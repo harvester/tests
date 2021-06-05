@@ -1,0 +1,8 @@
+# harvester_cluster_nodes
+#
+# Supported values are:
+#
+#  * 1: single node, no HA
+#  * 3: 3-node cluster, HA
+#
+harvester_cluster_nodes: 1
