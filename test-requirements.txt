@@ -1,0 +1,8 @@
+pytest
+pytest-html
+bcrypt
+requests
+pycryptodome
+sshpubkeys
+pyyaml
+polling2

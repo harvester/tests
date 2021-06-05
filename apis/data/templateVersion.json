@@ -1,0 +1,93 @@
+{
+   "apiVersion": "harvesterhci.io/v1beta1",
+   "kind": "VirtualMachineTemplate",
+   "metadata": {
+      "name": "test-raw-image-base-version",
+      "namespace": "harvester-system",
+      "labels": {
+         "template.harvesterhci.io/templateID": "test-raw-image-base-template"
+      }
+   },
+   "spec": {
+      "templateId": "harvester-system/test-raw-image-base-template",
+      "vm": {
+         "dataVolumeTemplates": [
+            {
+               "metadata": {
+		  "annotations":{"harvesterhci.io/imageId":"$occupancy_url"},
+                  "name": "datavolume-rootdisk"
+               },
+               "spec": {
+                  "pvc": {
+                     "accessModes": [
+                        "ReadWriteMany"
+                     ],
+                     "resources": {
+                        "requests": {
+                           "storage": "10Gi"
+                        }
+                     },
+                     "volumeMode": "Block"
+                  },
+                  "source": {
+                     "blank": {}
+                  }
+               }
+            }
+         ],
+         "running": true,
+         "template": {
+            "metadata": {
+               "creationTimestamp": null
+            },
+            "spec": {
+               "domain": {
+                  "cpu": {
+                     "cores": 1
+                  },
+                  "devices": {
+                     "disks": [
+                        {
+                           "bootOrder": 1,
+                           "disk": {
+                              "bus": "virtio"
+                           },
+                           "name": "rootdisk"
+                        }
+                     ],
+                     "interfaces": [
+                        {
+                           "masquerade": {},
+                           "name": "default"
+                        }
+                     ]
+                  },
+                  "machine": {
+                     "type": ""
+                  },
+                  "resources": {
+                     "requests": {
+                        "memory": "2Gi"
+                     }
+                  }
+               },
+               "evictionStrategy": "LiveMigrate",
+               "networks": [
+                  {
+                     "name": "default",
+                     "pod": {}
+                  }
+               ],
+               "volumes": [
+                  {
+                     "dataVolume": {
+                        "name": "datavolume-rootdisk"
+                     },
+                     "name": "rootdisk"
+                  }
+               ]
+            }
+         }
+      }
+   }
+}
