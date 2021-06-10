@@ -7,6 +7,9 @@ This is a harvester test framework which uses python pytest library. This framew
 
 Before running these tests, bring up a virtual harvester environment following the instructions in repo https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester
 
+In addition, the tests are executed via [tox][tox] so make sure it is installed,
+either via [Python pip][pip] or vendor package manager.
+
 ## Pytest Fixtures
 -------------
 They help us set up some helper code that should run before any tests are executed, and are perfect for setting-up resources that are needed by the tests. They are defined in conftest.py under the apis folder.
@@ -16,27 +19,32 @@ These fixture are executed at the session level and they are used to provide the
 ## Running Tests 
 ---
 
-- Create a python virtual environment, for example: test_venv
-```shell
-python3 -m venv test_venv
-source test_venv/bin/activate
-pip install -r test-requirements.txt
-```
-
-- Running tests
-```shell
-To run all the tests under apis folder
-Maintain the count of harvester_cluster_nodes(1 for single node and 3 for 3-node cluster) in config.yml. It can also be set as an option while executing the pytest
+To run all the API tests under the `apis` folder, maintain the count of
+harvester_cluster_nodes(1 for single node and 3 for 3-node cluster) in config.yml. It can also be set as an option while executing the pytest.
 
 For the first time logging pass the --set-admin-password option. For subsequest runs remove this option. 
 
-For first time logging  
-env PYTHONWARNINGS="ignore:Unverified HTTPS request" ./test_venv/bin/python -m pytest ./apis --endpoint https://<harvester_node_0 IP>:30443 --set_admin_password --html=test_result.html
+As mentioned before, the test will be executed via the [tox][tox]
+environments. Currently, both Python3.6 and Python3.8 are supported.
 
-For passing the harverster_cluster_nodes as option 
-env PYTHONWARNINGS="ignore:Unverified HTTPS request" ./test_venv/bin/python -m pytest ./apis --endpoint https://<harvester_node_0 IP>:30443 --harvester_cluster_nodes 1 --html=test_result.html
+For example, to run the tests in Python3.6 environmentfor the first time,
+against a freshly installed single node Harvester:
+```console
+tox -e py36 -- apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+```
+
+To pass the harverster_cluster_nodes as option:
+```console
+tox -e py36 -- apis --endpoint https://<harvester_node_0 IP>:30443 --harvester_cluster_nodes 1 --html=test_result.html
+```
+
+To run the API tests in Python3.8 environment:
+```console
+tox -e py38 -- apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+```
 
 Example Output:
+```console
 ============================= test session starts ==============================
 platform linux -- Python 3.6.12, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
 rootdir: <Folder from where tests are running> 
@@ -53,10 +61,14 @@ apis/test_volumes.py ....                                                [100%]
 ----------- generated html file: file:///<home Folder>/tests/test_result.html -----------
 ```
 
-- Destroy the python vitual environment
-```shell
-deactivate
-rm -rf test_env
+## Running Linter
+-----------------
+
+We are using the standard [flake8][flake8] linter to enforce coding style. To
+run the linter:
+
+```console
+tox -e pep8
 ```
 
 ## Adding New tests
@@ -64,4 +76,9 @@ rm -rf test_env
 
 Add new api tests under the apis folder. Pytest expects tests to be located in files whose names begin with test_ or end with _test.py
 
-Add any new fixtures in conftest.py. Fixture functions are created by marking them with the @pytest.fixture decorator. Test functions that require fixtures should accept them as arguments. 
+Add any new fixtures in conftest.py. Fixture functions are created by marking them with the @pytest.fixture decorator. Test functions that require fixtures should accept them as arguments.
+
+[tox]: https://tox.readthedocs.io/en/latest/
+[pip]: https://pip.pypa.io/en/stable/
+[flake8]: https://flake8.pycqa.org/en/latest/
+
