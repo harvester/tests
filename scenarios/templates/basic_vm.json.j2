@@ -1,0 +1,112 @@
+{# Template for basic VM creation request. Start the VM instance upon #}
+{# creation. #}
+
+{% if name is not defined %}
+    {% set name = random_name() %}
+{% endif %}
+{% set disk_0_name = name ~ "-disk-0-" ~ random_alphanumeric(length=5) %}
+
+{
+    "apiVersion": "kubevirt.io/v1",
+    "kind": "VirtualMachine",
+    "metadata": {
+        "annotations": {
+            "field.cattle.io/description": "{{ description | default('') }}"
+        },
+        "name": "{{ name }}"
+    },
+    "spec": {
+        "dataVolumeTemplates": [
+            {
+                "apiVersion": "cdi.kubevirt.io/v1beta1",
+                "kind": "DataVolume",
+                "metadata": {
+                    "annotations": {
+                        "harvesterhci.io/imageId": "{{ image_namespace | default('default') }}/{{ image_name }}"
+                    },
+                    "name": "{{ disk_0_name }}"
+                },
+                "spec": {
+                    "pvc": {
+                        "accessModes": [
+                            "ReadWriteMany"
+                        ],
+                        "resources": {
+                            "requests": {
+                                "storage": "{{ disk_size_gb | default(10) }}Gi"
+                            }
+                        },
+                        "volumeMode": "Block"
+                    },
+                    "source": {
+                        "blank": {}
+                    }
+                }
+            }
+        ],
+        "running": true,
+        "template": {
+            "metadata": {
+                "annotations": {
+                    "harvesterhci.io/diskNames": "[\"{{ disk_0_name }}\"]",
+                    "harvesterhci.io/sshNames": "[\"{{ ssh_key_name }}\"]"
+                },
+                "labels": {
+                    "harvesterhci.io/vmName": "{{ name }}"
+                }
+            },
+            "spec": {
+                "domain": {
+                    "cpu": {
+                        "cores": {{ cpu | default(1) }},
+                        "sockets": 1,
+                        "threads": 1
+                    },
+                    "devices": {
+                        "disks": [
+                            {
+                                "disk": {
+                                    "bus": "virtio"
+                                },
+                                "name": "disk-0"
+                            },
+                            {
+                                "disk": {
+                                    "bus": "virtio"
+                                },
+                                "name": "cloudinitdisk"
+                            }
+                        ],
+                        "inputs": [
+                            {
+                                "bus": "usb",
+                                "name": "tablet",
+                                "type": "tablet"
+                            }
+                        ]
+                    },
+                    "resources": {
+                        "requests": {
+                            "memory": "{{ memory_gb | default(1) }}Gi"
+                        }
+                    }
+                },
+                "hostname": "{{ hostname | default(name) }}",
+                "volumes": [
+                    {
+                        "dataVolume": {
+                            "name": "{{ disk_0_name }}"
+                        },
+                        "name": "disk-0"
+                    },
+                    {
+                        "cloudInitNoCloud": {
+                            "userData": "#cloud-config\\nssh_authorized_keys:\\n  - >-\\n    {{ ssh_public_key }}\\n"
+                        },
+                        "name": "cloudinitdisk"
+                    }
+                ]
+            }
+        }
+    }
+}

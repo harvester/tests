@@ -1,0 +1,33 @@
+{# Template for basic volume creation request. Default size is 10Gb. #}
+{% if name is not defined %}
+    {% set name = random_name() %}
+{% endif %}
+
+
+{
+    "apiVersion": "cdi.kubevirt.io/v1beta1",
+    "kind": "DataVolume",
+    "metadata": {
+        "annotations": {
+            "field.cattle.io/description": "{{ description | default('') }}"
+        },
+        "name": "{{ name }}",
+        "namespace": "{{ volume_namespace | default('default') }}"
+    },
+    "spec": {
+        "pvc": {
+            "accessModes": [
+                "ReadWriteMany"
+            ],
+            "resources": {
+                "requests": {
+                    "storage": "{{ size | default(10) }}Gi"
+                }
+            },
+            "volumeMode": "Block"
+        },
+        "source": {
+            "blank": {}
+        }
+    }
+}

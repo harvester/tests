@@ -1,0 +1,19 @@
+{# Harvester APIs #}
+{# see https://docs.harvesterhci.io/v0.2/reference/api/ #}
+
+{
+    "first_login_check": "{{ harvester_endpoint }}/v3/settings/first-login",
+    "local_auth": "{{ harvester_endpoint }}/v3-public/localProviders/local",
+    "reset_password": "{{ harvester_endpoint }}/v3/users",
+    "create_keypair": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/keypairs",
+    "delete_keypair": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/keypairs/%s",
+    "create_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages",
+    "delete_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages/%s",
+    "create_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes",
+    "delete_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes/%s",
+    "create_vm": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachines",
+    "delete_vm": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachines/%s",
+    "get_vm": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachines/%s",
+    "list_vm_instances": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineinstances",
+    "get_vm_instance": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineinstances/%s"
+}
