@@ -1,8 +1,11 @@
 pytest
 pytest-html
+pytest-json-report
+jinja2
 bcrypt
 requests
 pycryptodome
 sshpubkeys
 pyyaml
 polling2
+cryptography

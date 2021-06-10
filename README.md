@@ -1,9 +1,8 @@
 # About 
----
+
 This is a harvester test framework which uses python pytest library. This framework heavily depends on the pytest fixtures which are defined in conftest.py
 
 ## Pre-requisites
--------------
 
 Before running these tests, bring up a virtual harvester environment following the instructions in repo https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester
 
@@ -11,13 +10,17 @@ In addition, the tests are executed via [tox][tox] so make sure it is installed,
 either via [Python pip][pip] or vendor package manager.
 
 ## Pytest Fixtures
--------------
+
 They help us set up some helper code that should run before any tests are executed, and are perfect for setting-up resources that are needed by the tests. They are defined in conftest.py under the apis folder.
 
 These fixture are executed at the session level and they are used to provide the authentication and to get the api endpoints before executing tests for a particular api
 
-## Running Tests 
----
+## Running Tests
+
+### API Tests 
+
+API Tests are designed to test REST APIs for one resource (i.e. keypairs,
+vitualmachines, virtualmachineimages, etc) at a time.
 
 To run all the API tests under the `apis` folder, maintain the count of
 harvester_cluster_nodes(1 for single node and 3 for 3-node cluster) in config.yml. It can also be set as an option while executing the pytest.
@@ -27,7 +30,7 @@ For the first time logging pass the --set-admin-password option. For subsequest 
 As mentioned before, the test will be executed via the [tox][tox]
 environments. Currently, both Python3.6 and Python3.8 are supported.
 
-For example, to run the tests in Python3.6 environmentfor the first time,
+For example, to run the tests in a Python3.6 environment for the first time,
 against a freshly installed single node Harvester:
 ```console
 tox -e py36 -- apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
@@ -38,7 +41,7 @@ To pass the harverster_cluster_nodes as option:
 tox -e py36 -- apis --endpoint https://<harvester_node_0 IP>:30443 --harvester_cluster_nodes 1 --html=test_result.html
 ```
 
-To run the API tests in Python3.8 environment:
+To run the API tests in a Python3.8 environment:
 ```console
 tox -e py38 -- apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
 ```
@@ -59,6 +62,30 @@ apis/test_vm_templates.py ...                                            [ 81%]
 apis/test_volumes.py ....                                                [100%]
 
 ----------- generated html file: file:///<home Folder>/tests/test_result.html -----------
+```
+
+### Scenario Tests
+
+Scenario tests are designed to test a specific use case or scenario at a time,
+which may involved a combination of resources in an orchestrated workflow.
+
+Like the API tests, the scenario tests are also running inside the
+[tox][tox]-managed environments. Currently, both Python3.6 and Python3.8 are
+supported.
+
+To run the scenario tests in a Python3.6 environment:
+```console
+tox -r -e py36 -- scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+```
+To run the scenario tests in a Python3.8 environment:
+```console
+tox -r -e py38 -- scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+```
+By default the tests will cleanup after themselves. If you want to preserve the
+test artifact for debugging purposes, you may specific the `--do-not-cleanup`
+flag. For example:
+```console
+tox -r -e py38 -- scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html --do-not-cleanup
 ```
 
 ## Running Linter

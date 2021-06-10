@@ -5,4 +5,4 @@ __pycache__/
 *.log
 assets
 test_result.html
-
+*venv
