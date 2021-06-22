@@ -15,13 +15,12 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from scenarios import utils
-from urllib.parse import urljoin
+from harvester_e2e_tests import utils
 import pytest
 
 
 pytest_plugins = [
-   'scenarios.fixtures.api_version',
+   'harvester_e2e_tests.fixtures.api_version',
   ]
 
 
@@ -30,9 +29,10 @@ pytest_plugins = [
 class HarvesterAPIEndpoints:
     def __init__(self, endpoint, harvester_api_version,
                  cdi_api_version, kubevirt_api_version):
-       self.harvester_endpoint = endpoint
-       self.__dict__.update(
-           utils.get_json_object_from_template('api_endpoints',
+        self.harvester_endpoint = endpoint
+        self.__dict__.update(
+            utils.get_json_object_from_template(
+                'api_endpoints',
                 harvester_endpoint=self.harvester_endpoint,
                 harvester_api_version=harvester_api_version,
                 cdi_api_version=cdi_api_version,

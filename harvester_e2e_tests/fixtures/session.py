@@ -15,10 +15,9 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from urllib.parse import urljoin
 import pytest
 import requests
-import urllib3
+import yaml
 
 
 # FIXME(gyee): we need to set the admin password on the first login. Currently,
@@ -37,7 +36,7 @@ def _set_admin_password(harvester_api_endpoints, password):
     assert resp.status_code == 200, 'Unable to lookup first login status'
     if resp.json()['value'].lower() == 'false':
         # not first login, no need to set admin password
-        return  
+        return
 
     # need to set admin password
     # first obtain the token using the default admin password
@@ -47,8 +46,11 @@ def _set_admin_password(harvester_api_endpoints, password):
     resp = requests.post(
         harvester_api_endpoints.local_auth, verify=False,
         params=params, json=login_data)
-    assert resp.status_code == 200, ('Unable to authenticate admin with '
-                                     'default password')
+    # FIXME(gyee): it seems like Harvester API is returning a different status
+    # code in different releases even though the API version hasn't changed.
+    # For now, lets account for both 200 and 201 as valid error codes.
+    assert resp.status_code in [200, 201], (
+        'Unable to authenticate admin with default password')
 
     # now reset the admin password
     bearer_token = 'Bearer ' + resp.json()['token']
@@ -65,7 +67,6 @@ def _set_admin_password(harvester_api_endpoints, password):
 
 @pytest.fixture(scope='session')
 def admin_session(request, harvester_api_endpoints):
-    endpoint = request.config.getoption('--endpoint')
     username = request.config.getoption('--username')
     password = request.config.getoption('--password')
 
@@ -83,3 +84,14 @@ def admin_session(request, harvester_api_endpoints):
     auth_token = 'Bearer ' + resp.json()['token']
     s.headers.update({'Authorization': auth_token})
     return s
+
+
+@pytest.fixture(scope='session')
+def harvester_cluster_nodes(request):
+    nodes = request.config.getoption('--harvester_cluster_nodes')
+    if nodes is None:
+        # option is not specified. Load it from config file instead
+        with open('config.yml') as f:
+            config_data = yaml.safe_load(f)
+            nodes = config_data['harvester_cluster_nodes']
+    return nodes

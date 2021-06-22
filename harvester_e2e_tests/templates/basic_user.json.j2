@@ -1,0 +1,19 @@
+{# Template for basic Harvester user creation request. #}
+
+{% if username is not defined %}
+    {% set username = random_name() %}
+{% endif %}
+
+{% if password is not defined %}
+    {% set password = random_name() %}
+{% endif %}
+
+{
+    "apiVersion": "harvesterhci.io/v1beta1",
+    "kind": "User",
+    "displayName": "{{ display_name | default(username) }}",
+    "username": "{{ username }}",
+    "description": "{{ description | default('') }}",
+    "password": "{{ password }}",
+    "isAdmin": false
+}

@@ -18,6 +18,7 @@
 import jinja2
 import json
 import os
+import polling2
 import random
 import string
 import uuid
@@ -66,3 +67,12 @@ def get_json_object_from_template(template_name, **template_args):
     # now render the template
     rendered = template.render(template_args)
     return json.loads(rendered)
+
+
+def poll_for_resource_ready(admin_session, endpoint, expected_code=200):
+    ready = polling2.poll(
+        lambda: admin_session.get(endpoint).status_code == expected_code,
+        step=5,
+        timeout=60)
+    assert ready, 'Timed out while waiting for %s to yield %s' % (
+        endpoint, expected_code)
