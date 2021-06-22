@@ -15,22 +15,23 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from scenarios import utils
+from harvester_e2e_tests import utils
 import pytest
 import time
 
 
 pytest_plugins = [
-   'scenarios.fixtures.image',
-   'scenarios.fixtures.keypair',
-   'scenarios.fixtures.volume',
+   'harvester_e2e_tests.fixtures.image',
+   'harvester_e2e_tests.fixtures.keypair',
+   'harvester_e2e_tests.fixtures.volume',
   ]
 
 
 @pytest.fixture()
 def basic_vm(request, admin_session, image, keypair, volume,
              harvester_api_endpoints):
-    request_json = utils.get_json_object_from_template('basic_vm',
+    request_json = utils.get_json_object_from_template(
+        'basic_vm',
         image_namespace=image['metadata']['namespace'],
         image_name=image['metadata']['name'],
         disk_size_gb=10,
@@ -74,6 +75,5 @@ def test_create_vm(admin_session, basic_vm, keypair, harvester_api_endpoints):
         basic_vm['metadata']['name']))
     assert resp.status_code == 200, 'Failed to lookup VM instance %s' % (
         basic_vm['metadata']['name'])
-    vm_instance_json = resp.json()
     # TODO(gyee): need to make sure we can SSH into the VM, but only
     # if the VM has a public IP.

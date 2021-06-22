@@ -1,0 +1,16 @@
+{# Template for basic VM template creation request. #}
+{% if name is not defined %}
+    {% set name = random_name() %}
+{% endif %}
+
+{
+    "apiVersion": "harvesterhci.io/v1beta1",
+    "kind": "VirtualMachineTemplate",
+    "metadata": {
+        "name": "{{ name }}",
+        "namespace": "{{ vm_template_namespace | default('default') }}"
+    },
+    "spec": {
+        "description": "{{ description | default('') }}"
+    }
+}

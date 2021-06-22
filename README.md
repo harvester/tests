@@ -17,15 +17,23 @@ These fixture are executed at the session level and they are used to provide the
 
 ## Running Tests
 
+### Run All Tests
+
+To run the entire Harvester end-to-end test suite:
+
+```console
+tox -e py36 -- harvester_e2e_tests --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+```
+
 ### API Tests 
 
 API Tests are designed to test REST APIs for one resource (i.e. keypairs,
 vitualmachines, virtualmachineimages, etc) at a time.
 
-To run all the API tests under the `apis` folder, maintain the count of
-harvester_cluster_nodes(1 for single node and 3 for 3-node cluster) in config.yml. It can also be set as an option while executing the pytest.
-
-For the first time logging pass the --set-admin-password option. For subsequest runs remove this option. 
+To run all the API tests under the `harvester_e2e_tests\apis` folder, maintain
+the count of harvester_cluster_nodes(1 for single node and 3 for 3-node
+cluster) in config.yml. It can also be set as an option while executing the
+pytest.
 
 As mentioned before, the test will be executed via the [tox][tox]
 environments. Currently, both Python3.6 and Python3.8 are supported.
@@ -33,17 +41,17 @@ environments. Currently, both Python3.6 and Python3.8 are supported.
 For example, to run the tests in a Python3.6 environment for the first time,
 against a freshly installed single node Harvester:
 ```console
-tox -e py36 -- apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+tox -e py36 -- harvester_e2e_tests/apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
 ```
 
 To pass the harverster_cluster_nodes as option:
 ```console
-tox -e py36 -- apis --endpoint https://<harvester_node_0 IP>:30443 --harvester_cluster_nodes 1 --html=test_result.html
+tox -e py36 -- harvester_e2e_tests/apis --endpoint https://<harvester_node_0 IP>:30443 --harvester_cluster_nodes 1 --html=test_result.html
 ```
 
 To run the API tests in a Python3.8 environment:
 ```console
-tox -e py38 -- apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+tox -e py38 -- harvester_e2e_tests/apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
 ```
 
 Example Output:
@@ -75,17 +83,17 @@ supported.
 
 To run the scenario tests in a Python3.6 environment:
 ```console
-tox -r -e py36 -- scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+tox -r -e py36 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
 ```
 To run the scenario tests in a Python3.8 environment:
 ```console
-tox -r -e py38 -- scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+tox -r -e py38 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
 ```
 By default the tests will cleanup after themselves. If you want to preserve the
 test artifact for debugging purposes, you may specific the `--do-not-cleanup`
 flag. For example:
 ```console
-tox -r -e py38 -- scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html --do-not-cleanup
+tox -r -e py38 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html --do-not-cleanup
 ```
 
 ## Running Linter

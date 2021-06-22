@@ -22,14 +22,15 @@ from cryptography.hazmat.primitives.serialization import (
     Encoding,
     PrivateFormat,
     PublicFormat)
-from scenarios import utils
+from harvester_e2e_tests import utils
 import pytest
+import time
 
 
 pytest_plugins = [
-   'scenarios.fixtures.api_endpoints',
-   'scenarios.fixtures.api_version',
-   'scenarios.fixtures.session',
+   'harvester_e2e_tests.fixtures.api_endpoints',
+   'harvester_e2e_tests.fixtures.api_version',
+   'harvester_e2e_tests.fixtures.session',
   ]
 
 
@@ -55,22 +56,45 @@ def _generate_ssh_keypair():
     return public_key_ssh.decode('utf-8'), private_key_pem.decode('utf-8')
 
 
+def wait_till_validated(admin_session, harvester_api_endpoints, keypair_data):
+    for x in range(10):
+        resp = admin_session.get(harvester_api_endpoints.get_keypair % (
+            keypair_data['metadata']['name']))
+        assert resp.status_code == 200, (
+            'Unable to get keypair: %s' % (resp.content))
+        resp_json = resp.json()
+        if ('status' in resp_json and
+                resp_json['status']['conditions'][0]['type'] == 'validated'):
+            return
+        time.sleep(10)
+    pytest.fail('Timed out while waiting for keypair to be validated')
+
+
 @pytest.fixture(scope='class')
-def keypair(request, harvester_api_version, admin_session,
-            harvester_api_endpoints):
+def keypair_request_json():
     public_key, private_key = _generate_ssh_keypair()
-    request_json = utils.get_json_object_from_template('basic_keypair',
+    request_json = utils.get_json_object_from_template(
+        'basic_keypair',
         public_key=public_key
     )
-    print('---%s---' % (harvester_api_endpoints.create_keypair))
+    return [request_json, private_key]
+
+
+@pytest.fixture(scope='class')
+def keypair(request, harvester_api_version, admin_session,
+            harvester_api_endpoints, keypair_request_json):
     resp = admin_session.post(harvester_api_endpoints.create_keypair,
-                              json=request_json)
+                              json=keypair_request_json[0])
     assert resp.status_code == 201, 'Unable to create keypair'
     keypair_data = resp.json()
+    assert keypair_data['spec']['publicKey'] == \
+        keypair_request_json[0]['spec']['publicKey'], (
+            'Created publicKey does not match original publicKey')
+    wait_till_validated(admin_session, harvester_api_endpoints, keypair_data)
     # NOTE(gyee): inject the private key to the keypair data so tests
     # have access to it, just in case they want to also test SSH into
     # the VM. This is not a security concern as this is for test only.
-    keypair_data['spec']['privateKey'] = private_key
+    keypair_data['spec']['privateKey'] = keypair_request_json[1]
     yield keypair_data
     if not request.config.getoption('--do-not-cleanup'):
         resp = admin_session.delete(

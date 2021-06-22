@@ -15,8 +15,6 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import pytest
-
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -41,5 +39,11 @@ def pytest_addoption(parser):
         '--do-not-cleanup',
         action='store_true',
         help='Do not cleanup the test artifacts'
+    )
+    parser.addoption(
+        '--harvester_cluster_nodes',
+        action='store',
+        type='int',
+        help='Set count of test framework harvester cluster nodes.'
     )
     # TODO(gyee): may need to add SSL options later

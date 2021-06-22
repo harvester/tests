@@ -1,0 +1,36 @@
+{# Harvester APIs #}
+{# see https://docs.harvesterhci.io/v0.2/reference/api/ #}
+
+{
+    "list_nodes": "{{ harvester_endpoint }}/v1/nodes",
+    "first_login_check": "{{ harvester_endpoint }}/v3/settings/first-login",
+    "local_auth": "{{ harvester_endpoint }}/v3-public/localProviders/local",
+    "reset_password": "{{ harvester_endpoint }}/v3/users",
+    "create_keypair": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/keypairs",
+    "delete_keypair": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/keypairs/%s",
+    "get_keypair": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/keypairs/%s",
+    "list_images": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages",
+    "create_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages",
+    "delete_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages/%s",
+    "update_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages/%s",
+    "create_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes",
+    "get_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes/%s",
+    "delete_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes/%s",
+    "create_vm": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachines",
+    "delete_vm": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachines/%s",
+    "get_vm": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachines/%s",
+    "list_vm_instances": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineinstances",
+    "get_vm_instance": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineinstances/%s",
+    "create_network": "{{ harvester_endpoint }}/v1/k8s.cni.cncf.io.network-attachment-definitions",
+    "delete_network": "{{ harvester_endpoint }}/v1/k8s.cni.cncf.io.network-attachment-definitions/%s",
+    "list_networks": "{{ harvester_endpoint }}/v1/k8s.cni.cncf.io.network-attachment-definitions",
+    "list_harvester_settings": "{{ harvester_endpoint }}/v1/harvesterhci.io.settings",
+    "get_api_ui_version": "{{ harvester_endpoint }}/v1/harvesterhci.io.settings/api-ui-version",
+    "create_user": "{{ harvester_endpoint }}/v1/harvesterhci.io.users",
+    "create_vm_template": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinetemplates",
+    "list_vm_templates": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinetemplates",
+    "delete_vm_template": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinetemplates/%s",
+    "create_vm_template_version": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinetemplateversions",
+    "list_vm_template_versions": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinetemplateversions",
+    "delete_vm_template_version": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinetemplateversions/%s"
+}

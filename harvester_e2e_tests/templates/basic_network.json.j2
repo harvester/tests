@@ -1,0 +1,24 @@
+{# Template for basic image creation request. #}
+
+{% if name is not defined %}
+    {% set name = random_name() %}
+{% endif %}
+
+{% if vlan is not defined %}
+    {% set vlan = range(1, 4094) | random %}
+{% endif %}
+
+{
+   "apiVersion": "k8s.cni.cncf.io/v1",
+   "kind": "NetworkAttachmentDefinition",
+   "metadata": {
+      "labels": {
+         "networks.harvesterhci.io/type": "L2VlanNetwork"
+      },
+      "name": "{{ name }}",
+      "namespace": "{{ network_namespace | default('default') }}"
+   },
+   "spec": {
+      "config": "{\"cniVersion\":\"0.3.1\",\"name\":\"{{ name }}\",\"type\":\"bridge\",\"bridge\":\"harvester-br0\",\"promiscMode\":true,\"vlan\":{{ vlan | default('') }},\"ipam\":{}}"
+   }
+}
