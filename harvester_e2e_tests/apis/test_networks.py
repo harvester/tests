@@ -17,7 +17,6 @@
 
 from harvester_e2e_tests import utils
 import json
-import time
 
 
 pytest_plugins = [
@@ -66,27 +65,11 @@ def test_create_edit_network(admin_session, harvester_api_endpoints, network):
     request_json['spec']['config'] = json.dumps(conf_data)
     request_json['metadata']['name'] = network['metadata']['name']
     request_json['metadata']['namespace'] = network['metadata']['namespace']
-    # FIXME(gyee): seem like kubernetes required client to manually
-    # increment the resourceVersion on update. Shouldn't this be done
-    # by the backend?
-    request_json['metadata']['resourceVersion'] = str(
-        int(network['metadata']['resourceVersion']) + 1)
-    # FIXME(gyee): we need to do retries because kubenetes cluster is doing
-    # dark magic when updating resources because of the way it handles
-    # queuing. See
-    # https://github.com/kubernetes/kubernetes/issues/84430
-    # We'll need to fix this code after Kubenetes no longer needs dark magic.
-    retries = 5
-    while retries:
-        resp = admin_session.put(network['links']['update'], json=request_json)
-        if (resp.status_code == 409 and
-                'latest version and try' in resp.content.decode('utf-8')):
-            time.sleep(5)
-            retries -= 1
-        else:
-            break
-    assert resp.status_code == 200, 'Failed to update network: %s' % (
-        resp.content)
+    resp = utils.poll_for_update_resource(
+        admin_session,
+        network['links']['update'],
+        request_json,
+        network['links']['view'])
     updated_network_data = resp.json()
     updated_config = json.loads(updated_network_data['spec']['config'])
     assert updated_config['vlan'] == updated_vlan, 'Failed to update vlan'

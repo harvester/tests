@@ -16,9 +16,11 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+import polling2
 import pytest
 import time
 import json
+
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.image',
@@ -27,7 +29,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope='class', autouse=True)
 def basic_vm(request, admin_session, image, keypair, volume,
              harvester_api_endpoints):
     request_json = utils.get_json_object_from_template(
@@ -44,6 +46,24 @@ def basic_vm(request, admin_session, image, keypair, volume,
                               json=request_json)
     assert resp.status_code == 201, 'Failed to create VM'
     vm_resp_json = resp.json()
+    # wait for VM to be ready
+    time.sleep(30)
+
+    def _check_vm_ready():
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_resp_json['metadata']['name']))
+        if resp.status_code == 200:
+            resp_json = resp.json()
+            if ('status' in resp_json and 'ready' in resp_json['status'] and
+                    resp_json['status']['ready']):
+                return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_ready,
+        step=5,
+        timeout=120)
+    assert success, 'Timed out while waiting for VM to be ready.'
     yield vm_resp_json
     if not request.config.getoption('--do-not-cleanup'):
         resp = admin_session.delete(
@@ -51,164 +71,167 @@ def basic_vm(request, admin_session, image, keypair, volume,
                 vm_resp_json['metadata']['name']))
 
 
-def test_create_vm(admin_session, basic_vm, keypair, harvester_api_endpoints):
-    ready = False
-    # VM startup is asynchronous so make sure it is running and it has a
-    # corresponding instance.
-    retries = 10
-    while retries:
-        resp = admin_session.get(harvester_api_endpoints.get_vm % (
-            basic_vm['metadata']['name']))
-        if resp.status_code == 200:
-            resp_json = resp.json()
-            if ('status' in resp_json and 'ready' in resp_json['status'] and
-                    resp_json['status']['ready']):
-                ready = True
-                break
-        retries -= 1
-        # TODO(gyee): should we make the sleep time configurable?
-        time.sleep(30)
-    assert ready, 'Timed out while waiting for VM to be ready.'
+def lookup_vm_instance(admin_session, harvester_api_endpoints, basic_vm):
     # NOTE(gyee): seem like the corresponding VM instance has the same name as
     # the VM. If this assumption is not true, we need to fix this code.
     resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
         basic_vm['metadata']['name']))
     assert resp.status_code == 200, 'Failed to lookup VM instance %s' % (
         basic_vm['metadata']['name'])
-    vmi_resp_json = resp.json()
-    vmiUID = vmi_resp_json['metadata']['uid']
+    return resp.json()
 
-    # TODO(gyee): need to make sure we can SSH into the VM, but only
-    # if the VM has a public IP.
+
+def test_vm_actions(admin_session, basic_vm, keypair,
+                    harvester_api_endpoints):
+    # make sure the VM instance is successfully created
+    vm_instance_json = lookup_vm_instance(
+        admin_session, harvester_api_endpoints, basic_vm)
 
     # Test Various actions on created VM
 #    _update_vm(admin_session, harvester_api_endpoints, basic_vm)
-    _restart_vm(admin_session, harvester_api_endpoints,
-                basic_vm, vmiUID)
-    _stop_vm(admin_session, harvester_api_endpoints, basic_vm)
-    _start_vm(admin_session, harvester_api_endpoints, basic_vm)
-    _pause_vm(admin_session, harvester_api_endpoints, basic_vm)
-    _unpause_vm(admin_session, harvester_api_endpoints, basic_vm)
+    _restart_vm(admin_session, harvester_api_endpoints, vm_instance_json)
+    _stop_vm(admin_session, harvester_api_endpoints, vm_instance_json)
+    _start_vm(admin_session, harvester_api_endpoints, vm_instance_json)
+    _pause_vm(admin_session, harvester_api_endpoints, vm_instance_json)
+    _unpause_vm(admin_session, harvester_api_endpoints, vm_instance_json)
 
 
-def _restart_vm(admin_session, harvester_api_endpoints, basic_vm, vmiid):
+def _restart_vm(admin_session, harvester_api_endpoints, basic_vm_instance):
+    # restart the VM instance
     resp = admin_session.post(harvester_api_endpoints.restart_vm % (
-        basic_vm['metadata']['name']))
+        basic_vm_instance['metadata']['name']))
     assert resp.status_code == 204, 'Failed to restart VM instance %s' % (
-        basic_vm['metadata']['name'])
+        basic_vm_instance['metadata']['name'])
 
-    retries = 20
-    while retries:
+    # give it some time for the VM instance to restart
+    time.sleep(30)
+    previous_uid = basic_vm_instance['metadata']['uid']
+
+    def _check_new_vm_instance_running():
         resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
-            basic_vm['metadata']['name']))
+            basic_vm_instance['metadata']['name']))
         if resp.status_code == 200:
             resp_json = resp.json()
             if ('status' in resp_json and
+                    'phase' in resp_json['status'] and
                     resp_json['status']['phase'] == 'Running' and
-                    resp_json['metadata']['uid'] != vmiid):
-                vmiUID = resp_json['metadata']['uid']
-                break
+                    resp_json['metadata']['uid'] != previous_uid):
+                return True
+        return False
 
-        time.sleep(30)
-        retries -= 1
-
-    assert resp.status_code == 200, 'Failed to get VM instance %s' % (
+    success = polling2.poll(
+        _check_new_vm_instance_running,
+        step=5,
+        timeout=120)
+    assert success, 'Failed to restart VM instance %s' % (
         basic_vm['metadata']['name'])
-    assert vmiid != vmiUID, 'VM instance not changed for %s' % (
-        basic_vm['metadata']['name'])
 
 
-def _stop_vm(admin_session, harvester_api_endpoints, basic_vm):
+def _stop_vm(admin_session, harvester_api_endpoints, basic_vm_instance):
     resp = admin_session.post(harvester_api_endpoints.stop_vm % (
-        basic_vm['metadata']['name']))
+        basic_vm_instance['metadata']['name']))
     assert resp.status_code == 204, 'Failed to stop VM instance %s' % (
-        basic_vm['metadata']['name'])
+        basic_vm_instance['metadata']['name'])
 
-    retries = 10
-    while retries:
+    # give it some time for the VM instance to stop
+    time.sleep(30)
+
+    def _check_vm_instance_stopped():
         resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
-            basic_vm['metadata']['name']))
-        if resp.status_code == 200:
-            time.sleep(5)
-            retries -= 1
-        else:
-            break
+            basic_vm_instance['metadata']['name']))
+        if resp.status_code == 404:
+            return True
+        return False
 
-    assert resp.status_code == 404, 'Found VM instance for: %s' % (
-        basic_vm['metadata']['name'])
+    success = polling2.poll(
+        _check_vm_instance_stopped,
+        step=5,
+        timeout=120)
+    assert success, 'Failed to stop VM: %s' % (
+        basic_vm_instance['metadata']['name'])
 
 
-def _start_vm(admin_session, harvester_api_endpoints, basic_vm):
+def _start_vm(admin_session, harvester_api_endpoints, basic_vm_instance):
+    # NOTE: this step must be done after VM has stopped
     resp = admin_session.post(harvester_api_endpoints.start_vm % (
-        basic_vm['metadata']['name']))
+        basic_vm_instance['metadata']['name']))
     assert resp.status_code == 204, 'Failed to start VM instance %s' % (
-        basic_vm['metadata']['name'])
+        basic_vm_instance['metadata']['name'])
 
-    retries = 10
-    while retries:
+    # give it some time for the VM to start
+    time.sleep(30)
+
+    def _check_vm_instance_started():
         resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
-            basic_vm['metadata']['name']))
+            basic_vm_instance['metadata']['name']))
         if resp.status_code == 200:
             resp_json = resp.json()
             if ('status' in resp_json and
                     resp_json['status']['phase'] == 'Running'):
-                break
+                return True
+        return False
 
-        time.sleep(5)
-        retries -= 1
-
-    assert resp.status_code == 200, 'Failed to get VM instance for: %s' % (
+    success = polling2.poll(
+        _check_vm_instance_started,
+        step=5,
+        timeout=120)
+    assert success, 'Failed to get VM instance for: %s' % (
         basic_vm['metadata']['name'])
 
 
-def _pause_vm(admin_session, harvester_api_endpoints, basic_vm):
-    paused = False
+def _pause_vm(admin_session, harvester_api_endpoints, basic_vm_instance):
     resp = admin_session.post(harvester_api_endpoints.pause_vm % (
-        basic_vm['metadata']['name']))
+        basic_vm_instance['metadata']['name']))
     assert resp.status_code == 204, 'Failed to pause VM instance %s' % (
-        basic_vm['metadata']['name'])
+        basic_vm_instance['metadata']['name'])
 
-    retries = 10
-    while retries:
+    # give it some time for the VM to pause
+    time.sleep(10)
+
+    def _check_vm_instance_paused():
         resp = admin_session.get(harvester_api_endpoints.get_vm % (
-            basic_vm['metadata']['name']))
+            basic_vm_instance['metadata']['name']))
         if resp.status_code == 200:
             resp_json = resp.json()
-            if ('status' in resp_json and
-                    'Paused' in [i['type'] for i in
-                                 resp_json['status']['conditions']] and
-                    "True" in [i['status'] for i in
-                               resp_json['status']['conditions']]):
-                paused = True
-                break
-        retries -= 1
-        # TODO(gyee): should we make the sleep time configurable?
-        time.sleep(30)
-    assert paused, 'Timed out while waiting for VM to be paused.'
+            if 'status' in resp_json:
+                for condition in resp_json['status']['conditions']:
+                    if (condition['type'] == 'Paused' and
+                            condition['status'] == 'True'):
+                        return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_instance_paused,
+        step=5,
+        timeout=120)
+    assert success, 'Timed out while waiting for VM to be paused.'
 
 
-def _unpause_vm(admin_session, harvester_api_endpoints, basic_vm):
+def _unpause_vm(admin_session, harvester_api_endpoints, basic_vm_instance):
+    # NOTE: make sure to execute this step after _paused_vm()
     resp = admin_session.post(harvester_api_endpoints.unpause_vm % (
-        basic_vm['metadata']['name']))
+        basic_vm_instance['metadata']['name']))
     assert resp.status_code == 204, 'Failed to unpause VM instance %s' % (
-        basic_vm['metadata']['name'])
-    ready = False
-    # VM startup is asynchronous so make sure it is running and it has a
-    # corresponding instance.
-    retries = 10
-    while retries:
+        basic_vm_instance['metadata']['name'])
+
+    # give it some time to unpause
+    time.sleep(10)
+
+    def _check_vm_instance_unpaused():
         resp = admin_session.get(harvester_api_endpoints.get_vm % (
-            basic_vm['metadata']['name']))
+            basic_vm_instance['metadata']['name']))
         if resp.status_code == 200:
             resp_json = resp.json()
             if ('status' in resp_json and 'ready' in resp_json['status'] and
                     resp_json['status']['ready']):
-                ready = True
-                break
-        retries -= 1
-        # TODO(gyee): should we make the sleep time configurable?
-        time.sleep(30)
-    assert ready, 'Timed out while waiting for VM to be unpaused.'
+                return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_instance_unpaused,
+        step=5,
+        timeout=120)
+    assert success, 'Timed out while waiting for VM to be unpaused.'
 
 
 def _update_vm(admin_session, harvester_api_endpoints, basic_vm):
