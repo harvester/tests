@@ -76,3 +76,47 @@ def poll_for_resource_ready(admin_session, endpoint, expected_code=200):
         timeout=60)
     assert ready, 'Timed out while waiting for %s to yield %s' % (
         endpoint, expected_code)
+
+
+def get_latest_resource_version(admin_session, lookup_endpoint):
+    poll_for_resource_ready(admin_session, lookup_endpoint)
+    resp = admin_session.get(lookup_endpoint)
+    assert resp.status_code == 200, 'Failed to lookup resource: %s' % (
+        resp.content)
+    return resp.json()['metadata']['resourceVersion']
+
+
+def poll_for_update_resource(admin_session, update_endpoint, request_json,
+                             lookup_endpoint):
+
+    resp = None
+
+    def _update_resource():
+        # we want the update response to return back to the caller
+        nonlocal resp
+
+        # first we need to get the latest resourceVersion and fill that in
+        # the request_json as it is a required field and must be the latest.
+        request_json['metadata']['resourceVersion'] = (
+            get_latest_resource_version(admin_session, lookup_endpoint))
+        resp = admin_session.put(update_endpoint, json=request_json)
+        if resp.status_code == 409:
+            return False
+        else:
+            assert resp.status_code == 200, 'Failed to update resource: %s' % (
+                resp.content)
+            return True
+
+    # NOTE(gyee): we need to do retries because kubenetes cluster does not
+    # guarantee freshness when updating resources because of the way it handles
+    # queuing. See
+    # https://github.com/kubernetes/kubernetes/issues/84430
+    # Therefore, we must do fetch-retry when updating resources.
+    # Apparently this is way of life in Kubernetes world.
+    updated = polling2.poll(
+        _update_resource,
+        step=3,
+        timeout=120)
+    assert updated, 'Timed out while waiting to update resource: %s' % (
+        update_endpoint)
+    return resp

@@ -43,21 +43,18 @@ def test_get_user(admin_session, user):
 
 def test_update_user_password(admin_session, user):
     request_json = utils.get_json_object_from_template(
-        'basic_user', password='TestF00Bar')
+        'basic_user', password='UpdatedTestF00Bar')
     request_json['username'] = user['username']
     request_json['displayName'] = user['displayName']
     del request_json['description']
     del request_json['isAdmin']
     request_json['metadata'] = {'name': user['metadata']['name']}
-    request_json['metadata']['resourceVersion'] = (
-        user['metadata']['resourceVersion'])
-    resp = admin_session.put(user['links']['update'], json=request_json)
-    assert resp.status_code == 200, (
-        'Failed to update user: %s' % (resp.content))
-    updated_user_data = resp.json()
-    resp = admin_session.get(updated_user_data['links']['view'])
-    assert resp.status_code == 200, 'Failed to get user: %s' % (resp.content)
+    resp = utils.poll_for_update_resource(
+        admin_session,
+        user['links']['update'],
+        request_json,
+        user['links']['view'])
     get_updated_user = resp.json()
-    updatedPassStr = str.encode("TestF00Bar")
+    updatedPassStr = str.encode('UpdatedTestF00Bar')
     assert bcrypt.checkpw(
-        updatedPassStr, get_updated_user['password'].encode("utf-8"))
+        updatedPassStr, get_updated_user['password'].encode('utf-8'))
