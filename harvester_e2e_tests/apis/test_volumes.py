@@ -21,10 +21,11 @@ import yaml
 
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.volume',
-   'harvester_e2e_tests.fixtures.session',
-  ]
+    'harvester_e2e_tests.fixtures.api_endpoints',
+    'harvester_e2e_tests.fixtures.volume',
+    'harvester_e2e_tests.fixtures.session',
+    'harvester_e2e_tests.fixtures.image',
+]
 
 
 def test_create_volume_missing_size(admin_session, harvester_api_endpoints):
@@ -56,8 +57,36 @@ def test_create_volumes(volume):
     pass
 
 
+def test_create_volume_image_form(volume_image_form):
+    # NOTE: if the volume is successfully create that means the test is good
+    pass
+
+
 def test_create_volume_by_yaml(admin_session, harvester_api_endpoints):
     request_json = utils.get_json_object_from_template('basic_volume')
+    resp = admin_session.post(harvester_api_endpoints.create_volume,
+                              data=yaml.dump(request_json, sort_keys=False),
+                              headers={'Content-Type': 'application/yaml'})
+    assert resp.status_code == 201, (
+        'Failed to create volume with YAML request: %s' % (resp.content))
+    view_endpoint = harvester_api_endpoints.get_volume % (
+        request_json['metadata']['name'])
+    assert validate_blank_volumes(admin_session, view_endpoint)
+    resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
+        request_json['metadata']['name']))
+    # FIXME(gyee): we need to figure out why the API can arbitarily return
+    # 200 or 204. It should consistently returning one.
+    assert resp.status_code in [200, 204], 'Failed to delete volume: %s' % (
+        resp.content)
+
+
+def test_create_volume_using_image_by_yaml(admin_session,
+                                           harvester_api_endpoints, image):
+    request_json = utils.get_json_object_from_template('basic_volume')
+    imageid = "/".join([image['metadata']['namespace'],
+                       image['metadata']['name']])
+    request_json['metadata']['annotations'][
+        'harvesterhci.io/imageId'] = imageid
     resp = admin_session.post(harvester_api_endpoints.create_volume,
                               data=yaml.dump(request_json, sort_keys=False),
                               headers={'Content-Type': 'application/yaml'})
