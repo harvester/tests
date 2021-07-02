@@ -120,3 +120,13 @@ def poll_for_update_resource(admin_session, update_endpoint, request_json,
     assert updated, 'Timed out while waiting to update resource: %s' % (
         update_endpoint)
     return resp
+
+
+def lookup_vm_instance(admin_session, harvester_api_endpoints, vm_json):
+    # NOTE(gyee): seem like the corresponding VM instance has the same name as
+    # the VM. If this assumption is not true, we need to fix this code.
+    resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
+        vm_json['metadata']['name']))
+    assert resp.status_code == 200, 'Failed to lookup VM instance %s' % (
+        vm_json['metadata']['name'])
+    return resp.json()

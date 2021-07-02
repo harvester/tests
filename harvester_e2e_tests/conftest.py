@@ -15,6 +15,8 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import pytest
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -46,4 +48,43 @@ def pytest_addoption(parser):
         type='int',
         help='Set count of test framework harvester cluster nodes.'
     )
+    parser.addoption(
+        '--vlan-id',
+        action='store',
+        type='int',
+        help=('VLAN ID, if specified, will invoke the tests depended on '
+              'external networking.')
+    )
+    parser.addoption(
+        '--vlan-nic',
+        action='store',
+        default='eth0',
+        help='Physical NIC for VLAN. Default is "eth0"'
+    )
+    parser.addoption(
+        '--wait-timeout',
+        action='store',
+        type='int',
+        default=300,
+        help='Wait time for polling operations'
+    )
     # TODO(gyee): may need to add SSL options later
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", ('public_network: mark test to run only if public '
+                    'networking is available')
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption('--vlan-id'):
+        # --vlan-id is specified, do not skip tests relying on external
+        # routing
+        return
+    skip_public_network = pytest.mark.skip(reason=(
+        'VM not accessible because no VLAN setup with public routing'))
+    for item in items:
+        if 'public_network' in item.keywords:
+            item.add_marker(skip_public_network)
