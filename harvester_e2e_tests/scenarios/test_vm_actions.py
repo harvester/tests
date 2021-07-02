@@ -19,7 +19,6 @@ from harvester_e2e_tests import utils
 import polling2
 import pytest
 import time
-import json
 
 
 pytest_plugins = [
@@ -88,7 +87,8 @@ def test_vm_actions(admin_session, basic_vm, keypair,
         admin_session, harvester_api_endpoints, basic_vm)
 
     # Test Various actions on created VM
-#    _update_vm(admin_session, harvester_api_endpoints, basic_vm)
+    _update_vm(admin_session, harvester_api_endpoints,
+               basic_vm, vm_instance_json)
     _restart_vm(admin_session, harvester_api_endpoints, vm_instance_json)
     _stop_vm(admin_session, harvester_api_endpoints, vm_instance_json)
     _start_vm(admin_session, harvester_api_endpoints, vm_instance_json)
@@ -234,26 +234,42 @@ def _unpause_vm(admin_session, harvester_api_endpoints, basic_vm_instance):
     assert success, 'Timed out while waiting for VM to be unpaused.'
 
 
-def _update_vm(admin_session, harvester_api_endpoints, basic_vm):
+def _update_vm(admin_session, harvester_api_endpoints, basic_vm,
+               basic_vm_instance):
     domain_data = basic_vm['spec']['template']['spec']['domain']
-    domain_data['cpu']['cores'] = 2
-    domain_data['resources']['requests']['memory'] = "2Gi"
+    updated_cores = domain_data['cpu']['cores'] + 1
+    domain_data['cpu']['cores'] = updated_cores
 
-    retries = 20
-    while retries:
-        resp = admin_session.put(harvester_api_endpoints.update_vm % (
-            basic_vm['metadata']['name']), json=basic_vm)
-        if (resp.status_code == 409 and
-                'latest version and try' in resp.content.decode('utf-8')):
-            time.sleep(30)
-            retries -= 1
-        else:
-            break
-    assert resp.status_code == 200, 'Failed to update vm: %s' % (
-        resp.content)
-    updated_vm = resp.json()
-    updated_domain_data = json.loads(updated_vm['spec']['template']['spec']
-                                     ['domain'])
-    assert updated_domain_data['cpu']['cores'] == domain_data['cpu']['cores']
-    assert (updated_domain_data['resources']['requests']['memory'] ==
-            domain_data['resources']['requests']['memory'])
+    resp = utils.poll_for_update_resource(
+        admin_session,
+        harvester_api_endpoints.update_vm % (
+            basic_vm_instance['metadata']['name']),
+        basic_vm,
+        harvester_api_endpoints.get_vm % (
+            basic_vm_instance['metadata']['name']))
+    updated_vm_data = resp.json()
+    updated_domain_data = updated_vm_data['spec']['template']['spec']['domain']
+    assert updated_domain_data['cpu']['cores'] == updated_cores
+
+    # give it some time for the VM instance to restart
+    time.sleep(30)
+    previous_uid = basic_vm_instance['metadata']['uid']
+
+    def _check_vm_instance_not_changed():
+        resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
+            basic_vm_instance['metadata']['name']))
+        if resp.status_code == 200:
+            resp_json = resp.json()
+            if ('status' in resp_json and
+                    'phase' in resp_json['status'] and
+                    resp_json['status']['phase'] == 'Running' and
+                    resp_json['metadata']['uid'] == previous_uid):
+                return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_instance_not_changed,
+        step=5,
+        timeout=120)
+    assert success, 'Failed to update VM instance %s' % (
+        basic_vm['metadata']['name'])

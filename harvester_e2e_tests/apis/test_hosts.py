@@ -62,3 +62,24 @@ def test_verify_host_maintenance_mode(admin_session, harvester_api_endpoints):
     assert "unschedulable" not in ret_data["spec"]
     assert ("harvesterhci.io/maintain-status" not in
             ret_data["metadata"]["annotations"])
+
+
+def test_update_first_node(admin_session, harvester_api_endpoints):
+    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
+    host_data = resp.json()
+    first_node = host_data['data'][0]
+    first_node['metadata']['annotations'] = {
+            'field.cattle.io/description': 'for-test-update',
+            'harvesterhci.io/host-custom-name': 'for-test-update'
+    }
+    resp = utils.poll_for_update_resource(
+        admin_session,
+        host_data['data'][0]['links']['update'],
+        first_node,
+        host_data['data'][0]['links']['view'])
+    updated_host_data = resp.json()
+    assert updated_host_data['metadata']['annotations'].get(
+            'field.cattle.io/description') == 'for-test-update'
+    assert updated_host_data['metadata']['annotations'].get(
+            'harvesterhci.io/host-custom-name') == 'for-test-update'
