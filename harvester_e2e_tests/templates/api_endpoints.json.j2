@@ -2,6 +2,8 @@
 {# see https://docs.harvesterhci.io/v0.2/reference/api/ #}
 
 {
+    "get_vlan": "{{ harvester_endpoint }}/apis/network.harvesterhci.io/v1beta1/namespaces/harvester-system/clusternetworks/vlan",
+    "update_vlan": "{{ harvester_endpoint }}/v1/network.harvesterhci.io.clusternetworks/harvester-system/vlan",
     "list_nodes": "{{ harvester_endpoint }}/v1/nodes",
     "first_login_check": "{{ harvester_endpoint }}/v3/settings/first-login",
     "local_auth": "{{ harvester_endpoint }}/v3-public/localProviders/local",

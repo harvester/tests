@@ -13,7 +13,8 @@
         "annotations": {
             "field.cattle.io/description": "{{ description | default('') }}"
         },
-        "name": "{{ name }}"
+        "name": "{{ name }}",
+        "namespace": "{{ vm_namespace | default('default') }}"
     },
     "spec": {
         "dataVolumeTemplates": [
@@ -36,6 +37,7 @@
                                 "storage": "{{ disk_size_gb | default(10) }}Gi"
                             }
                         },
+                        "storageClassName": "longhorn-{{ image_name }}",
                         "volumeMode": "Block"
                     },
                     "source": {
@@ -83,7 +85,17 @@
                                 "name": "tablet",
                                 "type": "tablet"
                             }
+                        ],
+                        "interfaces": [
+                            {
+                                "masquerade": {},
+                                "model": "virtio",
+                                "name": "default"
+                            }
                         ]
+                    },
+                    "machine": {
+                        "type": ""
                     },
                     "resources": {
                         "requests": {
@@ -91,7 +103,14 @@
                         }
                     }
                 },
+                "evictionStrategy": "LiveMigrate",
                 "hostname": "{{ hostname | default(name) }}",
+                "networks": [
+                    {
+                        "name": "default",
+                        "pod": {}
+                    }
+                ],
                 "volumes": [
                     {
                         "dataVolume": {
@@ -101,7 +120,11 @@
                     },
                     {
                         "cloudInitNoCloud": {
+{% if user_data is defined %}
+                            "userData": "{{ user_data }}"
+{% else %}
                             "userData": "#cloud-config\\nssh_authorized_keys:\\n  - >-\\n    {{ ssh_public_key }}\\n"
+{% endif %}
                         },
                         "name": "cloudinitdisk"
                     }

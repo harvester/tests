@@ -26,22 +26,74 @@ pytest_plugins = [
   ]
 
 
-@pytest.fixture(scope='class')
-def image(request, harvester_api_version, admin_session,
-          harvester_api_endpoints):
+def _delete_image(admin_session, harvester_api_endpoints, image_json):
+    resp = admin_session.delete(harvester_api_endpoints.delete_image % (
+        image_json['metadata']['name']))
+    assert resp.status_code in [200, 201], 'Unable to delete image %s: %s' % (
+        image_json['metadata']['name'], resp.content)
+
+
+def _create_image(admin_session, harvester_api_endpoints, url, description=''):
     request_json = utils.get_json_object_from_template(
         'basic_image',
-        description='Leap 15.2 cloud image',
-        url=('http://download.opensuse.org/repositories/Cloud:/Images:/'
-             'Leap_15.2/images/openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+        description=description,
+        url=url
     )
     resp = admin_session.post(harvester_api_endpoints.create_image,
                               json=request_json)
     assert resp.status_code == 201, 'Unable to create image'
-    image_data = resp.json()
-    yield image_data
+    return resp.json()
+
+
+@pytest.fixture(scope='class')
+def ubuntu_image(request, harvester_api_version, admin_session,
+                 harvester_api_endpoints):
+    url = ('http://cloud-images.ubuntu.com/releases/focal/release/'
+           'ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img')
+    image_json = _create_image(
+        admin_session, harvester_api_endpoints, url,
+        description='Ubuntu 20.04 Server')
+    yield image_json
     if not request.config.getoption('--do-not-cleanup'):
-        resp = admin_session.delete(
-            harvester_api_endpoints.delete_image % (
-                image_data['metadata']['name']))
-        assert resp.status_code == 200, 'Unable to cleanup image'
+        _delete_image(admin_session, harvester_api_endpoints, image_json)
+
+
+@pytest.fixture(scope='class')
+def k3os_image(request, harvester_api_version, admin_session,
+               harvester_api_endpoints):
+    url = ('https://github.com/rancher/k3os/releases/download/v0.20.4-k3s1r0/'
+           'k3os-amd64.iso')
+    image_json = _create_image(
+        admin_session, harvester_api_endpoints, url,
+        description='K3OS')
+    yield image_json
+    if not request.config.getoption('--do-not-cleanup'):
+        _delete_image(admin_session, harvester_api_endpoints, image_json)
+
+
+@pytest.fixture(scope='class')
+def opensuse_image(request, harvester_api_version, admin_session,
+                   harvester_api_endpoints):
+    url = ('https://download.opensuse.org/tumbleweed/iso/'
+           'openSUSE-Tumbleweed-NET-x86_64-Current.iso')
+    image_json = _create_image(
+        admin_session, harvester_api_endpoints, url,
+        description='openSUSE Tumbleweed')
+    yield image_json
+    if not request.config.getoption('--do-not-cleanup'):
+        _delete_image(admin_session, harvester_api_endpoints, image_json)
+
+
+@pytest.fixture(scope='class')
+def image(request, admin_session, harvester_api_endpoints):
+    url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
+           'Leap_15.2/images/openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+
+    # when use parameterized fixture, use the URL from the parameter instead
+    if getattr(request, 'param', None):
+        url = request.param
+
+    image_json = _create_image(admin_session, harvester_api_endpoints, url)
+    yield image_json
+    if not request.config.getoption('--do-not-cleanup'):
+        _delete_image(admin_session, harvester_api_endpoints, image_json)
