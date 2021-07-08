@@ -20,7 +20,7 @@ import polling2
 import pytest
 import time
 import uuid
-
+import json
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.image',
@@ -301,3 +301,34 @@ class TestVMActions:
         assert found, 'Failed to add new network to VM %s' % (vm_name)
         # TODO(gyee): 1) make sure the new interface got an IP; and
         # 2) make sure we can ping that IP if it has a port in a public router
+
+    def test_validate_volume_inuse(self, request, admin_session,
+                                   harvester_api_endpoints, basic_vm):
+        vm_data = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, basic_vm)
+        vm_name = vm_data['metadata']['namespace'] + \
+            "/" + vm_data['metadata']['name']
+        vol_name = json.loads((
+            vm_data['metadata']['annotations'].get(
+                'harvesterhci.io/diskNames')))
+        resp = admin_session.get(harvester_api_endpoints.get_volume % (
+            vol_name[0]))
+        vol_data = resp.json()
+        vol_vm_annotation = json.loads(
+            vol_data['metadata']['annotations'].get(
+                'harvesterhci.io/owned-by'))
+        assert vol_vm_annotation[0].get('refs')[0] == vm_name
+
+    def test_delete_volume_inuse(self, request, admin_session,
+                                 harvester_api_endpoints, basic_vm):
+        vm_data = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, basic_vm)
+        vol_name = json.loads((vm_data['metadata']['annotations'].get(
+            'harvesterhci.io/diskNames')))
+        resp = admin_session.delete(
+            harvester_api_endpoints.delete_volume % (vol_name[0]))
+        assert resp.status_code == 422, (
+            'Expected HTTP 422 when attempting to delete volume attached '
+            'to a vm: %s' % (resp.content))
+        response_data = resp.json()
+        assert 'can not delete the volume' in response_data['message']
