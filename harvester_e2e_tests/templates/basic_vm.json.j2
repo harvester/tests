@@ -5,6 +5,10 @@
     {% set name = random_name() %}
 {% endif %}
 {% set disk_0_name = name ~ "-disk-0-" ~ random_alphanumeric(length=5) %}
+{% set disk_1_name = name ~ "-disk-1-" ~ random_alphanumeric(length=5) %}
+{% if image_storage_class is not defined %}
+    {% set image_storage_class = "longhorn" ~ image_name %}
+{% endif %}
 
 {
     "apiVersion": "kubevirt.io/v1",
@@ -37,7 +41,31 @@
                                 "storage": "{{ disk_size_gb | default(10) }}Gi"
                             }
                         },
-                        "storageClassName": "longhorn-{{ image_name }}",
+                        "storageClassName": "{{ image_storage_class }}",
+                        "volumeMode": "Block"
+                    },
+                    "source": {
+                        "blank": {}
+                    }
+                }
+            },
+            {
+                "apiVersion": "cdi.kubevirt.io/v1beta1",
+                "kind": "DataVolume",
+                "metadata": {
+                    "name": "{{ disk_1_name }}"
+                },
+                "spec": {
+                    "pvc": {
+                        "accessModes": [
+                            "ReadWriteMany"
+                        ],
+                        "resources": {
+                            "requests": {
+                                "storage": "{{ disk_size_gb | default(10) }}Gi"
+                            }
+                        },
+                        "storageClassName": "longhorn",
                         "volumeMode": "Block"
                     },
                     "source": {
@@ -49,10 +77,6 @@
         "running": true,
         "template": {
             "metadata": {
-                "annotations": {
-                    "harvesterhci.io/diskNames": "[\"{{ disk_0_name }}\"]",
-                    "harvesterhci.io/sshNames": "[\"{{ ssh_key_name }}\"]"
-                },
                 "labels": {
                     "harvesterhci.io/vmName": "{{ name }}"
                 }
@@ -71,6 +95,12 @@
                                     "bus": "virtio"
                                 },
                                 "name": "disk-0"
+                            },
+                            {
+                                "cdrom": {
+                                    "bus": "sata"
+                                },
+                                "name": "disk-1"
                             },
                             {
                                 "disk": {
@@ -119,7 +149,16 @@
                         "name": "disk-0"
                     },
                     {
+                        "dataVolume": {
+                            "name": "{{ disk_1_name }}"
+                        },
+                        "name": "disk-1"
+                    },
+                    {
                         "cloudInitNoCloud": {
+{% if network_data is defined %}
+                            "networkData": "{{ network_data }}",
+{% endif %}
 {% if user_data is defined %}
                             "userData": "{{ user_data }}"
 {% else %}

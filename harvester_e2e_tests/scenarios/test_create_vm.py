@@ -35,32 +35,41 @@ def _delete_vm(admin_session, harvester_api_endpoints, vm_json):
 
 
 def _create_vm(admin_session, image, keypair, harvester_api_endpoints,
-               cpu=1, disk_size_gb=10, memory_gb=1):
+               cpu=1, disk_size_gb=10, memory_gb=1, running=True):
     request_json = utils.get_json_object_from_template(
         'basic_vm',
         image_namespace=image['metadata']['namespace'],
         image_name=image['metadata']['name'],
+        image_storage_class=image['status']['storageClassName'],
         disk_size_gb=disk_size_gb,
         ssh_key_name=keypair['metadata']['name'],
         cpu=cpu,
         memory_gb=memory_gb,
         ssh_public_key=keypair['spec']['publicKey']
     )
+    request_json['spec']['running'] = running
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
     assert resp.status_code == 201, 'Failed to create VM'
     vm_resp_json = resp.json()
-    # wait for VM to be ready
-    time.sleep(30)
+    if running:
+        # wait for VM to be ready
+        time.sleep(120)
 
     def _check_vm_ready():
         resp = admin_session.get(harvester_api_endpoints.get_vm % (
             vm_resp_json['metadata']['name']))
         if resp.status_code == 200:
             resp_json = resp.json()
-            if ('status' in resp_json and 'ready' in resp_json['status'] and
-                    resp_json['status']['ready']):
-                return True
+            if running:
+                if ('status' in resp_json and
+                        'ready' in resp_json['status'] and
+                        resp_json['status']['ready']):
+                    return True
+            else:
+                if ('status' in resp_json and
+                        'ready' not in resp_json['status']):
+                    return True
         return False
 
     success = polling2.poll(
@@ -138,3 +147,19 @@ def test_create_vm_overcommit_cpu_and_memory_failed(
     # expect failure to create VM for CPU and memory overcommit
     _create_vm(admin_session, image, keypair, harvester_api_endpoints,
                cpu=10000, memory_gb=10000)
+
+
+def test_create_vm_do_not_start(admin_session, image, keypair,
+                                harvester_api_endpoints):
+    created = False
+    try:
+        vm_json = _create_vm(admin_session, image, keypair,
+                             harvester_api_endpoints, running=False)
+        created = True
+        resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
+            vm_json['metadata']['name']))
+        assert resp.status_code == 404, (
+            'Failed to create a VM with do not start: %s' % (resp.content))
+    finally:
+        if created:
+            _delete_vm(admin_session, harvester_api_endpoints, vm_json)

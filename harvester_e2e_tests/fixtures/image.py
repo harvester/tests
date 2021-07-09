@@ -16,7 +16,9 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+import polling2
 import pytest
+import time
 
 
 pytest_plugins = [
@@ -33,7 +35,8 @@ def _delete_image(admin_session, harvester_api_endpoints, image_json):
         image_json['metadata']['name'], resp.content)
 
 
-def _create_image(admin_session, harvester_api_endpoints, url, description=''):
+def _create_image(request, admin_session, harvester_api_endpoints, url,
+                  description=''):
     request_json = utils.get_json_object_from_template(
         'basic_image',
         description=description,
@@ -42,7 +45,32 @@ def _create_image(admin_session, harvester_api_endpoints, url, description=''):
     resp = admin_session.post(harvester_api_endpoints.create_image,
                               json=request_json)
     assert resp.status_code == 201, 'Unable to create image'
-    return resp.json()
+    image_json = resp.json()
+
+    # wait for the image to get ready
+    time.sleep(30)
+
+    def _wait_for_image_become_active():
+        # we want the update response to return back to the caller
+        nonlocal image_json
+
+        resp = admin_session.get(harvester_api_endpoints.get_image % (
+            image_json['metadata']['name']))
+        assert resp.status_code == 200, 'Failed to get image %s: %s' % (
+            image_json['metadata']['name'], resp.content)
+        image_json = resp.json()
+        if ('status' in image_json and
+                'storageClassName' in image_json['status']):
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_image_become_active,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for image to be active.'
+
+    return image_json
 
 
 @pytest.fixture(scope='class')
@@ -51,7 +79,7 @@ def ubuntu_image(request, harvester_api_version, admin_session,
     url = ('http://cloud-images.ubuntu.com/releases/focal/release/'
            'ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img')
     image_json = _create_image(
-        admin_session, harvester_api_endpoints, url,
+        request, admin_session, harvester_api_endpoints, url,
         description='Ubuntu 20.04 Server')
     yield image_json
     if not request.config.getoption('--do-not-cleanup'):
@@ -64,7 +92,7 @@ def k3os_image(request, harvester_api_version, admin_session,
     url = ('https://github.com/rancher/k3os/releases/download/v0.20.4-k3s1r0/'
            'k3os-amd64.iso')
     image_json = _create_image(
-        admin_session, harvester_api_endpoints, url,
+        request, admin_session, harvester_api_endpoints, url,
         description='K3OS')
     yield image_json
     if not request.config.getoption('--do-not-cleanup'):
@@ -77,7 +105,7 @@ def opensuse_image(request, harvester_api_version, admin_session,
     url = ('https://download.opensuse.org/tumbleweed/iso/'
            'openSUSE-Tumbleweed-NET-x86_64-Current.iso')
     image_json = _create_image(
-        admin_session, harvester_api_endpoints, url,
+        request, admin_session, harvester_api_endpoints, url,
         description='openSUSE Tumbleweed')
     yield image_json
     if not request.config.getoption('--do-not-cleanup'):
@@ -93,7 +121,8 @@ def image(request, admin_session, harvester_api_endpoints):
     if getattr(request, 'param', None):
         url = request.param
 
-    image_json = _create_image(admin_session, harvester_api_endpoints, url)
+    image_json = _create_image(request, admin_session, harvester_api_endpoints,
+                               url)
     yield image_json
     if not request.config.getoption('--do-not-cleanup'):
         _delete_image(admin_session, harvester_api_endpoints, image_json)

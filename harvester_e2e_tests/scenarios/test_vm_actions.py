@@ -30,21 +30,58 @@ pytest_plugins = [
 
 
 @pytest.fixture(scope='class')
-def basic_vm(request, admin_session, image, keypair, harvester_api_endpoints):
+def network_data():
+    yaml_data = """#cloud-config
+version: 1
+config:
+  - type: physical
+    name: eth0
+    subnets:
+      - type: dhcp
+  - type: physical
+    name: eth1
+    subnets:
+      - type: dhcp
+"""
+    return yaml_data.replace('\n', '\\n')
+
+
+@pytest.fixture(scope='class')
+def user_data_with_guest_agent(keypair):
     # set to root user password to 'linux' to test password login in
     # addition to SSH login
-    user_data = ('#cloud-config\\nchpasswd:\\n  list: |\\n    root:linux\\n'
-                 '  expire: false\\nssh_authorized_keys:\\n  - >-\\n'
-                 '    %s\\n' % (keypair['spec']['publicKey']))
+    yaml_data = """#cloud-config
+chpasswd:
+  list: |
+    root:linux
+  expire: false
+ssh_authorized_keys:
+  - %s
+package_update: true
+packages:
+  - qemu-guest-agent
+runcmd:
+  - - systemctl
+    - enable
+    - '--now'
+    - qemu-guest-agent
+""" % (keypair['spec']['publicKey'])
+    return yaml_data.replace('\n', '\\n')
+
+
+@pytest.fixture(scope='class')
+def basic_vm(request, admin_session, image, user_data_with_guest_agent,
+             network_data, harvester_api_endpoints):
     request_json = utils.get_json_object_from_template(
         'basic_vm',
         image_namespace=image['metadata']['namespace'],
         image_name=image['metadata']['name'],
+        image_storage_class=image['status']['storageClassName'],
         disk_size_gb=10,
-        ssh_key_name=keypair['metadata']['name'],
         cpu=1,
         memory_gb=1,
-        user_data=user_data
+        network_data=network_data,
+        user_data=user_data_with_guest_agent
     )
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
@@ -71,9 +108,11 @@ def basic_vm(request, admin_session, image, keypair, harvester_api_endpoints):
     assert success, 'Timed out while waiting for VM to be ready.'
     yield vm_resp_json
     if not request.config.getoption('--do-not-cleanup'):
+        # cleanup both disks, image and cdrom
+        params = {'removedDisks': 'disk-0,disk-1'}
         resp = admin_session.delete(
             harvester_api_endpoints.delete_vm % (
-                vm_resp_json['metadata']['name']))
+                vm_resp_json['metadata']['name']), params=params)
 
 
 class TestVMActions:
@@ -105,6 +144,15 @@ class TestVMActions:
         # make sure the VM instance is successfully created
         utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
+        # make sure it has a cdrom device
+        devices = basic_vm['spec']['template']['spec']['domain']['devices']
+        disks = devices['disks']
+        found_cdrom = False
+        for disk in disks:
+            if 'cdrom' in disk:
+                found_cdrom = True
+                break
+        assert found_cdrom, 'Expecting "cdrom" in the disks list.'
 
     def test_restart_vm(self, request, admin_session, harvester_api_endpoints,
                         basic_vm):
