@@ -14,6 +14,7 @@
     "list_images": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages",
     "create_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages",
     "delete_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages/%s",
+    "get_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages/%s",
     "update_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages/%s",
     "create_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes",
     "get_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes/%s",
