@@ -1,6 +1,6 @@
 {# Template for basic image creation request. #}
 
-{% if name is not defined %}
+{% if name is not defined or name is none %}
     {% set name = random_name() %}
 {% endif %}
 

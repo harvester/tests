@@ -117,29 +117,6 @@ def basic_vm(request, admin_session, image, user_data_with_guest_agent,
 
 class TestVMActions:
 
-    def _assert_vm_restarted(self, admin_session, harvester_api_endpoints,
-                             previous_uid, vm_name, wait_timeout):
-        # give it some time for the VM instance to restart
-        time.sleep(120)
-
-        def _check_vm_instance_restarted():
-            resp = admin_session.get(
-                harvester_api_endpoints.get_vm_instance % (vm_name))
-            if resp.status_code == 200:
-                resp_json = resp.json()
-                if ('status' in resp_json and
-                        'phase' in resp_json['status'] and
-                        resp_json['status']['phase'] == 'Running' and
-                        resp_json['metadata']['uid'] != previous_uid):
-                    return True
-            return False
-
-        success = polling2.poll(
-            _check_vm_instance_restarted,
-            step=5,
-            timeout=wait_timeout)
-        assert success, 'Failed to restart VM %s' % (vm_name)
-
     def test_create_vm(self, admin_session, harvester_api_endpoints, basic_vm):
         # make sure the VM instance is successfully created
         utils.lookup_vm_instance(
@@ -158,14 +135,8 @@ class TestVMActions:
                         basic_vm):
         vm_name = basic_vm['metadata']['name']
         previous_uid = basic_vm['metadata']['uid']
-        # restart the VM instance
-        resp = admin_session.post(harvester_api_endpoints.restart_vm % (
-            vm_name))
-        assert resp.status_code == 204, 'Failed to restart VM instance %s' % (
-            vm_name)
-        self._assert_vm_restarted(admin_session, harvester_api_endpoints,
-                                  previous_uid, vm_name,
-                                  request.config.getoption('--wait-timeout'))
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption('--wait-timeout'))
 
     def test_stop_vm(self, request, admin_session, harvester_api_endpoints,
                      basic_vm):
@@ -280,7 +251,9 @@ class TestVMActions:
     def test_update_vm_cpu(self, request, admin_session,
                            harvester_api_endpoints, basic_vm):
         vm_name = basic_vm['metadata']['name']
-        previous_uid = basic_vm['metadata']['uid']
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, basic_vm)
+        previous_uid = vm_instance_json['metadata']['uid']
         domain_data = basic_vm['spec']['template']['spec']['domain']
         updated_cores = domain_data['cpu']['cores'] + 1
         domain_data['cpu']['cores'] = updated_cores
@@ -294,9 +267,9 @@ class TestVMActions:
         updated_domain_data = (
             updated_vm_data['spec']['template']['spec']['domain'])
         assert updated_domain_data['cpu']['cores'] == updated_cores
-        self._assert_vm_restarted(admin_session, harvester_api_endpoints,
-                                  previous_uid, vm_name,
-                                  request.config.getoption('--wait-timeout'))
+        # restart the VM instance for the changes to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption('--wait-timeout'))
 
     @pytest.mark.public_network
     def test_update_vm_network(self, request, admin_session,
@@ -327,12 +300,11 @@ class TestVMActions:
             basic_vm,
             harvester_api_endpoints.get_vm % (vm_name))
         updated_vm_data = resp.json()
-        self._assert_vm_restarted(admin_session, harvester_api_endpoints,
-                                  previous_uid, vm_name,
-                                  request.config.getoption('--wait-timeout'))
-
-        found = False
+        # restart the VM instance for the changes to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption('--wait-timeout'))
         # check to make sure the network device is in the updated spec
+        found = False
         updated_spec = updated_vm_data['spec']['template']['spec']
         for i in updated_spec['domain']['devices']['interfaces']:
             if (network_name == i['name'] and i['model'] == 'virtio' and

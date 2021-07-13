@@ -76,6 +76,12 @@ def pytest_configure(config):
         "markers", ('public_network: mark test to run only if public '
                     'networking is available')
     )
+    config.addinivalue_line(
+        "markers", ('multi_node_scheduling: mark test to run only if we have '
+                    'a multi-node cluster where some hosts have more '
+                    'resources then others in order to test VM scheduling '
+                    'behavior')
+    )
 
 
 def pytest_collection_modifyitems(config, items):

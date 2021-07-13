@@ -16,6 +16,8 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+import polling2
+import pytest
 
 
 pytest_plugins = [
@@ -59,6 +61,64 @@ def test_create_image_no_url(admin_session, harvester_api_endpoints):
         image_data['metadata']['name']))
     assert resp.status_code == 200, 'Unable to delete image: %s' % (
         resp.content)
+
+
+def test_create_image_with_reuse_display_name(request, admin_session,
+                                              harvester_api_endpoints):
+    name = utils.random_name()
+    url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
+           'Leap_15.2/images/openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+    # create the image
+    image_json = utils.create_image(request, admin_session,
+                                    harvester_api_endpoints, url,
+                                    name=name,
+                                    description='Leap 15.2 cloud image')
+    old_image_name = image_json['metadata']['name']
+    # delete the image
+    utils.delete_image(request, admin_session, harvester_api_endpoints,
+                       image_json)
+    # create a different image with the same display name and it should be
+    # allowed
+    image_json = utils.create_image(request, admin_session,
+                                    harvester_api_endpoints, url,
+                                    name=name,
+                                    description='Leap 15.2 cloud image')
+    # delete the image
+    utils.delete_image(request, admin_session, harvester_api_endpoints,
+                       image_json)
+    # the names should be the same
+    assert image_json['metadata']['name'] == old_image_name, (
+        'Expecting new image to have the same name')
+    assert image_json['spec']['displayName'] == name, (
+        'Expecting new image to have the same display name')
+
+
+@pytest.mark.parametrize('image', ['https://test_bogus.img'], indirect=True)
+def test_create_image_with_invalid_url(request, admin_session,
+                                       harvester_api_endpoints, image):
+    image_json = None
+
+    def _check_image_status():
+        nonlocal image_json
+        resp = admin_session.get(harvester_api_endpoints.get_image % (
+            image['metadata']['name']))
+        assert resp.status_code == 200, 'Failed to lookup image %s: %s' % (
+            image['metadata']['name'], resp.content)
+        image_json = resp.json()
+        if ('status' in image_json and 'conditions' in image_json['status'] and
+                len(image_json['status']['conditions']) == 1 and
+                'status' in image_json['status']['conditions'][0]):
+            return True
+        return False
+
+    success = polling2.poll(
+        _check_image_status,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for image status'
+    image_status = image_json['status']['conditions'][0]['status'].lower()
+    assert image_status == 'false', (
+        'Expecting image creation to fail on bogus URL')
 
 
 def test_create_images(admin_session, image):
