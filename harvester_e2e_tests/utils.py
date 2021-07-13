@@ -17,10 +17,12 @@
 
 import jinja2
 import json
+import math
 import os
 import polling2
 import random
 import string
+import time
 import uuid
 
 
@@ -130,3 +132,191 @@ def lookup_vm_instance(admin_session, harvester_api_endpoints, vm_json):
     assert resp.status_code == 200, 'Failed to lookup VM instance %s' % (
         vm_json['metadata']['name'])
     return resp.json()
+
+
+def lookup_hosts_with_most_available_cpu(admin_session,
+                                         harvester_api_endpoints):
+    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
+    nodes_json = resp.json()['data']
+    most_available_cpu_nodes = None
+    most_available_cpu = 0
+    for node in nodes_json:
+        # look up CPU usage for the given node
+        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
+            node['metadata']['name']))
+        assert resp.status_code == 200, (
+            'Failed to lookup metrices for node %s: %s' % (
+                node['metadata']['name'], resp.content))
+        metrics_json = resp.json()
+        # NOTE: Kubernets CPU metrics are expressed in nanocores, or
+        # 1 billionth of a CPU. We need to convert it to a whole CPU core.
+        cpu_usage = math.ceil(
+            int(metrics_json['usage']['cpu'][:-1]) / 1000000000)
+        available_cpu = int(node['status']['allocatable']['cpu']) - cpu_usage
+        if available_cpu > most_available_cpu:
+            most_available_cpu = available_cpu
+            most_available_cpu_nodes = [node['metadata']['name']]
+        elif available_cpu == most_available_cpu:
+            most_available_cpu_nodes.append(node['metadata']['name'])
+    return (most_available_cpu_nodes, most_available_cpu)
+
+
+def lookup_hosts_with_most_available_memory(admin_session,
+                                            harvester_api_endpoints):
+    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
+    nodes_json = resp.json()['data']
+    most_available_memory_nodes = None
+    most_available_memory = 0
+    for node in nodes_json:
+        # look up CPU usage for the given node
+        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
+            node['metadata']['name']))
+        assert resp.status_code == 200, (
+            'Failed to lookup metrices for node %s: %s' % (
+                node['metadata']['name'], resp.content))
+        metrics_json = resp.json()
+        # NOTE: Kubernets memory metrics are expressed Kibibyte so convert it
+        # back to Gigabytes
+        memory_usage = math.ceil(
+            int(metrics_json['usage']['memory'][:-2]) * 1.024e-06)
+        # NOTE: we want the floor here so we don't over commit
+        allocatable_memory = int(node['status']['allocatable']['memory'][:-2])
+        allocatable_memory = math.floor(
+            allocatable_memory * 1.024e-06)
+        available_memory = allocatable_memory - memory_usage
+        if available_memory > most_available_memory:
+            most_available_memory = available_memory
+            most_available_memory_nodes = [node['metadata']['name']]
+        elif available_memory == most_available_memory:
+            most_available_memory_nodes.append(node['metadata']['name'])
+    return (most_available_memory_nodes, most_available_memory)
+
+
+def lookup_hosts_with_cpu_and_memory(admin_session, harvester_api_endpoints,
+                                     cpu, memory):
+    """Lookup nodes that satisfies the given CPU and memory requirements"""
+    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
+    nodes_json = resp.json()['data']
+    nodes = []
+    for node in nodes_json:
+        # look up CPU usage for the given node
+        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
+            node['metadata']['name']))
+        assert resp.status_code == 200, (
+            'Failed to lookup metrices for node %s: %s' % (
+                node['metadata']['name'], resp.content))
+        metrics_json = resp.json()
+        # NOTE: Kubernets CPU metrics are expressed in nanocores, or
+        # 1 billionth of a CPU. We need to convert it to a whole CPU core.
+        cpu_usage = math.ceil(
+            int(metrics_json['usage']['cpu'][:-1]) / 1000000000)
+        available_cpu = int(node['status']['allocatable']['cpu']) - cpu_usage
+        # NOTE: Kubernets memory metrics are expressed Kibibyte so convert it
+        # back to Gigabytes
+        memory_usage = math.ceil(
+            int(metrics_json['usage']['memory'][:-2]) * 1.024e-06)
+        # NOTE: we want the floor here so we don't over commit
+        allocatable_memory = int(node['status']['allocatable']['memory'][:-2])
+        allocatable_memory = math.floor(
+            allocatable_memory * 1.024e-06)
+        available_memory = allocatable_memory - memory_usage
+        if available_cpu >= cpu and available_memory >= memory:
+            nodes.append(node['metadata']['name'])
+    return nodes
+
+
+def restart_vm(admin_session, harvester_api_endpoints, previous_uid, vm_name,
+               wait_timeout):
+    resp = admin_session.post(harvester_api_endpoints.restart_vm % (
+        vm_name))
+    assert resp.status_code == 204, 'Failed to restart VM instance %s: %s' % (
+        vm_name, resp.content)
+    assert_vm_restarted(admin_session, harvester_api_endpoints, previous_uid,
+                        vm_name, wait_timeout)
+
+
+def assert_vm_restarted(admin_session, harvester_api_endpoints,
+                        previous_uid, vm_name, wait_timeout):
+    # give it some time for the VM instance to restart
+    time.sleep(120)
+
+    def _check_vm_instance_restarted():
+        resp = admin_session.get(
+            harvester_api_endpoints.get_vm_instance % (vm_name))
+        if resp.status_code == 200:
+            resp_json = resp.json()
+            if ('status' in resp_json and
+                    'phase' in resp_json['status'] and
+                    resp_json['status']['phase'] == 'Running' and
+                    resp_json['metadata']['uid'] != previous_uid):
+                return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_instance_restarted,
+        step=5,
+        timeout=wait_timeout)
+    assert success, 'Failed to restart VM %s' % (vm_name)
+
+
+def delete_image(request, admin_session, harvester_api_endpoints, image_json):
+    resp = admin_session.delete(harvester_api_endpoints.delete_image % (
+        image_json['metadata']['name']))
+    assert resp.status_code in [200, 201], 'Unable to delete image %s: %s' % (
+        image_json['metadata']['name'], resp.content)
+
+    def _wait_for_image_to_be_deleted():
+        resp = admin_session.get(harvester_api_endpoints.get_image % (
+            image_json['metadata']['name']))
+        if resp.status_code == 404:
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_image_to_be_deleted,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for image to be deleted'
+
+
+def create_image(request, admin_session, harvester_api_endpoints, url,
+                 name=None, description=''):
+    request_json = get_json_object_from_template(
+        'basic_image',
+        name=name,
+        description=description,
+        url=url
+    )
+    resp = admin_session.post(harvester_api_endpoints.create_image,
+                              json=request_json)
+    assert resp.status_code in [200, 201], 'Failed to create image %s: %s' % (
+        name, resp.content)
+    image_json = resp.json()
+
+    # wait for the image to get ready
+    time.sleep(30)
+
+    def _wait_for_image_become_active():
+        # we want the update response to return back to the caller
+        nonlocal image_json
+
+        resp = admin_session.get(harvester_api_endpoints.get_image % (
+            image_json['metadata']['name']))
+        assert resp.status_code == 200, 'Failed to get image %s: %s' % (
+            image_json['metadata']['name'], resp.content)
+        image_json = resp.json()
+        if ('status' in image_json and
+                'storageClassName' in image_json['status']):
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_image_become_active,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for image to be active.'
+
+    return image_json
