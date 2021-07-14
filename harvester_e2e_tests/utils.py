@@ -71,25 +71,26 @@ def get_json_object_from_template(template_name, **template_args):
     return json.loads(rendered)
 
 
-def poll_for_resource_ready(admin_session, endpoint, expected_code=200):
+def poll_for_resource_ready(request, admin_session, endpoint,
+                            expected_code=200):
     ready = polling2.poll(
         lambda: admin_session.get(endpoint).status_code == expected_code,
         step=5,
-        timeout=60)
+        timeout=request.config.getoption('--wait-timeout'))
     assert ready, 'Timed out while waiting for %s to yield %s' % (
         endpoint, expected_code)
 
 
-def get_latest_resource_version(admin_session, lookup_endpoint):
-    poll_for_resource_ready(admin_session, lookup_endpoint)
+def get_latest_resource_version(request, admin_session, lookup_endpoint):
+    poll_for_resource_ready(request, admin_session, lookup_endpoint)
     resp = admin_session.get(lookup_endpoint)
     assert resp.status_code == 200, 'Failed to lookup resource: %s' % (
         resp.content)
     return resp.json()['metadata']['resourceVersion']
 
 
-def poll_for_update_resource(admin_session, update_endpoint, request_json,
-                             lookup_endpoint):
+def poll_for_update_resource(request, admin_session, update_endpoint,
+                             request_json, lookup_endpoint):
 
     resp = None
 
@@ -100,7 +101,8 @@ def poll_for_update_resource(admin_session, update_endpoint, request_json,
         # first we need to get the latest resourceVersion and fill that in
         # the request_json as it is a required field and must be the latest.
         request_json['metadata']['resourceVersion'] = (
-            get_latest_resource_version(admin_session, lookup_endpoint))
+            get_latest_resource_version(
+                request, admin_session, lookup_endpoint))
         resp = admin_session.put(update_endpoint, json=request_json)
         if resp.status_code == 409:
             return False
@@ -129,8 +131,8 @@ def lookup_vm_instance(admin_session, harvester_api_endpoints, vm_json):
     # the VM. If this assumption is not true, we need to fix this code.
     resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
         vm_json['metadata']['name']))
-    assert resp.status_code == 200, 'Failed to lookup VM instance %s' % (
-        vm_json['metadata']['name'])
+    assert resp.status_code == 200, 'Failed to lookup VM instance %s: %s' % (
+        vm_json['metadata']['name'], resp.content)
     return resp.json()
 
 
@@ -320,3 +322,107 @@ def create_image(request, admin_session, harvester_api_endpoints, url,
     assert success, 'Timed out while waiting for image to be active.'
 
     return image_json
+
+
+def create_vm(request, admin_session, image, harvester_api_endpoints,
+              template='basic_vm', keypair=None, volume=None, cpu=1,
+              disk_size_gb=10, memory_gb=1, network_data=None,
+              user_data=None, running=True):
+    volume_name = None
+    ssh_public_key = None
+    if volume:
+        volume_name = volume['metadata']['name']
+    if keypair:
+        ssh_public_key = keypair['spec']['publicKey']
+    request_json = get_json_object_from_template(
+        template,
+        image_namespace=image['metadata']['namespace'],
+        image_name=image['metadata']['name'],
+        image_storage_class=image['status']['storageClassName'],
+        volume_name=volume_name,
+        disk_size_gb=disk_size_gb,
+        cpu=cpu,
+        memory_gb=memory_gb,
+        ssh_public_key=ssh_public_key,
+        network_data=network_data,
+        user_data=user_data
+    )
+    request_json['spec']['running'] = running
+    resp = admin_session.post(harvester_api_endpoints.create_vm,
+                              json=request_json)
+    assert resp.status_code == 201, 'Failed to create VM'
+    vm_resp_json = resp.json()
+    if running:
+        # wait for VM to be ready
+        time.sleep(180)
+
+    def _check_vm_ready():
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_resp_json['metadata']['name']))
+        if resp.status_code == 200:
+            resp_json = resp.json()
+            if running:
+                if ('status' in resp_json and
+                        'ready' in resp_json['status'] and
+                        resp_json['status']['ready']):
+                    return True
+            else:
+                if ('status' in resp_json and
+                        'ready' not in resp_json['status']):
+                    return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_ready,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for VM to be ready.'
+    return vm_resp_json
+
+
+def delete_vm(request, admin_session, harvester_api_endpoints, vm_json,
+              remove_all_disks=True):
+    params = {}
+    if remove_all_disks:
+        devices = vm_json['spec']['template']['spec']['domain']['devices']
+        disk_names = [disk['name'] for disk in devices['disks']]
+        params = {'removedDisks': ','.join(disk_names)}
+    resp = admin_session.delete(harvester_api_endpoints.delete_vm % (
+        vm_json['metadata']['name']), params=params)
+    assert resp.status_code in [200, 201], 'Failed to delete VM %s: %s' % (
+        vm_json['metadata']['name'], resp.content)
+
+    def _check_vm_deleted():
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_json['metadata']['name']))
+        if resp.status_code == 404:
+            return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_deleted,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for VM to be terminated.'
+
+
+def delete_volume(request, admin_session, harvester_api_endpoints,
+                  volume_json):
+    resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
+        volume_json['metadata']['name']))
+    assert resp.status_code in [200, 201], (
+        'Failed to delete volume %s: %s' % (
+            volume_json['metadata']['name'], resp.content))
+
+    def _check_volume_deleted():
+        resp = admin_session.get(harvester_api_endpoints.delete_volume % (
+            volume_json['metadata']['name']))
+        if resp.status_code == 404:
+            return True
+        return False
+
+    success = polling2.poll(
+        _check_volume_deleted,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for volume to be terminated.'

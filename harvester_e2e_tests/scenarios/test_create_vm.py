@@ -16,9 +16,7 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
-import polling2
 import pytest
-import time
 
 
 pytest_plugins = [
@@ -27,67 +25,14 @@ pytest_plugins = [
 ]
 
 
-def _delete_vm(admin_session, harvester_api_endpoints, vm_json):
-    params = {'removedDisks': 'disk-0,disk-1'}
-    resp = admin_session.delete(harvester_api_endpoints.delete_vm % (
-        vm_json['metadata']['name']), params=params)
-    assert resp.status_code in [200, 201], 'Failed to delete VM %s: %s' % (
-        vm_json['metadata']['name'], resp.content)
-
-
-def _create_vm(admin_session, image, keypair, harvester_api_endpoints,
-               cpu=1, disk_size_gb=10, memory_gb=1, running=True):
-    request_json = utils.get_json_object_from_template(
-        'basic_vm',
-        image_namespace=image['metadata']['namespace'],
-        image_name=image['metadata']['name'],
-        image_storage_class=image['status']['storageClassName'],
-        disk_size_gb=disk_size_gb,
-        ssh_key_name=keypair['metadata']['name'],
-        cpu=cpu,
-        memory_gb=memory_gb,
-        ssh_public_key=keypair['spec']['publicKey']
-    )
-    request_json['spec']['running'] = running
-    resp = admin_session.post(harvester_api_endpoints.create_vm,
-                              json=request_json)
-    assert resp.status_code == 201, 'Failed to create VM'
-    vm_resp_json = resp.json()
-    if running:
-        # wait for VM to be ready
-        time.sleep(120)
-
-    def _check_vm_ready():
-        resp = admin_session.get(harvester_api_endpoints.get_vm % (
-            vm_resp_json['metadata']['name']))
-        if resp.status_code == 200:
-            resp_json = resp.json()
-            if running:
-                if ('status' in resp_json and
-                        'ready' in resp_json['status'] and
-                        resp_json['status']['ready']):
-                    return True
-            else:
-                if ('status' in resp_json and
-                        'ready' not in resp_json['status']):
-                    return True
-        return False
-
-    success = polling2.poll(
-        _check_vm_ready,
-        step=5,
-        timeout=300)
-    assert success, 'Timed out while waiting for VM to be ready.'
-    return vm_resp_json
-
-
 @pytest.fixture(scope='function')
 def single_vm(request, admin_session, image, keypair, harvester_api_endpoints):
-    vm_json = _create_vm(admin_session, image, keypair,
-                         harvester_api_endpoints)
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints, keypair=keypair)
     yield vm_json
     if not request.config.getoption('--do-not-cleanup'):
-        _delete_vm(admin_session, harvester_api_endpoints, vm_json)
+        utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                        vm_json)
 
 
 # NOTE: we could have used the 'class' scope and use the code similar to
@@ -98,16 +43,17 @@ def single_vm(request, admin_session, image, keypair, harvester_api_endpoints):
 def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
                  opensuse_image, keypair, harvester_api_endpoints):
     vms = []
-    vms.append(_create_vm(admin_session, ubuntu_image, keypair,
-                          harvester_api_endpoints))
-    vms.append(_create_vm(admin_session, k3os_image, keypair,
-                          harvester_api_endpoints))
-    vms.append(_create_vm(admin_session, opensuse_image, keypair,
-                          harvester_api_endpoints))
+    vms.append(utils.create_vm(request, admin_session, ubuntu_image,
+                               harvester_api_endpoints, keypair=keypair))
+    vms.append(utils.create_vm(request, admin_session, k3os_image,
+                               harvester_api_endpoints, keypair=keypair))
+    vms.append(utils.create_vm(request, admin_session, opensuse_image,
+                               harvester_api_endpoints, keypair=keypair))
     yield vms
     if not request.config.getoption('--do-not-cleanup'):
         for vm_json in vms:
-            _delete_vm(admin_session, harvester_api_endpoints, vm_json)
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
 
 
 @pytest.mark.parametrize(
@@ -144,18 +90,19 @@ def test_create_multiple_vms(admin_session, image, multiple_vms,
 # once the bug is addressed.
 @pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/174')
 def test_create_vm_overcommit_cpu_and_memory_failed(
-        admin_session, image, keypair, harvester_api_endpoints):
+        request, admin_session, image, keypair, harvester_api_endpoints):
     # expect failure to create VM for CPU and memory overcommit
-    _create_vm(admin_session, image, keypair, harvester_api_endpoints,
-               cpu=10000, memory_gb=10000)
+    utils.create_vm(request, admin_session, image, harvester_api_endpoints,
+                    keypair=keypair, cpu=10000, memory_gb=10000)
 
 
-def test_create_vm_do_not_start(admin_session, image, keypair,
+def test_create_vm_do_not_start(request, admin_session, image, keypair,
                                 harvester_api_endpoints):
     created = False
     try:
-        vm_json = _create_vm(admin_session, image, keypair,
-                             harvester_api_endpoints, running=False)
+        vm_json = utils.create_vm(request, admin_session, image,
+                                  harvester_api_endpoints, keypair=keypair,
+                                  running=False)
         created = True
         resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
             vm_json['metadata']['name']))
@@ -163,7 +110,8 @@ def test_create_vm_do_not_start(admin_session, image, keypair,
             'Failed to create a VM with do not start: %s' % (resp.content))
     finally:
         if created:
-            _delete_vm(admin_session, harvester_api_endpoints, vm_json)
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
 
 
 # NOTE: the multi_node_scheduling test cases are designed to test
@@ -177,8 +125,8 @@ def test_create_vm_do_not_start(admin_session, image, keypair,
 # CPU and memory overcommit.
 
 @pytest.mark.multi_node_scheduling
-def test_create_vm_on_available_cpu_node(admin_session, image, keypair,
-                                         harvester_api_endpoints):
+def test_create_vm_on_available_cpu_node(request, admin_session, image,
+                                         keypair, harvester_api_endpoints):
     # find out the node that has the most available CPU
     (nodes, available_cpu) = utils.lookup_hosts_with_most_available_cpu(
         admin_session, harvester_api_endpoints)
@@ -187,8 +135,9 @@ def test_create_vm_on_available_cpu_node(admin_session, image, keypair,
     assert available_cpu > 0, 'No nodes has enough CPU available to create VMs'
     vm_json = None
     try:
-        vm_json = _create_vm(admin_session, image, keypair,
-                             harvester_api_endpoints, cpu=available_cpu)
+        vm_json = utils.create_vm(request, admin_session, image,
+                                  harvester_api_endpoints, keypair=keypair,
+                                  cpu=available_cpu)
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
         vm_node = vm_instance_json['status']['nodeName']
@@ -197,7 +146,8 @@ def test_create_vm_on_available_cpu_node(admin_session, image, keypair,
             '%s' % (nodes, vm_node))
     finally:
         if vm_json:
-            _delete_vm(admin_session, harvester_api_endpoints, vm_json)
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
 
 
 @pytest.mark.multi_node_scheduling
@@ -210,8 +160,8 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
     vm_json = None
     try:
         # first create a vanilla VM with minimal CPU and memory
-        vm_json = _create_vm(admin_session, image, keypair,
-                             harvester_api_endpoints)
+        vm_json = utils.create_vm(request, admin_session, image,
+                                  harvester_api_endpoints, keypair=keypair)
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
         # now update it use largest amount of CPU possible so that only the
@@ -221,7 +171,7 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
         domain_data = vm_json['spec']['template']['spec']['domain']
         domain_data['cpu']['cores'] = available_cpu
         utils.poll_for_update_resource(
-            admin_session,
+            request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
             vm_json,
             harvester_api_endpoints.get_vm % (vm_name))
@@ -237,12 +187,13 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
             '%s' % (nodes, vm_node))
     finally:
         if vm_json:
-            _delete_vm(admin_session, harvester_api_endpoints, vm_json)
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
 
 
 @pytest.mark.multi_node_scheduling
-def test_create_vm_on_available_memory_node(admin_session, image, keypair,
-                                            harvester_api_endpoints):
+def test_create_vm_on_available_memory_node(request, admin_session, image,
+                                            keypair, harvester_api_endpoints):
     # find out the node that has the most available memory
     (nodes, available_memory) = utils.lookup_hosts_with_most_available_memory(
         admin_session, harvester_api_endpoints)
@@ -251,9 +202,9 @@ def test_create_vm_on_available_memory_node(admin_session, image, keypair,
     assert available_memory > 0, 'No nodes has enough memory to create VMs'
     vm_json = None
     try:
-        vm_json = _create_vm(admin_session, image, keypair,
-                             harvester_api_endpoints,
-                             memory_gb=available_memory)
+        vm_json = utils.create_vm(request, admin_session, image,
+                                  harvester_api_endpoints, keypair=keypair,
+                                  memory_gb=available_memory)
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
         vm_node = vm_instance_json['status']['nodeName']
@@ -262,7 +213,8 @@ def test_create_vm_on_available_memory_node(admin_session, image, keypair,
             '%s' % (nodes, vm_node))
     finally:
         if vm_json:
-            _delete_vm(admin_session, harvester_api_endpoints, vm_json)
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
 
 
 @pytest.mark.multi_node_scheduling
@@ -275,8 +227,8 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
     vm_json = None
     try:
         # first create a vanilla VM with minimal CPU and memory
-        vm_json = _create_vm(admin_session, image, keypair,
-                             harvester_api_endpoints)
+        vm_json = utils.create_vm(request, admin_session, image,
+                                  harvester_api_endpoints, keypair=keypair)
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
         # now update it use largest amount of memory possible so that only the
@@ -287,7 +239,7 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
         domain_data['resources']['requests']['memory'] = '%sGi' % (
             available_memory)
         utils.poll_for_update_resource(
-            admin_session,
+            request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
             vm_json,
             harvester_api_endpoints.get_vm % (vm_name))
@@ -303,12 +255,13 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
             '%s' % (nodes, vm_node))
     finally:
         if vm_json:
-            _delete_vm(admin_session, harvester_api_endpoints, vm_json)
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
 
 
 @pytest.mark.multi_node_scheduling
-def test_create_vm_on_available_cpu_and_memory_nodes(admin_session, image,
-                                                     keypair,
+def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
+                                                     image, keypair,
                                                      harvester_api_endpoints):
     # TODO(gyee): should we make CPU and memory configurable?
     nodes = utils.lookup_hosts_with_cpu_and_memory(
@@ -317,8 +270,9 @@ def test_create_vm_on_available_cpu_and_memory_nodes(admin_session, image,
                             '4GB memory')
     vm_json = None
     try:
-        vm_json = _create_vm(admin_session, image, keypair,
-                             harvester_api_endpoints, cpu=2, memory_gb=4)
+        vm_json = utils.create_vm(request, admin_session, image,
+                                  harvester_api_endpoints, keypair=keypair,
+                                  cpu=2, memory_gb=4)
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
         vm_node = vm_instance_json['status']['nodeName']
@@ -327,4 +281,5 @@ def test_create_vm_on_available_cpu_and_memory_nodes(admin_session, image,
             '%s' % (nodes, vm_node))
     finally:
         if vm_json:
-            _delete_vm(admin_session, harvester_api_endpoints, vm_json)
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)

@@ -52,7 +52,8 @@ def test_create_with_vid_4095(admin_session, harvester_api_endpoints):
     assert 'and <=4094' in response_data['message']
 
 
-def test_create_edit_network(admin_session, harvester_api_endpoints, network):
+def test_create_edit_network(request, admin_session, harvester_api_endpoints,
+                             network):
     request_json = utils.get_json_object_from_template(
         'basic_network'
     )
@@ -66,7 +67,7 @@ def test_create_edit_network(admin_session, harvester_api_endpoints, network):
     request_json['metadata']['name'] = network['metadata']['name']
     request_json['metadata']['namespace'] = network['metadata']['namespace']
     resp = utils.poll_for_update_resource(
-        admin_session,
+        request, admin_session,
         network['links']['update'],
         request_json,
         network['links']['view'])

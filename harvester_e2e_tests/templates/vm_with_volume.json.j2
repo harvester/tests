@@ -5,7 +5,6 @@
     {% set name = random_name() %}
 {% endif %}
 {% set disk_0_name = name ~ "-disk-0-" ~ random_alphanumeric(length=5) %}
-{% set disk_1_name = name ~ "-disk-1-" ~ random_alphanumeric(length=5) %}
 {% if image_storage_class is not defined %}
     {% set image_storage_class = "longhorn" ~ image_name %}
 {% endif %}
@@ -48,30 +47,6 @@
                         "blank": {}
                     }
                 }
-            },
-            {
-                "apiVersion": "cdi.kubevirt.io/v1beta1",
-                "kind": "DataVolume",
-                "metadata": {
-                    "name": "{{ disk_1_name }}"
-                },
-                "spec": {
-                    "pvc": {
-                        "accessModes": [
-                            "ReadWriteMany"
-                        ],
-                        "resources": {
-                            "requests": {
-                                "storage": "{{ disk_size_gb | default(10) }}Gi"
-                            }
-                        },
-                        "storageClassName": "longhorn",
-                        "volumeMode": "Block"
-                    },
-                    "source": {
-                        "blank": {}
-                    }
-                }
             }
         ],
         "running": true,
@@ -97,8 +72,8 @@
                                 "name": "disk-0"
                             },
                             {
-                                "cdrom": {
-                                    "bus": "sata"
+                                "disk": {
+                                    "bus": "virtio"
                                 },
                                 "name": "disk-1"
 {% if network_data is defined and network_data is not none or user_data is defined and user_data is not none and ssh_public_key is defined and ssh_public_key is not none %}
@@ -152,7 +127,7 @@
                     },
                     {
                         "dataVolume": {
-                            "name": "{{ disk_1_name }}"
+                            "name": "{{ volume_name }}"
                         },
                         "name": "disk-1"
 {% if network_data is defined and network_data is not none or user_data is defined and user_data is not none and ssh_public_key is defined and ssh_public_key is not none %}
