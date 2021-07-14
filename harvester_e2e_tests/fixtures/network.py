@@ -38,7 +38,7 @@ def enable_vlan(request, admin_session, harvester_api_endpoints):
         vlan_json['config']['defaultPhysicalNIC'] = None
     vlan_json['enable'] = True
     vlan_json['config']['defaultPhysicalNIC'] = vlan_nic
-    utils.poll_for_update_resource(admin_session,
+    utils.poll_for_update_resource(request, admin_session,
                                    harvester_api_endpoints.update_vlan,
                                    vlan_json,
                                    harvester_api_endpoints.get_vlan)
@@ -83,7 +83,8 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
     assert resp.status_code == 201, 'Unable to create a network: %s' % (
         resp.content)
     network_data = resp.json()
-    utils.poll_for_resource_ready(admin_session, network_data['links']['view'])
+    utils.poll_for_resource_ready(request, admin_session,
+                                  network_data['links']['view'])
     yield network_data
 
     if not request.config.getoption('--do-not-cleanup'):

@@ -41,7 +41,7 @@ def test_get_user(admin_session, user):
     assert ret_user_data['username'] == user['username']
 
 
-def test_update_user_password(admin_session, user):
+def test_update_user_password(request, admin_session, user):
     request_json = utils.get_json_object_from_template(
         'basic_user', password='UpdatedTestF00Bar')
     request_json['username'] = user['username']
@@ -50,7 +50,7 @@ def test_update_user_password(admin_session, user):
     del request_json['isAdmin']
     request_json['metadata'] = {'name': user['metadata']['name']}
     resp = utils.poll_for_update_resource(
-        admin_session,
+        request, admin_session,
         user['links']['update'],
         request_json,
         user['links']['view'])

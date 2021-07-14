@@ -30,7 +30,8 @@ def test_list_settingss(admin_session, harvester_api_endpoints):
         resp.content)
 
 
-def test_update_api_ui_version(admin_session, harvester_api_endpoints):
+def test_update_api_ui_version(request, admin_session,
+                               harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.get_api_ui_version)
     assert resp.status_code == 200, (
         'Failed to get Harvester API UI version: %s' % (resp.content))
@@ -38,7 +39,7 @@ def test_update_api_ui_version(admin_session, harvester_api_endpoints):
     request_json = utils.get_json_object_from_template(
         'api_ui_version_setting')
     resp = utils.poll_for_update_resource(
-        admin_session,
+        request, admin_session,
         api_ui_version_data['links']['update'],
         request_json,
         harvester_api_endpoints.get_api_ui_version)
@@ -48,7 +49,7 @@ def test_update_api_ui_version(admin_session, harvester_api_endpoints):
     # now change it back
     request_json['value'] = api_ui_version_data['value']
     utils.poll_for_update_resource(
-        admin_session,
+        request, admin_session,
         updated_settings_data['links']['update'],
         request_json,
         harvester_api_endpoints.get_api_ui_version)

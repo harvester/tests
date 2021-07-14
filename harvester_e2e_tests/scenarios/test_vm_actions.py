@@ -25,7 +25,8 @@ import json
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.image',
     'harvester_e2e_tests.fixtures.keypair',
-    'harvester_e2e_tests.fixtures.network'
+    'harvester_e2e_tests.fixtures.network',
+    'harvester_e2e_tests.fixtures.volume'
 ]
 
 
@@ -70,49 +71,29 @@ runcmd:
 
 
 @pytest.fixture(scope='class')
-def basic_vm(request, admin_session, image, user_data_with_guest_agent,
-             network_data, harvester_api_endpoints):
-    request_json = utils.get_json_object_from_template(
-        'basic_vm',
-        image_namespace=image['metadata']['namespace'],
-        image_name=image['metadata']['name'],
-        image_storage_class=image['status']['storageClassName'],
-        disk_size_gb=10,
-        cpu=1,
-        memory_gb=1,
-        network_data=network_data,
-        user_data=user_data_with_guest_agent
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_vm,
-                              json=request_json)
-    assert resp.status_code == 201, 'Failed to create VM: %s' % (
-        resp.content)
-    vm_resp_json = resp.json()
-    # wait for VM to be ready
-    time.sleep(120)
-
-    def _check_vm_ready():
-        resp = admin_session.get(harvester_api_endpoints.get_vm % (
-            vm_resp_json['metadata']['name']))
-        if resp.status_code == 200:
-            resp_json = resp.json()
-            if ('status' in resp_json and 'ready' in resp_json['status'] and
-                    resp_json['status']['ready']):
-                return True
-        return False
-
-    success = polling2.poll(
-        _check_vm_ready,
-        step=5,
-        timeout=request.config.getoption('--wait-timeout'))
-    assert success, 'Timed out while waiting for VM to be ready.'
-    yield vm_resp_json
+def basic_vm(request, admin_session, image, keypair,
+             user_data_with_guest_agent, network_data,
+             harvester_api_endpoints):
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              keypair=keypair,
+                              network_data=network_data,
+                              user_data=user_data_with_guest_agent)
+    yield vm_json
     if not request.config.getoption('--do-not-cleanup'):
-        # cleanup both disks, image and cdrom
-        params = {'removedDisks': 'disk-0,disk-1'}
-        resp = admin_session.delete(
-            harvester_api_endpoints.delete_vm % (
-                vm_resp_json['metadata']['name']), params=params)
+        utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                        vm_json)
+
+
+@pytest.fixture(scope='class')
+def vm_with_volume(request, admin_session, image, volume, keypair,
+                   harvester_api_endpoints):
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              template='vm_with_volume',
+                              volume=volume,
+                              keypair=keypair)
+    return vm_json
 
 
 class TestVMActions:
@@ -259,7 +240,7 @@ class TestVMActions:
         domain_data['cpu']['cores'] = updated_cores
 
         resp = utils.poll_for_update_resource(
-            admin_session,
+            request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
             basic_vm,
             harvester_api_endpoints.get_vm % (vm_name))
@@ -295,7 +276,7 @@ class TestVMActions:
             spec['networks'] = []
         spec['networks'].append(new_network)
         resp = utils.poll_for_update_resource(
-            admin_session,
+            request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
             basic_vm,
             harvester_api_endpoints.get_vm % (vm_name))
@@ -352,3 +333,79 @@ class TestVMActions:
             'to a vm: %s' % (resp.content))
         response_data = resp.json()
         assert 'can not delete the volume' in response_data['message']
+
+
+class TestVMVolumes:
+
+    def test_create_vm_with_external_volume(self, admin_session,
+                                            harvester_api_endpoints,
+                                            vm_with_volume):
+        # make sure the VM instance is successfully created
+        utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_with_volume)
+        # make sure it's data volumes are in-use
+        volumes = vm_with_volume['spec']['template']['spec']['volumes']
+        for volume in volumes:
+            resp = admin_session.get(harvester_api_endpoints.get_volume % (
+                volume['dataVolume']['name']))
+            assert resp.status_code == 200, (
+                'Failed to lookup volume %s: %s' % (
+                    volume['dataVolume']['name'], resp.content))
+            volume_json = resp.json()
+            owned_by = json.loads(
+                volume_json['metadata']['annotations'].get(
+                    'harvesterhci.io/owned-by'))
+            expected_owner = '%s/%s' % (
+                vm_with_volume['metadata']['namespace'],
+                vm_with_volume['metadata']['name'])
+            # make sure VM is one of the owners
+            found = False
+            for owner in owned_by:
+                if (owner['schema'] == 'kubevirt.io.virtualmachine' and
+                        expected_owner in owner['refs']):
+                    found = True
+                    break
+            assert found, ('Expecting %s to be in volume %s owners list' % (
+                expected_owner, volume['dataVolume']['name']))
+
+    def test_delete_volume_in_use(self, request, admin_session,
+                                  harvester_api_endpoints, vm_with_volume):
+        volumes = vm_with_volume['spec']['template']['spec']['volumes']
+        for volume in volumes:
+            # try to delete a volume in 'in-use' state and it should
+            # fail
+            resp = admin_session.delete(
+                harvester_api_endpoints.delete_volume % (
+                    volume['dataVolume']['name']))
+            assert resp.status_code not in [200, 201], (
+                'Deleting "in-use" volumes should not be permitted: %s' % (
+                    resp.content))
+
+    def test_delete_vm_then_volumes(self, request, admin_session,
+                                    harvester_api_endpoints,
+                                    vm_with_volume, volume):
+        # delete the VM but keep the volumes
+        utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                        vm_with_volume, remove_all_disks=False)
+        volumes = vm_with_volume['spec']['template']['spec']['volumes']
+        for data_vol in volumes:
+            resp = admin_session.get(harvester_api_endpoints.get_volume % (
+                data_vol['dataVolume']['name']))
+            if data_vol['dataVolume']['name'] != volume['metadata']['name']:
+                # if this is not the externally created volume, it should be
+                # deleted along with the VM as this is the default Kubernetes
+                # behavior
+                assert resp.status_code == 404, (
+                    'Expecting data volume %s to be deleted with VM' % (
+                        data_vol['dataVolume']['name']))
+            else:
+                # the externally created volume should be preserved
+                assert resp.status_code == 200, (
+                    'Failed to lookup data volume %s: %s' % (
+                        data_vol['dataVolume']['name'], resp.content))
+        # NOTE: the volume will get cleaned up during test tear down. There's
+        # no need to delete it here.
+
+    # TODO(gyee): need to add a test case for not deleting the volume when the
+    # VM is deleted. Per my understanding, this can be done by first removing
+    # the ownerReferences first. However, that doesn't seem to be documented.

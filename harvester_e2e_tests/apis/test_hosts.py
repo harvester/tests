@@ -32,7 +32,8 @@ def test_get_host(admin_session, harvester_cluster_nodes,
     assert len(host_data['data']) == harvester_cluster_nodes
 
 
-def test_verify_host_maintenance_mode(admin_session, harvester_api_endpoints):
+def test_verify_host_maintenance_mode(request, admin_session,
+                                      harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
@@ -41,7 +42,7 @@ def test_verify_host_maintenance_mode(admin_session, harvester_api_endpoints):
         host_data['data'][0]['actions']['enableMaintenanceMode'])
     assert resp.status_code == 204, (
         'Failed to update node: %s' % (resp.content))
-    utils.poll_for_resource_ready(admin_session,
+    utils.poll_for_resource_ready(request, admin_session,
                                   host_data['data'][0]['links']['view'])
     resp = admin_session.get(host_data['data'][0]['links']['view'])
     resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
@@ -64,7 +65,7 @@ def test_verify_host_maintenance_mode(admin_session, harvester_api_endpoints):
             ret_data["metadata"]["annotations"])
 
 
-def test_update_first_node(admin_session, harvester_api_endpoints):
+def test_update_first_node(request, admin_session, harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
@@ -74,7 +75,7 @@ def test_update_first_node(admin_session, harvester_api_endpoints):
             'harvesterhci.io/host-custom-name': 'for-test-update'
     }
     resp = utils.poll_for_update_resource(
-        admin_session,
+        request, admin_session,
         host_data['data'][0]['links']['update'],
         first_node,
         host_data['data'][0]['links']['view'])
