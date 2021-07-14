@@ -22,7 +22,7 @@ def pytest_addoption(parser):
     parser.addoption(
         '--endpoint',
         action='store',
-        default='https://localhost:8443',
+        default='https://localhost:30443',
         help='Harvester API endpoint'
     )
     parser.addoption(
@@ -67,6 +67,11 @@ def pytest_addoption(parser):
         type='int',
         default=300,
         help='Wait time for polling operations'
+    )
+    parser.addoption(
+        '--rancher-endpoint',
+        action='store',
+        help='Rancher API endpoint'
     )
     # TODO(gyee): may need to add SSL options later
 
