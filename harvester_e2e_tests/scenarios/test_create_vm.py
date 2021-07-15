@@ -17,6 +17,8 @@
 
 from harvester_e2e_tests import utils
 import pytest
+import time
+import polling2
 
 
 pytest_plugins = [
@@ -283,3 +285,70 @@ def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
         if vm_json:
             utils.delete_vm(request, admin_session, harvester_api_endpoints,
                             vm_json)
+
+
+def test_host_maintenance_mode(request, admin_session, image, keypair,
+                               harvester_api_endpoints):
+    vm_json = None
+    try:
+        vm_json = utils.create_vm(request, admin_session, image,
+                                  harvester_api_endpoints, keypair=keypair)
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_json)
+        vm_node_before_migrate = vm_instance_json['status']['nodeName']
+
+        resp = admin_session.get(harvester_api_endpoints.get_node % (
+            vm_node_before_migrate))
+        host_json = resp.json()
+        resp = admin_session.post(
+            host_json['actions']['enableMaintenanceMode'])
+        assert resp.status_code == 204, (
+            'Failed to update node: %s' % (resp.content))
+        utils.poll_for_resource_ready(request, admin_session,
+                                      harvester_api_endpoints.get_node % (
+                                          vm_node_before_migrate))
+        resp = admin_session.get(harvester_api_endpoints.get_node % (
+            vm_node_before_migrate))
+        resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+        hdata = resp.json()
+        assert hdata["spec"]["unschedulable"]
+        s = hdata["metadata"]["annotations"]["harvesterhci.io/maintain-status"]
+        assert s in ["running", "completed"]
+
+        # give it some time for the VM to migrate
+        time.sleep(120)
+
+        def _check_vm_instance_migrated():
+            resp = admin_session.get(
+                harvester_api_endpoints.get_vm_instance % (
+                    vm_json['metadata']['name']))
+            if resp.status_code == 200:
+                resp_json = resp.json()
+                if ('status' in resp_json and
+                        resp_json['status']['migrationState']['completed']):
+                    return True
+            return False
+
+        success = polling2.poll(
+            _check_vm_instance_migrated,
+            step=5,
+            timeout=request.config.getoption('--wait-timeout'))
+        assert success, 'Timed out while waiting for VM to be migrated: %s' % (
+            vm_json['metadata']['name'])
+
+        vmi_json_after_migrate = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_json)
+        vm_node_after_migrate = vmi_json_after_migrate['status']['nodeName']
+        assert vm_node_after_migrate != vm_node_before_migrate
+        resp = admin_session.get(harvester_api_endpoints.get_node % (
+            vm_node_before_migrate))
+        host_json = resp.json()
+        resp = admin_session.post(
+            host_json['actions']['disableMaintenanceMode'])
+        assert resp.status_code == 204, (
+            'Failed to update node: %s' % (resp.content))
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if vm_json:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, vm_json)
