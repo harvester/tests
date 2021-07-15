@@ -15,6 +15,7 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import polling2
 import pytest
 import requests
 import yaml
@@ -31,9 +32,22 @@ import yaml
 # https://github.com/harvester/harvester/wiki/Authn-Initialization-Automation
 def _set_admin_password(harvester_api_endpoints, password):
     # check to see if this is first login
-    resp = requests.get(
-        harvester_api_endpoints.first_login_check, verify=False)
-    assert resp.status_code == 200, 'Unable to lookup first login status'
+    resp = None
+
+    def _wait_for_api():
+        nonlocal resp
+        resp = requests.get(
+            harvester_api_endpoints.first_login_check, verify=False)
+        if resp.status_code == 200:
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_api,
+        step=2,
+        timeout=120)
+    assert success, 'Timed out while trying lookup first login status: %s' % (
+        resp.content)
     if resp.json()['value'].lower() == 'false':
         # not first login, no need to set admin password
         return
