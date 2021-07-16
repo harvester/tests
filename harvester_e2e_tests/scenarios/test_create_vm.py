@@ -347,6 +347,24 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
             host_json['actions']['disableMaintenanceMode'])
         assert resp.status_code == 204, (
             'Failed to update node: %s' % (resp.content))
+        # migrate VM back to old host
+        resp = admin_session.post(harvester_api_endpoints.migrate_vm % (
+            vm_json['metadata']['name']),
+            json={"nodeName": vm_node_before_migrate})
+        assert resp.status_code == 204, 'Failed to migrat VM %s to host %s' % (
+            vm_json['metadata']['name'], vm_node_before_migrate)
+        # give it some time for the VM to migrate
+        time.sleep(120)
+        success = polling2.poll(
+            _check_vm_instance_migrated,
+            step=5,
+            timeout=request.config.getoption('--wait-timeout'))
+        assert success, 'Timed out as waiting for VM to migrate back: %s' % (
+            vm_json['metadata']['name'])
+        vmi_json_after_migrate = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_json)
+        orig_node_name = vmi_json_after_migrate['status']['nodeName']
+        assert orig_node_name == vm_node_before_migrate
     finally:
         if not request.config.getoption('--do-not-cleanup'):
             if vm_json:
