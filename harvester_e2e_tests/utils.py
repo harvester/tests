@@ -22,6 +22,7 @@ import os
 import polling2
 import random
 import string
+import subprocess
 import time
 import uuid
 import yaml
@@ -456,3 +457,69 @@ def delete_host(request, admin_session, harvester_api_endpoints, host_json):
         step=5,
         timeout=request.config.getoption('--wait-timeout'))
     assert success, 'Timed out while waiting for host to be deleted'
+
+
+def _get_node_script_path(request, script_name):
+    scripts_dir = request.config.getoption('--node-scripts-location')
+    assert scripts_dir, ('Node scripts location not provided. Please use '
+                         'the --node-scripts-location parameter to specify '
+                         'the location of the node scripts.')
+    assert os.path.isdir(scripts_dir), 'Invalid node scripts location: %s' % (
+        scripts_dir)
+    script = os.path.join(scripts_dir, script_name)
+    assert os.path.isfile(script), 'Node script %s not found' % (script)
+    assert os.access(script, os.X_OK), 'Node script %s is not executable' % (
+        script)
+    return script
+
+
+def power_off_node(request, admin_session, harvester_api_endpoints, node_name):
+    power_off_script = _get_node_script_path(request, 'power_off.sh')
+    result = subprocess.run([power_off_script, node_name], capture_output=True)
+    assert result.returncode == 0, (
+        'Failed to power-off node %s: rc: %s, stdout: %s, stderr: %s' % (
+            node_name, result.returncode, result.stderr, result.stdout))
+
+    # wait for the node to disappear
+    time.sleep(120)
+
+    def _wait_for_node_to_disappear():
+        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
+            node_name))
+        metrics_json = resp.json()
+        if 'status' in metrics_json and metrics_json['status'] == 404:
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_node_to_disappear,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for node to shutdown'
+
+
+def power_on_node(request, admin_session, harvester_api_endpoints, node_name):
+    power_on_script = _get_node_script_path(request, 'power_on.sh')
+    result = subprocess.run([power_on_script, node_name], capture_output=True)
+    assert result.returncode == 0, (
+        'Failed to power-on node %s: rc: %s, stdout: %s, stderr: %s' % (
+            node_name, result.returncode, result.stderr, result.stdout))
+
+    # wait for the node to power-on
+    time.sleep(180)
+
+    def _wait_for_node_to_appear():
+        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
+            node_name))
+        metrics_json = resp.json()
+        if ('metadata' in metrics_json and
+                'state' in metrics_json['metadata'] and
+                metrics_json['metadata']['state']['error'] is False):
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_node_to_appear,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for node to power-on'

@@ -73,6 +73,12 @@ def pytest_addoption(parser):
         action='store',
         help='Rancher API endpoint'
     )
+    parser.addoption(
+        '--node-scripts-location',
+        action='store',
+        help=('External scripts to power-off, power-up, and reboot a given '
+              'Harvester node to facilitate the host-specific tests')
+    )
     # TODO(gyee): may need to add SSL options later
 
 
@@ -86,6 +92,12 @@ def pytest_configure(config):
                     'a multi-node cluster where some hosts have more '
                     'resources then others in order to test VM scheduling '
                     'behavior')
+    )
+    config.addinivalue_line(
+        "markers", ('host_management: mark test to run only if we have '
+                    'host management (power_on.sh, power_off.sh, reboot.sh) '
+                    'scripts provided. These tests are designed to test '
+                    'scheduling resiliency and disaster recovery scenarios. ')
     )
     config.addinivalue_line(
         "markers", ('delete_host: mark test to run in the end when other '
