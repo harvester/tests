@@ -31,6 +31,7 @@
     "start_vm": "{{ harvester_endpoint }}/v1/kubevirt.io.virtualmachines/{{ api_namespace | default('default') }}/%s?action=start",
     "pause_vm": "{{ harvester_endpoint }}/v1/kubevirt.io.virtualmachines/{{ api_namespace | default('default') }}/%s?action=pause",
     "unpause_vm": "{{ harvester_endpoint }}/v1/kubevirt.io.virtualmachines/{{ api_namespace | default('default') }}/%s?action=unpause",
+    "migrate_vm": "{{ harvester_endpoint }}/v1/kubevirt.io.virtualmachines/{{ api_namespace | default('default') }}/%s?action=migrate",
     "list_vm_instances": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineinstances",
     "get_vm_instance": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineinstances/%s",
     "create_network": "{{ harvester_endpoint }}/v1/k8s.cni.cncf.io.network-attachment-definitions",
