@@ -87,6 +87,10 @@ def pytest_configure(config):
                     'resources then others in order to test VM scheduling '
                     'behavior')
     )
+    config.addinivalue_line(
+        "markers", ('delete_host: mark test to run in the end when other '
+                    'tests finished running')
+    )
 
 
 def pytest_collection_modifyitems(config, items):

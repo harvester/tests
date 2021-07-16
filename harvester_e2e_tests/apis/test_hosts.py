@@ -16,12 +16,13 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+import pytest
 
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.session',
-  ]
+    'harvester_e2e_tests.fixtures.api_endpoints',
+    'harvester_e2e_tests.fixtures.session',
+]
 
 
 def test_get_host(admin_session, harvester_cluster_nodes,
@@ -71,8 +72,8 @@ def test_update_first_node(request, admin_session, harvester_api_endpoints):
     host_data = resp.json()
     first_node = host_data['data'][0]
     first_node['metadata']['annotations'] = {
-            'field.cattle.io/description': 'for-test-update',
-            'harvesterhci.io/host-custom-name': 'for-test-update'
+        'field.cattle.io/description': 'for-test-update',
+        'harvesterhci.io/host-custom-name': 'for-test-update'
     }
     resp = utils.poll_for_update_resource(
         request, admin_session,
@@ -81,6 +82,25 @@ def test_update_first_node(request, admin_session, harvester_api_endpoints):
         host_data['data'][0]['links']['view'])
     updated_host_data = resp.json()
     assert updated_host_data['metadata']['annotations'].get(
-            'field.cattle.io/description') == 'for-test-update'
+        'field.cattle.io/description') == 'for-test-update'
     assert updated_host_data['metadata']['annotations'].get(
-            'harvesterhci.io/host-custom-name') == 'for-test-update'
+        'harvesterhci.io/host-custom-name') == 'for-test-update'
+
+
+@pytest.mark.delete_host
+def test_delete_host(request, admin_session, harvester_api_endpoints):
+    cur_endpoint = (request.config.getoption('--endpoint').split(":")[1])[2:]
+    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
+    host_data = resp.json()
+    for data in host_data['data']:
+        if data['metadata']['annotations'].get(
+                'etcd.k3s.cattle.io/node-address') != cur_endpoint:
+            host_data_to_delete = data
+    # delete the host
+    utils.delete_host(request, admin_session, harvester_api_endpoints,
+                      host_data_to_delete)
+    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
+    host_data = resp.json()
+    assert host_data_to_delete not in host_data['data']
