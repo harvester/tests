@@ -23,77 +23,10 @@ import uuid
 import json
 
 pytest_plugins = [
-    'harvester_e2e_tests.fixtures.image',
     'harvester_e2e_tests.fixtures.keypair',
-    'harvester_e2e_tests.fixtures.network',
+    'harvester_e2e_tests.fixtures.vm',
     'harvester_e2e_tests.fixtures.volume'
 ]
-
-
-@pytest.fixture(scope='class')
-def network_data():
-    yaml_data = """#cloud-config
-version: 1
-config:
-  - type: physical
-    name: eth0
-    subnets:
-      - type: dhcp
-  - type: physical
-    name: eth1
-    subnets:
-      - type: dhcp
-"""
-    return yaml_data.replace('\n', '\\n')
-
-
-@pytest.fixture(scope='class')
-def user_data_with_guest_agent(keypair):
-    # set to root user password to 'linux' to test password login in
-    # addition to SSH login
-    yaml_data = """#cloud-config
-chpasswd:
-  list: |
-    root:linux
-  expire: false
-ssh_authorized_keys:
-  - %s
-package_update: true
-packages:
-  - qemu-guest-agent
-runcmd:
-  - - systemctl
-    - enable
-    - '--now'
-    - qemu-guest-agent
-""" % (keypair['spec']['publicKey'])
-    return yaml_data.replace('\n', '\\n')
-
-
-@pytest.fixture(scope='class')
-def basic_vm(request, admin_session, image, keypair,
-             user_data_with_guest_agent, network_data,
-             harvester_api_endpoints):
-    vm_json = utils.create_vm(request, admin_session, image,
-                              harvester_api_endpoints,
-                              keypair=keypair,
-                              network_data=network_data,
-                              user_data=user_data_with_guest_agent)
-    yield vm_json
-    if not request.config.getoption('--do-not-cleanup'):
-        utils.delete_vm(request, admin_session, harvester_api_endpoints,
-                        vm_json)
-
-
-@pytest.fixture(scope='class')
-def vm_with_volume(request, admin_session, image, volume, keypair,
-                   harvester_api_endpoints):
-    vm_json = utils.create_vm(request, admin_session, image,
-                              harvester_api_endpoints,
-                              template='vm_with_volume',
-                              volume=volume,
-                              keypair=keypair)
-    return vm_json
 
 
 class TestVMActions:
@@ -302,37 +235,6 @@ class TestVMActions:
         assert found, 'Failed to add new network to VM %s' % (vm_name)
         # TODO(gyee): 1) make sure the new interface got an IP; and
         # 2) make sure we can ping that IP if it has a port in a public router
-
-    def test_validate_volume_inuse(self, request, admin_session,
-                                   harvester_api_endpoints, basic_vm):
-        vm_data = utils.lookup_vm_instance(
-            admin_session, harvester_api_endpoints, basic_vm)
-        vm_name = vm_data['metadata']['namespace'] + \
-            "/" + vm_data['metadata']['name']
-        vol_name = json.loads((
-            vm_data['metadata']['annotations'].get(
-                'harvesterhci.io/diskNames')))
-        resp = admin_session.get(harvester_api_endpoints.get_volume % (
-            vol_name[0]))
-        vol_data = resp.json()
-        vol_vm_annotation = json.loads(
-            vol_data['metadata']['annotations'].get(
-                'harvesterhci.io/owned-by'))
-        assert vol_vm_annotation[0].get('refs')[0] == vm_name
-
-    def test_delete_volume_inuse(self, request, admin_session,
-                                 harvester_api_endpoints, basic_vm):
-        vm_data = utils.lookup_vm_instance(
-            admin_session, harvester_api_endpoints, basic_vm)
-        vol_name = json.loads((vm_data['metadata']['annotations'].get(
-            'harvesterhci.io/diskNames')))
-        resp = admin_session.delete(
-            harvester_api_endpoints.delete_volume % (vol_name[0]))
-        assert resp.status_code == 422, (
-            'Expected HTTP 422 when attempting to delete volume attached '
-            'to a vm: %s' % (resp.content))
-        response_data = resp.json()
-        assert 'can not delete the volume' in response_data['message']
 
 
 class TestVMVolumes:

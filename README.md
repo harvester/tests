@@ -111,6 +111,41 @@ flag. For example:
 tox -r -e py38 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html --do-not-cleanup
 ```
 
+### Adding Host Management Scripts
+
+Some tests required manipulating the hosts where the VMs are running in order to
+test scheduling resiliency and disaster recovery scenarios. Therefore, we need
+external scripts to power-on, power-off, and to reboot a given node. The
+host management scripts are expected to be provided by users out-of-band.
+Reasons are:
+
+1. the scripts are very specific to the Harvester environment. For example,
+   for a virtual vagrant environment, the scripts may simply just performing
+   `vagrant halt <node name>` and `vagrant up <node name>`. However for a
+   baremetal environment managed by IPMI, the scripts may need to
+   use IPMO tools CLI.
+2. for certain environments (i.e. IPMI, RedFish, etc), credential is required.
+
+The host management scripts must all be placed into the same directory and must
+be named `power_on.sh`, `power_off.sh`, and `reboot.sh`. All the scripts must
+accept exactly one parameter, which is the name of the host. Please see the
+`scripts` directory for examples.
+
+Host management tests must be invoked with the `host_management` marker.
+For example, to run the host management tests:
+
+```console
+tox -e py38 -- --endpoint https://192.168.0.30:30443 --wait-timeout 600 --node-scripts-location ./scripts -m "host_management"
+```
+
+---
+**NOTE**
+
+Must also provide the `--node-scripts-location` parameter, which points to the
+directory which contains the host management shell scripts.
+
+---
+
 ## Running delete Host tests
 ----------------------------
 
