@@ -426,3 +426,25 @@ def delete_volume(request, admin_session, harvester_api_endpoints,
         step=5,
         timeout=request.config.getoption('--wait-timeout'))
     assert success, 'Timed out while waiting for volume to be terminated.'
+
+
+def delete_host(request, admin_session, harvester_api_endpoints, host_json):
+    resp = admin_session.delete(harvester_api_endpoints.delete_node % (
+        host_json['id']))
+    assert resp.status_code in [200, 201], 'Unable to delete host %s: %s' % (
+        host_json['id'], resp.content)
+    # wait for host to be deleted
+    time.sleep(180)
+
+    def _wait_for_host_to_be_deleted():
+        resp = admin_session.get(harvester_api_endpoints.get_node % (
+            host_json['id']))
+        if resp.status_code == 404:
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_host_to_be_deleted,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for host to be deleted'
