@@ -24,6 +24,7 @@ import random
 import string
 import time
 import uuid
+import yaml
 
 
 def random_name():
@@ -90,7 +91,7 @@ def get_latest_resource_version(request, admin_session, lookup_endpoint):
 
 
 def poll_for_update_resource(request, admin_session, update_endpoint,
-                             request_json, lookup_endpoint):
+                             request_json, lookup_endpoint, use_yaml=None):
 
     resp = None
 
@@ -103,7 +104,14 @@ def poll_for_update_resource(request, admin_session, update_endpoint,
         request_json['metadata']['resourceVersion'] = (
             get_latest_resource_version(
                 request, admin_session, lookup_endpoint))
-        resp = admin_session.put(update_endpoint, json=request_json)
+        if use_yaml:
+            resp = admin_session.put(update_endpoint,
+                                     data=yaml.dump(
+                                         request_json, sort_keys=False),
+                                     headers={
+                                         'Content-Type': 'application/yaml'})
+        else:
+            resp = admin_session.put(update_endpoint, json=request_json)
         if resp.status_code == 409:
             return False
         else:

@@ -79,12 +79,34 @@ def test_update_first_node(request, admin_session, harvester_api_endpoints):
         request, admin_session,
         host_data['data'][0]['links']['update'],
         first_node,
-        host_data['data'][0]['links']['view'])
+        harvester_api_endpoints.get_node % (host_data['data'][0]['id']))
     updated_host_data = resp.json()
     assert updated_host_data['metadata']['annotations'].get(
         'field.cattle.io/description') == 'for-test-update'
     assert updated_host_data['metadata']['annotations'].get(
         'harvesterhci.io/host-custom-name') == 'for-test-update'
+
+
+def test_update_using_yaml(request, admin_session, harvester_api_endpoints):
+    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
+    host_data = resp.json()
+    first_node = host_data['data'][0]
+    first_node['metadata']['annotations'] = {
+        'field.cattle.io/description': 'for-yaml-update',
+        'harvesterhci.io/host-custom-name': 'for-yaml-update'
+    }
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        host_data['data'][0]['links']['update'],
+        first_node,
+        harvester_api_endpoints.get_node % (host_data['data'][0]['id']),
+        use_yaml=True)
+    updated_host_data = resp.json()
+    assert updated_host_data['metadata']['annotations'].get(
+        'field.cattle.io/description') == 'for-yaml-update'
+    assert updated_host_data['metadata']['annotations'].get(
+        'harvesterhci.io/host-custom-name') == 'for-yaml-update'
 
 
 @pytest.mark.delete_host
