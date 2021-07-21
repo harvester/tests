@@ -16,66 +16,74 @@
 # you may find current contact information at www.suse.com
 
 import pytest
+import yaml
 
 
 def pytest_addoption(parser):
+    with open('config.yml') as f:
+        config_data = yaml.safe_load(f)
     parser.addoption(
         '--endpoint',
         action='store',
-        default='https://localhost:30443',
+        default=config_data['endpoint'],
         help='Harvester API endpoint'
     )
     parser.addoption(
         '--username',
         action='store',
-        default='admin',
+        default=config_data['username'],
         help='Harvester username'
     )
     parser.addoption(
         '--password',
         action='store',
-        default='password',
+        default=config_data['password'],
         help='Harvester password'
     )
     parser.addoption(
         '--do-not-cleanup',
         action='store_true',
+        default=config_data['do-not-cleanup'],
         help='Do not cleanup the test artifacts'
     )
     parser.addoption(
         '--harvester_cluster_nodes',
         action='store',
         type='int',
+        default=config_data['harvester_cluster_nodes'],
         help='Set count of test framework harvester cluster nodes.'
     )
     parser.addoption(
         '--vlan-id',
         action='store',
         type='int',
+        default=config_data['vlan-id'],
         help=('VLAN ID, if specified, will invoke the tests depended on '
               'external networking.')
     )
     parser.addoption(
         '--vlan-nic',
         action='store',
-        default='eth0',
+        default=config_data['vlan-nic'],
         help='Physical NIC for VLAN. Default is "eth0"'
     )
     parser.addoption(
         '--wait-timeout',
         action='store',
         type='int',
-        default=300,
+        default=config_data['wait-timeout'],
         help='Wait time for polling operations'
     )
     parser.addoption(
         '--rancher-endpoint',
         action='store',
+        default=config_data['rancher-endpoint'],
         help='Rancher API endpoint'
     )
     parser.addoption(
         '--node-scripts-location',
         action='store',
+        default=config_data['node-scripts-location'],
         help=('External scripts to power-off, power-up, and reboot a given '
               'Harvester node to facilitate the host-specific tests')
     )
@@ -106,9 +114,9 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption('--vlan-id'):
-        # --vlan-id is specified, do not skip tests relying on external
-        # routing
+    if config.getoption('--vlan-id') != -1:
+        # --vlan-id is correctly specified, do not skip tests relying
+        # on external routing
         return
     skip_public_network = pytest.mark.skip(reason=(
         'VM not accessible because no VLAN setup with public routing'))

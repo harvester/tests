@@ -17,12 +17,14 @@ These fixture are executed at the session level and they are used to provide the
 
 ## Running Tests
 
+Update config.yml with values for each entry based on the harvester environment the tests are run against.
+
 ### Run All Tests
 
 To run the entire Harvester end-to-end test suite:
 
 ```console
-tox -e py36 -- harvester_e2e_tests --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+tox -e py36 -- harvester_e2e_tests --html=test_result.html
 ```
 
 ### API Tests 
@@ -30,31 +32,21 @@ tox -e py36 -- harvester_e2e_tests --endpoint https://<harvester_node_0 IP>:3044
 API Tests are designed to test REST APIs for one resource (i.e. keypairs,
 vitualmachines, virtualmachineimages, etc) at a time.
 
-To run all the API tests under the `harvester_e2e_tests\apis` folder, maintain
-the count of harvester_cluster_nodes(1 for single node and 3 for 3-node
-cluster) in config.yml. It can also be set as an option while executing the
-pytest.
-
 Since deleting the host is irreversible process, run delete_host test after 
 running all the other tests
 
 As mentioned before, the test will be executed via the [tox][tox]
 environments. Currently, both Python3.6 and Python3.8 are supported.
 
-For example, to run the tests in a Python3.6 environment for the first time,
+For example, to run the API tests in a Python3.6 environment for the first time,
 and skipping the delete_host test against a freshly installed single node Harvester:
 ```console
-tox -e py36 -- harvester_e2e_tests/apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html -m "not delete_host"
-```
-
-To pass the harverster_cluster_nodes as option:
-```console
-tox -e py36 -- harvester_e2e_tests/apis --endpoint https://<harvester_node_0 IP>:30443 --harvester_cluster_nodes 1 --html=test_result.html -m "not delete_host"
+tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html -m "not delete_host"
 ```
 
 To run the API tests in a Python3.8 environment:
 ```console
-tox -e py38 -- harvester_e2e_tests/apis --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html -m "not delete_host"
+tox -e py38 -- harvester_e2e_tests/apis --html=test_result.html -m "not delete_host"
 ```
 
 Example Output:
@@ -86,30 +78,27 @@ supported.
 
 To run the scenario tests in a Python3.6 environment:
 ```console
-tox -r -e py36 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+tox -r -e py36 -- harvester_e2e_tests/scenarios --html=test_result.html
 ```
 
 To skip the multi_node_scheduling tests which are run in a multi-node cluster where some
 hosts have more resources than others in order to test VM scheduling behavior
 ```console
-tox -r -e py36 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html -m "not multi_node_scheduling"
+tox -r -e py36 -- harvester_e2e_tests/scenarios --html=test_result.html -m "not multi_node_scheduling"
 ```
 
 To run just the multi_node_scheduling tests
 ```console
-tox -r -e py36 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html -m muti_node_scheduling
+tox -r -e py36 -- harvester_e2e_tests/scenarios --html=test_result.html -m muti_node_scheduling
 ```
 
 To run the scenario tests in a Python3.8 environment:
 ```console
-tox -r -e py38 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html
+tox -r -e py38 -- harvester_e2e_tests/scenarios --html=test_result.html
 ```
 By default the tests will cleanup after themselves. If you want to preserve the
-test artifact for debugging purposes, you may specific the `--do-not-cleanup`
-flag. For example:
-```console
-tox -r -e py38 -- harvester_e2e_tests/scenarios --endpoint https://<harvester_node_0 IP>:30443 --html=test_result.html --do-not-cleanup
-```
+test artifact for debugging purposes, update the do-not-cleanup parameter in config.yml
+ to True.
 
 ### Adding Host Management Scripts
 
@@ -144,14 +133,12 @@ tox -e py38 -- --endpoint https://192.168.0.30:30443 --wait-timeout 600 --node-s
 Must also provide the `--node-scripts-location` parameter, which points to the
 directory which contains the host management shell scripts.
 
----
-
 ## Running delete Host tests
 ----------------------------
 
 To run the delete_host tests at the end when all tests are done running
 ```console
-tox -e py36 -- harvester_e2e_tests/apis --endpoint https://<harvester_node_0 IP>:30443 --harvester_cluster_nodes 1 --html=test_result.html -m delete_host
+tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html -m delete_host
 ```
 
 ## Running Linter
