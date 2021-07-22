@@ -33,6 +33,7 @@ def test_get_host(admin_session, harvester_cluster_nodes,
     assert len(host_data['data']) == harvester_cluster_nodes
 
 
+@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 def test_verify_host_maintenance_mode(request, admin_session,
                                       harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
@@ -126,3 +127,57 @@ def test_delete_host(request, admin_session, harvester_api_endpoints):
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
     assert host_data_to_delete not in host_data['data']
+
+
+@pytest.mark.host_management
+def test_host_mgmt_maintenance_mode(request, admin_session,
+                                    harvester_api_endpoints):
+    # Power Off Node
+    host_info = utils.poweroff_host_maintenance_mode(request, admin_session,
+                                                     harvester_api_endpoints)
+    node_name = host_info['id']
+    # power On Node
+    utils.power_on_node(request, admin_session, harvester_api_endpoints,
+                        node_name)
+    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+    ret_data = resp.json()
+    assert "Ready,SchedulingDisabled" in ret_data["metadata"]["fields"]
+    # Disable Maintenance Mode
+    resp = admin_session.post(
+        ret_data['actions']['disableMaintenanceMode'])
+    assert resp.status_code == 204, (
+        'Failed to update node: %s' % (resp.content))
+    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+    ret_data = resp.json()
+    assert "unschedulable" not in ret_data["spec"]
+    assert ("harvesterhci.io/maintain-status" not in
+            ret_data["metadata"]["annotations"])
+
+
+@pytest.mark.host_management
+def test_host_reboot_maintenance_mode(request, admin_session,
+                                      harvester_api_endpoints):
+    # Power Off Node
+    host_info = utils.poweroff_host_maintenance_mode(request, admin_session,
+                                                     harvester_api_endpoints)
+    node_name = host_info['id']
+    # Reboot Node
+    utils.reboot_node(request, admin_session, harvester_api_endpoints,
+                      node_name)
+    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+    ret_data = resp.json()
+    assert "Ready,SchedulingDisabled" in ret_data["metadata"]["fields"]
+    # Disable Maintenance Mode
+    resp = admin_session.post(
+        ret_data['actions']['disableMaintenanceMode'])
+    assert resp.status_code == 204, (
+        'Failed to update node: %s' % (resp.content))
+    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+    ret_data = resp.json()
+    assert "unschedulable" not in ret_data["spec"]
+    assert ("harvesterhci.io/maintain-status" not in
+            ret_data["metadata"]["annotations"])

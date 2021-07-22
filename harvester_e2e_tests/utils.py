@@ -523,3 +523,76 @@ def power_on_node(request, admin_session, harvester_api_endpoints, node_name):
         step=5,
         timeout=request.config.getoption('--wait-timeout'))
     assert success, 'Timed out while waiting for node to power-on'
+
+
+def lookup_host_not_harvester_endpoint(request, admin_session,
+                                       harvester_api_endpoints):
+    cur_endpoint = (request.config.getoption('--endpoint').split(":")[1])[2:]
+    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
+    nodes_json = resp.json()['data']
+    for node in nodes_json:
+        # look up CPU usage for the given node
+        if node['metadata']['annotations'].get(
+                'etcd.k3s.cattle.io/node-address') != cur_endpoint:
+            node_data = node
+    return node_data
+
+
+def reboot_node(request, admin_session, harvester_api_endpoints, node_name):
+    power_on_script = _get_node_script_path(request, 'reboot.sh')
+#    result = subprocess.run([power_on_script, node_name], capture_output=True)
+    result = subprocess.run([power_on_script, node_name])
+    assert result.returncode == 0, (
+        'Failed to reboot node %s: rc: %s, stdout: %s, stderr: %s' % (
+            node_name, result.returncode, result.stderr, result.stdout))
+
+    # wait for the node to power-on
+    time.sleep(180)
+
+    def _wait_for_node_to_appear():
+        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
+            node_name))
+        metrics_json = resp.json()
+        if ('metadata' in metrics_json and
+                'state' in metrics_json['metadata'] and
+                metrics_json['metadata']['state']['error'] is False):
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_node_to_appear,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for node to reboot'
+
+
+def poweroff_host_maintenance_mode(request, admin_session,
+                                   harvester_api_endpoints):
+    host_poweroff = lookup_host_not_harvester_endpoint(request, admin_session,
+                                                       harvester_api_endpoints)
+    # Enable Maintenance Mode
+    resp = admin_session.post(
+        host_poweroff['actions']['enableMaintenanceMode'])
+    assert resp.status_code == 204, (
+        'Failed to update node: %s' % (resp.content))
+    node_name = host_poweroff['id']
+    poll_for_resource_ready(request, admin_session,
+                            harvester_api_endpoints.get_node % (node_name))
+    resp = admin_session.get(
+        harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+    ret_data = resp.json()
+    assert ret_data["spec"]["unschedulable"]
+    s = ret_data["metadata"]["annotations"]["harvesterhci.io/maintain-status"]
+    assert s in ["running", "completed"]
+    node_name = host_poweroff['id']
+    # Power Off Node
+    power_off_node(request, admin_session, harvester_api_endpoints,
+                   node_name)
+    resp = admin_session.get(
+        harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+    ret_data = resp.json()
+    assert "NotReady,SchedulingDisabled" in ret_data["metadata"]["fields"]
+    return host_poweroff
