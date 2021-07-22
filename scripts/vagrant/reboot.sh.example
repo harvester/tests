@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+USAGE="${0}: <hostname>
+
+Where:
+
+  <hostname>: host name of the Vagrant Harvester node
+"
+
+if [ $# -ne 1 ] ; then
+        echo "$USAGE"
+        exit 1
+fi
+
+HOSTNAME=$1
+
+pushd /home/foo/ipxe-examples/vagrant-pxe-harvester
+vagrant reload $HOSTNAME
+popd
