@@ -334,11 +334,14 @@ def create_image(request, admin_session, harvester_api_endpoints, url,
 
 
 def create_vm(request, admin_session, image, harvester_api_endpoints,
-              template='basic_vm', keypair=None, volume=None, cpu=1,
-              disk_size_gb=10, memory_gb=1, network_data=None,
+              template='basic_vm', keypair=None, volume=None, network=None,
+              cpu=1, disk_size_gb=10, memory_gb=1, network_data=None,
               user_data=None, running=True):
     volume_name = None
     ssh_public_key = None
+    network_name = None
+    if network:
+        network_name = network['metadata']['name']
     if volume:
         volume_name = volume['metadata']['name']
     if keypair:
@@ -349,6 +352,7 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         image_name=image['metadata']['name'],
         image_storage_class=image['status']['storageClassName'],
         volume_name=volume_name,
+        network_name=network_name,
         disk_size_gb=disk_size_gb,
         cpu=cpu,
         memory_gb=memory_gb,
