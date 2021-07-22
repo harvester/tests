@@ -43,7 +43,7 @@ def _generate_ssh_keypair():
 
     private_key_pem = private_key.private_bytes(
         Encoding.PEM,
-        PrivateFormat.PKCS8,
+        PrivateFormat.OpenSSH,
         NoEncryption()
     )
 
