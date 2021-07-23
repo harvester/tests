@@ -4,6 +4,7 @@ pytest-json-report
 jinja2
 bcrypt
 requests
+paramiko
 pycryptodome
 sshpubkeys
 pyyaml

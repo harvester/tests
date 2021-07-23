@@ -53,8 +53,11 @@ chpasswd:
   list: |
     root:linux
   expire: false
-ssh_authorized_keys:
-  - %s
+ssh_pwauth: true
+users:
+  - name: root
+    ssh_authorized_keys:
+      - %s
 package_update: true
 packages:
   - qemu-guest-agent
@@ -74,6 +77,26 @@ def basic_vm(request, admin_session, image, keypair,
     vm_json = utils.create_vm(request, admin_session, image,
                               harvester_api_endpoints,
                               keypair=keypair,
+                              network_data=network_data,
+                              user_data=user_data_with_guest_agent)
+    yield vm_json
+    if not request.config.getoption('--do-not-cleanup'):
+        resp = admin_session.get(
+            harvester_api_endpoints.get_vm % (vm_json['metadata']['name']))
+        if resp.status_code != 404:
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
+
+
+@pytest.fixture(scope='class')
+def vm_with_one_vlan(request, admin_session, image, keypair,
+                     user_data_with_guest_agent, network_data,
+                     harvester_api_endpoints, network):
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              keypair=keypair,
+                              template='vm_with_one_vlan',
+                              network=network,
                               network_data=network_data,
                               user_data=user_data_with_guest_agent)
     yield vm_json

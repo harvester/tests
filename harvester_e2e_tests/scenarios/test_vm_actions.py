@@ -17,9 +17,7 @@
 
 from harvester_e2e_tests import utils
 import polling2
-import pytest
 import time
-import uuid
 import json
 
 pytest_plugins = [
@@ -184,57 +182,6 @@ class TestVMActions:
         # restart the VM instance for the changes to take effect
         utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
                          vm_name, request.config.getoption('--wait-timeout'))
-
-    @pytest.mark.public_network
-    def test_update_vm_network(self, request, admin_session,
-                               harvester_api_endpoints, basic_vm, network):
-        vm_name = basic_vm['metadata']['name']
-        previous_uid = basic_vm['metadata']['uid']
-        # add a new network to the VM
-        network_name = 'nic-%s' % uuid.uuid4().hex[:5]
-        new_network = {
-            'name': network_name,
-            'multus': {'networkName': network['metadata']['name']}
-        }
-        new_network_interface = {
-            'bridge': {},
-            'model': 'virtio',
-            'name': network_name
-        }
-        spec = basic_vm['spec']['template']['spec']
-        if 'interfaces' not in spec['domain']['devices']:
-            spec['domain']['devices']['interfaces'] = []
-        spec['domain']['devices']['interfaces'].append(new_network_interface)
-        if 'networks' not in spec:
-            spec['networks'] = []
-        spec['networks'].append(new_network)
-        resp = utils.poll_for_update_resource(
-            request, admin_session,
-            harvester_api_endpoints.update_vm % (vm_name),
-            basic_vm,
-            harvester_api_endpoints.get_vm % (vm_name))
-        updated_vm_data = resp.json()
-        # restart the VM instance for the changes to take effect
-        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
-                         vm_name, request.config.getoption('--wait-timeout'))
-        # check to make sure the network device is in the updated spec
-        found = False
-        updated_spec = updated_vm_data['spec']['template']['spec']
-        for i in updated_spec['domain']['devices']['interfaces']:
-            if (network_name == i['name'] and i['model'] == 'virtio' and
-                    'bridge' in i):
-                found = True
-                break
-        assert found, 'Failed to add new network device to VM %s' % (vm_name)
-        # check to make sure network is in the updated spec
-        found = False
-        for n in updated_spec['networks']:
-            if network_name == n['name']:
-                found = True
-                break
-        assert found, 'Failed to add new network to VM %s' % (vm_name)
-        # TODO(gyee): 1) make sure the new interface got an IP; and
-        # 2) make sure we can ping that IP if it has a port in a public router
 
 
 class TestVMVolumes:

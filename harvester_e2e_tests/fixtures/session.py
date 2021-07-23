@@ -35,10 +35,14 @@ def _set_admin_password(harvester_api_endpoints, password):
 
     def _wait_for_api():
         nonlocal resp
-        resp = requests.get(
-            harvester_api_endpoints.first_login_check, verify=False)
-        if resp.status_code == 200:
-            return True
+        try:
+            resp = requests.get(
+                harvester_api_endpoints.first_login_check, verify=False)
+            if resp.status_code == 200:
+                return True
+        except Exception:
+            # we should ignore network connectivity errors and retry
+            pass
         return False
 
     success = polling2.poll(
