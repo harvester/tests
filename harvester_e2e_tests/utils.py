@@ -544,9 +544,8 @@ def lookup_host_not_harvester_endpoint(request, admin_session,
 
 
 def reboot_node(request, admin_session, harvester_api_endpoints, node_name):
-    power_on_script = _get_node_script_path(request, 'reboot.sh')
-#    result = subprocess.run([power_on_script, node_name], capture_output=True)
-    result = subprocess.run([power_on_script, node_name])
+    reboot_script = _get_node_script_path(request, 'reboot.sh')
+    result = subprocess.run([reboot_script, node_name], capture_output=True)
     assert result.returncode == 0, (
         'Failed to reboot node %s: rc: %s, stdout: %s, stderr: %s' % (
             node_name, result.returncode, result.stderr, result.stdout))

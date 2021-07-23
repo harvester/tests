@@ -181,3 +181,26 @@ def test_host_reboot_maintenance_mode(request, admin_session,
     assert "unschedulable" not in ret_data["spec"]
     assert ("harvesterhci.io/maintain-status" not in
             ret_data["metadata"]["annotations"])
+
+
+@pytest.mark.host_management
+def test_host_poweroff_state(request, admin_session,
+                             harvester_api_endpoints):
+    host_of = utils.lookup_host_not_harvester_endpoint(request, admin_session,
+                                                       harvester_api_endpoints)
+    # Power off Node
+    node_name = host_of['id']
+    utils.power_off_node(request, admin_session, harvester_api_endpoints,
+                         node_name)
+    resp = admin_session.get(
+        harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+    ret_data = resp.json()
+    assert ret_data["metadata"]["state"]["name"] == "in-progress"
+    # power On Node
+    utils.power_on_node(request, admin_session, harvester_api_endpoints,
+                        node_name)
+    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+    ret_data = resp.json()
+    assert ret_data["metadata"]["state"]["name"] == "active"
