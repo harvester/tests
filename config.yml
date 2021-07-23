@@ -1,8 +1,29 @@
+# Harvester API endpoint
+endpoint: 'https://localhost:30443'
+
+#Harvester username
+username: 'admin'
+
+#Harvester password
+password: 'password'
+
+#Do not cleanup the test artifacts
+do-not-cleanup: False
+
 # harvester_cluster_nodes
-#
-# Supported values are:
-#
-#  * 1: single node, no HA
-#  * 3: 3-node cluster, HA
-#
 harvester_cluster_nodes: 1
+
+# VLAN ID, will invoke the tests depended on external networking if not set to -1.
+vlan-id: -1
+
+# Physical NIC for VLAN. Default is "eth0"
+vlan-nic: 'eth0'
+
+#Wait time for polling operations
+wait-timeout: 600
+
+#Rancher API endpoint
+rancher-endpoint: ~
+
+node-scripts-location: 'scripts/vagrant'
+
