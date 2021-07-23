@@ -36,7 +36,7 @@ def assert_ssh_into_vm(ip, timeout, keypair=None):
         try:
             # NOTE: for the default openSUSE Leap image, the root user
             # password is 'linux'
-            if keypair:
+            if keypair is not None:
                 private_key = RSAKey.from_private_key(
                     StringIO(keypair['spec']['privateKey']))
                 client.connect(ip, username='root', pkey=private_key)
@@ -101,7 +101,7 @@ class TestVMNetworking:
 
     def test_add_vlan_network_to_vm(self, request, admin_session,
                                     harvester_api_endpoints, basic_vm,
-                                    network):
+                                    network, keypair):
         vm_name = basic_vm['metadata']['name']
         previous_uid = basic_vm['metadata']['uid']
         timeout = request.config.getoption('--wait-timeout')
@@ -151,7 +151,7 @@ class TestVMNetworking:
         # now make sure we have network connectivity
         (vm_instance_json, public_ip) = get_vm_public_ip(
             admin_session, harvester_api_endpoints, updated_vm_data, timeout)
-        assert_ssh_into_vm(public_ip, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
     # NOTE: make sure to run this test case last as the vm_with_one_vlan
     # fixture has a class scope
