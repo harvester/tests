@@ -78,3 +78,20 @@ class TestHostDown:
         # power-on the node
         utils.power_on_node(request, admin_session, harvester_api_endpoints,
                             node_name)
+
+    @pytest.mark.host_management
+    def test_vm_after_host_reboot(self, request, admin_session,
+                                  harvester_api_endpoints, basic_vm):
+        # make sure the VM instance is successfully created
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, basic_vm)
+        node_name = vm_instance_json['status']['nodeName']
+        # Reboot VM
+        utils.reboot_node(request, admin_session, harvester_api_endpoints,
+                          node_name)
+        # VM restarted
+        vm_name = basic_vm['metadata']['name']
+        previous_uid = basic_vm['metadata']['uid']
+        utils.assert_vm_restarted(admin_session, harvester_api_endpoints,
+                                  previous_uid, vm_name,
+                                  request.config.getoption('--wait-timeout'))
