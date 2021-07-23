@@ -70,8 +70,8 @@ def _cleanup_network(admin_session, harvester_api_endpoints, network_id,
 @pytest.fixture(scope='session')
 def network(request, admin_session, harvester_api_endpoints, enable_vlan):
     vlan_id = request.config.getoption('--vlan-id')
-    # don't create network if VLAN is not specified
-    if not vlan_id:
+    # don't create network if VLAN is not correctly specified
+    if vlan_id == -1:
         return
 
     request_json = utils.get_json_object_from_template(

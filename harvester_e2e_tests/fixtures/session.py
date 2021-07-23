@@ -18,7 +18,6 @@
 import polling2
 import pytest
 import requests
-import yaml
 
 
 # FIXME(gyee): we need to set the admin password on the first login. Currently,
@@ -107,9 +106,4 @@ def admin_session(request, harvester_api_endpoints):
 @pytest.fixture(scope='session')
 def harvester_cluster_nodes(request):
     nodes = request.config.getoption('--harvester_cluster_nodes')
-    if nodes is None:
-        # option is not specified. Load it from config file instead
-        with open('config.yml') as f:
-            config_data = yaml.safe_load(f)
-            nodes = config_data['harvester_cluster_nodes']
     return nodes
