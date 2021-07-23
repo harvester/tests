@@ -193,3 +193,25 @@ class TestVMNetworking:
         assert subprocess.call(['ping', '-c', '3', public_ip]) != 0, (
             'Failed to remove network interface from VM %s. Public IP %s '
             'still accessible.' % (vm_name, public_ip))
+
+
+def test_two_vms_on_same_vlan(request, admin_session,
+                              harvester_api_endpoints, keypair,
+                              vms_with_same_vlan, network):
+    timeout = request.config.getoption('--wait-timeout')
+    network_name = network['metadata']['name']
+    for vm_json in vms_with_same_vlan:
+        # make sure the VM is on the same VLAN
+        networks = vm_json['spec']['template']['spec']['networks']
+        match_network = [n for n in networks if (n['name'] == 'nic-1')]
+        assert len(match_network) == 1, (
+            'Found multiple network interfaces with name "nic-1"')
+        assert 'multus' in match_network[0], (
+            'Expecting "multus" network interface.')
+        assert match_network[0]['multus']['networkName'] == network_name, (
+            'Expecting network name %s, got %s instead.' % (
+                network_name, match_network[0]['multus']['networkName']))
+        # now make sure it has connectivity
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_json, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
