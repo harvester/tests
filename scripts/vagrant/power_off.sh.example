@@ -2,19 +2,21 @@
 
 set -e
 
-USAGE="${0}: <hostname>
+USAGE="${0}: <hostname> <host IP>
 
 Where:
 
   <hostname>: host name of the Vagrant Harvester node
+  <host IP>: IP address of the Harvester node
 "
 
-if [ $# -ne 1 ] ; then
+if [ $# -ne 2 ] ; then
         echo "$USAGE"
         exit 1
 fi
 
 HOSTNAME=$1
+IP=$2
 
 pushd /home/foo/ipxe-examples/vagrant-pxe-harvester
 vagrant ssh-config $HOSTNAME

@@ -129,6 +129,23 @@ def vms_with_same_vlan(request, admin_session, image, keypair,
 
 
 @pytest.fixture(scope='class')
+def vms_with_vlan_as_default_network(request, admin_session, image, keypair,
+                                     user_data_with_guest_agent, network_data,
+                                     harvester_api_endpoints, network):
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              keypair=keypair,
+                              template='vm_with_vlan_as_default_network',
+                              network=network,
+                              network_data=network_data,
+                              user_data=user_data_with_guest_agent)
+    yield vm_json
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                        vm_json)
+
+
+@pytest.fixture(scope='class')
 def vm_with_volume(request, admin_session, image, volume, keypair,
                    harvester_api_endpoints):
     vm_json = utils.create_vm(request, admin_session, image,
