@@ -8,7 +8,7 @@
     "get_node": "{{ harvester_endpoint }}/v1/nodes/%s",
     "delete_node": "{{ harvester_endpoint }}/v1/nodes/%s",
     "get_node_metrics": "{{ harvester_endpoint }}/v1/metrics.k8s.io.nodes/%s",
-    "first_login_check": "{{ harvester_endpoint }}/v3/settings/first-login",
+    "first_login_check": "{{ harvester_endpoint }}/v1/management.cattle.io.setting/first-login",
     "local_auth": "{{ harvester_endpoint }}/v3-public/localProviders/local",
     "reset_password": "{{ harvester_endpoint }}/v3/users",
     "create_keypair": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/keypairs",

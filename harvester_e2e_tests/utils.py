@@ -477,9 +477,26 @@ def _get_node_script_path(request, script_name):
     return script
 
 
-def power_off_node(request, admin_session, harvester_api_endpoints, node_name):
+def _lookup_node_ip(admin_session, harvester_api_endpoints, node_name):
+    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
+    assert resp.status_code == 200, 'Failed to lookup host %s: %s' % (
+        node_name, resp.content)
+    node_json = resp.json()
+    for address in node_json['status']['addresses']:
+        if address['type'] == 'InternalIP':
+            return address['address']
+    assert False, 'Failed to lookup host IP: %s' % (
+        node_json['status']['addresses'])
+
+
+def power_off_node(request, admin_session, harvester_api_endpoints, node_name,
+                   node_ip=None):
     power_off_script = _get_node_script_path(request, 'power_off.sh')
-    result = subprocess.run([power_off_script, node_name], capture_output=True)
+    if node_ip is None:
+        node_ip = _lookup_node_ip(admin_session, harvester_api_endpoints,
+                                  node_name)
+    result = subprocess.run([power_off_script, node_name, node_ip],
+                            capture_output=True)
     assert result.returncode == 0, (
         'Failed to power-off node %s: rc: %s, stdout: %s, stderr: %s' % (
             node_name, result.returncode, result.stderr, result.stdout))
@@ -502,9 +519,14 @@ def power_off_node(request, admin_session, harvester_api_endpoints, node_name):
     assert success, 'Timed out while waiting for node to shutdown'
 
 
-def power_on_node(request, admin_session, harvester_api_endpoints, node_name):
+def power_on_node(request, admin_session, harvester_api_endpoints, node_name,
+                  node_ip=None):
     power_on_script = _get_node_script_path(request, 'power_on.sh')
-    result = subprocess.run([power_on_script, node_name], capture_output=True)
+    if node_ip is None:
+        node_ip = _lookup_node_ip(admin_session, harvester_api_endpoints,
+                                  node_name)
+    result = subprocess.run([power_on_script, node_name, node_ip],
+                            capture_output=True)
     assert result.returncode == 0, (
         'Failed to power-on node %s: rc: %s, stdout: %s, stderr: %s' % (
             node_name, result.returncode, result.stderr, result.stdout))
@@ -543,9 +565,14 @@ def lookup_host_not_harvester_endpoint(request, admin_session,
     return node_data
 
 
-def reboot_node(request, admin_session, harvester_api_endpoints, node_name):
+def reboot_node(request, admin_session, harvester_api_endpoints, node_name,
+                node_ip=None):
     reboot_script = _get_node_script_path(request, 'reboot.sh')
-    result = subprocess.run([reboot_script, node_name], capture_output=True)
+    if node_ip is None:
+        node_ip = _lookup_node_ip(admin_session, harvester_api_endpoints,
+                                  node_name)
+    result = subprocess.run([reboot_script, node_name, node_ip],
+                            capture_output=True)
     assert result.returncode == 0, (
         'Failed to reboot node %s: rc: %s, stdout: %s, stderr: %s' % (
             node_name, result.returncode, result.stderr, result.stdout))
