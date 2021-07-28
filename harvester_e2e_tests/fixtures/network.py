@@ -91,3 +91,33 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
         _cleanup_network(admin_session, harvester_api_endpoints,
                          network_data['id'],
                          request.config.getoption('--wait-timeout'))
+
+
+# This fixture is only called by test_create_edit_network
+# in apis/test_networks.py.
+# vlan_id is set to vlan_id + 1
+@pytest.fixture(scope='class')
+def network_for_update_test(request, admin_session,
+                            harvester_api_endpoints, enable_vlan):
+    vlan_id = request.config.getoption('--vlan-id')
+    # don't create network if VLAN is not correctly specified
+    if vlan_id == -1:
+        return
+
+    request_json = utils.get_json_object_from_template(
+        'basic_network',
+        vlan=vlan_id + 1
+    )
+    resp = admin_session.post(harvester_api_endpoints.create_network,
+                              json=request_json)
+    assert resp.status_code == 201, 'Unable to create a network: %s' % (
+        resp.content)
+    network_data = resp.json()
+    utils.poll_for_resource_ready(request, admin_session,
+                                  network_data['links']['view'])
+    yield network_data
+
+    if not request.config.getoption('--do-not-cleanup'):
+        _cleanup_network(admin_session, harvester_api_endpoints,
+                         network_data['id'],
+                         request.config.getoption('--wait-timeout'))

@@ -5,7 +5,7 @@ endpoint: 'https://localhost:30443'
 username: 'admin'
 
 #Harvester password
-password: 'password'
+password: 'admin'
 
 #Do not cleanup the test artifacts
 do-not-cleanup: False

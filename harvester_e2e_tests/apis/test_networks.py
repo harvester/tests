@@ -17,6 +17,7 @@
 
 from harvester_e2e_tests import utils
 import json
+import pytest
 
 
 pytest_plugins = [
@@ -52,25 +53,27 @@ def test_create_with_vid_4095(admin_session, harvester_api_endpoints):
     assert 'and <=4094' in response_data['message']
 
 
+@pytest.mark.public_network
 def test_create_edit_network(request, admin_session, harvester_api_endpoints,
-                             network):
+                             network_for_update_test):
     request_json = utils.get_json_object_from_template(
         'basic_network'
     )
-    conf_data = json.loads(network['spec']['config'])
-    if conf_data['vlan'] > 1:
-        updated_vlan = conf_data['vlan'] - 1
-    else:
-        updated_vlan = conf_data['vlan'] + 1
+    conf_data = json.loads(network_for_update_test['spec']['config'])
+    # network_for_update_test fixture creates vlan with vlan_id +1.
+    # Here update with -1.
+    updated_vlan = conf_data['vlan'] - 1
     conf_data['vlan'] = updated_vlan
     request_json['spec']['config'] = json.dumps(conf_data)
-    request_json['metadata']['name'] = network['metadata']['name']
-    request_json['metadata']['namespace'] = network['metadata']['namespace']
+    request_json['metadata']['name'] = \
+        network_for_update_test['metadata']['name']
+    request_json['metadata']['namespace'] = \
+        network_for_update_test['metadata']['namespace']
     resp = utils.poll_for_update_resource(
         request, admin_session,
-        network['links']['update'],
+        network_for_update_test['links']['update'],
         request_json,
-        network['links']['view'])
+        network_for_update_test['links']['view'])
     updated_network_data = resp.json()
     updated_config = json.loads(updated_network_data['spec']['config'])
     assert updated_config['vlan'] == updated_vlan, 'Failed to update vlan'
