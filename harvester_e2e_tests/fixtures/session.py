@@ -15,47 +15,11 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import polling2
 import pytest
 import requests
 
 
-# FIXME(gyee): we need to set the admin password on the first login. Currently,
-# this is done by using K3OS internal mechanism which is not officially
-# supported. This is merely a temporary workaround. This issue is being tracked
-# here https://github.com/harvester/harvester/issues/893. We need to update
-# this code once we have an officially supported public API to bootstrap
-# the local admin account.
-#
-# The workaround is based off
-# https://github.com/harvester/harvester/wiki/Authn-Initialization-Automation
 def _set_admin_password(harvester_api_endpoints, password):
-    # check to see if this is first login
-    resp = None
-
-    def _wait_for_api():
-        nonlocal resp
-        try:
-            resp = requests.get(
-                harvester_api_endpoints.first_login_check, verify=False)
-            if resp.status_code == 200:
-                return True
-        except Exception:
-            # we should ignore network connectivity errors and retry
-            pass
-        return False
-
-    success = polling2.poll(
-        _wait_for_api,
-        step=2,
-        timeout=120)
-    assert success, 'Timed out while trying lookup first login status: %s' % (
-        resp.content)
-    if resp.json()['value'].lower() == 'false':
-        # not first login, no need to set admin password
-        return
-
-    # need to set admin password
     # first obtain the token using the default admin password
     login_data = {'username': 'admin', 'password': 'admin',
                   'responseType': 'json'}
@@ -71,11 +35,11 @@ def _set_admin_password(harvester_api_endpoints, password):
 
     # now reset the admin password
     bearer_token = 'Bearer ' + resp.json()['token']
+    headers = {'authorization': bearer_token}
 
     reset_password_data = {'currentPassword': 'admin',
                            'newPassword': password}
     params = {'action': 'changepassword'}
-    headers = {'authorization': bearer_token}
     resp = requests.post(
         harvester_api_endpoints.reset_password, verify=False, headers=headers,
         params=params, json=reset_password_data)
