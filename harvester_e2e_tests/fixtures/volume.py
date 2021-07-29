@@ -57,13 +57,44 @@ def volume_image_form(request, kubevirt_api_version, admin_session,
     imageid = "/".join([image['metadata']['namespace'],
                        image['metadata']['name']])
     request_json['metadata']['annotations'][
-            'harvesterhci.io/imageId'] = imageid
+        'harvesterhci.io/imageId'] = imageid
     resp = admin_session.post(harvester_api_endpoints.create_volume,
                               json=request_json)
     assert resp.status_code == 201, 'Unable to create a blank volume'
     volume_data = resp.json()
     assert volume_data['metadata']['annotations'].get(
-            'harvesterhci.io/imageId') == imageid
+        'harvesterhci.io/imageId') == imageid
+    yield volume_data
+    if not request.config.getoption('--do-not-cleanup'):
+        resp = admin_session.delete(
+            harvester_api_endpoints.delete_volume % (
+                volume_data['metadata']['name']))
+        assert resp.status_code == 200, 'Unable to cleanup volume'
+
+
+@pytest.fixture(scope='class')
+def volume_with_image(request, kubevirt_api_version, admin_session,
+                      harvester_api_endpoints, image):
+    request_json = utils.get_json_object_from_template(
+        'basic_volume',
+        size=8,
+        description='Test volume using Image & Label'
+    )
+    imageid = "/".join([image['metadata']['namespace'],
+                       image['metadata']['name']])
+    request_json['metadata']['annotations'][
+        'harvesterhci.io/imageId'] = imageid
+    request_json['metadata']['labels'] = {
+        'test.harvesterhci.io': 'for-test'
+    }
+    resp = admin_session.post(harvester_api_endpoints.create_volume,
+                              json=request_json)
+    assert resp.status_code == 201, 'Unable to create a blank volume'
+    volume_data = resp.json()
+    assert volume_data['metadata']['annotations'].get(
+        'harvesterhci.io/imageId') == imageid
+    assert volume_data['metadata']['labels'].get(
+        'test.harvesterhci.io') == 'for-test'
     yield volume_data
     if not request.config.getoption('--do-not-cleanup'):
         resp = admin_session.delete(

@@ -20,6 +20,7 @@
     "get_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages/%s",
     "update_image": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachineimages/%s",
     "create_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes",
+    "update_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes/%s",
     "get_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes/%s",
     "delete_volume": "{{ harvester_endpoint }}/apis/{{ cdi_api_version }}/namespaces/{{ api_namespace | default('default') }}/datavolumes/%s",
     "create_vm": "{{ harvester_endpoint }}/apis/{{ kubevirt_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachines",

@@ -71,7 +71,8 @@ def test_create_volume_by_yaml(admin_session, harvester_api_endpoints):
         'Failed to create volume with YAML request: %s' % (resp.content))
     view_endpoint = harvester_api_endpoints.get_volume % (
         request_json['metadata']['name'])
-    assert validate_blank_volumes(admin_session, view_endpoint)
+    (status, vol_data) = validate_blank_volumes(admin_session, view_endpoint)
+    assert status
     resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
         request_json['metadata']['name']))
     # FIXME(gyee): we need to figure out why the API can arbitarily return
@@ -94,13 +95,77 @@ def test_create_volume_using_image_by_yaml(admin_session,
         'Failed to create volume with YAML request: %s' % (resp.content))
     view_endpoint = harvester_api_endpoints.get_volume % (
         request_json['metadata']['name'])
-    assert validate_blank_volumes(admin_session, view_endpoint)
+    (status, vol_data) = validate_blank_volumes(admin_session, view_endpoint)
+    assert status
     resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
         request_json['metadata']['name']))
     # FIXME(gyee): we need to figure out why the API can arbitarily return
     # 200 or 204. It should consistently returning one.
     assert resp.status_code in [200, 204], 'Failed to delete volume: %s' % (
         resp.content)
+
+
+def test_create_volume_with_label(admin_session, harvester_api_endpoints):
+    request_json = utils.get_json_object_from_template('basic_volume')
+    request_json['metadata']['labels'] = {
+        'test.harvesterhci.io': 'for-test'
+    }
+    resp = admin_session.post(harvester_api_endpoints.create_volume,
+                              json=request_json)
+    assert resp.status_code == 201, (
+        'Failed to create volume with labels: %s' % (resp.content))
+    view_endpoint = harvester_api_endpoints.get_volume % (
+        request_json['metadata']['name'])
+    (status, vol_data) = validate_blank_volumes(admin_session, view_endpoint)
+    assert status
+    assert vol_data['metadata']['labels'].get(
+        'test.harvesterhci.io') == 'for-test'
+    resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
+        request_json['metadata']['name']))
+    # FIXME(gyee): we need to figure out why the API can arbitarily return
+    # 200 or 204. It should consistently returning one.
+    assert resp.status_code in [200, 204], 'Failed to delete volume: %s' % (
+        resp.content)
+
+
+def test_create_volume_with_image_label(volume_with_image):
+    # NOTE: if the volume is successfully create that means the test is good
+    pass
+
+
+def test_update_vol(request, admin_session,
+                    harvester_api_endpoints, volume):
+    volume['metadata']['labels'] = {
+        'test.harvesterhci.io': 'for-test-update'
+    }
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_volume % (
+            volume['metadata']['name']),
+        volume,
+        harvester_api_endpoints.get_volume % (
+            volume['metadata']['name']))
+    updated_vol_data = resp.json()
+    assert updated_vol_data['metadata']['labels'].get(
+        'test.harvesterhci.io') == 'for-test-update'
+
+
+def test_update_vol_using_yaml(request, admin_session,
+                               harvester_api_endpoints, volume):
+    volume['metadata']['labels'] = {
+        'test.harvesterhci.io': 'for-test-update'
+    }
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_volume % (
+            volume['metadata']['name']),
+        volume,
+        harvester_api_endpoints.get_volume % (
+            volume['metadata']['name']),
+        use_yaml=True)
+    updated_vol_data = resp.json()
+    assert updated_vol_data['metadata']['labels'].get(
+        'test.harvesterhci.io') == 'for-test-update'
 
 
 def validate_blank_volumes(admin_session, get_api_link):
@@ -111,5 +176,5 @@ def validate_blank_volumes(admin_session, get_api_link):
         ret_data = resp.json()
         sleep(5)
         if 'status' in ret_data and ret_data['status']['phase'] == 'Succeeded':
-            return True
-    return False
+            return (True, ret_data)
+    return (False, ret_data)
