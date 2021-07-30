@@ -19,40 +19,10 @@ import pytest
 import requests
 
 
-def _set_admin_password(harvester_api_endpoints, password):
-    # first obtain the token using the default admin password
-    login_data = {'username': 'admin', 'password': 'admin',
-                  'responseType': 'json'}
-    params = {'action': 'login'}
-    resp = requests.post(
-        harvester_api_endpoints.local_auth, verify=False,
-        params=params, json=login_data)
-    # FIXME(gyee): it seems like Harvester API is returning a different status
-    # code in different releases even though the API version hasn't changed.
-    # For now, lets account for both 200 and 201 as valid error codes.
-    assert resp.status_code in [200, 201], (
-        'Unable to authenticate admin with default password')
-
-    # now reset the admin password
-    bearer_token = 'Bearer ' + resp.json()['token']
-    headers = {'authorization': bearer_token}
-
-    reset_password_data = {'currentPassword': 'admin',
-                           'newPassword': password}
-    params = {'action': 'changepassword'}
-    resp = requests.post(
-        harvester_api_endpoints.reset_password, verify=False, headers=headers,
-        params=params, json=reset_password_data)
-    assert resp.status_code == 200, 'Unable to reset admin password'
-
-
 @pytest.fixture(scope='session')
 def admin_session(request, harvester_api_endpoints):
     username = request.config.getoption('--username')
     password = request.config.getoption('--password')
-
-    # set admin password if needed
-    _set_admin_password(harvester_api_endpoints, password)
 
     # authenticate admin
     login_data = {'username': username, 'password': password}
@@ -62,6 +32,8 @@ def admin_session(request, harvester_api_endpoints):
     # NOTE(gyee): ignore SSL certificate validation for now
     resp = s.post(harvester_api_endpoints.local_auth, verify=False,
                   params=params, json=login_data)
+    assert resp.status_code == 201, 'Failed to authenticate admin user: %s' % (
+        resp.content)
     auth_token = 'Bearer ' + resp.json()['token']
     s.headers.update({'Authorization': auth_token})
     return s
