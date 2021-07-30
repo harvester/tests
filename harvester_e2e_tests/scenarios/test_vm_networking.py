@@ -27,7 +27,7 @@ pytest_plugins = [
 ]
 
 
-def assert_ssh_into_vm(ip, timeout, keypair=None):
+def wait_for_ssh_client(ip, timeout, keypair=None):
     client = SSHClient()
     # automatically add host since we only care about connectivity
     client.set_missing_host_key_policy(AutoAddPolicy)
@@ -54,6 +54,11 @@ def assert_ssh_into_vm(ip, timeout, keypair=None):
         step=5,
         timeout=timeout)
     assert ready, 'Timed out while waiting for SSH server to be ready'
+    return client
+
+
+def assert_ssh_into_vm(ip, timeout, keypair=None):
+    client = wait_for_ssh_client(ip, timeout, keypair)
     # execute a simple command
     stdin, stdout, stderr = client.exec_command('ls')
     client.close()
@@ -98,6 +103,31 @@ class TestVMNetworking:
         (vm_instance_json, public_ip) = get_vm_public_ip(
             admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
         assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+
+    def test_vlan_ip_pingable_after_reboot(self, request, admin_session,
+                                           harvester_api_endpoints, keypair,
+                                           vm_with_one_vlan):
+        """ Network Negative Test Case #1: Test VLAN network after reboot
+
+        In this scenario, we want to make sure the VLAN IP of a VM is still
+        pingable after the reboot.
+        """
+        timeout = request.config.getoption('--wait-timeout')
+        vm_name = vm_with_one_vlan['metadata']['name']
+        previous_uid = vm_with_one_vlan['metadata']['uid']
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        # make sure the public_ip is pingable
+        assert subprocess.call(['ping', '-c', '3', public_ip]) == 0, (
+            'Failed to ping VM %s public IP %s' % (vm_name, public_ip))
+        # reboot the instance
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, timeout)
+        # make sure the public_ip is pingable
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        assert subprocess.call(['ping', '-c', '3', public_ip]) == 0, (
+            'Failed to ping VM %s public IP %s' % (vm_name, public_ip))
 
     def test_add_vlan_network_to_vm(self, request, admin_session,
                                     harvester_api_endpoints, basic_vm,
@@ -195,6 +225,7 @@ class TestVMNetworking:
             'still accessible.' % (vm_name, public_ip))
 
 
+@pytest.mark.public_network
 def test_two_vms_on_same_vlan(request, admin_session,
                               harvester_api_endpoints, keypair,
                               vms_with_same_vlan, network):
@@ -217,6 +248,48 @@ def test_two_vms_on_same_vlan(request, admin_session,
         assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
 
+@pytest.mark.public_network
+def test_management_ip_pingable_after_reboot(request, admin_session,
+                                             harvester_api_endpoints, keypair,
+                                             vms_with_same_vlan):
+    """ Network Negative Test Case #2: Test management network after reboot
+
+    In this scenario, we want to make sure the management IP of a VM is still
+    pingable from another VM on the same subnet after the reboot.
+    """
+    timeout = request.config.getoption('--wait-timeout')
+    # get the public IP of the first VM so we can SSH into it and ping the
+    # second VM's management IP as the management IP is on a private subnet
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints, vms_with_same_vlan[0], timeout)
+    # wait for the second VM to fully boot up as well
+    (second_vm_instance, second_public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints, vms_with_same_vlan[1], timeout)
+    # get the management IP of the second VM
+    # NOTE: the first interface is the management IP
+    ip = second_vm_instance['status']['interfaces'][0]['ipAddress']
+    client = wait_for_ssh_client(public_ip, timeout, keypair=keypair)
+    # make sure the management IP of the second VM is pingable from the
+    # first VM
+    stdin, stdout, stderr = client.exec_command('ping -c 3 %s' % (ip))
+    client.close()
+    err = stderr.read()
+    assert len(err) == 0, ('Unable to ping %s: %s' % (ip, err))
+    # reboot the second VM
+    vm_name = vms_with_same_vlan[1]['metadata']['name']
+    previous_uid = vms_with_same_vlan[1]['metadata']['uid']
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, timeout)
+    # make sure the management IP of the second VM still pingable from
+    # the first VM after reboot
+    client = wait_for_ssh_client(public_ip, timeout, keypair=keypair)
+    stdin, stdout, stderr = client.exec_command('ping -c 3 %s' % (ip))
+    client.close()
+    err = stderr.read()
+    assert len(err) == 0, ('Unable to ping %s after reboot: %s' % (ip, err))
+
+
+@pytest.mark.public_network
 def test_update_vm_management_network_to_vlan(request, admin_session,
                                               harvester_api_endpoints, keypair,
                                               basic_vm, network):
@@ -261,6 +334,7 @@ def test_update_vm_management_network_to_vlan(request, admin_session,
     assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
 
+@pytest.mark.public_network
 def test_update_vm_vlan_network_to_management(request, admin_session,
                                               harvester_api_endpoints, keypair,
                                               vms_with_vlan_as_default_network,
