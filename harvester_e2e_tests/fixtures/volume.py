@@ -29,15 +29,9 @@ pytest_plugins = [
 @pytest.fixture(scope='class')
 def volume(request, kubevirt_api_version, admin_session,
            harvester_api_endpoints):
-    request_json = utils.get_json_object_from_template(
-        'basic_volume',
-        size=8,
-        description='Test volume'
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_volume,
-                              json=request_json)
-    assert resp.status_code == 201, 'Unable to create a blank volume'
-    volume_data = resp.json()
+    volume_data = utils.create_volume(
+            request, admin_session, harvester_api_endpoints,
+            description='Test volume', size=8)
     yield volume_data
     if not request.config.getoption('--do-not-cleanup'):
         resp = admin_session.delete(
@@ -49,19 +43,12 @@ def volume(request, kubevirt_api_version, admin_session,
 @pytest.fixture(scope='class')
 def volume_image_form(request, kubevirt_api_version, admin_session,
                       harvester_api_endpoints, image):
-    request_json = utils.get_json_object_from_template(
-        'basic_volume',
-        size=8,
-        description='Test volume using Image Form'
-    )
     imageid = "/".join([image['metadata']['namespace'],
                        image['metadata']['name']])
-    request_json['metadata']['annotations'][
-        'harvesterhci.io/imageId'] = imageid
-    resp = admin_session.post(harvester_api_endpoints.create_volume,
-                              json=request_json)
-    assert resp.status_code == 201, 'Unable to create a blank volume'
-    volume_data = resp.json()
+    volume_data = utils.create_volume(
+            request, admin_session, harvester_api_endpoints,
+            description='Test volume using Image Form',
+            size=8, image_id=imageid)
     assert volume_data['metadata']['annotations'].get(
         'harvesterhci.io/imageId') == imageid
     yield volume_data
@@ -75,22 +62,12 @@ def volume_image_form(request, kubevirt_api_version, admin_session,
 @pytest.fixture(scope='class')
 def volume_with_image(request, kubevirt_api_version, admin_session,
                       harvester_api_endpoints, image):
-    request_json = utils.get_json_object_from_template(
-        'basic_volume',
-        size=8,
-        description='Test volume using Image & Label'
-    )
     imageid = "/".join([image['metadata']['namespace'],
                        image['metadata']['name']])
-    request_json['metadata']['annotations'][
-        'harvesterhci.io/imageId'] = imageid
-    request_json['metadata']['labels'] = {
-        'test.harvesterhci.io': 'for-test'
-    }
-    resp = admin_session.post(harvester_api_endpoints.create_volume,
-                              json=request_json)
-    assert resp.status_code == 201, 'Unable to create a blank volume'
-    volume_data = resp.json()
+    volume_data = utils.create_volume(
+            request, admin_session, harvester_api_endpoints,
+            description='Test volume using Image & Label',
+            size=8, image_id=imageid, label='for-test')
     assert volume_data['metadata']['annotations'].get(
         'harvesterhci.io/imageId') == imageid
     assert volume_data['metadata']['labels'].get(

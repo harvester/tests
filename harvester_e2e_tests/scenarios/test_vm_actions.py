@@ -18,7 +18,6 @@
 from harvester_e2e_tests import utils
 import polling2
 import time
-import json
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.keypair',
@@ -190,32 +189,23 @@ class TestVMVolumes:
                                             harvester_api_endpoints,
                                             vm_with_volume):
         # make sure the VM instance is successfully created
-        utils.lookup_vm_instance(
+        utils.assert_volume_in_use(
             admin_session, harvester_api_endpoints, vm_with_volume)
-        # make sure it's data volumes are in-use
-        volumes = vm_with_volume['spec']['template']['spec']['volumes']
-        for volume in volumes:
-            resp = admin_session.get(harvester_api_endpoints.get_volume % (
-                volume['dataVolume']['name']))
-            assert resp.status_code == 200, (
-                'Failed to lookup volume %s: %s' % (
-                    volume['dataVolume']['name'], resp.content))
-            volume_json = resp.json()
-            owned_by = json.loads(
-                volume_json['metadata']['annotations'].get(
-                    'harvesterhci.io/owned-by'))
-            expected_owner = '%s/%s' % (
-                vm_with_volume['metadata']['namespace'],
-                vm_with_volume['metadata']['name'])
-            # make sure VM is one of the owners
-            found = False
-            for owner in owned_by:
-                if (owner['schema'] == 'kubevirt.io.virtualmachine' and
-                        expected_owner in owner['refs']):
-                    found = True
-                    break
-            assert found, ('Expecting %s to be in volume %s owners list' % (
-                expected_owner, volume['dataVolume']['name']))
+
+    def test_create_vm_with_two_external_volume(self, admin_session,
+                                                harvester_api_endpoints,
+                                                vm_with_two_disks):
+        # make sure the VM instance is successfully created
+        utils.assert_volume_in_use(
+            admin_session, harvester_api_endpoints, vm_with_two_disks)
+
+    def test_create_vm_with_cdrom_external_vol(self, admin_session,
+                                               harvester_api_endpoints,
+                                               vm_with_disk_cdrom):
+        # make sure the VM instance is successfully created
+        utils.assert_volume_in_use(
+            admin_session, harvester_api_endpoints, vm_with_disk_cdrom
+        )
 
     def test_delete_volume_in_use(self, request, admin_session,
                                   harvester_api_endpoints, vm_with_volume):

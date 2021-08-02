@@ -154,3 +154,41 @@ def vm_with_volume(request, admin_session, image, volume, keypair,
                               volume=volume,
                               keypair=keypair)
     return vm_json
+
+
+@pytest.fixture(scope='class')
+def vm_with_two_disks(request, admin_session, image, keypair,
+                      harvester_api_endpoints):
+
+    volume1 = utils.create_volume(
+        request, admin_session, harvester_api_endpoints,
+        description='Test volume', size=8)
+    volume2 = utils.create_volume(
+        request, admin_session, harvester_api_endpoints,
+        description='Test volume 2nd Disk', size=8)
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              template='vm_with_two_disks',
+                              volume=volume1,
+                              volume2=volume2,
+                              keypair=keypair)
+    return vm_json
+
+
+@pytest.fixture(scope='class')
+def vm_with_disk_cdrom(request, admin_session, image, keypair,
+                       harvester_api_endpoints):
+
+    cdromvol = utils.create_volume(
+        request, admin_session, harvester_api_endpoints,
+        description='Test volume', size=8)
+    volume2 = utils.create_volume(
+        request, admin_session, harvester_api_endpoints,
+        description='Test volume 2nd Disk', size=8)
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              template='vm_with_disk_cdrom',
+                              volume=cdromvol,
+                              volume2=volume2,
+                              keypair=keypair)
+    return vm_json

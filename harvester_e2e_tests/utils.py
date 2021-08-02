@@ -336,14 +336,17 @@ def create_image(request, admin_session, harvester_api_endpoints, url,
 def create_vm(request, admin_session, image, harvester_api_endpoints,
               template='basic_vm', keypair=None, volume=None, network=None,
               cpu=1, disk_size_gb=10, memory_gb=1, network_data=None,
-              user_data=None, running=True):
+              user_data=None, running=True, volume2=None):
     volume_name = None
     ssh_public_key = None
     network_name = None
+    volume_disk_two = None
     if network:
         network_name = network['metadata']['name']
     if volume:
         volume_name = volume['metadata']['name']
+    if volume2:
+        volume_disk_two = volume2['metadata']['name']
     if keypair:
         ssh_public_key = keypair['spec']['publicKey']
     request_json = get_json_object_from_template(
@@ -352,6 +355,7 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         image_name=image['metadata']['name'],
         image_storage_class=image['status']['storageClassName'],
         volume_name=volume_name,
+        volume_disk_two=volume_disk_two,
         network_name=network_name,
         disk_size_gb=disk_size_gb,
         cpu=cpu,
@@ -626,3 +630,55 @@ def poweroff_host_maintenance_mode(request, admin_session,
     ret_data = resp.json()
     assert "NotReady,SchedulingDisabled" in ret_data["metadata"]["fields"]
     return host_poweroff
+
+
+def create_volume(request, admin_session, harvester_api_endpoints, size,
+                  description=None, image_id=None, label=None):
+    request_json = get_json_object_from_template(
+        'basic_volume',
+        size=size,
+        description=description
+    )
+    if image_id:
+        request_json['metadata']['annotations'][
+            'harvesterhci.io/imageId'] = image_id
+    if label:
+        request_json['metadata']['labels'] = {
+            'test.harvesterhci.io': label
+        }
+
+    resp = admin_session.post(harvester_api_endpoints.create_volume,
+                              json=request_json)
+    assert resp.status_code == 201, 'Unable to create a blank volume'
+    volume_data = resp.json()
+    return volume_data
+
+
+def assert_volume_in_use(admin_session, harvester_api_endpoints,
+                         vm_json):
+    lookup_vm_instance(
+        admin_session, harvester_api_endpoints, vm_json)
+    # make sure it's data volumes are in-use
+    volumes = vm_json['spec']['template']['spec']['volumes']
+    for volume in volumes:
+        resp = admin_session.get(harvester_api_endpoints.get_volume % (
+            volume['dataVolume']['name']))
+        assert resp.status_code == 200, (
+            'Failed to lookup volume %s: %s' % (
+                volume['dataVolume']['name'], resp.content))
+        volume_json = resp.json()
+        owned_by = json.loads(
+            volume_json['metadata']['annotations'].get(
+                'harvesterhci.io/owned-by'))
+        expected_owner = '%s/%s' % (
+            vm_json['metadata']['namespace'],
+            vm_json['metadata']['name'])
+        # make sure VM is one of the owners
+        found = False
+        for owner in owned_by:
+            if (owner['schema'] == 'kubevirt.io.virtualmachine' and
+                    expected_owner in owner['refs']):
+                found = True
+                break
+        assert found, ('Expecting %s to be in volume %s owners list' % (
+            expected_owner, volume['dataVolume']['name']))
