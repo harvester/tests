@@ -87,15 +87,79 @@ def test_create_multiple_vms(admin_session, image, multiple_vms,
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
 
-# FIXME(gyee): skipping this test due to
-# https://github.com/harvester/harvester/issues/174. Will need to re-enable it
-# once the bug is addressed.
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/174')
 def test_create_vm_overcommit_cpu_and_memory_failed(
         request, admin_session, image, keypair, harvester_api_endpoints):
-    # expect failure to create VM for CPU and memory overcommit
-    utils.create_vm(request, admin_session, image, harvester_api_endpoints,
-                    keypair=keypair, cpu=10000, memory_gb=10000)
+    # create the VM
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              keypair=keypair, cpu=10000, memory_gb=10000,
+                              running=False)
+    vm_name = vm_json['metadata']['name']
+    try:
+        # now try to start the instance
+        resp = admin_session.post(harvester_api_endpoints.start_vm % (vm_name))
+        assert resp.status_code == 204, 'Failed to start VM instance %s' % (
+            vm_name)
+        # expect the VM to be unschedulable
+        utils.assert_vm_unschedulable(request, admin_session,
+                                      harvester_api_endpoints, vm_name)
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            resp = admin_session.get(
+                harvester_api_endpoints.get_vm % (vm_name))
+        if resp.status_code != 404:
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
+
+
+def test_create_vm_overcommit_cpu_failed(
+        request, admin_session, image, keypair, harvester_api_endpoints):
+    # create the VM
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              keypair=keypair, cpu=10000, memory_gb=1,
+                              running=False)
+    vm_name = vm_json['metadata']['name']
+    try:
+        # now try to start the instance
+        resp = admin_session.post(harvester_api_endpoints.start_vm % (vm_name))
+        assert resp.status_code == 204, 'Failed to start VM instance %s' % (
+            vm_name)
+        # expect the VM to be unschedulable
+        utils.assert_vm_unschedulable(request, admin_session,
+                                      harvester_api_endpoints, vm_name)
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            resp = admin_session.get(
+                harvester_api_endpoints.get_vm % (vm_name))
+        if resp.status_code != 404:
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
+
+
+def test_create_vm_overcommit_memory_failed(
+        request, admin_session, image, keypair, harvester_api_endpoints):
+    # create the VM
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              keypair=keypair, cpu=1, memory_gb=10000,
+                              running=False)
+    vm_name = vm_json['metadata']['name']
+    try:
+        # now try to start the instance
+        resp = admin_session.post(harvester_api_endpoints.start_vm % (vm_name))
+        assert resp.status_code == 204, 'Failed to start VM instance %s' % (
+            vm_name)
+        # expect the VM to be unschedulable
+        utils.assert_vm_unschedulable(request, admin_session,
+                                      harvester_api_endpoints, vm_name)
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            resp = admin_session.get(
+                harvester_api_endpoints.get_vm % (vm_name))
+        if resp.status_code != 404:
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
 
 
 def test_create_vm_do_not_start(request, admin_session, image, keypair,
