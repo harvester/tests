@@ -496,7 +496,7 @@ def power_off_node(request, admin_session, harvester_api_endpoints, node_name,
         node_ip = _lookup_node_ip(admin_session, harvester_api_endpoints,
                                   node_name)
     result = subprocess.run([power_off_script, node_name, node_ip],
-                            capture_output=True)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         'Failed to power-off node %s: rc: %s, stdout: %s, stderr: %s' % (
             node_name, result.returncode, result.stderr, result.stdout))
@@ -526,7 +526,7 @@ def power_on_node(request, admin_session, harvester_api_endpoints, node_name,
         node_ip = _lookup_node_ip(admin_session, harvester_api_endpoints,
                                   node_name)
     result = subprocess.run([power_on_script, node_name, node_ip],
-                            capture_output=True)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         'Failed to power-on node %s: rc: %s, stdout: %s, stderr: %s' % (
             node_name, result.returncode, result.stderr, result.stdout))
@@ -572,7 +572,7 @@ def reboot_node(request, admin_session, harvester_api_endpoints, node_name,
         node_ip = _lookup_node_ip(admin_session, harvester_api_endpoints,
                                   node_name)
     result = subprocess.run([reboot_script, node_name, node_ip],
-                            capture_output=True)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         'Failed to reboot node %s: rc: %s, stdout: %s, stderr: %s' % (
             node_name, result.returncode, result.stderr, result.stdout))
