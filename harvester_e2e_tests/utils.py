@@ -333,6 +333,60 @@ def create_image(request, admin_session, harvester_api_endpoints, url,
     return image_json
 
 
+def assert_vm_unschedulable(request, admin_session, harvester_api_endpoints,
+                            vm_name):
+    # give it some time for the scheduler to find a host
+    time.sleep(120)
+
+    def _check_vm_instance_unschedulable():
+        resp = admin_session.get(
+            harvester_api_endpoints.get_vm_instance % (vm_name))
+        if resp.status_code == 200:
+            resp_json = resp.json()
+            if ('status' in resp_json and
+                    'conditions' in resp_json['status']):
+                for condition in resp_json['status']['conditions']:
+                    if ('reason' in condition and
+                            condition['reason'] == 'Unschedulable'):
+                        return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_instance_unschedulable,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, (
+        'Timed out while waiting for the %s instance to become '
+        'unscheduable' % (vm_name))
+
+
+def assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                    vm_name, running):
+    # give it some time for the VM to boot up
+    time.sleep(180)
+
+    def _check_vm_ready():
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (vm_name))
+        if resp.status_code == 200:
+            resp_json = resp.json()
+            if running:
+                if ('status' in resp_json and
+                        'ready' in resp_json['status'] and
+                        resp_json['status']['ready']):
+                    return True
+            else:
+                if ('status' in resp_json and
+                        'ready' not in resp_json['status']):
+                    return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_ready,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for VM to be ready.'
+
+
 def create_vm(request, admin_session, image, harvester_api_endpoints,
               template='basic_vm', keypair=None, volume=None, network=None,
               cpu=1, disk_size_gb=10, memory_gb=1, network_data=None,
@@ -366,30 +420,8 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
     assert resp.status_code == 201, 'Failed to create VM'
     vm_resp_json = resp.json()
     if running:
-        # wait for VM to be ready
-        time.sleep(180)
-
-    def _check_vm_ready():
-        resp = admin_session.get(harvester_api_endpoints.get_vm % (
-            vm_resp_json['metadata']['name']))
-        if resp.status_code == 200:
-            resp_json = resp.json()
-            if running:
-                if ('status' in resp_json and
-                        'ready' in resp_json['status'] and
-                        resp_json['status']['ready']):
-                    return True
-            else:
-                if ('status' in resp_json and
-                        'ready' not in resp_json['status']):
-                    return True
-        return False
-
-    success = polling2.poll(
-        _check_vm_ready,
-        step=5,
-        timeout=request.config.getoption('--wait-timeout'))
-    assert success, 'Timed out while waiting for VM to be ready.'
+        assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                        vm_resp_json['metadata']['name'], running)
     return vm_resp_json
 
 
