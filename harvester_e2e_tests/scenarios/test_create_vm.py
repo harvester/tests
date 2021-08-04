@@ -180,6 +180,45 @@ def test_create_vm_do_not_start(request, admin_session, image, keypair,
                             vm_json)
 
 
+def test_create_update_vm_machine_type(request, admin_session, image, keypair,
+                                       harvester_api_endpoints):
+    created = False
+    try:
+        vm_json = utils.create_vm(request, admin_session, image,
+                                  harvester_api_endpoints, keypair=keypair,
+                                  machine_type='pc')
+        created = True
+        resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
+            vm_json['metadata']['name']))
+        machine = vm_json['spec']['template']['spec']['domain']['machine']
+        assert machine['type'] == 'pc'
+        vm_name = vm_json['metadata']['name']
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_json)
+        previous_uid = vm_instance_json['metadata']['uid']
+        # Update Machine Type to q35
+        domain = vm_json['spec']['template']['spec']['domain']
+        domain['machine']['type'] = 'q35'
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm % (vm_name),
+            vm_json,
+            harvester_api_endpoints.get_vm % (vm_name))
+        # restart the VM instance for the updated machine type to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption('--wait-timeout'))
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_name))
+        updated_vm_data = resp.json()
+        updated_machine_data = (
+            updated_vm_data['spec']['template']['spec']['domain']['machine'])
+        assert updated_machine_data['type'] == 'q35'
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if created:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, vm_json)
+
 # NOTE: the multi_node_scheduling test cases are designed to test
 # scenarios where nodes may have different hardware configurations in
 # terms of CPU, memory, and disk sizes. A VM with certain CPU requirement
@@ -189,6 +228,7 @@ def test_create_vm_do_not_start(request, admin_session, image, keypair,
 #
 # TODO(gyee): we may need to adjust these test cases if Kubernetes allows
 # CPU and memory overcommit.
+
 
 @pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
