@@ -127,7 +127,7 @@
                         ]
                     },
                     "machine": {
-                        "type": ""
+                        "type": "{{ machine_type | default('q35') }}"
                     },
                     "resources": {
                         "requests": {
