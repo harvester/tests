@@ -388,3 +388,23 @@ def test_update_vm_vlan_network_to_management(request, admin_session,
     assert ip.startswith('10.52.'), (
         'Expecting IP address to be in 10.52.0.0/24 subnet, got %s instead' % (
             ip))
+
+
+@pytest.mark.public_network
+def test_vm_network_with_bogus_vlan(request, admin_session,
+                                    harvester_api_endpoints,
+                                    vm_with_one_bogus_vlan):
+    """ Test creating VM with a bogus VLAN ID
+
+    In this scenario, we expect the VM to be successfully created. But the
+    network interface associated with the VLAN should not successfully gotten
+    a valid IPv4 address.
+    """
+    timeout = request.config.getoption('--wait-timeout')
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints,
+        vm_with_one_bogus_vlan, timeout)
+    # the VM instance should not be getting a IPv4 address
+    ip_parts = public_ip.split('.')
+    assert len(ip_parts) != 4, (
+        'VM should not have gotten an IPv4 address. Got %s' % (public_ip))
