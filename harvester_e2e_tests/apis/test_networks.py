@@ -53,6 +53,21 @@ def test_create_with_vid_4095(admin_session, harvester_api_endpoints):
     assert 'and <=4094' in response_data['message']
 
 
+def test_create_network_with_no_name(admin_session, harvester_api_endpoints):
+    """ Test create network with no name """
+    request_json = utils.get_json_object_from_template(
+        'basic_network',
+        vlan=4000,
+        name=''
+    )
+    resp = admin_session.post(harvester_api_endpoints.create_network,
+                              json=request_json)
+    assert resp.status_code == 422, (
+        'Expected HTTP 422 when trying to create network with no name')
+    response_data = resp.json()
+    assert 'name or generateName is required' in response_data['message']
+
+
 @pytest.mark.public_network
 def test_create_edit_network(request, admin_session, harvester_api_endpoints,
                              network_for_update_test):

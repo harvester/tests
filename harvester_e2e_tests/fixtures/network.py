@@ -67,13 +67,7 @@ def _cleanup_network(admin_session, harvester_api_endpoints, network_id,
     assert success, 'Unable to cleanup network: %s' % (network_id)
 
 
-@pytest.fixture(scope='session')
-def network(request, admin_session, harvester_api_endpoints, enable_vlan):
-    vlan_id = request.config.getoption('--vlan-id')
-    # don't create network if VLAN is not correctly specified
-    if vlan_id == -1:
-        return
-
+def _create_network(request, admin_session, harvester_api_endpoints, vlan_id):
     request_json = utils.get_json_object_from_template(
         'basic_network',
         vlan=vlan_id
@@ -85,6 +79,38 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
     network_data = resp.json()
     utils.poll_for_resource_ready(request, admin_session,
                                   network_data['links']['view'])
+    return network_data
+
+
+@pytest.fixture(scope='session')
+def network(request, admin_session, harvester_api_endpoints, enable_vlan):
+    vlan_id = request.config.getoption('--vlan-id')
+    # don't create network if VLAN is not correctly specified
+    if vlan_id == -1:
+        return
+
+    network_data = _create_network(request, admin_session,
+                                   harvester_api_endpoints, vlan_id)
+    yield network_data
+
+    if not request.config.getoption('--do-not-cleanup'):
+        _cleanup_network(admin_session, harvester_api_endpoints,
+                         network_data['id'],
+                         request.config.getoption('--wait-timeout'))
+
+
+@pytest.fixture(scope='class')
+def bogus_network(request, admin_session, harvester_api_endpoints,
+                  enable_vlan):
+    vlan_id = request.config.getoption('--vlan-id')
+    # don't create network if VLAN is not correctly specified
+    if vlan_id == -1:
+        return
+    # change the VLAN ID to an invalid one
+    vlan_id += 1
+
+    network_data = _create_network(request, admin_session,
+                                   harvester_api_endpoints, vlan_id)
     yield network_data
 
     if not request.config.getoption('--do-not-cleanup'):
