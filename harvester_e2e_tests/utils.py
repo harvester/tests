@@ -252,7 +252,7 @@ def restart_vm(admin_session, harvester_api_endpoints, previous_uid, vm_name,
 def assert_vm_restarted(admin_session, harvester_api_endpoints,
                         previous_uid, vm_name, wait_timeout):
     # give it some time for the VM instance to restart
-    time.sleep(120)
+    time.sleep(180)
 
     def _check_vm_instance_restarted():
         resp = admin_session.get(
@@ -366,17 +366,19 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
     time.sleep(180)
 
     def _check_vm_ready():
-        resp = admin_session.get(harvester_api_endpoints.get_vm % (vm_name))
+        resp = admin_session.get(harvester_api_endpoints.get_vm_instance %
+                                 (vm_name))
         if resp.status_code == 200:
             resp_json = resp.json()
             if running:
                 if ('status' in resp_json and
-                        'ready' in resp_json['status'] and
-                        resp_json['status']['ready']):
+                        'phase' in resp_json['status'] and
+                        'Running' in resp_json['status']['phase'] and
+                        'nodeName' in resp_json['status']):
                     return True
             else:
                 if ('status' in resp_json and
-                        'ready' not in resp_json['status']):
+                        'Running' not in resp_json['status']['phase']):
                     return True
         return False
 
