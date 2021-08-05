@@ -16,6 +16,7 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+import polling2
 import pytest
 
 
@@ -33,38 +34,49 @@ def test_get_host(admin_session, harvester_cluster_nodes,
     assert len(host_data['data']) == harvester_cluster_nodes
 
 
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 def test_verify_host_maintenance_mode(request, admin_session,
                                       harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
     # NOTE: always test on the first node for now
-    resp = admin_session.post(
-        host_data['data'][0]['actions']['enableMaintenanceMode'])
+    node_json = host_data['data'][0]
+    node_name = node_json['metadata']['name']
+    resp = admin_session.post(node_json['actions']['enableMaintenanceMode'])
     assert resp.status_code == 204, (
-        'Failed to update node: %s' % (resp.content))
+        'Failed to update node %s: %s' % (node_name, resp.content))
     utils.poll_for_resource_ready(request, admin_session,
-                                  host_data['data'][0]['links']['view'])
-    resp = admin_session.get(host_data['data'][0]['links']['view'])
-    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
-    ret_data = resp.json()
-    assert ret_data["spec"]["unschedulable"]
-    s = ret_data["metadata"]["annotations"]["harvesterhci.io/maintain-status"]
+                                  harvester_api_endpoints.get_node % (
+                                      node_name))
+    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host %s: %s' % (
+        node_name, resp.content)
+    node_json = resp.json()
+    assert node_json["spec"]["unschedulable"]
+    s = node_json["metadata"]["annotations"]["harvesterhci.io/maintain-status"]
     assert s in ["running", "completed"]
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
-    ret_data = resp.json()
-    resp = admin_session.post(
-        ret_data['data'][0]['actions']['disableMaintenanceMode'])
-    assert resp.status_code == 204, (
-        'Failed to update node: %s' % (resp.content))
-    resp = admin_session.get(host_data['data'][0]['links']['view'])
-    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
-    ret_data = resp.json()
-    assert "unschedulable" not in ret_data["spec"]
+    # now disable maintenance mode
+
+    def _disable_maintenance_mode():
+        resp = admin_session.post(
+            node_json['actions']['disableMaintenanceMode'])
+        if resp.status_code == 204:
+            return True
+        return False
+
+    success = polling2.poll(
+        _disable_maintenance_mode,
+        step=1,
+        timeout=request.config.getoption('--wait-timeout')
+    )
+    assert success, 'Timed out while trying to update node %s' % (node_name)
+    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
+    resp.status_code == 200, 'Failed to get host %s: %s' % (
+        node_name, resp.content)
+    node_json = resp.json()
+    assert "unschedulable" not in node_json["spec"]
     assert ("harvesterhci.io/maintain-status" not in
-            ret_data["metadata"]["annotations"])
+            node_json["metadata"]["annotations"])
 
 
 def test_update_first_node(request, admin_session, harvester_api_endpoints):
