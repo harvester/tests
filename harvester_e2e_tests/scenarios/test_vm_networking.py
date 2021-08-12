@@ -408,3 +408,76 @@ def test_vm_network_with_bogus_vlan(request, admin_session,
     ip_parts = public_ip.split('.')
     assert len(ip_parts) != 4, (
         'VM should not have gotten an IPv4 address. Got %s' % (public_ip))
+
+
+@pytest.mark.public_network
+def test_create_update_vm_user_data(request, admin_session, image,
+                                    keypair, harvester_api_endpoints, network,
+                                    user_data_with_guest_agent, network_data):
+    created = False
+    try:
+        single_vm = utils.create_vm(request, admin_session, image,
+                                    harvester_api_endpoints, keypair=keypair,
+                                    template='vm_with_one_vlan',
+                                    network=network)
+        created = True
+        # make sure the VM instance is successfully created
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, single_vm)
+        vm_name = single_vm['metadata']['name']
+        previous_uid = vm_instance_json['metadata']['uid']
+        devices = (
+            single_vm['spec']['template']['spec']['domain']['devices']['disks']
+            )
+        device_data = {
+            'disk': {
+                'bus': 'virtio'
+            },
+            'name': 'cloudinitdisk'
+        }
+        devices.append(device_data)
+        vol_data = single_vm['spec']['template']['spec']['volumes']
+        assert 'cloudInitNoCloud' not in vol_data
+        userdata = user_data_with_guest_agent.replace('\\n', '\n')
+        netdata = network_data.replace('\\n', '\n')
+        user_data = {
+            'cloudInitNoCloud': {
+                'networkData': netdata,
+                'userData': userdata
+                },
+            'name': 'cloudinitdisk'
+        }
+        vol_data.append(user_data)
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm % (vm_name),
+            single_vm,
+            harvester_api_endpoints.get_vm % (vm_name),
+            use_yaml=True)
+        # restart the VM instance for the updated machine type to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption('--wait-timeout'))
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_name))
+        updated_data = resp.json()
+        updated_vol_data = updated_data['spec']['template']['spec']['volumes']
+        found = False
+        for i in updated_vol_data:
+            if i['name'] == 'cloudinitdisk':
+                if (i['cloudInitNoCloud']['networkData'] == netdata and
+                        i['cloudInitNoCloud']['userData'] == userdata):
+                    found = True
+                    break
+
+        assert found, 'Failed to update VM %s to add userDate & NetData' % (
+            vm_name)
+
+        timeout = request.config.getoption('--wait-timeout')
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, updated_data, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+    finally:
+        if created:
+            if not request.config.getoption('--do-not-cleanup'):
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, single_vm)
