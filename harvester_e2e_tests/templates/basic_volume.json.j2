@@ -5,30 +5,23 @@
 
 
 {
-    "apiVersion": "cdi.kubevirt.io/v1beta1",
-    "kind": "DataVolume",
+    "apiVersion": "v1",
+    "kind": "PersistentVolumeClaim",
     "metadata": {
-        "annotations": {
-            "field.cattle.io/description": "{{ description | default('') }}"
-        },
-        "labels": {},
         "name": "{{ name }}",
-        "namespace": "{{ volume_namespace | default('default') }}"
+        "namespace": "{{ volume_namespace | default('default') }}",
+        "annotations": {}
     },
     "spec": {
-        "pvc": {
-            "accessModes": [
-                "ReadWriteMany"
-            ],
-            "resources": {
-                "requests": {
-                    "storage": "{{ size | default(10) }}Gi"
-                }
-            },
-            "volumeMode": "Block"
+        "resources": {
+            "requests": {
+                "storage": "{{ size | default(10) }}Gi"
+            }
         },
-        "source": {
-            "blank": {}
-        }
+        "volumeMode": "Block",
+        "accessModes": [
+            "ReadWriteMany"
+        ],
+        "storageClassName": "{{ storage_class_name | default('longhorn') }}"
     }
 }
