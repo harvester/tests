@@ -16,7 +16,7 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
-from time import sleep
+import polling2
 import yaml
 
 
@@ -30,14 +30,12 @@ pytest_plugins = [
 
 def test_create_volume_missing_size(admin_session, harvester_api_endpoints):
     request_json = utils.get_json_object_from_template('basic_volume')
-    del request_json['spec']['pvc']['resources']['requests']['storage']
+    del request_json['spec']['resources']['requests']['storage']
     resp = admin_session.post(harvester_api_endpoints.create_volume,
                               json=request_json)
     assert resp.status_code == 422, (
         'Expected HTTP 422 when attempting to create volume without '
         'specifying storage size: %s' % (resp.content))
-    response_data = resp.json()
-    assert 'PVC size is missing' in response_data['message']
 
 
 def test_create_volume_missing_name(admin_session, harvester_api_endpoints):
@@ -62,7 +60,8 @@ def test_create_volume_image_form(volume_image_form):
     pass
 
 
-def test_create_volume_by_yaml(admin_session, harvester_api_endpoints):
+def test_create_volume_by_yaml(request, admin_session,
+                               harvester_api_endpoints):
     request_json = utils.get_json_object_from_template('basic_volume')
     resp = admin_session.post(harvester_api_endpoints.create_volume,
                               data=yaml.dump(request_json, sort_keys=False),
@@ -71,8 +70,7 @@ def test_create_volume_by_yaml(admin_session, harvester_api_endpoints):
         'Failed to create volume with YAML request: %s' % (resp.content))
     view_endpoint = harvester_api_endpoints.get_volume % (
         request_json['metadata']['name'])
-    (status, vol_data) = validate_blank_volumes(admin_session, view_endpoint)
-    assert status
+    validate_blank_volumes(request, admin_session, view_endpoint)
     resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
         request_json['metadata']['name']))
     # FIXME(gyee): we need to figure out why the API can arbitarily return
@@ -81,7 +79,7 @@ def test_create_volume_by_yaml(admin_session, harvester_api_endpoints):
         resp.content)
 
 
-def test_create_volume_using_image_by_yaml(admin_session,
+def test_create_volume_using_image_by_yaml(request, admin_session,
                                            harvester_api_endpoints, image):
     request_json = utils.get_json_object_from_template('basic_volume')
     imageid = "/".join([image['metadata']['namespace'],
@@ -95,8 +93,7 @@ def test_create_volume_using_image_by_yaml(admin_session,
         'Failed to create volume with YAML request: %s' % (resp.content))
     view_endpoint = harvester_api_endpoints.get_volume % (
         request_json['metadata']['name'])
-    (status, vol_data) = validate_blank_volumes(admin_session, view_endpoint)
-    assert status
+    validate_blank_volumes(request, admin_session, view_endpoint)
     resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
         request_json['metadata']['name']))
     # FIXME(gyee): we need to figure out why the API can arbitarily return
@@ -105,7 +102,8 @@ def test_create_volume_using_image_by_yaml(admin_session,
         resp.content)
 
 
-def test_create_volume_with_label(admin_session, harvester_api_endpoints):
+def test_create_volume_with_label(request, admin_session,
+                                  harvester_api_endpoints):
     request_json = utils.get_json_object_from_template('basic_volume')
     request_json['metadata']['labels'] = {
         'test.harvesterhci.io': 'for-test'
@@ -116,9 +114,8 @@ def test_create_volume_with_label(admin_session, harvester_api_endpoints):
         'Failed to create volume with labels: %s' % (resp.content))
     view_endpoint = harvester_api_endpoints.get_volume % (
         request_json['metadata']['name'])
-    (status, vol_data) = validate_blank_volumes(admin_session, view_endpoint)
-    assert status
-    assert vol_data['metadata']['labels'].get(
+    pvc_json = validate_blank_volumes(request, admin_session, view_endpoint)
+    assert pvc_json['metadata']['labels'].get(
         'test.harvesterhci.io') == 'for-test'
     resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
         request_json['metadata']['name']))
@@ -133,48 +130,62 @@ def test_create_volume_with_image_label(volume_with_image):
     pass
 
 
-def test_update_vol(request, admin_session,
-                    harvester_api_endpoints, volume):
-    volume['metadata']['labels'] = {
-        'test.harvesterhci.io': 'for-test-update'
-    }
+def test_update_volume_json(request, admin_session,
+                            harvester_api_endpoints, volume):
+    view_endpoint = harvester_api_endpoints.get_volume % (
+        volume['metadata']['name'])
+    pvc_json = validate_blank_volumes(request, admin_session, view_endpoint)
+    # now try to increase the size
+    pvc_json['spec']['resources']['requests']['storage'] = '21Gi'
     resp = utils.poll_for_update_resource(
         request, admin_session,
         harvester_api_endpoints.update_volume % (
             volume['metadata']['name']),
-        volume,
+        pvc_json,
         harvester_api_endpoints.get_volume % (
             volume['metadata']['name']))
+    validate_blank_volumes(request, admin_session, view_endpoint)
     updated_vol_data = resp.json()
-    assert updated_vol_data['metadata']['labels'].get(
-        'test.harvesterhci.io') == 'for-test-update'
+    assert updated_vol_data['spec']['resources']['requests'].get(
+        'storage') == '21Gi'
 
 
-def test_update_vol_using_yaml(request, admin_session,
-                               harvester_api_endpoints, volume):
-    volume['metadata']['labels'] = {
-        'test.harvesterhci.io': 'for-test-update'
-    }
+def test_update_volume_yaml(request, admin_session,
+                            harvester_api_endpoints, volume):
+    view_endpoint = harvester_api_endpoints.get_volume % (
+        volume['metadata']['name'])
+    pvc_json = validate_blank_volumes(request, admin_session, view_endpoint)
+    # now try to increase the size
+    pvc_json['spec']['resources']['requests']['storage'] = '22Gi'
     resp = utils.poll_for_update_resource(
         request, admin_session,
         harvester_api_endpoints.update_volume % (
             volume['metadata']['name']),
-        volume,
+        pvc_json,
         harvester_api_endpoints.get_volume % (
             volume['metadata']['name']),
         use_yaml=True)
+    validate_blank_volumes(request, admin_session, view_endpoint)
     updated_vol_data = resp.json()
-    assert updated_vol_data['metadata']['labels'].get(
-        'test.harvesterhci.io') == 'for-test-update'
+    assert updated_vol_data['spec']['resources']['requests'].get(
+        'storage') == '22Gi'
 
 
-def validate_blank_volumes(admin_session, get_api_link):
-    for x in range(10):
+def validate_blank_volumes(request, admin_session, get_api_link):
+    pvc_json = None
+
+    def _wait_for_volume_ready():
+        nonlocal pvc_json
         resp = admin_session.get(get_api_link)
-        assert resp.status_code == 200, 'Failed to get volume: %s' % (
-            resp.content)
-        ret_data = resp.json()
-        sleep(5)
-        if 'status' in ret_data and ret_data['status']['phase'] == 'Succeeded':
-            return (True, ret_data)
-    return (False, ret_data)
+        if resp.status_code == 200:
+            pvc_json = resp.json()
+            if 'status' in pvc_json and pvc_json['status']['phase'] == 'Bound':
+                return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_volume_ready,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for volume to be ready.'
+    return pvc_json

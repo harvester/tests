@@ -25,7 +25,6 @@ pytest_plugins = [
   ]
 
 
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/968')
 def test_verify_default_vm_templates(admin_session, harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_vm_templates)
     assert resp.status_code == 200, (

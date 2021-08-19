@@ -52,9 +52,9 @@ class TestVMActions:
 
     def test_stop_vm(self, request, admin_session, harvester_api_endpoints,
                      basic_vm):
-        resp = admin_session.post(harvester_api_endpoints.stop_vm % (
+        resp = admin_session.put(harvester_api_endpoints.stop_vm % (
             basic_vm['metadata']['name']))
-        assert resp.status_code == 204, 'Failed to stop VM instance %s' % (
+        assert resp.status_code == 202, 'Failed to stop VM instance %s' % (
             basic_vm['metadata']['name'])
 
         # give it some time for the VM instance to stop
@@ -78,10 +78,11 @@ class TestVMActions:
     def test_start_vm(self, request, admin_session, harvester_api_endpoints,
                       basic_vm):
         # NOTE: this step must be done after VM has stopped
-        resp = admin_session.post(harvester_api_endpoints.start_vm % (
+        resp = admin_session.put(harvester_api_endpoints.start_vm % (
             basic_vm['metadata']['name']))
-        assert resp.status_code == 204, 'Failed to start VM instance %s' % (
-            basic_vm['metadata']['name'])
+        assert resp.status_code == 202, (
+            'Failed to start VM instance %s: %s' % (
+                basic_vm['metadata']['name'], resp.content))
 
         # give it some time for the VM to start
         time.sleep(120)
@@ -106,9 +107,9 @@ class TestVMActions:
 
     def test_pause_vm(self, request, admin_session, harvester_api_endpoints,
                       basic_vm):
-        resp = admin_session.post(harvester_api_endpoints.pause_vm % (
+        resp = admin_session.put(harvester_api_endpoints.pause_vm % (
             basic_vm['metadata']['name']))
-        assert resp.status_code == 204, 'Failed to pause VM instance %s' % (
+        assert resp.status_code == 200, 'Failed to pause VM instance %s' % (
             basic_vm['metadata']['name'])
 
         # give it some time for the VM to pause
@@ -135,9 +136,9 @@ class TestVMActions:
     def test_unpause_vm(self, request, admin_session, harvester_api_endpoints,
                         basic_vm):
         # NOTE: make sure to execute this step after _paused_vm()
-        resp = admin_session.post(harvester_api_endpoints.unpause_vm % (
+        resp = admin_session.put(harvester_api_endpoints.unpause_vm % (
             basic_vm['metadata']['name']))
-        assert resp.status_code == 204, 'Failed to unpause VM instance %s' % (
+        assert resp.status_code == 200, 'Failed to unpause VM instance %s' % (
             basic_vm['metadata']['name'])
 
         # give it some time to unpause
@@ -196,10 +197,11 @@ class TestVMVolumes:
         volumes = vm_with_volume['spec']['template']['spec']['volumes']
         for volume in volumes:
             resp = admin_session.get(harvester_api_endpoints.get_volume % (
-                volume['dataVolume']['name']))
+                volume['persistentVolumeClaim']['claimName']))
             assert resp.status_code == 200, (
                 'Failed to lookup volume %s: %s' % (
-                    volume['dataVolume']['name'], resp.content))
+                    volume['persistentVolumeClaim']['claimName'],
+                    resp.content))
             volume_json = resp.json()
             owned_by = json.loads(
                 volume_json['metadata']['annotations'].get(
@@ -215,7 +217,7 @@ class TestVMVolumes:
                     found = True
                     break
             assert found, ('Expecting %s to be in volume %s owners list' % (
-                expected_owner, volume['dataVolume']['name']))
+                expected_owner, volume['persistentVolumeClaim']['claimName']))
 
     def test_delete_volume_in_use(self, request, admin_session,
                                   harvester_api_endpoints, vm_with_volume):
@@ -225,7 +227,7 @@ class TestVMVolumes:
             # fail
             resp = admin_session.delete(
                 harvester_api_endpoints.delete_volume % (
-                    volume['dataVolume']['name']))
+                    volume['persistentVolumeClaim']['claimName']))
             assert resp.status_code not in [200, 201], (
                 'Deleting "in-use" volumes should not be permitted: %s' % (
                     resp.content))
@@ -238,23 +240,12 @@ class TestVMVolumes:
                         vm_with_volume, remove_all_disks=False)
         volumes = vm_with_volume['spec']['template']['spec']['volumes']
         for data_vol in volumes:
+            volume_name = data_vol['persistentVolumeClaim']['claimName']
             resp = admin_session.get(harvester_api_endpoints.get_volume % (
-                data_vol['dataVolume']['name']))
-            if data_vol['dataVolume']['name'] != volume['metadata']['name']:
-                # if this is not the externally created volume, it should be
-                # deleted along with the VM as this is the default Kubernetes
-                # behavior
-                assert resp.status_code == 404, (
-                    'Expecting data volume %s to be deleted with VM' % (
-                        data_vol['dataVolume']['name']))
-            else:
-                # the externally created volume should be preserved
-                assert resp.status_code == 200, (
-                    'Failed to lookup data volume %s: %s' % (
-                        data_vol['dataVolume']['name'], resp.content))
-        # NOTE: the volume will get cleaned up during test tear down. There's
-        # no need to delete it here.
-
-    # TODO(gyee): need to add a test case for not deleting the volume when the
-    # VM is deleted. Per my understanding, this can be done by first removing
-    # the ownerReferences first. However, that doesn't seem to be documented.
+                volume_name))
+            assert resp.status_code == 200, (
+                'Failed to lookup data volume %s: %s' % (
+                    volume_name, resp.content))
+            # now cleanup the volume
+            utils.delete_volume_by_name(request, admin_session,
+                                        harvester_api_endpoints, volume_name)

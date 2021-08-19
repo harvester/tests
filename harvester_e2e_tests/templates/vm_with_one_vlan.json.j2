@@ -18,65 +18,13 @@
     "kind": "VirtualMachine",
     "metadata": {
         "annotations": {
+            "harvesterhci.io/volumeClaimTemplates": "[{\"metadata\":{\"name\":\"{{ disk_0_name }}\",\"annotations\":{\"harvesterhci.io/imageId\":\"{{ image_namespace | default('default') }}/{{ image_name }}\"}},\"spec\":{\"accessModes\":[\"ReadWriteMany\"],\"resources\":{\"requests\":{\"storage\":\"{{ disk_size_gb | default(10) }}Gi\"}},\"volumeMode\":\"Block\",\"storageClassName\":\"{{ image_storage_class }}\"}},{\"metadata\":{\"name\":\"{{ disk_1_name }}\"},\"spec\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"10Gi\"}},\"volumeMode\":\"Block\",\"storageClassName\":\"longhorn\"}}]",
             "field.cattle.io/description": "{{ description | default('') }}"
         },
         "name": "{{ name }}",
         "namespace": "{{ vm_namespace | default('default') }}"
     },
     "spec": {
-        "dataVolumeTemplates": [
-            {
-                "apiVersion": "cdi.kubevirt.io/v1beta1",
-                "kind": "DataVolume",
-                "metadata": {
-                    "annotations": {
-                        "harvesterhci.io/imageId": "{{ image_namespace | default('default') }}/{{ image_name }}"
-                    },
-                    "name": "{{ disk_0_name }}"
-                },
-                "spec": {
-                    "pvc": {
-                        "accessModes": [
-                            "ReadWriteMany"
-                        ],
-                        "resources": {
-                            "requests": {
-                                "storage": "{{ disk_size_gb | default(10) }}Gi"
-                            }
-                        },
-                        "storageClassName": "{{ image_storage_class }}",
-                        "volumeMode": "Block"
-                    },
-                    "source": {
-                        "blank": {}
-                    }
-                }
-            },
-            {
-                "apiVersion": "cdi.kubevirt.io/v1beta1",
-                "kind": "DataVolume",
-                "metadata": {
-                    "name": "{{ disk_1_name }}"
-                },
-                "spec": {
-                    "pvc": {
-                        "accessModes": [
-                            "ReadWriteMany"
-                        ],
-                        "resources": {
-                            "requests": {
-                                "storage": "{{ disk_size_gb | default(10) }}Gi"
-                            }
-                        },
-                        "storageClassName": "longhorn",
-                        "volumeMode": "Block"
-                    },
-                    "source": {
-                        "blank": {}
-                    }
-                }
-            }
-        ],
         "running": true,
         "template": {
             "metadata": {
@@ -159,14 +107,14 @@
                 ],
                 "volumes": [
                     {
-                        "dataVolume": {
-                            "name": "{{ disk_0_name }}"
+                        "persistentVolumeClaim": {
+                            "claimName": "{{ disk_0_name }}"
                         },
                         "name": "disk-0"
                     },
                     {
-                        "dataVolume": {
-                            "name": "{{ disk_1_name }}"
+                        "persistentVolumeClaim": {
+                            "claimName": "{{ disk_1_name }}"
                         },
                         "name": "disk-1"
 {% if network_data is defined and network_data is not none or user_data is defined and user_data is not none and ssh_public_key is defined and ssh_public_key is not none %}
