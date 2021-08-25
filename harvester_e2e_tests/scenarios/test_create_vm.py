@@ -57,6 +57,36 @@ def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
             utils.delete_vm(request, admin_session, harvester_api_endpoints,
                             vm_json)
 
+def multiple_vms_create_delete_wodisk(request, admin_session, ubuntu_image, k3os_image,
+                 opensuse_image, keypair, harvester_api_endpoints):
+    vms = []
+    vms.append(utils.create_vm(request, admin_session, ubuntu_image,
+                               harvester_api_endpoints, keypair=keypair))
+    vms.append(utils.create_vm(request, admin_session, k3os_image,
+                               harvester_api_endpoints, keypair=keypair))
+    vms.append(utils.create_vm(request, admin_session, opensuse_image,
+                               harvester_api_endpoints, keypair=keypair))
+    yield vms
+    if not request.config.getoption('--do-not-cleanup'):
+        for vm_json in vms:
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json, remove_all_disks=False)
+
+def multiple_vms_create_delete_wdisk(request, admin_session, ubuntu_image, k3os_image,
+                 opensuse_image, keypair, harvester_api_endpoints):
+    vms = []
+    vms.append(utils.create_vm(request, admin_session, ubuntu_image,
+                               harvester_api_endpoints, keypair=keypair))
+    vms.append(utils.create_vm(request, admin_session, k3os_image,
+                               harvester_api_endpoints, keypair=keypair))
+    vms.append(utils.create_vm(request, admin_session, opensuse_image,
+                               harvester_api_endpoints, keypair=keypair))
+    yield vms
+    if not request.config.getoption('--do-not-cleanup'):
+        for vm_json in vms:
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json, remove_all_disks=True)
+
 
 @pytest.mark.parametrize(
     'image',
@@ -86,6 +116,22 @@ def test_create_multiple_vms(admin_session, image, multiple_vms,
     # TODO(gyee): make sure we can ssh into the VM since we have the networking
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
+
+def test_create_multiple_vms_delete_vm_wdisk(admin_session, image, multiple_vms_create_delete_wdisk,
+                             harvester_api_endpoints):
+    # make sure all the VM instances are successfully created
+    for a_vm in multiple_vms_create_delete_wdisk:
+        utils.lookup_vm_instance(admin_session, harvester_api_endpoints, a_vm)
+    # TODO(gyee): make sure we can ssh into the VM since we have the networking
+    # part figure out (i.e. ensoure the vlan is publicly routable)
+
+def test_create_multiple_vms_delete_vm_wodisk(admin_session, image, multiple_vms_create_delete_wodisk,
+                             harvester_api_endpoints):
+    # make sure all the VM instances are successfully created
+    for a_vm in multiple_vms_create_delete_wodisk:
+        utils.lookup_vm_instance(admin_session, harvester_api_endpoints, a_vm)
+    # TODO(gyee): make sure we can ssh into the VM since we have the networking
+    # part figure out (i.e. ensoure the vlan is publicly routable)
 
 def test_create_vm_overcommit_cpu_and_memory_failed(
         request, admin_session, image, keypair, harvester_api_endpoints):
