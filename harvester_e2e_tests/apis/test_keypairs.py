@@ -16,13 +16,14 @@
 # you may find current contact information at www.suse.com
 
 import yaml
+import pytest
 
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.keypair',
-   'harvester_e2e_tests.fixtures.session',
-  ]
+    'harvester_e2e_tests.fixtures.api_endpoints',
+    'harvester_e2e_tests.fixtures.keypair',
+    'harvester_e2e_tests.fixtures.session',
+]
 
 
 def test_create_keypair_missing_name(admin_session, harvester_api_endpoints,
@@ -74,3 +75,9 @@ def test_create_keypair_by_yaml(admin_session, harvester_api_endpoints,
         keypair_data['metadata']['name']))
     assert resp.status_code == 200, 'Failed to delete keypair: %s' % (
         resp.content)
+
+
+@pytest.mark.terraform
+def test_create_keypairs_using_terraform(keypair_using_terraform):
+    # keypair creation validation is done in the fixture already
+    pass

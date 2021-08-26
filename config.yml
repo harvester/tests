@@ -27,3 +27,4 @@ rancher-endpoint: ~
 
 node-scripts-location: 'scripts/vagrant'
 
+terraform-scripts-location: 'scripts/terraform'

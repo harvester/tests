@@ -144,3 +144,9 @@ def test_update_images(admin_session, harvester_api_endpoints, image):
     assert update_image_data['metadata']['annotations'] == {
         'test.harvesterhci.io': 'for-test-update'
     }
+
+
+@pytest.mark.terraform
+def test_create_images_using_terraform(admin_session, image_using_terraform):
+    # NOTE: the image fixture will be creating the image and check the result
+    pass

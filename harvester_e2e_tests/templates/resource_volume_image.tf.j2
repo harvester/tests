@@ -1,0 +1,10 @@
+resource "harvester_volume" "{{ name }}" {
+  depends_on = [harvester_image.opensuse]
+  name  = "{{ name }}" 
+  size  = "{{ size | default(10) }}Gi" 
+  image = "{{ image_namespace | default('harvester-public') }}/{{ image }}"
+
+  lifecycle {
+    ignore_changes = all
+  }
+}

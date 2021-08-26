@@ -20,10 +20,10 @@ import pytest
 
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.api_version',
-   'harvester_e2e_tests.fixtures.session',
-  ]
+    'harvester_e2e_tests.fixtures.api_endpoints',
+    'harvester_e2e_tests.fixtures.api_version',
+    'harvester_e2e_tests.fixtures.session',
+]
 
 
 @pytest.fixture(scope='class')
@@ -83,3 +83,19 @@ def image(request, admin_session, harvester_api_endpoints):
     if not request.config.getoption('--do-not-cleanup'):
         utils.delete_image(request, admin_session, harvester_api_endpoints,
                            image_json)
+
+
+@pytest.fixture(scope='class')
+def image_using_terraform(request, admin_session, harvester_api_endpoints):
+    url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
+           'Leap_15.2/images/openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+
+    # when use parameterized fixture, use the URL from the parameter instead
+    if getattr(request, 'param', None):
+        url = request.param
+
+    image_name = utils.create_image_terraform(request, admin_session,
+                                              harvester_api_endpoints, url)
+    yield image_name
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session)

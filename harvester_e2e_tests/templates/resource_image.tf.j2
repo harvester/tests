@@ -1,0 +1,10 @@
+resource "harvester_image" "{{ name }}" {
+  name         = "{{ name }}" 
+  namespace    = "{{ image_namespace | default('harvester-public') }}"
+  display_name = "{{ name }}" 
+  url          = "{{ url }}" 
+
+  lifecycle {
+    ignore_changes = all
+  }
+}
