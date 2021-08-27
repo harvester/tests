@@ -392,7 +392,8 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
 def create_vm(request, admin_session, image, harvester_api_endpoints,
               template='basic_vm', keypair=None, volume=None, network=None,
               cpu=1, disk_size_gb=10, memory_gb=1, network_data=None,
-              user_data=None, running=True, machine_type='q35'):
+              user_data=None, running=True, machine_type='q35',
+              include_usb=True):
     volume_name = None
     ssh_public_key = None
     network_name = None
@@ -415,7 +416,8 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         ssh_public_key=ssh_public_key,
         network_data=network_data,
         user_data=user_data,
-        machine_type=machine_type
+        machine_type=machine_type,
+        include_usb=include_usb
     )
     request_json['spec']['running'] = running
     resp = admin_session.post(harvester_api_endpoints.create_vm,
