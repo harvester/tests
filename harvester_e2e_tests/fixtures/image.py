@@ -42,7 +42,7 @@ def ubuntu_image(request, harvester_api_version, admin_session,
 
 @pytest.fixture(scope='class')
 def windows_image(request, harvester_api_version, admin_session,
-                 harvester_api_endpoints):
+                  harvester_api_endpoints):
     url = ('http://10.84.144.252/meera/'
            'ws2016.qcow2')
     image_json = utils.create_image(

@@ -43,7 +43,8 @@ def single_vm(request, admin_session, image, keypair, harvester_api_endpoints):
 # single test.
 @pytest.fixture(scope='function')
 def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
-                 opensuse_image, windows_image, keypair, harvester_api_endpoints):
+                 opensuse_image, windows_image, keypair,
+                 harvester_api_endpoints):
     vms = []
     vms.append(utils.create_vm(request, admin_session, ubuntu_image,
                                harvester_api_endpoints, keypair=keypair))
