@@ -43,13 +43,15 @@ def single_vm(request, admin_session, image, keypair, harvester_api_endpoints):
 # single test.
 @pytest.fixture(scope='function')
 def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
-                 opensuse_image, keypair, harvester_api_endpoints):
+                 opensuse_image, windows_image, keypair, harvester_api_endpoints):
     vms = []
     vms.append(utils.create_vm(request, admin_session, ubuntu_image,
                                harvester_api_endpoints, keypair=keypair))
     vms.append(utils.create_vm(request, admin_session, k3os_image,
                                harvester_api_endpoints, keypair=keypair))
     vms.append(utils.create_vm(request, admin_session, opensuse_image,
+                               harvester_api_endpoints, keypair=keypair))
+    vms.append(utils.create_vm(request, admin_session, windows_image,
                                harvester_api_endpoints, keypair=keypair))
     yield vms
     if not request.config.getoption('--do-not-cleanup'):
@@ -66,9 +68,12 @@ def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
         ('https://github.com/rancher/k3os/releases/download/v0.20.4-k3s1r0/'
          'k3os-amd64.iso'),
         ('https://download.opensuse.org/tumbleweed/iso/'
-         'openSUSE-Tumbleweed-NET-x86_64-Current.iso')
+         'openSUSE-Tumbleweed-NET-x86_64-Current.iso'),
+        ('http://10.84.144.252/meera/'
+         'ws2016.qcow2')
     ],
     indirect=True)
+@pytest.mark.singlevmtest
 def test_create_single_vm(admin_session, image, single_vm,
                           harvester_api_endpoints):
     # make sure the VM instance is successfully created
@@ -78,6 +83,7 @@ def test_create_single_vm(admin_session, image, single_vm,
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
 
+@pytest.mark.multivmtest
 def test_create_multiple_vms(admin_session, image, multiple_vms,
                              harvester_api_endpoints):
     # make sure all the VM instances are successfully created
