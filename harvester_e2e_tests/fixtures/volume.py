@@ -36,14 +36,13 @@ def volume(request, kubevirt_api_version, admin_session,
     )
     resp = admin_session.post(harvester_api_endpoints.create_volume,
                               json=request_json)
-    assert resp.status_code == 201, 'Unable to create a blank volume'
+    assert resp.status_code == 201, 'Unable to create a blank volume: %s' % (
+        resp.content)
     volume_data = resp.json()
     yield volume_data
     if not request.config.getoption('--do-not-cleanup'):
-        resp = admin_session.delete(
-            harvester_api_endpoints.delete_volume % (
-                volume_data['metadata']['name']))
-        assert resp.status_code == 200, 'Unable to cleanup volume'
+        utils.delete_volume(request, admin_session,
+                            harvester_api_endpoints, volume_data)
 
 
 @pytest.fixture(scope='class')
@@ -66,10 +65,8 @@ def volume_image_form(request, kubevirt_api_version, admin_session,
         'harvesterhci.io/imageId') == imageid
     yield volume_data
     if not request.config.getoption('--do-not-cleanup'):
-        resp = admin_session.delete(
-            harvester_api_endpoints.delete_volume % (
-                volume_data['metadata']['name']))
-        assert resp.status_code == 200, 'Unable to cleanup volume'
+        utils.delete_volume(request, admin_session,
+                            harvester_api_endpoints, volume_data)
 
 
 @pytest.fixture(scope='class')
@@ -97,7 +94,5 @@ def volume_with_image(request, kubevirt_api_version, admin_session,
         'test.harvesterhci.io') == 'for-test'
     yield volume_data
     if not request.config.getoption('--do-not-cleanup'):
-        resp = admin_session.delete(
-            harvester_api_endpoints.delete_volume % (
-                volume_data['metadata']['name']))
-        assert resp.status_code == 200, 'Unable to cleanup volume'
+        utils.delete_volume(request, admin_session,
+                            harvester_api_endpoints, volume_data)
