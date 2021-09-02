@@ -88,10 +88,10 @@ def pytest_addoption(parser):
               'Harvester node to facilitate the host-specific tests')
     )
     parser.addoption(
-        '--win-image-url,
+        '--win-image-url',
         action='store',
         default=config_data['win-image-url'],
-        help=('Window Image URL ')
+        help=('Windows image URL ')
     )
 
     # TODO(gyee): may need to add SSL options later

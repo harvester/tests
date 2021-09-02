@@ -241,9 +241,9 @@ def lookup_hosts_with_cpu_and_memory(admin_session, harvester_api_endpoints,
 
 def restart_vm(admin_session, harvester_api_endpoints, previous_uid, vm_name,
                wait_timeout):
-    resp = admin_session.post(harvester_api_endpoints.restart_vm % (
+    resp = admin_session.put(harvester_api_endpoints.restart_vm % (
         vm_name))
-    assert resp.status_code == 204, 'Failed to restart VM instance %s: %s' % (
+    assert resp.status_code == 202, 'Failed to restart VM instance %s: %s' % (
         vm_name, resp.content)
     assert_vm_restarted(admin_session, harvester_api_endpoints, previous_uid,
                         vm_name, wait_timeout)
@@ -430,13 +430,8 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
 
 def delete_vm(request, admin_session, harvester_api_endpoints, vm_json,
               remove_all_disks=True):
-    params = {}
-    if remove_all_disks:
-        devices = vm_json['spec']['template']['spec']['domain']['devices']
-        disk_names = [disk['name'] for disk in devices['disks']]
-        params = {'removedDisks': ','.join(disk_names)}
     resp = admin_session.delete(harvester_api_endpoints.delete_vm % (
-        vm_json['metadata']['name']), params=params)
+        vm_json['metadata']['name']))
     assert resp.status_code in [200, 201], 'Failed to delete VM %s: %s' % (
         vm_json['metadata']['name'], resp.content)
 
@@ -452,19 +447,39 @@ def delete_vm(request, admin_session, harvester_api_endpoints, vm_json,
         step=5,
         timeout=request.config.getoption('--wait-timeout'))
     assert success, 'Timed out while waiting for VM to be terminated.'
+    if remove_all_disks:
+        # NOTE: for PVC, we must explicitly delete the volumes after the
+        # VM is deleted
+        volumes = vm_json['spec']['template']['spec']['volumes']
+        for volume in volumes:
+            if 'persistentVolumeClaim' in volume:
+                delete_volume_by_name(
+                     request, admin_session, harvester_api_endpoints,
+                     volume['persistentVolumeClaim']['claimName'])
 
 
 def delete_volume(request, admin_session, harvester_api_endpoints,
                   volume_json):
+    delete_volume_by_name(request, admin_session, harvester_api_endpoints,
+                          volume_json['metadata']['name'])
+
+
+def delete_volume_by_name(request, admin_session, harvester_api_endpoints,
+                          volume_name):
+    # see if the volume exist first
+    resp = admin_session.get(harvester_api_endpoints.get_volume % (
+        volume_name))
+    if resp.status_code == 404:
+        # volume doesn't exist so nothing to be done
+        return
     resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
-        volume_json['metadata']['name']))
+        volume_name))
     assert resp.status_code in [200, 201], (
-        'Failed to delete volume %s: %s' % (
-            volume_json['metadata']['name'], resp.content))
+        'Failed to delete volume %s: %s' % (volume_name, resp.content))
 
     def _check_volume_deleted():
         resp = admin_session.get(harvester_api_endpoints.delete_volume % (
-            volume_json['metadata']['name']))
+            volume_name))
         if resp.status_code == 404:
             return True
         return False

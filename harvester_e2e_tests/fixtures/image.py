@@ -43,7 +43,7 @@ def ubuntu_image(request, harvester_api_version, admin_session,
 @pytest.fixture(scope='class')
 def windows_image(request, harvester_api_version, admin_session,
                   harvester_api_endpoints):
-    url = request.config.getoption('win-image-url')
+    url = request.config.getoption('--win-image-url')
     image_json = utils.create_image(
         request, admin_session, harvester_api_endpoints, url,
         description='Windows 2016')

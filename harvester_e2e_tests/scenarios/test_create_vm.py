@@ -20,11 +20,21 @@ import pytest
 import time
 import polling2
 
-
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.image',
     'harvester_e2e_tests.fixtures.keypair'
 ]
+
+
+@pytest.fixture(scope='function')
+def windows_vm(request, admin_session, windows_image, keypair,
+               harvester_api_endpoints):
+    vm_json = utils.create_vm(request, admin_session, windows_image,
+                              harvester_api_endpoints, keypair=keypair)
+    yield vm_json
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                        vm_json)
 
 
 @pytest.fixture(scope='function')
@@ -69,9 +79,7 @@ def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
         ('https://github.com/rancher/k3os/releases/download/v0.20.4-k3s1r0/'
          'k3os-amd64.iso'),
         ('https://download.opensuse.org/tumbleweed/iso/'
-         'openSUSE-Tumbleweed-NET-x86_64-Current.iso'),
-        ('http://10.84.144.252/meera/'
-         'ws2016.qcow2')
+         'openSUSE-Tumbleweed-NET-x86_64-Current.iso')
     ],
     indirect=True)
 @pytest.mark.singlevmtest
@@ -80,6 +88,16 @@ def test_create_single_vm(admin_session, image, single_vm,
     # make sure the VM instance is successfully created
     utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, single_vm)
+    # TODO(gyee): make sure we can ssh into the VM since we have the networking
+    # part figure out (i.e. ensoure the vlan is publicly routable)
+
+
+@pytest.mark.singlevmtest
+def test_create_windows_vm(admin_session, image, windows_vm,
+                           harvester_api_endpoints):
+    # make sure the VM instance is successfully created
+    utils.lookup_vm_instance(
+        admin_session, harvester_api_endpoints, windows_vm)
     # TODO(gyee): make sure we can ssh into the VM since we have the networking
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
