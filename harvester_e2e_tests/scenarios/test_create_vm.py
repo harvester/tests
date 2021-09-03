@@ -20,11 +20,21 @@ import pytest
 import time
 import polling2
 
-
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.image',
     'harvester_e2e_tests.fixtures.keypair'
 ]
+
+
+@pytest.fixture(scope='function')
+def windows_vm(request, admin_session, windows_image, keypair,
+               harvester_api_endpoints):
+    vm_json = utils.create_vm(request, admin_session, windows_image,
+                              harvester_api_endpoints, keypair=keypair)
+    yield vm_json
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                        vm_json)
 
 
 @pytest.fixture(scope='function')
@@ -43,13 +53,16 @@ def single_vm(request, admin_session, image, keypair, harvester_api_endpoints):
 # single test.
 @pytest.fixture(scope='function')
 def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
-                 opensuse_image, keypair, harvester_api_endpoints):
+                 opensuse_image, windows_image, keypair,
+                 harvester_api_endpoints):
     vms = []
     vms.append(utils.create_vm(request, admin_session, ubuntu_image,
                                harvester_api_endpoints, keypair=keypair))
     vms.append(utils.create_vm(request, admin_session, k3os_image,
                                harvester_api_endpoints, keypair=keypair))
     vms.append(utils.create_vm(request, admin_session, opensuse_image,
+                               harvester_api_endpoints, keypair=keypair))
+    vms.append(utils.create_vm(request, admin_session, windows_image,
                                harvester_api_endpoints, keypair=keypair))
     yield vms
     if not request.config.getoption('--do-not-cleanup'):
@@ -69,6 +82,7 @@ def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
          'openSUSE-Tumbleweed-NET-x86_64-Current.iso')
     ],
     indirect=True)
+@pytest.mark.singlevmtest
 def test_create_single_vm(admin_session, image, single_vm,
                           harvester_api_endpoints):
     # make sure the VM instance is successfully created
@@ -78,6 +92,17 @@ def test_create_single_vm(admin_session, image, single_vm,
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
 
+@pytest.mark.singlevmtest
+def test_create_windows_vm(admin_session, image, windows_vm,
+                           harvester_api_endpoints):
+    # make sure the VM instance is successfully created
+    utils.lookup_vm_instance(
+        admin_session, harvester_api_endpoints, windows_vm)
+    # TODO(gyee): make sure we can ssh into the VM since we have the networking
+    # part figure out (i.e. ensoure the vlan is publicly routable)
+
+
+@pytest.mark.multivmtest
 def test_create_multiple_vms(admin_session, image, multiple_vms,
                              harvester_api_endpoints):
     # make sure all the VM instances are successfully created

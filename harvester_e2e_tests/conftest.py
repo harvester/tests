@@ -87,6 +87,13 @@ def pytest_addoption(parser):
         help=('External scripts to power-off, power-up, and reboot a given '
               'Harvester node to facilitate the host-specific tests')
     )
+    parser.addoption(
+        '--win-image-url',
+        action='store',
+        default=config_data['win-image-url'],
+        help=('Windows image URL ')
+    )
+
     # TODO(gyee): may need to add SSL options later
 
 
