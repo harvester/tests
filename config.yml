@@ -27,3 +27,4 @@ rancher-endpoint: ~
 
 node-scripts-location: 'scripts/vagrant'
 
+win-image-url: 'http://10.84.144.252/meera/ws2016.qcow2'
