@@ -17,12 +17,15 @@
 
 from harvester_e2e_tests import utils
 import pytest
+import yaml
 import time
 import polling2
 
+
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.image',
-    'harvester_e2e_tests.fixtures.keypair'
+    'harvester_e2e_tests.fixtures.keypair',
+    'harvester_e2e_tests.fixtures.vm'
 ]
 
 
@@ -203,6 +206,68 @@ def test_create_vm_do_not_start(request, admin_session, image, keypair,
         if created:
             utils.delete_vm(request, admin_session, harvester_api_endpoints,
                             vm_json)
+
+
+@pytest.mark.nouserdata
+def test_create_update_vm_enable_user_data(request, admin_session, image,
+                                           keypair, harvester_api_endpoints,
+                                           basic_vm_no_user_data):
+    vm_name = basic_vm_no_user_data['metadata']['name']
+    vm_instance_json = utils.lookup_vm_instance(
+       admin_session, harvester_api_endpoints, basic_vm_no_user_data)
+    previous_uid = vm_instance_json['metadata']['uid']
+    # Include user_data
+    package_data = {
+       'packages': [
+          'qemu-guest-agent'
+          ],
+       'runcmd': [[
+          'systemctl',
+          'enable',
+          '--now',
+          'qemu-guest-agent'
+          ]]
+    }
+    volumes = basic_vm_no_user_data['spec']['template']['spec']['volumes']
+    cloudinit = None
+    for volume in volumes:
+        if 'cloudInitNoCloud' in volume:
+            cloudinit = volume
+            break
+    user_data = yaml.safe_load(cloudinit['cloudInitNoCloud']['userData']
+                               .replace('\\n', '\n'))
+    assert 'packages' not in user_data
+    user_data.update(package_data)
+    cloudinit['cloudInitNoCloud']['userData'] = yaml.dump(
+                                                user_data,
+                                                default_flow_style=False)
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_vm % (vm_name),
+        basic_vm_no_user_data,
+        harvester_api_endpoints.get_vm % (vm_name))
+    # restart the VM instance for the updated machine type to take effect
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, request.config.getoption('--wait-timeout'))
+    resp = admin_session.get(harvester_api_endpoints.get_vm % (
+                             vm_name))
+    updated_vm_data = resp.json()
+    updated_volume_data = (
+        updated_vm_data['spec']['template']['spec']['volumes'])
+    cloudinit = None
+    for volume in updated_volume_data:
+        if 'cloudInitNoCloud' in volume:
+            cloudinit = volume
+            break
+    upd_user_data = yaml.safe_load(cloudinit['cloudInitNoCloud']['userData']
+                                   .replace('\\n', '\n'))
+    assert 'packages' in upd_user_data
+    assert 'runcmd' in upd_user_data
+    assert 'qemu-guest-agent' in upd_user_data['packages']
+    assert 'systemctl' in upd_user_data['runcmd'][0]
+    assert 'enable' in upd_user_data['runcmd'][0]
+    assert '--now' in upd_user_data['runcmd'][0]
+    assert 'qemu-guest-agent' in upd_user_data['runcmd'][0]
 
 
 def test_create_update_vm_machine_type(request, admin_session, image, keypair,
