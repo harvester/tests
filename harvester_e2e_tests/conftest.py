@@ -121,12 +121,16 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption('--vlan-id') != -1:
-        # --vlan-id is correctly specified, do not skip tests relying
-        # on external routing
-        return
-    skip_public_network = pytest.mark.skip(reason=(
-        'VM not accessible because no VLAN setup with public routing'))
-    for item in items:
-        if 'public_network' in item.keywords:
-            item.add_marker(skip_public_network)
+    if config.getoption('--vlan-id') == -1:
+        skip_public_network = pytest.mark.skip(reason=(
+            'VM not accessible because no VLAN setup with public routing'))
+        for item in items:
+            if 'public_network' in item.keywords:
+                item.add_marker(skip_public_network)
+
+    if config.getoption('--win-image-url') == '':
+        skip_windows_vm = pytest.mark.skip(reason=(
+            'Windows image not specified'))
+        for item in items:
+            if 'windows_vm' in item.keywords:
+                item.add_marker(skip_windows_vm)

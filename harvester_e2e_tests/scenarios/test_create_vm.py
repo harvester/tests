@@ -62,8 +62,9 @@ def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
                                harvester_api_endpoints, keypair=keypair))
     vms.append(utils.create_vm(request, admin_session, opensuse_image,
                                harvester_api_endpoints, keypair=keypair))
-    vms.append(utils.create_vm(request, admin_session, windows_image,
-                               harvester_api_endpoints, keypair=keypair))
+    if windows_image:
+        vms.append(utils.create_vm(request, admin_session, windows_image,
+                                   harvester_api_endpoints, keypair=keypair))
     yield vms
     if not request.config.getoption('--do-not-cleanup'):
         for vm_json in vms:
@@ -92,7 +93,7 @@ def test_create_single_vm(admin_session, image, single_vm,
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
 
-@pytest.mark.singlevmtest
+@pytest.mark.windows_vm
 def test_create_windows_vm(admin_session, image, windows_vm,
                            harvester_api_endpoints):
     # make sure the VM instance is successfully created

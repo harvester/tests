@@ -44,13 +44,16 @@ def ubuntu_image(request, harvester_api_version, admin_session,
 def windows_image(request, harvester_api_version, admin_session,
                   harvester_api_endpoints):
     url = request.config.getoption('--win-image-url')
-    image_json = utils.create_image(
-        request, admin_session, harvester_api_endpoints, url,
-        description='Windows 2016')
+    image_json = None
+    if url != '':
+        image_json = utils.create_image(
+            request, admin_session, harvester_api_endpoints, url,
+            description='Windows 2016')
     yield image_json
     if not request.config.getoption('--do-not-cleanup'):
-        utils.delete_image(request, admin_session, harvester_api_endpoints,
-                           image_json)
+        if image_json:
+            utils.delete_image(request, admin_session, harvester_api_endpoints,
+                               image_json)
 
 
 @pytest.fixture(scope='class')
