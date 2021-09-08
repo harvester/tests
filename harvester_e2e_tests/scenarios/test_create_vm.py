@@ -123,8 +123,8 @@ def test_create_vm_overcommit_cpu_and_memory_failed(
     vm_name = vm_json['metadata']['name']
     try:
         # now try to start the instance
-        resp = admin_session.post(harvester_api_endpoints.start_vm % (vm_name))
-        assert resp.status_code == 204, 'Failed to start VM instance %s' % (
+        resp = admin_session.put(harvester_api_endpoints.start_vm % (vm_name))
+        assert resp.status_code == 202, 'Failed to start VM instance %s' % (
             vm_name)
         # expect the VM to be unschedulable
         utils.assert_vm_unschedulable(request, admin_session,
@@ -133,9 +133,9 @@ def test_create_vm_overcommit_cpu_and_memory_failed(
         if not request.config.getoption('--do-not-cleanup'):
             resp = admin_session.get(
                 harvester_api_endpoints.get_vm % (vm_name))
-        if resp.status_code != 404:
-            utils.delete_vm(request, admin_session, harvester_api_endpoints,
-                            vm_json)
+            if resp.status_code != 404:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, vm_json)
 
 
 def test_create_vm_overcommit_cpu_failed(
@@ -148,8 +148,8 @@ def test_create_vm_overcommit_cpu_failed(
     vm_name = vm_json['metadata']['name']
     try:
         # now try to start the instance
-        resp = admin_session.post(harvester_api_endpoints.start_vm % (vm_name))
-        assert resp.status_code == 204, 'Failed to start VM instance %s' % (
+        resp = admin_session.put(harvester_api_endpoints.start_vm % (vm_name))
+        assert resp.status_code == 202, 'Failed to start VM instance %s' % (
             vm_name)
         # expect the VM to be unschedulable
         utils.assert_vm_unschedulable(request, admin_session,
@@ -158,9 +158,9 @@ def test_create_vm_overcommit_cpu_failed(
         if not request.config.getoption('--do-not-cleanup'):
             resp = admin_session.get(
                 harvester_api_endpoints.get_vm % (vm_name))
-        if resp.status_code != 404:
-            utils.delete_vm(request, admin_session, harvester_api_endpoints,
-                            vm_json)
+            if resp.status_code != 404:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, vm_json)
 
 
 def test_create_vm_overcommit_memory_failed(
@@ -173,8 +173,8 @@ def test_create_vm_overcommit_memory_failed(
     vm_name = vm_json['metadata']['name']
     try:
         # now try to start the instance
-        resp = admin_session.post(harvester_api_endpoints.start_vm % (vm_name))
-        assert resp.status_code == 204, 'Failed to start VM instance %s' % (
+        resp = admin_session.put(harvester_api_endpoints.start_vm % (vm_name))
+        assert resp.status_code == 202, 'Failed to start VM instance %s' % (
             vm_name)
         # expect the VM to be unschedulable
         utils.assert_vm_unschedulable(request, admin_session,
@@ -183,9 +183,9 @@ def test_create_vm_overcommit_memory_failed(
         if not request.config.getoption('--do-not-cleanup'):
             resp = admin_session.get(
                 harvester_api_endpoints.get_vm % (vm_name))
-        if resp.status_code != 404:
-            utils.delete_vm(request, admin_session, harvester_api_endpoints,
-                            vm_json)
+            if resp.status_code != 404:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, vm_json)
 
 
 def test_create_vm_do_not_start(request, admin_session, image, keypair,
@@ -201,7 +201,7 @@ def test_create_vm_do_not_start(request, admin_session, image, keypair,
         assert resp.status_code == 404, (
             'Failed to create a VM with do not start: %s' % (resp.content))
     finally:
-        if created:
+        if created and not request.config.getoption('--do-not-cleanup'):
             utils.delete_vm(request, admin_session, harvester_api_endpoints,
                             vm_json)
 
@@ -435,10 +435,8 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         resp = admin_session.get(harvester_api_endpoints.get_node % (
             vm_node_before_migrate))
         host_json = resp.json()
-        resp = admin_session.post(
-            host_json['actions']['enableMaintenanceMode'])
-        assert resp.status_code == 204, (
-            'Failed to update node: %s' % (resp.content))
+        utils.enable_maintenance_mode(request, admin_session,
+                                      harvester_api_endpoints, host_json)
         utils.poll_for_resource_ready(request, admin_session,
                                       harvester_api_endpoints.get_node % (
                                           vm_node_before_migrate))
@@ -460,6 +458,7 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
             if resp.status_code == 200:
                 resp_json = resp.json()
                 if ('status' in resp_json and
+                        'migrationState' in resp_json['status'] and
                         resp_json['status']['migrationState']['completed']):
                     return True
             return False
@@ -478,10 +477,8 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         resp = admin_session.get(harvester_api_endpoints.get_node % (
             vm_node_before_migrate))
         host_json = resp.json()
-        resp = admin_session.post(
-            host_json['actions']['disableMaintenanceMode'])
-        assert resp.status_code == 204, (
-            'Failed to update node: %s' % (resp.content))
+        utils.disable_maintenance_mode(request, admin_session,
+                                       harvester_api_endpoints, host_json)
         # migrate VM back to old host
         resp = admin_session.post(harvester_api_endpoints.migrate_vm % (
             vm_json['metadata']['name']),

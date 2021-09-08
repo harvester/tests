@@ -455,7 +455,8 @@ def delete_vm(request, admin_session, harvester_api_endpoints, vm_json,
             if 'persistentVolumeClaim' in volume:
                 delete_volume_by_name(
                      request, admin_session, harvester_api_endpoints,
-                     volume['persistentVolumeClaim']['claimName'])
+                     volume['persistentVolumeClaim']['claimName'],
+                     owned_by=vm_json['metadata']['name'])
 
 
 def delete_volume(request, admin_session, harvester_api_endpoints,
@@ -465,13 +466,33 @@ def delete_volume(request, admin_session, harvester_api_endpoints,
 
 
 def delete_volume_by_name(request, admin_session, harvester_api_endpoints,
-                          volume_name):
+                          volume_name, owned_by=None):
     # see if the volume exist first
     resp = admin_session.get(harvester_api_endpoints.get_volume % (
         volume_name))
     if resp.status_code == 404:
         # volume doesn't exist so nothing to be done
         return
+
+    def _wait_for_vm_remove_owned_by():
+        if owned_by is None:
+            return True
+        resp = admin_session.get(harvester_api_endpoints.get_volume % (
+            volume_name))
+        volume_json = resp.json()
+        annotations = volume_json['metadata']['annotations']
+        if 'harvesterhci.io/owned-by' in annotations:
+            if owned_by in annotations['harvesterhci.io/owned-by']:
+                return False
+            return True
+        else:
+            return True
+
+    success = polling2.poll(
+        _wait_for_vm_remove_owned_by,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+
     resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
         volume_name))
     assert resp.status_code in [200, 201], (
@@ -676,3 +697,55 @@ def poweroff_host_maintenance_mode(request, admin_session,
     ret_data = resp.json()
     assert "NotReady,SchedulingDisabled" in ret_data["metadata"]["fields"]
     return host_poweroff
+
+
+def enable_maintenance_mode(request, admin_session, harvester_api_endpoints,
+                            node_json):
+
+    def _add_drain_taint(node_json):
+        if 'taints' in node_json['spec']:
+            for taint in node_json['spec']['taints']:
+                if taint['key'] == 'kubevirt.io/drain':
+                    return
+        else:
+            node_json['spec']['taints'] = []
+        node_json['spec']['taints'].append(
+            {
+                'key': 'kubevirt.io/drain',
+                'value': 'scheduling',
+                'effect': 'NoSchedule'
+            }
+        )
+
+    # NOTE(gyee): implemention of
+    # https://github.com/harvester/harvester/blob/
+    # 3edc82a7ae6a5de6e8114901058dc573938093e8/pkg/api/node/formatter.go#L92
+    node_json['spec']['unschedulable'] = True
+    _add_drain_taint(node_json)
+    if 'annotations' not in node_json['metadata']:
+        node_json['metadata']['annotations'] = {}
+    node_json['metadata']['annotations']['harvesterhci.io/maintain-status'] = (
+        'running')
+    poll_for_update_resource(request, admin_session,
+                             node_json['links']['update'],
+                             node_json,
+                             harvester_api_endpoints.get_node % (
+                                 node_json['metadata']['name']))
+
+
+def disable_maintenance_mode(request, admin_session, harvester_api_endpoints,
+                             node_json):
+    # NOTE(gyee): implementation of
+    # https://github.com/harvester/harvester/blob/
+    # 3edc82a7ae6a5de6e8114901058dc573938093e8/pkg/api/node/formatter.go#L118
+    node_json['spec']['unschedulable'] = False
+    if 'taints' in node_json['spec']:
+        node_json['spec']['taints'] = [
+            t for t in node_json['spec']['taints'] if not (
+                t['key'] == 'kubevirt.io/drain')]
+    del node_json['metadata']['annotations']['harvesterhci.io/maintain-status']
+    poll_for_update_resource(request, admin_session,
+                             node_json['links']['update'],
+                             node_json,
+                             harvester_api_endpoints.get_node % (
+                                 node_json['metadata']['name']))
