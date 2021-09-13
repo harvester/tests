@@ -65,7 +65,7 @@ runcmd:
   - - systemctl
     - enable
     - '--now'
-    - qemu-guest-agent
+    - qemu-ga
 """ % (keypair['spec']['publicKey'])
     return yaml_data.replace('\n', '\\n')
 
@@ -79,6 +79,22 @@ def basic_vm(request, admin_session, image, keypair,
                               keypair=keypair,
                               network_data=network_data,
                               user_data=user_data_with_guest_agent)
+    yield vm_json
+    if not request.config.getoption('--do-not-cleanup'):
+        resp = admin_session.get(
+            harvester_api_endpoints.get_vm % (vm_json['metadata']['name']))
+        if resp.status_code != 404:
+            utils.delete_vm(request, admin_session, harvester_api_endpoints,
+                            vm_json)
+
+
+@pytest.fixture(scope='class')
+def basic_vm_no_user_data(request, admin_session, image, keypair,
+                          network_data, harvester_api_endpoints):
+    vm_json = utils.create_vm(request, admin_session, image,
+                              harvester_api_endpoints,
+                              keypair=keypair,
+                              network_data=network_data)
     yield vm_json
     if not request.config.getoption('--do-not-cleanup'):
         resp = admin_session.get(
