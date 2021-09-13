@@ -22,7 +22,8 @@ import polling2
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.image',
-    'harvester_e2e_tests.fixtures.keypair'
+    'harvester_e2e_tests.fixtures.keypair',
+    'harvester_e2e_tests.fixtures.vm'
 ]
 
 
@@ -204,6 +205,45 @@ def test_create_vm_do_not_start(request, admin_session, image, keypair,
         if created and not request.config.getoption('--do-not-cleanup'):
             utils.delete_vm(request, admin_session, harvester_api_endpoints,
                             vm_json)
+
+
+@pytest.mark.usbvmtest
+def test_create_update_vm_enable_usb(request, admin_session, image, keypair,
+                                     harvester_api_endpoints,
+                                     basic_vm_nousb):
+    domain = basic_vm_nousb['spec']['template']['spec']['domain']
+    assert 'inputs' not in domain['devices']
+    vm_name = basic_vm_nousb['metadata']['name']
+    vm_instance_json = utils.lookup_vm_instance(
+       admin_session, harvester_api_endpoints, basic_vm_nousb)
+    previous_uid = vm_instance_json['metadata']['uid']
+    # Include USB
+    domain_data = (
+       basic_vm_nousb['spec']['template']['spec']['domain']
+       )
+    devices = domain_data['devices']
+    devices['inputs'] = [{
+       'bus': 'usb',
+       'name': 'tablet',
+       'type': 'tablet'
+    }]
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_vm % (vm_name),
+        basic_vm_nousb,
+        harvester_api_endpoints.get_vm % (vm_name))
+    # restart the VM instance for the updated machine type to take effect
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, request.config.getoption('--wait-timeout'))
+    resp = admin_session.get(harvester_api_endpoints.get_vm % (
+                             vm_name))
+    updated_vm_data = resp.json()
+    updated_devices_data = (
+        updated_vm_data['spec']['template']['spec']['domain'])
+    assert 'inputs' in updated_devices_data['devices']
+    assert 'usb' in updated_devices_data['devices']['inputs'][0]['bus']
+    assert 'tablet' in updated_devices_data['devices']['inputs'][0]['name']
+    assert 'tablet' in updated_devices_data['devices']['inputs'][0]['type']
 
 
 def test_create_update_vm_machine_type(request, admin_session, image, keypair,
