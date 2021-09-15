@@ -92,3 +92,10 @@ def test_create_edit_network(request, admin_session, harvester_api_endpoints,
     updated_network_data = resp.json()
     updated_config = json.loads(updated_network_data['spec']['config'])
     assert updated_config['vlan'] == updated_vlan, 'Failed to update vlan'
+
+
+@pytest.mark.terraform
+def test_create_network_using_terraform(request, admin_session,
+                                        harvester_api_endpoints,
+                                        network_using_terraform):
+    pass
