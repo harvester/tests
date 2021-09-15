@@ -21,9 +21,9 @@ import pytest
 
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.session',
-  ]
+    'harvester_e2e_tests.fixtures.api_endpoints',
+    'harvester_e2e_tests.fixtures.session',
+]
 
 
 @pytest.fixture(scope='session')
@@ -147,3 +147,21 @@ def network_for_update_test(request, admin_session,
         _cleanup_network(admin_session, harvester_api_endpoints,
                          network_data['id'],
                          request.config.getoption('--wait-timeout'))
+
+
+@pytest.fixture(scope='session')
+def network_using_terraform(request, admin_session,
+                            harvester_api_endpoints, enable_vlan):
+    vlan_id = request.config.getoption('--vlan-id')
+    # don't create network if VLAN is not correctly specified
+    if vlan_id == -1:
+        return
+
+    network_data = utils.create_network_terraform(request, admin_session,
+                                                  harvester_api_endpoints,
+                                                  'resource_network',
+                                                  vlan_id)
+    yield network_data
+
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session)
