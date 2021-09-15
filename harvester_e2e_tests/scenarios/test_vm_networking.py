@@ -428,7 +428,7 @@ def test_create_update_vm_user_data(request, admin_session, image,
         previous_uid = vm_instance_json['metadata']['uid']
         devices = (
             single_vm['spec']['template']['spec']['domain']['devices']['disks']
-            )
+        )
         device_data = {
             'disk': {
                 'bus': 'virtio'
@@ -444,7 +444,7 @@ def test_create_update_vm_user_data(request, admin_session, image,
             'cloudInitNoCloud': {
                 'networkData': netdata,
                 'userData': userdata
-                },
+            },
             'name': 'cloudinitdisk'
         }
         vol_data.append(user_data)
@@ -481,3 +481,41 @@ def test_create_update_vm_user_data(request, admin_session, image,
             if not request.config.getoption('--do-not-cleanup'):
                 utils.delete_vm(request, admin_session,
                                 harvester_api_endpoints, single_vm)
+
+
+@pytest.mark.terraform
+def test_create_vm_using_terraform(request, admin_session,
+                                   harvester_api_endpoints,
+                                   image_using_terraform,
+                                   volume_using_terraform,
+                                   keypair_using_terraform,
+                                   network_using_terraform,
+                                   user_data_with_guest_agent_using_terraform,
+                                   network_data):
+    created = False
+    try:
+        vm_json = utils.create_vm_terraform(
+            request,
+            admin_session,
+            harvester_api_endpoints,
+            template_name='resource_vm',
+            keypair=keypair_using_terraform,
+            image=image_using_terraform,
+            volume=volume_using_terraform,
+            net=network_using_terraform,
+            user_data=user_data_with_guest_agent_using_terraform,
+            net_data=network_data)
+        created = True
+        # make sure the VM instance is successfully created
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_json)
+        timeout = request.config.getoption('--wait-timeout')
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_json, timeout)
+
+#       assert_ssh_into_vm(public_ip, timeout, keypair=keypair_using_terraform)
+
+    finally:
+        if created:
+            if not request.config.getoption('--do-not-cleanup'):
+                utils.destroy_resource(request, admin_session)

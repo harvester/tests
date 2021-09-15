@@ -1,0 +1,59 @@
+resource "harvester_virtualmachine" "{{ name }}" {
+  depends_on = [harvester_image.{{ image_name }}, harvester_volume.{{ vol_name }}, harvester_network.{{ net_name }}]
+
+  name        = "{{ name }}"
+  description = "test raw image"
+
+  tags = {
+    ssh-user = "root"
+  }
+
+  cpu    = {{ cpu | default(1) }} 
+  memory = "{{ memory_gb | default(2) }}Gi"
+
+  start        = true
+  hostname     = "{{ hostname | default(name) }}"
+  machine_type = "{{ machine_type | default('q35') }}"
+
+  ssh_keys = [
+    "{{ keypair }}"
+  ]
+
+  network_interface {
+    name         = "default"
+    model        = "virtio"
+    type         = "masquerade"
+  }
+
+  network_interface {
+    name         = "nic-1"
+    model        = "virtio"
+    type         = "bridge"
+    network_name = "{{ net_namespace | default('harvester-public') }}/{{ net_name }}"
+  }
+
+  disk {
+    name       = "rootdisk"
+    type       = "disk"
+    size       = "10Gi"
+    bus        = "virtio"
+    boot_order = 1
+
+    image        = "{{ image_name }}"
+    auto_delete  = true 
+  }
+
+  disk {
+    name = "mount-disk"
+    type = "disk"
+    bus  = "virtio"
+
+    existing_volume_name = "{{ vol_name }}"
+    auto_delete          = false
+  }
+
+  cloudinit {
+    user_data    = "{{ user_data }}"
+    network_data = "{{ net_data }}"
+  }
+}
