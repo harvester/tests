@@ -71,6 +71,32 @@ runcmd:
 
 
 @pytest.fixture(scope='class')
+def user_data_with_guest_agent_using_terraform(keypair_using_terraform):
+    # set to root user password to 'linux' to test password login in
+    # addition to SSH login
+    yaml_data = """#cloud-config
+chpasswd:
+  list: |
+    root:linux
+  expire: false
+ssh_pwauth: true
+users:
+  - name: root
+    ssh_authorized_keys:
+      - %s
+package_update: true
+packages:
+  - qemu-guest-agent
+runcmd:
+  - - systemctl
+    - enable
+    - '--now'
+    - qemu-ga
+""" % (keypair_using_terraform['spec']['publicKey'])
+    return yaml_data.replace('\n', '\\n')
+
+
+@pytest.fixture(scope='class')
 def basic_vm(request, admin_session, image, keypair,
              user_data_with_guest_agent, network_data,
              harvester_api_endpoints):

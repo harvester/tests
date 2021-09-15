@@ -6,3 +6,4 @@ __pycache__/
 assets
 test_result.html
 *venv
+*.kube

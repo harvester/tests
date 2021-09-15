@@ -1,0 +1,8 @@
+resource "harvester_ssh_key" "{{ name }}" {
+  name        = "{{ name }}" 
+  public_key  = "{{ public_key }}" 
+
+  lifecycle {
+    ignore_changes = all
+  }
+}

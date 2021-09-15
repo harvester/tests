@@ -1,0 +1,8 @@
+resource "harvester_volume" "{{ name }}" {
+  name  = "{{ name }}" 
+  size  = "{{ size | default(10) }}Gi" 
+
+  lifecycle {
+    ignore_changes = all
+  }
+}

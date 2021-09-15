@@ -96,3 +96,33 @@ def volume_with_image(request, kubevirt_api_version, admin_session,
     if not request.config.getoption('--do-not-cleanup'):
         utils.delete_volume(request, admin_session,
                             harvester_api_endpoints, volume_data)
+
+
+@pytest.fixture(scope='class')
+def volume_using_terraform(request, kubevirt_api_version, admin_session,
+                           harvester_api_endpoints):
+    vol_data = utils.create_volume_terraform(request, admin_session,
+                                             harvester_api_endpoints,
+                                             'resource_volume',
+                                             10)
+    yield vol_data
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session)
+
+
+@pytest.fixture(scope='class')
+def volume_with_image_using_terraform(request, kubevirt_api_version,
+                                      admin_session, harvester_api_endpoints,
+                                      image_using_terraform):
+    image_name = image_using_terraform['metadata']['name']
+    vol_data = utils.create_volume_terraform(request, admin_session,
+                                             harvester_api_endpoints,
+                                             'resource_volume_image',
+                                             10, image_name)
+    imageid = "/".join([image_using_terraform['metadata']['namespace'],
+                       image_name])
+    assert vol_data['metadata']['annotations'].get(
+        'harvesterhci.io/imageId') == imageid
+    yield vol_data
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session)

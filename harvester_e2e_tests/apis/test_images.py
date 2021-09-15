@@ -21,10 +21,10 @@ import pytest
 
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.image',
-   'harvester_e2e_tests.fixtures.keypair',
-   'harvester_e2e_tests.fixtures.volume',
-  ]
+    'harvester_e2e_tests.fixtures.image',
+    'harvester_e2e_tests.fixtures.keypair',
+    'harvester_e2e_tests.fixtures.volume',
+]
 
 
 def test_list_images(admin_session, harvester_api_endpoints):
@@ -144,3 +144,9 @@ def test_update_images(admin_session, harvester_api_endpoints, image):
     assert update_image_data['metadata']['annotations'] == {
         'test.harvesterhci.io': 'for-test-update'
     }
+
+
+@pytest.mark.terraform
+def test_create_images_using_terraform(admin_session, image_using_terraform):
+    # NOTE: the image fixture will be creating the image and check the result
+    pass
