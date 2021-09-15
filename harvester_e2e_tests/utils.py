@@ -26,6 +26,7 @@ import subprocess
 import time
 import uuid
 import yaml
+import shutil
 
 
 def random_name():
@@ -273,11 +274,13 @@ def assert_vm_restarted(admin_session, harvester_api_endpoints,
     assert success, 'Failed to restart VM %s' % (vm_name)
 
 
-def delete_image(request, admin_session, harvester_api_endpoints, image_json):
-    resp = admin_session.delete(harvester_api_endpoints.delete_image % (
-        image_json['metadata']['name']))
-    assert resp.status_code in [200, 201], 'Unable to delete image %s: %s' % (
-        image_json['metadata']['name'], resp.content)
+def delete_image(request, admin_session, harvester_api_endpoints, image_json,
+                 use_terraform=None):
+    if use_terraform is None:
+        resp = admin_session.delete(harvester_api_endpoints.delete_image % (
+            image_json['metadata']['name']))
+        assert resp.status_code in [200, 201], 'Unable to del image %s: %s' % (
+            image_json['metadata']['name'], resp.content)
 
     def _wait_for_image_to_be_deleted():
         resp = admin_session.get(harvester_api_endpoints.get_image % (
@@ -456,9 +459,9 @@ def delete_vm(request, admin_session, harvester_api_endpoints, vm_json,
         for volume in volumes:
             if 'persistentVolumeClaim' in volume:
                 delete_volume_by_name(
-                     request, admin_session, harvester_api_endpoints,
-                     volume['persistentVolumeClaim']['claimName'],
-                     owned_by=vm_json['metadata']['name'])
+                    request, admin_session, harvester_api_endpoints,
+                    volume['persistentVolumeClaim']['claimName'],
+                    owned_by=vm_json['metadata']['name'])
 
 
 def delete_volume(request, admin_session, harvester_api_endpoints,
@@ -536,17 +539,22 @@ def delete_host(request, admin_session, harvester_api_endpoints, host_json):
     assert success, 'Timed out while waiting for host to be deleted'
 
 
-def _get_node_script_path(request, script_name):
-    scripts_dir = request.config.getoption('--node-scripts-location')
+def _get_node_script_path(request, script_name=None, script_type=None):
+    if script_type == 'terraform':
+        scripts_dir = request.config.getoption('--terraform-scripts-location')
+    else:
+        scripts_dir = request.config.getoption('--node-scripts-location')
     assert scripts_dir, ('Node scripts location not provided. Please use '
                          'the --node-scripts-location parameter to specify '
                          'the location of the node scripts.')
     assert os.path.isdir(scripts_dir), 'Invalid node scripts location: %s' % (
         scripts_dir)
-    script = os.path.join(scripts_dir, script_name)
-    assert os.path.isfile(script), 'Node script %s not found' % (script)
-    assert os.access(script, os.X_OK), 'Node script %s is not executable' % (
-        script)
+    script = scripts_dir
+    if script_name:
+        script = os.path.join(scripts_dir, script_name)
+        assert os.path.isfile(script), 'Node script %s not found' % (script)
+        assert os.access(script, os.X_OK), 'Node script %s not executable' % (
+            script)
     return script
 
 
@@ -751,3 +759,325 @@ def disable_maintenance_mode(request, admin_session, harvester_api_endpoints,
                              node_json,
                              harvester_api_endpoints.get_node % (
                                  node_json['metadata']['name']))
+
+
+def create_tf_from_template(request, template_name, **template_args):
+    # get the current path relative to the ./templates/ directory
+    my_path = os.path.dirname(os.path.realpath(__file__))
+    # NOTE: the templates directory must be at the same level as
+    # utilities.py, and all the templates must have the '.yaml.j2' extension
+    templates_path = os.path.join(my_path, 'templates')
+    template_file = f'{templates_path}/{template_name}.tf.j2'
+    # now load the template
+    with open(template_file) as tempfile:
+        template = jinja2.Template(tempfile.read())
+    # now render the template
+#    template.globals['random_name'] = random_name
+    rendered = template.render(template_args)
+    tf_file_dir = _get_node_script_path(request, script_type='terraform')
+    tf_file_path = os.path.join(tf_file_dir, f'{template_name}.tf')
+    with open(tf_file_path, 'w') as f:
+        f.write(rendered)
+
+
+def create_kubeconfig_from_template(request, template_name, **template_args):
+    # Create/Update kubeconfig
+    my_path = os.path.dirname(os.path.realpath(__file__))
+    # NOTE: the templates directory must be at the same level as
+    # utilities.py, and all the templates must have the '.yaml.j2' extension
+    templates_path = os.path.join(my_path, 'templates')
+    template_file = f'{templates_path}/{template_name}.j2'
+    with open(template_file) as tempfile:
+        template = jinja2.Template(tempfile.read())
+    # now render the template
+    rendered = template.render(template_args)
+    terraform_path = _get_node_script_path(
+        request, script_type='terraform')
+    kubeconfig_dir = os.path.join(terraform_path, '.kube')
+    if not os.path.exists(kubeconfig_dir):
+        os.makedirs(kubeconfig_dir)
+    config_file_path = os.path.join(kubeconfig_dir, 'config')
+    with open(config_file_path, 'w') as f:
+        f.write(rendered)
+    create_tf_from_template(
+        request,
+        'provider',
+        kubeconfig=os.path.abspath(config_file_path))
+
+
+def create_image_terraform(request, admin_session, harvester_api_endpoints,
+                           url):
+    name = "t-" + random_name()
+    create_tf_from_template(
+        request,
+        'resource_image',
+        name=name,
+        url=url)
+
+    create_kubeconfig_from_template(
+        request,
+        'kube_config',
+        harvester_endpoint=request.config.getoption('--endpoint'),
+        token=(admin_session.headers['authorization']).split()[1]
+    )
+
+    terraform_script = _get_node_script_path(
+        request, 'terraform.sh', 'terraform')
+    result = subprocess.run([terraform_script], shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 0, (
+        'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
+            result.returncode, result.stderr, result.stdout))
+    # wait for the image to get ready
+    time.sleep(50)
+
+    def _wait_for_image_become_active():
+        # we want the update response to return back to the caller
+
+        resp = admin_session.get(harvester_api_endpoints.get_ter_image % (
+            name))
+        assert resp.status_code == 200, 'Failed to get image %s: %s' % (
+            name, resp.content)
+        image_json = resp.json()
+        if ('status' in image_json and
+                'storageClassName' in image_json['status'] and
+                image_json['status']['progress'] == 100):
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_image_become_active,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for image to be active.'
+
+    resp = admin_session.get(harvester_api_endpoints.get_ter_image % (
+        name))
+    image_json = resp.json()
+    return image_json
+
+
+def destroy_resource(request, admin_session, destroy_type=None):
+    create_kubeconfig_from_template(
+        request,
+        'kube_config',
+        harvester_endpoint=request.config.getoption('--endpoint'),
+        token=(admin_session.headers['authorization']).split()[1]
+    )
+
+    terraform_path = _get_node_script_path(
+        request, script_type='terraform')
+    if os.path.isdir(os.path.join(terraform_path, 'terraformharvester')):
+        terraform_script = _get_node_script_path(
+            request, 'terraform_destroy.sh', 'terraform') + ' ' + destroy_type
+        result = subprocess.run([terraform_script], shell=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        assert result.returncode == 0, (
+            'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
+                result.returncode, result.stderr, result.stdout))
+
+    if os.path.isdir(os.path.join(terraform_path, '.kube')):
+        shutil.rmtree(os.path.join(terraform_path, '.kube'))
+
+    if os.path.isfile(os.path.join(terraform_path, 'provider.tf')):
+        os.remove(os.path.join(terraform_path, 'provider.tf'))
+
+
+def create_volume_terraform(request, admin_session, harvester_api_endpoints,
+                            template_name, size, image=None):
+    name = "t-" + random_name()
+    create_tf_from_template(
+        request,
+        template_name,
+        name=name,
+        size=size,
+        image=image)
+
+    create_kubeconfig_from_template(
+        request,
+        'kube_config',
+        harvester_endpoint=request.config.getoption('--endpoint'),
+        token=(admin_session.headers['authorization']).split()[1]
+    )
+
+    terraform_script = _get_node_script_path(
+        request, 'terraform.sh', 'terraform')
+    result = subprocess.run([terraform_script], shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 0, (
+        'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
+            result.returncode, result.stderr, result.stdout))
+
+    resp = admin_session.get(harvester_api_endpoints.get_volume % (
+        name))
+    assert resp.status_code == 200, 'Failed to get Volume %s: %s' % (
+        name, resp.content)
+
+    vol_data = resp.json()
+    return vol_data
+
+
+def create_keypair_terraform(request, admin_session, harvester_api_endpoints,
+                             template_name, public_key):
+    name = "t-" + random_name()
+    create_tf_from_template(
+        request,
+        template_name,
+        name=name,
+        public_key=public_key)
+
+    create_kubeconfig_from_template(
+        request,
+        'kube_config',
+        harvester_endpoint=request.config.getoption('--endpoint'),
+        token=(admin_session.headers['authorization']).split()[1]
+    )
+
+    terraform_script = _get_node_script_path(
+        request, 'terraform.sh', 'terraform')
+    result = subprocess.run([terraform_script], shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 0, (
+        'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
+            result.returncode, result.stderr, result.stdout))
+
+    resp = admin_session.get(harvester_api_endpoints.get_keypair % (
+        name))
+    assert resp.status_code == 200, 'Failed to get Volume %s: %s' % (
+        name, resp.content)
+
+    keypair_data = resp.json()
+    return keypair_data
+
+
+def create_network_terraform(request, admin_session, harvester_api_endpoints,
+                             template_name, vlan_id):
+
+    #    name = 'vlan' + str(vlan_id)
+    name = "t-" + random_name()
+    create_tf_from_template(
+        request,
+        template_name,
+        name=name,
+        vlan_id=vlan_id)
+
+    create_kubeconfig_from_template(
+        request,
+        'kube_config',
+        harvester_endpoint=request.config.getoption('--endpoint'),
+        token=(admin_session.headers['authorization']).split()[1]
+    )
+
+    terraform_script = _get_node_script_path(
+        request, 'terraform.sh', 'terraform')
+    result = subprocess.run([terraform_script], shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 0, (
+        'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
+            result.returncode, result.stderr, result.stdout))
+
+    poll_for_resource_ready(request, admin_session,
+                            harvester_api_endpoints.get_network % (name))
+    resp = admin_session.get(harvester_api_endpoints.get_network % (
+        name))
+    assert resp.status_code == 200, 'Failed to get Network %s: %s' % (
+        name, resp.content)
+
+    network_data = resp.json()
+    return network_data
+
+
+def create_clusternetworks_terraform(request, admin_session,
+                                     harvester_api_endpoints,
+                                     template_name,
+                                     vlan_nic=None):
+
+    create_tf_from_template(
+        request,
+        template_name,
+        vlan_nic=vlan_nic)
+
+    create_kubeconfig_from_template(
+        request,
+        'kube_config',
+        harvester_endpoint=request.config.getoption('--endpoint'),
+        token=(admin_session.headers['authorization']).split()[1]
+    )
+
+    terraform_script = _get_node_script_path(
+        request, 'terraform.sh', 'terraform') + ' ' + 'import'
+    result = subprocess.run([terraform_script], shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 0, (
+        'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
+            result.returncode, result.stderr, result.stdout))
+
+    poll_for_resource_ready(request, admin_session,
+                            harvester_api_endpoints.get_vlan)
+    resp = admin_session.get(harvester_api_endpoints.get_vlan)
+    assert resp.status_code == 200, 'Failed to get vlan: %s' % (resp.content)
+    network_data = resp.json()
+    return network_data
+
+
+def create_vm_terraform(request, admin_session, harvester_api_endpoints,
+                        template_name,
+                        keypair=None,
+                        volume=None,
+                        volume_with_image=None,
+                        network=None,
+                        user_data=None,
+                        net_data=None):
+    name = 't-' + random_name()
+    create_tf_from_template(
+        request,
+        template_name,
+        name=name,
+        vol_name=volume['metadata']['name'],
+        vol_with_image=volume_with_image['metadata']['name'],
+        net_name=network['metadata']['name'],
+        keypair=keypair['metadata']['name'],
+        public_key=keypair['spec']['publicKey'],
+        user_data=user_data,
+        net_data=net_data)
+
+    create_kubeconfig_from_template(
+        request,
+        'kube_config',
+        harvester_endpoint=request.config.getoption('--endpoint'),
+        token=(admin_session.headers['authorization']).split()[1]
+    )
+
+    terraform_script = _get_node_script_path(
+        request, 'terraform.sh', 'terraform')
+    result = subprocess.run([terraform_script], shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 0, (
+        'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
+            result.returncode, result.stderr, result.stdout))
+
+    assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                    name, running=True)
+    resp = admin_session.get(harvester_api_endpoints.get_vm % (
+        name))
+    assert resp.status_code == 200, 'Failed to get VirtualMachine %s: %s' % (
+        name, resp.content)
+
+    vm_data = resp.json()
+    return vm_data
+
+
+def check_ter_vm_deleted(request, admin_session, harvester_api_endpoints,
+                         vm_json):
+    def _check_vm_deleted():
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_json['metadata']['name']))
+        if resp.status_code == 404:
+            return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_deleted,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for VM to be terminated.'

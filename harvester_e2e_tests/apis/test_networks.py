@@ -18,6 +18,7 @@
 from harvester_e2e_tests import utils
 import json
 import pytest
+import time
 
 
 pytest_plugins = [
@@ -92,3 +93,38 @@ def test_create_edit_network(request, admin_session, harvester_api_endpoints,
     updated_network_data = resp.json()
     updated_config = json.loads(updated_network_data['spec']['config'])
     assert updated_config['vlan'] == updated_vlan, 'Failed to update vlan'
+
+
+@pytest.mark.terraform
+def test_create_network_using_terraform(request, admin_session,
+                                        harvester_api_endpoints,
+                                        network_using_terraform):
+    pass
+
+
+@pytest.mark.terraform
+def test_cluster_network_using_terraform(request, admin_session,
+                                         harvester_api_endpoints):
+
+    network_data = utils.create_clusternetworks_terraform(
+                       request,
+                       admin_session,
+                       harvester_api_endpoints,
+                       'resource_clusternetworks',
+                       'eth0')
+
+    time.sleep(30)
+    assert 'eth0' in network_data['config']['defaultPhysicalNIC']
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session, 'dir-only')
+
+    # undo cluster network update back to original
+    network_data = utils.create_clusternetworks_terraform(
+                        request, admin_session,
+                        harvester_api_endpoints,
+                        'resource_clusternetworks',
+                        'vlan')
+    time.sleep(30)
+    assert 'vlan' in network_data['config']['defaultPhysicalNIC']
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session, 'dir-only')

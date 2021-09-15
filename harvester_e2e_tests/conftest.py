@@ -93,6 +93,12 @@ def pytest_addoption(parser):
         default=config_data['win-image-url'],
         help=('Windows image URL ')
     )
+    parser.addoption(
+        '--terraform-scripts-location',
+        action='store',
+        default=config_data['terraform-scripts-location'],
+        help=('External scripts to create resources using terraform')
+    )
 
     # TODO(gyee): may need to add SSL options later
 
@@ -117,6 +123,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", ('delete_host: mark test to run in the end when other '
                     'tests finished running')
+    )
+    config.addinivalue_line(
+        "markers", ('terraform: mark test to run only if we have terraform.sh '
+                    'and terraform provider scripts provided')
     )
 
 

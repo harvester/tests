@@ -1,5 +1,5 @@
 # Harvester API endpoint
-endpoint: 'https://localhost:30443'
+endpoint: 'https://192.168.0.30:30443'
 
 #Harvester username
 username: 'admin'
@@ -29,3 +29,5 @@ node-scripts-location: 'scripts/vagrant'
 
 # URL to download the Windows image
 win-image-url: ''
+
+terraform-scripts-location: 'terraform_test_artifacts'

@@ -28,10 +28,10 @@ import time
 
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.api_version',
-   'harvester_e2e_tests.fixtures.session',
-  ]
+    'harvester_e2e_tests.fixtures.api_endpoints',
+    'harvester_e2e_tests.fixtures.api_version',
+    'harvester_e2e_tests.fixtures.session',
+]
 
 
 def _generate_ssh_keypair():
@@ -101,3 +101,19 @@ def keypair(request, harvester_api_version, admin_session,
             harvester_api_endpoints.delete_keypair % (
                 keypair_data['metadata']['name']))
         assert resp.status_code == 200, 'Unable to cleanup keypair'
+
+
+@pytest.fixture(scope='class')
+def keypair_using_terraform(request, harvester_api_version, admin_session,
+                            harvester_api_endpoints):
+
+    public_key, private_key = _generate_ssh_keypair()
+    keypair_data = utils.create_keypair_terraform(request, admin_session,
+                                                  harvester_api_endpoints,
+                                                  'resource_keypair',
+                                                  public_key)
+    wait_till_validated(admin_session, harvester_api_endpoints, keypair_data)
+    keypair_data['spec']['privateKey'] = private_key
+    yield keypair_data
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session, 'all')
