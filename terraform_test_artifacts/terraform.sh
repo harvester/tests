@@ -12,11 +12,12 @@ if [ ! -e $TMPDIR ]; then
     exit 1
 fi
 
-mv "$PWD"/terraform_test_artifacts/resource* "$TMPDIR"
-mv -f "$PWD"/terraform_test_artifacts/provider.tf "$TMPDIR"
+TERDIR="$PWD"/terraform_test_artifacts
+mv "$TERDIR"/resource* "$TMPDIR"
+mv -f "$TERDIR"/provider.tf "$TMPDIR"
 
 pushd "$TMPDIR" 
-terraform init
-terraform plan -out tfplan -input=false 
-terraform apply -input=false tfplan 
+#terraform init
+TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform plan -out tfplan -input=false 
+TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform apply -input=false tfplan 
 popd

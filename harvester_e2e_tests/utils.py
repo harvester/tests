@@ -26,6 +26,7 @@ import subprocess
 import time
 import uuid
 import yaml
+import shutil
 
 
 def random_name():
@@ -876,7 +877,7 @@ def destroy_resource(request, admin_session):
                 result.returncode, result.stderr, result.stdout))
 
     if os.path.isdir(os.path.join(terraform_path, '.kube')):
-        os.rmdir(os.path.join(terraform_path, '.kube'))
+        shutil.rmtree(os.path.join(terraform_path, '.kube'))
 
     if os.path.isfile(os.path.join(terraform_path, 'provider.tf')):
         os.remove(os.path.join(terraform_path, 'provider.tf'))

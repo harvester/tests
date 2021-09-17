@@ -149,8 +149,8 @@ directory which contains the host management shell scripts.
 To run the tests which uses terraform to create each resource, it uses the 
 scripts in scripts/terraform folder
 ```console
-tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html --vland-id 10 -m terraform
-tox -e py36 -- harvester_e2e_tests/scenarios/test_vm_networking.py --html=test_result.html --vland-id 10 -m terraform
+tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html --vlan-id 10 -m terraform
+tox -e py36 -- harvester_e2e_tests/scenarios/test_vm_networking.py --html=test_result.html --vlan-id 10 -m terraform
 ```
 
 ## Running delete Host tests

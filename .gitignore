@@ -7,3 +7,6 @@ assets
 test_result.html
 *venv
 *.kube
+*provider.tf
+*dev.tfrc
+*.terraform.d
