@@ -77,7 +77,7 @@ def test_create_keypair_by_yaml(admin_session, harvester_api_endpoints,
         resp.content)
 
 
-@pytest.mark.terraform
+@pytest.mark.terraform_1
 def test_create_keypairs_using_terraform(keypair_using_terraform):
     # keypair creation validation is done in the fixture already
     pass

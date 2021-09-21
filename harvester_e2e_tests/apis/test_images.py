@@ -146,7 +146,7 @@ def test_update_images(admin_session, harvester_api_endpoints, image):
     }
 
 
-@pytest.mark.terraform
+@pytest.mark.terraform_1
 def test_create_images_using_terraform(admin_session, image_using_terraform):
     # NOTE: the image fixture will be creating the image and check the result
     pass

@@ -107,7 +107,7 @@ def volume_using_terraform(request, kubevirt_api_version, admin_session,
                                              10)
     yield vol_data
     if not request.config.getoption('--do-not-cleanup'):
-        utils.destroy_resource(request, admin_session)
+        utils.destroy_resource(request, admin_session, 'None')
 
 
 @pytest.fixture(scope='class')
@@ -125,4 +125,4 @@ def volume_with_image_using_terraform(request, kubevirt_api_version,
         'harvesterhci.io/imageId') == imageid
     yield vol_data
     if not request.config.getoption('--do-not-cleanup'):
-        utils.destroy_resource(request, admin_session)
+        utils.destroy_resource(request, admin_session, 'None')

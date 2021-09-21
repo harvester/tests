@@ -192,14 +192,14 @@ def validate_blank_volumes(request, admin_session, get_api_link):
     return pvc_json
 
 
-@pytest.mark.terraform
+@pytest.mark.terraform_1
 def test_create_volume_using_terraform(admin_session, volume_using_terraform):
     # NOTE: the volume_using_terraform fixture will be creating the
     # volume and check the result
     pass
 
 
-@pytest.mark.terraform
+@pytest.mark.terraform_1
 def test_create_vol_with_image_terraform(admin_session,
                                          volume_with_image_using_terraform):
     # NOTE: the volume_using_terraform fixture will be creating the

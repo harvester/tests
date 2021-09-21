@@ -483,7 +483,7 @@ def test_create_update_vm_user_data(request, admin_session, image,
                                 harvester_api_endpoints, single_vm)
 
 
-@pytest.mark.terraform
+@pytest.mark.terraform_1
 def test_create_vm_using_terraform(request, admin_session,
                                    harvester_api_endpoints,
                                    volume_using_terraform,

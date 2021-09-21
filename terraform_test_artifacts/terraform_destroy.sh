@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -e
+#check to clean only dir_only or all (dir + resource)
+if [ -z "$1" ]; then DESTORYTYPE="all"; else DESTORYTYPE="$1"; fi
 
 TMPDIR="$PWD"/terraform_test_artifacts/terraformharvester
 KUBEDIR="$PWD"/terraform_test_artifacts/.kube
@@ -15,6 +17,9 @@ fi
 trap "exit 1"           HUP INT PIPE QUIT TERM
 trap 'rm -rf "$TMPDIR" "$KUBEDIR"' EXIT
 
-pushd "$TMPDIR" 
-TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform destroy -auto-approve
+pushd "$TMPDIR"
+if [ "$DESTROYTYPE" != "dir_only" ]
+then
+   TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform destroy -auto-approve
+fi
 popd

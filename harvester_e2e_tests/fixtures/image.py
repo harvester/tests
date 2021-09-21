@@ -115,6 +115,6 @@ def image_using_terraform(request, admin_session, harvester_api_endpoints):
     yield image_json
     if not request.config.getoption('--do-not-cleanup'):
         print("Destroy resource")
-        utils.destroy_resource(request, admin_session)
+        utils.destroy_resource(request, admin_session, 'None')
         utils.delete_image(request, admin_session, harvester_api_endpoints,
                            image_json, use_terraform=True)

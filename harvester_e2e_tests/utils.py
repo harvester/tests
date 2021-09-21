@@ -857,7 +857,7 @@ def create_image_terraform(request, admin_session, harvester_api_endpoints,
     return image_json
 
 
-def destroy_resource(request, admin_session):
+def destroy_resource(request, admin_session, destroy_type=None):
     create_kubeconfig_from_template(
         request,
         'kube_config',
@@ -869,7 +869,7 @@ def destroy_resource(request, admin_session):
         request, script_type='terraform')
     if os.path.isdir(os.path.join(terraform_path, 'terraformharvester')):
         terraform_script = _get_node_script_path(
-            request, 'terraform_destroy.sh', 'terraform')
+            request, 'terraform_destroy.sh', 'terraform') + ' ' + str(destroy_type)
         result = subprocess.run([terraform_script], shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         assert result.returncode == 0, (
@@ -983,6 +983,44 @@ def create_network_terraform(request, admin_session, harvester_api_endpoints,
     assert resp.status_code == 200, 'Failed to get Network %s: %s' % (
         name, resp.content)
 
+    network_data = resp.json()
+    return network_data
+
+
+def create_clusternetworks_terraform(request, admin_session,
+                                     harvester_api_endpoints,
+                                     template_name,
+                                     vlan_nic=None):
+
+    create_tf_from_template(
+        request,
+        template_name,
+        vlan_nic=vlan_nic)
+
+    print('Creating Kube')
+    create_kubeconfig_from_template(
+        request,
+        'kube_config',
+        harvester_endpoint=request.config.getoption('--endpoint'),
+        token=(admin_session.headers['authorization']).split()[1]
+    )
+
+    print('Creating script')
+    
+    terraform_script = _get_node_script_path(
+        request, 'terraform.sh', 'terraform') + ' import'
+    print('print terraform script')
+    print(terraform_script)
+    result = subprocess.run([terraform_script], shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 0, (
+        'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
+            result.returncode, result.stderr, result.stdout))
+
+    poll_for_resource_ready(request, admin_session,
+                            harvester_api_endpoints.get_vlan)
+    resp = admin_session.get(harvester_api_endpoints.get_vlan)
+    assert resp.status_code == 200, 'Failed to get vlan: %s' % (resp.content)
     network_data = resp.json()
     return network_data
 

@@ -164,4 +164,4 @@ def network_using_terraform(request, admin_session,
     yield network_data
 
     if not request.config.getoption('--do-not-cleanup'):
-        utils.destroy_resource(request, admin_session)
+        utils.destroy_resource(request, admin_session, 'None')

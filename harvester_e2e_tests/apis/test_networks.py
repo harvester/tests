@@ -18,6 +18,7 @@
 from harvester_e2e_tests import utils
 import json
 import pytest
+import time
 
 
 pytest_plugins = [
@@ -94,8 +95,49 @@ def test_create_edit_network(request, admin_session, harvester_api_endpoints,
     assert updated_config['vlan'] == updated_vlan, 'Failed to update vlan'
 
 
-@pytest.mark.terraform
+@pytest.mark.terraform_1
 def test_create_network_using_terraform(request, admin_session,
                                         harvester_api_endpoints,
                                         network_using_terraform):
     pass
+
+
+@pytest.mark.terraform
+def test_cluster_network_using_terraform(request, admin_session,
+                                         harvester_api_endpoints):
+
+    vlan_resp = admin_session.get(harvester_api_endpoints.get_vlan)
+    exist_vlan_data = vlan_resp.json()
+    vlan_name = exist_vlan_data['config']['defaultPhysicalNIC']
+    print('Old vlan')
+    print(vlan_name)
+    network_data = utils.create_clusternetworks_terraform(
+                       request,
+                       admin_session,
+                       harvester_api_endpoints,
+                       'resource_clusternetworks',
+                       'eth0')
+
+    time.sleep(30)
+    updated_vlan_name = network_data['config']['defaultPhysicalNIC']
+    print('New vlan')
+    print(updated_vlan_name)
+    assert 'eth0' in network_data['config']['defaultPhysicalNIC']
+    print('After assert')
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session, 'dir-only')
+
+    # undo cluster network update back to original
+    network_data = utils.create_clusternetworks_terraform(
+                        request, admin_session,
+                        harvester_api_endpoints,
+                        'resource_clusternetworks',
+                        'vlan')
+    time.sleep(30)
+    undo_vlan_name = network_data['config']['defaultPhysicalNIC']
+    print('Undo vlan')
+    print(undo_vlan_name)
+    assert 'vlan' in network_data['config']['defaultPhysicalNIC']
+    print('After assert')
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.destroy_resource(request, admin_session, 'dir-only')
