@@ -16,9 +16,9 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+import os
 import polling2
 import pytest
-
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.image',
@@ -66,8 +66,11 @@ def test_create_image_no_url(admin_session, harvester_api_endpoints):
 def test_create_image_with_reuse_display_name(request, admin_session,
                                               harvester_api_endpoints):
     name = utils.random_name()
-    url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
-           'Leap_15.2/images/openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+    base_url = request.config.getoption(
+        '--image-cache-url',
+        ('http://download.opensuse.org/repositories/Cloud:/Images:/'
+         'Leap_15.2/images'))
+    url = os.path.join(base_url, 'openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
     # create the image
     image_json = utils.create_image(request, admin_session,
                                     harvester_api_endpoints, url,

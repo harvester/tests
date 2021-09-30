@@ -16,6 +16,7 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+import os
 import pytest
 
 
@@ -29,8 +30,11 @@ pytest_plugins = [
 @pytest.fixture(scope='class')
 def ubuntu_image(request, harvester_api_version, admin_session,
                  harvester_api_endpoints):
-    url = ('http://cloud-images.ubuntu.com/releases/focal/release/'
-           'ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img')
+    base_url = request.config.getoption(
+        '--image-cache-url',
+        'http://cloud-images.ubuntu.com/releases/focal/release/')
+    url = os.path.join(base_url,
+                       'ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img')
     image_json = utils.create_image(
         request, admin_session, harvester_api_endpoints, url,
         description='Ubuntu 20.04 Server')
@@ -59,8 +63,11 @@ def windows_image(request, harvester_api_version, admin_session,
 @pytest.fixture(scope='class')
 def k3os_image(request, harvester_api_version, admin_session,
                harvester_api_endpoints):
-    url = ('https://github.com/rancher/k3os/releases/download/v0.20.4-k3s1r0/'
-           'k3os-amd64.iso')
+    base_url = request.config.getoption(
+        '--image-cache-url',
+        'https://github.com/rancher/k3os/releases/download/v0.20.4-k3s1r0')
+    url = os.path.join(base_url,
+                       'k3os-amd64.iso')
     image_json = utils.create_image(
         request, admin_session, harvester_api_endpoints, url,
         description='K3OS')
@@ -73,8 +80,10 @@ def k3os_image(request, harvester_api_version, admin_session,
 @pytest.fixture(scope='class')
 def opensuse_image(request, harvester_api_version, admin_session,
                    harvester_api_endpoints):
-    url = ('https://download.opensuse.org/tumbleweed/iso/'
-           'openSUSE-Tumbleweed-NET-x86_64-Current.iso')
+    base_url = request.config.getoption(
+        '--image-cache-url',
+        'https://download.opensuse.org/tumbleweed/iso')
+    url = os.path.join(base_url, 'openSUSE-Tumbleweed-NET-x86_64-Current.iso')
     image_json = utils.create_image(
         request, admin_session, harvester_api_endpoints, url,
         description='openSUSE Tumbleweed')
@@ -86,12 +95,20 @@ def opensuse_image(request, harvester_api_version, admin_session,
 
 @pytest.fixture(scope='class')
 def image(request, admin_session, harvester_api_endpoints):
-    url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
-           'Leap_15.2/images/openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+    cache_url = request.config.getoption('--image-cache-url')
 
     # when use parameterized fixture, use the URL from the parameter instead
     if getattr(request, 'param', None):
         url = request.param
+        if cache_url:
+            url = os.path.join(cache_url,
+                               url[url.rfind('/') + 1:])
+    else:
+        base_url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
+                    'Leap_15.2/images')
+        if cache_url:
+            base_url = cache_url
+        url = os.path.join(base_url, 'openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
 
     image_json = utils.create_image(request, admin_session,
                                     harvester_api_endpoints, url)
@@ -103,8 +120,11 @@ def image(request, admin_session, harvester_api_endpoints):
 
 @pytest.fixture(scope='class')
 def image_using_terraform(request, admin_session, harvester_api_endpoints):
-    url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
-           'Leap_15.2/images/openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+    base_url = request.config.getoption(
+        '--image-cache-url',
+        ('http://download.opensuse.org/repositories/Cloud:/Images:/'
+         'Leap_15.2/images'))
+    url = os.path.join(base_url, 'openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
 
     # when use parameterized fixture, use the URL from the parameter instead
     if getattr(request, 'param', None):
