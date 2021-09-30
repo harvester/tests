@@ -95,6 +95,7 @@ def test_create_edit_network(request, admin_session, harvester_api_endpoints,
 
 
 @pytest.mark.terraform
+@pytest.mark.public_network
 def test_create_network_using_terraform(request, admin_session,
                                         harvester_api_endpoints,
                                         network_using_terraform):
