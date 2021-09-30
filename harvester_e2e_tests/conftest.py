@@ -99,6 +99,12 @@ def pytest_addoption(parser):
         default=config_data['terraform-scripts-location'],
         help=('External scripts to create resources using terraform')
     )
+    parser.addoption(
+        '--image-cache-url',
+        action='store',
+        default=config_data['image-cache-url'],
+        help=('URL for the local images cache')
+    )
 
     # TODO(gyee): may need to add SSL options later
 

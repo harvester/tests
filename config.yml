@@ -30,4 +30,7 @@ node-scripts-location: 'scripts/vagrant'
 # URL to download the Windows image
 win-image-url: ''
 
+# URL to download all images
+image-cache-url: ''
+
 terraform-scripts-location: 'terraform_test_artifacts'
