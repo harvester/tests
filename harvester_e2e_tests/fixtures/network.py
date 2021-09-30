@@ -36,12 +36,21 @@ def enable_vlan(request, admin_session, harvester_api_endpoints):
         vlan_json['config'] = {}
     if 'defaultPhysicalNIC' not in vlan_json['config']:
         vlan_json['config']['defaultPhysicalNIC'] = None
-    vlan_json['enable'] = True
-    vlan_json['config']['defaultPhysicalNIC'] = vlan_nic
-    utils.poll_for_update_resource(request, admin_session,
-                                   harvester_api_endpoints.update_vlan,
-                                   vlan_json,
-                                   harvester_api_endpoints.get_vlan)
+
+    if utils.is_marker_enabled(request, 'terraform'):
+        utils.create_clusternetworks_terraform(
+            request,
+            admin_session,
+            harvester_api_endpoints,
+            'resource_clusternetworks',
+            vlan_nic)
+    else:
+        vlan_json['enable'] = True
+        vlan_json['config']['defaultPhysicalNIC'] = vlan_nic
+        utils.poll_for_update_resource(request, admin_session,
+                                       harvester_api_endpoints.update_vlan,
+                                       vlan_json,
+                                       harvester_api_endpoints.get_vlan)
 
 
 def _cleanup_network(admin_session, harvester_api_endpoints, network_id,
@@ -164,4 +173,7 @@ def network_using_terraform(request, admin_session,
     yield network_json
 
     if not request.config.getoption('--do-not-cleanup'):
-        utils.destroy_resource(request, admin_session)
+        utils.destroy_resource(
+            request,
+            admin_session,
+            'harvester_network.' + network_json['metadata']['name'])
