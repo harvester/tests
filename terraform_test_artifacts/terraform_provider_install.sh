@@ -2,25 +2,30 @@
 
 set -e
 
-USAGE="${0}: <version> 
+USAGE="${0}: [<version>] 
 
 Where:
-  <version>: Latest version of terraform provider for Havester 
+  <version>: version of to dowload. If absent, it will download the latest.
 "
 
-if [ $# -ne 1 ] ; then
+ARCH=linux_amd64
+DOWNLOAD_URL=
+if [ $# -eq 0 ] ; then
+	# lookup the latest release download URL
+	DOWNLOAD_URL=$(curl https://api.github.com/repos/harvester/terraform-provider-harvester/releases/latest | grep "browser_download_url" | awk '{print $2}' | tr -d '"')
+elif [ $# -eq 1 ] ; then
+	VER=$1
+	DOWNLOAD_URL="https://github.com/harvester/terraform-provider-harvester/releases/download/v${VER}/terraform-provider-harvester-amd64.tar.gz"
+else
         echo "$USAGE"
         exit 1
 fi
 
-VER=$1
 ARCH=linux_amd64
-WGET="wget https://github.com/harvester/terraform-provider-harvester/releases/download/v${VER}/terraform-provider-harvester-amd64.tar.gz"
 
 TERDIR="$PWD/terraform_test_artifacts"
-#pushd "$PWD"/terraform_test_artifacts/
 pushd "$TERDIR"
-`$WGET`
+`wget ${DOWNLOAD_URL}`
 ## extract archive
 tar -zxvf ./terraform-provider-harvester-amd64.tar.gz
 terraform_harvester_provider_bin=${TERDIR}/terraform-provider-harvester
