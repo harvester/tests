@@ -54,13 +54,9 @@ def test_create_image_no_url(admin_session, harvester_api_endpoints):
     )
     resp = admin_session.post(harvester_api_endpoints.create_image,
                               json=request_json)
-    assert resp.status_code == 201, 'Failed to create image: %s' % (
-        resp.content)
-    image_data = resp.json()
-    resp = admin_session.delete(harvester_api_endpoints.delete_image % (
-        image_data['metadata']['name']))
-    assert resp.status_code == 200, 'Unable to delete image: %s' % (
-        resp.content)
+    assert resp.status_code == 422, (
+        'Expecting HTTP 422 for attempting to create an image with an empty '
+        'URL %s:%s ' % (resp.status_code, resp.content))
 
 
 def test_create_image_with_reuse_display_name(request, admin_session,

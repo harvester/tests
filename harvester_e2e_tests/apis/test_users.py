@@ -17,6 +17,7 @@
 
 from harvester_e2e_tests import utils
 import bcrypt
+import pytest
 
 
 pytest_plugins = [
@@ -26,12 +27,14 @@ pytest_plugins = [
   ]
 
 
+@pytest.mark.skip(reason='User management feature is being deferred.')
 def test_create_users(user):
     # user creation is tested implicitly by successfully creating
     # the user fixture
     pass
 
 
+@pytest.mark.skip(reason='User management feature is being deferred.')
 def test_get_user(admin_session, user):
     resp = admin_session.get(user['links']['view'])
     assert resp.status_code == 200, 'Failed to get user: %s' % (resp.content)
@@ -41,6 +44,7 @@ def test_get_user(admin_session, user):
     assert ret_user_data['username'] == user['username']
 
 
+@pytest.mark.skip(reason='User management feature is being deferred.')
 def test_update_user_password(request, admin_session, user):
     request_json = utils.get_json_object_from_template(
         'basic_user', password='UpdatedTestF00Bar')

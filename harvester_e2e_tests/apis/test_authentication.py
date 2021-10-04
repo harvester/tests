@@ -15,10 +15,8 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import re
 import requests
-from urllib.parse import (urlparse, urlunparse, urljoin)
-
+from urllib.parse import urljoin
 
 pytest_plugins = [
    'harvester_e2e_tests.fixtures.api_endpoints',
@@ -31,15 +29,7 @@ pytest_plugins = [
 def test_rancher_authentication(admin_session, request):
     username = request.config.getoption('--username')
     password = request.config.getoption('--password')
-    # if Rancher URL is not specified, we will use the same host with
-    # port 30444 which is default Rancher API port
-    rancher_endpoint = request.config.getoption('--rancher-endpoint')
-    if not rancher_endpoint:
-        harvester_endpoint = request.config.getoption('--endpoint')
-        o = urlparse(harvester_endpoint)
-        netloc = re.sub(':.*$', ':30444', o.netloc)
-        rancher_endpoint = urlunparse(
-            (o.scheme, netloc, o.path, o.params, o.query, o.fragment))
+    rancher_endpoint = request.config.getoption('--endpoint')
     rancher_auth_url = urljoin(
             rancher_endpoint, '/v3-public/localProviders/local')
     login_data = {'username': username,
