@@ -75,12 +75,6 @@ def pytest_addoption(parser):
         help='Wait time for polling operations'
     )
     parser.addoption(
-        '--rancher-endpoint',
-        action='store',
-        default=config_data['rancher-endpoint'],
-        help='Rancher API endpoint'
-    )
-    parser.addoption(
         '--node-scripts-location',
         action='store',
         default=config_data['node-scripts-location'],

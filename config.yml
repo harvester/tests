@@ -11,19 +11,16 @@ password: 'admin'
 do-not-cleanup: False
 
 # harvester_cluster_nodes
-harvester_cluster_nodes: 1
+harvester_cluster_nodes: 3
 
 # VLAN ID, will invoke the tests depended on external networking if not set to -1.
-vlan-id: -1
+vlan-id: 1
 
-# Physical NIC for VLAN. Default is "eth0"
-vlan-nic: 'eth0'
+# Physical NIC for VLAN. Default is "harvester-mgmt"
+vlan-nic: 'harvester-mgmt'
 
 #Wait time for polling operations
 wait-timeout: 600
-
-#Rancher API endpoint
-rancher-endpoint: ~
 
 node-scripts-location: 'scripts/vagrant'
 

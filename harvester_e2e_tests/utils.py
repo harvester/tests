@@ -681,10 +681,8 @@ def poweroff_host_maintenance_mode(request, admin_session,
     host_poweroff = lookup_host_not_harvester_endpoint(request, admin_session,
                                                        harvester_api_endpoints)
     # Enable Maintenance Mode
-    resp = admin_session.post(
-        host_poweroff['actions']['enableMaintenanceMode'])
-    assert resp.status_code == 204, (
-        'Failed to update node: %s' % (resp.content))
+    enable_maintenance_mode(request, admin_session,
+                            harvester_api_endpoints, host_poweroff)
     node_name = host_poweroff['id']
     poll_for_resource_ready(request, admin_session,
                             harvester_api_endpoints.get_node % (node_name))
