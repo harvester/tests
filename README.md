@@ -149,8 +149,8 @@ directory which contains the host management shell scripts.
 To run the tests which uses terraform to create each resource, it uses the 
 scripts in scripts/terraform folder
 ```console
-tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html --vlan-id 10 -m terraform
-tox -e py36 -- harvester_e2e_tests/scenarios/test_vm_networking.py --html=test_result.html --vlan-id 10 -m terraform
+tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html -m terraform
+tox -e py36 -- harvester_e2e_tests/scenarios/test_vm_networking.py --html=test_result.html -m terraform
 ```
 
 ## Running delete Host tests
@@ -159,6 +159,15 @@ tox -e py36 -- harvester_e2e_tests/scenarios/test_vm_networking.py --html=test_r
 To run the delete_host tests at the end when all tests are done running
 ```console
 tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html -m delete_host
+```
+
+## Running Backup tests
+-----------------------
+
+To run the backup tests for both S3 and NFS endpoint, provide the S3 and nfs
+endpoint either on command line or in config.yml
+```console
+tox -e py36 -- harvester_e2e_tests --html=test_result.html --accessKeyId <accessKey> --secretAccessKey <secretaccesskey> --bucketName <bucket> --region <region> --nfs-endpoint nfs://<IP>/<path> -m backup
 ```
 
 ## Running Linter

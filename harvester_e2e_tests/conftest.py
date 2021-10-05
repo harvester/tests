@@ -94,6 +94,12 @@ def pytest_addoption(parser):
         help=('External scripts to create resources using terraform')
     )
     parser.addoption(
+        '--backup-scripts-location',
+        action='store',
+        default=config_data['backup-scripts-location'],
+        help=('scripts to create files inside a VM')
+    )
+    parser.addoption(
         '--image-cache-url',
         action='store',
         default=config_data['image-cache-url'],
@@ -106,6 +112,37 @@ def pytest_addoption(parser):
         help=('when enabled reboot the VM as a workaound for '
               'https://github.com/harvester/harvester/issues/1059')
     )
+    parser.addoption(
+        '--accessKeyId',
+        action='store',
+        default=config_data['accessKeyId'],
+        help=('A user-id that uniquely identifies your account. ')
+    )
+    parser.addoption(
+        '--secretAccessKey',
+        action='store',
+        default=config_data['secretAccessKey'],
+        help=('The password to your account')
+    )
+    parser.addoption(
+        '--bucketName',
+        action='store',
+        default=config_data['bucketName'],
+        help=('Name of the bucket')
+    )
+    parser.addoption(
+        '--region',
+        action='store',
+        default=config_data['region'],
+        help=('Region of the bucket')
+    )
+    parser.addoption(
+        '--nfs-endpoint',
+        action='store',
+        default=config_data['nfs-endpoint'],
+        help=('Endpoint for storing backup in nfs share')
+    )
+
     # TODO(gyee): may need to add SSL options later
 
 
@@ -134,6 +171,10 @@ def pytest_configure(config):
         "markers", ('terraform: mark test to run only if we have terraform.sh '
                     'and terraform provider scripts provided')
     )
+    config.addinivalue_line(
+        "markers", ('backup: mark test to run only to execute the backup and '
+                    'Restore tests')
+    )
 
 
 def pytest_collection_modifyitems(config, items):
@@ -150,3 +191,11 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if 'windows_vm' in item.keywords:
                 item.add_marker(skip_windows_vm)
+
+    if (config.getoption('--nfs-endpoint') == '' and
+            config.getoption('--accessKeyId') == ''):
+        skip_backup = pytest.mark.skip(reason=(
+            'AWS credentials or NFS endpoint are not available'))
+        for item in items:
+            if 'backup' in item.keywords:
+                item.add_marker(skip_backup)

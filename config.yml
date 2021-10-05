@@ -33,3 +33,14 @@ image-cache-url: ''
 terraform-scripts-location: 'terraform_test_artifacts'
 
 workaround-restartvm: False
+
+# Backup Target S3
+region: ''
+accessKeyId: ''
+secretAccessKey: ''
+bucketName: ''
+
+# Backup Targer NFS
+nfs-endpoint: ''
+
+backup-scripts-location: 'backup_restore_test_artifacts'

@@ -11,3 +11,5 @@ sshpubkeys
 pyyaml
 polling2
 cryptography
+boto3
+scp

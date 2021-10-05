@@ -1,0 +1,21 @@
+{# Template for basic backup creation request. #}
+
+{% if name is not defined or name is none %}
+    {% set name = random_name() %}
+{% endif %}
+
+{
+    "apiVersion": "harvesterhci.io/v1beta1",
+    "kind": "VirtualMachineBackup",
+    "metadata": {
+        "name": "{{ name }}",
+        "namespace": "{{ backup_namespace | default('default') }}"
+    },
+    "spec": {
+        "source": {
+            "apiGroup": "kubevirt.io",
+            "kind": "VirtualMachine",
+            "name": "{{ vm_name }}"
+        }
+    }
+}

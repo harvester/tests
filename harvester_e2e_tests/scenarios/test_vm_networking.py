@@ -21,9 +21,13 @@ from paramiko import SSHClient, AutoAddPolicy, RSAKey
 import polling2
 import pytest
 import subprocess
+import time
+from scp import SCPClient
+
 
 pytest_plugins = [
-    'harvester_e2e_tests.fixtures.vm'
+    'harvester_e2e_tests.fixtures.vm',
+    'harvester_e2e_tests.fixtures.backuptarget'
 ]
 
 
@@ -74,6 +78,39 @@ def assert_ssh_into_vm(ip, timeout, keypair=None):
     assert len(err) == 0, ('Error while SSH into %s: %s' % (ip, err))
 
 
+def fileactions_into_vm(ip, timeout, keypair=None,
+                        createfile=None, chkfileexist=None,
+                        chkmd5=None, script=None):
+    filesPresent = []
+    md5pass = []
+    client = wait_for_ssh_client(ip, timeout, keypair)
+    # execute a simple command
+    if script:
+        with SCPClient(client.get_transport()) as scp:
+            scp.put(script, '/tmp')
+        scp.close()
+        stdin, stdout, stderr = client.exec_command('ls')
+    if createfile:
+        stdin, stdout, stderr = client.exec_command(
+            'bash /tmp/createFiles.sh {0}'.format(createfile))
+    if chkfileexist:
+        stdin, stdout, stderr = client.exec_command('ls *.txt 2> /dev/null')
+        for line in stdout.readlines():
+            filesPresent.append(line.strip())
+    if chkmd5:
+        stdin, stdout, stderr = client.exec_command('ls *.md5 2> /dev/null')
+        for line in stdout.readlines():
+            stdin, stdout, stderr = client.exec_command(
+                'md5sum --status -c {0} && echo PASS'.format(line.strip()))
+            out = stdout.read().strip()
+            if out.decode('utf-8') == 'PASS':
+                md5pass.append(line.strip())
+    client.close()
+    err = stderr.read()
+    assert len(err) == 0, ('Error while SSH into %s: %s' % (ip, err))
+    return (filesPresent, md5pass)
+
+
 def get_vm_public_ip(admin_session, harvester_api_endpoints, vm, timeout,
                      nic_name='nic-1'):
     vm_instance_json = None
@@ -100,6 +137,200 @@ def get_vm_public_ip(admin_session, harvester_api_endpoints, vm, timeout,
         'Timed out while waiting for VM public IP to be assigned: %s' % (
             vm_instance_json))
     return (vm_instance_json, public_ip)
+
+
+def backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget,
+                      vm_new=None,
+                      new_vm_name=None):
+    vm_name = vm_with_one_vlan['metadata']['name']
+    backup_name = utils.random_name()
+    backup_json = None
+    restored_vm_json = None
+    try:
+        backup_json = utils.create_vm_backup(request, admin_session,
+                                             harvester_api_endpoints,
+                                             backuptarget,
+                                             name=backup_name,
+                                             vm_name=vm_name)
+        timeout = request.config.getoption('--wait-timeout')
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        script = utils.get_backup_create_files_script(
+            request, 'createFiles.sh', 'backup')
+        # Create a file in VM
+        fileactions_into_vm(public_ip, timeout,
+                            createfile=1,
+                            script=script)
+        time.sleep(50)
+        # Check file exists after taking backup
+        fileExists = []
+        filesmd5pass = []
+        (fileExists, filesmd5pass) = fileactions_into_vm(public_ip, timeout,
+                                                         keypair=keypair,
+                                                         chkfileexist=True,
+                                                         chkmd5=True)
+        assert fileExists == ['file1.txt'], 'File1 not exist in VM'
+        assert filesmd5pass == ['file1.md5'], 'MD5 chksum failed for file1'
+
+        # Stop VM
+        utils.stop_vm(request, admin_session,
+                      harvester_api_endpoints, vm_name)
+        # Restore existing VM from backup
+        restore_name = utils.random_name()
+        if new_vm_name:
+            vm_name = new_vm_name
+        utils.restore_vm_backup(request, admin_session,
+                                harvester_api_endpoints,
+                                name=restore_name,
+                                vm_name=vm_name,
+                                backup_name=backup_name,
+                                vm_new=vm_new)
+        utils.assert_vm_ready(request, admin_session,
+                              harvester_api_endpoints,
+                              vm_name, running=True)
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_name))
+        assert resp.status_code == 200, 'Failed to get restor VM %s: %s' % (
+            vm_name, resp.content)
+
+        restored_vm_json = resp.json()
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            restored_vm_json, timeout)
+        if vm_new is None:
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vm_with_one_vlan)
+        fileExists = []
+        filesmd5pass = []
+        (fileExists, filesmd5pass) = fileactions_into_vm(public_ip, timeout,
+                                                         keypair=keypair,
+                                                         chkfileexist=True)
+        assert len(fileExists) == 0, 'File1 still exist in VM'
+
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if backup_json:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, vm_with_one_vlan)
+                utils.delete_vm_backup(request, admin_session,
+                                       harvester_api_endpoints,
+                                       backuptarget, backup_json)
+            if new_vm_name:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, restored_vm_json)
+
+
+def backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget,
+                                   delbackup=None):
+    vm_name = vm_with_one_vlan['metadata']['name']
+    backup_name = utils.random_name()
+    backup_lst = []
+    backup_json = None
+    restored_vm_json = None
+    restore_lst = []
+    try:
+        timeout = request.config.getoption('--wait-timeout')
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        script = utils.get_backup_create_files_script(
+            request, 'createFiles.sh', 'backup')
+        # scp createFiles script on VM
+        fileactions_into_vm(public_ip, timeout,
+                            script=script)
+        for x in range(1, 4):
+            # Create a file in VM
+            fileactions_into_vm(public_ip, timeout,
+                                createfile=x)
+            time.sleep(70)
+            backup_name = "bk" + str(x) + "-" + utils.random_name()
+            backup_json = utils.create_vm_backup(request, admin_session,
+                                                 harvester_api_endpoints,
+                                                 backuptarget,
+                                                 name=backup_name,
+                                                 vm_name=vm_name)
+            backup_lst.append(backup_json)
+
+        if delbackup == 'first':
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[0])
+            del backup_lst[0]
+        elif delbackup == 'middle':
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[1])
+            del backup_lst[1]
+        elif delbackup == 'last':
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[2])
+            del backup_lst[2]
+        # Restore backup 1
+        # Restore existing VM from backup
+        for backup in backup_lst:
+            restore_name = utils.random_name()
+            utils.stop_vm(request, admin_session,
+                          harvester_api_endpoints, vm_name)
+            backup_name = backup['metadata']['name']
+            utils.restore_vm_backup(request, admin_session,
+                                    harvester_api_endpoints,
+                                    name=restore_name,
+                                    vm_name=vm_name,
+                                    backup_name=backup_name)
+            utils.assert_vm_ready(request, admin_session,
+                                  harvester_api_endpoints,
+                                  vm_name, running=True)
+            resp = admin_session.get(harvester_api_endpoints.get_vm % (
+                vm_name))
+            assert resp.status_code == 200, 'Failed to get VM %s: %s' % (
+                vm_name, resp.content)
+
+            restored_vm_json = resp.json()
+            restore_lst.append(restored_vm_json)
+            timeout = request.config.getoption('--wait-timeout')
+            (vm_instance_json, public_ip) = get_vm_public_ip(
+                admin_session, harvester_api_endpoints,
+                restored_vm_json, timeout)
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vm_with_one_vlan)
+            fileExists = []
+            filesmd5pass = []
+            (fileExists, filesmd5pass) = fileactions_into_vm(public_ip,
+                                                             timeout,
+                                                             keypair=keypair,
+                                                             chkfileexist=True,
+                                                             chkmd5=True)
+            backup_seq = backup['metadata']['name'].split("-")[0]
+            if backup_seq == 'bk1':
+                assert fileExists == ['file1.txt'], 'File1 not exist in VM'
+                assert filesmd5pass == ['file1.md5'], (
+                    'MD5 chksum failed for file1')
+            elif backup_seq == 'bk2':
+                assert fileExists == ['file1.txt', 'file2.txt'], (
+                    'All files dont exist')
+                assert filesmd5pass == ['file1-2.md5', 'file2.md5'], (
+                    'MD5 ckecksum failed while restoring middle backup')
+            elif backup_seq == 'bk3':
+                assert fileExists == ['file1.txt', 'file2.txt', 'file3.txt'], (
+                    'All files dont exist')
+                assert filesmd5pass == [
+                    'file1-2.md5', 'file2-2.md5', 'file3.md5'], (
+                    'MD5 checksum failed while restoring last backup')
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if backup_lst:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, vm_with_one_vlan)
+                for backup_json in backup_lst:
+                    utils.delete_vm_backup(request, admin_session,
+                                           harvester_api_endpoints,
+                                           backuptarget, backup_json)
 
 
 @pytest.mark.public_network
@@ -570,3 +801,173 @@ def test_create_vm_using_terraform(request, admin_session,
         if created:
             if not request.config.getoption('--do-not-cleanup'):
                 utils.destroy_resource(request, admin_session, 'all')
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+@pytest.mark.backup
+def test_backup_restore_new_vm(request, admin_session,
+                               harvester_api_endpoints,
+                               keypair, vm_with_one_vlan,
+                               backuptarget_s3,
+                               vm_new=True):
+    new_vm_name = "new-vm-" + utils.random_name()
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget_s3,
+                      vm_new=vm_new,
+                      new_vm_name=new_vm_name
+                      )
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+@pytest.mark.backup
+def test_backup_restore_existing_vm(request, admin_session,
+                                    harvester_api_endpoints,
+                                    keypair, vm_with_one_vlan,
+                                    backuptarget_s3):
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget_s3
+                      )
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+@pytest.mark.backup
+def test_chained_del_middle_backup(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup='middle'):
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+@pytest.mark.backup
+def test_chained_del_first_backup(request, admin_session,
+                                  harvester_api_endpoints,
+                                  keypair, vm_with_one_vlan,
+                                  backuptarget_s3,
+                                  delbackup='first'):
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+@pytest.mark.backup
+def test_chained_del_last_backup(request, admin_session,
+                                 harvester_api_endpoints,
+                                 keypair, vm_with_one_vlan,
+                                 backuptarget_s3,
+                                 delbackup='last'):
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+@pytest.mark.backup
+def test_restore_chained_backups(request, admin_session,
+                                 harvester_api_endpoints,
+                                 keypair, vm_with_one_vlan,
+                                 backuptarget_s3):
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3
+                                   )
+
+
+@pytest.mark.backup
+def test_backup_restore_new_vm_nfs(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_nfs,
+                                   vm_new=True):
+    new_vm_name = "new-vm-" + utils.random_name()
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget_nfs,
+                      vm_new=vm_new,
+                      new_vm_name=new_vm_name
+                      )
+
+
+@pytest.mark.backup
+def test_backup_restore_existing_vm_nfs(request, admin_session,
+                                        harvester_api_endpoints,
+                                        keypair, vm_with_one_vlan,
+                                        backuptarget_nfs):
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget_nfs
+                      )
+
+
+@pytest.mark.backup
+def test_chained_del_middle_backup_nfs(request, admin_session,
+                                       harvester_api_endpoints,
+                                       keypair, vm_with_one_vlan,
+                                       backuptarget_nfs,
+                                       delbackup='middle'):
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup
+def test_chained_del_first_backup_nfs(request, admin_session,
+                                      harvester_api_endpoints,
+                                      keypair, vm_with_one_vlan,
+                                      backuptarget_nfs,
+                                      delbackup='first'):
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup
+def test_chained_del_last_backup_nfs(request, admin_session,
+                                     harvester_api_endpoints,
+                                     keypair, vm_with_one_vlan,
+                                     backuptarget_nfs,
+                                     delbackup='last'):
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup
+def test_restore_chained_backups_nfs(request, admin_session,
+                                     harvester_api_endpoints,
+                                     keypair, vm_with_one_vlan,
+                                     backuptarget_nfs):
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_nfs
+                                   )

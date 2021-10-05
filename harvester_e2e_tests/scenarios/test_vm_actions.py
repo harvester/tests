@@ -19,11 +19,13 @@ from harvester_e2e_tests import utils
 import polling2
 import time
 import json
+import pytest
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.keypair',
     'harvester_e2e_tests.fixtures.vm',
-    'harvester_e2e_tests.fixtures.volume'
+    'harvester_e2e_tests.fixtures.volume',
+    'harvester_e2e_tests.fixtures.backuptarget'
 ]
 
 
@@ -52,28 +54,9 @@ class TestVMActions:
 
     def test_stop_vm(self, request, admin_session, harvester_api_endpoints,
                      basic_vm):
-        resp = admin_session.put(harvester_api_endpoints.stop_vm % (
-            basic_vm['metadata']['name']))
-        assert resp.status_code == 202, 'Failed to stop VM instance %s' % (
-            basic_vm['metadata']['name'])
-
-        # give it some time for the VM instance to stop
-        time.sleep(120)
-
-        def _check_vm_instance_stopped():
-            resp = admin_session.get(
-                harvester_api_endpoints.get_vm_instance % (
-                    basic_vm['metadata']['name']))
-            if resp.status_code == 404:
-                return True
-            return False
-
-        success = polling2.poll(
-            _check_vm_instance_stopped,
-            step=5,
-            timeout=request.config.getoption('--wait-timeout'))
-        assert success, 'Failed to stop VM: %s' % (
-            basic_vm['metadata']['name'])
+        vm_name = basic_vm['metadata']['name']
+        utils.stop_vm(request, admin_session, harvester_api_endpoints,
+                      vm_name)
 
     def test_start_vm(self, request, admin_session, harvester_api_endpoints,
                       basic_vm):
@@ -249,3 +232,50 @@ class TestVMVolumes:
             # now cleanup the volume
             utils.delete_volume_by_name(request, admin_session,
                                         harvester_api_endpoints, volume_name)
+
+
+@pytest.mark.backup
+class TestVMBackupRestore:
+
+    @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+    def test_backup_single_vm_s3(self, request, admin_session,
+                                 harvester_api_endpoints, basic_vm,
+                                 backuptarget_s3):
+        vm_name = basic_vm['metadata']['name']
+        backup_name = utils.random_name()
+        backup_json = None
+        try:
+            backup_json = utils.create_vm_backup(request, admin_session,
+                                                 harvester_api_endpoints,
+                                                 backuptarget_s3,
+                                                 name=backup_name,
+                                                 vm_name=vm_name)
+        finally:
+            if not request.config.getoption('--do-not-cleanup'):
+                if backup_json:
+                    utils.delete_vm(request, admin_session,
+                                    harvester_api_endpoints, basic_vm)
+                    utils.delete_vm_backup(
+                        request, admin_session, harvester_api_endpoints,
+                        backuptarget_s3, backup_json)
+
+    def test_backup_single_vm_nfs(self, request, admin_session,
+                                  harvester_api_endpoints, basic_vm,
+                                  backuptarget_nfs):
+        vm_name = basic_vm['metadata']['name']
+        backup_name = utils.random_name()
+        backup_json = None
+        try:
+            backup_json = utils.create_vm_backup(request, admin_session,
+                                                 harvester_api_endpoints,
+                                                 backuptarget_nfs,
+                                                 name=backup_name,
+                                                 vm_name=vm_name)
+        finally:
+            if not request.config.getoption('--do-not-cleanup'):
+                if backup_json:
+                    utils.delete_vm(request, admin_session,
+                                    harvester_api_endpoints, basic_vm)
+                    utils.delete_vm_backup(
+                        request, admin_session, harvester_api_endpoints,
+                        backuptarget_nfs, backup_json)
