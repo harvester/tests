@@ -27,6 +27,7 @@ import time
 import uuid
 import yaml
 import shutil
+import boto3
 
 
 def random_name():
@@ -248,6 +249,32 @@ def restart_vm(admin_session, harvester_api_endpoints, previous_uid, vm_name,
         vm_name, resp.content)
     assert_vm_restarted(admin_session, harvester_api_endpoints, previous_uid,
                         vm_name, wait_timeout)
+
+
+def stop_vm(request, admin_session, harvester_api_endpoints,
+            vm_name):
+    resp = admin_session.put(harvester_api_endpoints.stop_vm % (
+        vm_name))
+    assert resp.status_code == 202, 'Failed to stop VM instance %s' % (
+        vm_name)
+
+    # give it some time for the VM instance to stop
+    time.sleep(120)
+
+    def _check_vm_instance_stopped():
+        resp = admin_session.get(
+            harvester_api_endpoints.get_vm_instance % (
+                vm_name))
+        if resp.status_code == 404:
+            return True
+        return False
+
+    success = polling2.poll(
+        _check_vm_instance_stopped,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Failed to stop VM: %s' % (
+        vm_name)
 
 
 def assert_vm_restarted(admin_session, harvester_api_endpoints,
@@ -540,6 +567,8 @@ def delete_host(request, admin_session, harvester_api_endpoints, host_json):
 def _get_node_script_path(request, script_name=None, script_type=None):
     if script_type == 'terraform':
         scripts_dir = request.config.getoption('--terraform-scripts-location')
+    elif script_type == 'backup':
+        scripts_dir = request.config.getoption('--backup-scripts-location')
     else:
         scripts_dir = request.config.getoption('--node-scripts-location')
     assert scripts_dir, ('Node scripts location not provided. Please use '
@@ -1069,3 +1098,185 @@ def is_marker_enabled(request, marker_name):
         if item.get_closest_marker(marker_name) is not None:
             return True
     return False
+
+
+def create_vm_backup(request, admin_session, harvester_api_endpoints,
+                     backuptarget, name=None, vm_name=None):
+    request_json = get_json_object_from_template(
+        'basic_vm_backup',
+        name=name,
+        vm_name=vm_name
+    )
+    backuptarget_value = json.loads(backuptarget['value'])
+    backuptarget_type = backuptarget_value['type']
+    if backuptarget_type == 's3':
+        total_objects_before_backup = get_total_objects_s3_bucket(request)
+    else:
+        total_objects_before_backup = get_total_objects_nfs_share(request)
+
+    resp = admin_session.post(harvester_api_endpoints.create_vm_backup,
+                              json=request_json)
+    assert resp.status_code in [200, 201], 'Failed to create backup %s: %s' % (
+        name, resp.content)
+    backup_json = resp.json()
+
+    # wait for the backup to get ready
+    time.sleep(30)
+
+    def _wait_for_backup_become_active():
+        # we want the update response to return back to the caller
+
+        resp = admin_session.get(harvester_api_endpoints.get_vm_backup % (
+            backup_json['metadata']['name']))
+        assert resp.status_code == 200, 'Failed to get backup %s: %s' % (
+            backup_json['metadata']['name'], resp.content)
+        resp_json = resp.json()
+        if ('status' in resp_json and
+                'readyToUse' in resp_json['status'] and
+                resp_json['status']['readyToUse']):
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_backup_become_active,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Failed to Backup  VM: %s' % (
+        vm_name)
+
+    if backuptarget_type == 's3':
+        total_objects_after_backup = get_total_objects_s3_bucket(request)
+    else:
+        total_objects_after_backup = get_total_objects_nfs_share(request)
+
+    time.sleep(50)
+
+    assert total_objects_before_backup < total_objects_after_backup, (
+            'Failed to add any objects in %s target. '
+            'Before backup object count: %s; after backup object count: %s' % (
+                backuptarget_type, total_objects_before_backup,
+                total_objects_after_backup))
+    return backup_json
+
+
+def delete_vm_backup(request, admin_session,
+                     harvester_api_endpoints, backuptarget, backup_json):
+
+    backuptarget_value = json.loads(backuptarget['value'])
+    backuptarget_type = backuptarget_value['type']
+    if backuptarget_type == 's3':
+        total_objects_before_delete = get_total_objects_s3_bucket(request)
+    else:
+        total_objects_before_delete = get_total_objects_nfs_share(request)
+    resp = admin_session.delete(harvester_api_endpoints.delete_vm_backup % (
+
+        backup_json['metadata']['name']))
+    assert resp.status_code in [200, 201], 'Unable to del backup %s: %s' % (
+        backup_json['metadata']['name'], resp.content)
+
+    def _wait_for_backup_to_be_deleted():
+        resp = admin_session.get(harvester_api_endpoints.get_vm_backup % (
+            backup_json['metadata']['name']))
+        if resp.status_code == 404:
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_backup_to_be_deleted,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Timed out while waiting for backup to be deleted'
+
+    time.sleep(50)
+    if backuptarget_type == 's3':
+        total_objects_after_delete = get_total_objects_s3_bucket(request)
+    else:
+        total_objects_after_delete = get_total_objects_nfs_share(request)
+
+    print(total_objects_before_delete)
+    print(total_objects_after_delete)
+    assert total_objects_before_delete > total_objects_after_delete, (
+            'Failed to delete any objects from %s target. '
+            'Before delete object count: %s; after delete object count: %s' % (
+                backuptarget_type, total_objects_before_delete,
+                total_objects_after_delete))
+
+
+def get_total_objects_s3_bucket(request):
+    accesskey = request.config.getoption('--accessKeyId')
+    secretaccesskey = request.config.getoption('--secretAccessKey')
+    bucket = request.config.getoption('--bucketName')
+    region = request.config.getoption('--region')
+    totalCount = 0
+    s3 = boto3.resource("s3",
+                        region_name=region,
+                        aws_access_key_id=accesskey,
+                        aws_secret_access_key=secretaccesskey)
+    s3bucket = s3.Bucket(bucket)
+    for key in s3bucket.objects.all():
+        totalCount += 1
+
+    return totalCount
+
+
+def get_total_objects_nfs_share(request):
+    backup_script = get_backup_create_files_script(
+        request, 'mountnfs.sh', 'backup')
+    nfsendpoint = (request.config.getoption('--nfs-endpoint').split("//")[1])
+    total_objects = 0
+    result = subprocess.run([backup_script, nfsendpoint],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert result.returncode == 0, (
+        'Failed to run mountnfs : rc: %s, stdout: %s, stderr: %s' % (
+            result.returncode, result.stderr, result.stdout))
+    total_objects = int(result.stdout.decode("utf-8"))
+    return total_objects
+
+
+def restore_vm_backup(request, admin_session, harvester_api_endpoints,
+                      name=None, vm_name=None,
+                      backup_name=None, vm_new=None):
+    request_json = get_json_object_from_template(
+        'basic_vm_restore',
+        name=name,
+        vm_name=vm_name,
+        backup_name=backup_name
+    )
+    if vm_new:
+        request_json['spec']['newVM'] = vm_new
+    resp = admin_session.post(harvester_api_endpoints.create_vm_restore,
+                              json=request_json)
+    assert resp.status_code in [200, 201], 'Failed to restore bakup %s: %s' % (
+        backup_name, resp.content)
+    restore_json = resp.json()
+
+    # wait for the restore to get ready
+    time.sleep(30)
+
+    def _wait_for_restore_to_finish():
+        # we want the update response to return back to the caller
+
+        resp = admin_session.get(harvester_api_endpoints.get_vm_restore % (
+            restore_json['metadata']['name']))
+        assert resp.status_code == 200, 'Failed to restore %s: %s' % (
+            restore_json['metadata']['name'], resp.content)
+        resp_json = resp.json()
+        if ('status' in resp_json and
+                'complete' in resp_json['status'] and
+                resp_json['status']['complete']):
+            return True
+        return False
+
+    success = polling2.poll(
+        _wait_for_restore_to_finish,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert success, 'Failed to Restore  VM: %s' % (
+        vm_name)
+
+    return restore_json
+
+
+def get_backup_create_files_script(request, script_name, script_type):
+    script = _get_node_script_path(request, script_name, script_type)
+    return script

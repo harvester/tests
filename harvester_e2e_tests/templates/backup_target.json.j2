@@ -1,0 +1,8 @@
+{
+    "apiVersion": "harvesterhci.io/v1beta1",
+    "kind": "Setting",
+    "metadata": {
+        "name": "backup-target"
+    },
+    "value": "{\"type\":\"{{ storetype }}\",\"endpoint\":\"{{ endpoint | default('') }}\",\"accessKeyId\":\"{{ accesskeyid | default('') }}\",\"secretAccessKey\":\"{{ secretaccesskey | default('') }}\",\"bucketName\":\"{{ bucketname | default('') }}\",\"bucketRegion\":\"{{ region | default('') }}\",\"cert\":\"\",\"virtualHostedStyle\":false}"
+}

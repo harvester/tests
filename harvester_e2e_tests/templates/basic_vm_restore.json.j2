@@ -1,0 +1,24 @@
+{# Template for basic restore backup request. #}
+
+{% if name is not defined or name is none %}
+    {% set name = random_name() %}
+{% endif %}
+
+{
+    "apiVersion": "harvesterhci.io/v1beta1",
+    "kind": "VirtualMachineRestore",
+    "metadata": {
+        "name": "{{ name }}",
+        "namespace": "{{ restore_namespace | default('default') }}"
+    },
+    "spec": {
+        "newVM": false,
+        "target": {
+            "apiGroup": "kubevirt.io",
+            "kind": "VirtualMachine",
+            "name": "{{ vm_name }}"
+        },
+        "virtualMachineBackupName": "{{ backup_name }}",
+        "virtualMachineBackupNamespace": "{{ backup_namespace | default('default') }}"
+    }
+}
