@@ -29,7 +29,7 @@ resource "harvester_virtualmachine" "{{ name }}" {
     name         = "nic-1"
     model        = "virtio"
     type         = "bridge"
-    network_name = "{{ net_namespace | default('harvester-public') }}/{{ net_name }}"
+    network_name = "{{ net_namespace | default('default') }}/{{ net_name }}"
   }
 
   disk {

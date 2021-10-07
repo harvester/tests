@@ -1,6 +1,6 @@
 resource "harvester_image" "{{ name }}" {
   name         = "{{ name }}" 
-  namespace    = "{{ image_namespace | default('harvester-public') }}"
+  namespace    = "{{ image_namespace | default('default') }}"
   display_name = "{{ name }}" 
   url          = "{{ url }}" 
   source_type  = "download"

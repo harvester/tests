@@ -830,7 +830,7 @@ def create_image_terraform(request, admin_session, harvester_api_endpoints,
     def _wait_for_image_become_active():
         # we want the update response to return back to the caller
 
-        resp = admin_session.get(harvester_api_endpoints.get_ter_image % (
+        resp = admin_session.get(harvester_api_endpoints.get_image % (
             name))
         assert resp.status_code == 200, 'Failed to get image %s: %s' % (
             name, resp.content)
@@ -848,7 +848,7 @@ def create_image_terraform(request, admin_session, harvester_api_endpoints,
         timeout=request.config.getoption('--wait-timeout'))
     assert success, 'Timed out while waiting for image to be active.'
 
-    resp = admin_session.get(harvester_api_endpoints.get_ter_image % (
+    resp = admin_session.get(harvester_api_endpoints.get_image % (
         name))
     image_json = resp.json()
     return image_json
