@@ -1,6 +1,6 @@
 resource "harvester_network" "{{ name }}" {
   name      = "{{ name }}"
-  namespace = "{{ net_namespace | default('harvester-public') }}"
+  namespace = "{{ net_namespace | default('default') }}"
 
   vlan_id = {{ vlan_id }} 
 

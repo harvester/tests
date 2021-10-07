@@ -2,7 +2,7 @@ resource "harvester_volume" "{{ name }}" {
   depends_on = [harvester_image.{{ image }}]
   name  = "{{ name }}" 
   size  = "{{ size | default(10) }}Gi" 
-  image = "{{ image_namespace | default('harvester-public') }}/{{ image }}"
+  image = "{{ image_namespace | default('default') }}/{{ image }}"
 
   lifecycle {
     ignore_changes = all
