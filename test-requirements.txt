@@ -1,4 +1,5 @@
 pytest
+pytest-ordering
 pytest-html
 pytest-json-report
 jinja2
