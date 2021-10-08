@@ -15,6 +15,7 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import copy
 from harvester_e2e_tests import utils
 import pytest
 
@@ -66,20 +67,31 @@ def test_update_first_node(request, admin_session, harvester_api_endpoints):
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
     first_node = host_data['data'][0]
+    original_annotations = copy.deepcopy(first_node['metadata']['annotations'])
     first_node['metadata']['annotations'] = {
         'field.cattle.io/description': 'for-test-update',
         'harvesterhci.io/host-custom-name': 'for-test-update'
     }
-    resp = utils.poll_for_update_resource(
-        request, admin_session,
-        host_data['data'][0]['links']['update'],
-        first_node,
-        harvester_api_endpoints.get_node % (host_data['data'][0]['id']))
-    updated_host_data = resp.json()
-    assert updated_host_data['metadata']['annotations'].get(
-        'field.cattle.io/description') == 'for-test-update'
-    assert updated_host_data['metadata']['annotations'].get(
-        'harvesterhci.io/host-custom-name') == 'for-test-update'
+    try:
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            host_data['data'][0]['links']['update'],
+            first_node,
+            harvester_api_endpoints.get_node % (host_data['data'][0]['id']))
+        updated_host_data = resp.json()
+        assert updated_host_data['metadata']['annotations'].get(
+            'field.cattle.io/description') == 'for-test-update'
+        assert updated_host_data['metadata']['annotations'].get(
+            'harvesterhci.io/host-custom-name') == 'for-test-update'
+    finally:
+        # change it back to original
+        if updated_host_data:
+            updated_host_data['metadata']['annotations'] = original_annotations
+            utils.poll_for_update_resource(
+                request, admin_session,
+                updated_host_data['links']['update'],
+                updated_host_data,
+                harvester_api_endpoints.get_node % (updated_host_data['id']))
 
 
 def test_update_using_yaml(request, admin_session, harvester_api_endpoints):
@@ -87,33 +99,40 @@ def test_update_using_yaml(request, admin_session, harvester_api_endpoints):
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
     first_node = host_data['data'][0]
+    original_annotations = copy.deepcopy(first_node['metadata']['annotations'])
     first_node['metadata']['annotations'] = {
         'field.cattle.io/description': 'for-yaml-update',
         'harvesterhci.io/host-custom-name': 'for-yaml-update'
     }
-    resp = utils.poll_for_update_resource(
-        request, admin_session,
-        host_data['data'][0]['links']['update'],
-        first_node,
-        harvester_api_endpoints.get_node % (host_data['data'][0]['id']),
-        use_yaml=True)
-    updated_host_data = resp.json()
-    assert updated_host_data['metadata']['annotations'].get(
-        'field.cattle.io/description') == 'for-yaml-update'
-    assert updated_host_data['metadata']['annotations'].get(
-        'harvesterhci.io/host-custom-name') == 'for-yaml-update'
+    try:
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            host_data['data'][0]['links']['update'],
+            first_node,
+            harvester_api_endpoints.get_node % (host_data['data'][0]['id']),
+            use_yaml=True)
+        updated_host_data = resp.json()
+        assert updated_host_data['metadata']['annotations'].get(
+            'field.cattle.io/description') == 'for-yaml-update'
+        assert updated_host_data['metadata']['annotations'].get(
+            'harvesterhci.io/host-custom-name') == 'for-yaml-update'
+    finally:
+        # change it back to original
+        if updated_host_data:
+            updated_host_data['metadata']['annotations'] = original_annotations
+            utils.poll_for_update_resource(
+                request, admin_session,
+                updated_host_data['links']['update'],
+                updated_host_data,
+                harvester_api_endpoints.get_node % (updated_host_data['id']))
 
 
 @pytest.mark.delete_host
 def test_delete_host(request, admin_session, harvester_api_endpoints):
-    cur_endpoint = (request.config.getoption('--endpoint').split(":")[1])[2:]
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
-    for data in host_data['data']:
-        if data['metadata']['annotations'].get(
-                'etcd.k3s.cattle.io/node-address') != cur_endpoint:
-            host_data_to_delete = data
+    host_data_to_delete = host_data['data'][0]
     # delete the host
     utils.delete_host(request, admin_session, harvester_api_endpoints,
                       host_data_to_delete)
@@ -121,6 +140,7 @@ def test_delete_host(request, admin_session, harvester_api_endpoints):
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
     assert host_data_to_delete not in host_data['data']
+    # TODO(gyee): do we need to make sure the VIP still works?
 
 
 @pytest.mark.host_management
@@ -178,19 +198,23 @@ def test_host_poweroff_state(request, admin_session,
                              harvester_api_endpoints):
     host_of = utils.lookup_host_not_harvester_endpoint(request, admin_session,
                                                        harvester_api_endpoints)
-    # Power off Node
-    node_name = host_of['id']
-    utils.power_off_node(request, admin_session, harvester_api_endpoints,
-                         node_name)
-    resp = admin_session.get(
-        harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
-    ret_data = resp.json()
-    assert ret_data["metadata"]["state"]["name"] == "in-progress"
-    # power On Node
-    utils.power_on_node(request, admin_session, harvester_api_endpoints,
-                        node_name)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
-    ret_data = resp.json()
-    assert ret_data["metadata"]["state"]["name"] == "active"
+    try:
+        # Power off Node
+        node_name = host_of['id']
+        utils.power_off_node(request, admin_session, harvester_api_endpoints,
+                             node_name)
+        resp = admin_session.get(
+            harvester_api_endpoints.get_node % (node_name))
+        resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+        ret_data = resp.json()
+        assert ret_data["metadata"]["state"]["name"] in [
+            "in-progress", "unavailable"]
+    finally:
+        # power On Node
+        utils.power_on_node(request, admin_session, harvester_api_endpoints,
+                            node_name)
+        resp = admin_session.get(
+            harvester_api_endpoints.get_node % (node_name))
+        resp.status_code == 200, 'Failed to get host: %s' % (resp.content)
+        ret_data = resp.json()
+        assert ret_data["metadata"]["state"]["name"] == "active"
