@@ -127,6 +127,7 @@ def test_update_using_yaml(request, admin_session, harvester_api_endpoints):
                 harvester_api_endpoints.get_node % (updated_host_data['id']))
 
 
+@pytest.mark.last
 @pytest.mark.delete_host
 def test_delete_host(request, admin_session, harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
