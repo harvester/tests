@@ -1,0 +1,4 @@
+baseURL = "http://test.local/harvester-tests"
+languageCode = "en-us"
+title = "Harvester manual test cases"
+disableKinds = ["taxonomyTerm"]
