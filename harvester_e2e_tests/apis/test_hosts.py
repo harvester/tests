@@ -133,7 +133,11 @@ def test_delete_host(request, admin_session, harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
-    host_data_to_delete = host_data['data'][0]
+    # FIXME(gyee): for now only delete the last node in the cluster due to
+    # https://github.com/harvester/harvester/issues/1398
+    # This is assuming that the orders are correct. We'll need to test
+    # deleting the first node after the issue's been resolved.
+    host_data_to_delete = host_data['data'][-1]
     # delete the host
     utils.delete_host(request, admin_session, harvester_api_endpoints,
                       host_data_to_delete)
