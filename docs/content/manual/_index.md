@@ -1,4 +1,4 @@
 ---
-title: Test Cases for harvester
+title: Manual Test Cases for harvester
 ---
-Test cases for harvester.
+Manual Test cases for harvester.
