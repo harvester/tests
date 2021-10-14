@@ -26,8 +26,8 @@ pushd "$TMPDIR"
 
 #Remove resource for destroytype all
 if [[ "$DESTROYTYPE" == "all" ]] ; then
-  TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform destroy -auto-approve
+  TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc "$TERDIR"/bin/terraform destroy -auto-approve
 else
-  TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform destroy -auto-approve --target $DESTROYTYPE
+  TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc "$TERDIR"/bin/terraform destroy -auto-approve --target $DESTROYTYPE
 fi
 popd
