@@ -112,8 +112,9 @@ class TestVMNetworking:
             admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
         # reboot the VM as a workaound for
         # https://github.com/harvester/harvester/issues/1059
-        restart_vm(request, admin_session, harvester_api_endpoints,
-                   vm_with_one_vlan)
+        if request.config.getoption('--workaround-restartvm'):
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vm_with_one_vlan)
         assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
     def test_vlan_ip_pingable_after_reboot(self, request, admin_session,
@@ -128,8 +129,9 @@ class TestVMNetworking:
         vm_name = vm_with_one_vlan['metadata']['name']
         # reboot the VM as a workaound for
         # https://github.com/harvester/harvester/issues/1059
-        restart_vm(request, admin_session, harvester_api_endpoints,
-                   vm_with_one_vlan)
+        if request.config.getoption('--workaround-restartvm'):
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vm_with_one_vlan)
         resp = admin_session.get(harvester_api_endpoints.get_vm % (vm_name))
         assert resp.status_code == 200, (
             'Failed to lookup VM %s: %s:%s' % (
@@ -273,7 +275,9 @@ def test_two_vms_on_same_vlan(request, admin_session,
             admin_session, harvester_api_endpoints, vm_json, timeout)
         # reboot the VM as a workaound for
         # https://github.com/harvester/harvester/issues/1059
-        restart_vm(request, admin_session, harvester_api_endpoints, vm_json)
+        if request.config.getoption('--workaround-restartvm'):
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vm_json)
         assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
 
@@ -288,10 +292,11 @@ def test_management_ip_pingable_after_reboot(request, admin_session,
     """
     # reboot the VM as a workaound for
     # https://github.com/harvester/harvester/issues/1059
-    restart_vm(request, admin_session, harvester_api_endpoints,
-               vms_with_same_vlan[0])
-    restart_vm(request, admin_session, harvester_api_endpoints,
-               vms_with_same_vlan[1])
+    if request.config.getoption('--workaround-restartvm'):
+        restart_vm(request, admin_session, harvester_api_endpoints,
+                   vms_with_same_vlan[0])
+        restart_vm(request, admin_session, harvester_api_endpoints,
+                   vms_with_same_vlan[1])
 
     timeout = request.config.getoption('--wait-timeout')
     # get the public IP of the first VM so we can SSH into it and ping the
@@ -369,8 +374,9 @@ def test_update_vm_management_network_to_vlan(request, admin_session,
     # make sure it has connectivity
     # reboot the VM as a workaound for
     # https://github.com/harvester/harvester/issues/1059
-    restart_vm(request, admin_session, harvester_api_endpoints,
-               updated_vm_data)
+    if request.config.getoption('--workaround-restartvm'):
+        restart_vm(request, admin_session, harvester_api_endpoints,
+                   updated_vm_data)
     assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
 
@@ -517,8 +523,9 @@ def test_create_update_vm_user_data(request, admin_session, image,
             admin_session, harvester_api_endpoints, updated_data, timeout)
         # reboot the VM as a workaound for
         # https://github.com/harvester/harvester/issues/1059
-        restart_vm(request, admin_session, harvester_api_endpoints,
-                   updated_data)
+        if request.config.getoption('--workaround-restartvm'):
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       updated_data)
         assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
     finally:
         if created:
