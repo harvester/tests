@@ -1,5 +1,5 @@
 ---
-title: First Time Login	
+title: Verify the Filter on the Host page	
 ---
 1. Enter name of a host and verify the nodes get filtered out.	
 
