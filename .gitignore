@@ -11,3 +11,4 @@ test_result.html
 *dev.tfrc
 *.terraform.d
 *terraformharvester
+terraform_test_artifacts/bin
