@@ -35,10 +35,10 @@ fi
 #terraform import
 if [ "$IMPYESNO" == "import" ]; then
 #terraform import
-   TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform import harvester_clusternetwork.vlan harvester-system/vlan
+   TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc "$TERDIR"/bin/terraform import harvester_clusternetwork.vlan harvester-system/vlan
 fi
 
 #terraform init
-TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform plan -out tfplan -input=false 
-TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc terraform apply -input=false tfplan 
+TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc "$TERDIR"/bin/terraform plan -out tfplan -input=false 
+TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc "$TERDIR"/bin/terraform apply -input=false tfplan 
 popd
