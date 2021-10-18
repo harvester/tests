@@ -119,6 +119,16 @@ def image(request, admin_session, harvester_api_endpoints):
 
 
 @pytest.fixture(scope='class')
+def image_upload_fs(request, admin_session, harvester_api_endpoints):
+    image_json = utils.create_image_upload(request, admin_session,
+                                           harvester_api_endpoints)
+    yield image_json
+    if not request.config.getoption('--do-not-cleanup'):
+        utils.delete_image(request, admin_session, harvester_api_endpoints,
+                           image_json)
+
+
+@pytest.fixture(scope='class')
 def image_using_terraform(request, admin_session, harvester_api_endpoints):
     base_url = request.config.getoption(
         '--image-cache-url',

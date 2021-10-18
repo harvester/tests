@@ -28,6 +28,8 @@ import uuid
 import yaml
 import shutil
 import boto3
+import tempfile
+import requests
 
 
 def random_name():
@@ -322,10 +324,11 @@ def delete_image(request, admin_session, harvester_api_endpoints, image_json):
 
 
 def create_image(request, admin_session, harvester_api_endpoints, url,
-                 name=None, description=''):
+                 name=None, description='', source_type='download'):
     request_json = get_json_object_from_template(
         'basic_image',
         name=name,
+        source_type=source_type,
         description=description,
         url=url
     )
@@ -1092,6 +1095,72 @@ def create_vm_terraform(request, admin_session, harvester_api_endpoints,
 
     vm_data = resp.json()
     return vm_data
+
+
+def create_image_upload(request, admin_session, harvester_api_endpoints,
+                        name=None):
+
+    cache_url = request.config.getoption('--image-cache-url')
+
+    base_url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
+                'Leap_15.2/images')
+    if cache_url:
+        base_url = cache_url
+    url = os.path.join(base_url, 'openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        image_path = os.path.join(
+            tmpdir, 'openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+        # first download the file
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(image_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        # create an image for upload
+        image_json = create_image(request, admin_session,
+                                  harvester_api_endpoints,
+                                  '', source_type='upload')
+        image_name = image_json['metadata']['name']
+        # now upload the file in one shot
+        # TODO(gyee): need to check with Harvester team to see if the API
+        # supports streaming
+        image_size = os.stat(image_path).st_size
+        files = {'chunk': open(image_path, 'rb')}
+        params = {'action': 'upload',
+                  'size': image_size}
+        resp = admin_session.post(
+            harvester_api_endpoints.upload_image % (image_name),
+            files=files,
+            params=params)
+        assert resp.status_code in [200, 201], (
+            'Failed to upload image %s: %s: %s' % (
+                image_name, resp.status_code, resp.content))
+
+        def _wait_for_image_upload_complete():
+            # we want the update response to return back to the caller
+            nonlocal image_json
+
+            resp = admin_session.get(harvester_api_endpoints.get_image % (
+                image_json['metadata']['name']))
+            assert resp.status_code == 200, 'Failed to get image %s: %s' % (
+                image_json['metadata']['name'], resp.content)
+            image_json = resp.json()
+            if ('status' in image_json and
+                    'progress' in image_json['status'] and
+                    'size' in image_json['status'] and
+                    image_json['status']['progress'] == 100 and
+                    image_json['status']['size'] == image_size):
+                return True
+            return False
+
+        success = polling2.poll(
+             _wait_for_image_upload_complete,
+             step=5,
+             timeout=request.config.getoption('--wait-timeout'))
+        assert success, 'Timed out while waiting for image upload to finish.'
+
+    return image_json
 
 
 def is_marker_enabled(request, marker_name):
