@@ -125,6 +125,13 @@ def test_create_images(admin_session, image):
     pass
 
 
+@pytest.mark.imageupload
+def test_image_upload(request, admin_session, image_upload_fs, keypair,
+                      harvester_api_endpoints):
+    # NOTE: the image fixture will be uploading the image and check the result
+    pass
+
+
 def test_update_images(admin_session, harvester_api_endpoints, image):
     image['metadata']['labels'] = {
         'test.harvesterhci.io': 'for-test-update'
