@@ -31,3 +31,5 @@ win-image-url: ''
 image-cache-url: ''
 
 terraform-scripts-location: 'terraform_test_artifacts'
+
+workaround-restartvm: False

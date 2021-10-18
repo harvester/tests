@@ -16,6 +16,7 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+import json
 import polling2
 import pytest
 
@@ -76,14 +77,12 @@ def _cleanup_network(admin_session, harvester_api_endpoints, network_id,
     assert success, 'Unable to cleanup network: %s' % (network_id)
 
 
-def _lookup_network(request, admin_session, harvester_api_endpoints, name):
-    resp = admin_session.get(harvester_api_endpoints.get_network % (name))
+def _lookup_network(request, admin_session, harvester_api_endpoints, vlan_id):
+    resp = admin_session.get(harvester_api_endpoints.list_networks)
     if resp.status_code == 200:
-        return resp.json()
-    else:
-        assert resp.status_code == 404, (
-            'Failed to lookup network %s: %s: %s' % (
-                name, resp.status_code, resp.content))
+        for network in resp.json()['data']:
+            if json.loads(network['spec']['config'])['vlan'] == vlan_id:
+                return network
     return None
 
 
@@ -94,7 +93,7 @@ def _create_network(request, admin_session, harvester_api_endpoints, vlan_id):
 
     # If a network with the same VLAN ID already exist, just use it.
     network_data = _lookup_network(request, admin_session,
-                                   harvester_api_endpoints, network_name)
+                                   harvester_api_endpoints, vlan_id)
     if network_data:
         return network_data
 

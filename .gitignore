@@ -12,3 +12,4 @@ test_result.html
 *.terraform.d
 *terraformharvester
 *.DS_Store
+terraform_test_artifacts/bin

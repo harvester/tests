@@ -24,7 +24,15 @@ fi
 ARCH=linux_amd64
 
 TERDIR="$PWD/terraform_test_artifacts"
+if [ -d "$TERDIR"/.terraform.d ]; then
+  rm -rf ${TERDIR}/.terraform.d
+fi
 pushd "$TERDIR"
+TFRCFILE="dev.tfrc"
+if [ -e $TFRCFILE ]; then
+  rm -rf $TFRCFILE
+fi
+
 `wget ${DOWNLOAD_URL}`
 ## extract archive
 tar -zxvf ./terraform-provider-harvester-amd64.tar.gz
@@ -34,7 +42,6 @@ terraform_harvester_provider_dir="${TERDIR}/.terraform.d/plugins/registry.terraf
 mkdir -p "${terraform_harvester_provider_dir}"
 cp ${terraform_harvester_provider_bin} "${terraform_harvester_provider_dir}/terraform-provider-harvester_v${VER}"
 
-TFRCFILE="dev.tfrc"
 if [ -e $TFRCFILE ]; then
   echo "File $TFRCFILE already exists!"
 else
@@ -50,5 +57,12 @@ fi
 rm -rf ${TERDIR}/install-terraform-provider-harvester.sh
 rm -rf ${TERDIR}/terraform-provider-harvester-amd64.tar.gz
 rm -rf ${TERDIR}/terraform-provider-harvester
+
+if [ -d "$TERDIR"/.kube ]; then
+  rm -rf ${TERDIR}/.kube
+fi
+if [ -d "$TERDIR"/terraformharvester ]; then
+  rm -rf ${TERDIR}/terraformharvester
+fi
 
 popd

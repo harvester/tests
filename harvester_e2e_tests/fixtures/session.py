@@ -28,9 +28,10 @@ def admin_session(request, harvester_api_endpoints):
     login_data = {'username': username, 'password': password}
     params = {'action': 'login'}
     s = requests.Session()
+    s.verify = False
     # TODO(gyee): do we need to support other auth methods?
     # NOTE(gyee): ignore SSL certificate validation for now
-    resp = s.post(harvester_api_endpoints.local_auth, verify=False,
+    resp = s.post(harvester_api_endpoints.local_auth,
                   params=params, json=login_data)
     assert resp.status_code == 201, 'Failed to authenticate admin user: %s' % (
         resp.content)
