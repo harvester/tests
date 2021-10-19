@@ -26,6 +26,10 @@ jobs:
       - name: Fetch gh-pages branch
         run: |
           git fetch --depth=1 origin gh-pages
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
       - name: Install Hugo
         run: |
           # Adapted from https://gist.github.com/steinwaywhw/a4cd19cda655b8249d908261a62687f8
