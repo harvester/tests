@@ -1,0 +1,4 @@
+baseURL = "https://harvester.github.io/tests/"
+languageCode = "en-us"
+title = "Harvester manual test cases"
+disableKinds = ["taxonomyTerm"]
