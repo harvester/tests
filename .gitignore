@@ -11,6 +11,7 @@ test_result.html
 *dev.tfrc
 *.terraform.d
 *terraformharvester
-<<<<<<< HEAD
 terraform_test_artifacts/bin
 *.DS_Store
+terraform_test_artifacts/bin
+docs/public
