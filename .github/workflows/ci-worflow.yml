@@ -39,6 +39,7 @@ jobs:
             tr -d \" | \
             xargs -n 1 curl -Lo hugo.tar.gz
           tar -xf hugo.tar.gz -C /usr/local/bin/ hugo
+          chmod +x /usr/local/bin/hugo
       - name: Run Hugo
         run: |
           hugo
