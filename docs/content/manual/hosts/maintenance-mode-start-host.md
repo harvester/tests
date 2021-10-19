@@ -1,8 +1,12 @@
 ---
-title: First Time Login	
+title: Start Host in maintenance mode	
 ---
-1. After successful installation of Harvester using Iso, on navigating to UI, user should be prompted to change the password.
-2. Verify the password rules
+1. For Host that is in maintenance mode and turned off
+2. Start host
 
 ## Expected Results
-1. User should be able to login
+1. Host should turn on
+2. Maintenance mode label in hosts list should go from red to yellow
+
+### Known bugs
+https://github.com/harvester/harvester/issues/1272
