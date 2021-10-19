@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>UI on Harvester manual test cases</title>
+    <link>https://harvester.github.io/tests/manual/ui/</link>
+    <description>Recent content in UI on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/ui/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Verify the external link at the bottom of the page</title>
+      <link>https://harvester.github.io/tests/manual/ui/verify-bottom-links/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/ui/verify-bottom-links/</guid>
+      <description>Click all the external links available at the bottom of the page - Docs, Forums, Slack, File an issue. Click the Generate support bundle at the bottom of the page  Expected Results  The external links should take user to correct URL in new tab in the browser. The support bundle should be generated once the Generate support bundle. The progress should be shown while the bundle is getting generated.</description>
+    </item>
+    
+    <item>
+      <title>Verify the Harvester UI URL</title>
+      <link>https://harvester.github.io/tests/manual/ui/verify-url/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/ui/verify-url/</guid>
+      <description> Navigate to the Harvester UI and verify the URL. Verify the Harvester icon on the left top corner  Expected Results  The URL should be the management ip + /dashboard redirect to login page if not login redirect to dashboard page if already login  </description>
+    </item>
+    
+    <item>
+      <title>Verify the left side menu</title>
+      <link>https://harvester.github.io/tests/manual/ui/verify-left-menu/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/ui/verify-left-menu/</guid>
+      <description> Check all the menu at the left side of the screen. Verify the preference and logout option is available at the right top of the screen  Expected Results  The menu should have Dashboard, Hosts, Virtual machines, Volumes, Images and Advance. The Advance menu should have sub menu Templates, backups, network, SSH keys, Users, Cloud config templates, Settings. Clicking on the menu should take user to the respective pages  </description>
+    </item>
+    
+    <item>
+      <title>Verify the links which navigate to the internal pages</title>
+      <link>https://harvester.github.io/tests/manual/ui/verify-internal-links/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/ui/verify-internal-links/</guid>
+      <description> Click the links available on the pages like on dashboard - host, virtual machines etc Verify the events and resources tabs presents in the pages e.g. - Dashboard, Virtual machines  Expected Results  The internal link should take user to the correct page in the same tab opened in the browser  </description>
+    </item>
+    
+  </channel>
+</rss>

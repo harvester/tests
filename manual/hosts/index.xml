@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hosts on Harvester manual test cases</title>
+    <link>https://harvester.github.io/tests/manual/hosts/</link>
+    <description>Recent content in Hosts on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/hosts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Delete Host</title>
+      <link>https://harvester.github.io/tests/manual/hosts/delete-host/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/delete-host/</guid>
+      <description> Navigate to the Hosts page and select the node Click Delete  Expected Results  SSH to the node and check the nodes has components deleted.  </description>
+    </item>
+    
+    <item>
+      <title>Delete host that has VMs on it</title>
+      <link>https://harvester.github.io/tests/manual/hosts/delete-host-with-vm/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/delete-host-with-vm/</guid>
+      <description>Navigate to the Hosts page and select the node Click Delete  Expected Results  An alert message should appear. If VM exists it should stop user to delete the node or move VM to other node. If VM is getting moved to another node and there is no space, it should stop user to delete the node.  Existing bugs https://github.com/harvester/harvester/issues/1004</description>
+    </item>
+    
+    <item>
+      <title>Download host YAML</title>
+      <link>https://harvester.github.io/tests/manual/hosts/download-host-yaml/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/download-host-yaml/</guid>
+      <description> Navigate to the Hosts page and select the node Click Download Yaml  Expected Results  The Yaml should get downloaded.  </description>
+    </item>
+    
+    <item>
+      <title>Edit Config</title>
+      <link>https://harvester.github.io/tests/manual/hosts/edit-config/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/edit-config/</guid>
+      <description> Navigate to the Hosts page and select the node Click edit config. Add description and other details Try to modify the network config  Expected Results  The edited values should be saved and reflected on the page.  </description>
+    </item>
+    
+    <item>
+      <title>Edit Config YAML</title>
+      <link>https://harvester.github.io/tests/manual/hosts/edit-config-yaml/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/edit-config-yaml/</guid>
+      <description> Navigate to the Hosts page and select the node Click edit config through YAML. Add description and other details Try to modify the network config  Expected Results  The edited values should be saved and reflected on the page.  </description>
+    </item>
+    
+    <item>
+      <title>Maintenance mode for host with multiple VMs</title>
+      <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-multiple-vm/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-multiple-vm/</guid>
+      <description> Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Do health check on VMs  Expected Results  Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode  </description>
+    </item>
+    
+    <item>
+      <title>Maintenance mode for host with one VM</title>
+      <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-one-vm/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-one-vm/</guid>
+      <description> Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Do health check on VMs  Expected Results  Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode  </description>
+    </item>
+    
+    <item>
+      <title>Maintenance mode on node with no vms</title>
+      <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-no-vm/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-no-vm/</guid>
+      <description> Put host in maintenance mode Wait for host to go from entering maintenance mode to maintenance mode.  Expected Results  Host should start to go into maintenance mode Host should go into maintenance mode  </description>
+    </item>
+    
+    <item>
+      <title>Migrate back VMs that were on host after taking host out of maintenance mode</title>
+      <link>https://harvester.github.io/tests/manual/hosts/q-maintenance-mode-migrate-back-vms/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/q-maintenance-mode-migrate-back-vms/</guid>
+      <description>Migrate all VMs back to host that were migrated off  Expected Results I&amp;rsquo;m not sure about the expected behavior on this. I&amp;rsquo;m checking.</description>
+    </item>
+    
+    <item>
+      <title>Power down and power up the node</title>
+      <link>https://harvester.github.io/tests/manual/hosts/negative-power-down-power-up-node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/negative-power-down-power-up-node/</guid>
+      <description>Create two vms on a cluster. Power down the node. Try to migrate a VM from the down node to active node. Leave the 2nd vm as it is. Power on the node  Expected Results  The 1st VM should be migrated to other node on manually doing it. The 2nd VM should be accessible once the node is up.  Known bugs https://github.com/harvester/harvester/issues/982</description>
+    </item>
+    
+    <item>
+      <title>Power down the node</title>
+      <link>https://harvester.github.io/tests/manual/hosts/negative-power-down-node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/negative-power-down-node/</guid>
+      <description> Create two vms on a cluster. Power down the node. Try to migrate a VM from the down node to active node. Leave the 2nd vm as it is.  Expected Results  The 1st VM should be migrated to other node on manually doing it. The 2nd VM should be recovered from the lost node  </description>
+    </item>
+    
+    <item>
+      <title>Reboot host that is in maintenance mode</title>
+      <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-reboot-host/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-reboot-host/</guid>
+      <description>For Host that is in maintenance mode and turned on Reboot host  Expected Results  Host should reboot Maintenance mode label in hosts list should go from yellow to red to yellow  Known Bugs https://github.com/harvester/harvester/issues/1272</description>
+    </item>
+    
+    <item>
+      <title>Reboot node</title>
+      <link>https://harvester.github.io/tests/manual/hosts/negative-reboot-node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/negative-reboot-node/</guid>
+      <description> Create a vm on the cluster. Reboot the node where the vm exists. Reboot the node where there is no vm  Expected Results  On rebooting the node, once the node is back up and Harvester is started, the host should become available on the cluster.  </description>
+    </item>
+    
+    <item>
+      <title>Remove a management node from a 3 nodes cluster and add it back to the cluster by reinstalling it</title>
+      <link>https://harvester.github.io/tests/manual/hosts/remove-management-node-then-reinstall/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/remove-management-node-then-reinstall/</guid>
+      <description> From a HA cluster with 3 nodes Delete one of the nodes after the node promotion(all 3 nodes are management nodes) Reinstall the removed node with the same node name and IP The rejoined node will be promoted to master automatically  Expected Results  The removed node should be able to rejoin the cluster without issues  Comments  Purpose is to cover this scenario: https://github.com/harvester/harvester/issues/1040 Check the job promotion with the command kubectl get jobs -n harvester-system If a node is stuck in the removing status, you likely face to this issue, execute this command as workaround: kubectl get node -o name &amp;lt;nodename&amp;gt; | xargs -i kubectl patch {} -p &#39;{&amp;quot;metadata&amp;quot;:{&amp;quot;finalizers&amp;quot;:[]}}&#39; --type=merge  </description>
+    </item>
+    
+    <item>
+      <title>Remove unavailable node with VMs on it</title>
+      <link>https://harvester.github.io/tests/manual/hosts/negative-remove-unavailable-node-with-vm/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/negative-remove-unavailable-node-with-vm/</guid>
+      <description>Create VMs on a host. Turn off Host Remove Host from hosts list  Expected Results  VMs should migrate to new host  Known Bugs https://github.com/harvester/harvester/issues/983</description>
+    </item>
+    
+    <item>
+      <title>Start Host in maintenance mode</title>
+      <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-start-host/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-start-host/</guid>
+      <description>For Host that is in maintenance mode and turned off Start host  Expected Results  Host should turn on Maintenance mode label in hosts list should go from red to yellow  Known bugs https://github.com/harvester/harvester/issues/1272</description>
+    </item>
+    
+    <item>
+      <title>Take host out of maintenance mode that has been rebooted</title>
+      <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</guid>
+      <description> For host in maintenance mode that has been rebooted take host out of maintenance mode  Expected Results  Host should go to Active Label shbould go green  </description>
+    </item>
+    
+    <item>
+      <title>Take host out of maintenance mode that has not been rebooted</title>
+      <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-not-rebooted/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-not-rebooted/</guid>
+      <description> For host in maintenance mode that has not been rebooted take host out of maintenance mode  Expected Results  Host should go to Active Label shbould go green  </description>
+    </item>
+    
+    <item>
+      <title>Temporary network disruption</title>
+      <link>https://harvester.github.io/tests/manual/hosts/negative-network-disruption/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/negative-network-disruption/</guid>
+      <description> Create a vms on the cluster. Disable network of a node for sometime. e.g. 5 sec, 5 mins  Expected Results  VM should be accessible after the network is up.  </description>
+    </item>
+    
+    <item>
+      <title>Turn off host that is in maintenance mode</title>
+      <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-turn-off-host/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-turn-off-host/</guid>
+      <description>Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Shut down Host  Expected Results  Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode host should shut down Maintenance mode label in hosts list should go red  Known bugs https://github.com/harvester/harvester/issues/1272</description>
+    </item>
+    
+    <item>
+      <title>Verify Enabling maintenance mode</title>
+      <link>https://harvester.github.io/tests/manual/hosts/verify-enabling-maintenance-mode/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/verify-enabling-maintenance-mode/</guid>
+      <description> Navigate to the Hosts page and select the node Click Maintenance Mode  Expected Results  The existing VM should get migrated to other nodes. Verify the CRDs to see the maintenance mode is enabled.  Comments  Needs other test cases to be added If VM migration fails How does live migration work What happens if there are no schedulable resources on nodes  Check CRDs on hosts  On going into maintenance mode kubectl get virtualmachines &amp;ndash;all-namespaces   Kubectl get virtualmachines/name -o yaml  On coming out of maintenance mode kubectl get virtualmachines &amp;ndash;all-namespaces     Kubectl get virtualmachines/name -o yaml  Check that maintenance mode host isn&amp;rsquo;t schedulable  Fully provision all nodes and try to create a VM     It should fail  Migration with maintenance mode What if migration gets stuck, can you cancel VMs going to different hosts Canceling maintenance mode P1  Put in maintenance mode Check migration of VMs Check status of VMs modify filesystem on VMs Check status of host Take host out of maintenance mode Check status of host Migrate VMs back to host Check filesystem Create new VMs on host Check status of VMs      </description>
+    </item>
+    
+    <item>
+      <title>Verify the Filter on the Host page</title>
+      <link>https://harvester.github.io/tests/manual/hosts/verify-filter-on-host-page/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/verify-filter-on-host-page/</guid>
+      <description> Enter name of a host and verify the nodes get filtered out.  Expected Results  The edited name should be reflected on the host.  </description>
+    </item>
+    
+    <item>
+      <title>Verify the info of the node</title>
+      <link>https://harvester.github.io/tests/manual/hosts/verify-node-info/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/verify-node-info/</guid>
+      <description> Navigate to the hosts tab and verify the following.  State Name Host IP CPU Memory Storage Size Age    Expected Results  All the data/status shown on the page should be correct.  </description>
+    </item>
+    
+    <item>
+      <title>Verify the state for Powered down node</title>
+      <link>https://harvester.github.io/tests/manual/hosts/negative-verify-state-powered-down-node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/negative-verify-state-powered-down-node/</guid>
+      <description> Power down the node and check the state of the node in the cluster  Expected Results  The node state should show unavilable  </description>
+    </item>
+    
+  </channel>
+</rss>

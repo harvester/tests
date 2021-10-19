@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Advanced on Harvester manual test cases</title>
+    <link>https://harvester.github.io/tests/manual/advanced/</link>
+    <description>Recent content in Advanced on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/advanced/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Change api-ui-source bundled</title>
+      <link>https://harvester.github.io/tests/manual/advanced/chage-api-ui-source-bundled/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/chage-api-ui-source-bundled/</guid>
+      <description> Log in as admin Navigate to advanced settings Change api-ui-source to bundled Save Refresh page Check page source for dashboard loading location  Expected Results  Log in should complete Settings should save dashboard location should be loading from /dashboard/_nuxt/  (verify it in browser&amp;rsquo;s developers tools)    </description>
+    </item>
+    
+    <item>
+      <title>Change api-ui-source external</title>
+      <link>https://harvester.github.io/tests/manual/advanced/chage-api-ui-source-external/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/chage-api-ui-source-external/</guid>
+      <description> Log in as admin Navigate to advanced settings Change api-ui-source to external Save Refresh page Check page source for dashboard loading location  Expected Results  Log in should complete Settings should save dashboard location should be loading from https://releases.rancher.com/harvester-ui/latest (verify it in browser&amp;rsquo;s developers tools)  </description>
+    </item>
+    
+    <item>
+      <title>Change log level debug</title>
+      <link>https://harvester.github.io/tests/manual/advanced/change-log-level-debug/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/change-log-level-debug/</guid>
+      <description> Log in as admin Navigate to advanced settings Edit config on log-level Choose Debug Save Create two VMs Reboot both VMs Download Logs  Expected Results  Login should complete Settings should save VMs should create VMs should reboot sucessfully Logs should show Debug level output  </description>
+    </item>
+    
+    <item>
+      <title>Change log level Info</title>
+      <link>https://harvester.github.io/tests/manual/advanced/change-log-level-info/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/change-log-level-info/</guid>
+      <description> Log in as admin Navigate to advanced settings Edit config on log-level Choose Info Save Create two VMs Reboot both VMs Download Logs  Expected Results  Login should complete Settings should save VMs should create VMs should reboot sucessfully Logs should show Info level output  </description>
+    </item>
+    
+    <item>
+      <title>Change log level Trace</title>
+      <link>https://harvester.github.io/tests/manual/advanced/change-log-level-trace/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/change-log-level-trace/</guid>
+      <description> Log in as admin Navigate to advanced settings Edit config on log-level Choose Trace Save Create two VMs Reboot both VMs Download Logs  Expected Results  Login should complete Settings should save VMs should create VMs should reboot sucessfully Logs should show Trace level output  </description>
+    </item>
+    
+    <item>
+      <title>Set backup target S3</title>
+      <link>https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/</guid>
+      <description> Log in as admin Navigate to advanced settings Edit config on backup-target Choose S3 Set valid S3 target Save  Expected Results  login should complete Settings should save You should not get an error message  </description>
+    </item>
+    
+    <item>
+      <title>Set backup-target NFS</title>
+      <link>https://harvester.github.io/tests/manual/advanced/set-nfs-backup-target/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/set-nfs-backup-target/</guid>
+      <description> Log in as admin Navigate to advanced settings Edit config on backup-target Choose NFS Set valid NFS target Save  Expected Results  login should complete Settings should save You should not get an error message  </description>
+    </item>
+    
+    <item>
+      <title>Set backup-target NFS invalid target</title>
+      <link>https://harvester.github.io/tests/manual/advanced/negative-set-invalid-nfs-backup-target/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/negative-set-invalid-nfs-backup-target/</guid>
+      <description> Log in as admin Navigate to advanced settings Edit config on backup-target Choose NFS Set invalid NFS target Save  Expected Results  login should complete Settings should save You should get an error message  </description>
+    </item>
+    
+    <item>
+      <title>Set backup-target S3 invalid target</title>
+      <link>https://harvester.github.io/tests/manual/advanced/negative-set-invalid-s3-backup-target/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/advanced/negative-set-invalid-s3-backup-target/</guid>
+      <description> Log in as admin Navigate to advanced settings Edit config on backup-target Choose S3 Set invalid S3 target Save  Expected Results  login should complete Settings should save You should get an error message  </description>
+    </item>
+    
+  </channel>
+</rss>
