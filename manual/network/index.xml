@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Network on Harvester manual test cases</title>
+    <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/</link>
+    <description>Recent content in Network on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Add multiple Networks via form</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-multiple-networks-form/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-multiple-networks-form/</guid>
+      <description> Create a new VM via the web form Add both a management network and an external VLAN network Validate both interfaces exist in the VM  ip link list   Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine  Expected Results  The VM should create You should see three interfaces listed in VM You should get responses from pinging the VM You should get responses from pinging the VM  </description>
+    </item>
+    
+    <item>
+      <title>Add multiple Networks via YAML</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-multiple-networks-yaml/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-multiple-networks-yaml/</guid>
+      <description> Create a new VM via YAML Add both a management network and an external VLAN network Validate both interfaces exist in the VM  ip link list   Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine  Expected Results  The VM should create You should see three interfaces listed in VM You should get responses from pinging the VM You should get responses from pinging the VM  </description>
+    </item>
+    
+    <item>
+      <title>Add VLAN network</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-vlan-network/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-vlan-network/</guid>
+      <description> Open settings on a harvester cluster Navigate to the VLAN settings page Click Enabled Add the default Physical NIC Click Save Validate that it has updated in settings  Expected Results  You should be able to add the VLAN network device You should see in the settings list that it has your new default NIC  </description>
+    </item>
+    
+    <item>
+      <title>Create new network</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/create-network/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/create-network/</guid>
+      <description> Navigate to the networks page in harvester Click Create Add a name Add a VLAN ID Click Create  Expected Results  You should be able to add the VLAN You should see the VLAN show up in the networks page  </description>
+    </item>
+    
+    <item>
+      <title>Delete external VLAN network via form</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-vlan-network-form/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-vlan-network-form/</guid>
+      <description> On a VM with both an external VLAN and a management VLAN delete the external VLAN via the web form Validate interface was removed with  ip link list   Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine  Expected Results  The VM should update and reboot You should only see one interface (and the loopback) in the list You should not be able to ping the VM on the external VLAN You should get responses from the VM  </description>
+    </item>
+    
+    <item>
+      <title>Delete external VLAN network via YAML</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-vlan-network-yaml/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-vlan-network-yaml/</guid>
+      <description> On a VM with both an external VLAN and a management VLAN delete the external VLAN via YAML Validate interface was removed with  ip link list   Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine  Expected Results  The VM should update and reboot You should only see one interface (and the loopback) in the list You should not be able to ping the VM on the external VLAN You should get responses from the VM  </description>
+    </item>
+    
+    <item>
+      <title>Delete management network via form</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-management-network-form/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-management-network-form/</guid>
+      <description> On a VM with both an external VLAN and a management VLAN delete the management VLAN via the web form Validate interface was removed with  ip link list   Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine  Expected Results  The VM should update and reboot You should only see one interface (and the loopback) in the list You should not be able to ping the VM on the management VLAN You should get responses from the VM  </description>
+    </item>
+    
+    <item>
+      <title>Delete management network via YAML</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-management-network-yaml/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-management-network-yaml/</guid>
+      <description> On a VM with both an external VLAN and a management VLAN delete the management network via YAML Validate interface was removed with  ip link list   Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine  Expected Results  The VM should update and reboot You should only see one interface (and the loopback) in the list You should not be able to ping the VM on the management network You should get responses from the VM  </description>
+    </item>
+    
+    <item>
+      <title>Edit network via form change external VLAN to management network</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-form-change-vlan-to-management/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-form-change-vlan-to-management/</guid>
+      <description> Edit VM and change external VLAN to management network with bridge type via the web form Ping VM Attempt to SSH to VM  Expected Results  VM should save and reboot You should be able to ping the VM from an external network You should be able to SSH to VM  </description>
+    </item>
+    
+    <item>
+      <title>Edit network via form change management network to external VLAN</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-form-change-management-to-vlan/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-form-change-management-to-vlan/</guid>
+      <description> Edit VM and change management network to external VLAN with bridge type via the web form Ping VM Attempt to SSH to VM  Expected Results  VM should save and reboot You should be able to ping the VM from an external network You should be able to SSH to VM  </description>
+    </item>
+    
+    <item>
+      <title>Edit network via YAML change external VLAN to management network</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-yaml-change-vlan-to-management/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-yaml-change-vlan-to-management/</guid>
+      <description> Edit VM and change external VLAN to management network with bridge type via YAML Ping VM Attempt to SSH to VM  Expected Results  VM should save and reboot You should be able to ping the VM from an external network You should be able to SSH to VM  </description>
+    </item>
+    
+    <item>
+      <title>Edit network via YAML change management network to external VLAN</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-yaml-change-management-to-vlan/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-yaml-change-management-to-vlan/</guid>
+      <description> Edit VM and change management network to external VLAN with bridge type via YAML Ping VM Attempt to SSH to VM  Expected Results  VM should save and reboot You should be able to ping the VM from an external network You should be able to SSH to VM  </description>
+    </item>
+    
+    <item>
+      <title>Negative network comes back up after reboot external VLAN</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-vlan-after-reboot/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-vlan-after-reboot/</guid>
+      <description> Start pinging the VM reboot the VM  Expected Results  The VM should respond The VM should reboot The pings should stop getting responses The pings should start getting responses again  </description>
+    </item>
+    
+    <item>
+      <title>Negative network comes back up after reboot management network</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-management-after-reboot/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-management-after-reboot/</guid>
+      <description> Start pinging the VM from the management network reboot the VM  Expected Results  The VM should respond The VM should reboot The pings should stop getting responses The pings should start getting responses again  </description>
+    </item>
+    
+    <item>
+      <title>Try to add a network with no name</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-add-network-no-name/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-add-network-no-name/</guid>
+      <description> Navigate to the networks page in harvester Click Create Don&amp;rsquo;t add a name Add a VLAN ID Click Create  Expected Results  You should get an error that says you need to add a name  </description>
+    </item>
+    
+    <item>
+      <title>Validate network connectivity external VLAN</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/validate-network-external-vlan/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/validate-network-external-vlan/</guid>
+      <description> Create a new VM Make sure that the network is set to the external VLAN with bridge as the type Ping VM Attempt to SSH to VM  Expected Results  VM should be created You should be able to ping the VM from an external network You should be able to SSH to VM  </description>
+    </item>
+    
+    <item>
+      <title>Validate network connectivity invalid external VLAN</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-network-connectivity-invalid-vlan/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-network-connectivity-invalid-vlan/</guid>
+      <description> Create a new VM Make sure that the network is set to the external VLAN with bridge as the type and a VLAN ID that isn&amp;rsquo;t valid for your network Ping VM Attempt to SSH to VM  Expected Results  VM should be created You should not be able to ping the VM from an external network You should not be able to SSH to VM  </description>
+    </item>
+    
+    <item>
+      <title>Validate network connectivity management network</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/validate-network-management-network/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/network/validate-network-management-network/</guid>
+      <description> Create a new VM Make sure that the network is set to the management network with masquerade as the type Ping VM Attempt to SSH to VM  Expected Results  VM should be created You should not be able to ping the VM from an external network You should not be able to SSH to VM  </description>
+    </item>
+    
+  </channel>
+</rss>

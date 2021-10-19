@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Harvester manual test cases
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css">
+  </head>
+  <body class="markdown-body" style="display: flex; padding: 1%;">
+    
+<aside style="width: 30%; padding: 1%; border-right: 1px solid lightgray;">
+  <a href="https://noahgildersleeve.github.io/test-harvester-tests/manual"><h2>Manual Test Cases</h2></a>
+  
+  <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/">Advanced</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/chage-api-ui-source-bundled/">Change api-ui-source bundled</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/chage-api-ui-source-external/">Change api-ui-source external</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/change-log-level-debug/">Change log level debug</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/change-log-level-info/">Change log level Info</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/change-log-level-trace/">Change log level Trace</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/set-s3-backup-target/">Set backup target S3</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/set-nfs-backup-target/">Set backup-target NFS</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/negative-set-invalid-nfs-backup-target/">Set backup-target NFS invalid target</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/advanced/negative-set-invalid-s3-backup-target/">Set backup-target S3 invalid target</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/">Authentication</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/general-authentication/">Authentication Validation</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/first-time-login/">First Time Login</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/login-after-password-reset/">Login after password reset</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/logout-then-login/">Logout from the UI and login again</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/multi-browser-login/">Multi-browser login</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/verify-github-ssh/">Verify SSH key was added from Github during install</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/">Backup and Restore</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/backup-single-vm/">Backup Single VM</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/backup-single-vm-that-has-been-live-migrated/">Backup Single VM that has been live migrated before</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/create-backup-target/">Create Backup Target</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/delete-single-backup/">Delete backup from backups list</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/delete-first-backup-chained-backup/">Delete first backup in chained backup</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/delete-last-backup-chained-backup/">Delete last backup in chainged backup</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/delete-middle-backup-chained-backup/">Delete middle backup in chained backup</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/delete-multiple-backups/">Delete multiple backups</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/edit-backup-read-yaml-from-file/">Edit backup read YAML from file</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/edit-backup-yaml/">Edit backup via YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/filter-backups/">Filter backups</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-backup-single-vm/">Negative backup single VM</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-backup-full-backup-target/">Negative create backup on store that is full (NFS)</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-create-backup-target/">Negative Create Backup Target</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-delete-backup-while-restoring/">Negative delete backup while restore is in progress</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-delete-multiple-backups/">Negative delete multiple backups</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-delete-single-backup/">Negative delete single backup</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-disrupt-backup-target-while-restoring/">Negative disrupt backup server while restore is in progress</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-edit-backup-file/">Negative edit backup read from file YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-edit-backup-yaml/">Negative edit backup YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-backup-while-taking-backup/">Negative initiate a backup while system is taking another backup</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-power-down-node-while-restoring-replace/">Negative Power down the node where the VM is getting replaced by the restore</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-power-down-node-while-restoring/">Negative power down the node where the VM is getting restored</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-restore-backup-replace/">Negative restore backup replace existing VM</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-restore-backup-replace-while-deleting-backup/">Negative restore backup replace existing VM with backup from same VM that is turned on</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/negative-restore-backup-replace-while-turned-on/">Negative restore backup replace existing VM with backup from same VM that is turned on</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/restore-backup-create-new-vm/">Restore backup create new vm</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/restore-backup-for-vm-live-migrated/">Restore Backup for VM that was live migrated</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/restore-backup-replace-existing/">Restore backup replace existing VM with backup from same VM</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/restore-first-backup-chained-backup/">Restore First backup in chained backup</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/restore-last-backup-chained-backup/">Restore last backup in chained backup</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/backup-and-restore/restore-middle-backup-chained-backup/">Restore middle backup in chained backup</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/">Deployment Tests for Harvester</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/add-node-cluster/">Add a node to existing cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/install-bare-metal-iso/">Install Harvester on a bare Metal node using ISO image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/install-nested-virtualization/">Install Harvester on a bare Metal node using ISO image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/install-bare-metal-pxe/">Install Harvester on a bare Metal node using PXE boot</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/negative-power-off-one-node-cluster/">Power down a node out of three nodes available for the Cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/negative-power-down-management-node/">Power down the management node.</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/negative-reboot-management-node/">Reboot the management node/added node.</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/remove-node-cluster/">Remove a node from the existing cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/verify-network-connection/">Verify and Configure Networking Connection</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/verify-ssh/">Verify Configuring SSH keys</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/verify-http-config/">Verify Configuring via HTTP URL</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/verify-installation-confirmation/">Verify the installation confirmation screen</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/verify-installer-options/">Verify the Installer Options</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/verify-proxy/">Verify the Proxy configuration</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/deployment/verify-vip-load-balancer/">VIP Load balancer verification</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/">Hosts</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/delete-host/">Delete Host</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/delete-host-with-vm/">Delete host that has VMs on it</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/download-host-yaml/">Download host YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/edit-config/">Edit Config</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/edit-config-yaml/">Edit Config YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/maintenance-mode-multiple-vm/">Maintenance mode for host with multiple VMs</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/maintenance-mode-one-vm/">Maintenance mode for host with one VM</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/maintenance-mode-no-vm/">Maintenance mode on node with no vms</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/q-maintenance-mode-migrate-back-vms/">Migrate back VMs that were on host after taking host out of maintenance mode</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/negative-power-down-power-up-node/">Power down and power up the node</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/negative-power-down-node/">Power down the node</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/maintenance-mode-reboot-host/">Reboot host that is in maintenance mode</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/negative-reboot-node/">Reboot node</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/remove-management-node-then-reinstall/">Remove a management node from a 3 nodes cluster and add it back to the cluster by reinstalling it</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/negative-remove-unavailable-node-with-vm/">Remove unavailable node with VMs on it</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/maintenance-mode-start-host/">Start Host in maintenance mode</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/maintenance-mode-enable-host-rebooted/">Take host out of maintenance mode that has been rebooted</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/maintenance-mode-enable-host-not-rebooted/">Take host out of maintenance mode that has not been rebooted</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/negative-network-disruption/">Temporary network disruption</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/maintenance-mode-turn-off-host/">Turn off host that is in maintenance mode</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/verify-enabling-maintenance-mode/">Verify Enabling maintenance mode</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/verify-filter-on-host-page/">Verify the Filter on the Host page</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/verify-node-info/">Verify the info of the node</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/hosts/negative-verify-state-powered-down-node/">Verify the state for Powered down node</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/">Images</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/add-labels/">Add Labels</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/create-images-with-valid-image-url/">Create Images with valid image URL</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/negative-create-with-invalid-image/">Create with invalid image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/delete-image/">Delete the image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/edit-images/">Edit images</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/upload-cloud-image/">Upload Cloud Image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/negative-upload-invalid-image-file/">Upload image that is invalid</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/upload-iso-image/">Upload ISO Image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/images/verify-options-available-for-image/">Verify the options available for image</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/">Live Migration</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/initiate-multple-migrations-same-time/">Initiate multiple migrations at one time</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-turned-on-vm-to-another-host/">Migrate a turned on VM from one host to another</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-with-cloud-init/">Migrate a VM created with cloud init config data</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-with-user-data/">Migrate a VM created with user data config</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-multiple-volumes/">Migrate a VM that has multiple volumes</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-created-from-template/">Migrate a VM that was created from a template</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-created-from-restore-to-new/">Migrate a VM that was created using a restore backup to new VM</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-with-one-backup/">Migrate a VM with 1 backup</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-with-ssh/">Migrate a VM with a saved SSH Key</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-multiple-backups/">Migrate a VM with multiple backups</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-vm-multiple-networks/">Migrate a VM with multiple networks</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/migrate-to-node-without-replicaset/">Migrate to Node without replicaset</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/negative-migrate-vm/">Negative migrate a turned on VM from one host to another</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/negative-network-disconnect-while-migrating/">Negative network disconnection for a longer time while migration is in progress</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/negative-network-disruption-while-migrating/">Negative network disconnection for a short time while migration is in progress</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/negative-node-down-while-migrating/">Negative node down while migration is in progress</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/negative-node-unschedulable/">Negative node unschedulable during live migration</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/abort-live-migration/">Test aborting live migration</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/zero-downtime-download-test/">Test zero downtime for live migration download test</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/live-migration/zero-downtime-ping-test/">Test zero downtime for live migration ping test</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/">Network</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-multiple-networks-form/">Add multiple Networks via form</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-multiple-networks-yaml/">Add multiple Networks via YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/add-vlan-network/">Add VLAN network</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/create-network/">Create new network</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-vlan-network-form/">Delete external VLAN network via form</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-vlan-network-yaml/">Delete external VLAN network via YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-management-network-form/">Delete management network via form</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/delete-management-network-yaml/">Delete management network via YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-form-change-vlan-to-management/">Edit network via form change external VLAN to management network</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-form-change-management-to-vlan/">Edit network via form change management network to external VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-yaml-change-vlan-to-management/">Edit network via YAML change external VLAN to management network</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/edit-network-yaml-change-management-to-vlan/">Edit network via YAML change management network to external VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-vlan-after-reboot/">Negative network comes back up after reboot external VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-management-after-reboot/">Negative network comes back up after reboot management network</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-add-network-no-name/">Try to add a network with no name</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/validate-network-external-vlan/">Validate network connectivity external VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/negative-network-connectivity-invalid-vlan/">Validate network connectivity invalid external VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/network/validate-network-management-network/">Validate network connectivity management network</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/">Node Driver</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-custom-docker-install-url/">Add a custom &ldquo;Docker Install URL&rdquo;</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-custom-insecure-registries/">Add a custom &ldquo;Insecure Registries&rdquo;</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-custom-registry-mirrors/">Add a custom &ldquo;Registry Mirrors&rdquo;</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-custom-storage-driver/">Add a custom &ldquo;Storage Driver&rdquo;</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/add-cluster-driver/">Add cluster driver</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/q-cluster-different-roles/">Add the different roles to the cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-add-remove-node/">Add/remove a node in the created harvester cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/q-cluster-backup-restore/">Backup and restore of harvester cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/verify-cluster-functionality/">Basic functional verification of Harvester cluster after creation</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/create-add-labs/">Cluster add labs</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-add-taints/">Cluster add Taints</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/create-3-node-rke1/">Create a 3 nodes harvester cluster with RKE1 (only with mandatory info, other values stays with default)</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/create-3-node-rke2/">Create a 3 nodes harvester cluster with RKE2 (only with mandatory info, other values stays with default)</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/q-cluster-add-taint/">Create a harvester cluster and add Taint to a node</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/add-3-master-nodes/">Create a harvester cluster with 3 master nodes</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-non-default-k8s/">Create a harvester cluster with a non-default version of k8s</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-different-images/">Create a harvester cluster with different images</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-template-dropdown-multi-user/">Create a harvester cluster, template drop-down list validation</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-non-default-resources/">Create harvester cluster using non-default CPUs, Memory, Disk</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-different-bus/">Create harvester clusters with different Bus</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-different-networks/">Create harvester clusters with different Networks</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/deactivate-activate-deletenode-driver/">Deactivate/activate/delete Harvester Node Driver</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/cluster-delete/">Delete Cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/guest-csi-driver/">Guest CSI Driver</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/import-external-harvester/">Import External Harvester</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/import-internal-harvester/">Import internal harvester</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/non-admin-user/">Use a non-admin user</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/node-driver/verify-add-node-pool/">Verify &ldquo;Add Node Pool&rdquo;</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/">Terraform Provider</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/install-terraform-provider/">Installation of the Harvester terraform provider</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/harvester-kubeconfig-variasble/">Target Harvester by setting the variable kubeconfig with your kubeconfig file in the provider.tf file</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/harvester-kubeconfig-home/">Target Harvester with the default kubeconfig located in $HOME/.kube/config</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/deployment-all-resources/">Test a deployment with ALL resources at the same time</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/harvester-clusternetwork-resource/">Test the harvester_clusternetwork resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/harvester-image-resource/">Test the harvester_image resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/harvester-network-resource/">Test the harvester_network resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/harvester-ssh-key-resource/">Test the harvester_ssh_key resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/harvester-virtualmachine-resource/">Test the harvester_virtualmachine resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraform-provider/harvester-volume-resource/">Test the harvester_volume resource</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraformer/">Terraformer</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraformer/harvester-cluster-communicate/">Check that you can communicate with the Harvester cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraformer/import-edit-clusternetwork/">Import and make changes to clusternetwork resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraformer/import-edit-image/">Import and make changes to image resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraformer/import-edit-network/">Import and make changes to network resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraformer/import-edit-ssh-key/">Import and make changes to ssh_key resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraformer/import-edit-virtual-machine/">Import and make changes to virtualmachine resource</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/terraformer/import-edit-volume/">Import and make changes to volume resource</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/ui/">UI</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/ui/verify-bottom-links/">Verify the external link at the bottom of the page</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/ui/verify-url/">Verify the Harvester UI URL</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/ui/verify-left-menu/">Verify the left side menu</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/ui/verify-internal-links/">Verify the links which navigate to the internal pages</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/">Virtual Machines</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-only-1-network/">Add a network to an existing VM with only 1 network</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-two-networks/">Add a network to an existing VM with two networks</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/clone-vm-and-dont-select-start-after-creation/">Clone VM and don&rsquo;t select start after creation</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/clone-vm-that-is-turned-off/">Clone VM that is turned off</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/clone-vm-that-is-turned-on/">Clone VM that is turned on</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/clone-vm-that-was-created-from-image/">Clone VM that was created from image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/clone-vm-that-was-created-from-template/">Clone VM that was created from template</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/clone-vm-that-was-not-created-from-image/">Clone VM that was not created from image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/">Create a new VM and add Enable usb tablet option</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-new-vm-and-add-install-guest-agent-option/">Create a new VM and add Install guest agent option</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-the-form/">Create a new VM with Network Data from the form</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-yaml/">Create a new VM with Network Data from YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-new-vm-with-user-data-from-the-form/">Create a new VM with User Data from the form</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-vm-on-a-vlan-with-an-existing-machine-and-then-change-the-existing-machines-vlan/">Create a VM on a VLAN with an existing machine and then change the existing machine&rsquo;s VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-vm-with-2-networks/">Create a VM with 2 networks</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/">Create a vm with all the default values</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-checked/">Create a VM with Start VM on Creation checked</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/">Create a VM with start VM on creation unchecked</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-multiple-instances-vm-with-iso-image/">Create multiple instances of the vm with ISO image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-multiple-instances-vm-with-raw-image/">Create multiple instances of the vm with raw image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-multiple-instances-vm-with-windows-image/">Create multiple instances of the vm with Windows Image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-new-vm-with-a-machine-type-pc/">Create new VM with a machine type of PC</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-new-vm-with-a-machine-type-q35/">Create new VM with a machine type of q35</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-one-vm-on-a-vlan-and-then-move-another-vm-to-that-vlan/">Create one VM on a VLAN and then move another VM to that VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-one-vm-on-a-vlan-that-has-other-vms-then-change-it-to-a-different-vlan/">Create one VM on a VLAN that has other VMs then change it to a different VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-pc/">Create Single instances of the vm with ISO image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/">Create Single instances of the vm with ISO image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-q35/">Create Single instances of the vm with ISO image with machine type pc</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/">Create Single instances of the vm with raw image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-single-instances-vm-with-windows-image/">Create Single instances of the vm with Windows Image</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-two-vms-in-the-same-vlan/">Create two VMs in the same VLAN</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-two-vms-on-separate-vlans/">Create two VMs on separate VLANs</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-two-vms-on-the-same-vlan-and-change-one/">Create two VMs on the same VLAN and change one</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-and-add-ssh-key/">Create VM and add SSH key</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-using-a-template-of-default-version/">Create vm using a template of default version</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-using-a-template-of-default-version-with-machine-type-pc/">Create vm using a template of default version with machine type pc</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-using-a-template-of-default-version-with-machine-type-q35/">Create vm using a template of default version with machine type q35</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-using-a-template-non-default-version/">Create vm using a template of non-default version</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-both-cpu-and-memory-not-in-cluster/">Create vm with both CPU and Memory not in cluster</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-cpu-not-in-cluster/">Create vm with CPU not in cluster.</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-existing-volume/">Create VM with existing Volume</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-memory-not-in-cluster/">Create vm with Memory not in cluster.</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/">Create VM with resources that are only on one node in cluster CPU</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/">Create VM with resources that are only on one node in cluster CPU</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/">Create VM with resources that are only on one node in cluster CPU and Memory</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/">Create VM with resources that are only on one node in cluster Memory</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/">Create VM with resources that are only on one node in cluster Memory</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-saved-ssh-key/">Create VM with saved SSH key</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-the-default-network/">Create VM with the default network</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/create-vm-with-two-disk-volumes/">Create VM with two disk volumes</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/delete-multiple-vms-with-disks/">Delete multiple VMs with disks</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/delete-multiple-vms-without-disks/">Delete multiple VMs without disks</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/delete-single-vm-all-disks/">Delete single vm all disks</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/negative-delete-vm/">Delete VM Negative</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-and-add-install-enable-usb-tablet-option/">Edit a VM and add install Enable usb tablet option</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-and-add-install-guest-agent-option/">Edit a VM and add install guest agent option</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-network-data/">Edit a VM from the form to add Network Data</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-user-data/">Edit a VM from the form to add user data</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-network-data/">Edit a VM from the YAML to add Network Data</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-user-data/">Edit a VM from the YAML to add user data</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-an-existing-vm-to-another-machine-type/">Edit an existing VM to another machine type</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-vm-and-insert-ssh-and-check-the-ssh-key-is-accepted-for-the-login/">Edit vm and insert ssh and check the ssh key is accepted for the login</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/negative-edit-vm-form/">Edit VM Form Negative</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-vm-network-and-verify-the-network-is-working-as-per-configuration-/">Edit vm network and verify the network is working as per configuration</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-vm-via-form-with-cpu/">Edit VM via form with CPU</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-vm-via-form-with-cpu-and-memory/">Edit VM via form with CPU and Memory</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-vm-via-form-with-memory/">Edit VM via form with Memory</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu/">Edit VM via YAML with CPU</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu-and-memory/">Edit VM via YAML with CPU and Memory</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-vm-via-yaml-with-memory/">Edit VM via YAML with Memory</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/">Edit VM with resources that are only on one node in cluster CPU and Memory</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/q-negative-edit-vm-yaml/">Edit VM YAML Negative</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/run-multiple-instances-console/">Run multiple instances of the console</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/negative-start-vm-and-stop-node/">Start VM and stop node Negative</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/negative-start-vm/">Start VM Negative</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/negative-stop-vm/">Stop VM Negative</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/">Verify operations like Stop, restart, pause, download Yaml, generate template</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/">Volumes</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/create-image-from-volume/">Create image from Volume</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/create-volume-root-disk-blank-form-label/">Create Volume root disk blank Form with label</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/create-volume-root-disk-vm-image-form/">Create volume root disk VM Image Form</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/create-volume-root-disk-vm-image-form-label/">Create volume root disk VM Image Form with label</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/delete-volume-that-is-not-attached-to-vm/">Delete volume that is not attached to a VM</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/delete-volume-that-was-attached-to-vm-but-is-not-now/">Delete volume that was attached to VM but now is not</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/edit-volume-decrase-size-yaml/">Edit volume decrease size via YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/edit-volume-decrease-size-form/">Edit volume decrease size via YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/edit-volume-form-add-label/">Edit Volume Form add label</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/edit-volume-increase-size-form/">Edit volume increase size via form</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/edit-volume-increase-size-yaml/">Edit volume increase size via YAML</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/edit-volume-yaml-add-label/">Edit Volume YAML add label</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/negative-delete-volume-that-is-in-use/">Negative delete Volume that is in use</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/volumes/validate-volume-shows-in-use-while-attached/">Validate volume shows as in use when attached</a></li>
+  
+
+</ul>
+
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/webhooks/">Webhooks</a></li>
+  
+    <ul>
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/webhooks/datavolumes.cdi.kubevirt.io/">datavolumes.cdi.kubevirt.io</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/webhooks/keypairs.harvesterhci.io/">keypairs.harvesterhci.io</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/webhooks/q-network-attachment-definitions.k8s.cni.cncf.io/">network-attachment-definitions.k8s.cni.cncf.io</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/webhooks/virtualmachineimages.harvesterhci.io/">virtualmachineimages.harvesterhci.io</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/webhooks/virtualmachinerestores.harvesterhci.io/">virtualmachinerestores.harvesterhci.io</a></li>
+  
+
+  <li><a href="https://noahgildersleeve.github.io/test-harvester-tests/manual/webhooks/virtualmachinetemplateversions.harvesterhci.io/">virtualmachinetemplateversions.harvesterhci.io</a></li>
+  
+
+</ul>
+
+  
+
+</ul>
+
+  
+</aside>
+
+<main style="padding: 1%; width: 70%;">
+  <h1 id="title">Import and make changes to clusternetwork resource</h1>
+  <div>
+    <article id="content">
+       <ol>
+<li>Import clusternetwork resource</li>
+</ol>
+<pre tabindex="0"><code>terraformer import harvester -r clusternetwork
+</code></pre><ol>
+<li>Replace the provider (already explained in the installation process above)</li>
+<li>terraform plan and apply command should print &ldquo;No changes.&rdquo;</li>
+<li>Alter the resource and check with terraform plan then terraform apply
+For instance, alter the following properties: default_physical_nic, enable in the clusternetwork.tf file</li>
+<li>Check the change through either the UI or the API</li>
+</ol>
+<h2 id="expected-results">Expected Results</h2>
+<ul>
+<li>Import output</li>
+</ul>
+<pre tabindex="0"><code>terraformer import harvester -r clusternetwork
+2021/08/04 15:43:25 harvester importing... clusternetwork
+2021/08/04 15:43:26 harvester done importing clusternetwork
+...
+</code></pre><ul>
+<li>Terraform plan output</li>
+</ul>
+<pre tabindex="0"><code>default_physical =&gt; Plan: 0 to add, 1 to change, 0 to destroy.
+enable=&gt; Plan: 0 to add, 1 to change, 0 to destroy.
+</code></pre><ul>
+<li>You should see the changes on the UI in the according sections</li>
+</ul>
+
+    </article>
+  </div>
+</main>
+
+    
+    
+  </body>
+</html>

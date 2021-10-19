@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Authentication on Harvester manual test cases</title>
+    <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/</link>
+    <description>Recent content in Authentication on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Authentication Validation</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/general-authentication/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/general-authentication/</guid>
+      <description>Enable Access Control . Choose “Allow any valid User” as “Site Access”. Make sure any user is able to access the site. Enable Access Control . Choose “Restrict to Specific User” and add few users. Make sure only the specified users have access to the server. Others should get authentication error. Enable Access Control . Choose “Restrict to Specific User” and add a group. Make sure only all users belonging to the group have access to the server Others should get authentication error.</description>
+    </item>
+    
+    <item>
+      <title>First Time Login</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/first-time-login/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/first-time-login/</guid>
+      <description> After successful installation of Harvester using Iso, on navigating to UI, user should be prompted to change the password. Verify the password rules  Expected Results  User should be able to login  </description>
+    </item>
+    
+    <item>
+      <title>Login after password reset</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/login-after-password-reset/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/login-after-password-reset/</guid>
+      <description> Enter the wrong credential. Enter the correct credential  Expected Results  Login should fail. Login should pass  </description>
+    </item>
+    
+    <item>
+      <title>Logout from the UI and login again</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/logout-then-login/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/logout-then-login/</guid>
+      <description> Logout from the UI and Log in again  Expected Results  User should be able to logout/login successfully.  </description>
+    </item>
+    
+    <item>
+      <title>Multi-browser login</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/multi-browser-login/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/multi-browser-login/</guid>
+      <description> Login via Chrome, firefox, edge, safari etc  Expected Results  Chrome, firefox, edge, safari etc should have same behavior.  </description>
+    </item>
+    
+    <item>
+      <title>Verify SSH key was added from Github during install</title>
+      <link>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/verify-github-ssh/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://noahgildersleeve.github.io/test-harvester-tests/manual/authentication/verify-github-ssh/</guid>
+      <description> Add ssh key from Github while installing the Harvester. Login Harvester with github.  Expected Results  User should be able to logout/login successfully.  </description>
+    </item>
+    
+  </channel>
+</rss>
