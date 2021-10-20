@@ -172,8 +172,12 @@ def pytest_configure(config):
                     'and terraform provider scripts provided')
     )
     config.addinivalue_line(
-        "markers", ('backup: mark test to run only to execute the backup and '
-                    'Restore tests')
+        "markers", ('backupnfs: mark test to run only the backup and restore'
+                    'tests for NFS backup target')
+    )
+    config.addinivalue_line(
+        "markers", ('backups3: mark test to run only the backup and restore'
+                    'tests for S3 backup target')
     )
 
 
@@ -198,4 +202,18 @@ def pytest_collection_modifyitems(config, items):
             'AWS credentials or NFS endpoint are not available'))
         for item in items:
             if 'backup' in item.keywords:
+                item.add_marker(skip_backup)
+
+    if config.getoption('--accessKeyId') == '':
+        skip_backup = pytest.mark.skip(reason=(
+            'AWS credentials are not available'))
+        for item in items:
+            if 'backups3' in item.keywords:
+                item.add_marker(skip_backup)
+
+    if config.getoption('--nfs-endpoint') == '':
+        skip_backup = pytest.mark.skip(reason=(
+            'NFS endpoint is not available'))
+        for item in items:
+            if 'backupnfs' in item.keywords:
                 item.add_marker(skip_backup)

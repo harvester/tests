@@ -29,6 +29,144 @@ pytest_plugins = [
 ]
 
 
+def backup_restore_migrated_vm(request, admin_session,
+                               harvester_api_endpoints,
+                               vm_with_volume,
+                               backuptarget):
+    backup_json = utils.random_name()
+    try:
+        vm_name = vm_with_volume['metadata']['name']
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_with_volume)
+        vm_node_before_migrate = vm_instance_json['status']['nodeName']
+
+        resp = admin_session.get(harvester_api_endpoints.get_node % (
+            vm_node_before_migrate))
+
+        resp = admin_session.get(harvester_api_endpoints.list_nodes)
+        assert resp.status_code == 200, 'Failed to list nodes: %s' % (
+            resp.content)
+        nodes_json = resp.json()['data']
+        for node in nodes_json:
+            if node['metadata']['name'] != vm_node_before_migrate:
+                node_to_migrate = node['metadata']['name']
+
+        resp = admin_session.put(harvester_api_endpoints.migrate_vm % (
+            vm_name),
+            json={"nodeName": node_to_migrate})
+        assert resp.status_code == 202, 'Failed to migrat VM to host %s' % (
+            node_to_migrate)
+        # give it some time for the VM to migrate
+        time.sleep(120)
+
+        def _check_vm_instance_migrated():
+            resp = admin_session.get(
+                harvester_api_endpoints.get_vm_instance % (
+                    vm_name))
+            if resp.status_code == 200:
+                resp_json = resp.json()
+                if ('status' in resp_json and
+                        'migrationState' in resp_json['status'] and
+                        resp_json['status']['migrationState']['completed']):
+                    return True
+            return False
+
+        success = polling2.poll(
+            _check_vm_instance_migrated,
+            step=5,
+            timeout=request.config.getoption('--wait-timeout'))
+        assert success, 'Timed out as waiting for VM to migrate : %s' % (
+            vm_name)
+        vmi_json_after_migrate = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_with_volume)
+        vm_node_after_migrate = vmi_json_after_migrate['status']['nodeName']
+        assert vm_node_after_migrate != vm_node_before_migrate, (
+            'Failed to Migrate as Host remains same. '
+            'Node Before Migrate: %s; Node after Migrate: %s' % (
+                vm_node_before_migrate, vm_node_after_migrate))
+        # Create backup of Live migrated VM
+        backup_name = utils.random_name()
+        backup_json = utils.create_vm_backup(request, admin_session,
+                                             harvester_api_endpoints,
+                                             backuptarget,
+                                             name=backup_name,
+                                             vm_name=vm_name)
+        # Stop VM
+        utils.stop_vm(request, admin_session,
+                      harvester_api_endpoints, vm_name)
+        # Restore existing VM from backup
+        restore_name = utils.random_name()
+        utils.restore_vm_backup(request, admin_session,
+                                harvester_api_endpoints,
+                                name=restore_name,
+                                vm_name=vm_name,
+                                backup_name=backup_name)
+        utils.assert_vm_ready(request, admin_session,
+                              harvester_api_endpoints,
+                              vm_name, running=True)
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_name))
+        assert resp.status_code == 200, 'Failed to get restor VM %s: %s' % (
+            vm_name, resp.content)
+
+        restored_vm_json = resp.json()
+        restored_vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, restored_vm_json)
+        restored_vm_node = restored_vm_instance_json['status']['nodeName']
+        assert restored_vm_node == vm_node_after_migrate, (
+            'Node of restored VM not same as Node after VM migration '
+            'Node Of Restored VM: %s; VM Node after Migrate: %s' % (
+                restored_vm_node, vm_node_after_migrate))
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if vm_with_volume:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, vm_with_volume)
+            if backup_json:
+                utils.delete_vm_backup(request, admin_session,
+                                       harvester_api_endpoints,
+                                       backuptarget, backup_json)
+
+
+def update_backup_yaml(request, admin_session,
+                       harvester_api_endpoints,
+                       basic_vm,
+                       backuptarget):
+    vm_name = basic_vm['metadata']['name']
+    utils.lookup_vm_instance(
+        admin_session, harvester_api_endpoints, basic_vm)
+    backup_name = utils.random_name()
+    backup_json = None
+    try:
+        backup_json = utils.create_vm_backup(request, admin_session,
+                                             harvester_api_endpoints,
+                                             backuptarget,
+                                             name=backup_name,
+                                             vm_name=vm_name)
+        backup_json['metadata']['annotations'] = {
+            'test.harvesterhci.io': 'for-test-update'
+        }
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm_backup % (
+                backup_json['metadata']['name']),
+            backup_json,
+            harvester_api_endpoints.get_vm_backup % (
+                backup_json['metadata']['name']),
+            use_yaml=True)
+        updated_backup_data = resp.json()
+        assert updated_backup_data['metadata']['annotations'].get(
+            'test.harvesterhci.io') == 'for-test-update'
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if backup_json:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, basic_vm)
+                utils.delete_vm_backup(
+                    request, admin_session, harvester_api_endpoints,
+                    backuptarget, backup_json)
+
+
 class TestVMActions:
 
     def test_create_vm(self, admin_session, harvester_api_endpoints, basic_vm):
@@ -234,48 +372,131 @@ class TestVMVolumes:
                                         harvester_api_endpoints, volume_name)
 
 
-@pytest.mark.backup
-class TestVMBackupRestore:
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+@pytest.mark.backups3
+def test_backup_single_vm_s3(request, admin_session,
+                             harvester_api_endpoints, basic_vm,
+                             backuptarget_s3):
+    vm_name = basic_vm['metadata']['name']
+    backup_name = utils.random_name()
+    backup_json = None
+    try:
+        backup_json = utils.create_vm_backup(request, admin_session,
+                                             harvester_api_endpoints,
+                                             backuptarget_s3,
+                                             name=backup_name,
+                                             vm_name=vm_name)
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if backup_json:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, basic_vm)
+                utils.delete_vm_backup(
+                    request, admin_session, harvester_api_endpoints,
+                    backuptarget_s3, backup_json)
 
-    @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
-    def test_backup_single_vm_s3(self, request, admin_session,
-                                 harvester_api_endpoints, basic_vm,
-                                 backuptarget_s3):
-        vm_name = basic_vm['metadata']['name']
-        backup_name = utils.random_name()
-        backup_json = None
-        try:
-            backup_json = utils.create_vm_backup(request, admin_session,
-                                                 harvester_api_endpoints,
-                                                 backuptarget_s3,
-                                                 name=backup_name,
-                                                 vm_name=vm_name)
-        finally:
-            if not request.config.getoption('--do-not-cleanup'):
-                if backup_json:
-                    utils.delete_vm(request, admin_session,
-                                    harvester_api_endpoints, basic_vm)
-                    utils.delete_vm_backup(
-                        request, admin_session, harvester_api_endpoints,
-                        backuptarget_s3, backup_json)
 
-    def test_backup_single_vm_nfs(self, request, admin_session,
-                                  harvester_api_endpoints, basic_vm,
-                                  backuptarget_nfs):
-        vm_name = basic_vm['metadata']['name']
-        backup_name = utils.random_name()
-        backup_json = None
-        try:
-            backup_json = utils.create_vm_backup(request, admin_session,
-                                                 harvester_api_endpoints,
-                                                 backuptarget_nfs,
-                                                 name=backup_name,
-                                                 vm_name=vm_name)
-        finally:
-            if not request.config.getoption('--do-not-cleanup'):
-                if backup_json:
-                    utils.delete_vm(request, admin_session,
-                                    harvester_api_endpoints, basic_vm)
-                    utils.delete_vm_backup(
-                        request, admin_session, harvester_api_endpoints,
-                        backuptarget_nfs, backup_json)
+@pytest.mark.backupnfs
+def test_backup_single_vm_nfs(request, admin_session,
+                              harvester_api_endpoints, basic_vm,
+                              backuptarget_nfs):
+    vm_name = basic_vm['metadata']['name']
+    backup_name = utils.random_name()
+    backup_json = None
+    try:
+        backup_json = utils.create_vm_backup(request, admin_session,
+                                             harvester_api_endpoints,
+                                             backuptarget_nfs,
+                                             name=backup_name,
+                                             vm_name=vm_name)
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if backup_json:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, basic_vm)
+                utils.delete_vm_backup(
+                    request, admin_session, harvester_api_endpoints,
+                    backuptarget_nfs, backup_json)
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
+@pytest.mark.backups3
+def test_backup_restore_migrated_vm_s3(request, admin_session,
+                                       harvester_api_endpoints,
+                                       vm_with_volume,
+                                       backuptarget_s3):
+    backup_restore_migrated_vm(request, admin_session,
+                               harvester_api_endpoints,
+                               vm_with_volume,
+                               backuptarget_s3)
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
+@pytest.mark.backupnfs
+def test_backup_restore_migrated_vm_nfs(request, admin_session,
+                                        harvester_api_endpoints,
+                                        vm_with_volume,
+                                        backuptarget_nfs):
+    backup_restore_migrated_vm(request, admin_session,
+                               harvester_api_endpoints,
+                               vm_with_volume,
+                               backuptarget_nfs)
+
+
+@pytest.mark.backupnfs
+def test_update_backup_yaml_nfs(request, admin_session,
+                                harvester_api_endpoints, basic_vm,
+                                backuptarget_nfs):
+    update_backup_yaml(request, admin_session,
+                       harvester_api_endpoints,
+                       basic_vm,
+                       backuptarget_nfs)
+
+
+@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
+@pytest.mark.backups3
+def test_update_backup_yaml_s3(request, admin_session,
+                               harvester_api_endpoints, basic_vm,
+                               backuptarget_s3):
+    update_backup_yaml(request, admin_session,
+                       harvester_api_endpoints,
+                       basic_vm,
+                       backuptarget_s3)
+
+
+@pytest.mark.backupnfs
+def test_restore_backup_vm_on(request, admin_session,
+                              harvester_api_endpoints,
+                              basic_vm, backuptarget_nfs):
+    # make sure the VM instance is successfully created
+    vm_instance_json = utils.lookup_vm_instance(
+        admin_session, harvester_api_endpoints, basic_vm)
+    vm_name = vm_instance_json['metadata']['name']
+    backup_name = utils.random_name()
+    backup_json = None
+    try:
+        backup_json = utils.create_vm_backup(request, admin_session,
+                                             harvester_api_endpoints,
+                                             backuptarget_nfs,
+                                             name=backup_name,
+                                             vm_name=vm_name)
+        restore_name = utils.random_name()
+        request_json = utils.get_json_object_from_template(
+            'basic_vm_restore',
+            name=restore_name,
+            vm_name=vm_name,
+            backup_name=backup_name
+        )
+        resp = admin_session.post(
+            harvester_api_endpoints.create_vm_restore,
+            json=request_json)
+        content = resp.json()
+        assert 'please stop the VM' in content['message']
+    finally:
+        if not request.config.getoption('--do-not-cleanup'):
+            if backup_json:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, basic_vm)
+                utils.delete_vm_backup(
+                    request, admin_session, harvester_api_endpoints,
+                    backuptarget_nfs, backup_json)

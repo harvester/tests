@@ -35,6 +35,7 @@
     "migrate_vm": "{{ harvester_endpoint }}/apis/subresources.kubevirt.io/v1/namespaces/{{ api_namespace | default('default') }}/virtualmachines/%s/migrate",
     "create_vm_backup": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinebackups",
     "get_vm_backup": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinebackups/%s",
+    "update_vm_backup": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinebackups/%s",
     "create_vm_restore": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinerestores",
     "get_vm_restore": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinerestores/%s",
     "delete_vm_backup": "{{ harvester_endpoint }}/apis/{{ harvester_api_version }}/namespaces/{{ api_namespace | default('default') }}/virtualmachinebackups/%s",
