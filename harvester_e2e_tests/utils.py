@@ -979,8 +979,9 @@ def create_keypair_terraform(request, admin_session, harvester_api_endpoints,
 def create_network_terraform(request, admin_session, harvester_api_endpoints,
                              template_name, vlan_id):
 
-    #    name = 'vlan' + str(vlan_id)
-    name = "t-" + random_name()
+    # NOTE(gyee): will name the network with the following convention as
+    # VLAN ID must be unique. vlan_network_<VLAN ID>
+    name = f'vlan-network-{vlan_id}'
     create_tf_from_template(
         request,
         template_name,
