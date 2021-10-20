@@ -1,8 +1,12 @@
 name: PEP8 Check 
 
 on:
-  - push
-  - pull_request
+  push:
+    paths-ignore:
+      - docs/**
+  pull_request:
+    paths-ignore:
+      - docs/**
 
 jobs:
   build:
