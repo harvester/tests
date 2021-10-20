@@ -2374,7 +2374,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Verify operations like Stop, restart, pause, download Yaml, generate template</title>
+      <title>Verify operations like Stop, restart, pause, download YAML, generate template</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
