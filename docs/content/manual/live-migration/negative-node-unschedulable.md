@@ -1,5 +1,5 @@
 ---
-title: Negative node unschedulable during live migration	
+title: Negative node un-schedulable during live migration	
 ---
 ## Prerequisite: 
 1. Cluster is of 3 nodes.

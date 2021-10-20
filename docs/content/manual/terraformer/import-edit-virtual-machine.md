@@ -1,7 +1,7 @@
 ---
-title: Import and make changes to virtualmachine resource
+title: Import and make changes to virtual machine resource
 ---
-1. Import virtualmachine resource
+1. Import virtual machine resource
 `terraformer import harvester -r virtualmachine`
 1. Replace the provider (already explained in the installation process above)
 1. terraform plan and apply command should print "No changes."
