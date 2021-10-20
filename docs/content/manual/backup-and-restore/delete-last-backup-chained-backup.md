@@ -1,5 +1,5 @@
 ---
-title: Delete last backup in chainged backup
+title: Delete last backup in chained backup
 ---
 1. Create a new VM
 1. Create a file named 1 and add some data using command `dd if=/dev/urandom of=file1.txt count=100 bs=1M`
