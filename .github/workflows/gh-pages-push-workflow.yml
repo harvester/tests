@@ -1,11 +1,6 @@
-name: GH-Pages
+name: GH-Pages-Push
 on:
   push:
-    branches:
-      - main
-    paths:
-      - docs/**
-  pull_request:
     branches:
       - main
     paths:

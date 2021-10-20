@@ -1,0 +1,35 @@
+name: GH-Pages-PR
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - docs/**
+
+jobs:
+  gh-pages:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.8]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Fetch gh-pages branch
+        run: |
+          git fetch --depth=1 origin gh-pages
+      - name: Install Hugo
+        run: |
+          # Adapted from https://gist.github.com/steinwaywhw/a4cd19cda655b8249d908261a62687f8
+          curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest | \
+            grep -E 'browser_download_url.*hugo_[0-9]+.*Linux-64bit.tar.gz' | \
+            cut -d : -f 2,3 | \
+            tr -d \" | \
+            xargs -n 1 curl -Lo hugo.tar.gz
+          tar -xf hugo.tar.gz -C /usr/local/bin/ hugo
+      - name: Run Hugo
+        run: |
+          hugo
+        working-directory: ./docs/
