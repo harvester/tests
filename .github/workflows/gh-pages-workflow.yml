@@ -20,7 +20,7 @@ jobs:
         python: [3.6, 3.8]
 
     steps:
-        - name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
       - name: Fetch gh-pages branch
         run: |
