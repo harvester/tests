@@ -368,7 +368,7 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
     </item>
     
     <item>
-      <title>Create a new VM and add Enable usb tablet option</title>
+      <title>Create a new VM and add Enable USB tablet option</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -927,7 +927,7 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
     </item>
     
     <item>
-      <title>Delete last backup in chainged backup</title>
+      <title>Delete last backup in chained backup</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-last-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1404,12 +1404,12 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
     </item>
     
     <item>
-      <title>Import and make changes to virtualmachine resource</title>
+      <title>Import and make changes to virtual machine resource</title>
       <link>https://harvester.github.io/tests/manual/terraformer/import-edit-virtual-machine/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/terraformer/import-edit-virtual-machine/</guid>
-      <description>Import virtualmachine resource terraformer import harvester -r virtualmachine Replace the provider (already explained in the installation process above) terraform plan and apply command should print &amp;ldquo;No changes.&amp;rdquo; Alter the resource and check with terraform plan then terraform apply For instance, alter the following properties: cpu, memory, name in the virtualmachine.tf file Check the change through either the UI or the API  Expected Results  Import output  terraformer import harvester -r virtualmachine 2021/08/04 16:15:08 harvester importing.</description>
+      <description>Import virtual machine resource terraformer import harvester -r virtualmachine Replace the provider (already explained in the installation process above) terraform plan and apply command should print &amp;ldquo;No changes.&amp;rdquo; Alter the resource and check with terraform plan then terraform apply For instance, alter the following properties: cpu, memory, name in the virtualmachine.tf file Check the change through either the UI or the API  Expected Results  Import output  terraformer import harvester -r virtualmachine 2021/08/04 16:15:08 harvester importing.</description>
     </item>
     
     <item>
@@ -1815,7 +1815,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Negative node unschedulable during live migration</title>
+      <title>Negative node un-schedulable during live migration</title>
       <link>https://harvester.github.io/tests/manual/live-migration/negative-node-unschedulable/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
