@@ -804,7 +804,7 @@ def test_create_vm_using_terraform(request, admin_session,
 
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
-@pytest.mark.backup
+@pytest.mark.backups3
 def test_backup_restore_new_vm(request, admin_session,
                                harvester_api_endpoints,
                                keypair, vm_with_one_vlan,
@@ -821,7 +821,7 @@ def test_backup_restore_new_vm(request, admin_session,
 
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
-@pytest.mark.backup
+@pytest.mark.backups3
 def test_backup_restore_existing_vm(request, admin_session,
                                     harvester_api_endpoints,
                                     keypair, vm_with_one_vlan,
@@ -834,7 +834,7 @@ def test_backup_restore_existing_vm(request, admin_session,
 
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
-@pytest.mark.backup
+@pytest.mark.backups3
 def test_chained_del_middle_backup(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -849,7 +849,7 @@ def test_chained_del_middle_backup(request, admin_session,
 
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
-@pytest.mark.backup
+@pytest.mark.backups3
 def test_chained_del_first_backup(request, admin_session,
                                   harvester_api_endpoints,
                                   keypair, vm_with_one_vlan,
@@ -864,7 +864,7 @@ def test_chained_del_first_backup(request, admin_session,
 
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
-@pytest.mark.backup
+@pytest.mark.backups3
 def test_chained_del_last_backup(request, admin_session,
                                  harvester_api_endpoints,
                                  keypair, vm_with_one_vlan,
@@ -879,7 +879,7 @@ def test_chained_del_last_backup(request, admin_session,
 
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
-@pytest.mark.backup
+@pytest.mark.backups3
 def test_restore_chained_backups(request, admin_session,
                                  harvester_api_endpoints,
                                  keypair, vm_with_one_vlan,
@@ -891,7 +891,7 @@ def test_restore_chained_backups(request, admin_session,
                                    )
 
 
-@pytest.mark.backup
+@pytest.mark.backupnfs
 def test_backup_restore_new_vm_nfs(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -907,7 +907,7 @@ def test_backup_restore_new_vm_nfs(request, admin_session,
                       )
 
 
-@pytest.mark.backup
+@pytest.mark.backupnfs
 def test_backup_restore_existing_vm_nfs(request, admin_session,
                                         harvester_api_endpoints,
                                         keypair, vm_with_one_vlan,
@@ -919,7 +919,7 @@ def test_backup_restore_existing_vm_nfs(request, admin_session,
                       )
 
 
-@pytest.mark.backup
+@pytest.mark.backupnfs
 def test_chained_del_middle_backup_nfs(request, admin_session,
                                        harvester_api_endpoints,
                                        keypair, vm_with_one_vlan,
@@ -933,7 +933,7 @@ def test_chained_del_middle_backup_nfs(request, admin_session,
                                    )
 
 
-@pytest.mark.backup
+@pytest.mark.backupnfs
 def test_chained_del_first_backup_nfs(request, admin_session,
                                       harvester_api_endpoints,
                                       keypair, vm_with_one_vlan,
@@ -947,7 +947,7 @@ def test_chained_del_first_backup_nfs(request, admin_session,
                                    )
 
 
-@pytest.mark.backup
+@pytest.mark.backupnfs
 def test_chained_del_last_backup_nfs(request, admin_session,
                                      harvester_api_endpoints,
                                      keypair, vm_with_one_vlan,
@@ -961,7 +961,7 @@ def test_chained_del_last_backup_nfs(request, admin_session,
                                    )
 
 
-@pytest.mark.backup
+@pytest.mark.backupnfs
 def test_restore_chained_backups_nfs(request, admin_session,
                                      harvester_api_endpoints,
                                      keypair, vm_with_one_vlan,

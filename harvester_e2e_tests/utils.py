@@ -1263,8 +1263,6 @@ def delete_vm_backup(request, admin_session,
     else:
         total_objects_after_delete = get_total_objects_nfs_share(request)
 
-    print(total_objects_before_delete)
-    print(total_objects_after_delete)
     assert total_objects_before_delete > total_objects_after_delete, (
             'Failed to delete any objects from %s target. '
             'Before delete object count: %s; after delete object count: %s' % (

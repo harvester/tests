@@ -17,7 +17,7 @@
 
 from harvester_e2e_tests import utils
 import pytest
-
+import time
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.api_endpoints',
@@ -53,6 +53,14 @@ def backuptarget_s3(request, kubevirt_api_version, admin_session,
         request_json,
         harvester_api_endpoints.get_backup_target)
     updated_settings_data = resp.json()
+    time.sleep(30)
+    resp = admin_session.get(harvester_api_endpoints.get_backup_target)
+    assert resp.status_code == 200, (
+        'Failed to get Backup Target Settings: %s' % (resp.content))
+    backup_target_data = resp.json()
+    assert not backup_target_data['metadata']['state']['error'], (
+        'Backup Target Failed with error: %s' % (
+            backup_target_data['metadata']['state']['message']))
     assert updated_settings_data['value'] == request_json['value'], (
         'Failed to update Backup Target with S3')
     yield updated_settings_data
@@ -82,6 +90,14 @@ def backuptarget_nfs(request, kubevirt_api_version, admin_session,
         request_json,
         harvester_api_endpoints.get_backup_target)
     updated_settings_data = resp.json()
+    time.sleep(30)
+    resp = admin_session.get(harvester_api_endpoints.get_backup_target)
+    assert resp.status_code == 200, (
+        'Failed to get Backup Target Settings: %s' % (resp.content))
+    backup_target_data = resp.json()
+    assert not backup_target_data['metadata']['state']['error'], (
+        'Backup Target Failed with error: %s' % (
+            backup_target_data['metadata']['state']['message']))
     assert updated_settings_data['value'] == request_json['value'], (
         'Failed to update Backup Target with NFS')
     yield updated_settings_data
