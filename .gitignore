@@ -1,3 +1,8 @@
+# RobotFramework
+*log*.html
+*report*.html
+*output*.xml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
