@@ -2,6 +2,7 @@
 *log*.html
 *report*.html
 *output*.xml
+config.py
 logs/
 
 # Byte-compiled / optimized / DLL files

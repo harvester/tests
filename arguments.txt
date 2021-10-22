@@ -1,0 +1,6 @@
+# This is used for `--argumentfile`, `-A` in `robot` command
+# more info: https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#argument-files
+
+-T
+-V config.py
+-d logs

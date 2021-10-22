@@ -1,0 +1,10 @@
+# This file is used for configuring test variables
+
+# Common resource
+Harvester_URL = "https://127.0.0.1:30443/"
+TESTING_BROWSER = "Chrome"
+BROWSER_WAIT_TIMEOUT = "30s"
+
+# Login
+HARVESTER_USERNAME = "admin"
+HARVESTER_PASSWORD = "admin"
