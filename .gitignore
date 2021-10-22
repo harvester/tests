@@ -2,6 +2,7 @@
 *log*.html
 *report*.html
 *output*.xml
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
