@@ -85,6 +85,9 @@
   <li><a href="https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-that-has-been-live-migrated/">Backup Single VM that has been live migrated before</a></li>
   
 
+  <li><a href="https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-node-off/">Backup single VM with node off</a></li>
+  
+
   <li><a href="https://harvester.github.io/tests/manual/backup-and-restore/create-backup-target/">Create Backup Target</a></li>
   
 
@@ -110,9 +113,6 @@
   
 
   <li><a href="https://harvester.github.io/tests/manual/backup-and-restore/filter-backups/">Filter backups</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-single-vm/">Negative backup single VM</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-full-backup-target/">Negative create backup on store that is full (NFS)</a></li>
@@ -977,7 +977,7 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">Negative backup single VM</h1>
+  <h1 id="title">Backup single VM with node off</h1>
   <div>
     <article id="content">
        <ol>
@@ -986,8 +986,12 @@
 </ol>
 <h2 id="expected-results">Expected Results</h2>
 <ol>
-<li>You should not be able to take a backup</li>
+<li>The backup should complete successfully</li>
 </ol>
+<h2 id="comments">Comments</h2>
+<p>We do allow taking backup even if the VM is down, as you can take backup when the VM is off, this is because the volume still exists with longhorn&rsquo;s multi replicas, but weneed to check the data integrity.</p>
+<h2 id="known-bugs">Known Bugs</h2>
+<p><a href="https://github.com/harvester/harvester/issues/1483">https://github.com/harvester/harvester/issues/1483</a></p>
 
     </article>
   </div>

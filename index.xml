@@ -169,6 +169,16 @@
     </item>
     
     <item>
+      <title>Backup single VM with node off</title>
+      <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-node-off/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-node-off/</guid>
+      <description>On multi-node setup bring down node that is hosting VM Click take backup in virtual machine list  Expected Results  The backup should complete successfully  Comments We do allow taking backup even if the VM is down, as you can take backup when the VM is off, this is because the volume still exists with longhorn&amp;rsquo;s multi replicas, but weneed to check the data integrity.
+Known Bugs https://github.</description>
+    </item>
+    
+    <item>
       <title>Basic functional verification of Harvester cluster after creation</title>
       <link>https://harvester.github.io/tests/manual/node-driver/verify-cluster-functionality/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -1659,15 +1669,6 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
       
       <guid>https://harvester.github.io/tests/manual/authentication/multi-browser-login/</guid>
       <description> Login via Chrome, firefox, edge, safari etc  Expected Results  Chrome, firefox, edge, safari etc should have same behavior.  </description>
-    </item>
-    
-    <item>
-      <title>Negative backup single VM</title>
-      <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-single-vm/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-single-vm/</guid>
-      <description> On multi-node setup bring down node that is hosting VM Click take backup in virtual machine list  Expected Results  You should not be able to take a backup  </description>
     </item>
     
     <item>
