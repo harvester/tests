@@ -1,7 +1,10 @@
 *** Settings ***
-Documentation        Simple example using SeleniumLibrary.
-Resource             ../resources/login.robot
-Suite Teardown       Close All Browsers
+Documentation       Simple example using SeleniumLibrary.
+Metadata            Tested on Browser   ${BROWSER}
+Metadata            Login URL           ${LOGIN_URL}
+Metadata            Page Wait Timeout   ${BROWSER_WAIT_TIMEOUT}
+Resource            ../resources/login.robot
+Suite Teardown      Close All Browsers
 
 
 *** Test Cases ***
