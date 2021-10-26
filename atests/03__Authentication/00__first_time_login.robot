@@ -1,5 +1,8 @@
 **** Settings ***
 Documentation       Used to test fresh Harvester installed.
+Metadata            Tested on Browser   ${BROWSER}
+Metadata            Login URL           ${LOGIN_URL}
+Metadata            Page Wait Timeout   ${BROWSER_WAIT_TIMEOUT}
 Resource            ../resources/login.robot
 Suite Setup         Open browser to login page
 Suite Teardown      Set Password And Close Browser
