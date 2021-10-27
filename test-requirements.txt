@@ -1,4 +1,5 @@
 pytest
+pytest-drop-dup-tests
 pytest-ordering
 pytest-html
 pytest-json-report
