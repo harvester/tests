@@ -4,7 +4,7 @@ Metadata            Tested on Browser   ${BROWSER}
 Metadata            Login URL           ${LOGIN_URL}
 Metadata            Page Wait Timeout   ${BROWSER_WAIT_TIMEOUT}
 Resource            ../resources/login.robot
-Suite Setup         Open browser to login page
+Suite Setup         Open browser to login page      dashboard/auth/setup
 Suite Teardown      Set Password And Close Browser
 Force Tags          setup password  smoke
 Default Tags        positive
@@ -20,6 +20,8 @@ ${CLIPBOARD_VALUE}
 
 **** Test Cases ***
 Random Password Copied
+    [Documentation]     paste function required to access clipboard via UI.
+    [tags]      ui-required
     Given Navigate To Setup Page
     And Click Copy Button
     Then Random Generated Password Should be Copied
@@ -57,6 +59,8 @@ Specific Password Consistant
     Then Element Should Be Enabled      css:button[type=submit]
 
 Random Password Regenerated
+    [Documentation]     paste function required to access clipboard via UI.
+    [tags]      ui-required
     Given Navigate To Setup Page
           Click Copy Button
     And Click Set Specific Password
