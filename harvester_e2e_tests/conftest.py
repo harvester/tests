@@ -179,6 +179,26 @@ def pytest_configure(config):
         "markers", ('backups3: mark test to run only the backup and restore'
                     'tests for S3 backup target')
     )
+    config.addinivalue_line(
+        "markers", ('imageupload: marker to run imageupload test')
+    )
+    config.addinivalue_line(
+        "markers", ('singlevmtest: marker to run create single vm test')
+    )
+    config.addinivalue_line(
+        "markers", ('multivmtest: marker to run create multiple vms test')
+    )
+    config.addinivalue_line(
+        "markers", ('windows_vm: marker to run only create vm test '
+                    'using windows images')
+    )
+    config.addinivalue_line(
+        "markers", ('usbvmtest: marker to run only create vm test with usb')
+    )
+    config.addinivalue_line(
+        "markers", ('nouserdata: marker to run only create vm test '
+                    'with nouserdata')
+    )
 
 
 def pytest_collection_modifyitems(config, items):
