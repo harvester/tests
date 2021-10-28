@@ -192,7 +192,12 @@ def validate_blank_volumes(request, admin_session, get_api_link):
     return pvc_json
 
 
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
 @pytest.mark.terraform
+# This test covers terraform-7-Harvester volume as a pre-req it covers
+# terraform-1-install, terraform-2-kube config, terraform-3-define kube config
+# terraform-10-All resource terraform plan,apply, terraform destroy
 def test_create_volume_using_terraform(admin_session, volume_using_terraform):
     # NOTE: the volume_using_terraform fixture will be creating the
     # volume and check the result

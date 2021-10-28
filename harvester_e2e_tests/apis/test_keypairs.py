@@ -77,7 +77,11 @@ def test_create_keypair_by_yaml(admin_session, harvester_api_endpoints,
         resp.content)
 
 
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
 @pytest.mark.terraform
+# This test covers terraform-5-Harvester ssh key as a pre-req it covers
+# terraform-1-install, terraform-2-kube config, terraform-3-define kube config
 def test_create_keypairs_using_terraform(keypair_using_terraform):
     # keypair creation validation is done in the fixture already
     pass
