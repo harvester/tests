@@ -8,3 +8,15 @@ BROWSER_WAIT_TIMEOUT = "30s"
 # Login
 HARVESTER_USERNAME = "admin"
 HARVESTER_PASSWORD = "admin"
+
+# Backup
+BACKUP_NFS_URI = "nfs://URI:/folders/endpoint"
+BACKUP_S3_BUCKET_NAME = ""
+BACKUP_S3_BUCKET_REGION = ""
+BACKUP_S3_KEY_ID = ""
+BACKUP_S3_SECRET = ""
+
+# S3 Optional
+# BACKUP_S3_Endpoint = ""
+# BACKUP_S3_Certificate = ''' long string '''
+# BACKUP_S3_Virtual_hosted_style = True
