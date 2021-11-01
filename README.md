@@ -36,3 +36,6 @@ robot -A arguments.txt atests
 - `atest/` - acceptance test cases
     - `./resources` - robot framework resource files
     - `./<Num>__<TestName>` - relevant test cases
+
+## Development
+For Acceptance Tests, please check [develop guide](./atests/README.md)
