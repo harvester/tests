@@ -38,7 +38,7 @@ if [ "$IMPYESNO" == "import" ]; then
    TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc "$TERDIR"/bin/terraform import harvester_clusternetwork.vlan harvester-system/vlan
 fi
 
-#terraform init
+terraform init
 TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc "$TERDIR"/bin/terraform plan -out tfplan -input=false 
 TF_CLI_CONFIG_FILE="$TERDIR"/dev.tfrc "$TERDIR"/bin/terraform apply -input=false tfplan 
 popd
