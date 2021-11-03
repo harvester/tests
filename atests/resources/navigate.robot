@@ -26,3 +26,12 @@ Navigate To Advanced Settings And Edit Option
     Wait Until Element Is Visible   css:main div.outlet div.masthead   ${timeout}
     Wait Until Element Is Visible   css:main div.outlet section   ${timeout}
     Sleep   0.5s
+
+Navigate To Option
+    [arguments]     ${option}       ${timeout}=${BROWSER_WAIT_TIMEOUT}
+    ${_opt} =       Convert To Title Case   ${option}
+    Log         Input:${option} conveted to ${_opt}   DEBUG
+    Click Element   xpath://nav//li[a/span[text()="Dashboard"]]
+    Sleep   0.2s
+    Wait Until Element Is Not Visible   css:main div.loading-indicator   ${timeout}
+    Sleep   0.3s
