@@ -6,6 +6,15 @@ Suite Teardown      Close All Browsers
 
 
 **** Test Cases ***
+Test General Navigation
+    [template]      Navigate To Option ${option} And Screenshot
+    Namespaces
+    Dashboard
+    Hosts
+    Virtual Machines
+    Volumes
+    Images
+
 Test Advanced Navigation
     [template]      Navigate To Advanced Option ${option} And Screenshot
     Settings
@@ -28,8 +37,12 @@ Test Advanced Settings Navigation
 
 
 **** Keywords ***
+Navigate To Option ${option} And Screenshot
+    Given Navigate To Option      ${option}
+    Then Capture Page Screenshot
+
 Navigate To Advanced Option ${option} And Screenshot
-    Navigate To Advanced    ${option}
+    Navigate To Advanced Option   ${option}
     Capture Page Screenshot
 
 Navigate To Edit Advanced Setting ${option} And Screenshot

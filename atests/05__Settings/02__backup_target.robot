@@ -13,7 +13,7 @@ Valid NFS Target
         Click Save Button
         Click Show Backup Target
     Then Error Message Should Not Exists
-    And Navigate To Advanced   Backups
+    And Navigate To Advanced Option     Backups
     Then Error Message Should Not Exists In Backups
 
 Invalid NFS Target
@@ -23,7 +23,7 @@ Invalid NFS Target
         Click Save Button
         Click Show Backup Target
     Then Error Message Should Exists
-    And Navigate To Advanced   Backups
+    And Navigate To Advanced Option     Backups
     Then Error Message Should Exists In Backups
 
 Valid S3 Target
@@ -34,7 +34,7 @@ Valid S3 Target
     And Click Save Button
         Click Show Backup Target
     Then Error Message Should Not Exists
-    And Navigate To Advanced   Backups
+    And Navigate To Advanced Option     Backups
     Then Error Message Should Not Exists In Backups
 
 Invalid S3 Target
@@ -45,7 +45,7 @@ Invalid S3 Target
     And Click Save Button
         Click Show Backup Target
     Then Error Message Should Exists
-    And Navigate To Advanced   Backups
+    And Navigate To Advanced Option     Backups
     Then Error Message Should Exists In Backups
 
 
