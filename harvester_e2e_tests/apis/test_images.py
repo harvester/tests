@@ -33,7 +33,15 @@ def test_list_images(admin_session, harvester_api_endpoints):
         'Failed to list images: %s' % (resp.content))
 
 
+@pytest.mark.images_p2
+@pytest.mark.p2
 def test_create_image_no_data(admin_session, harvester_api_endpoints):
+    """
+    Test creating image with no data
+
+    Covers:
+        Negative test images-3-Create Image no data
+    """
     no_image_data = {
         'apiVersion': 'harvesterhci.io/v1beta1',
         'kind': 'VirtualMachineImage'
@@ -46,7 +54,15 @@ def test_create_image_no_data(admin_session, harvester_api_endpoints):
     assert 'name or generateName is required' in response_data['message']
 
 
+@pytest.mark.images_p2
+@pytest.mark.p2
 def test_create_image_no_url(admin_session, harvester_api_endpoints):
+    """
+    Test creating image with no url
+
+    Covers:
+        Negative test images-3-Create Image no data
+    """
     request_json = utils.get_json_object_from_template(
         'basic_image',
         description='Leap 15.2 cloud image',
@@ -59,8 +75,16 @@ def test_create_image_no_url(admin_session, harvester_api_endpoints):
         'URL %s:%s ' % (resp.status_code, resp.content))
 
 
+@pytest.mark.images_p1
+@pytest.mark.p1
 def test_create_image_with_reuse_display_name(request, admin_session,
                                               harvester_api_endpoints):
+    """
+    Test Delete image
+
+    Covers:
+        images-6-Delete Image
+    """
     name = utils.random_name()
     base_url = request.config.getoption(
         '--image-cache-url',
@@ -92,9 +116,17 @@ def test_create_image_with_reuse_display_name(request, admin_session,
         'Expecting new image to have the same display name')
 
 
+@pytest.mark.images_p2
+@pytest.mark.p2
 @pytest.mark.parametrize('image', ['https://test_bogus.img'], indirect=True)
 def test_create_image_with_invalid_url(request, admin_session,
                                        harvester_api_endpoints, image):
+    """
+    Test Invalid image
+
+    Covers:
+        images-2-Invalid Image
+    """
     image_json = None
 
     def _check_image_status():
@@ -120,19 +152,43 @@ def test_create_image_with_invalid_url(request, admin_session,
         'Expecting image creation to fail on bogus URL')
 
 
+@pytest.mark.images_p1
+@pytest.mark.p1
 def test_create_images(admin_session, image):
+    """
+    Test Create image
+
+    Covers:
+        images-1-Create Image
+    """
     # NOTE: the image fixture will be creating the image and check the result
     pass
 
 
+@pytest.mark.images_p1
+@pytest.mark.p1
 @pytest.mark.imageupload
 def test_image_upload(request, admin_session, image_upload_fs, keypair,
                       harvester_api_endpoints):
+    """
+    Test create upload image
+
+    Covers:
+        images-7-Upload Image, only check Image is active (does not create vm)
+    """
     # NOTE: the image fixture will be uploading the image and check the result
     pass
 
 
+@pytest.mark.images_p1
+@pytest.mark.p1
 def test_update_images(admin_session, harvester_api_endpoints, image):
+    """
+    Test Edit Image and Add Labels
+
+    Covers:
+        images-3-Edit Image and images-4-Add Labels
+    """
     image['metadata']['labels'] = {
         'test.harvesterhci.io': 'for-test-update'
     }
@@ -152,7 +208,19 @@ def test_update_images(admin_session, harvester_api_endpoints, image):
     }
 
 
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
+# This test covers terraform-5-Harvester image as a pre-req it covers
+# terraform-1-install, terraform-2-kube config, terraform-3-define kube config
 @pytest.mark.terraform
 def test_create_images_using_terraform(admin_session, image_using_terraform):
+    """
+    Test creates Harvester Image
+
+    Covers:
+        terraform-5-Harvester image as a pre-req it covers
+        terraform-1-install, terraform-2-kube config, terraform-3-define
+        kube config
+    """
     # NOTE: the image fixture will be creating the image and check the result
     pass
