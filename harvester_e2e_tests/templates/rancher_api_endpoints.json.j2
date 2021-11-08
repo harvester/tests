@@ -1,0 +1,17 @@
+{
+    "local_auth": "{{ rancher_endpoint }}/v3-public/localProviders/local",
+    "change_password": "{{ rancher_endpoint }}/v3/users",
+    "import_harvester_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters",
+    "get_cluster_id": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters/{{ api_namespace | default('fleet-default') }}/%s",
+    "get_clusterregistrationtokens": "{{ rancher_endpoint }}/v3/clusterregistrationtokens",
+    "execute_kubectl": "{{ rancher_endpoint }}/k8s/clusters/local/api/v1/namespaces/cattle-system/secrets?fieldManager=kubectl-client-side-apply",
+    "get_server_url_setting": "{{ rancher_endpoint }}/v1/management.cattle.io.settings/server-url",
+    "update_server_url_setting": "{{ rancher_endpoint }}/v1/management.cattle.io.settings/server-url",
+    "create_user": "{{ rancher_endpoint }}/v3/users",
+    "create_global_role_binding": "{{ rancher_endpoint }}/v3/globalrolebindings",
+    "get_project_id": "{{ rancher_endpoint }}/v1/management.cattle.io.projects/%s",
+    "search_principals": "{{ rancher_endpoint }}/v3/principals",
+    "set_podsecuritypolicytemplate": "{{ rancher_endpoint }}/v3/projects/%s",
+    "create_projectroletemplatebinding": "{{ rancher_endpoint }}/v3/projectroletemplatebindings",
+    "get_virtualmachines": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/kubevirt.io.virtualmachines"
+}

@@ -585,6 +585,8 @@ def _get_node_script_path(request, script_name=None, script_type=None):
         scripts_dir = request.config.getoption('--terraform-scripts-location')
     elif script_type == 'backup':
         scripts_dir = request.config.getoption('--backup-scripts-location')
+    elif script_type == 'rancher':
+        scripts_dir = request.config.getoption('--rancher-scripts-location')
     else:
         scripts_dir = request.config.getoption('--node-scripts-location')
     assert scripts_dir, ('Node scripts location not provided. Please use '
@@ -1174,9 +1176,9 @@ def create_image_upload(request, admin_session, harvester_api_endpoints,
             return False
 
         success = polling2.poll(
-             _wait_for_image_upload_complete,
-             step=5,
-             timeout=request.config.getoption('--wait-timeout'))
+            _wait_for_image_upload_complete,
+            step=5,
+            timeout=request.config.getoption('--wait-timeout'))
         assert success, 'Timed out while waiting for image upload to finish.'
 
     return image_json
@@ -1241,10 +1243,10 @@ def create_vm_backup(request, admin_session, harvester_api_endpoints,
     time.sleep(50)
 
     assert total_objects_before_backup < total_objects_after_backup, (
-            'Failed to add any objects in %s target. '
-            'Before backup object count: %s; after backup object count: %s' % (
-                backuptarget_type, total_objects_before_backup,
-                total_objects_after_backup))
+        'Failed to add any objects in %s target. '
+        'Before backup object count: %s; after backup object count: %s' % (
+            backuptarget_type, total_objects_before_backup,
+            total_objects_after_backup))
     return backup_json
 
 
@@ -1283,10 +1285,10 @@ def delete_vm_backup(request, admin_session,
         total_objects_after_delete = get_total_objects_nfs_share(request)
 
     assert total_objects_before_delete > total_objects_after_delete, (
-            'Failed to delete any objects from %s target. '
-            'Before delete object count: %s; after delete object count: %s' % (
-                backuptarget_type, total_objects_before_delete,
-                total_objects_after_delete))
+        'Failed to delete any objects from %s target. '
+        'Before delete object count: %s; after delete object count: %s' % (
+            backuptarget_type, total_objects_before_delete,
+            total_objects_after_delete))
 
 
 def get_total_objects_s3_bucket(request):
@@ -1364,6 +1366,8 @@ def restore_vm_backup(request, admin_session, harvester_api_endpoints,
     return restore_json
 
 
-def get_backup_create_files_script(request, script_name, script_type):
+def get_backup_create_files_script(request,
+                                   script_name=None,
+                                   script_type=None):
     script = _get_node_script_path(request, script_name, script_type)
     return script

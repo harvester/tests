@@ -142,6 +142,12 @@ def pytest_addoption(parser):
         default=config_data['nfs-endpoint'],
         help=('Endpoint for storing backup in nfs share')
     )
+    parser.addoption(
+        '--rancher-scripts-location',
+        action='store',
+        default=config_data['rancher-scripts-location'],
+        help=('scripts to install rancher server inside a VM')
+    )
 
     # TODO(gyee): may need to add SSL options later
 
@@ -235,6 +241,9 @@ def pytest_configure(config):
     )
     config.addinivalue_line(
         "markers", ('hosts_p2: mark test to run only P1 test for Hosts')
+    )
+    config.addinivalue_line(
+        "markers", ('rancher: mark rancher integration  tests ')
     )
 
 
