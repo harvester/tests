@@ -13,3 +13,4 @@ test_result.html
 *terraformharvester
 terraform_test_artifacts/bin
 *.DS_Store
+*config
