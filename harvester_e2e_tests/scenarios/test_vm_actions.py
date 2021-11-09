@@ -167,8 +167,15 @@ def update_backup_yaml(request, admin_session,
                     backuptarget, backup_json)
 
 
+@pytest.mark.vm_p1
+@pytest.mark.p1
 class TestVMActions:
-
+    """
+    Test Virtual Machines opertions like restart,stop,start,pause,
+    unpause
+    Covers:
+        vm-55-VM operations stop,start,restart,pause,unpause
+    """
     def test_create_vm(self, admin_session, harvester_api_endpoints, basic_vm):
         # make sure the VM instance is successfully created
         utils.lookup_vm_instance(

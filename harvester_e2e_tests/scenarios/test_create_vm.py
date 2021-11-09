@@ -88,6 +88,13 @@ def multiple_vms(request, admin_session, ubuntu_image, k3os_image,
 @pytest.mark.singlevmtest
 def test_create_single_vm(admin_session, image, single_vm,
                           harvester_api_endpoints):
+    """
+    Test Single Virtual Machines with ISO, raw image
+    Covers:
+        vm-1-single instances of the vm with ISO Image
+        vm-2-single instances of the vm with raw Image
+        vm-27-VM with User Data from YAML
+    """
     # make sure the VM instance is successfully created
     utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, single_vm)
@@ -95,9 +102,16 @@ def test_create_single_vm(admin_session, image, single_vm,
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
 
+@pytest.mark.vm_p2
+@pytest.mark.p2
 @pytest.mark.windows_vm
 def test_create_windows_vm(admin_session, image, windows_vm,
                            harvester_api_endpoints):
+    """
+    Test Virtual Machines with windows Image
+    Covers:
+        vm-3-single instances of the vm with Windows Image
+    """
     # make sure the VM instance is successfully created
     utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, windows_vm)
@@ -105,9 +119,19 @@ def test_create_windows_vm(admin_session, image, windows_vm,
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
 
+@pytest.mark.vm_p2
+@pytest.mark.p2
 @pytest.mark.multivmtest
 def test_create_multiple_vms(admin_session, image, multiple_vms,
                              harvester_api_endpoints):
+    """
+    Test Virtual Machines with multiple vm with raw,ubuntu,iso,windows
+    Covers:
+        vm-4-multiple instances vm with iso
+        vm-5-multiple instances vm with raw image
+        vm-6-multiple instances vm with windows
+        vm-27-VM with User Data from YAML
+    """
     # make sure all the VM instances are successfully created
     for a_vm in multiple_vms:
         utils.lookup_vm_instance(admin_session, harvester_api_endpoints, a_vm)
@@ -115,8 +139,15 @@ def test_create_multiple_vms(admin_session, image, multiple_vms,
     # part figure out (i.e. ensoure the vlan is publicly routable)
 
 
+@pytest.mark.vm_p1
+@pytest.mark.p1
 def test_create_vm_overcommit_cpu_and_memory_failed(
         request, admin_session, image, keypair, harvester_api_endpoints):
+    """
+    Test Virtual Machines with both CPU and memory not in cluster
+    Covers:
+        vm-11-vm with both cpu and memory not in cluster
+    """
     # create the VM
     vm_json = utils.create_vm(request, admin_session, image,
                               harvester_api_endpoints,
@@ -140,8 +171,15 @@ def test_create_vm_overcommit_cpu_and_memory_failed(
                                 harvester_api_endpoints, vm_json)
 
 
+@pytest.mark.vm_p2
+@pytest.mark.p2
 def test_create_vm_overcommit_cpu_failed(
         request, admin_session, image, keypair, harvester_api_endpoints):
+    """
+    Test Virtual Machines with CPU not in cluster
+    Covers:
+        vm-09-vm with cpu not in cluster
+    """
     # create the VM
     vm_json = utils.create_vm(request, admin_session, image,
                               harvester_api_endpoints,
@@ -165,8 +203,15 @@ def test_create_vm_overcommit_cpu_failed(
                                 harvester_api_endpoints, vm_json)
 
 
+@pytest.mark.vm_p2
+@pytest.mark.p2
 def test_create_vm_overcommit_memory_failed(
         request, admin_session, image, keypair, harvester_api_endpoints):
+    """
+    Test Virtual Machines with memory not in cluster
+    Covers:
+        vm-10-vm with memory not in cluster
+    """
     # create the VM
     vm_json = utils.create_vm(request, admin_session, image,
                               harvester_api_endpoints,
@@ -209,9 +254,17 @@ def test_create_vm_do_not_start(request, admin_session, image, keypair,
 
 
 @pytest.mark.usbvmtest
+@pytest.mark.vm_p2
+@pytest.mark.p2
 def test_create_update_vm_enable_usb(request, admin_session, image, keypair,
                                      harvester_api_endpoints,
                                      basic_vm_nousb):
+    """
+    Create VM and add Enable USB tablet option
+    Covers:
+        vm-38-vm and add Enable USB tablet option
+        vm-39-vm and add Enable USB tablet option
+    """
     domain = basic_vm_nousb['spec']['template']['spec']['domain']
     assert 'inputs' not in domain['devices']
     vm_name = basic_vm_nousb['metadata']['name']
@@ -247,10 +300,17 @@ def test_create_update_vm_enable_usb(request, admin_session, image, keypair,
     assert 'tablet' in updated_devices_data['devices']['inputs'][0]['type']
 
 
+@pytest.mark.vm_p2
+@pytest.mark.p2
 @pytest.mark.nouserdata
 def test_create_update_vm_enable_user_data(request, admin_session, image,
                                            keypair, harvester_api_endpoints,
                                            basic_vm_no_user_data):
+    """
+    Edit a VM and add install guest agent option
+    Covers:
+        vm-35-vm Edit a VM and add install guest agent option
+    """
     vm_name = basic_vm_no_user_data['metadata']['name']
     vm_instance_json = utils.lookup_vm_instance(
        admin_session, harvester_api_endpoints, basic_vm_no_user_data)
@@ -309,8 +369,17 @@ def test_create_update_vm_enable_user_data(request, admin_session, image,
     assert 'qemu-ga' in upd_user_data['runcmd'][0]
 
 
+@pytest.mark.vm_p1
+@pytest.mark.p1
 def test_create_update_vm_machine_type(request, admin_session, image, keypair,
                                        harvester_api_endpoints):
+    """
+    Create VM with machine type pc and update to q35
+    Covers:
+        vm-24-vm Create new VM with a machine type of PC
+        vm-23-vm Create new VM with a machine type of q35
+        vm-25-vm Edit an existing VM to another machine type
+    """
     created = False
     try:
         vm_json = utils.create_vm(request, admin_session, image,
@@ -359,10 +428,17 @@ def test_create_update_vm_machine_type(request, admin_session, image, keypair,
 # CPU and memory overcommit.
 
 
+@pytest.mark.vm_p1
+@pytest.mark.p1
 @pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
+    """
+    Create VM with resource with one node in cluster CPU
+    Covers:
+        vm-71-vm with resource with one node in cluster CPU
+    """
     # find out the node that has the most available CPU
     (nodes, available_cpu) = utils.lookup_hosts_with_most_available_cpu(
         admin_session, harvester_api_endpoints)
@@ -386,10 +462,18 @@ def test_create_vm_on_available_cpu_node(request, admin_session, image,
                             vm_json)
 
 
+@pytest.mark.vm_p1
+@pytest.mark.p1
 @pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
+    """
+    update VM with resource with one node in cluster cpu
+    Covers:
+        vm-74-vm with resource with one node in cluster cpu
+        vm-76-vm with resource with one node in cluster cpu&memory
+    """
     # find out the node that has the most available CPU
     (nodes, available_cpu) = utils.lookup_hosts_with_most_available_cpu(
         admin_session, harvester_api_endpoints)
@@ -428,10 +512,17 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
                             vm_json)
 
 
+@pytest.mark.vm_p1
+@pytest.mark.p1
 @pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
+    """
+    Create VM with resource with one node in cluster memory
+    Covers:
+        vm-72-vm with resource with one node in cluster memory
+    """
     # find out the node that has the most available memory
     (nodes, available_memory) = utils.lookup_hosts_with_most_available_memory(
         admin_session, harvester_api_endpoints)
@@ -455,10 +546,18 @@ def test_create_vm_on_available_memory_node(request, admin_session, image,
                             vm_json)
 
 
+@pytest.mark.vm_p1
+@pytest.mark.p1
 @pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
+    """
+    update VM with resource with one node in cluster memory
+    Covers:
+        vm-75-vm with resource with one node in cluster memory
+        vm-76-vm with resource with one node in cluster cpu&memory
+    """
     # find out the node that has the most available memory
     (nodes, available_memory) = utils.lookup_hosts_with_most_available_memory(
         admin_session, harvester_api_endpoints)
@@ -498,11 +597,18 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
                             vm_json)
 
 
+@pytest.mark.vm_p1
+@pytest.mark.p1
 @pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
                                                      image, keypair,
                                                      harvester_api_endpoints):
+    """
+    Create VM with resource with one node in cluster cpu & memory
+    Covers:
+        vm-73-vm with resource with one node in cluster cpu & memory
+    """
     # TODO(gyee): should we make CPU and memory configurable?
     nodes = utils.lookup_hosts_with_cpu_and_memory(
         admin_session, harvester_api_endpoints, 2, 4)

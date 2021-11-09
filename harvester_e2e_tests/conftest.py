@@ -199,6 +199,18 @@ def pytest_configure(config):
         "markers", ('nouserdata: marker to run only create vm test '
                     'with nouserdata')
     )
+    config.addinivalue_line(
+        "markers", ('vm_p1: marker to run only P1 Virtual Machine test ')
+    )
+    config.addinivalue_line(
+        "markers", ('vm_p2: marker to run only P2 Virtual Machine  test ')
+    )
+    config.addinivalue_line(
+        "markers", ('network_p1: marker to run only P1 Network test ')
+    )
+    config.addinivalue_line(
+        "markers", ('network_p2: marker to run only P2 Network test ')
+    )
 
 
 def pytest_collection_modifyitems(config, items):
