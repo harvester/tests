@@ -1,7 +1,6 @@
-***** Settings ***
+*** Settings ***
 Resource            ../resources/login.robot
 Resource            ../resources/navigate.robot
-# Suite Setup         Login to Harvester Dashboard
 Suite Teardown      Close All Browsers
 
 
@@ -11,7 +10,7 @@ ${ENDPOINT_IS_LOGIN}    dashboard/c/local
 ${ENDPOINT_NOT_LOGIN}   dashboard/auth/login
 
 
-**** Test Cases ***
+*** Test Cases ***
 Harvester Icon Position
     [Setup]         Login to Harvester Dashboard
     [Teardown]      Close Browser
