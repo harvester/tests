@@ -148,6 +148,12 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.addinivalue_line(
+        "markers", ('p1: mark test to run only p1 tests ')
+    )
+    config.addinivalue_line(
+        "markers", ('p2: mark test to run only p2 tests ')
+    )
+    config.addinivalue_line(
         "markers", ('public_network: mark test to run only if public '
                     'networking is available')
     )
@@ -198,6 +204,21 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", ('nouserdata: marker to run only create vm test '
                     'with nouserdata')
+    )
+    config.addinivalue_line(
+        "markers", ('images_p1: mark test to run only to execute the P1 test '
+                    'for images')
+    )
+    config.addinivalue_line(
+        "markers", ('images_p2: mark test to run only to execute the P2 test '
+                    'for images')
+    )
+    config.addinivalue_line(
+        "markers", ('terraform_provider_p1: mark test to run only to execute '
+                    'the P1 test for terraform provider')
+    )
+    config.addinivalue_line(
+        "markers", ('imageupload: mark test to run upload image')
     )
 
 
