@@ -4,6 +4,9 @@
 Harvester_URL = "https://127.0.0.1:30443/"
 TESTING_BROWSER = "Chrome"
 BROWSER_WAIT_TIMEOUT = "30s"
+BROWSER_DOWNLOAD_PATH = ""
+# default download path will be placed to "{OUTPUT FILE}-downlaods"
+# You can check `atest/resources/login_utils.py` for more information
 
 # Login
 HARVESTER_USERNAME = "admin"

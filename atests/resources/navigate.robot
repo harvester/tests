@@ -1,9 +1,9 @@
-***** Settings ***
+*** Settings ***
 Resource            common.robot
 Library             String
 
 
-***** Keywords ***
+*** Keywords ***
 Navigate To Advanced Option
     [arguments]     ${option}=Templates    ${timeout}=${BROWSER_WAIT_TIMEOUT}
     ${_opt} =   Convert To Title Case   ${option}
@@ -34,4 +34,4 @@ Navigate To Option
     Click Element   xpath://nav//li[a/span[text()="${option}"]]
     Sleep   0.2s
     Wait Until Element Is Not Visible   css:main div.loading-indicator   ${timeout}
-    Sleep   0.3s
+    Sleep   1s

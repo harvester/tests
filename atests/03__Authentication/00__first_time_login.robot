@@ -6,7 +6,7 @@ Metadata            Page Wait Timeout   ${BROWSER_WAIT_TIMEOUT}
 Resource            ../resources/login.robot
 Suite Setup         Open browser to login page      dashboard/auth/setup
 Suite Teardown      Set Password And Close Browser
-Force Tags          setup password  smoke
+Force Tags          setup password  smoke   run-once
 Default Tags        positive
 
 

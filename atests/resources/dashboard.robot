@@ -1,8 +1,8 @@
-***** Settings ***
+*** Settings ***
 Resource            navigate.robot
 
 
-***** Keywords ***
+*** Keywords ***
 Click User Icon On Right Top
     [arguments]   ${timeout}=${BROWSER_WAIT_TIMEOUT}
     Navigate To Option   Dashboard   timeout=${timeout}

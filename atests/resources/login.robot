@@ -8,8 +8,9 @@ Open Browser To Login Page
     [Arguments]     ${endpoint}=dashboard/auth/login
     ...             ${timeout}=${BROWSER_WAIT_TIMEOUT}
 
+    Set Default Browser Download Path   ${BROWSER_DOWNLOAD_PATH}
     Open Browser    ${LOGIN URL}    ${BROWSER}
-    ...             options=add_argument("--ignore-certificate-errors")
+    ...             options=add_argument("--ignore-certificate-errors"); add_experimental_option("prefs", {"download.default_directory": "${BROWSER_DOWNLOAD_PATH}"})
     Wait Until Location Contains     ${endpoint}    timeout=${timeout}
     Title Should Be    Harvester
     Log Location
