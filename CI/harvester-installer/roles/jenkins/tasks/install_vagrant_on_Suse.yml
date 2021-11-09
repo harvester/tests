@@ -1,0 +1,22 @@
+---
+- name: jenkins | install_vagrant_on_Suse | Install vagrant package
+  community.general.zypper:
+    name: https://releases.hashicorp.com/vagrant/{{ LATEST_VAGRANT_VERSION }}/vagrant_{{ LATEST_VAGRANT_VERSION }}_x86_64.rpm
+    state: present
+
+- name: jenkins | install_vagrant_on_Suse | Install KVM
+  community.general.zypper:
+    name: [patterns-openSUSE-kvm_server, patterns-server-kvm_tools]
+    type: pattern
+    state: latest
+
+- name: jenkins | install_vagrant_on_Suse | Install bridge-utils
+  community.general.zypper:
+    name: bridge-utils
+    state: latest
+
+- name: jenkins | install_vagrant_on_Suse | Enable libvirtd service
+  service:
+    name: libvirtd
+    state: started
+    enabled: yes

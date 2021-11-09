@@ -1,0 +1,26 @@
+---
+- name: jenkins | main | Install Docker
+  include_tasks: install_docker.yml
+
+- name: jenkins | main | Install Vagrant and vagrant-libvirt plugin
+  include_tasks: install_vagrant.yml
+
+- name: jenkins | main | Create jenkins user
+  user:
+    name: jenkins
+    password: "{{ JENKINS_USER_PASSWORD | password_hash('sha512') }}"
+    shell: /bin/bash
+    home: /var/lib/jenkins
+    groups: jenkins,libvirt,docker
+    append: yes 
+
+- name: jenkins | main | Enable SSH password auth for jenkins user
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    block: |
+      Match User jenkins
+          PasswordAuthentication yes
+
+- name: jenkins | main | Reboot
+  reboot:
+    msg: "Reboot for the permission changes to take effect"

@@ -1,0 +1,54 @@
+# see https://www.digitalocean.com/community/tutorials/how-to-automate-jenkins-setup-with-docker-and-jenkins-configuration-as-code
+jenkins:
+  systemMessage: "Jenkins configured automatically"
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: {{ JENKINS_ADMIN_USERNAME }}
+          password: {{ JENKINS_ADMIN_PASSWORD  }}
+        - id: {{ JENKINS_DEV_USERNAME }}
+          password: {{ JENKINS_DEV_PASSWORD }}
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Job/Build:{{ JENKINS_DEV_USERNAME }}"
+        - "Job/Cancel:{{ JENKINS_DEV_USERNAME }}"
+        - "Job/Read:{{ JENKINS_DEV_USERNAME }}"
+        - "Job/Workspace:{{ JENKINS_DEV_USERNAME }}"
+        - "Overall/Administer:{{ JENKINS_ADMIN_USERNAME }}"
+        - "Overall/Read:authenticated"
+        - "Run/Replay:{{ JENKINS_DEV_USERNAME }}"
+        - "Run/Update:{{ JENKINS_DEV_USERNAME }}"
+  remotingSecurity:
+    enabled: true
+
+  numExecutors: 1
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: "GLOBAL"
+              username: "{{ GITHUB_CI_USERNAME }}"
+              password: "{{ GITHUB_CI_PASSWORD }}"
+              id: "for-harvester-ci"
+
+security:
+  queueItemAuthenticator:
+    authenticators:
+    - global:
+        strategy: "triggeringUsersAuthorizationStrategy"
+
+jobs:
+  - file: /var/lib/jenkins/casc_configs/harvester_vagrant_installation_test.groovy
+
+unclassified:
+  location:
+    url: {{ JENKINS_PUBLIC_ENDPOINT }}
+    adminAddress: {{ JENKINS_ADMIN_EMAIL }}
+
+  ghprbTrigger:
+    githubAuth:
+      - credentialsId: "for-harvester-ci"

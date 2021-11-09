@@ -1,0 +1,116 @@
+[ default ]
+ca                      = root-ca		# CA name
+
+[ req ]
+default_bits            = 2048                  # RSA key size
+encrypt_key             = no                    # Protect private key
+default_md              = sha256                # MD to use
+utf8                    = yes                   # Input is UTF-8
+string_mask             = utf8only              # Emit UTF-8 strings
+prompt                  = no                    # Don't prompt for DN
+distinguished_name      = ca_dn                 # DN section
+req_extensions          = v3_ca			# Desired extensions
+
+[ ca_dn ]
+0.domainComponent       = {{ domain_component_0 }}
+1.domainComponent       = {{ domain_component_1 }}
+organizationName        = {{ organization }}
+organizationalUnitName  = {{ organizational_unit }}
+commonName              = {{ root_ca_common_name }}
+
+[ v3_ca ]
+keyUsage                = critical, digitalSignature, keyCertSign, cRLSign
+basicConstraints        = critical, CA:true
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier	= keyid:always,issuer
+
+[ v3_intermediate_ca ]
+keyUsage                = critical, digitalSignature, keyCertSign, cRLSign
+basicConstraints        = critical, CA:true, pathlen:0
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always,issuer
+
+[ user_cert ]
+# Extensions for client certificate ('man x509v3_config').
+basicConstraints	= CA:FALSE
+nsCertType		= client, email
+nsComment		= "OpenSSL Generated Client Certificate"
+subjectKeyIdentifier	= hash
+authorityKeyIdentifier	= keyid,issuer
+keyUsage		= critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage	= clientAuth, emailProtection
+
+[ server_cert ]
+# Extensions for server certificates ('man x509v3_config').
+basicConstraints	= CA:FALSE
+nsCertType		= server
+nsComment		= "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier	= hash
+authorityKeyIdentifier	= keyid,issuer:always
+keyUsage		= critical, digitalSignature, keyEncipherment
+extendedKeyUsage	= serverAuth
+
+[ crl_ext ]
+# Extension for CRLs ('man x509v3_config').
+authorityKeyIdentifier	= keyid:always
+
+[ ocsp ]
+# Extension for OCSP signing certificates ('man ocsp').
+basicConstraints 	= CA:FALSE
+subjectKeyIdentifier	= hash
+authorityKeyIdentifier	= keyid,issuer
+keyUsage		= critical, digitalSignature
+extendedKeyUsage	= critical, OSCPSigning
+
+[ ca ]
+default_ca              = root_ca               # The default CA section
+
+[ root_ca ]
+# Directory and file locations.
+dir			= {{ root_ca_dir }}
+certs			= $dir/certs
+crl_dir			= $dir/crl
+private_dir		= $dir/private
+new_certs_dir		= $dir/newcerts
+database		= $dir/index.txt
+serial			= $dir/serial
+RANDFILE		= $private_dir/.rand
+
+# Root CA key and certificate location
+certificate             = $certs/$ca.pem       # The CA cert
+private_key             = $private_dir/$ca.key # CA private key
+
+# CRL
+crlnumber               = $dir/crlnumber	# CRL number file
+crl			= $crl_dir/ca.crl.pem
+crl_extension		= crl_ext
+default_crl_days	= 365
+
+unique_subject          = no                    # Require unique subject
+default_days            = 3652                  # How long to certify for
+default_md              = sha256		# MD to use
+policy                  = strict_policy		# Default naming policy
+email_in_dn             = no                    # Add email to cert DN
+preserve                = no                    # Keep passed DN ordering
+name_opt                = ca_default            # Subject DN display options
+cert_opt                = ca_default            # Certificate display options
+copy_extensions         = none                  # Copy extensions from CSR
+x509_extensions         = signing_ca_ext        # Default cert extensions
+
+[ strict_policy ]
+domainComponent         = match
+organizationName	= match
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress		= optional
+
+[ loose_policy ]
+domainComponent         = optional
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+

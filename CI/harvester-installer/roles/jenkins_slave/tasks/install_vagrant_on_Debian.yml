@@ -1,0 +1,21 @@
+---
+- name: jenkins | install_vagrant_on_Debian | Install vagrant package
+  apt:
+    deb: https://releases.hashicorp.com/vagrant/{{ LATEST_VAGRANT_VERSION }}/vagrant_{{ LATEST_VAGRANT_VERSION }}_x86_64.deb
+
+- name: jenkins | install_vagrant_on_Debian | Install build essentials
+  apt:
+    name: build-essential
+    state: latest
+
+- name: jenkins | install_vagrant_on_Debian | Install KVM
+  apt:
+    name: [qemu-kvm, libvirt-daemon-system, libvirt-clients, bridge-utils, virtinst, virt-manager, libvirt-dev]
+    state: latest
+
+- name: jenkins | install_vagrant_on_Debian | Add jenkins user to libvirt group
+  user:
+    name: jenkins
+    groups: libvirt
+    append: yes
+

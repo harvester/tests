@@ -1,0 +1,11 @@
+---
+- name: jenkins | install_docker_on_Suse | Install Docker packages
+  community.general.zypper:
+    name: [docker, python3-docker-compose]
+    state: latest
+
+- name: jenkins | install_docker_on_Suse | Enable docker service
+  service:
+    name: docker
+    enabled: yes
+    state: started

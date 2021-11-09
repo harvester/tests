@@ -1,0 +1,33 @@
+---
+
+- set_fact:
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+  when: timestamp is not defined
+
+- set_fact:
+    user_cert_conf_file: "/tmp/user_cert.conf_{{ timestamp }}"
+
+- name: pki | generate_user_cert_req | Create {{ user_cert_conf_file }}
+  template:
+    src: user_cert.conf.j2
+    dest: "{{ user_cert_conf_file }}"
+
+- name: pki | generate_user_cert_req | Generate CSR for {{ user_domain_name }}:{{ user_name }}
+  command: |
+    openssl req
+      -config "{{ user_cert_conf_file }}"
+      -new
+      -sha256
+      -key "{{ key_file }}"
+      -nodes
+  register: user_csr
+
+- name: pki | generate_user_cert_req | Remove {{ user_cert_conf_file }}
+  file:
+    path: "{{ user_cert_conf_file }}"
+    state: absent
+
+- name: pki | generate_user_cert_req | Copy CSR to {{ groups.pki[0] }}
+  copy:
+    content: "{{ user_csr.stdout }}"
+    dest: "{{ intermediate_ca_csr_dir }}/{{ user_domain_name }}_{{user_name}}_{{ timestamp }}.csr"

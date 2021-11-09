@@ -1,0 +1,14 @@
+---
+
+# must supply the following vars:
+#  - key_type
+#  - key_file
+- include: _generate_{{key_type}}_private_key.yml
+
+- name: pki | generate_private_key | Set proper permission for {{ key_file }}
+  file:
+    path: "{{ key_file }}"
+    owner: "{{ file_owner }}"
+    group: "{{ file_group }}"
+    mode: "{{ file_mode }}"
+  when: file_owner is defined

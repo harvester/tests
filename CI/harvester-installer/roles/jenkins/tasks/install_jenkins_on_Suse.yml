@@ -1,0 +1,71 @@
+---
+- name: jenkins | install_jenkins_on_Suse | Install essential packages
+  community.general.zypper:
+    name: [python3, python3-pip, figlet]
+    state: latest
+
+- name: jenkins | install_jenkins_on_Suse | Install Ansible
+  pip:
+    name: [pip, ansible]
+    state: latest
+
+- name: jenkins | install_jenkins_on_Suse | Add Jenkins repo for openSUSE
+  community.general.zypper_repository:
+    name: jenkins
+    repo: http://pkg.jenkins.io/opensuse-stable/
+    auto_import_keys: yes
+    runrefresh: yes
+    state: present
+
+- name: jenkins | install_jenkins_on_Suse | Install jenkins package
+  community.general.zypper:
+    name: jenkins
+
+# NOTE(gyee): running this tasks repeatedly will add the same Java args
+# multiple time. But that should be fine so as long as the values are
+# consistent. However, if we are using this task to reconfigure any of the
+# args with a different value then the result may not be correct.
+# If we ever need to reconfigure Jenkins, it may be best to just do re-install.
+- name: jenkins | install_jenkins_on_Suse | Add Java options
+  lineinfile:
+    path: /etc/sysconfig/jenkins
+    regexp: '^(JENKINS_JAVA_OPTIONS=\")(.*)$'
+    line: '\1-Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/var/lib/jenkins/casc_configs \2'
+    state: present
+    backrefs: yes
+    mode: 0644
+
+- name: jenkins | install_jenkins_on_Suse |
+        Create init.groovy.d to bootstrap Jenkins
+  file:
+    path: /var/lib/jenkins/init.groovy.d
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: 0775
+
+- name: jenkins | install_jenkins_on_Suse |
+        Configure Jenkins bootstrap credential
+  template:
+    src: basic-security.groovy.j2
+    dest: /var/lib/jenkins/init.groovy.d/basic-security.groovy
+    owner: jenkins
+    group: jenkins
+    mode: 0755
+
+# NOTE(gyee): since jenkins process is running in the jenkins user context,
+# it can't use the default HTTP port 80
+- name: jenkins | install_jenkins_on_Suse | Allow HTTP port 8080
+  shell: |
+    firewall-cmd --zone=public --add-port=8080/tcp --permanent
+    firewall-cmd --zone=public --add-service=http --permanent
+    firewall-cmd --reload
+
+- name: jenkins | install_jenkins_on_Suse | Generate jenkins service
+  shell: >
+    systemctl enable jenkins
+
+- name: jenkins | install_jenkins_on_Suse | Start jenkins
+  systemd:
+    name: jenkins
+    state: restarted

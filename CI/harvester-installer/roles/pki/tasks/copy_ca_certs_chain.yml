@@ -1,0 +1,14 @@
+---
+
+- name: pki | copy_ca_certs_chain | Get the CA certificates chain
+  command: cat {{ ca_cert_chain_file }}
+  register: ca_cert_chain_out
+
+- name: pki | copy_ca_certs_chain | Copy CA certificates chain to localhost
+  copy:
+    content: "{{ ca_cert_chain_out.stdout }}"
+    dest: "{{ ca_certs_file }}"
+    owner: "{{ file_owner }}"
+    group: "{{ file_group }}"
+    mode: "{{ file_mode }}"
+    force: no

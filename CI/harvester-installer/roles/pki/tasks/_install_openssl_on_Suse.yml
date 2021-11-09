@@ -1,0 +1,7 @@
+---
+
+- name: pki | _install_openssl_on_Suse | Install OpenSSL package
+  zypper:
+    name: openssl
+    state: latest
+

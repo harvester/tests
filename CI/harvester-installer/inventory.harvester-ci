@@ -1,0 +1,6 @@
+[harvester-ci]
+master ansible_host=136.144.56.229 ansible_user=root
+
+[harvester-ci-slave]
+slave ansible_host=147.28.128.211 ansible_user=root
+

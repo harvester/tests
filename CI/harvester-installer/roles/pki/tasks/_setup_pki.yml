@@ -1,0 +1,59 @@
+---
+
+- name: pki | main | Install openssl
+  include_tasks: _install_openssl_on_{{ ansible_os_family }}.yml
+
+- name: pki | main | Create directory hierarchy
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    state: directory
+    recurse: yes
+    mode: 0700
+  with_items:
+    - "{{ root_ca_dir }}"
+    - "{{ intermediate_ca_dir }}"
+    - "{{ etc_dir }}"
+
+- name: pki | main | Create certs directory
+  file:
+    path: "{{ certs_dir }}"
+    owner: root
+    group: root
+    state: directory
+    recurse: yes
+    mode: 0755
+
+- name: pki | main | Make sure {{ pki_home }} is world readable
+  file:
+    path: "{{ pki_home }}"
+    mode: 0755
+    state: directory
+
+- include: _setup_root_ca.yml
+- include: _setup_intermediate_ca.yml
+
+# What a horrible way to do simple cat in Ansible!
+- name: pki | main | Get the root CA cert
+  command: cat {{ root_ca_cert_file }}
+  register: root_ca_cert_out
+
+- name: pki | main | Get the intermediate CA cert
+  command: cat {{ intermediate_ca_cert_file }}
+  register: intermediate_ca_cert_out
+
+- name: pki | main | Create CA chain {{ ca_cert_chain_file }}
+  copy:
+    content: "{{ root_ca_cert_out.stdout }}"
+    dest: "{{ ca_cert_chain_file }}"
+    mode: 0755
+    owner: root
+    group: root
+
+- name: pki | main | Add intermediate CA cert to {{ ca_cert_chain_file }}
+  lineinfile:
+    path: "{{ ca_cert_chain_file }}"
+    insertafter: EOF
+    line: "{{ intermediate_ca_cert_out.stdout }}"
+    mode: 0755
