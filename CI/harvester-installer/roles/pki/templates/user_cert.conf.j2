@@ -1,0 +1,27 @@
+
+[ req ]
+distinguished_name 		= client_dn
+default_bits            	= 2048                  # RSA key size
+encrypt_key             	= no                    # Protect private key
+default_md              	= sha256                # MD to use
+utf8                    	= yes                   # Input is UTF-8
+string_mask             	= utf8only              # Emit UTF-8 strings
+prompt                  	= no                    # Prompt for DN
+req_extensions          	= client_reqext         # Desired extensions
+
+[ client_dn ]
+0.domainComponent       	= {{ domain_component_0 }}
+1.domainComponent       	= {{ domain_component_1 }}
+organizationName        	= {{ organization }}
+organizationalUnitName  	= {{ organizational_unit }}
+organizationName        	= {{ user_domain_name }} 
+commonName              	= {{ user_name }}
+
+[ client_reqext ]
+basicConstraints        	= CA:FALSE
+nsCertType              	= client, email
+nsComment               	= "OpenSSL Generated Client Certificate"
+subjectKeyIdentifier    	= hash
+#authorityKeyIdentifier  	= keyid,issuer
+keyUsage                	= critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage        	= clientAuth, emailProtection

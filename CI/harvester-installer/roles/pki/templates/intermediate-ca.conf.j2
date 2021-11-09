@@ -1,0 +1,119 @@
+#jinja2:trim_blocks: False
+[ default ]
+ca                      = intermediate-ca
+
+[ ca ]
+ca			= intermediate-ca
+default_ca 		= ca_default
+
+[ ca_default ]
+# Directory and file locations.
+dir               	= {{ intermediate_ca_dir }}
+certs             	= $dir/certs
+crl_dir           	= $dir/crl
+new_certs_dir     	= $dir/newcerts
+private_dir		= $dir/private
+database          	= $dir/index.txt
+serial            	= $dir/serial
+RANDFILE          	= $private_dir/.rand
+
+# The root key and root certificate.
+private_key       	= $private_dir/$ca.key
+certificate       	= $certs/$ca.pem
+
+# For certificate revocation lists.
+crlnumber         	= /crlnumber
+crl               	= /crl/intermediate.crl.pem
+crl_extensions    	= crl_ext
+default_crl_days  	= 365
+
+# SHA-1 is deprecated, so use SHA-2 instead.
+default_md        	= sha256
+
+name_opt          	= ca_default
+cert_opt          	= ca_default
+default_days      	= 3652
+preserve          	= no
+policy            	= loose_policy
+
+unique_subject          = no
+
+[ strict_policy ]
+domainComponent         = match
+organizationName        = match
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ loose_policy ]
+domainComponent         = optional
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ req ]
+default_bits        	= 2048
+distinguished_name  	= intermediate_ca_dn
+prompt			= no
+string_mask         	= utf8only
+
+# SHA-1 is deprecated, so use SHA-2 instead.
+default_md          	= sha256
+
+# Extension to add when the -x509 option is used.
+x509_extensions     	= v3_ca
+
+[ intermediate_ca_dn ]
+0.domainComponent       = {{ domain_component_0 }}
+1.domainComponent       = {{ domain_component_1 }}
+organizationName        = {{ organization }}
+organizationalUnitName  = {{ organizational_unit }}
+commonName              = {{ intermediate_ca_common_name }}
+
+[ v3_ca ]
+subjectKeyIdentifier 	= hash
+authorityKeyIdentifier 	= keyid:always,issuer
+basicConstraints 	= critical, CA:true
+keyUsage 		= critical, digitalSignature, cRLSign, keyCertSign
+
+[ v3_intermediate_ca ]
+subjectKeyIdentifier 	= hash
+authorityKeyIdentifier 	= keyid:always,issuer
+basicConstraints 	= critical, CA:true, pathlen:0
+keyUsage 		= critical, digitalSignature, cRLSign, keyCertSign
+
+[ user_cert ]
+basicConstraints 	= CA:FALSE
+nsCertType 		= client, email
+nsComment 		= "OpenSSL Generated Client Certificate"
+subjectKeyIdentifier 	= hash
+authorityKeyIdentifier 	= keyid,issuer
+keyUsage 		= critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage 	= clientAuth, emailProtection
+
+[ server_cert ]
+basicConstraints 	= CA:FALSE
+nsCertType 		= server
+nsComment 		= "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier 	= hash
+authorityKeyIdentifier 	= keyid,issuer:always
+keyUsage 		= critical, digitalSignature, keyEncipherment
+extendedKeyUsage 	= serverAuth
+{%- if ssl_server_san is defined and not ssl_server_san == "" %}
+subjectAltName		= {{ ssl_server_san }}
+{% endif %}
+
+[ crl_ext ]
+authorityKeyIdentifier	= keyid:always
+
+[ ocsp ]
+basicConstraints 	= CA:FALSE
+subjectKeyIdentifier 	= hash
+authorityKeyIdentifier 	= keyid,issuer
+keyUsage 		= critical, digitalSignature
+extendedKeyUsage 	= critical, OCSPSigning
+

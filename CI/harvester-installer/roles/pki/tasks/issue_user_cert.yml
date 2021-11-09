@@ -1,0 +1,22 @@
+---
+
+- set_fact:
+    csr_file: "{{ intermediate_ca_csr_dir }}/{{ user_domain_name }}_{{user_name}}_{{ timestamp }}.csr"
+
+- name: pki | issue_user_cert | Issue certificate for {{ csr_file }}
+  command: |
+    openssl ca
+      -config "{{ intermediate_ca_conf_file }}"
+      -extensions user_cert
+      -days 3650
+      -notext
+      -md sha256
+      -in "{{ csr_file }}"
+      -batch
+  register: user_cert_pem
+
+- name: pki | issue_user_cert | Create {{ user_cert_file }}
+  copy:
+    content: "{{ user_cert_pem.stdout }}"
+    dest: "{{ user_cert_file }}"
+    force: no

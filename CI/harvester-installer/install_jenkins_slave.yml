@@ -1,0 +1,19 @@
+---
+- name: Install Jenkins Slave
+  hosts: harvester-ci-slave
+  become: yes
+
+  tasks:
+    - name: Include settings
+      include_vars:
+        file: settings.yml
+
+    - name: Check for supported OS version
+      fail:
+        msg: "OS must be openSUSE or Ubuntu"
+      when: (ansible_distribution|lower != 'opensuse leap' and
+             ansible_distribution|lower != 'ubuntu')
+
+    - name: Install Jenkins Slave
+      include_role:
+        name: jenkins_slave

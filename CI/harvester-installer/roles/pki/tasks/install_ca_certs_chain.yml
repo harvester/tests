@@ -1,0 +1,27 @@
+---
+# NOTE(gyee): we'll only include the first one that matches. The rest will be ignored.
+- name: pki | install_ca_certs_chain | Include OS family vars
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_os_family }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+    - "default.yml"
+
+- name: pki | install_ca_certs_chain | Include OS distribution vars
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | replace(' ', '_') }}.yml" 
+    - "{{ ansible_distribution | lower | replace(' ', '_') }}.yml"
+    - "{{ ansible_distribution | replace(' ', '_') }}.yml"
+    - "default.yml"
+
+- name: pki | install_ca_certs_chain | Get the CA certificates chain
+  command: cat {{ ca_cert_chain_file }}
+  register: ca_cert_chain_out
+
+- name: pki | install_ca_certs_chain | Set CA cert chain content fact
+  set_fact:
+    ca_certs_chain_content: "{{ ca_cert_chain_out.stdout }}"
+
+- name: pki | install_ca_certs_chain | Update system trust with new CA certs
+  include_tasks: _install_ca_certs_chain_on_{{ ansible_os_family }}.yml

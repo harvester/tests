@@ -1,0 +1,45 @@
+---
+
+- name: pki | _setup_ca | Create {{ ca_type }} CA directory hierarchy
+  file:
+    path: "{{ ca_dir }}/{{ item }}"
+    owner: root
+    group: root
+    state: directory
+    mode: 0700
+  with_items:
+    - csr
+    - certs
+    - crl
+    - newcerts
+    - private
+
+- name: pki | _setup_ca | Create {{ ca_type }} CA index file
+  file:
+    path: "{{ ca_dir }}/index.txt"
+    owner: root
+    group: root
+    state: touch
+    mode: 0700
+
+- name: pki | _setup_ca | Create {{ ca_type }} CA serial file
+  copy:
+    dest: "{{ ca_dir }}/serial"
+    force: no
+    content: 1000
+    mode: 0700
+    owner: root
+    group: root
+
+- name: pki | _setup_ca | Create {{ ca_type }} CA crlnumber file
+  copy:
+    dest: "{{ ca_dir }}/serial"
+    force: no
+    content: 1000
+    mode: 0700
+    owner: root
+    group: root
+
+- include: generate_private_key.yml
+  vars:
+    key_file: "{{ ca_dir }}/private/{{ ca_type }}-ca.key"

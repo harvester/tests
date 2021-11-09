@@ -1,0 +1,22 @@
+---
+
+- name: pki | issue_certificate | Issue certificate for {{ csr_file }}
+  command: |
+    openssl ca
+      -config "{{ ca_conf_file }}"
+      -extensions "{{ ca_extensions }}"
+      -days 3650
+      -notext
+      -md sha256
+      -in "{{ csr_file }}"
+      -out "{{ cert_file }}"
+      -batch
+  args:
+    creates: "{{ cert_file }}"
+
+- name: pki | issue_certificate | Verify certificate {{ cert_file }}
+  command: |
+    openssl verify
+      -CAfile "{{ ca_cert_file }}"
+      "{{ cert_file }}"
+

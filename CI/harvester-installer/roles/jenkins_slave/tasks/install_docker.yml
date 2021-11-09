@@ -1,0 +1,9 @@
+---
+- name: jenkins | install_docker | Install Docker
+  include_tasks: install_docker_on_{{ ansible_os_family }}.yml
+
+- name: jenkins | install_docker | Add jenkins user to docker group
+  user:
+    name: jenkins
+    groups: docker
+    append: yes

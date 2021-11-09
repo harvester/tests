@@ -1,0 +1,36 @@
+#jinja2:trim_blocks: False
+[ req ]
+distinguished_name 		= server_dn
+default_bits            	= 2048                  # RSA key size
+encrypt_key             	= no                    # Protect private key
+default_md              	= sha256                # MD to use
+utf8                    	= yes                   # Input is UTF-8
+string_mask             	= utf8only              # Emit UTF-8 strings
+prompt                  	= no                    # Prompt for DN
+req_extensions          	= server_reqext         # Desired extensions
+
+[ server_dn ]
+0.domainComponent       	= {{ domain_component_0 }}
+1.domainComponent       	= {{ domain_component_1 }}
+organizationName        	= {{ organization }}
+organizationalUnitName  	= {{ organizational_unit }}
+commonName              	= {{ ssl_server_host_name }} 
+
+[ server_reqext ]
+basicConstraints        	= CA:FALSE
+nsCertType              	= server
+nsComment               	= "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier    	= hash
+#authorityKeyIdentifier  	= keyid,issuer:always
+keyUsage                	= critical, digitalSignature, keyEncipherment
+{%- if ssl_server_san is defined and not ssl_server_san == "" %}
+subjectAltName			= {{ ssl_server_san }}
+{% endif %}
+
+#subjectAltName          	= @alt_names
+
+#[ alt_names ]
+#DNS.1 				= dev-adfs
+#DNS.2 				= dev-adfs.thegyee.com
+#IP.1 				= 172.16.0.41
+

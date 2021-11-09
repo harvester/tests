@@ -1,0 +1,23 @@
+---
+- name: jenkins | install_docker_on_Debian |
+        Install prerequisite packages for Docker
+  apt:
+    name: [openjdk-11-jdk, apt-transport-https, ca-certificates, curl, software-properties-common]
+    state: latest
+    update_cache: yes
+
+- name: jenkins | install_docker_on_Debian | Add Docker apt repo key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: jenkins | install_docker_on_Debian | Add Docker apt repo
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+    state: present
+    update_cache: true
+
+- name: jenkins | install_docker_on_Debian | Install docker-ce package
+  apt:
+    name: docker-ce
+    state: latest

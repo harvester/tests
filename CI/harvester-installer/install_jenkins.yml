@@ -1,0 +1,31 @@
+---
+- name: Install Jenkins on localhost
+  hosts: harvester-ci
+  become: yes
+  vars:
+    GITHUB_PROJECT: harvester/harvester-installer
+
+  tasks:
+    - name: Include settings
+      include_vars:
+        file: settings.yml
+
+    - name: Check for supported OS version
+      fail:
+        msg: "OS must be openSUSE or Ubuntu"
+      when: (ansible_distribution|lower != 'opensuse leap' and
+             ansible_distribution|lower != 'ubuntu')
+
+    - name: Setup PKI
+      include_role:
+        name: pki
+      when: JENKINS_PROXY_ENABLE_SSL
+
+    - name: Setup Nginx proxy
+      include_role:
+        name: nginx
+      when: JENKINS_USE_PROXY
+
+    - name: Install Jenkins
+      include_role:
+        name: jenkins

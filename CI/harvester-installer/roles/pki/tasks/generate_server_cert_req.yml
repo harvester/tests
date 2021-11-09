@@ -1,0 +1,44 @@
+---
+
+- set_fact:
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+  when: timestamp is not defined
+
+- set_fact:
+    ssl_server_host_name: "{{ inventory_hostname }}"
+  when: ssl_server_host_name is not defined
+
+- set_fact:
+    server_cert_conf_file: "/tmp/server_cert.conf_{{ timestamp }}"
+
+- name: pki | generate_server_cert_req | Create {{ server_cert_conf_file }}
+  template:
+    src: server_cert.conf.j2
+    dest: "{{ server_cert_conf_file }}"
+
+- name: pki | generate_server_cert_req | Generate CSR for {{ ssl_server_host_name }}
+  command: |
+    openssl req
+      -config "{{ server_cert_conf_file }}"
+      -new
+      -sha256
+      -key "{{ key_file }}"
+      -nodes
+  register: server_csr
+
+- name: pki | generate_server_cert_req | Remove {{ server_cert_conf_file }}
+  file:
+    path: "{{ server_cert_conf_file }}"
+    state: absent
+
+- name: pki | generate_server_cert_req |
+        Ensure {{ intermediate_ca_csr_dir }} exist
+  file:
+    path: "{{ intermediate_ca_csr_dir }}"
+    state: directory
+    recurse: yes
+
+- name: pki | generate_server_cert_req | Copy CSR to {{ groups.pki[0] }}
+  copy:
+    content: "{{ server_csr.stdout }}"
+    dest: "{{ intermediate_ca_csr_dir }}/{{ ssl_server_host_name }}_{{ timestamp }}.csr"

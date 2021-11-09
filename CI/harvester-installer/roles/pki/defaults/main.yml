@@ -1,0 +1,38 @@
+---
+
+# global configuration
+pki_home: /var/simple-pki
+certs_dir: "{{ pki_home }}/certs"
+etc_dir: "{{ pki_home }}/etc"
+
+domain_component_0: com
+domain_component_1: suse 
+organization: cloud
+organizational_unit: harvester
+root_ca_common_name: Self-Signed Root CA
+intermediate_ca_common_name: Intermediate CA
+
+ca_cert_chain_file: "{{ certs_dir }}/{{ domain_component_1 }}-{{ domain_component_0 }}-ca-certs.pem"
+
+# root CA configuration
+root_ca_dir: "{{ pki_home }}/ca/root"
+root_ca_conf_file: "{{ etc_dir }}/root-ca.conf"
+root_ca_key_file: "{{ root_ca_dir }}/private/root-ca.key"
+root_ca_cert_file: "{{ root_ca_dir }}/certs/root-ca.pem"
+
+# intermediate CA configuration
+intermediate_ca_dir: "{{ pki_home }}/ca/intermedia"
+intermediate_ca_csr_dir: "{{ intermediate_ca_dir }}/csr"
+intermediate_ca_conf_file: "{{ etc_dir }}/intermediate-ca.conf"
+intermediate_ca_key_file: "{{ intermediate_ca_dir }}/private/intermediate-ca.key"
+intermediate_ca_cert_file: "{{ intermediate_ca_dir }}/certs/intermediate-ca.pem"
+intermediate_ca_csr_file: "{{ intermediate_ca_dir }}/csr/intermediate-ca-csr.pem"
+
+# All CA configuration
+#ssl_server_san: DNS:hostname,DNS:alt-hostname,IP:127.0.0.1
+
+key_size: 4096
+# can be either "rsa" or "dsa", must be in lower case
+key_type: rsa
+
+ip: "{{ ssl_server_cert_ip | default(ansible_host) }}"

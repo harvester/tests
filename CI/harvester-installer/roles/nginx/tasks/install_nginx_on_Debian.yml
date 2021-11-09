@@ -1,0 +1,6 @@
+---
+- name: nginx | install_nginx_on_Debian | Install nginx package
+  apt:
+    name: ['nginx']
+    state: latest
+    update_cache: yes
