@@ -59,7 +59,7 @@ def test_create_network_with_no_name(admin_session, harvester_api_endpoints):
     """
     Negative test to create network with no name
     Covers:
-        Network-3-Test create network with no name
+        Negative Network-3-Test create network with no name
     """
     request_json = utils.get_json_object_from_template(
         'basic_network',
@@ -100,9 +100,19 @@ def test_create_edit_network(request, admin_session, harvester_api_endpoints,
     assert updated_config['vlan'] == updated_vlan, 'Failed to update vlan'
 
 
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
 @pytest.mark.terraform
 @pytest.mark.public_network
 def test_create_network_using_terraform(request, admin_session,
                                         harvester_api_endpoints,
                                         network_using_terraform):
+    """
+    Test creates Terraform Harvester
+    Covers:
+        terraform-6-Harvester network as a pre-req it covers
+        terraform-8-Harvester cluster network during enable vlan
+        terraform-1-install, terraform-2-kube config, terraform-3-define
+        kube config
+    """
     pass

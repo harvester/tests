@@ -313,8 +313,15 @@ class TestVMActions:
                          vm_name, request.config.getoption('--wait-timeout'))
 
 
+@pytest.mark.vm_p2
+@pytest.mark.p2
 class TestVMVolumes:
-
+    """
+    Create Virtual Machines with volume
+    Covers:
+        vm-14-vm with 2 disks
+        vm-15-vm with 1 disks partially done 1 cdrom not done
+    """
     def test_create_vm_with_external_volume(self, admin_session,
                                             harvester_api_endpoints,
                                             vm_with_volume):

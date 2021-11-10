@@ -301,7 +301,9 @@ def test_create_update_vm_enable_usb(request, admin_session, image, keypair,
 
 
 @pytest.mark.vm_p2
+@pytest.mark.vm_p1
 @pytest.mark.p2
+@pytest.mark.p1
 @pytest.mark.nouserdata
 def test_create_update_vm_enable_user_data(request, admin_session, image,
                                            keypair, harvester_api_endpoints,
@@ -310,6 +312,7 @@ def test_create_update_vm_enable_user_data(request, admin_session, image,
     Edit a VM and add install guest agent option
     Covers:
         vm-35-vm Edit a VM and add install guest agent option
+        vm-34-vm create VM and add install guest agent option
     """
     vm_name = basic_vm_no_user_data['metadata']['name']
     vm_instance_json = utils.lookup_vm_instance(
@@ -379,6 +382,8 @@ def test_create_update_vm_machine_type(request, admin_session, image, keypair,
         vm-24-vm Create new VM with a machine type of PC
         vm-23-vm Create new VM with a machine type of q35
         vm-25-vm Edit an existing VM to another machine type
+        vm-67-vm Create Single instances of the vm with ISO image
+        with machine type q35
     """
     created = False
     try:
