@@ -3,6 +3,7 @@
 set -e
 
 # Make a temporary folder
+#DATE_WITH_TIME=`date "+%Y%m%d-%H%M%S"`
 TMPDIR="$PWD"/terraform_test_artifacts/terraformharvester
 mkdir -p "$TMPDIR"
 
@@ -19,8 +20,12 @@ mv -f "$TERDIR"/provider.tf "$TMPDIR"
 pushd "$TMPDIR"
 
 "$TERDIR"/bin/terraform init
-if [ $1 == "import" ]; then
+if [ $1 == "cluster" ]; then
    "$TERDIR"/bin/terraform import harvester_clusternetwork.vlan harvester-system/vlan
+fi
+
+if [ $1 == "network" ]; then
+   "$TERDIR"/bin/terraform import harvester_network.$2 default/$2
 fi
 
 "$TERDIR"/bin/terraform plan -out tfplan -input=false

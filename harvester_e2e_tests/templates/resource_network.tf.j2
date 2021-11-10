@@ -1,6 +1,7 @@
 resource "harvester_network" "{{ name }}" {
   name      = "{{ name }}"
   namespace = "{{ net_namespace | default('default') }}"
+  description = "Network created by terraform tests"
 
   vlan_id = {{ vlan_id }} 
 

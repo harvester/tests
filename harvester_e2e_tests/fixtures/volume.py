@@ -107,7 +107,9 @@ def volume_using_terraform(request, kubevirt_api_version, admin_session,
                                              10)
     yield vol_data
     if not request.config.getoption('--do-not-cleanup'):
-        utils.destroy_resource(request, admin_session, 'all')
+        utils.destroy_resource(
+            request,
+            admin_session, 'harvester_volume.' + vol_data['metadata']['name'])
 
 
 @pytest.fixture(scope='class')
