@@ -1,5 +1,5 @@
 resource "harvester_virtualmachine" "{{ name }}" {
-  depends_on = [harvester_image.{{ image_name }}, harvester_volume.{{ vol_name }}, harvester_network.{{ net_name }}]
+  depends_on = [harvester_volume.{{ vol_name }}, harvester_image.{{ image_name }}, harvester_network.{{ net_name }}]
 
   name        = "{{ name }}"
   description = "test raw image"

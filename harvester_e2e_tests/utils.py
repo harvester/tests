@@ -980,7 +980,7 @@ def create_keypair_terraform(request, admin_session, harvester_api_endpoints,
 
 
 def create_network_terraform(request, admin_session, harvester_api_endpoints,
-                             template_name, vlan_id):
+                             template_name, vlan_id, import_flag):
 
     # NOTE(gyee): will name the network with the following convention as
     # VLAN ID must be unique. vlan_network_<VLAN ID>
@@ -998,8 +998,14 @@ def create_network_terraform(request, admin_session, harvester_api_endpoints,
         token=(admin_session.headers['authorization']).split()[1]
     )
 
-    terraform_script = _get_node_script_path(
-        request, 'terraform.sh', 'terraform')
+    if import_flag:
+        terraform_script = _get_node_script_path(
+            request, 'terraform.sh', 'terraform') + \
+                           ' ' + 'network' + ' ' + name
+    else:
+        terraform_script = _get_node_script_path(
+            request, 'terraform.sh', 'terraform')
+
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
@@ -1035,7 +1041,7 @@ def create_clusternetworks_terraform(request, admin_session,
     )
 
     terraform_script = _get_node_script_path(
-        request, 'terraform.sh', 'terraform') + ' ' + 'import'
+        request, 'terraform.sh', 'terraform') + ' ' + 'cluster'
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (

@@ -187,13 +187,23 @@ def network_using_terraform(request, admin_session,
     if vlan_id == -1:
         return
 
+    # If a network with the same VLAN ID already exist,
+    # don't try to create but import it
+    network_data = _lookup_network(request, admin_session,
+                                   harvester_api_endpoints, vlan_id)
+
+    if network_data:
+        import_flag = True
+    else:
+        import_flag = False
+
     network_json = utils.create_network_terraform(request, admin_session,
                                                   harvester_api_endpoints,
                                                   'resource_network',
-                                                  vlan_id)
+                                                  vlan_id, import_flag)
     yield network_json
 
-    if not request.config.getoption('--do-not-cleanup'):
+    if not request.config.getoption('--do-not-cleanup') and not import_flag:
         utils.destroy_resource(
             request,
             admin_session,
