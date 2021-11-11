@@ -220,6 +220,12 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", ('imageupload: mark test to run upload image')
     )
+    config.addinivalue_line(
+        "markers", ('vol_p1: mark test to run only P1 test for Volume')
+    )
+    config.addinivalue_line(
+        "markers", ('vol_p2: mark test to run only P2 test for Volume')
+    )
 
 
 def pytest_collection_modifyitems(config, items):

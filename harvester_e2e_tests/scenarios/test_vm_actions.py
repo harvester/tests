@@ -306,6 +306,10 @@ class TestVMActions:
                          vm_name, request.config.getoption('--wait-timeout'))
 
 
+@pytest.mark.vol_p2
+@pytest.mark.vol_p1
+@pytest.mark.p2
+@pytest.mark.p1
 class TestVMVolumes:
 
     def test_create_vm_with_external_volume(self, admin_session,
@@ -342,6 +346,12 @@ class TestVMVolumes:
 
     def test_delete_volume_in_use(self, request, admin_session,
                                   harvester_api_endpoints, vm_with_volume):
+        """
+        Volume testing
+        Covers:
+            Negative vol-01-Delete Volume that is in use
+            vol-13-Validate volume shows as in use when attached
+        """
         volumes = vm_with_volume['spec']['template']['spec']['volumes']
         for volume in volumes:
             # try to delete a volume in 'in-use' state and it should
@@ -356,6 +366,11 @@ class TestVMVolumes:
     def test_delete_vm_then_volumes(self, request, admin_session,
                                     harvester_api_endpoints,
                                     vm_with_volume, volume):
+        """
+        Volume testing
+        Covers:
+            vol-15-Delete volume that was attached to VM but now is not
+        """
         # delete the VM but keep the volumes
         utils.delete_vm(request, admin_session, harvester_api_endpoints,
                         vm_with_volume, remove_all_disks=False)
