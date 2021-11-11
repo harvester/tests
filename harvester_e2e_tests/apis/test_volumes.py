@@ -51,18 +51,40 @@ def test_create_volume_missing_name(admin_session, harvester_api_endpoints):
     assert 'name or generateName is required' in response_data['message']
 
 
+@pytest.mark.vol_p1
+@pytest.mark.p1
 def test_create_volumes(volume):
+    """
+    Volume test with image
+    Covers:
+        vol-02-Create Volume root disk blank YAML
+        vol-14-Delete volume that is not attached to a VM
+    """
     # NOTE: if the volume is successfully create that means the test is good
     pass
 
 
+@pytest.mark.vol_p1
+@pytest.mark.p1
 def test_create_volume_image_form(volume_image_form):
     # NOTE: if the volume is successfully create that means the test is good
+    """
+    Volume test with image
+    Covers:
+        vol-03-Create volume root disk VM Image Form
+    """
     pass
 
 
+@pytest.mark.vol_p1
+@pytest.mark.p1
 def test_create_volume_by_yaml(request, admin_session,
                                harvester_api_endpoints):
+    """
+    Volume test with image
+    Covers:
+        vol-02-Create Volume root disk blank YAML
+    """
     request_json = utils.get_json_object_from_template('basic_volume')
     resp = admin_session.post(harvester_api_endpoints.create_volume,
                               data=yaml.dump(request_json, sort_keys=False),
@@ -80,8 +102,15 @@ def test_create_volume_by_yaml(request, admin_session,
         resp.content)
 
 
+@pytest.mark.vol_p1
+@pytest.mark.p1
 def test_create_volume_using_image_by_yaml(request, admin_session,
                                            harvester_api_endpoints, image):
+    """
+    Volume test with image
+    Covers:
+        vol-04-Create volume root disk VM Image YAML
+    """
     request_json = utils.get_json_object_from_template('basic_volume')
     imageid = "/".join([image['metadata']['namespace'],
                        image['metadata']['name']])
@@ -103,8 +132,15 @@ def test_create_volume_using_image_by_yaml(request, admin_session,
         resp.content)
 
 
+@pytest.mark.vol_p2
+@pytest.mark.p2
 def test_create_volume_with_label(request, admin_session,
                                   harvester_api_endpoints):
+    """
+    Volume test with image
+    Covers:
+        vol-09-Create Volume root disk blank Form with label
+    """
     request_json = utils.get_json_object_from_template('basic_volume')
     request_json['metadata']['labels'] = {
         'test.harvesterhci.io': 'for-test'
@@ -126,13 +162,27 @@ def test_create_volume_with_label(request, admin_session,
         resp.content)
 
 
+@pytest.mark.vol_p2
+@pytest.mark.p2
 def test_create_volume_with_image_label(volume_with_image):
     # NOTE: if the volume is successfully create that means the test is good
+    """
+    Volume test with image
+    Covers:
+        vol-10-Create volume root disk VM Image Form with label
+    """
     pass
 
 
+@pytest.mark.vol_p2
+@pytest.mark.p2
 def test_update_volume_json(request, admin_session,
                             harvester_api_endpoints, volume):
+    """
+    Volume test with image
+    Covers:
+        vol-05-Edit volume increase size via json
+    """
     view_endpoint = harvester_api_endpoints.get_volume % (
         volume['metadata']['name'])
     pvc_json = validate_blank_volumes(request, admin_session, view_endpoint)
@@ -151,8 +201,15 @@ def test_update_volume_json(request, admin_session,
         'storage') == '21Gi'
 
 
+@pytest.mark.vol_p2
+@pytest.mark.p2
 def test_update_volume_yaml(request, admin_session,
                             harvester_api_endpoints, volume):
+    """
+    Volume test with image
+    Covers:
+        vol-05-Edit volume increase size via YAML
+    """
     view_endpoint = harvester_api_endpoints.get_volume % (
         volume['metadata']['name'])
     pvc_json = validate_blank_volumes(request, admin_session, view_endpoint)
