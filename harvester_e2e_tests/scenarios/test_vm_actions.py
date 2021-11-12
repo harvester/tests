@@ -306,8 +306,8 @@ class TestVMActions:
                          vm_name, request.config.getoption('--wait-timeout'))
 
 
-@pytest.mark.vol_p2
-@pytest.mark.vol_p1
+@pytest.mark.volumes_p2
+@pytest.mark.volumes_p1
 @pytest.mark.p2
 @pytest.mark.p1
 class TestVMVolumes:
