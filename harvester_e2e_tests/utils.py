@@ -304,14 +304,27 @@ def assert_vm_restarted(admin_session, harvester_api_endpoints,
 
 
 def delete_image(request, admin_session, harvester_api_endpoints, image_json):
-    resp = admin_session.delete(harvester_api_endpoints.delete_image % (
-        image_json['metadata']['name']))
-    assert resp.status_code in [200, 201], 'Unable to del image %s: %s' % (
-        image_json['metadata']['name'], resp.content)
+    delete_image_by_name(request,
+                         admin_session,
+                         harvester_api_endpoints,
+                         image_json['metadata']['name'])
+
+
+def delete_image_by_name(request, admin_session,
+                         harvester_api_endpoints, image_name):
+    # see if the image exist first
+    resp = admin_session.get(harvester_api_endpoints.get_image % (image_name))
+    if resp.status_code == 404:
+        # image doesn't exist so nothing to be done
+        return
 
     def _wait_for_image_to_be_deleted():
-        resp = admin_session.get(harvester_api_endpoints.get_image % (
-            image_json['metadata']['name']))
+        # retry delete
+        admin_session.delete(harvester_api_endpoints.delete_image %
+                             (image_name))
+        time.sleep(15)
+        resp = admin_session.get(harvester_api_endpoints.get_image %
+                                 (image_name))
         if resp.status_code == 404:
             return True
         return False
