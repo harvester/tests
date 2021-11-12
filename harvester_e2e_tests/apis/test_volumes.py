@@ -51,7 +51,7 @@ def test_create_volume_missing_name(admin_session, harvester_api_endpoints):
     assert 'name or generateName is required' in response_data['message']
 
 
-@pytest.mark.vol_p1
+@pytest.mark.volumes_p1
 @pytest.mark.p1
 def test_create_volumes(volume):
     """
@@ -64,7 +64,7 @@ def test_create_volumes(volume):
     pass
 
 
-@pytest.mark.vol_p1
+@pytest.mark.volumes_p1
 @pytest.mark.p1
 def test_create_volume_image_form(volume_image_form):
     # NOTE: if the volume is successfully create that means the test is good
@@ -76,7 +76,7 @@ def test_create_volume_image_form(volume_image_form):
     pass
 
 
-@pytest.mark.vol_p1
+@pytest.mark.volumes_p1
 @pytest.mark.p1
 def test_create_volume_by_yaml(request, admin_session,
                                harvester_api_endpoints):
@@ -102,7 +102,7 @@ def test_create_volume_by_yaml(request, admin_session,
         resp.content)
 
 
-@pytest.mark.vol_p1
+@pytest.mark.volumes_p1
 @pytest.mark.p1
 def test_create_volume_using_image_by_yaml(request, admin_session,
                                            harvester_api_endpoints, image):
@@ -132,7 +132,7 @@ def test_create_volume_using_image_by_yaml(request, admin_session,
         resp.content)
 
 
-@pytest.mark.vol_p2
+@pytest.mark.volumes_p2
 @pytest.mark.p2
 def test_create_volume_with_label(request, admin_session,
                                   harvester_api_endpoints):
@@ -162,7 +162,7 @@ def test_create_volume_with_label(request, admin_session,
         resp.content)
 
 
-@pytest.mark.vol_p2
+@pytest.mark.volumes_p2
 @pytest.mark.p2
 def test_create_volume_with_image_label(volume_with_image):
     # NOTE: if the volume is successfully create that means the test is good
@@ -174,7 +174,7 @@ def test_create_volume_with_image_label(volume_with_image):
     pass
 
 
-@pytest.mark.vol_p2
+@pytest.mark.volumes_p2
 @pytest.mark.p2
 def test_update_volume_json(request, admin_session,
                             harvester_api_endpoints, volume):
@@ -201,7 +201,7 @@ def test_update_volume_json(request, admin_session,
         'storage') == '21Gi'
 
 
-@pytest.mark.vol_p2
+@pytest.mark.volumes_p2
 @pytest.mark.p2
 def test_update_volume_yaml(request, admin_session,
                             harvester_api_endpoints, volume):
