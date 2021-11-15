@@ -17,6 +17,7 @@
 
 import requests
 from urllib.parse import urljoin
+import pytest
 
 pytest_plugins = [
    'harvester_e2e_tests.fixtures.api_endpoints',
@@ -26,7 +27,15 @@ pytest_plugins = [
 
 # NOTE: include the admin_session here to ensure the password reset event
 # has already occurred
+@pytest.mark.authentication_p1
+@pytest.mark.p1
 def test_rancher_authentication(admin_session, request):
+    """
+    Test the rancher authentication
+    Covers:
+        authentication-07-Verify the same Login credential
+        for the Rancher integration.
+    """
     username = request.config.getoption('--username')
     password = request.config.getoption('--password')
     rancher_endpoint = request.config.getoption('--endpoint')
