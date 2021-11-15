@@ -226,6 +226,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", ('volumes_p2: mark test to run only P2 test for Volume')
     )
+    config.addinivalue_line(
+        "markers", ('authentication_p1: mark test to run only P1 '
+                    'test for authentication')
+    )
 
 
 def pytest_collection_modifyitems(config, items):
