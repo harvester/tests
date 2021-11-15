@@ -230,6 +230,12 @@ def pytest_configure(config):
         "markers", ('authentication_p1: mark test to run only P1 '
                     'test for authentication')
     )
+    config.addinivalue_line(
+        "markers", ('hosts_p1: mark test to run only P1 test for Hosts')
+    )
+    config.addinivalue_line(
+        "markers", ('hosts_p2: mark test to run only P1 test for Hosts')
+    )
 
 
 def pytest_collection_modifyitems(config, items):
