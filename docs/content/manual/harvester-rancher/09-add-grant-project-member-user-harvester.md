@@ -8,10 +8,14 @@ title: 09-Add and grant project-member user to harvester
 5. Open harvester from `Virtualization Management` page
 6. Click `Projects/Namespaces`
 7. Edit config of `default` project
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/25221ce8-909a-4532-85d0-5a1912528f37)
+
 8. Search project-member user
 9.  Assign `Member` role to it
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/cac6a089-833c-4d37-b0da-bd0ad08677c1)
+
 10. Logout current user from Rancher 
 11. Login with `project-member`
 12. Open harvester from `Virtualization Management` page

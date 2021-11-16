@@ -25,6 +25,7 @@ HTTP_PROXY=http://proxy-host:port
 HTTPS_PROXY=http://proxy-host:port
 NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,<internal domain>
 ```
+
 ![image](https://user-images.githubusercontent.com/29251855/141812497-6664b1ae-42f9-4602-8e36-bd70f0b410c5.png)
 
 14. Create ubuntu cloud image from URL

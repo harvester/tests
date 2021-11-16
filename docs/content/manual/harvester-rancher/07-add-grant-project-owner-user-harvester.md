@@ -8,10 +8,14 @@ title: 07-Add and grant project-owner user to harvester
 5. Open harvester from `Virtualization Management` page
 6. Click `Projects/Namespaces`
 7. Edit config of `default` project
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/25221ce8-909a-4532-85d0-5a1912528f37)
+
 8. Search project-owner user
 9. Assign `Owner` role to it
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/f3bb7b2d-f687-4cc0-bb98-f286f45ea17b)
+
 10. Logout current user from Rancher 
 11. Login with `project-owner`
 12. Open harvester from `Virtualization Management` page

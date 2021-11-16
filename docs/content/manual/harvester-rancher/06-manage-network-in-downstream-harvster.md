@@ -13,5 +13,5 @@ Prerequisite: Harvester already imported to Rancher Dashboard
 
 1. Can create an new virtual network
 2. Create create a new virtual machine using the new virtual network
-3. Virtual machine can retrive ip address
+3. Virtual machine can retrieve ip address
 4. Can delete a virtual network

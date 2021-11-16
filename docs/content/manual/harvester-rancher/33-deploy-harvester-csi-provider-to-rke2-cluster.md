@@ -11,13 +11,19 @@ title: 33-Deploy Harvester CSI provider to RKE 2 Cluster
 8.  Select network `vlan1`
 9.  Input SSH User: `ubuntu`
 10. Check alread set `Harvester` as cloud provider
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/514d1d88-08e7-441a-861c-38bb3c96bbe7)
+
 11. Click Create
 12. Wait for RKE2 cluster provisioning complete (~20min)
 
 ## Expected Results
 1. Provision RKE2 cluster successfully with `Running` status
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/4526b95b-71f4-498f-b509-dea60ec5e0e5)
+
 2. Can acccess RKE2 cluster to check all resources and services
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/682dccdc-cc0b-427f-ab7a-fdfaa1f82e06)
+
 3. Check CSI provider installed and configured on RKE2 cluster

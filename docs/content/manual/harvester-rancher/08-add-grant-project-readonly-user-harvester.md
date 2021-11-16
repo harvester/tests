@@ -8,10 +8,14 @@ title: 08-Add and grant project-readonly user to harvester
 5. Open harvester from `Virtualization Management` page
 6. Click `Projects/Namespaces`
 7. Edit config of `default` project
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/25221ce8-909a-4532-85d0-5a1912528f37)
+
 8. Search project-readonly user
 9.  Assign `Read Only` role to it
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/0effd0f6-6e20-4415-801b-03c4c6294a24)
+
 10. Logout current user from Rancher 
 11. Login with `project-readonly`
 12. Open harvester from `Virtualization Management` page

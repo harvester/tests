@@ -191,3 +191,36 @@ Add any new fixtures in conftest.py. Fixture functions are created by marking th
 [pip]: https://pip.pypa.io/en/stable/
 [flake8]: https://flake8.pycqa.org/en/latest/
 
+## Manual Test Cases
+Some scenarios are hard to test using the automation tests and are documented as manual test cases that need to be verified before release.
+The manual test cases are accessible [here](https://harvesterhci.io/tests/manual/).
+
+The manual test case pages can be edited under `docs/content/manual/`.
+
+To categorize tests, place them in sub-directories under `docs/content/manual/`.
+These sub-directories must contain a file named `_index.md` with the following:
+```markdown
+---
+title: Name of Test Category
+---
+Optional description regarding the test category.
+```
+
+Each test page should be structured as such:
+```markdown
+---
+title: Name of Test Case
+---
+Description of the test case.
+```
+
+Both of these files can contain Markdown in the title and page body.
+
+# Preview the website
+To preview the website changes, you will need to [install Hugo](https://gohugo.io/getting-started/installing/).
+Once Hugo is installed, run the following:
+```shell
+hugo server --buildDrafts --buildFuture
+```
+The site will be accessible at http://localhost:1313.
+
