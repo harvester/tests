@@ -8,4 +8,5 @@ title: 19-Enable Harvester Node Driver
 
 ## Expected Results
 1. Status displayed Activated
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/59f92871-6ce8-43d5-a0ae-d08e3ae2dc18)

@@ -13,10 +13,14 @@ Already provision RKE1/RKE2 cluster in previous test case
 7. Click `Services`
 8. Click Create 
 9. Select `Load Balancer`
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/f628094c-a195-4f99-9fb7-858d759dc019)
+
 10. Given service name
 11. Provide Listending port and Target port
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/2c20c759-4769-438b-94ad-5b995ba66873)
+
 12. Click `Add-on Config`
 13. Provide Health Check port
 14. Select `dhcp` as IPAM mode
@@ -25,9 +29,12 @@ Already provision RKE1/RKE2 cluster in previous test case
 17. Provide Health Check Period
 18. Provide Health Check Timeout
 19. Click Create button
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/a8d11df6-cc76-4897-8310-def670682775)
 
 ## Expected Results
 1. Can create load balance service correctly
+
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/4fbf9271-e3fa-4490-b1e9-8bb9c20060bf)
+
 2. Can operate and foward workload as expected
