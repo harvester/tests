@@ -11,6 +11,16 @@ def paste():
     else:
         return paste()
 
+@keyword("Copy To Clipboard")
+def copy(ctx):
+    try:
+        from pyperclip import copy as copy_
+    except ImportError as e:
+        raise ImportError("3rd party Library `pyperclip` is required"
+                          " before using this keyword.") from e
+    else:
+        copy_(ctx)
+
 
 @keyword("Set Default Browser Download Path")
 def default_download(dest: str = "") -> str:

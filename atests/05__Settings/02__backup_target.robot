@@ -3,6 +3,7 @@ Resource            ../resources/login.robot
 Resource            ../resources/navigate.robot
 Suite Setup         Login to Harvester Dashboard
 Suite Teardown      Close All Browsers
+Force Tags          backup-target
 
 
 **** Test Cases ***
