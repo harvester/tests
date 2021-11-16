@@ -87,6 +87,7 @@ Navigate To Setup Page
     [Arguments]     ${timeout}=${BROWSER_WAIT_TIMEOUT}
     Go To                           ${SETUP_PAGE_URL}
     Wait Until Location Contains    ${SETUP_ENDPOINT}
+    Wait Until Element Is Not Visible   css:i.initial-load-spinner  timeout=${timeout}
     Wait Until Element Is Visible   css:div.dashboard-root  ${timeout}
     Title Should Be                 Harvester
 

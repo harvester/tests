@@ -46,7 +46,7 @@ Error Message Should Display
 
 Username Should Be
     [arguments]     ${username}
-    Element Attribute Value Should Be   //header//div[@class="user-name"]
+    Element Attribute Value Should Be   xpath://header//div[@class="user-name"]
     ...                                 innerText   \ ${username}
 
 User Should Be Log Out And Redirect To Log In Page
