@@ -4,6 +4,82 @@
   <url>
     <loc>https://harvester.github.io/tests/manual/_incoming/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/03-manage-vm-downstream-harvster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/04-manage-host-downstream-harvster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/05-manage-image-volume-downstream-harvster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/06-manage-network-in-downstream-harvster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/07-add-grant-project-owner-user-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/08-add-grant-project-readonly-user-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/09-add-grant-project-member-user-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/10-add-grant-project-custom-user-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/12-create-namespace-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/13-add-grant-project-owner-user-custom/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/14-add-grant-project-readonly-user-custom/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/15-add-grant-project-member-user-custom/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/16-add-grant-project-custom-user-custom/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/17-delete-imported-harvester-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/18-delete-failed-imported-harvester-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/19-enable-harvester-node-driver/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/20-create-rke1-kubernetes-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/21-delete-rke1-kubernetes-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/22-create-rke2-kubernetes-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/23-delete-rke2-kubernetes-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/24-delete-rke1-kubernetes-cluster-provisioning/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/25-delete-rke1-kubernetes-cluster-failure/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/26-delete-rke2-kubernetes-cluster-provisioning/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/27-delete-rke2-kubernetes-cluster-failure/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/28-deploy-harvester-cloud-provider-to-rke1-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/29-deploy-harvester-cloud-provider-to-rke2-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/30-configure-harvester-loadbalancer-service/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/31-specify-pool-ipam-mode-loadbalancer-service/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/32-deploy-harvester-csi-provider-to-rke1-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/33-deploy-harvester-csi-provider-to-rke2-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/34-hotplug-unplug-volumes-in-rke1-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/35-hotplug-unplug-volumes-in-rke2-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/36-remove-harvester-loadbalancer-service/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/cluster-custom-docker-install-url/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/cluster-custom-insecure-registries/</loc>
@@ -315,6 +391,8 @@
     <loc>https://harvester.github.io/tests/manual/authentication/first-time-login/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/guest-csi-driver/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/</loc>
   </url><url>
