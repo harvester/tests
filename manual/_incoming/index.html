@@ -985,37 +985,34 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">Import and make changes to network resource</h1>
-  <div>
-    <article id="content">
-       <ol>
-<li>Import network resource
-<code>terraformer import harvester -r network</code></li>
-<li>Replace the provider (already explained in the installation process above)</li>
-<li>terraform plan and apply command should print &ldquo;No changes.&rdquo;</li>
-<li>Alter the resource and check with terraform plan then terraform apply
-For instance, alter the following properties: name, namespace and vlan_id in the network.tf file</li>
-<li>Check the change through either the UI or the API</li>
+  <header class="homepage-header">
+    <h1>Incoming Test Cases</h1>
+    
+  </header>
+  <div class="homepage-content">
+    <p>These are some potential new tests for next release.</p>
+<h3 id="v100-ga-tests">v1.0.0 GA Tests</h3>
+<ol>
+<li>RKE1/RKE2 Node driver enhancement <a href="https://github.com/harvester/harvester/issues/1174">#1174</a>, <a href="https://github.com/harvester/harvester/issues/1247">#1247</a>, <a href="https://github.com/harvester/harvester/issues/1348">#1348</a>, <a href="https://github.com/harvester/harvester/issues/1373">#1373</a>, <a href="https://github.com/harvester/harvester/issues/1379">#1379</a></li>
+<li>Rancher import experience <a href="https://github.com/harvester/harvester/issues/1330">#1330</a></li>
+<li>zero downtime upgrade <a href="https://github.com/harvester/harvester/issues/1022">#1022</a></li>
+<li>store metadata in backup-target <a href="https://github.com/harvester/harvester/issues/988">#988</a></li>
+<li>SSL certificate <a href="https://github.com/harvester/harvester/issues/761">#761</a></li>
+<li>additional trusted CA configure-ability <a href="https://github.com/harvester/harvester/issues/1260">#1260</a></li>
+<li>proxy settings for rke2 and rancher <a href="https://github.com/harvester/harvester/issues/1218">#1218</a></li>
+<li>Volume hot-unplug <a href="https://github.com/harvester/harvester/issues/1401">#1401</a></li>
+<li>cloud config byte limit <a href="https://github.com/harvester/harvester/issues/760">#760</a></li>
+<li>soft reboot/shutdown <a href="https://github.com/harvester/harvester/issues/574">#574</a></li>
+<li>VIP accessibility <a href="https://github.com/harvester/harvester/issues/1398">#1398</a>, <a href="https://github.com/harvester/harvester/issues/1424">#1424</a></li>
+<li>Volume scheduling <a href="https://github.com/harvester/harvester/issues/1334">#1334</a></li>
 </ol>
-<h2 id="expected-results">Expected Results</h2>
-<ul>
-<li>Import output</li>
-</ul>
-<pre tabindex="0"><code>terraformer import harvester -r network
-2021/08/04 16:14:08 harvester importing... network
-2021/08/04 16:14:08 harvester done importing network
-...
-</code></pre><ul>
-<li>Terraform plan output</li>
-</ul>
-<pre tabindex="0"><code>name =&gt; Plan: 1 to add, 0 to change, 1 to destroy.
-namespace =&gt; Plan: 1 to add, 0 to change, 1 to destroy.
-vlan_id =&gt; Plan: 0 to add, 1 to change, 0 to destroy.
-</code></pre><ul>
-<li>You should see the changes on the UI in the according sections</li>
+
+  </div>
+  <div>
+    <ul>
+
 </ul>
 
-    </article>
   </div>
 </main>
 
