@@ -23,6 +23,10 @@ import requests
 def admin_session(request, harvester_api_endpoints):
     username = request.config.getoption('--username')
     password = request.config.getoption('--password')
+    old_password = request.config.getoption('--old-password')
+
+    # reset admin password
+    reset_admin_password(harvester_api_endpoints, old_password, password)
 
     # authenticate admin
     login_data = {'username': username, 'password': password}
@@ -44,3 +48,29 @@ def admin_session(request, harvester_api_endpoints):
 def harvester_cluster_nodes(request):
     nodes = request.config.getoption('--harvester_cluster_nodes')
     return nodes
+
+
+def reset_admin_password(harvester_api_endpoints, old_password, password):
+    login_data = {'username': 'admin', 'password': old_password,
+                  'responseType': 'json'}
+    params = {'action': 'login'}
+    resp = requests.post(
+        harvester_api_endpoints.local_auth, verify=False,
+        params=params, json=login_data)
+    # FIXME(gyee): it seems like Harvester API is returning a different status
+    # code in different releases even though the API version hasn't changed.
+    # For now, lets account for both 200 and 201 as valid error codes.
+    assert resp.status_code in [200, 201], (
+        'Unable to authenticate admin with old password')
+
+    # now reset the admin password
+    bearer_token = 'Bearer ' + resp.json()['token']
+
+    reset_password_data = {'currentPassword': old_password,
+                           'newPassword': password}
+    params = {'action': 'changepassword'}
+    headers = {'authorization': bearer_token}
+    resp = requests.post(
+        harvester_api_endpoints.reset_password, verify=False, headers=headers,
+        params=params, json=reset_password_data)
+    assert resp.status_code == 200, 'Unable to reset admin password'

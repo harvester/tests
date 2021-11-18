@@ -4,8 +4,11 @@ endpoint: 'https://localhost:30443'
 #Harvester username
 username: 'admin'
 
-#Harvester password
-password: 'admin'
+#Harvester old/default admin password
+old-password: 'admin'
+
+#Harvester password - satisfies the minimum 12 character length
+password: 'password1234'
 
 #Do not cleanup the test artifacts
 do-not-cleanup: False

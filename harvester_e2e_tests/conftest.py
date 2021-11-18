@@ -35,10 +35,16 @@ def pytest_addoption(parser):
         help='Harvester username'
     )
     parser.addoption(
+        '--old-password',
+        action='store',
+        default=config_data['old-password'],
+        help='Harvester old admin password'
+    )
+    parser.addoption(
         '--password',
         action='store',
         default=config_data['password'],
-        help='Harvester password'
+        help='Harvester new admin password'
     )
     parser.addoption(
         '--do-not-cleanup',
