@@ -51,7 +51,7 @@ def test_verify_host_maintenance_mode(request, admin_session,
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-03-Verify Enabling maintenance mode
-        hosts-11-Host with one VM on it
+        hosts-12-Host with no VMs on it
     """
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
@@ -231,6 +231,8 @@ def test_host_reboot_maintenance_mode(request, admin_session,
     Covers:
         hosts-17-Maintenance Mode-Take host out of maintenance
         mode that has been rebooted
+        hosts-15-Maintenance Mode-reboot host that is in
+        maintenance mode
         hosts-02-Negative test-Verify the state for Powered down node
     """
     # Power Off Node

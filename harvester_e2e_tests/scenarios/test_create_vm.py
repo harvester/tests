@@ -661,8 +661,15 @@ def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
                             vm_json)
 
 
+@pytest.mark.hosts_p2
+@pytest.mark.p2
 def test_host_maintenance_mode(request, admin_session, image, keypair,
                                harvester_api_endpoints):
+    """
+    Test the hosts are the nodes which make the cluster
+    Covers:
+        hosts-11-Host with one VM on it
+    """
     vm_json = None
     try:
         vm_json = utils.create_vm(request, admin_session, image,
