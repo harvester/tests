@@ -24,10 +24,16 @@ pytest_plugins = [
 
 
 class TestHostDown:
-
+    @pytest.mark.virtual_machines_p1
+    @pytest.mark.p1
     @pytest.mark.host_management
     def test_host_shutdown(self, request, admin_session,
                            harvester_api_endpoints, basic_vm):
+        """
+        Test shutdown when vm is running and start vm
+        Covers:
+            Negative virtual-machines-03-Start VM Negative
+        """
         # make sure the VM instance is successfully created
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
@@ -63,8 +69,15 @@ class TestHostDown:
                             node_name)
 
     @pytest.mark.host_management
+    @pytest.mark.virtual_machines_p1
+    @pytest.mark.p1
     def test_delete_vm_while_host_shutdown(self, request, admin_session,
                                            harvester_api_endpoints, basic_vm):
+        """
+        Test shutdown when vm is running and delete vm
+        Covers:
+            Negative virtual-machines-05-Delete VM Negative
+        """
         # make sure the VM instance is successfully created
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)

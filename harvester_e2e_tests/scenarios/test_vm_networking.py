@@ -139,12 +139,20 @@ def get_vm_public_ip(admin_session, harvester_api_endpoints, vm, timeout,
     return (vm_instance_json, public_ip)
 
 
+@pytest.mark.virtual_machines_p1
+@pytest.mark.p1
 def backup_restore_vm(request, admin_session,
                       harvester_api_endpoints,
                       keypair, vm_with_one_vlan,
                       backuptarget,
                       vm_new=None,
                       new_vm_name=None):
+    """
+        Test create virutal machines
+        Covers:
+            virtual-machines-37-Create a VM with Start VM on
+            Creation checked
+    """
     vm_name = vm_with_one_vlan['metadata']['name']
     backup_name = utils.random_name()
     backup_json = None
@@ -333,11 +341,22 @@ def backup_restore_chained_backups(request, admin_session,
                                            backuptarget, backup_json)
 
 
+@pytest.mark.network_p1
+@pytest.mark.p1
 @pytest.mark.public_network
 class TestVMNetworking:
 
     def test_ssh_to_vm(self, request, admin_session,
                        harvester_api_endpoints, keypair, vm_with_one_vlan):
+        """
+        Test Network connectivity and VM
+        Covers:
+            network-01-Validate network connectivity Mgmt Network
+            network-08-Validate network connectivity both Mgmt and ext VLAN
+            virtual-machines-22-Create a VM with 2 networks,
+            one default management network
+            and one VLAN
+        """
         timeout = request.config.getoption('--wait-timeout')
         (vm_instance_json, public_ip) = get_vm_public_ip(
             admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
@@ -351,10 +370,12 @@ class TestVMNetworking:
     def test_vlan_ip_pingable_after_reboot(self, request, admin_session,
                                            harvester_api_endpoints, keypair,
                                            vm_with_one_vlan):
-        """ Network Negative Test Case #1: Test VLAN network after reboot
-
-        In this scenario, we want to make sure the VLAN IP of a VM is still
-        pingable after the reboot.
+        """
+        Negative Test network connectivity after reboot
+        Covers:
+            network-01-Network Negative Test Case #1: Test VLAN network
+            after reboot In this scenario, we want to make sure the
+            VLAN IP of a VM is still pingable after the reboot.
         """
         timeout = request.config.getoption('--wait-timeout')
         vm_name = vm_with_one_vlan['metadata']['name']
@@ -387,6 +408,15 @@ class TestVMNetworking:
     def test_add_vlan_network_to_vm(self, request, admin_session,
                                     harvester_api_endpoints, basic_vm,
                                     network, keypair):
+        """
+        Test Network connectivity
+        Covers:
+            network-01-Validate network connectivity Mgmt Network
+            network-02-Validate network connectivity External VLAN
+            network-53-Edit vm network and verify the network is
+            working as per configuration
+            network-13-Add VLAN network
+        """
         vm_name = basic_vm['metadata']['name']
         previous_uid = basic_vm['metadata']['uid']
         timeout = request.config.getoption('--wait-timeout')
@@ -447,6 +477,12 @@ class TestVMNetworking:
     def test_remove_vlan_network_from_vm(self, request, admin_session,
                                          harvester_api_endpoints,
                                          vm_with_one_vlan, network):
+        """
+        Test Network connectivity
+        Covers:
+            network-12-Delete single network from multiple networks VM
+            Delete external VLAN
+        """
         vm_name = vm_with_one_vlan['metadata']['name']
         previous_uid = vm_with_one_vlan['metadata']['uid']
         timeout = request.config.getoption('--wait-timeout')
@@ -516,10 +552,15 @@ def test_two_vms_on_same_vlan(request, admin_session,
 def test_management_ip_pingable_after_reboot(request, admin_session,
                                              harvester_api_endpoints, keypair,
                                              vms_with_same_vlan):
-    """ Network Negative Test Case #2: Test management network after reboot
-
-    In this scenario, we want to make sure the management IP of a VM is still
-    pingable from another VM on the same subnet after the reboot.
+    """
+        Test Network connectivity
+        Covers:
+            Negative network-02-test mgmt network after reboot
+            In this scenario, we want to make sure the management IP
+            of a VM is still pingable from another VM on the same subnet after
+            the reboot. Network Negative Test Case #1: Test management network
+            after reboot. In this scenario, we want to make sure the able to
+            ssh to the first VM using public ip.
     """
     # reboot the VM as a workaound for
     # https://github.com/harvester/harvester/issues/1059
@@ -565,6 +606,11 @@ def test_management_ip_pingable_after_reboot(request, admin_session,
 def test_update_vm_management_network_to_vlan(request, admin_session,
                                               harvester_api_endpoints, keypair,
                                               basic_vm, network):
+    """
+    Test Network connectivity
+    Covers:
+        network-04-Change management network to external VLAN
+    """
     vm_name = basic_vm['metadata']['name']
     previous_uid = basic_vm['metadata']['uid']
     timeout = request.config.getoption('--wait-timeout')
@@ -616,6 +662,11 @@ def test_update_vm_vlan_network_to_management(request, admin_session,
                                               harvester_api_endpoints, keypair,
                                               vms_with_vlan_as_default_network,
                                               network):
+    """
+    Test Network connectivity
+    Covers:
+        network-06-Change external VLAN to management network
+    """
     vm_name = vms_with_vlan_as_default_network['metadata']['name']
     previous_uid = vms_with_vlan_as_default_network['metadata']['uid']
     timeout = request.config.getoption('--wait-timeout')
@@ -667,15 +718,19 @@ def test_update_vm_vlan_network_to_management(request, admin_session,
             ip))
 
 
+@pytest.mark.network_p2
+@pytest.mark.p2
 @pytest.mark.public_network
 def test_vm_network_with_bogus_vlan(request, admin_session,
                                     harvester_api_endpoints,
                                     vm_with_one_bogus_vlan):
-    """ Test creating VM with a bogus VLAN ID
-
-    In this scenario, we expect the VM to be successfully created. But the
-    network interface associated with the VLAN should not successfully gotten
-    a valid IPv4 address.
+    """
+    Negative Test creating VM with a bogus VLAN ID
+    Covers
+        network-04-Invalid network scenario, we expect the VM to be
+        successfully created. But the network interface associated
+        with the VLAN should not successfully gotten a valid
+        IPv4 address.
     """
     timeout = request.config.getoption('--wait-timeout')
     (vm_instance_json, public_ip) = get_vm_public_ip(
