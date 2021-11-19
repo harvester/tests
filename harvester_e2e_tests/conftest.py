@@ -221,6 +221,20 @@ def pytest_configure(config):
         "markers", ('imageupload: mark test to run upload image')
     )
     config.addinivalue_line(
+        "markers", ('virtual_machines_p1: marker to run only P1 '
+                    ' Virtual Machine test')
+    )
+    config.addinivalue_line(
+        "markers", ('virtual_machines_p2: marker to run only P2  '
+                    ' Virtual Machine test')
+    )
+    config.addinivalue_line(
+        "markers", ('network_p1: marker to run only P1 Network test ')
+    )
+    config.addinivalue_line(
+        "markers", ('network_p2: marker to run only P2 Network test ')
+    )
+    config.addinivalue_line(
         "markers", ('volumes_p1: mark test to run only P1 test for Volume')
     )
     config.addinivalue_line(
