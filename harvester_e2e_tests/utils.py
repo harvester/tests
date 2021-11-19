@@ -1249,7 +1249,8 @@ def create_vm_backup(request, admin_session, harvester_api_endpoints,
 
 
 def delete_vm_backup(request, admin_session,
-                     harvester_api_endpoints, backuptarget, backup_json):
+                     harvester_api_endpoints, backuptarget,
+                     backup_json, remove_all_disks=True):
 
     backuptarget_value = json.loads(backuptarget['value'])
     backuptarget_type = backuptarget_value['type']
@@ -1275,7 +1276,16 @@ def delete_vm_backup(request, admin_session,
         step=5,
         timeout=request.config.getoption('--wait-timeout'))
     assert success, 'Timed out while waiting for backup to be deleted'
-
+    if remove_all_disks:
+        # NOTE: for PVC, we must explicitly delete the volumes after the
+        # VM is deleted
+        volumes = backup_json['spec']['template']['spec']['volumes']
+        for volume in volumes:
+            if 'persistentVolumeClaim' in volume:
+                delete_volume_by_name(
+                    request, admin_session, harvester_api_endpoints,
+                    volume['persistentVolumeClaim']['claimName'],
+                    owned_by=backup_json['metadata']['name'])
     time.sleep(50)
     if backuptarget_type == 's3':
         total_objects_after_delete = get_total_objects_s3_bucket(request)
