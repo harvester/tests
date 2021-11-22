@@ -2,9 +2,9 @@
 title: 19-Enable Harvester Node Driver	
 ---
 1. Open Cluster Management
-2. Click `Drivers` page and navigate to `Node Drivers` tab
-3. Search harvester
-4. Check Harvester and click `Activate`
+1. Click `Drivers` page and navigate to `Node Drivers` tab
+1. Search harvester
+1. Check Harvester and click `Activate`
 
 ## Expected Results
 1. Status displayed Activated

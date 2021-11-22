@@ -1,37 +1,37 @@
 ---
 title: 28-Deploy Harvester cloud provider to RKE1 Cluster	
 ---
-1. Open `Cluster Management` page
-2. Click Create 
-3. Expand RKE1 Configuration
-4. Add Template in `Node template`
-5. Select Harvester
-6. Select created cloud credential created
-7. Select `default` namespace
-8. Select ubuntu image 
-9. Select network: `vlan1`
-10. Provide SSH User: `ubuntu`
-11. Provide template name, click create
-12. Open Cluster page, click Create
-13. Toggle `RKE1`
-14. Provide cluster name
-15. Provide Name Prefix
-16. Select node template we just created
-17. Check `etcd`
-18. Check `Control Panel`
-19. Select `External` under `Cloud Provider`
-20. SSH to harvester cluster node 
-21. Run the following command to generate add-on configuration 
+1 Open `Cluster Management` page
+1 Click Create 
+1 Expand RKE1 Configuration
+1 Add Template in `Node template`
+1 Select Harvester
+1 Select created cloud credential created
+1 Select `default` namespace
+1 Select ubuntu image 
+1 Select network: `vlan1`
+1. Provide SSH User: `ubuntu`
+1. Provide template name, click create
+1. Open Cluster page, click Create
+1. Toggle `RKE1`
+1. Provide cluster name
+1. Provide Name Prefix
+1. Select node template we just created
+1. Check `etcd`
+1. Check `Control Panel`
+1. Select `External` under `Cloud Provider`
+1. SSH to harvester cluster node 
+1. Run the following command to generate add-on configuration 
 ```
 curl -sfL https://raw.githubusercontent.com/harvester/cloud-provider-harvester/master/deploy/generate_addon.sh | sh -s <serviceAccount name e.g `admin`> <namespace e.g `default`>
 ```
-22. Click the ```Edit as YAML``` button and add above command to it
-23. Add the result to RKE YAML file 
-24. Click create
+1. Click the ```Edit as YAML``` button and add above command to it
+1. Add the result to RKE YAML file 
+1. Click create
 
 ## Expected Results
 1. Provision RKE1 cluster successfully with `Running` status
-2. Can acccess RKE1 cluster to check all resources and services
+1. Can acccess RKE1 cluster to check all resources and services
 
 ## Known issues
 This issue block the RKE 1 provisioning task
