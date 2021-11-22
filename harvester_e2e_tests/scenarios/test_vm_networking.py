@@ -341,7 +341,7 @@ def get_vm_public_ip(admin_session, harvester_api_endpoints, vm, timeout,
 @pytest.mark.p1
 def backup_restore_vm(request, admin_session,
                       harvester_api_endpoints,
-                      keypair, vm_with_one_vlan,
+                      keypair, vms_with_vlan_as_default_network,
                       backuptarget,
                       vm_new=None,
                       new_vm_name=None):
@@ -351,7 +351,7 @@ def backup_restore_vm(request, admin_session,
             virtual-machines-37-Create a VM with Start VM on
             Creation checked
     """
-    vm_name = vm_with_one_vlan['metadata']['name']
+    vm_name = vms_with_vlan_as_default_network['metadata']['name']
     backup_name = utils.random_name()
     backup_json = None
     restored_vm_json = None
@@ -363,7 +363,8 @@ def backup_restore_vm(request, admin_session,
                                              vm_name=vm_name)
         timeout = request.config.getoption('--wait-timeout')
         (vm_instance_json, public_ip) = get_vm_public_ip(
-            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+            admin_session, harvester_api_endpoints,
+            vms_with_vlan_as_default_network, timeout)
         script = utils.get_backup_create_files_script(
             request, 'createFiles.sh', 'backup')
         # Create a file in VM
@@ -408,7 +409,7 @@ def backup_restore_vm(request, admin_session,
             restored_vm_json, timeout)
         if vm_new is None:
             restart_vm(request, admin_session, harvester_api_endpoints,
-                       vm_with_one_vlan)
+                       vms_with_vlan_as_default_network)
         fileExists = []
         filesmd5pass = []
         (fileExists, filesmd5pass) = fileactions_into_vm(public_ip, timeout,
@@ -420,7 +421,8 @@ def backup_restore_vm(request, admin_session,
         if not request.config.getoption('--do-not-cleanup'):
             if backup_json:
                 utils.delete_vm(request, admin_session,
-                                harvester_api_endpoints, vm_with_one_vlan)
+                                harvester_api_endpoints,
+                                vms_with_vlan_as_default_network)
                 utils.delete_vm_backup(request, admin_session,
                                        harvester_api_endpoints,
                                        backuptarget, backup_json)
@@ -431,10 +433,10 @@ def backup_restore_vm(request, admin_session,
 
 def backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
-                                   keypair, vm_with_one_vlan,
+                                   keypair, vms_with_vlan_as_default_network,
                                    backuptarget,
                                    delbackup=None):
-    vm_name = vm_with_one_vlan['metadata']['name']
+    vm_name = vms_with_vlan_as_default_network['metadata']['name']
     backup_name = utils.random_name()
     backup_lst = []
     backup_json = None
@@ -443,7 +445,8 @@ def backup_restore_chained_backups(request, admin_session,
     try:
         timeout = request.config.getoption('--wait-timeout')
         (vm_instance_json, public_ip) = get_vm_public_ip(
-            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+            admin_session, harvester_api_endpoints,
+            vms_with_vlan_as_default_network, timeout)
         script = utils.get_backup_create_files_script(
             request, 'createFiles.sh', 'backup')
         # scp createFiles script on VM
@@ -504,7 +507,7 @@ def backup_restore_chained_backups(request, admin_session,
                 admin_session, harvester_api_endpoints,
                 restored_vm_json, timeout)
             restart_vm(request, admin_session, harvester_api_endpoints,
-                       vm_with_one_vlan)
+                       vms_with_vlan_as_default_network)
             fileExists = []
             filesmd5pass = []
             (fileExists, filesmd5pass) = fileactions_into_vm(public_ip,
@@ -532,7 +535,8 @@ def backup_restore_chained_backups(request, admin_session,
         if not request.config.getoption('--do-not-cleanup'):
             if backup_lst:
                 utils.delete_vm(request, admin_session,
-                                harvester_api_endpoints, vm_with_one_vlan)
+                                harvester_api_endpoints,
+                                vms_with_vlan_as_default_network)
                 for backup_json in backup_lst:
                     utils.delete_vm_backup(request, admin_session,
                                            harvester_api_endpoints,
@@ -1176,7 +1180,7 @@ def test_chained_del_last_backup(request, admin_session,
 @pytest.mark.backups3
 def test_restore_chained_backups(request, admin_session,
                                  harvester_api_endpoints,
-                                 keypair, vm_with_one_vlan,
+                                 keypair, vms_with_vlan_as_default_network,
                                  backuptarget_s3):
     """
         Backup Restore Testing
@@ -1187,7 +1191,7 @@ def test_restore_chained_backups(request, admin_session,
     """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
-                                   keypair, vm_with_one_vlan,
+                                   keypair, vms_with_vlan_as_default_network,
                                    backuptarget_s3
                                    )
 
@@ -1197,7 +1201,7 @@ def test_restore_chained_backups(request, admin_session,
 @pytest.mark.backupnfs
 def test_backup_restore_new_vm_nfs(request, admin_session,
                                    harvester_api_endpoints,
-                                   keypair, vm_with_one_vlan,
+                                   keypair, vms_with_vlan_as_default_network,
                                    backuptarget_nfs,
                                    vm_new=True):
     """
@@ -1208,7 +1212,7 @@ def test_backup_restore_new_vm_nfs(request, admin_session,
     new_vm_name = "new-vm-" + utils.random_name()
     backup_restore_vm(request, admin_session,
                       harvester_api_endpoints,
-                      keypair, vm_with_one_vlan,
+                      keypair, vms_with_vlan_as_default_network,
                       backuptarget_nfs,
                       vm_new=vm_new,
                       new_vm_name=new_vm_name
@@ -1220,7 +1224,8 @@ def test_backup_restore_new_vm_nfs(request, admin_session,
 @pytest.mark.backupnfs
 def test_backup_restore_existing_vm_nfs(request, admin_session,
                                         harvester_api_endpoints,
-                                        keypair, vm_with_one_vlan,
+                                        keypair,
+                                        vms_with_vlan_as_default_network,
                                         backuptarget_nfs):
     """
         Backup Restore Testing
@@ -1230,7 +1235,7 @@ def test_backup_restore_existing_vm_nfs(request, admin_session,
     """
     backup_restore_vm(request, admin_session,
                       harvester_api_endpoints,
-                      keypair, vm_with_one_vlan,
+                      keypair, vms_with_vlan_as_default_network,
                       backuptarget_nfs
                       )
 
@@ -1240,7 +1245,8 @@ def test_backup_restore_existing_vm_nfs(request, admin_session,
 @pytest.mark.backupnfs
 def test_chained_del_middle_backup_nfs(request, admin_session,
                                        harvester_api_endpoints,
-                                       keypair, vm_with_one_vlan,
+                                       keypair,
+                                       vms_with_vlan_as_default_network,
                                        backuptarget_nfs,
                                        delbackup='middle'):
     """
@@ -1250,7 +1256,8 @@ def test_chained_del_middle_backup_nfs(request, admin_session,
     """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
-                                   keypair, vm_with_one_vlan,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
                                    backuptarget_nfs,
                                    delbackup=delbackup
                                    )
@@ -1261,7 +1268,8 @@ def test_chained_del_middle_backup_nfs(request, admin_session,
 @pytest.mark.backupnfs
 def test_chained_del_first_backup_nfs(request, admin_session,
                                       harvester_api_endpoints,
-                                      keypair, vm_with_one_vlan,
+                                      keypair,
+                                      vms_with_vlan_as_default_network,
                                       backuptarget_nfs,
                                       delbackup='first'):
     """
@@ -1271,7 +1279,8 @@ def test_chained_del_first_backup_nfs(request, admin_session,
     """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
-                                   keypair, vm_with_one_vlan,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
                                    backuptarget_nfs,
                                    delbackup=delbackup
                                    )
@@ -1282,7 +1291,8 @@ def test_chained_del_first_backup_nfs(request, admin_session,
 @pytest.mark.backupnfs
 def test_chained_del_last_backup_nfs(request, admin_session,
                                      harvester_api_endpoints,
-                                     keypair, vm_with_one_vlan,
+                                     keypair,
+                                     vms_with_vlan_as_default_network,
                                      backuptarget_nfs,
                                      delbackup='last'):
     """
@@ -1292,7 +1302,7 @@ def test_chained_del_last_backup_nfs(request, admin_session,
     """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
-                                   keypair, vm_with_one_vlan,
+                                   keypair, vms_with_vlan_as_default_network,
                                    backuptarget_nfs,
                                    delbackup=delbackup
                                    )
@@ -1303,7 +1313,8 @@ def test_chained_del_last_backup_nfs(request, admin_session,
 @pytest.mark.backupnfs
 def test_restore_chained_backups_nfs(request, admin_session,
                                      harvester_api_endpoints,
-                                     keypair, vm_with_one_vlan,
+                                     keypair,
+                                     vms_with_vlan_as_default_network,
                                      backuptarget_nfs):
     """
         Backup Restore Testing
@@ -1314,7 +1325,8 @@ def test_restore_chained_backups_nfs(request, admin_session,
     """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
-                                   keypair, vm_with_one_vlan,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
                                    backuptarget_nfs
                                    )
 
