@@ -1,5 +1,5 @@
 ---
-title: 01-Import existing Harvester clusters in Rancher	
+title: 41-Import Harvester into nested Rancher
 ---
 1. Login rancher dashboard
 1. Navigate to Virtual Management Page

@@ -5,26 +5,26 @@ Prerequisite:
 Already provision RKE1/RKE2 cluster in previous test case
 
 1. Open `Global Settings` in hamburger menu
-2. Replace `ui-dashboard-index` to `https://releases.rancher.com/harvester-ui/dashboard/latest/index.html`
-3. Change `ui-offline-preferred` to `Remote`
-4. Refresh the current page (ctrl + r)
-5. Open provisioned RKE2 cluster from hamburger menu
-6. Drop down `Service Discovery`
-7. Click `Services`
-8. Click Create 
-9. Select `Load Balancer`
+1. Replace `ui-dashboard-index` to `https://releases.rancher.com/harvester-ui/dashboard/latest/index.html`
+1. Change `ui-offline-preferred` to `Remote`
+1. Refresh the current page (ctrl + r)
+1. Open provisioned RKE2 cluster from hamburger menu
+1. Drop down `Service Discovery`
+1. Click `Services`
+1. Click Create 
+1. Select `Load Balancer`
 
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/f628094c-a195-4f99-9fb7-858d759dc019)
 
-10. Given service name
-11. Provide Listending port and Target port
+1. Given service name
+1. Provide Listending port and Target port
 
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/2c20c759-4769-438b-94ad-5b995ba66873)
 
-12. Click `Add-on Config`
-13. Provide Health Check port
-14. Select `dhcp` as IPAM mode
-15. Provide Health Check Threshold
+1. Click `Add-on Config`
+1. Provide Health Check port
+1. Select `dhcp` as IPAM mode
+1. Provide Health Check Threshold
 16. Provide Health Check Failure Threshold
 17. Provide Health Check Period
 18. Provide Health Check Timeout
@@ -37,4 +37,4 @@ Already provision RKE1/RKE2 cluster in previous test case
 
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/4fbf9271-e3fa-4490-b1e9-8bb9c20060bf)
 
-2. Can operate and foward workload as expected
+1. Can operate and foward workload as expected
