@@ -43,6 +43,8 @@ bucketName: ''
 # Backup Targer NFS
 nfs-endpoint: ''
 
+nfs-mount-dir: 'nfsshare'
+
 backup-scripts-location: 'backup_restore_test_artifacts'
 rancher-scripts-location: 'rancher_integration_test_artifacts'
 
