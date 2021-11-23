@@ -1332,8 +1332,9 @@ def get_total_objects_nfs_share(request):
     backup_script = get_backup_create_files_script(
         request, 'mountnfs.sh', 'backup')
     nfsendpoint = (request.config.getoption('--nfs-endpoint').split("//")[1])
+    nfsmountdir = request.config.getoption('--nfs-mount-dir')
     total_objects = 0
-    result = subprocess.run([backup_script, nfsendpoint],
+    result = subprocess.run([backup_script, nfsendpoint, nfsmountdir],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         'Failed to run mountnfs : rc: %s, stdout: %s, stderr: %s' % (

@@ -2,21 +2,23 @@
 
 set -e
 
-USAGE="${0}: <nfs-endpoint>
+USAGE="${0}: <nfs-endpoint> <nfs-mount-dir>
 
 Where:
 
-  <nfs endpoint>: endpoint for remote nfs share 
+  <nfs endpoint>: endpoint for remote nfs share
+  <nfs-mount-dir> configurable mount directory for nfs share
 "
 
-if [ $# -ne 1 ] ; then
+if [ $# -ne 2 ] ; then
         echo "$USAGE"
         exit 1
 fi
 
 NFSENDPOINT=$1
+NFSMNTDIR=$2
 
-TMPDIR="$PWD"/backup_restore_test_artifacts/nfsshare
+TMPDIR="$PWD"/backup_restore_test_artifacts/"$NFSMNTDIR"
 mkdir -p "$TMPDIR"
 # Check if temp dir is  created successfully.
 if [ ! -e $TMPDIR ]; then

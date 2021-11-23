@@ -154,6 +154,12 @@ def pytest_addoption(parser):
         default=config_data['rancher-version'],
         help=('Rancher Docker image version to use')
     )
+    parser.addoption(
+        '--nfs-mount-dir',
+        action='store',
+        default=config_data['nfs-mount-dir'],
+        help=('mount directory for nfs share')
+    )
 
     # TODO(gyee): may need to add SSL options later
 
