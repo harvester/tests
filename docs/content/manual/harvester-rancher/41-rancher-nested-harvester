@@ -1,6 +1,8 @@
 ---
 title: 41-Import Harvester into nested Rancher
 ---
+Prerequisite: External network on VLAN
+1. Install Rancher in a VM using Docker method on Harvester cluster using the external VLAN
 1. Login rancher dashboard
 1. Navigate to Virtual Management Page
 1. Click import existing
