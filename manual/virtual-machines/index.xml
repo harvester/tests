@@ -457,6 +457,15 @@
     </item>
     
     <item>
+      <title>Create Windows VM</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-windows-vm/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-windows-vm/</guid>
+      <description>Create a VM with the VM template with windows-iso-image-base-temp Config the CPU and Memory to 4 and 8 respectively Select the windows ISO image Click the Volumes tab and update the root disk size to 50GB Click create to launch the windows VM Optional: you can increase the second disk size or add an additional one. Click create to launch the VM (this will take a couple of minutes upon your network speed of download the ISO image) Click the Console to launch a VNC console of the windows server, and you will need to find an evaluation key of the windows server 2012 installation.</description>
+    </item>
+    
+    <item>
       <title>Delete multiple VMs with disks</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-with-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

@@ -7,6 +7,15 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/harvester-rancher/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title></title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>01-Import existing Harvester clusters in Rancher</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -68,38 +77,38 @@ Expected Results </description>
     
     <item>
       <title>07-Add and grant project-owner user to harvester</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/07-add-grant-project-owner-user-harvester/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/07-rbac-add-grant-project-owner-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/07-add-grant-project-owner-user-harvester/</guid>
-      <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-owner and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project  Search project-owner user Assign Owner role to it  Logout current user from Rancher Login with project-owner Open harvester from Virtualization Management page  Expected Results  Can create project-owner and set password Can assign Owner role to project-owner in default Can login correctly with project-owner Can manage all default project resources including host, virtual machines, volumes, VM and network  </description>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/07-rbac-add-grant-project-owner-user-harvester/</guid>
+      <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-owner and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project   Search project-owner user Assign Owner role to it   Logout current user from Rancher Login with project-owner Open harvester from Virtualization Management page  Expected Results  Can create project-owner and set password Can assign Owner role to project-owner in default Can login correctly with project-owner Can manage all default project resources including host, virtual machines, volumes, VM and network  </description>
     </item>
     
     <item>
       <title>08-Add and grant project-readonly user to harvester</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/08-add-grant-project-readonly-user-harvester/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/08-rbac-add-grant-project-readonly-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/08-add-grant-project-readonly-user-harvester/</guid>
-      <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-readonly and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project  Search project-readonly user Assign Read Only role to it  Logout current user from Rancher Login with project-readonly Open harvester from Virtualization Management page  Expected Results  Can create project-readonly and set password Can assign Read Only role to project-readonly in default Can login correctly with project-readonly Can&amp;rsquo;t see Host page in harvester Can&amp;rsquo;t create or edit any resource including virtual machines, volumes, Images &amp;hellip;  </description>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/08-rbac-add-grant-project-readonly-user-harvester/</guid>
+      <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-readonly and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project   Search project-readonly user Assign Read Only role to it   Logout current user from Rancher Login with project-readonly Open harvester from Virtualization Management page  Expected Results  Can create project-readonly and set password Can assign Read Only role to project-readonly in default Can login correctly with project-readonly Can&amp;rsquo;t see Host page in harvester Can&amp;rsquo;t create or edit any resource including virtual machines, volumes, Images &amp;hellip;  </description>
     </item>
     
     <item>
       <title>09-Add and grant project-member user to harvester</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/09-add-grant-project-member-user-harvester/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/09-add-grant-project-member-user-harvester/</guid>
-      <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-member and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project  Search project-member user Assign Member role to it  Logout current user from Rancher Login with project-member Open harvester from Virtualization Management page  Expected Results  Can create project-member and set password Can assign Member role to project-member in default Can login correctly with project-member Can&amp;rsquo;t see Host page in harvester Can&amp;rsquo;t create or edit any resource including virtual machines, volumes, Images &amp;hellip;  </description>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/</guid>
+      <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-member and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project   Search project-member user Assign Member role to it   Logout current user from Rancher Login with project-member Open harvester from Virtualization Management page  Expected Results  Can create project-member and set password Can assign Member role to project-member in default Can login correctly with project-member Can&amp;rsquo;t see Host page in harvester Can&amp;rsquo;t create or edit any resource including virtual machines, volumes, Images &amp;hellip;  </description>
     </item>
     
     <item>
       <title>10-Add and grant project-custom user to harvester</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/10-add-grant-project-custom-user-harvester/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/10-add-grant-project-custom-user-harvester/</guid>
-      <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-custom and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project  Search project-custom user Assign Custom role to it  Set Create Namespace, Manage Volumes and View Volumes Logout current user from Rancher Login with project-custom Open harvester from Virtualization Management page  Expected Results  Can create project-custom and set password Can assign Custom role to project-custom in default Can login correctly with project-custom Can do Create Namespace, Manage Volumes and View Volumes in default project  </description>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/</guid>
+      <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-custom and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project   Search project-custom user Assign Custom role to it   Set Create Namespace, Manage Volumes and View Volumes Logout current user from Rancher Login with project-custom Open harvester from Virtualization Management page  Expected Results  Can create project-custom and set password Can assign Custom role to project-custom in default Can login correctly with project-custom Can do Create Namespace, Manage Volumes and View Volumes in default project  </description>
     </item>
     
     <item>
@@ -108,7 +117,7 @@ Expected Results </description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/</guid>
-      <description> Open harvester from Virtualization Management page Click Projects/Namespaces Click Create Project Set CPU and Memory limit in Resource Quotas  Change view to testProject only  Create some images Create some volumes Create a virtual machine  Expected Results  Can creat project correctly in Projects/Namespaces page Can create images correctly Can create volumes correctly Can create virtual machine correctly  </description>
+      <description> Open harvester from Virtualization Management page Click Projects/Namespaces Click Create Project Set CPU and Memory limit in Resource Quotas   Change view to testProject only   Create some images Create some volumes Create a virtual machine  Expected Results  Can creat project correctly in Projects/Namespaces page Can create images correctly Can create volumes correctly Can create virtual machine correctly  </description>
     </item>
     
     <item>
@@ -122,37 +131,37 @@ Expected Results </description>
     
     <item>
       <title>13-Add and grant project-owner user to custom project</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/13-add-grant-project-owner-user-custom/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/13-rbac-add-grant-project-owner-user-custom/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/13-add-grant-project-owner-user-custom/</guid>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/13-rbac-add-grant-project-owner-user-custom/</guid>
       <description> Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of testProject project Search project-owner user Assign Owner role to it Logout current user from Rancher Login with project-owner Open harvester from Virtualization Management page Change view to testProject only  Expected Results  Can assign Owner role to project-owner in testProject project Can manage all testProject project resources including host, virtual machines, volumes, VM and network  </description>
     </item>
     
     <item>
       <title>14-Add and grant project-readonly user to custom project</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/14-add-grant-project-readonly-user-custom/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/14-rbac-add-grant-project-readonly-user-custom/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/14-add-grant-project-readonly-user-custom/</guid>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/14-rbac-add-grant-project-readonly-user-custom/</guid>
       <description> Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of testProject project Search project-readonly user Assign Read Only role to it Logout current user from Rancher Login with project-readonly Open harvester from Virtualization Management page Change view to testProject only  Expected Results  Can assign Read Only role to in testProject project Can login correctly with project-readonly Can&amp;rsquo;t see Host page in testProject only view Can&amp;rsquo;t create or edit any resource including virtual machines, volumes, Images &amp;hellip; in testProject only view  </description>
     </item>
     
     <item>
       <title>15-Add and grant project-member user to custom project</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/15-add-grant-project-member-user-custom/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/15-rbac-add-grant-project-member-user-custom/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/15-add-grant-project-member-user-custom/</guid>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/15-rbac-add-grant-project-member-user-custom/</guid>
       <description> Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of testProject project Search project-member user Assign Member role to it Logout current user from Rancher Login with project-member Open harvester from Virtualization Management page Change view to testProject only  Expected Results  Can assign Member role to project-member in testProject project Can login correctly with project-member Can&amp;rsquo;t see Host page in testProject project Can&amp;rsquo;t create or edit any resource including virtual machines, volumes, Images &amp;hellip; in testProject project  </description>
     </item>
     
     <item>
       <title>16-Add and grant project-custom user to custom project</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/16-add-grant-project-custom-user-custom/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/16-rbac-add-grant-project-custom-user-custom/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/16-add-grant-project-custom-user-custom/</guid>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/16-rbac-add-grant-project-custom-user-custom/</guid>
       <description> Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of testProject project Search project-custom user Assign Custom role to it Set Create Namespace, Manage Volumes and View Volumes Logout current user from Rancher Login with project-custom Open harvester from Virtualization Management page Change view to testProject only  Expected Results  Can assign Custom role to project-custom in testProject project Can login correctly with project-custom Can do Create Namespace, Manage Volumes and View Volumes in testProject project  </description>
     </item>
     
@@ -189,7 +198,7 @@ Expected Results </description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/20-create-rke1-kubernetes-cluster/</guid>
-      <description>Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imprted Cluster list Click Create  Expand RKE1 Configuration Add Template in Node template Select Harvester Select created cloud credential created Select default namespace Select ubuntu image Select network: vlan1 Provide SSH User: ubuntu  Provide template name, click create Open Cluster page, click Create Toggle RKE1 Provide cluster name Provide Name Prefix Select node template we just created Check etcd Check Control Panel  Click create  Expected Results  Provision RKE1 cluster successfully with Running status Can acccess RKE1 cluster to check all resources and services  Known issues This issue block the RKE 1 provisioning task</description>
+      <description>Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imprted Cluster list Click Create   Expand RKE1 Configuration Add Template in Node template Select Harvester Select created cloud credential created Select default namespace Select ubuntu image Select network: vlan1 Provide SSH User: ubuntu   Provide template name, click create Open Cluster page, click Create Toggle RKE1 Provide cluster name Provide Name Prefix Select node template we just created Check etcd Check Control Panel   Click create  Expected Results  Provision RKE1 cluster successfully with Running status Can acccess RKE1 cluster to check all resources and services  Known issues This issue block the RKE 1 provisioning task</description>
     </item>
     
     <item>
@@ -207,7 +216,7 @@ Expected Results </description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/22-create-rke2-kubernetes-cluster/</guid>
-      <description> Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imprted Cluster list Click Create  Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Click Create  Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status  Can acccess RKE2 cluster to check all resources and services  </description>
+      <description> Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imprted Cluster list Click Create   Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Click Create   Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services  </description>
     </item>
     
     <item>
@@ -261,7 +270,8 @@ Expected Results </description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/28-deploy-harvester-cloud-provider-to-rke1-cluster/</guid>
-      <description>Open Cluster Management page Click Create Expand RKE1 Configuration Add Template in Node template Select Harvester Select created cloud credential created Select default namespace Select ubuntu image Select network: vlan1 Provide SSH User: ubuntu Provide template name, click create Open Cluster page, click Create Toggle RKE1 Provide cluster name Provide Name Prefix Select node template we just created Check etcd Check Control Panel Select External under Cloud Provider SSH to harvester cluster node Run the following command to generate add-on configuration  curl -sfL https://raw.</description>
+      <description>1 Open Cluster Management page 1 Click Create 1 Expand RKE1 Configuration 1 Add Template in Node template 1 Select Harvester 1 Select created cloud credential created 1 Select default namespace 1 Select ubuntu image 1 Select network: vlan1
+ Provide SSH User: ubuntu Provide template name, click create Open Cluster page, click Create Toggle RKE1 Provide cluster name Provide Name Prefix Select node template we just created Check etcd Check Control Panel Select External under Cloud Provider SSH to harvester cluster node Run the following command to generate add-on configuration  curl -sfL https://raw.</description>
     </item>
     
     <item>
@@ -270,7 +280,7 @@ Expected Results </description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/29-deploy-harvester-cloud-provider-to-rke2-cluster/</guid>
-      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider  Click Create Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status  Can acccess RKE2 cluster to check all resources and services  </description>
+      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider   Click Create Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services  </description>
     </item>
     
     <item>
@@ -280,7 +290,7 @@ Expected Results </description>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/30-configure-harvester-loadbalancer-service/</guid>
       <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
- Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer  Given service name Provide Listending port and Target port  Click Add-on Config Provide Health Check port Select dhcp as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button  Expected Results  Can create load balance service correctly  Can operate and foward workload as expected  </description>
+ Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer   Given service name Provide Listending port and Target port   Click Add-on Config Provide Health Check port Select dhcp as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button  Expected Results  Can create load balance service correctly   Can operate and foward workload as expected  </description>
     </item>
     
     <item>
@@ -290,7 +300,7 @@ Expected Results </description>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/31-specify-pool-ipam-mode-loadbalancer-service/</guid>
       <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
- Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer  Given service name Provide Listending port and Target port  Click Add-on Config Provide Health Check port Select pool as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button  Expected Results  Can create load balance service correctly Can operate and foward workload as expected  </description>
+ Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer   Given service name Provide Listending port and Target port   Click Add-on Config Provide Health Check port Select pool as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button  Expected Results  Can create load balance service correctly Can operate and foward workload as expected  </description>
     </item>
     
     <item>
@@ -308,7 +318,7 @@ Expected Results </description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/33-deploy-harvester-csi-provider-to-rke2-cluster/</guid>
-      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider  Click Create Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status  Can acccess RKE2 cluster to check all resources and services  Check CSI provider installed and configured on RKE2 cluster  </description>
+      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider   Click Create Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services   Check CSI provider installed and configured on RKE2 cluster  </description>
     </item>
     
     <item>
@@ -331,7 +341,7 @@ Known issues This issue blocks the RKE 1 provisioning task
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/35-hotplug-unplug-volumes-in-rke2-cluster/</guid>
       <description>Prerequisite: Already provisioned RKE2 cluster machine on Harvester
- Open RKE2 harvester from hamburger menu Open Storage Select PersistentVolumes Click Create Provide Name Select volume plugin to Local Open Custom Select harvester in Assign to Storage Class  Click create  Expected Results  Can create persistent volume correctly Can remove persistent volume correctly  </description>
+ Open RKE2 harvester from hamburger menu Open Storage Select PersistentVolumes Click Create Provide Name Select volume plugin to Local Open Custom Select harvester in Assign to Storage Class   Click create  Expected Results  Can create persistent volume correctly Can remove persistent volume correctly  </description>
     </item>
     
     <item>
@@ -361,6 +371,139 @@ Known issues This issue blocks the RKE 1 provisioning task
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</guid>
       <description>Environment Setup Setup the airgapped harvester
  Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on bond0 Now harvester dashboard page will out of work We can&amp;rsquo;t ssh to original assigned node ip We need to ssh to 192.168.0.30, 31, 32 instead Run ip a | grep bond0 get the {ip-of-bond0} Run the recover command Confirm default route by using ip r | grep default Wait for a while and access dashboard (it takes some time) Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
+    </item>
+    
+    <item>
+      <title>40-RBAC Add restricted admin User Harvester</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/40-rbac-add-restricted-admin-user-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/40-rbac-add-restricted-admin-user-harvester/</guid>
+      <description> As admin import/register a harvester cluster in Rancher create restricted admin user rstradm verify rstradm has access to to Virturalization management page and the harvester cluster is listed Verify rstradm has access to Harvester UI through rancher by selecting it from the list in step 3 and can CRUD each resource  </description>
+    </item>
+    
+    <item>
+      <title>40-Standard user no Harvester Access</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/39-rbac-standard-user-no-access/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/39-rbac-standard-user-no-access/</guid>
+      <description> As admin import/register a harvester cluster in Rancher As admin, Enable Harvester node driver As a standard user User1, login to rancher Verify User1 has no access to harvester cluster in Virtualization management page Create harvester cloud credential as User1 Verify User1 can use this cloud credential to create a node template and a node driver cluster 3 and can CRUD each resource  </description>
+    </item>
+    
+    <item>
+      <title>41-Import Harvester into nested Rancher</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/41-rancher-nested-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/41-rancher-nested-harvester/</guid>
+      <description>Prerequisite: External network on VLAN
+ Install Rancher in a VM using Docker method on Harvester cluster using the external VLAN Login rancher dashboard Navigate to Virtual Management Page Click import existing Copy the curl command  SSH to harvester master node (user: rancher) Execute the curl command to import harvester to rancher curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f - Run sudo chmod 775 /etc/rancher/rke2/rke2.yaml to solve the permission denied error Run curl command again, you should see the following successful import message namespace/cattle-system configured serviceaccount/cattle created clusterrolebinding.</description>
+    </item>
+    
+    <item>
+      <title>42-Add cloud credential KUBECONFIG</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/42-add-cloud-credential-kubeconfig/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/42-add-cloud-credential-kubeconfig/</guid>
+      <description>Prerequisite: KUBECONFIG from Harvester
+ Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select external cluster Input KUBECONFIG from Harvester Click Create  </description>
+    </item>
+    
+    <item>
+      <title>43-Scale up node driver RKE1</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/43-node-driver-scale-up-rke1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/43-node-driver-scale-up-rke1/</guid>
+      <description>Prerequisite: RKE1 cluster in Harvester with at least 2 worker nodes
+ provision a multinode cluster using harvester node driver with at least 2 worker nodes scale up a node in the cluster  </description>
+    </item>
+    
+    <item>
+      <title>44-Scale up node driver RKE2</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/44-node-driver-scale-up-rke2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/44-node-driver-scale-up-rke2/</guid>
+      <description>Prerequisite: KUBECONFIG from Harvester
+ provision a multinode cluster using harvester node driver with at least 2 worker nodes scale up a node in the cluster  </description>
+    </item>
+    
+    <item>
+      <title>45-Scale down node driver RKE1</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/45-node-driver-scale-down-rke1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/45-node-driver-scale-down-rke1/</guid>
+      <description>Prerequisite: KUBECONFIG from Harvester
+ provision a multinode cluster using harvester node driver with at least 2 worker nodes scale down a node in the cluster  </description>
+    </item>
+    
+    <item>
+      <title>46-Scale down node driver RKE2</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/</guid>
+      <description>Prerequisite: KUBECONFIG from Harvester
+ provision a multinode cluster using harvester node driver with at least 2 worker nodes scale down a node in the cluster  </description>
+    </item>
+    
+    <item>
+      <title>48-Overprovision Harvester</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</guid>
+      <description> import harvester into rancher over-provision the connected harvester cluster (i.e. deploy large number of nodes) note: the number will depend on the resources available in the harvester cluster you&amp;rsquo;ve imported. i.e. a harvester setup with 24 cores, 64 GB of ram, you could try provisioning a 3cp, 2cp, 2w cluster of size 4 vCPU 8GB ram to over-provision CPU i.e. a harvester setup with 24 cores, 64 GB of ram, you could try provisioning a 3cp, 2cp, 2w cluster of size 2 vCPU 10GB ram to over-provision CPU  </description>
+    </item>
+    
+    <item>
+      <title>48-Verify Backup and restore on server migration</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</guid>
+      <description> Create a harvester cluster Deploy a harvester node driver cluster preupgrade checks on both Take a backup Restore on a new rancher server from backup taken ins step 4 Run post-upgrade checks for both clusters Verify virtualization management → harvester is accessible Run p0 use case  </description>
+    </item>
+    
+    <item>
+      <title>50-Use fleet when a harvester cluster is imported to rancher</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/50-fleet-with-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/50-fleet-with-harvester/</guid>
+      <description> deploy rancher with harvester enabled docker: &amp;ndash;features=harvester=enabled helm: &amp;ndash;set &amp;lsquo;extraEnv[0].name=CATTLE_FEATURES&amp;rsquo; &amp;ndash;set &amp;lsquo;extraEnv[0].value=harvester=enabled import a harvester setup go to fleet → repos -&amp;gt; create validate that that the harvester cluster is NOT in the dropdown for cluster deployments validate that selecting the &amp;lsquo;all clusters&amp;rsquo; option for deployment does NOT deploy to the harvester cluster  </description>
+    </item>
+    
+    <item>
+      <title>51-Use harvester cloud provider to provision an LB - rke1</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/51-harvester-cloud-provider-loadbalancer-rke1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/51-harvester-cloud-provider-loadbalancer-rke1/</guid>
+      <description> Provision cluster using rke1 with harvester as the node driver enable the cloud driver for harvester while provisioning the cluster run jenkins v3 validation checks once cluster comes to active  </description>
+    </item>
+    
+    <item>
+      <title>52-Use harvester cloud provider to provision an LB - rke2</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/52-harvester-cloud-provider-loadbalancer-rke2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/52-harvester-cloud-provider-loadbalancer-rke2/</guid>
+      <description> Provision cluster using rke1 with harvester as the node driver enable the cloud driver for harvester while provisioning the cluster run jenkins v3 validation checks once cluster comes to active  </description>
+    </item>
+    
+    <item>
+      <title>53-Disable Harvester flag with Harvester cluster added</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/</guid>
+      <description>Pre-requisites: Rancher with Harvester imported
+ Disable Harvester feature flag on Rancher  Expected Results  Harvester should show up in cluster management Virtualization management tab should be hidden.  </description>
     </item>
     
   </channel>

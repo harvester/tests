@@ -4,6 +4,8 @@
   <url>
     <loc>https://harvester.github.io/tests/manual/_incoming/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/</loc>
@@ -16,25 +18,25 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/06-manage-network-in-downstream-harvster/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/07-add-grant-project-owner-user-harvester/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/07-rbac-add-grant-project-owner-user-harvester/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/08-add-grant-project-readonly-user-harvester/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/08-rbac-add-grant-project-readonly-user-harvester/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/09-add-grant-project-member-user-harvester/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/10-add-grant-project-custom-user-harvester/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/12-create-namespace-harvester/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/13-add-grant-project-owner-user-custom/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/13-rbac-add-grant-project-owner-user-custom/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/14-add-grant-project-readonly-user-custom/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/14-rbac-add-grant-project-readonly-user-custom/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/15-add-grant-project-member-user-custom/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/15-rbac-add-grant-project-member-user-custom/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/16-add-grant-project-custom-user-custom/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/16-rbac-add-grant-project-custom-user-custom/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/17-delete-imported-harvester-cluster/</loc>
   </url><url>
@@ -79,6 +81,34 @@
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/40-rbac-add-restricted-admin-user-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/39-rbac-standard-user-no-access/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/41-rancher-nested-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/42-add-cloud-credential-kubeconfig/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/43-node-driver-scale-up-rke1/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/44-node-driver-scale-up-rke2/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/45-node-driver-scale-down-rke1/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/50-fleet-with-harvester/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/51-harvester-cloud-provider-loadbalancer-rke1/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/52-harvester-cloud-provider-loadbalancer-rke2/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/cluster-custom-docker-install-url/</loc>
   </url><url>
@@ -271,6 +301,8 @@
     <loc>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form-label/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/virtual-machines/create-windows-vm/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/images/negative-create-with-invalid-image/</loc>
   </url><url>
