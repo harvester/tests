@@ -82,9 +82,9 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/40-rbac-add-restricted-admin-user-harvester/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/39-rbac-standard-user-no-access/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/40-rbac-add-restricted-admin-user-harvester/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/41-rancher-nested-harvester/</loc>
   </url><url>
@@ -98,9 +98,9 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/50-fleet-with-harvester/</loc>
   </url><url>

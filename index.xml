@@ -374,21 +374,21 @@ Known issues This issue blocks the RKE 1 provisioning task
     </item>
     
     <item>
+      <title>39-Standard user no Harvester Access</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/39-rbac-standard-user-no-access/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/39-rbac-standard-user-no-access/</guid>
+      <description> As admin import/register a harvester cluster in Rancher As admin, Enable Harvester node driver As a standard user User1, login to rancher Verify User1 has no access to harvester cluster in Virtualization management page Create harvester cloud credential as User1 Verify User1 can use this cloud credential to create a node template and a node driver cluster 3 and can CRUD each resource  </description>
+    </item>
+    
+    <item>
       <title>40-RBAC Add restricted admin User Harvester</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/40-rbac-add-restricted-admin-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/40-rbac-add-restricted-admin-user-harvester/</guid>
       <description> As admin import/register a harvester cluster in Rancher create restricted admin user rstradm verify rstradm has access to to Virturalization management page and the harvester cluster is listed Verify rstradm has access to Harvester UI through rancher by selecting it from the list in step 3 and can CRUD each resource  </description>
-    </item>
-    
-    <item>
-      <title>40-Standard user no Harvester Access</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/39-rbac-standard-user-no-access/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/39-rbac-standard-user-no-access/</guid>
-      <description> As admin import/register a harvester cluster in Rancher As admin, Enable Harvester node driver As a standard user User1, login to rancher Verify User1 has no access to harvester cluster in Virtualization management page Create harvester cloud credential as User1 Verify User1 can use this cloud credential to create a node template and a node driver cluster 3 and can CRUD each resource  </description>
     </item>
     
     <item>
@@ -452,21 +452,21 @@ Known issues This issue blocks the RKE 1 provisioning task
     </item>
     
     <item>
-      <title>48-Overprovision Harvester</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</guid>
-      <description> import harvester into rancher over-provision the connected harvester cluster (i.e. deploy large number of nodes) note: the number will depend on the resources available in the harvester cluster you&amp;rsquo;ve imported. i.e. a harvester setup with 24 cores, 64 GB of ram, you could try provisioning a 3cp, 2cp, 2w cluster of size 4 vCPU 8GB ram to over-provision CPU i.e. a harvester setup with 24 cores, 64 GB of ram, you could try provisioning a 3cp, 2cp, 2w cluster of size 2 vCPU 10GB ram to over-provision CPU  </description>
-    </item>
-    
-    <item>
       <title>48-Verify Backup and restore on server migration</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</guid>
       <description> Create a harvester cluster Deploy a harvester node driver cluster preupgrade checks on both Take a backup Restore on a new rancher server from backup taken ins step 4 Run post-upgrade checks for both clusters Verify virtualization management → harvester is accessible Run p0 use case  </description>
+    </item>
+    
+    <item>
+      <title>49-Overprovision Harvester</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</guid>
+      <description> import harvester into rancher over-provision the connected harvester cluster (i.e. deploy large number of nodes) note: the number will depend on the resources available in the harvester cluster you&amp;rsquo;ve imported. i.e. a harvester setup with 24 cores, 64 GB of ram, you could try provisioning a 3cp, 2cp, 2w cluster of size 4 vCPU 8GB ram to over-provision CPU i.e. a harvester setup with 24 cores, 64 GB of ram, you could try provisioning a 3cp, 2cp, 2w cluster of size 2 vCPU 10GB ram to over-provision CPU  </description>
     </item>
     
     <item>
