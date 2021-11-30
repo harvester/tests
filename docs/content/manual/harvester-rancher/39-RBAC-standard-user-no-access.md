@@ -1,6 +1,5 @@
 ---
-title: 40-Standard user no Harvester Access
-
+title: 39-Standard user no Harvester Access
 ---
 1. As admin import/register a harvester cluster in Rancher
 1. As admin, Enable Harvester node driver
