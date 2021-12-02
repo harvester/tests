@@ -1,10 +1,13 @@
 ---
 title: 01-Import existing Harvester clusters in Rancher	
 ---
+This feature have been deprecated which already enhanced and merge to setup from harvester settings
+Please refer to [02-Integrate to Rancher from Harvester settings](https://harvesterhci.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/) to test this feature
+
 1. Login rancher dashboard
-1. Navigate to Virtual Management Page
-1. Click import existing
-1. Copy the curl command 
+2. Navigate to Virtual Management Page
+3. Click import existing
+4. Copy the curl command 
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/08e70d37-e573-47b1-a3d6-0f3615116d48)
 1. SSH to harvester master node (user: rancher)
 1. Execute the curl command to import harvester to rancher

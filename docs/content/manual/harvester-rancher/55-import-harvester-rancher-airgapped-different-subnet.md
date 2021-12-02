@@ -1,30 +1,37 @@
 ---
-title: 37-Import Online Harvester From the Airgapped Rancher
+title: 55-Import Harvester to Rancher in airgapped different subnet
 ---
 
 ### Environment Setup
+`Note: Harvester and Rancher are under different subnet, can access to each other`
 
-Setup the online harvester
+Setup the airgapped harvester
+1. Fetch ipxe vagrant example with new offline feature
+https://github.com/harvester/ipxe-examples/pull/32 
+1. Edit the setting.xml file
+1. Set offline: `true`
 1. Use ipxe vagrant example to setup a 3 nodes cluster
-https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester 
 1. Enable vlan on `harvester-mgmt`
-1. Now harvester dashboard page will out of work
-1. Create ubuntu cloud image from URL
 1. Create virtual machine with name `vlan1` and id: `1`
+1. Open Settings, edit `http-proxy` with the following values
+```
+HTTP_PROXY=http://proxy-host:port
+HTTPS_PROXY=http://proxy-host:port
+NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,<internal domain>
+```
+
+![image](https://user-images.githubusercontent.com/29251855/141812497-6664b1ae-42f9-4602-8e36-bd70f0b410c5.png)
+
+1. Create ubuntu cloud image from URL
 1. Create virtual machine and assign vlan network, confirm can get ip address
 
 Setup squid HTTP proxy server
-1. Move to vagrant pxe harvester folder
-1. Execute `vagrant ssh pxe_server`
-1. Run `apt-get install squid`
-1. Edit `/etc/squid/squid.conf` and add line
-```
-http_access allow all
-http_port 3128
-```
-1. Run `systemctl restart squid` 
+1. When you enabled `offline` in vagrant example, you don't need to install squid http proxy
 
-Setup the airgapped harvester
+
+Setup the airgapped rancher
+1. Create another airgapped network have different IP CIDR with ipxe example
+1. Make harvester private network can route to rancher private network (e.g set route)
 1. Create an ubuntu virtual machine on localhost machine 
 1. Assign `harvester` and `vagrant-libvirt` network to the virtual machine
 1. Run `curl -fsSL https://get.docker.com | bash` to install docker
