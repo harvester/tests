@@ -1,6 +1,8 @@
 ---
-title: 02-Integrate to Rancher from Harvester settings	
+title: #1230 Http proxy setting download image	
 ---
+
+[#1230](https://github.com/harvester/harvester/issues/1330) Http proxy setting download image
 
 ## Environment setup
 1. Install the latest rancher from docker command

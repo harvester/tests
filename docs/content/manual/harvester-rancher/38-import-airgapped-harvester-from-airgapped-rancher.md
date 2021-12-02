@@ -10,14 +10,8 @@ https://github.com/harvester/ipxe-examples/pull/32
 1. Edit the setting.xml file
 1. Set offline: `true`
 1. Use ipxe vagrant example to setup a 3 nodes cluster
-1. Enable vlan on `bond0`
+1. Enable vlan on `harvester-mgmt`
 1. Now harvester dashboard page will out of work
-1. We can't ssh to original assigned node ip
-1. We need to ssh to 192.168.0.30, 31, 32 instead
-1. Run `ip a | grep bond0` get the {ip-of-bond0}
-1. Run the recover command
-1. Confirm default route by using `ip r | grep default`
-1. Wait for a while and access dashboard (it takes some time)
 1. Create virtual machine with name `vlan1` and id: `1`
 1. Open Settings, edit `http-proxy` with the following values
 ```
@@ -39,7 +33,7 @@ Setup the airgapped harvester
 1. Create an ubuntu virtual machine on localhost machine 
 1. Assign `harvester` and `vagrant-libvirt` network to the virtual machine
 1. Run `curl -fsSL https://get.docker.com | bash` to install docker
-1. Pull rancher 2.6.2 image `docker pull rancher/rancher:2.6.2`
+1. Pull latest rancher image `docker pull rancher/rancher:2.6-head`
 1. Query default route `ip r`
 1. Remove default route `ip r delete {delte route}`
 1. Run rancher container by command:
@@ -59,5 +53,8 @@ $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 \
 
 
 ## Expected Results
-1. Provision RKE2 cluster successfully with `Running` status
-1. Can acccess RKE2 cluster to check all resources and services
+1. Can import harvester from Rancher correctly 
+1. Can access downstream harvester cluster from Rancher dashboard 
+1. Can provision at least one node RKE2 cluster to harvester correctly with running status
+1. Can explore provisioned RKE2 cluster nodes 
+1. RKE2 cluster VM created running correctly on harvester node
