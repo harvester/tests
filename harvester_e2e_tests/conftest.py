@@ -257,6 +257,14 @@ def pytest_configure(config):
                     'test for authentication')
     )
     config.addinivalue_line(
+        "markers", ('backup_and_restore_p1: mark test to run only to execute '
+                    'the P1 test for Backup and Recovery')
+    )
+    config.addinivalue_line(
+        "markers", ('backup_and_restore_p2: mark test to run only to execute '
+                    'the P2 test for Backup and Recovery')
+    )
+    config.addinivalue_line(
         "markers", ('hosts_p1: mark test to run only P1 test for Hosts')
     )
     config.addinivalue_line(

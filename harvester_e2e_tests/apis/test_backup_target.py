@@ -39,8 +39,15 @@ def test_setup_backup_target_nfs(backuptarget_nfs):
 
 
 @pytest.mark.backupnfs
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 def test_invalid_backup_target_nfs(request, admin_session,
                                    harvester_api_endpoints):
+    """
+        Backup Restore Testing
+        Covers:
+           Negative backup-and-restore-03-Create Backup Target Negative
+    """
     resp = admin_session.get(harvester_api_endpoints.get_backup_target)
     assert resp.status_code == 200, (
         'Failed to get Backup Target Settings: %s' % (resp.content))

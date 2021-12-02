@@ -1056,6 +1056,8 @@ def test_create_vm_using_terraform(request, admin_session,
                 utils.destroy_resource(request, admin_session, 'all')
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_backup_restore_new_vm(request, admin_session,
@@ -1063,6 +1065,11 @@ def test_backup_restore_new_vm(request, admin_session,
                                keypair, vm_with_one_vlan,
                                backuptarget_s3,
                                vm_new=True):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-06-Restore Backup Replace New VM
+    """
     new_vm_name = "new-vm-" + utils.random_name()
     backup_restore_vm(request, admin_session,
                       harvester_api_endpoints,
@@ -1073,12 +1080,20 @@ def test_backup_restore_new_vm(request, admin_session,
                       )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_backup_restore_existing_vm(request, admin_session,
                                     harvester_api_endpoints,
                                     keypair, vm_with_one_vlan,
                                     backuptarget_s3):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-04-Restore Backup Replace existing VM
+            with backup from same VM
+    """
     backup_restore_vm(request, admin_session,
                       harvester_api_endpoints,
                       keypair, vm_with_one_vlan,
@@ -1086,6 +1101,8 @@ def test_backup_restore_existing_vm(request, admin_session,
                       )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_chained_del_middle_backup(request, admin_session,
@@ -1093,6 +1110,12 @@ def test_chained_del_middle_backup(request, admin_session,
                                    keypair, vm_with_one_vlan,
                                    backuptarget_s3,
                                    delbackup='middle'):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-15-Delete middle backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -1101,6 +1124,8 @@ def test_chained_del_middle_backup(request, admin_session,
                                    )
 
 
+@pytest.mark.backup_and_restore_p2
+@pytest.mark.p2
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_chained_del_first_backup(request, admin_session,
@@ -1108,6 +1133,12 @@ def test_chained_del_first_backup(request, admin_session,
                                   keypair, vm_with_one_vlan,
                                   backuptarget_s3,
                                   delbackup='first'):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-16-Delete first backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -1116,6 +1147,8 @@ def test_chained_del_first_backup(request, admin_session,
                                    )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_chained_del_last_backup(request, admin_session,
@@ -1123,6 +1156,12 @@ def test_chained_del_last_backup(request, admin_session,
                                  keypair, vm_with_one_vlan,
                                  backuptarget_s3,
                                  delbackup='last'):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-17-Delete last backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -1131,12 +1170,21 @@ def test_chained_del_last_backup(request, admin_session,
                                    )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_restore_chained_backups(request, admin_session,
                                  harvester_api_endpoints,
                                  keypair, vm_with_one_vlan,
                                  backuptarget_s3):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-18-Delete last backup in chained backup
+            backup-and-restore-19-Delete middle backup in chained backup
+            backup-and-restore-20-Delete first backup in chained backup
+    """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -1144,12 +1192,19 @@ def test_restore_chained_backups(request, admin_session,
                                    )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.backupnfs
 def test_backup_restore_new_vm_nfs(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
                                    backuptarget_nfs,
                                    vm_new=True):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-06-Restore Backup Create new VM
+    """
     new_vm_name = "new-vm-" + utils.random_name()
     backup_restore_vm(request, admin_session,
                       harvester_api_endpoints,
@@ -1160,11 +1215,19 @@ def test_backup_restore_new_vm_nfs(request, admin_session,
                       )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.backupnfs
 def test_backup_restore_existing_vm_nfs(request, admin_session,
                                         harvester_api_endpoints,
                                         keypair, vm_with_one_vlan,
                                         backuptarget_nfs):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-04-Restore Backup Replace existing VM nfs
+            with backup from same VM
+    """
     backup_restore_vm(request, admin_session,
                       harvester_api_endpoints,
                       keypair, vm_with_one_vlan,
@@ -1172,12 +1235,19 @@ def test_backup_restore_existing_vm_nfs(request, admin_session,
                       )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.backupnfs
 def test_chained_del_middle_backup_nfs(request, admin_session,
                                        harvester_api_endpoints,
                                        keypair, vm_with_one_vlan,
                                        backuptarget_nfs,
                                        delbackup='middle'):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-15-Delete middle backup in chained backup nfs
+    """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -1186,12 +1256,19 @@ def test_chained_del_middle_backup_nfs(request, admin_session,
                                    )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.backupnfs
 def test_chained_del_first_backup_nfs(request, admin_session,
                                       harvester_api_endpoints,
                                       keypair, vm_with_one_vlan,
                                       backuptarget_nfs,
                                       delbackup='first'):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-16-Delete first backup in chained backup nfs
+    """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -1200,12 +1277,19 @@ def test_chained_del_first_backup_nfs(request, admin_session,
                                    )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.backupnfs
 def test_chained_del_last_backup_nfs(request, admin_session,
                                      harvester_api_endpoints,
                                      keypair, vm_with_one_vlan,
                                      backuptarget_nfs,
                                      delbackup='last'):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-17-Delete last backup in chained backup nfs
+    """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,
@@ -1214,11 +1298,20 @@ def test_chained_del_last_backup_nfs(request, admin_session,
                                    )
 
 
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 @pytest.mark.backupnfs
 def test_restore_chained_backups_nfs(request, admin_session,
                                      harvester_api_endpoints,
                                      keypair, vm_with_one_vlan,
                                      backuptarget_nfs):
+    """
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-18-Delete last backup in chained backup nfs
+            backup-and-restore-19-Delete middle backup in chained backup nfs
+            backup-and-restore-20-Delete first backup in chained backup nfs
+    """
     backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vm_with_one_vlan,

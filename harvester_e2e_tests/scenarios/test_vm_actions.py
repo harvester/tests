@@ -33,6 +33,13 @@ def backup_restore_migrated_vm(request, admin_session,
                                harvester_api_endpoints,
                                vm_with_volume,
                                backuptarget):
+    """
+        Backup Restore Testing
+        Covers:
+           backup-and-restore-13-Restore Backup for VM that was live migrated
+           backup-and-restore-14-Backup Single VM that has been live migrated
+            before
+    """
     backup_json = utils.random_name()
     try:
         vm_name = vm_with_volume['metadata']['name']
@@ -402,9 +409,18 @@ class TestVMVolumes:
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 def test_backup_single_vm_s3(request, admin_session,
                              harvester_api_endpoints, basic_vm,
                              backuptarget_s3):
+    """
+    Backup and Restore
+        Covers:
+       backup-and-restore-02-Backup Single VM s3
+       backup-and-restore-07-Delete single Backup
+       backup-and-restore-01-create backup target
+    """
     vm_name = basic_vm['metadata']['name']
     backup_name = utils.random_name()
     backup_json = None
@@ -425,9 +441,16 @@ def test_backup_single_vm_s3(request, admin_session,
 
 
 @pytest.mark.backupnfs
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 def test_backup_single_vm_nfs(request, admin_session,
                               harvester_api_endpoints, basic_vm,
                               backuptarget_nfs):
+    """
+    Backup and Restore
+        Covers:
+        vol-02-Backup Single VM nfs
+    """
     vm_name = basic_vm['metadata']['name']
     backup_name = utils.random_name()
     backup_json = None
@@ -449,10 +472,20 @@ def test_backup_single_vm_nfs(request, admin_session,
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
 @pytest.mark.backups3
+@pytest.mark.backup_and_restore_p2
+@pytest.mark.p2
 def test_backup_restore_migrated_vm_s3(request, admin_session,
                                        harvester_api_endpoints,
                                        vm_with_volume,
                                        backuptarget_s3):
+    """
+    Backup and Restore
+    Covers:
+       backup-and-restore-13-Restore Backup S3 for VM that was
+       live migrated
+       backup-and-restore-14-Backup single vm S3 for VM that was
+       live migrated before
+    """
     backup_restore_migrated_vm(request, admin_session,
                                harvester_api_endpoints,
                                vm_with_volume,
@@ -461,10 +494,20 @@ def test_backup_restore_migrated_vm_s3(request, admin_session,
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
 @pytest.mark.backupnfs
+@pytest.mark.backup_and_restore_p2
+@pytest.mark.p2
 def test_backup_restore_migrated_vm_nfs(request, admin_session,
                                         harvester_api_endpoints,
                                         vm_with_volume,
                                         backuptarget_nfs):
+    """
+    Backup and Restore
+    Covers:
+       backup-and-restore-13-Restore Backup nfs for VM that was
+       live migrated
+       backup-and-restore-14-Backup single vm nfs for VM that was
+       live migrated before
+    """
     backup_restore_migrated_vm(request, admin_session,
                                harvester_api_endpoints,
                                vm_with_volume,
@@ -472,9 +515,16 @@ def test_backup_restore_migrated_vm_nfs(request, admin_session,
 
 
 @pytest.mark.backupnfs
+@pytest.mark.backup_and_restore_p2
+@pytest.mark.p2
 def test_update_backup_yaml_nfs(request, admin_session,
                                 harvester_api_endpoints, basic_vm,
                                 backuptarget_nfs):
+    """
+        Backup Restore Testing
+        Covers:
+           backup-and-restore-11-Edit Backup nfs
+    """
     update_backup_yaml(request, admin_session,
                        harvester_api_endpoints,
                        basic_vm,
@@ -483,9 +533,16 @@ def test_update_backup_yaml_nfs(request, admin_session,
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
+@pytest.mark.backup_and_restore_p2
+@pytest.mark.p2
 def test_update_backup_yaml_s3(request, admin_session,
                                harvester_api_endpoints, basic_vm,
                                backuptarget_s3):
+    """
+        Backup Restore Testing
+        Covers:
+           backup-and-restore-11-Edit Backup s3
+    """
     update_backup_yaml(request, admin_session,
                        harvester_api_endpoints,
                        basic_vm,
@@ -493,9 +550,16 @@ def test_update_backup_yaml_s3(request, admin_session,
 
 
 @pytest.mark.backupnfs
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
 def test_restore_backup_vm_on(request, admin_session,
                               harvester_api_endpoints,
                               basic_vm, backuptarget_nfs):
+    """
+        Backup Restore Testing
+        Covers:
+           Negative backup-and-restore-08-Restore Backup Negative
+    """
     # make sure the VM instance is successfully created
     vm_instance_json = utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, basic_vm)
