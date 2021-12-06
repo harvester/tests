@@ -244,9 +244,6 @@
   
     <ul>
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/"></a></li>
-  
-
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/">01-Import existing Harvester clusters in Rancher</a></li>
   
 
@@ -385,6 +382,9 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/">46-Scale down node driver RKE2</a></li>
   
 
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/">47-Verify Backup and restore on same server</a></li>
+  
+
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/">48-Verify Backup and restore on server migration</a></li>
   
 
@@ -401,6 +401,15 @@
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/">53-Disable Harvester flag with Harvester cluster added</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/54-import-airgapped-harvester-from-online-rancher/">54-Import Airgapped Harvester From the Online Rancher</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/55-import-harvester-rancher-airgapped-different-subnet/">55-Import Harvester to Rancher in airgapped different subnet</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/">56-Import Harvester to Rancher in airgapped different subnet</a></li>
   
 
 </ul>
@@ -1158,17 +1167,19 @@
   <h1 id="title">19-Enable Harvester Node Driver</h1>
   <div>
     <article id="content">
-       <ol>
+       <p>From Rancher v2.6.3-rc1, harvester node driver has already builtin racher
+We don&rsquo;t need manual activate it</p>
+<ol>
 <li>Open Cluster Management</li>
 <li>Click <code>Drivers</code> page and navigate to <code>Node Drivers</code> tab</li>
 <li>Search harvester</li>
-<li>Check Harvester and click <code>Activate</code></li>
+<li>Check Harvester node driver is activated and mark as <code>builtin</code></li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>
 <ol>
 <li>Status displayed Activated</li>
 </ol>
-<p><img src="https://images.zenhubusercontent.com/61519853321ea20d65443929/59f92871-6ce8-43d5-a0ae-d08e3ae2dc18" alt="image.png"></p>
+<p><img src="https://user-images.githubusercontent.com/29251855/144419405-b75e9ffd-03aa-4599-87f1-0cd39a523a94.png" alt="image"></p>
 
     </article>
   </div>

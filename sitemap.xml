@@ -4,8 +4,6 @@
   <url>
     <loc>https://harvester.github.io/tests/manual/_incoming/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/</loc>
@@ -98,6 +96,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</loc>
@@ -109,6 +109,12 @@
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/52-harvester-cloud-provider-loadbalancer-rke2/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/54-import-airgapped-harvester-from-online-rancher/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/55-import-harvester-rancher-airgapped-different-subnet/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/cluster-custom-docker-install-url/</loc>
   </url><url>

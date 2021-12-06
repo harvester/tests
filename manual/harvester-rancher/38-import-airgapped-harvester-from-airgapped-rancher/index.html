@@ -244,9 +244,6 @@
   
     <ul>
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/"></a></li>
-  
-
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/">01-Import existing Harvester clusters in Rancher</a></li>
   
 
@@ -385,6 +382,9 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/">46-Scale down node driver RKE2</a></li>
   
 
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/">47-Verify Backup and restore on same server</a></li>
+  
+
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/">48-Verify Backup and restore on server migration</a></li>
   
 
@@ -401,6 +401,15 @@
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/">53-Disable Harvester flag with Harvester cluster added</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/54-import-airgapped-harvester-from-online-rancher/">54-Import Airgapped Harvester From the Online Rancher</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/55-import-harvester-rancher-airgapped-different-subnet/">55-Import Harvester to Rancher in airgapped different subnet</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/">56-Import Harvester to Rancher in airgapped different subnet</a></li>
   
 
 </ul>
@@ -1166,14 +1175,8 @@
 <li>Edit the setting.xml file</li>
 <li>Set offline: <code>true</code></li>
 <li>Use ipxe vagrant example to setup a 3 nodes cluster</li>
-<li>Enable vlan on <code>bond0</code></li>
+<li>Enable vlan on <code>harvester-mgmt</code></li>
 <li>Now harvester dashboard page will out of work</li>
-<li>We can&rsquo;t ssh to original assigned node ip</li>
-<li>We need to ssh to 192.168.0.30, 31, 32 instead</li>
-<li>Run <code>ip a | grep bond0</code> get the {ip-of-bond0}</li>
-<li>Run the recover command</li>
-<li>Confirm default route by using <code>ip r | grep default</code></li>
-<li>Wait for a while and access dashboard (it takes some time)</li>
 <li>Create virtual machine with name <code>vlan1</code> and id: <code>1</code></li>
 <li>Open Settings, edit <code>http-proxy</code> with the following values</li>
 </ol>
@@ -1194,7 +1197,7 @@ NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc
 <li>Create an ubuntu virtual machine on localhost machine</li>
 <li>Assign <code>harvester</code> and <code>vagrant-libvirt</code> network to the virtual machine</li>
 <li>Run <code>curl -fsSL https://get.docker.com | bash</code> to install docker</li>
-<li>Pull rancher 2.6.2 image <code>docker pull rancher/rancher:2.6.2</code></li>
+<li>Pull latest rancher image <code>docker pull rancher/rancher:2.6-head</code></li>
 <li>Query default route <code>ip r</code></li>
 <li>Remove default route <code>ip r delete {delte route}</code></li>
 <li>Run rancher container by command:</li>
@@ -1214,8 +1217,11 @@ NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc
 </ol>
 <h2 id="expected-results">Expected Results</h2>
 <ol>
-<li>Provision RKE2 cluster successfully with <code>Running</code> status</li>
-<li>Can acccess RKE2 cluster to check all resources and services</li>
+<li>Can import harvester from Rancher correctly</li>
+<li>Can access downstream harvester cluster from Rancher dashboard</li>
+<li>Can provision at least one node RKE2 cluster to harvester correctly with running status</li>
+<li>Can explore provisioned RKE2 cluster nodes</li>
+<li>RKE2 cluster VM created running correctly on harvester node</li>
 </ol>
 
     </article>

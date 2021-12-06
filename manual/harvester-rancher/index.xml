@@ -7,21 +7,13 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/harvester-rancher/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title></title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>01-Import existing Harvester clusters in Rancher</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</guid>
-      <description>Login rancher dashboard Navigate to Virtual Management Page Click import existing Copy the curl command  SSH to harvester master node (user: rancher) Execute the curl command to import harvester to rancher curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f - Run sudo chmod 775 /etc/rancher/rke2/rke2.yaml to solve the permission denied error Run curl command again, you should see the following successful import message namespace/cattle-system configured serviceaccount/cattle created clusterrolebinding.rbac.authorization.k8s.io/cattle-admin-binding created secret/cattle-credentials-413137f created clusterrole.</description>
+      <description>This feature have been deprecated which already enhanced and merge to setup from harvester settings Please refer to 02-Integrate to Rancher from Harvester settings to test this feature
+ Login rancher dashboard Navigate to Virtual Management Page Click import existing Copy the curl command  SSH to harvester master node (user: rancher) Execute the curl command to import harvester to rancher curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f - Run sudo chmod 775 /etc/rancher/rke2/rke2.</description>
     </item>
     
     <item>
@@ -30,9 +22,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/</guid>
-      <description>According to feature https://github.com/harvester/harvester/issues/1330
-We will import harvester cluster to rancher cluster from harvester UI settings
-Expected Results </description>
+      <description>Environment setup  Install the latest rancher from docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6-head Create an one node harvester cluster Both harvester and rancher have internet connection  Verification Steps  Access rancher dashboard Open Virtualization Management page Import existing harvester Copy the registration url  Create image from URL (change folder date to latest) https://cloud-images.ubuntu.com/focal/20211122/focal-server-cloudimg-amd64.img Access harvester dashboard Edit cluster-registration-url in settings  Paste the registration url and save Back to rancher and wait for harvester imported in Rancher  Expected Results  Harvester can be imported in rancher dashboard with running status Can access harvester in virtual machine page Can create harvester cloud credential Can load harvester cloud credential while creating harvester  </description>
     </item>
     
     <item>
@@ -189,7 +179,8 @@ Expected Results </description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/19-enable-harvester-node-driver/</guid>
-      <description> Open Cluster Management Click Drivers page and navigate to Node Drivers tab Search harvester Check Harvester and click Activate  Expected Results  Status displayed Activated  </description>
+      <description>From Rancher v2.6.3-rc1, harvester node driver has already builtin racher We don&amp;rsquo;t need manual activate it
+ Open Cluster Management Click Drivers page and navigate to Node Drivers tab Search harvester Check Harvester node driver is activated and mark as builtin  Expected Results  Status displayed Activated  </description>
     </item>
     
     <item>
@@ -360,7 +351,8 @@ Known issues This issue blocks the RKE 1 provisioning task
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</guid>
       <description>Environment Setup Setup the online harvester
- Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on bond0 Now harvester dashboard page will out of work We can&amp;rsquo;t ssh to original assigned node ip We need to ssh to 192.168.0.30, 31, 32 instead Run ip a | grep bond0 get the {ip-of-bond0} Run the recover command Confirm default route by using ip r | grep default Wait for a while and access dashboard (it takes some time) Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address  Setup squid HTTP proxy server</description>
+ Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address  Setup squid HTTP proxy server
+ Move to vagrant pxe harvester folder Execute vagrant ssh pxe_server Run apt-get install squid Edit /etc/squid/squid.</description>
     </item>
     
     <item>
@@ -370,7 +362,7 @@ Known issues This issue blocks the RKE 1 provisioning task
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</guid>
       <description>Environment Setup Setup the airgapped harvester
- Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on bond0 Now harvester dashboard page will out of work We can&amp;rsquo;t ssh to original assigned node ip We need to ssh to 192.168.0.30, 31, 32 instead Run ip a | grep bond0 get the {ip-of-bond0} Run the recover command Confirm default route by using ip r | grep default Wait for a while and access dashboard (it takes some time) Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
+ Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt;  Create ubuntu cloud image from URL Create virtual machine and assign vlan network, confirm can get ip address  Setup squid HTTP proxy server</description>
     </item>
     
     <item>
@@ -452,6 +444,15 @@ Known issues This issue blocks the RKE 1 provisioning task
     </item>
     
     <item>
+      <title>47-Verify Backup and restore on same server</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>48-Verify Backup and restore on server migration</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -504,6 +505,39 @@ Known issues This issue blocks the RKE 1 provisioning task
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/</guid>
       <description>Pre-requisites: Rancher with Harvester imported
  Disable Harvester feature flag on Rancher  Expected Results  Harvester should show up in cluster management Virtualization management tab should be hidden.  </description>
+    </item>
+    
+    <item>
+      <title>54-Import Airgapped Harvester From the Online Rancher</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/54-import-airgapped-harvester-from-online-rancher/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/54-import-airgapped-harvester-from-online-rancher/</guid>
+      <description>Environment Setup Setup the airgapped harvester
+ Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt;  Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address  Setup squid HTTP proxy server</description>
+    </item>
+    
+    <item>
+      <title>55-Import Harvester to Rancher in airgapped different subnet</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/55-import-harvester-rancher-airgapped-different-subnet/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/55-import-harvester-rancher-airgapped-different-subnet/</guid>
+      <description>Environment Setup Note: Harvester and Rancher are under different subnet, can access to each other
+Setup the airgapped harvester
+ Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
+    </item>
+    
+    <item>
+      <title>56-Import Harvester to Rancher in airgapped different subnet</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/</guid>
+      <description>Environment Setup Note: Harvester and Rancher are under different subnet, can access to each other
+Setup the online harvester
+ Iso or vagrant ipxe install harvester on network with internet connection Enable vlan on harvester-mgmt Create virtual machine with name vlan1 and id: 1 Create ubuntu cloud image from URL Create virtual machine and assign vlan network, confirm can get ip address  Setup the online rancher
+ Install rancher on network with internet connection throug docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.</description>
     </item>
     
   </channel>

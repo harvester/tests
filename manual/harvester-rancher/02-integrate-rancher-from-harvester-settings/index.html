@@ -244,9 +244,6 @@
   
     <ul>
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/"></a></li>
-  
-
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/">01-Import existing Harvester clusters in Rancher</a></li>
   
 
@@ -385,6 +382,9 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/">46-Scale down node driver RKE2</a></li>
   
 
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/">47-Verify Backup and restore on same server</a></li>
+  
+
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/">48-Verify Backup and restore on server migration</a></li>
   
 
@@ -401,6 +401,15 @@
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/">53-Disable Harvester flag with Harvester cluster added</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/54-import-airgapped-harvester-from-online-rancher/">54-Import Airgapped Harvester From the Online Rancher</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/55-import-harvester-rancher-airgapped-different-subnet/">55-Import Harvester to Rancher in airgapped different subnet</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/">56-Import Harvester to Rancher in airgapped different subnet</a></li>
   
 
 </ul>
@@ -1158,10 +1167,37 @@
   <h1 id="title">02-Integrate to Rancher from Harvester settings</h1>
   <div>
     <article id="content">
-       <p>According to feature
-<a href="https://github.com/harvester/harvester/issues/1330">https://github.com/harvester/harvester/issues/1330</a></p>
-<p>We will import harvester cluster to rancher cluster from harvester UI settings</p>
+       <h2 id="environment-setup">Environment setup</h2>
+<ol>
+<li>Install the latest rancher from docker command</li>
+</ol>
+<pre tabindex="0"><code>$ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6-head
+</code></pre><ol start="2">
+<li>Create an one node harvester cluster</li>
+<li>Both harvester and rancher have internet connection</li>
+</ol>
+<h2 id="verification-steps">Verification Steps</h2>
+<ol>
+<li>Access rancher dashboard</li>
+<li>Open Virtualization Management page</li>
+<li>Import existing harvester</li>
+<li>Copy the registration url
+<img src="https://user-images.githubusercontent.com/29251855/143001156-31b06586-9b66-4016-a0f5-6dca92a7b2f6.png" alt="image"></li>
+<li>Create image from URL (change folder date to latest)
+<a href="https://cloud-images.ubuntu.com/focal/20211122/focal-server-cloudimg-amd64.img">https://cloud-images.ubuntu.com/focal/20211122/focal-server-cloudimg-amd64.img</a></li>
+<li>Access harvester dashboard</li>
+<li>Edit <code>cluster-registration-url</code> in settings
+<img src="https://user-images.githubusercontent.com/29251855/143771558-01398c11-8e3f-40c1-903e-2817cade80c8.png" alt="image"></li>
+<li>Paste the registration url and save</li>
+<li>Back to rancher and wait for harvester imported in Rancher</li>
+</ol>
 <h2 id="expected-results">Expected Results</h2>
+<ol>
+<li>Harvester can be imported in rancher dashboard with <code>running</code> status</li>
+<li>Can access harvester in virtual machine page</li>
+<li>Can create harvester cloud credential</li>
+<li>Can load harvester cloud credential while creating harvester</li>
+</ol>
 
     </article>
   </div>
