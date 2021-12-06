@@ -1,8 +1,8 @@
 ---
-title: #1230 Http proxy setting download image	
+title: #1330 Rancher import harvester enhancement
 ---
 
-[#1230](https://github.com/harvester/harvester/issues/1330) Http proxy setting download image
+* Related issues: [#1330](https://github.com/harvester/harvester/issues/1330) Http proxy setting download image
 
 ## Environment setup
 1. Install the latest rancher from docker command
@@ -17,7 +17,7 @@ $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged r
 1. Access rancher dashboard
 2. Open Virtualization Management page 
 3. Import existing harvester 
-4. Copy the registration url
+4. Copy the registration url 
 ![image](https://user-images.githubusercontent.com/29251855/143001156-31b06586-9b66-4016-a0f5-6dca92a7b2f6.png)
 5. Create image from URL (change folder date to latest)
 https://cloud-images.ubuntu.com/focal/20211122/focal-server-cloudimg-amd64.img 
