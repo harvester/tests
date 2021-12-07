@@ -18,12 +18,12 @@
 from harvester_e2e_tests import utils
 from io import StringIO
 from paramiko import SSHClient, AutoAddPolicy, RSAKey
+from scp import SCPClient
 import polling2
 import pytest
+import requests
 import subprocess
 import time
-import requests
-from scp import SCPClient
 
 
 pytest_plugins = [
@@ -42,33 +42,45 @@ def rancher_vm(request, admin_session, keypair,
                                                      rancher_vm_with_one_vlan,
                                                      timeout)
 
+    # provision Rancher
     script = utils.get_backup_create_files_script(
         request, 'rancher_server_install.sh', 'rancher')
-    ([], [], bootstrap_pass) = fileactions_into_vm(public_ip, timeout,
-                                                   installrancher=True,
-                                                   script=script)
+    rancher_version = request.config.getoption('--rancher-version')
+    ([], [], bootstrap_pass) = fileactions_into_vm(
+        public_ip, timeout, installrancher=True, script=script,
+        script_params=rancher_version)
     assert bootstrap_pass, 'Failed to install rancher'
 
     endpoint = "https://" + public_ip
+    s = utils.retry_session()
 
+    # authenticate to Rancher
     username = "admin"
     login_data = {'username': username, 'password': bootstrap_pass,
                   'responseType': 'json'}
     params = {'action': 'login'}
-    s = requests.Session()
-    s.verify = False
     rancher_api_endpoints = utils.get_json_object_from_template(
         'rancher_api_endpoints',
         rancher_endpoint=endpoint)
-    time.sleep(50)
-    resp = s.post(rancher_api_endpoints['local_auth'],
-                  params=params, json=login_data)
-    assert resp.status_code == 201, 'Failed to authenticate admin user: %s' % (
-        resp.content)
 
-    auth_token = 'Bearer ' + resp.json()['token']
+    def _wait_for_login_successful():
+        try:
+            resp = s.post(rancher_api_endpoints['local_auth'],
+                          params=params, json=login_data)
+            assert resp.status_code == 201, (
+                'Failed to authenticate admin user: %s' % (resp.content))
+            return resp.json()['token']
+        except requests.exceptions.SSLError:
+            pass
+
+    token = polling2.poll(
+        _wait_for_login_successful,
+        step=5,
+        timeout=timeout)
+    auth_token = 'Bearer ' + token
     s.headers.update({'Authorization': auth_token})
 
+    # update the Rancheradmin password
     change_password_json = {
         'currentPassword': bootstrap_pass,
         'newPassword': 'Password12345'
@@ -79,36 +91,35 @@ def rancher_vm(request, admin_session, keypair,
     assert resp.status_code == 200, 'Failed to update password: %s' % (
         resp.content)
 
+    # relogin after password change
     login_data = {'username': 'admin', 'password': 'Password12345',
                   'responseType': 'json'}
     params = {'action': 'login'}
-    s = requests.Session()
-    s.verify = False
-
-    def _wait_for_login_successful():
-        try:
-            resp = s.post(rancher_api_endpoints['local_auth'],
-                          params=params, json=login_data)
-            assert resp.status_code == 201, (
-                'Failed to authenticate admin user: %s' % (resp.content))
-            return resp.json()['token']
-        except Exception as e:
-            print(e)
-
-    token = polling2.poll(
-        _wait_for_login_successful,
-        step=5,
-        timeout=timeout)
-    assert token, 'Timed out while waiting to login to Rancher'
-    auth_token = 'Bearer ' + token
+    resp = s.post(rancher_api_endpoints['local_auth'],
+                  params=params, json=login_data)
+    assert resp.status_code == 201, (
+        'Failed to authenticate admin user: %s' % (resp.content))
+    auth_token = 'Bearer ' + resp.json()['token']
     s.headers.update({'Authorization': auth_token})
 
     # update server-url setting
+    rancher_ip = public_ip
+    if request.config.getoption('--vlan-id') < 1:
+        # if VLAN ID is not default, the Rancher VM's public IP is not
+        # routable from the Harvester nodes. Therefore, we must use the IP
+        # from the default interface of the Rancher VM.
+        (vm_instance_json, rancher_ip) = get_vm_public_ip(
+            admin_session,
+            harvester_api_endpoints,
+            rancher_vm_with_one_vlan,
+            timeout,
+            nic_name='default')
     resp = s.get(rancher_api_endpoints['get_server_url_setting'])
     assert resp.status_code == 200, (
-        'Failed to fetch server-url setting: %s' % (resp.content))
+        'Failed to fetch server-url setting from %s: %s' % (
+            rancher_api_endpoints['get_server_url_setting'], resp.content))
     server_url_setting_json = resp.json()
-    server_url_setting_json['value'] = 'https://%s' % (public_ip)
+    server_url_setting_json['value'] = 'https://%s' % (rancher_ip)
     utils.poll_for_update_resource(
         request,
         s,
@@ -117,6 +128,26 @@ def rancher_vm(request, admin_session, keypair,
         rancher_api_endpoints['get_server_url_setting'])
 
     return (s, rancher_api_endpoints)
+
+
+def set_cluster_registration_url(admin_session, harvester_api_endpoints,
+                                 manifest_url):
+    # lookup Harvester cluster-registration-url
+    resp = admin_session.get(
+        harvester_api_endpoints.get_cluster_registration_url)
+    assert resp.status_code == 200, (
+        'Failed to lookup Harvester cluster-registration-url: %s: %s' % (
+            resp.status_code, resp.content))
+    cluster_reg_url_json = resp.json()
+
+    # set Harvester cluster-registration-url
+    cluster_reg_url_json['value'] = manifest_url
+    resp = admin_session.put(
+        harvester_api_endpoints.update_cluster_registration_url,
+        json=cluster_reg_url_json)
+    assert resp.status_code == 200, (
+        'Failed to update cluster-registration-url: %s:%s' % (
+            resp.status_code, resp.content))
 
 
 @pytest.fixture(scope='class')
@@ -152,43 +183,22 @@ def rancher_vm_with_harvester(request, admin_session,
     assert cluster_id, 'Failed to lookup cluster ID.'
 
     # now get the manifestUrl
-    def _wait_for_manifest_url():
-        params = {"clusterId": cluster_id}
-        try:
-            resp = rancher_admin_session.get(
-                rancher_api_endpoints['get_clusterregistrationtokens'],
-                params=params)
-            if resp.status_code == 200:
-                cluster_json = resp.json()
-                if ('data' in cluster_json and
-                        len(cluster_json['data']) > 0):
-                    return cluster_json['data'][0]['manifestUrl']
-        except Exception as e:
-            print(e)
-
-    manifest_url = polling2.poll(
-        _wait_for_manifest_url,
-        step=5,
-        timeout=request.config.getoption('--wait-timeout'))
-    assert manifest_url, 'Timed out while waiting for manifest URL.'
-
-    # lookup Harvester cluster-registration-url
-    resp = admin_session.get(
-        harvester_api_endpoints.get_cluster_registration_url)
+    params = {"clusterId": cluster_id}
+    resp = rancher_admin_session.get(
+        rancher_api_endpoints['get_clusterregistrationtokens'],
+        params=params)
     assert resp.status_code == 200, (
-        'Failed to lookup Harvester cluster-registration-url: %s: %s' % (
-            resp.status_code, resp.content))
-    cluster_reg_url_json = resp.json()
+        'Failed to lookup manifestUrl: %s' % (resp.content))
+    manifest_url = resp.json()['data'][0]['manifestUrl']
 
-    # set Harvester cluster-registration-url
-    cluster_reg_url_json['value'] = manifest_url
-    resp = admin_session.put(
-        harvester_api_endpoints.update_cluster_registration_url,
-        json=cluster_reg_url_json)
-    assert resp.status_code == 200, (
-        'Failed to update cluster-registration-url: %s:%s' % (
-            resp.status_code, resp.content))
-    return (rancher_admin_session, rancher_api_endpoints, cluster_id)
+    # register Harvester cluster
+    set_cluster_registration_url(admin_session, harvester_api_endpoints,
+                                 manifest_url)
+
+    yield (rancher_admin_session, rancher_api_endpoints, cluster_id)
+
+    # de-register the Harvester cluster prior to exist
+    set_cluster_registration_url(admin_session, harvester_api_endpoints, '')
 
 
 def wait_for_ssh_client(ip, timeout, keypair=None):
@@ -240,7 +250,8 @@ def assert_ssh_into_vm(ip, timeout, keypair=None):
 
 def fileactions_into_vm(ip, timeout, keypair=None,
                         createfile=None, chkfileexist=None,
-                        chkmd5=None, script=None, installrancher=None):
+                        chkmd5=None, script=None, installrancher=None,
+                        script_params=None):
     filesPresent = []
     md5pass = []
     client = wait_for_ssh_client(ip, timeout, keypair)
@@ -254,8 +265,10 @@ def fileactions_into_vm(ip, timeout, keypair=None,
         stdin, stdout, stderr = client.exec_command(
             'bash /tmp/createFiles.sh {0}'.format(createfile))
     if installrancher:
-        stdin, stdout, stderr = client.exec_command(
-            'bash /tmp/rancher_server_install.sh')
+        command = 'bash /tmp/rancher_server_install.sh'
+        if script_params:
+            command += ' ' + script_params
+        stdin, stdout, stderr = client.exec_command(command)
         out = stdout.read().strip()
         rancher_pass = out.decode('utf-8')
     if chkfileexist:

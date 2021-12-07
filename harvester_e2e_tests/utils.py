@@ -15,21 +15,41 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+import boto3
 import jinja2
 import json
 import math
 import os
 import polling2
 import random
+import requests
+import shutil
 import string
 import subprocess
+import tempfile
 import time
 import uuid
 import yaml
-import shutil
-import boto3
-import tempfile
-import requests
+
+
+def retry_session():
+    """Create a session that will retry on connection errors"""
+    # TODO(gyee): should we make retries and backoff_factor configurable?
+    # We should retry on connection error only.
+    # See https://urllib3.readthedocs.io/en/latest/reference/
+    # urllib3.util.html#urllib3.util.Retry for more information.
+    retry_strategy = Retry(total=5, backoff_factor=10.0,
+                           status_forcelist=[404, 500])
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    s = requests.Session()
+    # TODO(gyee): do we need to support other auth methods?
+    # NOTE(gyee): ignore SSL certificate validation for now
+    s.verify = False
+    s.mount('https://', adapter)
+    s.mount('http://', adapter)
+    return s
 
 
 def random_name():
@@ -117,7 +137,7 @@ def poll_for_update_resource(request, admin_session, update_endpoint,
                                          'Content-Type': 'application/yaml'})
         else:
             resp = admin_session.put(update_endpoint, json=request_json)
-        if resp.status_code == 409:
+        if resp.status_code in [409, 500]:
             return False
         else:
             assert resp.status_code == 200, 'Failed to update resource: %s' % (

@@ -148,6 +148,12 @@ def pytest_addoption(parser):
         default=config_data['rancher-scripts-location'],
         help=('scripts to install rancher server inside a VM')
     )
+    parser.addoption(
+        '--rancher-version',
+        action='store',
+        default=config_data['rancher-version'],
+        help=('Rancher Docker image version to use')
+    )
 
     # TODO(gyee): may need to add SSL options later
 
