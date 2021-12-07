@@ -45,3 +45,6 @@ nfs-endpoint: ''
 
 backup-scripts-location: 'backup_restore_test_artifacts'
 rancher-scripts-location: 'rancher_integration_test_artifacts'
+
+# Rancher Docker image version to use
+rancher-version: 'v2.6-head'

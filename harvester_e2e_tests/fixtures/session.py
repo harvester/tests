@@ -15,8 +15,8 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+from harvester_e2e_tests import utils
 import pytest
-import requests
 
 
 @pytest.fixture(scope='session')
@@ -27,10 +27,7 @@ def admin_session(request, harvester_api_endpoints):
     # authenticate admin
     login_data = {'username': username, 'password': password}
     params = {'action': 'login'}
-    s = requests.Session()
-    s.verify = False
-    # TODO(gyee): do we need to support other auth methods?
-    # NOTE(gyee): ignore SSL certificate validation for now
+    s = utils.retry_session()
     resp = s.post(harvester_api_endpoints.local_auth,
                   params=params, json=login_data)
     assert resp.status_code == 201, 'Failed to authenticate admin user: %s' % (

@@ -104,11 +104,11 @@ def image(request, admin_session, harvester_api_endpoints):
             url = os.path.join(cache_url,
                                url[url.rfind('/') + 1:])
     else:
-        base_url = ('http://download.opensuse.org/repositories/Cloud:/Images:/'
-                    'Leap_15.2/images')
+        base_url = ('https://download.opensuse.org/repositories/Cloud:/Images:'
+                    '/Leap_15.3/images')
         if cache_url:
             base_url = cache_url
-        url = os.path.join(base_url, 'openSUSE-Leap-15.2.x86_64-NoCloud.qcow2')
+        url = os.path.join(base_url, 'openSUSE-Leap-15.3.x86_64-NoCloud.qcow2')
 
     image_json = utils.create_image(request, admin_session,
                                     harvester_api_endpoints, url)
