@@ -183,13 +183,33 @@ def rancher_vm_with_harvester(request, admin_session,
     assert cluster_id, 'Failed to lookup cluster ID.'
 
     # now get the manifestUrl
-    params = {"clusterId": cluster_id}
-    resp = rancher_admin_session.get(
-        rancher_api_endpoints['get_clusterregistrationtokens'],
-        params=params)
-    assert resp.status_code == 200, (
-        'Failed to lookup manifestUrl: %s' % (resp.content))
-    manifest_url = resp.json()['data'][0]['manifestUrl']
+#    params = {"clusterId": cluster_id}
+#    resp = rancher_admin_session.get(
+#        rancher_api_endpoints['get_clusterregistrationtokens'],
+#        params=params)
+#    assert resp.status_code == 200, (
+#        'Failed to lookup manifestUrl: %s' % (resp.content))
+#    manifest_url = resp.json()['data'][0]['manifestUrl']
+
+    def _wait_for_manifest_url():
+        params = {"clusterId": cluster_id}
+        try:
+            resp = rancher_admin_session.get(
+                rancher_api_endpoints['get_clusterregistrationtokens'],
+                params=params)
+            if resp.status_code == 200:
+                cluster_json = resp.json()
+                if ('data' in cluster_json and
+                        len(cluster_json['data']) > 0):
+                    return cluster_json['data'][0]['manifestUrl']
+        except Exception as e:
+            print(e)
+
+    manifest_url = polling2.poll(
+        _wait_for_manifest_url,
+        step=5,
+        timeout=request.config.getoption('--wait-timeout'))
+    assert manifest_url, 'Timed out while waiting for manifest URL.'
 
     # register Harvester cluster
     set_cluster_registration_url(admin_session, harvester_api_endpoints,
@@ -1307,3 +1327,90 @@ class TestRancherIntegration:
 #        assert resp.status_code == 200, (
 #            'Failed to get virtaul machines  %s: %s' % (
 #                resp.status_code, resp.content))
+
+    def test_create_rke2_cluster(self, rancher_vm_with_harvester,
+                                 image, network):
+        (rancher_admin_session, rancher_api_endpoints,
+         cluster_id) = rancher_vm_with_harvester
+
+        # Generate Kube config
+        params = {'action': 'generateKubeconfig'}
+        resp = rancher_admin_session.post(
+            rancher_api_endpoints['generate_kubeconfig'] % (
+                cluster_id),
+            params=params)
+        assert resp.status_code == 200, (
+            'Failed to generate kubeconfig %s: %s' % (
+                resp.status_code, resp.content))
+        kube_json = resp.json()
+        kubeconfig = kube_json['config']
+
+        # Create cloud credentials
+        request_json = utils.get_json_object_from_template(
+            'rancher_cluster_cloud_credentials',
+            name="test-rke2",
+            cluster_id=cluster_id
+        )
+        request_json['harvestercredentialConfig'][
+                'kubeconfigContent'] = kubeconfig
+        resp = rancher_admin_session.post(
+            rancher_api_endpoints['create_cloud_credentials'],
+            json=request_json)
+        assert resp.status_code == 201, (
+            'Failed to create cloud credentials %s: %s' % (
+                resp.status_code, resp.content))
+        cred_json = resp.json()
+        cloud_credential_id = cred_json['id']
+
+        # Harvester Kubeconfig
+        rke2_cluster_name = utils.random_name()
+        hkube_data = {'clusterRoleName': 'harvesterhci.io:cloudprovider',
+                      'namespace': 'default',
+                      'serviceAccountName': rke2_cluster_name,
+                      'responseType': 'json'}
+        resp = rancher_admin_session.post(
+            rancher_api_endpoints['rke2_kubeconfig'] % (
+                cluster_id),
+            json=hkube_data)
+        assert resp.status_code == 200, (
+            'Failed to create rke2 kubeconfig %s: %s' % (
+                resp.status_code, resp.content))
+        harvkubeconfig = resp.json()
+
+        # RKE2 machine config
+        image_name = "/".join([image['metadata']['namespace'],
+                               image['metadata']['name']])
+        network_name = "/".join([network['metadata']['namespace'],
+                                 network['metadata']['name']])
+        request_json = utils.get_json_object_from_template(
+            'rancher_rke2_cluster_config',
+            image_name=image_name,
+            rke2_cluster_name=rke2_cluster_name,
+            network_name=network_name
+        )
+        resp = rancher_admin_session.post(
+            rancher_api_endpoints['rke2_machine_config'],
+            json=request_json)
+        assert resp.status_code == 201, (
+            'Failed to config rke2 cluster machine %s: %s' % (
+                resp.status_code, resp.content))
+        config_json = resp.json()
+        pool_name = config_json['metadata']['name']
+
+        # Provision RKE2 cluster
+        request_json = utils.get_json_object_from_template(
+            'rancher_provision_rke2_cluster',
+            name=rke2_cluster_name,
+            cloud_credential_id=cloud_credential_id,
+            rke2_cluster_name=rke2_cluster_name,
+            pool_name=pool_name
+        )
+        request_json['spec']['rkeConfig']['machineSelectorConfig'][0][
+                'config']['cloud-provider-config'] = harvkubeconfig
+        resp = rancher_admin_session.post(
+            rancher_api_endpoints['provision_rke2_cluster'],
+            json=request_json)
+        assert resp.status_code == 201, (
+            'Failed to provision rke2 cluster %s: %s' % (
+                resp.status_code, resp.content))
+#        provision_json = resp.json()

@@ -13,5 +13,10 @@
     "search_principals": "{{ rancher_endpoint }}/v3/principals",
     "set_podsecuritypolicytemplate": "{{ rancher_endpoint }}/v3/projects/%s",
     "create_projectroletemplatebinding": "{{ rancher_endpoint }}/v3/projectroletemplatebindings",
-    "get_virtualmachines": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/kubevirt.io.virtualmachines"
+    "get_virtualmachines": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/kubevirt.io.virtualmachines",
+    "generate_kubeconfig": "{{ rancher_endpoint }}/v3/clusters/%s",
+    "create_cloud_credentials": "{{ rancher_endpoint }}/v3/cloudcredentials",
+    "rke2_kubeconfig": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/kubeconfig",
+    "rke2_machine_config": "{{ rancher_endpoint }}/v1/rke-machine-config.cattle.io.harvesterconfigs/{{ api_namespace | default('fleet-default') }}",
+    "provision_rke2_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters"
 }
