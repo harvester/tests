@@ -235,26 +235,3 @@ def vm_with_volume(request, admin_session, image, volume, keypair,
                               volume=volume,
                               keypair=keypair)
     return vm_json
-
-
-@pytest.fixture(scope='class')
-def rancher_vm_with_one_vlan(request, admin_session, image, keypair,
-                             user_data_with_guest_agent, network_data,
-                             harvester_api_endpoints, network):
-    vm_json = utils.create_vm(request, admin_session, image,
-                              harvester_api_endpoints,
-                              keypair=keypair,
-                              template='vm_with_vlan_as_default_network',
-                              cpu=2,
-                              disk_size_gb=30,
-                              memory_gb=8,
-                              network=network,
-                              network_data=network_data,
-                              user_data=user_data_with_guest_agent)
-    yield vm_json
-    if not request.config.getoption('--do-not-cleanup'):
-        resp = admin_session.get(
-            harvester_api_endpoints.get_vm % (vm_json['metadata']['name']))
-        if resp.status_code != 404:
-            utils.delete_vm(request, admin_session, harvester_api_endpoints,
-                            vm_json)

@@ -47,3 +47,20 @@ def harvester_api_endpoints(request, harvester_api_version,
     harvester_endpoint = request.config.getoption('--endpoint')
     return HarvesterAPIEndpoints(harvester_endpoint, harvester_api_version,
                                  cdi_api_version, kubevirt_api_version)
+
+
+class RancherAPIEndpoints:
+    def __init__(self, rancher_endpoint):
+        self.rancher_endpoint = rancher_endpoint
+        self.__dict__.update(
+            utils.get_json_object_from_template(
+                'rancher_api_endpoints',
+                rancher_endpoint=rancher_endpoint
+            )
+        )
+
+
+@pytest.fixture(scope='session')
+def rancher_api_endpoints(request):
+    rancher_endpoint = request.config.getoption('--rancher-endpoint')
+    return RancherAPIEndpoints(rancher_endpoint)

@@ -41,3 +41,21 @@ def admin_session(request, harvester_api_endpoints):
 def harvester_cluster_nodes(request):
     nodes = request.config.getoption('--harvester_cluster_nodes')
     return nodes
+
+
+@pytest.fixture(scope='session')
+def rancher_admin_session(request, rancher_api_endpoints):
+    password = request.config.getoption('--rancher-admin-password')
+
+    # authenticate admin
+    login_data = {'username': 'admin', 'password': password,
+                  'responseType': 'json'}
+    params = {'action': 'login'}
+    s = utils.retry_session()
+    resp = s.post(rancher_api_endpoints.local_auth,
+                  params=params, json=login_data)
+    assert resp.status_code == 201, (
+        'Failed to authenticate admin user: %s' % (resp.content))
+    auth_token = 'Bearer ' + resp.json()['token']
+    s.headers.update({'Authorization': auth_token})
+    return s

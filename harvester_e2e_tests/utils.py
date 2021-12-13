@@ -15,8 +15,11 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+from io import StringIO
+from paramiko import SSHClient, AutoAddPolicy, RSAKey
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from scp import SCPClient
 import boto3
 import jinja2
 import json
@@ -40,8 +43,11 @@ def retry_session():
     # We should retry on connection error only.
     # See https://urllib3.readthedocs.io/en/latest/reference/
     # urllib3.util.html#urllib3.util.Retry for more information.
+    allowed_methods = frozenset({'DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT',
+                                 'TRACE', 'POST'})
     retry_strategy = Retry(total=5, backoff_factor=10.0,
-                           status_forcelist=[404, 500])
+                           status_forcelist=[500],
+                           allowed_methods=allowed_methods)
     adapter = HTTPAdapter(max_retries=retry_strategy)
     s = requests.Session()
     # TODO(gyee): do we need to support other auth methods?
@@ -605,8 +611,6 @@ def _get_node_script_path(request, script_name=None, script_type=None):
         scripts_dir = request.config.getoption('--terraform-scripts-location')
     elif script_type == 'backup':
         scripts_dir = request.config.getoption('--backup-scripts-location')
-    elif script_type == 'rancher':
-        scripts_dir = request.config.getoption('--rancher-scripts-location')
     else:
         scripts_dir = request.config.getoption('--node-scripts-location')
     assert scripts_dir, ('Node scripts location not provided. Please use '
@@ -1392,3 +1396,74 @@ def get_backup_create_files_script(request,
                                    script_type=None):
     script = _get_node_script_path(request, script_name, script_type)
     return script
+
+
+def wait_for_ssh_client(ip, timeout, keypair=None):
+    client = SSHClient()
+    # automatically add host since we only care about connectivity
+    client.set_missing_host_key_policy(AutoAddPolicy)
+
+    def _wait_for_connect():
+        try:
+            # NOTE: for the default openSUSE Leap image, the root user
+            # password is 'linux'
+            if keypair is not None:
+                private_key = RSAKey.from_private_key(
+                    StringIO(keypair['spec']['privateKey']))
+                client.connect(ip, username='root', pkey=private_key)
+            else:
+                client.connect(ip, username='root', password='linux')
+        except Exception as e:
+            print('Unable to connect to %s: %s' % (ip, e))
+            return False
+        return True
+
+    ready = polling2.poll(
+        _wait_for_connect,
+        step=5,
+        timeout=timeout)
+    assert ready, 'Timed out while waiting for SSH server to be ready'
+    return client
+
+
+def get_vm_ip_address(admin_session, harvester_api_endpoints, vm, timeout,
+                      nic_name='default'):
+    vm_instance_json = None
+
+    def _wait_for_ip():
+        nonlocal vm_instance_json
+        vm_instance_json = lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm)
+        for interface in vm_instance_json['status']['interfaces']:
+            # NOTE: by default, the second NIC name is 'nic-1'
+            if (interface['name'] == nic_name and
+                    'ipAddress' in interface):
+                return interface['ipAddress']
+
+    ip = polling2.poll(
+        _wait_for_ip,
+        step=5,
+        timeout=timeout)
+
+    assert ip, (
+        'Timed out while waiting for IP address for NIC %s to be '
+        ' assigned: %s' % (nic_name, vm_instance_json))
+    return (vm_instance_json, ip)
+
+
+def execute_script_on_vm(ip, timeout, script, keypair=None,
+                         script_params=None):
+    ssh_client = wait_for_ssh_client(ip, timeout, keypair)
+    # first copy the script to the /tmp dir on the VM
+    with SCPClient(ssh_client.get_transport()) as scp:
+        scp.put(script, '/tmp')
+    # now execute the script on the VM and return stdout as string
+    command = 'bash /tmp/%s' % (os.path.basename(script))
+    if script_params:
+        command += ' ' + script_params
+    stdin, stdout, stderr = ssh_client.exec_command(command)
+    ssh_client.close()
+    errors = stderr.read().strip().decode('utf-8')
+    assert not errors, (
+        'Failed to execute %s on %s: %s' % (script, ip, errors))
+    return stdout.read().strip().decode('utf-8')

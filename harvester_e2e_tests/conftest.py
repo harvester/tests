@@ -143,16 +143,46 @@ def pytest_addoption(parser):
         help=('Endpoint for storing backup in nfs share')
     )
     parser.addoption(
-        '--rancher-scripts-location',
-        action='store',
-        default=config_data['rancher-scripts-location'],
-        help=('scripts to install rancher server inside a VM')
-    )
-    parser.addoption(
         '--rancher-version',
         action='store',
         default=config_data['rancher-version'],
-        help=('Rancher Docker image version to use')
+        help=('Rancher Docker image version to use when bootstrapping Rancher '
+              'VM in Harvester')
+    )
+    parser.addoption(
+        '--rancher-endpoint',
+        action='store',
+        default=config_data.get('rancher-endpoint', None),
+        help='Rancher API endpoint'
+    )
+    parser.addoption(
+        '--rancher-admin-password',
+        action='store',
+        default=config_data.get('rancher-admin-password', None),
+        help='Rancher admin user password'
+    )
+    parser.addoption(
+        '--kubernetes-version',
+        action='store',
+        default=config_data.get('kubernetes-version', 'v1.21.6+rke2r1'),
+        help='Kubernetes version to use for Rancher integration tests'
+    )
+    parser.addoption(
+        '--test-environment',
+        action='store',
+        default='local',
+        help=('QE test environment (e.g. chiefs, raiders, etc), for '
+              'distinguishing the test artifacts in the case where an '
+              'dependency (e.g. Rancher) is shared amongst the '
+              'test environments. If you are running local Vagrant, you '
+              'should name the environment to your username (e.g. gyee)')
+    )
+    parser.addoption(
+        '--rancher-cluster-wait-timeout',
+        action='store',
+        type='int',
+        default=config_data['rancher-cluster-wait-timeout'],
+        help='Wait time for polling Rancher cluster ready status'
     )
     parser.addoption(
         '--nfs-mount-dir',
@@ -283,6 +313,11 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", ('rancher: mark rancher integration  tests ')
     )
+    config.addinivalue_line(
+        "markers", (
+            'rancher_integration_with_external_rancher: mark Rancher '
+            'integration tests with an external Rancher')
+    )
 
 
 def pytest_collection_modifyitems(config, items):
@@ -321,3 +356,11 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if 'backupnfs' in item.keywords:
                 item.add_marker(skip_backup)
+
+    if (not config.getoption('--rancher-endpoint') and
+            not config.getoption('--rancher-admin-password')):
+        skip_rancher_integration_external = pytest.mark.skip(reason=(
+            'Rancher endpoint and admin password are not specified'))
+        for item in items:
+            if 'rancher_integration_with_external_rancher' in item.keywords:
+                item.add_marker(skip_rancher_integration_external)
