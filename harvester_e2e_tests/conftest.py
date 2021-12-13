@@ -277,6 +277,10 @@ def pytest_configure(config):
         "markers", ('hosts_p2: mark test to run only P1 test for Hosts')
     )
     config.addinivalue_line(
+        "markers", ('terraform_provider_p1: mark test to run only P1 test '
+                    'for terraform provider')
+    )
+    config.addinivalue_line(
         "markers", ('rancher: mark rancher integration  tests ')
     )
 

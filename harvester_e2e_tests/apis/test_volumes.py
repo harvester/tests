@@ -256,9 +256,11 @@ def test_create_volume_using_terraform(admin_session, volume_using_terraform):
     """
     Test creates Terraform Harvester
     Covers:
-        terraform-7-Harvester volume
-        terraform-10-All resource terraform plan,apply, terraform destroy
-        terraform-1-install, terraform-2-kube config, terraform-3-define
+        terraform-provider-07-Harvester volume
+        terraform-provider-10-All resource terraform plan,apply,
+        terraform destroy
+        terraform-provider-01-install, terraform-provider-02-kube config,
+        terraform-provider-03-define
         kube config
     """
     # NOTE: the volume_using_terraform fixture will be creating the
