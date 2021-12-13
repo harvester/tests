@@ -170,6 +170,25 @@ endpoint either on command line or in config.yml
 tox -e py36 -- harvester_e2e_tests --html=test_result.html --accessKeyId <accessKey> --secretAccessKey <secretaccesskey> --bucketName <bucket> --region <region> --nfs-endpoint nfs://<IP>/<path> -m backup
 ```
 
+## Running Rancher Integration tests
+------------------------------------
+
+An external Rancher instance is required in order to run Harvester Rancher integration tests. Furthermore, the external Rancher instance must be reachable by
+the Harvester nodes. Conversely, the Harvester VIP must also be reachable by
+Rancher during cluster provisioning. Both `--rancher-endpoint` and `--rancher-admin-password` arguments must be specified in order to run the Rancher integration tests. Optionally, user may specify `--kubernetes-version` argument to for a specific Kubernetes version to use when provisioning an RKE cluster via Harvester node driver. If `--kubernetes-version` is absent, Kubernetes version `v1.21.6+rke2r1` will be used.
+
+To run Rancher integration tests, for example:
+
+```console
+tox -e py38 -- harvester_e2e_tests/scenarios/test_rancher_integration.py --endpoint https://192.168.0.131 --rancher-endpoint https://rancher-instance --rancher-admin-password rancher_password --kubernetes-version v1.27.1+rke2r2
+```
+
+If the external Rancher instance is shared by multiple Harvester environments, user should also provide the `--test-environment` argument to distinguish the artifacts created by the current test environment in case manual cleanup is needed. All the artifacts (e.g. RKE2 clusters, cloud credentials, import Harvester cluster, etc) have the test environment name it their names (e.g. harvester-<test environment>-<random string>). For example:
+
+```console
+tox -e py38 -- harvester_e2e_tests/scenarios/test_rancher_integration.py --endpoint https://192.168.0.131 --rancher-endpoint https://rancher-instance --rancher-admin-password rancher_password --kubernetes-version v1.27.1+rke2r2 --test-environment browns
+```
+
 ## Running Linter
 -----------------
 

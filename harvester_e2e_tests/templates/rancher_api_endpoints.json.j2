@@ -2,7 +2,7 @@
     "local_auth": "{{ rancher_endpoint }}/v3-public/localProviders/local",
     "change_password": "{{ rancher_endpoint }}/v3/users",
     "import_harvester_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters",
-    "get_cluster_id": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters/{{ api_namespace | default('fleet-default') }}/%s",
+    "get_provisioning_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters/{{ api_namespace | default('fleet-default') }}/%s",
     "get_clusterregistrationtokens": "{{ rancher_endpoint }}/v3/clusterregistrationtokens",
     "execute_kubectl": "{{ rancher_endpoint }}/k8s/clusters/local/api/v1/namespaces/cattle-system/secrets?fieldManager=kubectl-client-side-apply",
     "get_server_url_setting": "{{ rancher_endpoint }}/v1/management.cattle.io.settings/server-url",
@@ -16,7 +16,10 @@
     "get_virtualmachines": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/kubevirt.io.virtualmachines",
     "generate_kubeconfig": "{{ rancher_endpoint }}/v3/clusters/%s",
     "create_cloud_credentials": "{{ rancher_endpoint }}/v3/cloudcredentials",
+    "delete_cloud_credential": "{{ rancher_endpoint }}/v3/cloudCredentials/%s",
     "rke2_kubeconfig": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/kubeconfig",
     "rke2_machine_config": "{{ rancher_endpoint }}/v1/rke-machine-config.cattle.io.harvesterconfigs/{{ api_namespace | default('fleet-default') }}",
-    "provision_rke2_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters"
+    "provision_rke2_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters",
+    "delete_provisioning_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters/{{ api_namespace | default('fleet-default') }}/%s",
+    "delete_service_account_for_cluster": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/serviceaccounts/default/%s"
 }

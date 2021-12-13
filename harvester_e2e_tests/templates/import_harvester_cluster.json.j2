@@ -1,5 +1,10 @@
 {# Template for importing harvester cluster #}
 
+{% if test_environment is not defined or not test_environment|length %}
+    {% set test_environment = "unknown" %}
+{% endif %}
+
+{% set cluster_name = "harvester-" ~ test_environment ~ "-" ~ random_alphanumeric(length=5) %}
 {
     "type": "provisioning.cattle.io.cluster",
     "metadata": {
@@ -7,7 +12,7 @@
         "annotations": {
             "field.cattle.io/description": "harvester"
         },
-        "name": "harvester"
+        "name": "{{ cluster_name }}"
     },
     "spec": {}
 }
