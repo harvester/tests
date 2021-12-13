@@ -1023,6 +1023,8 @@ def test_create_update_vm_user_data(request, admin_session, image,
 
 
 @pytest.mark.terraform
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
 def test_create_vm_using_terraform(request, admin_session,
                                    harvester_api_endpoints,
                                    image_using_terraform,
@@ -1031,6 +1033,13 @@ def test_create_vm_using_terraform(request, admin_session,
                                    network_using_terraform,
                                    user_data_with_guest_agent_using_terraform,
                                    network_data):
+    """
+    Test creates VM using terraform
+    Covers:
+    terraform-provider-09-Test harvester_virtualmachine resource
+    terraform-provider-01-install, terraform-provider-02-kube config,
+    terraform-provider-03-define kube config
+    """
     created = False
     try:
         vm_json = utils.create_vm_terraform(

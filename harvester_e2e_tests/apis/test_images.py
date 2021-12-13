@@ -218,8 +218,9 @@ def test_create_images_using_terraform(admin_session, image_using_terraform):
     Test creates Harvester Image
 
     Covers:
-        terraform-5-Harvester image as a pre-req it covers
-        terraform-1-install, terraform-2-kube config, terraform-3-define
+        terraform-provider-05-Harvester image as a pre-req it covers
+        terraform-provider-01-install, terraform-provider-02-kube config,
+        terraform-provider-03-define
         kube config
     """
     # NOTE: the image fixture will be creating the image and check the result

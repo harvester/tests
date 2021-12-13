@@ -110,9 +110,10 @@ def test_create_network_using_terraform(request, admin_session,
     """
     Test creates Terraform Harvester
     Covers:
-        terraform-6-Harvester network as a pre-req it covers
-        terraform-8-Harvester cluster network during enable vlan
-        terraform-1-install, terraform-2-kube config, terraform-3-define
+        terraform-provider-06-Harvester network as a pre-req it covers
+        terraform-provider-08-Harvester cluster network during enable vlan
+        terraform-provider-01-install, terraform-provider-02-kube config,
+        terraform-provider-03-define
         kube config
     """
     pass
