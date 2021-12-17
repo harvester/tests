@@ -40,7 +40,13 @@ def test_create_with_vid_0(admin_session, harvester_api_endpoints):
     assert 'must >=1' in response_data['message']
 
 
+@pytest.mark.network_p1
+@pytest.mark.p1
 def test_create_with_vid_4095(admin_session, harvester_api_endpoints):
+    """
+    Covers:
+        network-14-create network
+    """
     request_json = utils.get_json_object_from_template(
         'basic_network',
         vlan=4095
