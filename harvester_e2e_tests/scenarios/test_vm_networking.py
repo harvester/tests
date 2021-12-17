@@ -178,11 +178,20 @@ def backup_restore_vm(request, admin_session,
                                 harvester_api_endpoints, restored_vm_json)
 
 
+@pytest.mark.network_p2
+@pytest.mark.p2
 def backup_restore_chained_backups(request, admin_session,
                                    harvester_api_endpoints,
                                    keypair, vms_with_vlan_as_default_network,
                                    backuptarget,
                                    delbackup=None):
+    """
+       Test Network connectivity and VM
+       Covers:
+           network-10-Validate network connectivity Mgmt Network
+           Delete single network from multiple networks vm
+        """
+
     vm_name = vms_with_vlan_as_default_network['metadata']['name']
     backup_name = utils.random_name()
     backup_lst = []
