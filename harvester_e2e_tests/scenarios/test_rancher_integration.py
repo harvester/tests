@@ -308,9 +308,7 @@ class TestRancherIntegrationWithExternalRancher:
         # successfully created this test is golden
         pass
 
-    @pytest.mark.skip('Need to figure out how to cleanup since we are '
-                      'sharing a Rancher instance')
-    def test_add_prj_owner_user(self, rancher_admin_session,
+    def test_add_prj_owner_user(self, request, rancher_admin_session,
                                 rancher_api_endpoints,
                                 external_rancher_with_imported_harvester):
         cluster_id = external_rancher_with_imported_harvester
@@ -391,7 +389,7 @@ class TestRancherIntegrationWithExternalRancher:
         params = {'action': 'login'}
         s = requests.Session()
         s.verify = False
-        resp = s.post(rancher_api_endpoints['local_auth'],
+        resp = s.post(rancher_api_endpoints.local_auth,
                       params=params, json=login_data)
         assert resp.status_code == 201, 'Failed to authenticate user: %s' % (
             resp.content)
@@ -399,11 +397,19 @@ class TestRancherIntegrationWithExternalRancher:
         auth_token = 'Bearer ' + resp.json()['token']
         s.headers.update({'Authorization': auth_token})
 
-#        resp = s.get(rancher_api_endpoints['get_virtualmachines'] % (
-#                cluster_id))
-#        assert resp.status_code == 200, (
-#            'Failed to get virtaul machines  %s: %s' % (
-#                resp.status_code, resp.content))
+        resp = s.get(rancher_api_endpoints.get_virtualmachines % (
+            cluster_id))
+        assert resp.status_code == 200, (
+            'Failed to get virtaul machines  %s: %s' % (
+                resp.status_code, resp.content))
+
+        if not request.config.getoption('--do-not-cleanup'):
+            resp = rancher_admin_session.delete(
+                rancher_api_endpoints.delete_user % (
+                    user_id))
+            assert resp.status_code == 200, (
+                'Failed to delete user %s: %s' % (
+                    user_id, resp.content))
 
     def test_create_rke2_cluster(self, request, rke2_cluster):
         # NOTE(gyee): if rke2_cluster fixture is successfully created that

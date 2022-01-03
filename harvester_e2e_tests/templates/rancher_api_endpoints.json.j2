@@ -21,5 +21,6 @@
     "rke2_machine_config": "{{ rancher_endpoint }}/v1/rke-machine-config.cattle.io.harvesterconfigs/{{ api_namespace | default('fleet-default') }}",
     "provision_rke2_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters",
     "delete_provisioning_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters/{{ api_namespace | default('fleet-default') }}/%s",
-    "delete_service_account_for_cluster": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/serviceaccounts/default/%s"
+    "delete_service_account_for_cluster": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/serviceaccounts/default/%s",
+    "delete_user": "{{ rancher_endpoint }}/v3/users/%s"
 }
