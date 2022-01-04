@@ -72,7 +72,7 @@ def _delete_cluster(request, rancher_admin_session, rancher_api_endpoints,
     success = polling2.poll(
         _check_cluster_deleted,
         step=5,
-        timeout=request.config.getoption('--wait-timeout'))
+        timeout=request.config.getoption('--rancher-cluster-wait-timeout'))
 
     assert success, 'Timed out while waiting for cluster to be deleted.'
 
