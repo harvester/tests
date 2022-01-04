@@ -19,49 +19,32 @@ These are some potential new tests for next release.
 1. Volume scheduling [#1334](https://github.com/harvester/harvester/issues/1334)
 
 ### Owner: Unknown
-- task: Remove the `Upgrade` button in the setting [#1719](https://github.com/harvester/harvester/issues/1719) owner:unknown p1
 - Three node RKE2 Cluster on SLES fails on startup  [#1494](https://github.com/harvester/harvester/issues/1494) owner:unknown area/rancher-related, bug
 - doc: Document the Harvester release process and dependency [#1397](https://github.com/harvester/harvester/issues/1397) owner:unknown p1
 - task: trigger the ISO build with the new Harvester commit [#1395](https://github.com/harvester/harvester/issues/1395) owner:unknown p2
-- [BUG] After click "Detach volume" button, nothing happend [#1708](https://github.com/harvester/harvester/issues/1708) owner:unknown area/ui, bug
 - [BUG] Error : can't sync vm backup metadata, err: virtualmachinebackups.harvesterhci.io \"test-backup\" already exists [#1673](https://github.com/harvester/harvester/issues/1673) owner:unknown area/backend, bug
 - [BUG][Guest cluster] Permission denied for workload with security context [#1630](https://github.com/harvester/harvester/issues/1630) owner:unknown p1
 - [BUG] rke1 load balancer is unable to provision `0/8 nodes are available: 2 node(s) had taint {node-role.kubernetes.io/controlplane: true}, that the pod didn't tolerate, 6 node(s) had taint {node.cloudprovider.kubernetes.io/uninitialized: true}, that the pod didn't tolerate.` [#1628](https://github.com/harvester/harvester/issues/1628) owner:unknown area/load-balancer, documentation
 - [BUG] Creating VM with larger size than schedulable Longorn storage doesn't give error [#1609](https://github.com/harvester/harvester/issues/1609) owner:unknown area/ui, bug
-- [BUG] Extra disk auto provision from installation may cause NDM can't find a valid longhorn node to provision [#1599](https://github.com/harvester/harvester/issues/1599) owner:unknown area/storage, bug, severity/1
 - [BUG] PXE installer fails for multiple nodes [#1598](https://github.com/harvester/harvester/issues/1598) owner:unknown area/installer, blocker, bug, regression
 - [BUG] Backup target endpoint processing code has a bug [#1555](https://github.com/harvester/harvester/issues/1555) owner:unknown area/backend, bug
 - [BUG] Unable to login after initial password setup [#1549](https://github.com/harvester/harvester/issues/1549) owner:unknown p1
-- [BUG] VM memory display in long bytes value instead GB on virtual machine page [#1534](https://github.com/harvester/harvester/issues/1534) owner:unknown area/backend, area/ui, bug, severity/2
-- [BUG] Failed to enable vlan cluster network after disable and enable again, display "Network Error" [#1529](https://github.com/harvester/harvester/issues/1529) owner:unknown p1
-- [BUG] Failed to enable vlan cluster network after disable and enable again, display "Network Error" [#1528](https://github.com/harvester/harvester/issues/1528) owner:unknown area/network, bug, severity/2
-- [BUG] Unable to create RKE1 cluster in rancher by node driver, shows "waiting for ssh to be available" [#1519](https://github.com/harvester/harvester/issues/1519) owner:unknown area/harvester-node-driver, area/rancher-related, bug, severity/1
-- [BUG] Multiple instance creation VMs do not match the set number [#1504](https://github.com/harvester/harvester/issues/1504) owner:unknown p1
-- [BUG] Nodes with cordoned status should not be in the selection list for VM migration [#1501](https://github.com/harvester/harvester/issues/1501) owner:unknown p2
-- [BUG] Input excessive line of text while creating cloud-init template will cause whole input field is out of control [#1486](https://github.com/harvester/harvester/issues/1486) owner:unknown area/ui, bug, severity/2
 - [BUG]VM can't access other harvester node or vm when harvester node only have one VM [#1480](https://github.com/harvester/harvester/issues/1480) owner:unknown p2
-- [BUG] intimidating error message when missing mandatory field [#1477](https://github.com/harvester/harvester/issues/1477) owner:unknown p2
 - [BUG] cordon not documented [#1457](https://github.com/harvester/harvester/issues/1457) owner:unknown bug, documentation
-- [BUG] Incorrect naming of project resource configuration [#1449](https://github.com/harvester/harvester/issues/1449) owner:unknown p2
 - [BUG] You can upload an image from you local machine that isn't valid [#1425](https://github.com/harvester/harvester/issues/1425) owner:unknown area/backend, bug
 - [BUG] Support topology aware scheduling of guest cluster workloads [#1417](https://github.com/harvester/harvester/issues/1417) owner:unknown bug
 - [BUG] unable to upload image by file [#1415](https://github.com/harvester/harvester/issues/1415) owner:unknown p1
 - [BUG] unable to remove Machine from scaled cluster [#1389](https://github.com/harvester/harvester/issues/1389) owner:unknown p1
-- [BUG] Change namespace of existing VM by using terraform provider will cause "Virt-launcher pod has not yet been scheduled"  [#1384](https://github.com/harvester/harvester/issues/1384) owner:unknown p1
 - [BUG] deleted clusters still visible under rancher [#1379](https://github.com/harvester/harvester/issues/1379) owner:unknown p1
 - [BUG] RKE2 / Harvester: Nodes stuck in provisioning when master nodes lack worker role [#1373](https://github.com/harvester/harvester/issues/1373) owner:unknown p1
 - [BUG] Delete multiple VMs but some related volumes still remaining here [#1371](https://github.com/harvester/harvester/issues/1371) owner:unknown p2
 - [BUG] Rancher monitoring stack is crashing on Harvester guest cluster  [#1369](https://github.com/harvester/harvester/issues/1369) owner:unknown p2
 - [BUG] Node duplicate display when it back online [#1361](https://github.com/harvester/harvester/issues/1361) owner:unknown p1
-- [BUG] "Add disk" drop down resets back to first item [#1358](https://github.com/harvester/harvester/issues/1358) owner:unknown p2
-- [BUG] NTP connection check unreailable  [#1345](https://github.com/harvester/harvester/issues/1345) owner:unknown p2
 - [BUG] Frequent kernel panics occurring during operation [#1342](https://github.com/harvester/harvester/issues/1342) owner:unknown p1
 - [BUG] USB Boot hangs indefinitely at `fb0: switching to amdgpudrmfb from EFI VGA` [#1225](https://github.com/harvester/harvester/issues/1225) owner:unknown p2
 - [BUG] Kubevirt services get deleted after importing Harvester to Rancher [#1143](https://github.com/harvester/harvester/issues/1143) owner:unknown p1
 - [BUG] Embedded Rancher doesn't work [#1134](https://github.com/harvester/harvester/issues/1134) owner:unknown p2
 - [BUG]State for powered down node stays in-progress [#1035](https://github.com/harvester/harvester/issues/1035) owner:unknown p3
-- [BUG] Trying to set maintenance mode on the last available node shouldn't be allowed [#1014](https://github.com/harvester/harvester/issues/1014) owner:unknown p2
-- [BUG] Failed to create image when deployed in private network environment [#1012](https://github.com/harvester/harvester/issues/1012) owner:unknown p2
 - [EPIC] Documentation for v0.3.0  [#1347](https://github.com/harvester/harvester/issues/1347) owner:unknown p1
 - [FEATURE] add *Processing* and *succeed* info for backup-target option [#1498](https://github.com/harvester/harvester/issues/1498) owner:unknown area/ui, enhancement
 - [FEATURE] Change the default option of `ui-source` from Auto to Bundled [#1485](https://github.com/harvester/harvester/issues/1485) owner:unknown area/backend, area/ui, enhancement, wontfix
@@ -73,7 +56,6 @@ These are some potential new tests for next release.
 - [Question] Can't install guest agent for a running VM [#837](https://github.com/harvester/harvester/issues/837) owner:unknown documentation
 
 ### Owner: Noah
-
 - Task: mark external Harvester cluster provisioning support as experimental  [#1671](https://github.com/harvester/harvester/issues/1671) owner:noahgildersleeve area/ui, documentation, require/release-note
 - task: reorg the `harvester/tests` to include test documents [#1399](https://github.com/harvester/harvester/issues/1399) owner:noahgildersleeve p1
 - Task: Public available test plan [#1291](https://github.com/harvester/harvester/issues/1291) owner:noahgildersleeve p2
@@ -117,6 +99,23 @@ These are some potential new tests for next release.
 - [FEATURE] Show common network interface when selecting network interface for the VLAN network [#1273](https://github.com/harvester/harvester/issues/1273) owner:noahgildersleeve p1
 
 ### Owner: David
+- task: Remove the `Upgrade` button in the setting [#1719](https://github.com/harvester/harvester/issues/1719) owner:TachunLin p1
+- [BUG] After click "Detach volume" button, nothing happend [#1708](https://github.com/harvester/harvester/issues/1708) owner:TachunLin area/ui, bug
+- [BUG] Extra disk auto provision from installation may cause NDM can't find a valid longhorn node to provision [#1599](https://github.com/harvester/harvester/issues/1599) owner:TachunLin area/storage, bug, severity/1
+- [BUG] VM memory display in long bytes value instead GB on virtual machine page [#1534](https://github.com/harvester/harvester/issues/1534) owner:TachunLin area/backend, area/ui, bug, severity/2
+- [BUG] Failed to enable vlan cluster network after disable and enable again, display "Network Error" [#1529](https://github.com/harvester/harvester/issues/1529) owner:TachunLin p1
+- [BUG] Failed to enable vlan cluster network after disable and enable again, display "Network Error" [#1528](https://github.com/harvester/harvester/issues/1528) owner:TachunLin area/network, bug, severity/2
+- [BUG] Unable to create RKE1 cluster in rancher by node driver, shows "waiting for ssh to be available" [#1519](https://github.com/harvester/harvester/issues/1519) owner:TachunLin area/harvester-node-driver, area/rancher-related, bug, severity/1
+- [BUG] Multiple instance creation VMs do not match the set number [#1504](https://github.com/harvester/harvester/issues/1504) owner:TachunLin p1
+- [BUG] Nodes with cordoned status should not be in the selection list for VM migration [#1501](https://github.com/harvester/harvester/issues/1501) owner:TachunLin p2
+- [BUG] Input excessive line of text while creating cloud-init template will cause whole input field is out of control [#1486](https://github.com/harvester/harvester/issues/1486) owner:TachunLin area/ui, bug, severity/2
+- [BUG] intimidating error message when missing mandatory field [#1477](https://github.com/harvester/harvester/issues/1477) owner:TachunLin p2
+- [BUG] Incorrect naming of project resource configuration [#1449](https://github.com/harvester/harvester/issues/1449) owner:TachunLin p2
+- [BUG] Change namespace of existing VM by using terraform provider will cause "Virt-launcher pod has not yet been scheduled"  [#1384](https://github.com/harvester/harvester/issues/1384) owner:TachunLin p1
+- [BUG] "Add disk" drop down resets back to first item [#1358](https://github.com/harvester/harvester/issues/1358) owner:TachunLin p2
+- [BUG] NTP connection check unreailable  [#1345](https://github.com/harvester/harvester/issues/1345) owner:TachunLin p2
+- [BUG] Trying to set maintenance mode on the last available node shouldn't be allowed [#1014](https://github.com/harvester/harvester/issues/1014) owner:TachunLin p2
+- [BUG] Failed to create image when deployed in private network environment [#1012](https://github.com/harvester/harvester/issues/1012) owner:TachunLin p2
 - [Rancher Integration] User is unable to use template to create cluster through virtualization management  [#1620](https://github.com/harvester/harvester/issues/1620) owner:TachunLin p1
 - [BUG/ENHANCEMENT] VIP configured in a VLAN network can not be reached [#1424](https://github.com/harvester/harvester/issues/1424) owner:TachunLin p1
 - Better error messages when misconfiguring multiple nics [#531](https://github.com/harvester/harvester/issues/531) owner:TachunLin p2
