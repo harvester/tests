@@ -19,41 +19,9 @@ These are some potential new tests for next release.
 1. Volume scheduling [#1334](https://github.com/harvester/harvester/issues/1334)
 
 ### Owner: Unknown
-- Three node RKE2 Cluster on SLES fails on startup  [#1494](https://github.com/harvester/harvester/issues/1494) owner:unknown area/rancher-related, bug
-- doc: Document the Harvester release process and dependency [#1397](https://github.com/harvester/harvester/issues/1397) owner:unknown p1
-- task: trigger the ISO build with the new Harvester commit [#1395](https://github.com/harvester/harvester/issues/1395) owner:unknown p2
-- [BUG] Error : can't sync vm backup metadata, err: virtualmachinebackups.harvesterhci.io \"test-backup\" already exists [#1673](https://github.com/harvester/harvester/issues/1673) owner:unknown area/backend, bug
-- [BUG][Guest cluster] Permission denied for workload with security context [#1630](https://github.com/harvester/harvester/issues/1630) owner:unknown p1
-- [BUG] rke1 load balancer is unable to provision `0/8 nodes are available: 2 node(s) had taint {node-role.kubernetes.io/controlplane: true}, that the pod didn't tolerate, 6 node(s) had taint {node.cloudprovider.kubernetes.io/uninitialized: true}, that the pod didn't tolerate.` [#1628](https://github.com/harvester/harvester/issues/1628) owner:unknown area/load-balancer, documentation
-- [BUG] Creating VM with larger size than schedulable Longorn storage doesn't give error [#1609](https://github.com/harvester/harvester/issues/1609) owner:unknown area/ui, bug
-- [BUG] PXE installer fails for multiple nodes [#1598](https://github.com/harvester/harvester/issues/1598) owner:unknown area/installer, blocker, bug, regression
-- [BUG] Backup target endpoint processing code has a bug [#1555](https://github.com/harvester/harvester/issues/1555) owner:unknown area/backend, bug
-- [BUG] Unable to login after initial password setup [#1549](https://github.com/harvester/harvester/issues/1549) owner:unknown p1
-- [BUG]VM can't access other harvester node or vm when harvester node only have one VM [#1480](https://github.com/harvester/harvester/issues/1480) owner:unknown p2
-- [BUG] cordon not documented [#1457](https://github.com/harvester/harvester/issues/1457) owner:unknown bug, documentation
-- [BUG] You can upload an image from you local machine that isn't valid [#1425](https://github.com/harvester/harvester/issues/1425) owner:unknown area/backend, bug
-- [BUG] Support topology aware scheduling of guest cluster workloads [#1417](https://github.com/harvester/harvester/issues/1417) owner:unknown bug
-- [BUG] unable to upload image by file [#1415](https://github.com/harvester/harvester/issues/1415) owner:unknown p1
-- [BUG] unable to remove Machine from scaled cluster [#1389](https://github.com/harvester/harvester/issues/1389) owner:unknown p1
-- [BUG] deleted clusters still visible under rancher [#1379](https://github.com/harvester/harvester/issues/1379) owner:unknown p1
-- [BUG] RKE2 / Harvester: Nodes stuck in provisioning when master nodes lack worker role [#1373](https://github.com/harvester/harvester/issues/1373) owner:unknown p1
-- [BUG] Delete multiple VMs but some related volumes still remaining here [#1371](https://github.com/harvester/harvester/issues/1371) owner:unknown p2
 - [BUG] Rancher monitoring stack is crashing on Harvester guest cluster  [#1369](https://github.com/harvester/harvester/issues/1369) owner:unknown p2
-- [BUG] Node duplicate display when it back online [#1361](https://github.com/harvester/harvester/issues/1361) owner:unknown p1
-- [BUG] Frequent kernel panics occurring during operation [#1342](https://github.com/harvester/harvester/issues/1342) owner:unknown p1
-- [BUG] USB Boot hangs indefinitely at `fb0: switching to amdgpudrmfb from EFI VGA` [#1225](https://github.com/harvester/harvester/issues/1225) owner:unknown p2
-- [BUG] Kubevirt services get deleted after importing Harvester to Rancher [#1143](https://github.com/harvester/harvester/issues/1143) owner:unknown p1
-- [BUG] Embedded Rancher doesn't work [#1134](https://github.com/harvester/harvester/issues/1134) owner:unknown p2
-- [BUG]State for powered down node stays in-progress [#1035](https://github.com/harvester/harvester/issues/1035) owner:unknown p3
-- [EPIC] Documentation for v0.3.0  [#1347](https://github.com/harvester/harvester/issues/1347) owner:unknown p1
-- [FEATURE] add *Processing* and *succeed* info for backup-target option [#1498](https://github.com/harvester/harvester/issues/1498) owner:unknown area/ui, enhancement
-- [FEATURE] Change the default option of `ui-source` from Auto to Bundled [#1485](https://github.com/harvester/harvester/issues/1485) owner:unknown area/backend, area/ui, enhancement, wontfix
-- [FEATURE] Support other build targets for Terraform provider [#1478](https://github.com/harvester/harvester/issues/1478) owner:unknown area/terraform, enhancement
-- [FEATURE] We should not expose 'prevent_destroy' attribute in Terraform 'harvester_clusternetworks' resource [#1355](https://github.com/harvester/harvester/issues/1355) owner:unknown p2
-- [FEATURE] Improve Harvester kernel debug-ability. [#1343](https://github.com/harvester/harvester/issues/1343) owner:unknown p1
-- [FEATURE] Publish the Harvester Terraformer to the TF registry [#1151](https://github.com/harvester/harvester/issues/1151) owner:unknown p2
-- [Question] Node deletion behavior [#1069](https://github.com/harvester/harvester/issues/1069) owner:unknown p1
-- [Question] Can't install guest agent for a running VM [#837](https://github.com/harvester/harvester/issues/837) owner:unknown documentation
+- [BUG] Error : can't sync vm backup metadata, err: virtualmachinebackups.harvesterhci.io \"test-backup\" already exists [#1673](https://github.com/harvester/harvester/issues/1673) owner:unknown area/backend, bug
+
 
 ### Owner: Noah
 - Task: mark external Harvester cluster provisioning support as experimental  [#1671](https://github.com/harvester/harvester/issues/1671) owner:noahgildersleeve area/ui, documentation, require/release-note
