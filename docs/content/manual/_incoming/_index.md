@@ -8,13 +8,10 @@ These are some potential new tests for next release.
 1. RKE1/RKE2 Node driver enhancement [#1174](https://github.com/harvester/harvester/issues/1174), [#1247](https://github.com/harvester/harvester/issues/1247), [#1348](https://github.com/harvester/harvester/issues/1348), [#1373](https://github.com/harvester/harvester/issues/1373), [#1379](https://github.com/harvester/harvester/issues/1379)
 1. Rancher import experience [#1330](https://github.com/harvester/harvester/issues/1330)
 1. zero downtime upgrade [#1022](https://github.com/harvester/harvester/issues/1022)
-1. store metadata in backup-target [#988](https://github.com/harvester/harvester/issues/988)
-1. SSL certificate [#761](https://github.com/harvester/harvester/issues/761)
-1. additional trusted CA configure-ability [#1260](https://github.com/harvester/harvester/issues/1260)
 1. proxy settings for rke2 and rancher [#1218](https://github.com/harvester/harvester/issues/1218)
 1. Volume hot-unplug [#1401](https://github.com/harvester/harvester/issues/1401)
 1. cloud config byte limit [#760](https://github.com/harvester/harvester/issues/760)
-1. soft reboot/shutdown [#574](https://github.com/harvester/harvester/issues/574)
+1. ~~soft reboot/shutdown [#574](https://github.com/harvester/harvester/issues/574)~~ Deferred to v1.0.1
 1. VIP accessibility [#1398](https://github.com/harvester/harvester/issues/1398), [#1424](https://github.com/harvester/harvester/issues/1424)
 1. Volume scheduling [#1334](https://github.com/harvester/harvester/issues/1334)
 
@@ -127,43 +124,18 @@ These are some potential new tests for next release.
 - [Task] Test Air gap with Rancher integration [#1052](https://github.com/harvester/harvester/issues/1052) owner:TachunLin p1
 - [feature] allow users to create cloud-config template on the VM creating page [#1433](https://github.com/harvester/harvester/issues/1433) owner:TachunLin p1
 
-### Owner: Lanfon
-- sysctl in Harvester config does not work [#1405](https://github.com/harvester/harvester/issues/1405) owner:lanfon72 p2
-- [BUG] Harvester network controller manager failed to update lock [#1722](https://github.com/harvester/harvester/issues/1722) owner:lanfon72 area/network, blocker, bug
-- [BUG] When creating a new template from an existing template, the  volume size should be editable [#1711](https://github.com/harvester/harvester/issues/1711) owner:lanfon72 area/ui, bug
-- [BUG] Harvester 1.0.0-rc1 fails to install on NVMe M.2 SSD [#1627](https://github.com/harvester/harvester/issues/1627) owner:lanfon72 p1
-- [BUG] Node's resource information mismatch to details view [#1612](https://github.com/harvester/harvester/issues/1612) owner:lanfon72 area/ui, bug, regression
-- [BUG] NVMe drive can be added multiple times in host config in UI [#1608](https://github.com/harvester/harvester/issues/1608) owner:lanfon72 p1
-- [BUG] Support Bundle failed to create due to timeout [#1585](https://github.com/harvester/harvester/issues/1585) owner:lanfon72 p2
-- [BUG] Installation failed: "Could find partition device path for partition 6" [#1583](https://github.com/harvester/harvester/issues/1583) owner:lanfon72 p1
-- [BUG] The password field in the Harvester continue login screen does not offer show/hide toggle [#1550](https://github.com/harvester/harvester/issues/1550) owner:lanfon72 p2
-- [BUG] Memory is being saved as the wrong amount in VMs [#1537](https://github.com/harvester/harvester/issues/1537) owner:lanfon72 p1
-- [BUG] Agent node becomes NotReady when one of the controller node fails [#1521](https://github.com/harvester/harvester/issues/1521) owner:lanfon72 p1
-- [BUG] Fail to use `/dev/by-id/xxx` link as the install disk in PXE boot installation [#1462](https://github.com/harvester/harvester/issues/1462) owner:lanfon72 area/installer, bug
-- [BUG] The config will keep changing,  so the frontend will keep refreshing the list [#1453](https://github.com/harvester/harvester/issues/1453) owner:lanfon72 p2
-- [BUG] Resource quota management not completely implemented in UI [#1450](https://github.com/harvester/harvester/issues/1450) owner:lanfon72 p1
-- [BUG] VM scheduling failure not reflected in VM status [#1446](https://github.com/harvester/harvester/issues/1446) owner:lanfon72 p3
-- [BUG] Harvester v0.3.0 unable to get local issuer certificate with https squashfs url [#1431](https://github.com/harvester/harvester/issues/1431) owner:lanfon72 bug
-- [BUG] Harvester 0.3 does not allow CPU-overprovisioning [#1429](https://github.com/harvester/harvester/issues/1429) owner:lanfon72 p1
-- [BUG] VM SSH Key's modifying didn't reflect to user data [#1386](https://github.com/harvester/harvester/issues/1386) owner:lanfon72 p2
-- [BUG] VM's resource restriction is not match to hosts state [#1376](https://github.com/harvester/harvester/issues/1376) owner:lanfon72 p2
-- [BUG] VM's function won't work when host is down [#1360](https://github.com/harvester/harvester/issues/1360) owner:lanfon72 p2
-- [BUG] Nodes in maintenance mode are listed in Node Scheduling selection [#1350](https://github.com/harvester/harvester/issues/1350) owner:lanfon72 p2
-- [BUG] Backup-target failing for the harvester-ci-testing bucket [#1339](https://github.com/harvester/harvester/issues/1339) owner:lanfon72 p2
-- [BUG] Lack Edit as YAML button for resource creation [#1304](https://github.com/harvester/harvester/issues/1304) owner:lanfon72 p2
-- [BUG] Cursor jumps to the end while editing image name [#1269](https://github.com/harvester/harvester/issues/1269) owner:lanfon72 p2
-- [BUG] After rebooting all Harvester nodes concurrently some VMs can't be restarted [#1263](https://github.com/harvester/harvester/issues/1263) owner:lanfon72 p1
-- [BUG] Host overview doesn't show actual available storage from longhorn [#1253](https://github.com/harvester/harvester/issues/1253) owner:lanfon72 p1
-- [BUG]  Unable to migrate `restore-new` vm twice [#1086](https://github.com/harvester/harvester/issues/1086) owner:lanfon72 p2
-- [BUG] Error message about invalid backup target doesn't go away [#1051](https://github.com/harvester/harvester/issues/1051) owner:lanfon72 p1
-- [BUG] VM status doesn't update when host goes down [#982](https://github.com/harvester/harvester/issues/982) owner:lanfon72 p1
-- [BUG] VM always in starting state when 3 VMs is running [#1387](https://github.com/harvester/harvester/issues/1387) owner:lanfon72, noahgildersleeve p2
-- [FEATURE] Ability to use HwAddr to lookup NetworkInterface Name in harvester-installer. [#1641](https://github.com/harvester/harvester/issues/1641) owner:lanfon72 area/installer, enhancement
-- [FEATURE] maximum CPU in VM creation [#1565](https://github.com/harvester/harvester/issues/1565) owner:lanfon72 area/ui, enhancement
-- [FEATURE] Support management of node labels  for advanced scheduling of VMs [#1416](https://github.com/harvester/harvester/issues/1416) owner:lanfon72 p2
-- [FEATURE] Move `download kubeconfig` icon [#1349](https://github.com/harvester/harvester/issues/1349) owner:lanfon72 p2
-- [FEATURE] Configuring additional trusted CA certificates [#1260](https://github.com/harvester/harvester/issues/1260) owner:lanfon72 p1
-- [FEATURE] Doc: Install OS from a USB disk [#1200](https://github.com/harvester/harvester/issues/1200) owner:lanfon72 p1
-- [FEATURE] backup VM required metadata to the external storage server [#988](https://github.com/harvester/harvester/issues/988) owner:lanfon72 p2
-- [FEATURE] Add auto SSL certificate using Let's Encrypt or ability to bring Custom certificate to secure Harvester [#761](https://github.com/harvester/harvester/issues/761) owner:lanfon72 p1
-- [FEATURE] Allow customization of TLS parameters [#1046](https://github.com/harvester/harvester/issues/1046) owner:lanfon72, noahgildersleeve p2
+### Owner: Lanfon, Not added issues
+- [#1387](https://github.com/harvester/harvester/issues/1387), VM related but can't be reproduced
+- [#1583](https://github.com/harvester/harvester/issues/1583), bug of `yip` tool, not harvester
+- [#1263](https://github.com/harvester/harvester/issues/1263), bug of Longhorn#3315, fixed after Longhorn v1.2.2
+- [#1405](https://github.com/harvester/harvester/issues/1405), install config, typo on document
+- [#1431](https://github.com/harvester/harvester/issues/1431), install config, lack document
+- [#1453](https://github.com/harvester/harvester/issues/1453), UI's basic operation on VM page
+- [#1269](https://github.com/harvester/harvester/issues/1269), UI's basic operation on Image page
+- [#1612](https://github.com/harvester/harvester/issues/1612), regression Hosts No.1
+- [#1253](https://github.com/harvester/harvester/issues/1253), regression Hosts No.1
+- [#1376](https://github.com/harvester/harvester/issues/1376), regression VM No.71-76
+- [#1386](https://github.com/harvester/harvester/issues/1386), regression VM No.28,53
+- [#1376](https://github.com/harvester/harvester/issues/1376), regression VM No.71-76
+- [#1360](https://github.com/harvester/harvester/issues/1360), regression Backup and Restore Negative No.4,5,14,15
+- [#1304](https://github.com/harvester/harvester/issues/1304), regression UI No.5
