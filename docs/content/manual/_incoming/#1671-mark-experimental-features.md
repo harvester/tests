@@ -9,8 +9,8 @@ title: Mark some features as experimental
 ![image](https://user-images.githubusercontent.com/3344618/146233410-d3f11b88-f4fa-4ee8-a0f5-fb6f70f86e70.png)
 1. Verify that Cloud Credentials is marked as experimental
 ![image](https://user-images.githubusercontent.com/3344618/146233518-ae9777a8-0753-4137-8df1-2976a5df72e7.png)
+1. Verify that external is marked as experimental in add node template
+![image](https://user-images.githubusercontent.com/83787952/148307474-93d06531-0835-4312-b5d0-e9131309d2ad.png)
 
 ## Expected Results
-1. Can hot-plug volume without error
-2. Can hot-unplug the pluggable volumes without restarting VM
-3. The de-attached volume can also be hot-plug and mount back to VM
+1. All external Harvester fields should be marked as experimental
