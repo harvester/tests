@@ -22,5 +22,12 @@
     "provision_rke2_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters",
     "delete_provisioning_cluster": "{{ rancher_endpoint }}/v1/provisioning.cattle.io.clusters/{{ api_namespace | default('fleet-default') }}/%s",
     "delete_service_account_for_cluster": "{{ rancher_endpoint }}/k8s/clusters/%s/v1/harvester/serviceaccounts/default/%s",
-    "delete_user": "{{ rancher_endpoint }}/v3/users/%s"
+    "delete_user": "{{ rancher_endpoint }}/v3/users/%s",
+    "create_node_template": "{{ rancher_endpoint }}/v3/nodetemplate",
+    "delete_node_template": "{{ rancher_endpoint }}/v3/nodeTemplates/%s",
+    "replace_cluster": "{{ rancher_endpoint }}/v3/cluster",
+    "get_rke1_cluster": "{{ rancher_endpoint }}/v3/cluster/%s",
+    "create_node_pool": "{{ rancher_endpoint }}/v3/nodepool",
+    "get_nodepool": "{{ rancher_endpoint }}/v3/nodePools/%s",
+    "delete_node_pool": "{{ rancher_endpoint }}/v3/nodePools/%s"
 }

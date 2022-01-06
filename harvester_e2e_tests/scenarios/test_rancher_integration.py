@@ -19,6 +19,7 @@ from harvester_e2e_tests import utils
 import polling2
 import pytest
 import requests
+import time
 
 
 pytest_plugins = [
@@ -75,6 +76,42 @@ def _delete_cluster(request, rancher_admin_session, rancher_api_endpoints,
         timeout=request.config.getoption('--rancher-cluster-wait-timeout'))
 
     assert success, 'Timed out while waiting for cluster to be deleted.'
+
+
+def _delete_rke1_cluster(request, rancher_admin_session, rancher_api_endpoints,
+                         rke1_cluster_id, nodepool_id, node_template_id):
+    _delete_cluster(request, rancher_admin_session, rancher_api_endpoints,
+                    rke1_cluster_id)
+
+    # delete nodepool
+    resp = rancher_admin_session.delete(
+        rancher_api_endpoints.delete_node_pool % (
+            nodepool_id))
+    assert resp.status_code == 200, (
+        'Failed to delete node Pool %s: %s' % (
+            nodepool_id, resp.content))
+
+    def _check_nodepool_deleted():
+        resp = rancher_admin_session.get(
+            rancher_api_endpoints.get_nodepool % (nodepool_id))
+        if resp.status_code == 404:
+            return True
+
+    success = polling2.poll(
+        _check_nodepool_deleted,
+        step=5,
+        timeout=request.config.getoption('--rancher-cluster-wait-timeout'))
+
+    assert success, 'Timed out while waiting for nodepool to be deleted.'
+
+    time.sleep(50)
+    # delete node template
+    resp = rancher_admin_session.delete(
+        rancher_api_endpoints.delete_node_template % (
+            node_template_id))
+    assert resp.status_code == 204, (
+        'Failed to delete node template %s: %s' % (
+            node_template_id, resp.content))
 
 
 def _wait_for_cluster_ready(request, rancher_admin_session,
@@ -222,6 +259,93 @@ def cloud_credential(request, rancher_admin_session, rancher_api_endpoints,
         assert resp.status_code == 204, (
             'Failed to delete cloud credential %s: %s' % (
                 cloud_credential_id, resp.content))
+
+
+@pytest.fixture(scope='class')
+def rke1_cluster(request, rancher_admin_session, rancher_api_endpoints, image,
+                 network, cloud_credential,
+                 external_rancher_with_imported_harvester):
+    test_environment = request.config.getoption('--test-environment')
+    cloud_credential_id = cloud_credential
+
+    # Harvester Kubeconfig
+    rke1_cluster_name = 'rke1-' + test_environment
+    rke1_cluster_name += '-' + utils.random_name()
+
+    # Create Node Template
+    image_name = "/".join([image['metadata']['namespace'],
+                          image['metadata']['name']])
+    network_name = "/".join([network['metadata']['namespace'],
+                            network['metadata']['name']])
+    request_json = utils.get_json_object_from_template(
+        'rancher_nodetemplate',
+        image_name=image_name,
+        network_name=network_name,
+        cloud_cred_id=cloud_credential_id
+    )
+    resp = rancher_admin_session.post(
+        rancher_api_endpoints.create_node_template,
+        json=request_json)
+    assert resp.status_code == 201, (
+        'Failed to create node template for RKE1 %s: %s' % (
+            resp.status_code, resp.content))
+    nodetemplate_json = resp.json()
+    node_template_id = nodetemplate_json['id']
+
+    # Replace Cluster
+    request_json = utils.get_json_object_from_template(
+        'rancher_replace_cluster',
+        name=rke1_cluster_name
+    )
+    params = {'_replace': 'true'}
+    resp = rancher_admin_session.post(
+        rancher_api_endpoints.replace_cluster,
+        params=params, json=request_json)
+    assert resp.status_code == 201, (
+        'Failed to replace cluster for RKE1 %s: %s' % (
+            resp.status_code, resp.content))
+
+    # Get Cluster Id
+    resp = rancher_admin_session.get(
+        rancher_api_endpoints.replace_cluster)
+    assert resp.status_code == 200, (
+        'Failed to get cluster for RKE1 %s: %s' % (
+            resp.status_code, resp.content))
+    cluster_json = resp.json()
+    for data in cluster_json['data']:
+        if data['name'] == rke1_cluster_name:
+            rke1_cluster_id = data['id']
+
+    time.sleep(50)
+    # Create Node Pool
+    request_json = utils.get_json_object_from_template(
+        'rancher_nodepool',
+        node_template_id=node_template_id,
+        rke1_cluster_id=rke1_cluster_id,
+        host_prefix=rke1_cluster_name
+    )
+    resp = rancher_admin_session.post(
+        rancher_api_endpoints.create_node_pool,
+        json=request_json)
+    assert resp.status_code == 201, (
+        'Failed to create node pool for RKE1 %s: %s' % (
+            resp.status_code, resp.content))
+    nodepool_json = resp.json()
+    nodepool_id = nodepool_json['id']
+
+    # wait for provision to successfully complete
+    # wait for cluster to be ready
+    _wait_for_cluster_ready(request, rancher_admin_session,
+                            rancher_api_endpoints, rke1_cluster_id)
+
+    yield rke1_cluster_id
+
+    if not request.config.getoption('--do-not-cleanup'):
+        # delete the imported Harvester cluster from Rancher
+        _delete_rke1_cluster(request, rancher_admin_session,
+                             rancher_api_endpoints,
+                             rke1_cluster_id, nodepool_id,
+                             node_template_id)
 
 
 @pytest.fixture(scope='class')
@@ -410,6 +534,9 @@ class TestRancherIntegrationWithExternalRancher:
             assert resp.status_code == 200, (
                 'Failed to delete user %s: %s' % (
                     user_id, resp.content))
+
+    def test_create_rke1_cluster(self, request, rke1_cluster):
+        pass
 
     def test_create_rke2_cluster(self, request, rke2_cluster):
         # NOTE(gyee): if rke2_cluster fixture is successfully created that
