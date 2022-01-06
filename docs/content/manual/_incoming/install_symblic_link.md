@@ -8,6 +8,6 @@ Ref: https://github.com/harvester/harvester/issues/1462
 
 ## Case: Harvester install with configure symbolic link on `install.device`
 1. Install Harvester with any nodes
-2. login to console, use `ls -l /dev/disk/by-path` to get disk's link name
-3. Re-install Harvester with configure file, with set the disk's link name instead.
-4. Harvester should be install successfully
+1. login to console, use `ls -l /dev/disk/by-path` to get disk's link name
+1. Re-install Harvester with configure file, with set the disk's link name instead.
+1. Harvester should be install successfully
