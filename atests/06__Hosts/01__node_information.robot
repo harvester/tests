@@ -122,7 +122,7 @@ Displayed Memory Values Should Be Like
 
 Displayed Storage Values Should Be Like
     [arguments]     ${old_value}
-    ${txt} =        Get Text      //main//section//div[@class="numbers"][../h3[normalize-space(text())="Storage Size"]]/span[span]
+    ${txt} =        Get Text      //main//section//div[@class="numbers"][../h3[normalize-space(text())="Storage"]]/span[span]
     ${matches} =    Get Regexp Matches
     ...             ${txt}
     ...             (\\d+(?:\\.\\d+)?)\\sof\\s(\\d+)    1   2
