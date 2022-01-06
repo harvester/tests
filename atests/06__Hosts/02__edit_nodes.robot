@@ -116,6 +116,8 @@ Purge Custom Name And Description on
 
 Update YAML With
     [arguments]     ${custom_name}      ${description}
+    Wait Until Element Is Visible   css:main pre.CodeMirror-line    timeout=${BROWSER_WAIT_TIMEOUT}
+
     Click Element   css:main pre.CodeMirror-line
     Press Keys      css:main div.CodeMirror textarea
     ...             CTRL+a+CTRL+x

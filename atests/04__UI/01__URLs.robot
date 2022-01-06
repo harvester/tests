@@ -58,4 +58,5 @@ Navigate To Location
     [arguments]         ${url}
     Go To   ${url}
     Wait Until Element Is Not Visible       xpath://i[@class="initial-load-spinner"]
+    ...                                     timeout=${BROWSER_WAIT_TIMEOUT}
     Sleep   0.2s
