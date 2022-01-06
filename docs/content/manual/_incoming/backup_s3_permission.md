@@ -8,10 +8,10 @@ Ref: https://github.com/harvester/harvester/issues/1339
 
 ## Case: S3 Backup with `single-bucket-user`
 1. Install Harvester with any nodes
-2. Setup Minio
+1. Setup Minio
     1. then follow the [instruction](https://objectivefs.com/howto/how-to-restrict-s3-bucket-policy-to-only-one-aws-s3-bucket) to create a `single-bucket-user`.
-    2. Create specific bucket for the user
-    3. Create other buckets
-3. setup `backup-target` with the **single-bucket-user** permission
+    1. Create specific bucket for the user
+    1. Create other buckets
+1. setup `backup-target` with the **single-bucket-user** permission
     1. When assign the dedicated bucket (for the user), connection should success.
-    2. When assign other buckets, connection should failed with **AccessDenied** error message
+    1. When assign other buckets, connection should failed with **AccessDenied** error message

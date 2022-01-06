@@ -8,5 +8,5 @@ Ref: https://github.com/harvester/harvester/issues/1550
 
 ## Case: Toggle of Password field
 1. install harvester with any nodes
-2. setup password
-3. logout then login with password toggled
+1. setup password
+1. logout then login with password toggled

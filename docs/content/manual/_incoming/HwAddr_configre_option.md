@@ -8,4 +8,4 @@ Ref: https://github.com/harvester/harvester/issues/1064
 
 ### Case: Use `HwAddr` to install harvester via PXE
 1. Install Harvester with PXE installation, set `hwAddr` instead of `name` in **install.networks**
-2. Harvester should installed successfully
+1. Harvester should installed successfully

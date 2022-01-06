@@ -11,15 +11,15 @@ Ref:
 
 ## Case: Create a VM that no Node can host it
 1. Install Harvester with any nodes
-2. download a image to create VM
-3. create a VM with over-commit (consider to over-provisioning feature, double or triple the host resource would be more reliable.)
-4. VM should shows **Starting** state, and an alart icon shows aside.
-5. hover to the icon, pop-up message should display messages like `0/N nodes are available: n insufficient ...`
+1. download a image to create VM
+1. create a VM with over-commit (consider to over-provisioning feature, double or triple the host resource would be more reliable.)
+1. VM should shows **Starting** state, and an alart icon shows aside.
+1. hover to the icon, pop-up message should display messages like `0/N nodes are available: n insufficient ...`
 
 ## Case: VM's state changed to **Not Ready** when the host is down
 1. Install Harvester with 2+ nodes
-2. Create an Image for VM creation
-3. Create a VM and wait until state becomes **Running**
-4. Reboot the node which hosting the VM
-5. Node's _State_ should be `In Progress` in _**Hosts**_ page
-6. VM's _State_ should be `Not Ready` in _**Virtual Machines**_ page
+1. Create an Image for VM creation
+1. Create a VM and wait until state becomes **Running**
+1. Reboot the node which hosting the VM
+1. Node's _State_ should be `In Progress` in _**Hosts**_ page
+1. VM's _State_ should be `Not Ready` in _**Virtual Machines**_ page
