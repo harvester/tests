@@ -1,0 +1,18 @@
+{
+   "type":"nodeTemplate",
+   "engineInstallURL":"https://releases.rancher.com/install-docker/20.10.sh",
+   "engineRegistryMirror":[ ],
+   "driver":"harvester",
+   "harvesterConfig":{
+       "cloudConfig":"",
+       "cpuCount":"1",
+       "diskSize":10,
+       "imageName":"{{ image_name }}",
+       "memorySize":4,
+       "networkName":"{{ network_name }}",
+       "sshUser":"opensuse",
+       "vmNamespace":"default",
+       "type":"harvesterConfig"
+   },
+   "cloudCredentialId":"{{ cloud_cred_id }}"
+}
