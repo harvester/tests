@@ -11,6 +11,7 @@ def paste():
     else:
         return paste()
 
+
 @keyword("Copy To Clipboard")
 def copy(ctx):
     try:
