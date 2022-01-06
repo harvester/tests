@@ -10,3 +10,4 @@ title: Edit VM via YAML with CPU (e2e_be)
 1. Changes should show
     - In Form
     - In YAML
+    - In VM list
