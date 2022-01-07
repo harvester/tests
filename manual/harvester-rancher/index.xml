@@ -17,7 +17,7 @@
     </item>
     
     <item>
-      <title>02-Integrate to Rancher from Harvester settings</title>
+      <title>02-Integrate to Rancher from Harvester settings (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -66,7 +66,7 @@
     </item>
     
     <item>
-      <title>07-Add and grant project-owner user to harvester</title>
+      <title>07-Add and grant project-owner user to harvester (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/07-rbac-add-grant-project-owner-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -156,7 +156,7 @@
     </item>
     
     <item>
-      <title>17-Delete Imported Harvester Cluster</title>
+      <title>17-Delete Imported Harvester Cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/17-delete-imported-harvester-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -202,7 +202,7 @@
     </item>
     
     <item>
-      <title>22-Create RKE2 Kubernetes Cluster</title>
+      <title>22-Create RKE2 Kubernetes Cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/22-create-rke2-kubernetes-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -211,7 +211,7 @@
     </item>
     
     <item>
-      <title>23-Delete RKE2 Kubernetes Cluster</title>
+      <title>23-Delete RKE2 Kubernetes Cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/23-delete-rke2-kubernetes-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

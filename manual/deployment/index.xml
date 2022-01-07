@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/deployment/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Add a node to existing cluster</title>
+      <title>Add a node to existing cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/add-node-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -36,7 +36,7 @@ Expected Results  On completion of the installation, Harvester should provide th
     </item>
     
     <item>
-      <title>Install Harvester on a bare Metal node using PXE boot</title>
+      <title>Install Harvester on a bare Metal node using PXE boot (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/install-bare-metal-pxe/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -82,7 +82,7 @@ Expected Results  On completion of the installation, Harvester should provide th
     </item>
     
     <item>
-      <title>Verify and Configure Networking Connection</title>
+      <title>Verify and Configure Networking Connection (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/verify-network-connection/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -136,7 +136,7 @@ Expected Results  On completion of the installation, Harvester should provide th
     </item>
     
     <item>
-      <title>VIP Load balancer verification</title>
+      <title>VIP Load balancer verification (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/verify-vip-load-balancer/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

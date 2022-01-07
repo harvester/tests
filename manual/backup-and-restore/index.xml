@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/backup-and-restore/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Backup Single VM</title>
+      <title>Backup Single VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -16,7 +16,7 @@
     </item>
     
     <item>
-      <title>Backup Single VM that has been live migrated before</title>
+      <title>Backup Single VM that has been live migrated before (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-that-has-been-live-migrated/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -35,7 +35,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Create Backup Target</title>
+      <title>Create Backup Target (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/create-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -44,7 +44,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Delete backup from backups list</title>
+      <title>Delete backup from backups list (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-single-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -53,7 +53,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Delete first backup in chained backup</title>
+      <title>Delete first backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-first-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -62,7 +62,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Delete last backup in chained backup</title>
+      <title>Delete last backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-last-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -71,7 +71,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Delete middle backup in chained backup</title>
+      <title>Delete middle backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-middle-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -98,7 +98,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Edit backup via YAML</title>
+      <title>Edit backup via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/edit-backup-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -233,7 +233,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Negative restore backup replace existing VM with backup from same VM that is turned on</title>
+      <title>Negative restore backup replace existing VM with backup from same VM that is turned on (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-turned-on/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -242,7 +242,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Restore backup create new vm</title>
+      <title>Restore backup create new vm (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -251,7 +251,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Restore Backup for VM that was live migrated</title>
+      <title>Restore Backup for VM that was live migrated (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-for-vm-live-migrated/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -260,7 +260,7 @@ Known Bugs https://github.</description>
     </item>
     
     <item>
-      <title>Restore backup replace existing VM with backup from same VM</title>
+      <title>Restore backup replace existing VM with backup from same VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-replace-existing/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

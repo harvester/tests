@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/hosts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Delete Host</title>
+      <title>Delete Host (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/delete-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -34,7 +34,7 @@
     </item>
     
     <item>
-      <title>Edit Config</title>
+      <title>Edit Config (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/edit-config/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -43,7 +43,7 @@
     </item>
     
     <item>
-      <title>Edit Config YAML</title>
+      <title>Edit Config YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/edit-config-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -61,7 +61,7 @@
     </item>
     
     <item>
-      <title>Maintenance mode for host with one VM</title>
+      <title>Maintenance mode for host with one VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-one-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -70,7 +70,7 @@
     </item>
     
     <item>
-      <title>Maintenance mode on node with no vms</title>
+      <title>Maintenance mode on node with no vms (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-no-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -106,7 +106,7 @@
     </item>
     
     <item>
-      <title>Reboot host that is in maintenance mode</title>
+      <title>Reboot host that is in maintenance mode (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-reboot-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -142,7 +142,7 @@
     </item>
     
     <item>
-      <title>Start Host in maintenance mode</title>
+      <title>Start Host in maintenance mode (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-start-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -151,7 +151,7 @@
     </item>
     
     <item>
-      <title>Take host out of maintenance mode that has been rebooted</title>
+      <title>Take host out of maintenance mode that has been rebooted	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -160,7 +160,7 @@
     </item>
     
     <item>
-      <title>Take host out of maintenance mode that has not been rebooted</title>
+      <title>Take host out of maintenance mode that has not been rebooted (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-not-rebooted/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -178,7 +178,7 @@
     </item>
     
     <item>
-      <title>Turn off host that is in maintenance mode</title>
+      <title>Turn off host that is in maintenance mode (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-turn-off-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

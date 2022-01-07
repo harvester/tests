@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/terraform-provider/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Installation of the Harvester terraform provider</title>
+      <title>Installation of the Harvester terraform provider (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/install-terraform-provider/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -18,7 +18,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Target Harvester by setting the variable kubeconfig with your kubeconfig file in the provider.tf file</title>
+      <title>Target Harvester by setting the variable kubeconfig with your kubeconfig file in the provider.tf file (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-variasble/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -27,7 +27,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Target Harvester with the default kubeconfig located in $HOME/.kube/config</title>
+      <title>Target Harvester with the default kubeconfig located in $HOME/.kube/config (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-home/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -36,7 +36,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Test a deployment with ALL resources at the same time</title>
+      <title>Test a deployment with ALL resources at the same time (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/deployment-all-resources/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -45,7 +45,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Test the harvester_clusternetwork resource</title>
+      <title>Test the harvester_clusternetwork resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-clusternetwork-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -54,7 +54,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Test the harvester_image resource</title>
+      <title>Test the harvester_image resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-image-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -63,7 +63,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Test the harvester_network resource</title>
+      <title>Test the harvester_network resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-network-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -72,7 +72,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Test the harvester_ssh_key resource</title>
+      <title>Test the harvester_ssh_key resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-ssh-key-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -82,7 +82,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Test the harvester_virtualmachine resource</title>
+      <title>Test the harvester_virtualmachine resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-virtualmachine-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -91,7 +91,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Test the harvester_volume resource</title>
+      <title>Test the harvester_volume resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-volume-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

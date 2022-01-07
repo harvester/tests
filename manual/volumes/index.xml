@@ -34,7 +34,7 @@
     </item>
     
     <item>
-      <title>Create volume root disk VM Image Form with label</title>
+      <title>Create volume root disk VM Image Form with label (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -43,7 +43,7 @@
     </item>
     
     <item>
-      <title>Delete volume that is not attached to a VM</title>
+      <title>Delete volume that is not attached to a VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/delete-volume-that-is-not-attached-to-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -52,7 +52,7 @@
     </item>
     
     <item>
-      <title>Delete volume that was attached to VM but now is not</title>
+      <title>Delete volume that was attached to VM but now is not (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/delete-volume-that-was-attached-to-vm-but-is-not-now/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -97,7 +97,7 @@
     </item>
     
     <item>
-      <title>Edit volume increase size via YAML</title>
+      <title>Edit volume increase size via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -106,7 +106,7 @@
     </item>
     
     <item>
-      <title>Edit Volume YAML add label</title>
+      <title>Edit Volume YAML add label (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-yaml-add-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -115,7 +115,7 @@
     </item>
     
     <item>
-      <title>Negative delete Volume that is in use</title>
+      <title>Negative delete Volume that is in use (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/negative-delete-volume-that-is-in-use/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -124,7 +124,7 @@
     </item>
     
     <item>
-      <title>Validate volume shows as in use when attached</title>
+      <title>Validate volume shows as in use when attached (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/validate-volume-shows-in-use-while-attached/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

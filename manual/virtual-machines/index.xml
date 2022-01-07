@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/virtual-machines/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Add a network to an existing VM with only 1 network</title>
+      <title>Add a network to an existing VM with only 1 network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-only-1-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -79,7 +79,7 @@
     </item>
     
     <item>
-      <title>Create a new VM and add Enable USB tablet option</title>
+      <title>Create a new VM and add Enable USB tablet option	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -88,7 +88,7 @@
     </item>
     
     <item>
-      <title>Create a new VM and add Install guest agent option</title>
+      <title>Create a new VM and add Install guest agent option (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-install-guest-agent-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -106,7 +106,7 @@
     </item>
     
     <item>
-      <title>Create a new VM with Network Data from YAML</title>
+      <title>Create a new VM with Network Data from YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -133,7 +133,7 @@
     </item>
     
     <item>
-      <title>Create a VM with 2 networks</title>
+      <title>Create a VM with 2 networks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-2-networks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -142,7 +142,7 @@
     </item>
     
     <item>
-      <title>Create a vm with all the default values</title>
+      <title>Create a vm with all the default values (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -151,7 +151,7 @@
     </item>
     
     <item>
-      <title>Create a VM with Start VM on Creation checked</title>
+      <title>Create a VM with Start VM on Creation checked (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-checked/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -160,7 +160,7 @@
     </item>
     
     <item>
-      <title>Create a VM with start VM on creation unchecked</title>
+      <title>Create a VM with start VM on creation unchecked (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -169,7 +169,7 @@
     </item>
     
     <item>
-      <title>Create multiple instances of the vm with ISO image</title>
+      <title>Create multiple instances of the vm with ISO image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-iso-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -178,7 +178,7 @@
     </item>
     
     <item>
-      <title>Create multiple instances of the vm with raw image</title>
+      <title>Create multiple instances of the vm with raw image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-raw-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -187,7 +187,7 @@
     </item>
     
     <item>
-      <title>Create multiple instances of the vm with Windows Image</title>
+      <title>Create multiple instances of the vm with Windows Image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-windows-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -196,7 +196,7 @@
     </item>
     
     <item>
-      <title>Create new VM with a machine type of PC</title>
+      <title>Create new VM with a machine type of PC (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-pc/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -205,7 +205,7 @@
     </item>
     
     <item>
-      <title>Create new VM with a machine type of q35</title>
+      <title>Create new VM with a machine type of q35 (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-q35/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -241,7 +241,7 @@
     </item>
     
     <item>
-      <title>Create Single instances of the vm with ISO image</title>
+      <title>Create Single instances of the vm with ISO image	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -259,7 +259,7 @@
     </item>
     
     <item>
-      <title>Create Single instances of the vm with raw image</title>
+      <title>Create Single instances of the vm with raw image	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -268,7 +268,7 @@
     </item>
     
     <item>
-      <title>Create Single instances of the vm with Windows Image</title>
+      <title>Create Single instances of the vm with Windows Image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-windows-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -277,7 +277,7 @@
     </item>
     
     <item>
-      <title>Create two VMs in the same VLAN</title>
+      <title>Create two VMs in the same VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-in-the-same-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -304,7 +304,7 @@
     </item>
     
     <item>
-      <title>Create VM and add SSH key</title>
+      <title>Create VM and add SSH key (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-and-add-ssh-key/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -349,7 +349,7 @@
     </item>
     
     <item>
-      <title>Create vm with both CPU and Memory not in cluster</title>
+      <title>Create vm with both CPU and Memory not in cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-both-cpu-and-memory-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -358,7 +358,7 @@
     </item>
     
     <item>
-      <title>Create vm with CPU not in cluster.</title>
+      <title>Create vm with CPU not in cluster. (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-cpu-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -367,7 +367,7 @@
     </item>
     
     <item>
-      <title>Create VM with existing Volume</title>
+      <title>Create VM with existing Volume (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -376,21 +376,12 @@
     </item>
     
     <item>
-      <title>Create vm with Memory not in cluster.</title>
+      <title>Create vm with Memory not in cluster. (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-memory-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-memory-not-in-cluster/</guid>
       <description> Attempt to create a VM with the appropriate resources  Expected Results  You should get errors for each resource you over provisioned The VM should not create until errors are resolved  </description>
-    </item>
-    
-    <item>
-      <title>Create VM with resources that are only on one node in cluster CPU</title>
-      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</guid>
-      <description> Create a VM with resources that are only available on one node in cluster  Expected Results  VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks  </description>
     </item>
     
     <item>
@@ -403,20 +394,20 @@
     </item>
     
     <item>
-      <title>Create VM with resources that are only on one node in cluster CPU and Memory</title>
-      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</link>
+      <title>Create VM with resources that are only on one node in cluster CPU (e2e_be)</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</guid>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</guid>
       <description> Create a VM with resources that are only available on one node in cluster  Expected Results  VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks  </description>
     </item>
     
     <item>
-      <title>Create VM with resources that are only on one node in cluster Memory</title>
-      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</link>
+      <title>Create VM with resources that are only on one node in cluster CPU and Memory (e2e_be)</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</guid>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</guid>
       <description> Create a VM with resources that are only available on one node in cluster  Expected Results  VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks  </description>
     </item>
     
@@ -430,7 +421,16 @@
     </item>
     
     <item>
-      <title>Create VM with saved SSH key</title>
+      <title>Create VM with resources that are only on one node in cluster Memory (e2e_be)</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</guid>
+      <description> Create a VM with resources that are only available on one node in cluster  Expected Results  VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks  </description>
+    </item>
+    
+    <item>
+      <title>Create VM with saved SSH key (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-saved-ssh-key/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -439,7 +439,7 @@
     </item>
     
     <item>
-      <title>Create VM with the default network</title>
+      <title>Create VM with the default network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-the-default-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -448,7 +448,7 @@
     </item>
     
     <item>
-      <title>Create VM with two disk volumes</title>
+      <title>Create VM with two disk volumes (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -466,7 +466,7 @@
     </item>
     
     <item>
-      <title>Delete multiple VMs with disks</title>
+      <title>Delete multiple VMs with disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-with-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -475,7 +475,7 @@
     </item>
     
     <item>
-      <title>Delete multiple VMs without disks</title>
+      <title>Delete multiple VMs without disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-without-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -484,7 +484,7 @@
     </item>
     
     <item>
-      <title>Delete single vm all disks</title>
+      <title>Delete single vm all disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-single-vm-all-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -493,7 +493,7 @@
     </item>
     
     <item>
-      <title>Delete VM Negative</title>
+      <title>Delete VM Negative (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-delete-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -502,7 +502,7 @@
     </item>
     
     <item>
-      <title>Edit a VM and add install Enable usb tablet option</title>
+      <title>Edit a VM and add install Enable usb tablet option (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-and-add-install-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -511,7 +511,7 @@
     </item>
     
     <item>
-      <title>Edit a VM and add install guest agent option</title>
+      <title>Edit a VM and add install guest agent option (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-and-add-install-guest-agent-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -538,7 +538,7 @@
     </item>
     
     <item>
-      <title>Edit a VM from the YAML to add Network Data</title>
+      <title>Edit a VM from the YAML to add Network Data (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-network-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -547,7 +547,7 @@
     </item>
     
     <item>
-      <title>Edit a VM from the YAML to add user data</title>
+      <title>Edit a VM from the YAML to add user data (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-user-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -556,7 +556,7 @@
     </item>
     
     <item>
-      <title>Edit an existing VM to another machine type</title>
+      <title>Edit an existing VM to another machine type (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-an-existing-vm-to-another-machine-type/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -565,7 +565,7 @@
     </item>
     
     <item>
-      <title>Edit vm and insert ssh and check the ssh key is accepted for the login</title>
+      <title>Edit vm and insert ssh and check the ssh key is accepted for the login (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-and-insert-ssh-and-check-the-ssh-key-is-accepted-for-the-login/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -583,7 +583,7 @@
     </item>
     
     <item>
-      <title>Edit vm network and verify the network is working as per configuration</title>
+      <title>Edit vm network and verify the network is working as per configuration (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-network-and-verify-the-network-is-working-as-per-configuration-/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -619,7 +619,7 @@
     </item>
     
     <item>
-      <title>Edit VM via YAML with CPU</title>
+      <title>Edit VM via YAML with CPU (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -628,7 +628,7 @@
     </item>
     
     <item>
-      <title>Edit VM via YAML with CPU and Memory</title>
+      <title>Edit VM via YAML with CPU and Memory (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu-and-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -637,7 +637,7 @@
     </item>
     
     <item>
-      <title>Edit VM via YAML with Memory</title>
+      <title>Edit VM via YAML with Memory (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -682,7 +682,7 @@
     </item>
     
     <item>
-      <title>Start VM Negative</title>
+      <title>Start VM Negative (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-start-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -700,7 +700,7 @@
     </item>
     
     <item>
-      <title>Verify operations like Stop, restart, pause, download YAML, generate template</title>
+      <title>Verify operations like Stop, restart, pause, download YAML, generate template (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

@@ -17,7 +17,7 @@
     </item>
     
     <item>
-      <title>02-Integrate to Rancher from Harvester settings</title>
+      <title>02-Integrate to Rancher from Harvester settings (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -66,7 +66,7 @@
     </item>
     
     <item>
-      <title>07-Add and grant project-owner user to harvester</title>
+      <title>07-Add and grant project-owner user to harvester (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/07-rbac-add-grant-project-owner-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -156,7 +156,7 @@
     </item>
     
     <item>
-      <title>17-Delete Imported Harvester Cluster</title>
+      <title>17-Delete Imported Harvester Cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/17-delete-imported-harvester-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -202,7 +202,7 @@
     </item>
     
     <item>
-      <title>22-Create RKE2 Kubernetes Cluster</title>
+      <title>22-Create RKE2 Kubernetes Cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/22-create-rke2-kubernetes-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -211,7 +211,7 @@
     </item>
     
     <item>
-      <title>23-Delete RKE2 Kubernetes Cluster</title>
+      <title>23-Delete RKE2 Kubernetes Cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/23-delete-rke2-kubernetes-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -577,7 +577,7 @@ Setup the online harvester
     </item>
     
     <item>
-      <title>Add a network to an existing VM with only 1 network</title>
+      <title>Add a network to an existing VM with only 1 network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-only-1-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -595,7 +595,7 @@ Setup the online harvester
     </item>
     
     <item>
-      <title>Add a node to existing cluster</title>
+      <title>Add a node to existing cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/add-node-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -613,7 +613,7 @@ Setup the online harvester
     </item>
     
     <item>
-      <title>Add Labels</title>
+      <title>Add Labels (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/add-labels/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -631,7 +631,7 @@ Setup the online harvester
     </item>
     
     <item>
-      <title>Add multiple Networks via YAML</title>
+      <title>Add multiple Networks via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/add-multiple-networks-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -649,7 +649,7 @@ Setup the online harvester
     </item>
     
     <item>
-      <title>Add VLAN network</title>
+      <title>Add VLAN network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/add-vlan-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -715,7 +715,7 @@ Verify Items  Backup target connect to S3 should only require the permission to 
     </item>
     
     <item>
-      <title>Backup Single VM</title>
+      <title>Backup Single VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -724,7 +724,7 @@ Verify Items  Backup target connect to S3 should only require the permission to 
     </item>
     
     <item>
-      <title>Backup Single VM that has been live migrated before</title>
+      <title>Backup Single VM that has been live migrated before (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-that-has-been-live-migrated/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -982,7 +982,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create a new VM and add Enable USB tablet option</title>
+      <title>Create a new VM and add Enable USB tablet option	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -991,7 +991,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create a new VM and add Install guest agent option</title>
+      <title>Create a new VM and add Install guest agent option (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-install-guest-agent-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1009,7 +1009,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create a new VM with Network Data from YAML</title>
+      <title>Create a new VM with Network Data from YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1036,7 +1036,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create a VM with 2 networks</title>
+      <title>Create a VM with 2 networks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-2-networks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1045,7 +1045,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create a vm with all the default values</title>
+      <title>Create a vm with all the default values (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1054,7 +1054,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create a VM with Start VM on Creation checked</title>
+      <title>Create a VM with Start VM on Creation checked (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-checked/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1063,7 +1063,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create a VM with start VM on creation unchecked</title>
+      <title>Create a VM with start VM on creation unchecked (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1072,7 +1072,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create Backup Target</title>
+      <title>Create Backup Target (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/create-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1117,7 +1117,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create Images with valid image URL</title>
+      <title>Create Images with valid image URL (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/create-images-with-valid-image-url/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1126,7 +1126,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create multiple instances of the vm with ISO image</title>
+      <title>Create multiple instances of the vm with ISO image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-iso-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1135,7 +1135,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create multiple instances of the vm with raw image</title>
+      <title>Create multiple instances of the vm with raw image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-raw-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1144,7 +1144,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create multiple instances of the vm with Windows Image</title>
+      <title>Create multiple instances of the vm with Windows Image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-windows-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1153,7 +1153,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create new network</title>
+      <title>Create new network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/create-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1162,7 +1162,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create new VM with a machine type of PC</title>
+      <title>Create new VM with a machine type of PC (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-pc/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1171,7 +1171,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create new VM with a machine type of q35</title>
+      <title>Create new VM with a machine type of q35 (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-q35/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1207,7 +1207,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create Single instances of the vm with ISO image</title>
+      <title>Create Single instances of the vm with ISO image	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1225,7 +1225,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create Single instances of the vm with raw image</title>
+      <title>Create Single instances of the vm with raw image	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1234,7 +1234,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create Single instances of the vm with Windows Image</title>
+      <title>Create Single instances of the vm with Windows Image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-windows-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1243,7 +1243,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create two VMs in the same VLAN</title>
+      <title>Create two VMs in the same VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-in-the-same-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1270,7 +1270,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create VM and add SSH key</title>
+      <title>Create VM and add SSH key (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-and-add-ssh-key/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1315,7 +1315,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create vm with both CPU and Memory not in cluster</title>
+      <title>Create vm with both CPU and Memory not in cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-both-cpu-and-memory-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1324,7 +1324,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create vm with CPU not in cluster.</title>
+      <title>Create vm with CPU not in cluster. (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-cpu-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1333,7 +1333,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create VM with existing Volume</title>
+      <title>Create VM with existing Volume (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1342,21 +1342,12 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create vm with Memory not in cluster.</title>
+      <title>Create vm with Memory not in cluster. (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-memory-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-memory-not-in-cluster/</guid>
       <description> Attempt to create a VM with the appropriate resources  Expected Results  You should get errors for each resource you over provisioned The VM should not create until errors are resolved  </description>
-    </item>
-    
-    <item>
-      <title>Create VM with resources that are only on one node in cluster CPU</title>
-      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</guid>
-      <description> Create a VM with resources that are only available on one node in cluster  Expected Results  VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks  </description>
     </item>
     
     <item>
@@ -1369,20 +1360,20 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create VM with resources that are only on one node in cluster CPU and Memory</title>
-      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</link>
+      <title>Create VM with resources that are only on one node in cluster CPU (e2e_be)</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</guid>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</guid>
       <description> Create a VM with resources that are only available on one node in cluster  Expected Results  VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks  </description>
     </item>
     
     <item>
-      <title>Create VM with resources that are only on one node in cluster Memory</title>
-      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</link>
+      <title>Create VM with resources that are only on one node in cluster CPU and Memory (e2e_be)</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</guid>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</guid>
       <description> Create a VM with resources that are only available on one node in cluster  Expected Results  VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks  </description>
     </item>
     
@@ -1396,7 +1387,16 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create VM with saved SSH key</title>
+      <title>Create VM with resources that are only on one node in cluster Memory (e2e_be)</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</guid>
+      <description> Create a VM with resources that are only available on one node in cluster  Expected Results  VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks  </description>
+    </item>
+    
+    <item>
+      <title>Create VM with saved SSH key (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-saved-ssh-key/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1405,7 +1405,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create VM with the default network</title>
+      <title>Create VM with the default network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-the-default-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1414,7 +1414,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create VM with two disk volumes</title>
+      <title>Create VM with two disk volumes (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1441,7 +1441,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create volume root disk VM Image Form with label</title>
+      <title>Create volume root disk VM Image Form with label (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1459,7 +1459,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Create with invalid image</title>
+      <title>Create with invalid image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/negative-create-with-invalid-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1487,7 +1487,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete backup from backups list</title>
+      <title>Delete backup from backups list (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-single-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1514,7 +1514,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete external VLAN network via YAML</title>
+      <title>Delete external VLAN network via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/delete-vlan-network-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1523,7 +1523,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete first backup in chained backup</title>
+      <title>Delete first backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-first-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1532,7 +1532,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete Host</title>
+      <title>Delete Host (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/delete-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1550,7 +1550,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete last backup in chained backup</title>
+      <title>Delete last backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-last-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1568,7 +1568,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete management network via YAML</title>
+      <title>Delete management network via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/delete-management-network-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1577,7 +1577,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete middle backup in chained backup</title>
+      <title>Delete middle backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-middle-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1595,7 +1595,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete multiple VMs with disks</title>
+      <title>Delete multiple VMs with disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-with-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1604,7 +1604,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete multiple VMs without disks</title>
+      <title>Delete multiple VMs without disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-without-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1613,7 +1613,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete single vm all disks</title>
+      <title>Delete single vm all disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-single-vm-all-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1622,7 +1622,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete the image</title>
+      <title>Delete the image	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/delete-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1631,7 +1631,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete VM Negative</title>
+      <title>Delete VM Negative (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-delete-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1640,7 +1640,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete volume that is not attached to a VM</title>
+      <title>Delete volume that is not attached to a VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/delete-volume-that-is-not-attached-to-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1649,7 +1649,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
-      <title>Delete volume that was attached to VM but now is not</title>
+      <title>Delete volume that was attached to VM but now is not (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/delete-volume-that-was-attached-to-vm-but-is-not-now/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1677,7 +1677,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit a VM and add install Enable usb tablet option</title>
+      <title>Edit a VM and add install Enable usb tablet option (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-and-add-install-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1686,7 +1686,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit a VM and add install guest agent option</title>
+      <title>Edit a VM and add install guest agent option (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-and-add-install-guest-agent-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1713,7 +1713,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit a VM from the YAML to add Network Data</title>
+      <title>Edit a VM from the YAML to add Network Data (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-network-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1722,7 +1722,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit a VM from the YAML to add user data</title>
+      <title>Edit a VM from the YAML to add user data (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-user-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1731,7 +1731,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit an existing VM to another machine type</title>
+      <title>Edit an existing VM to another machine type (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-an-existing-vm-to-another-machine-type/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1749,7 +1749,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit backup via YAML</title>
+      <title>Edit backup via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/edit-backup-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1758,7 +1758,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit Config</title>
+      <title>Edit Config (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/edit-config/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1767,7 +1767,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit Config YAML</title>
+      <title>Edit Config YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/edit-config-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1776,7 +1776,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit images</title>
+      <title>Edit images (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/edit-images/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1803,7 +1803,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit network via YAML change external VLAN to management network</title>
+      <title>Edit network via YAML change external VLAN to management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/edit-network-yaml-change-vlan-to-management/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1812,7 +1812,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit network via YAML change management network to external VLAN</title>
+      <title>Edit network via YAML change management network to external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/edit-network-yaml-change-management-to-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1821,7 +1821,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit vm and insert ssh and check the ssh key is accepted for the login</title>
+      <title>Edit vm and insert ssh and check the ssh key is accepted for the login (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-and-insert-ssh-and-check-the-ssh-key-is-accepted-for-the-login/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1839,7 +1839,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit vm network and verify the network is working as per configuration</title>
+      <title>Edit vm network and verify the network is working as per configuration (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-network-and-verify-the-network-is-working-as-per-configuration-/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1875,7 +1875,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit VM via YAML with CPU</title>
+      <title>Edit VM via YAML with CPU (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1884,7 +1884,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit VM via YAML with CPU and Memory</title>
+      <title>Edit VM via YAML with CPU and Memory (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu-and-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1893,7 +1893,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit VM via YAML with Memory</title>
+      <title>Edit VM via YAML with Memory (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1956,7 +1956,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit volume increase size via YAML</title>
+      <title>Edit volume increase size via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1965,7 +1965,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
     </item>
     
     <item>
-      <title>Edit Volume YAML add label</title>
+      <title>Edit Volume YAML add label (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-yaml-add-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2113,7 +2113,7 @@ Expected Results  On completion of the installation, Harvester should provide th
     </item>
     
     <item>
-      <title>Install Harvester on a bare Metal node using PXE boot</title>
+      <title>Install Harvester on a bare Metal node using PXE boot (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/install-bare-metal-pxe/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2153,7 +2153,7 @@ Verify Items  Disk&amp;rsquo;s symbolic link can be used in install configure op
     </item>
     
     <item>
-      <title>Installation of the Harvester terraform provider</title>
+      <title>Installation of the Harvester terraform provider (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/install-terraform-provider/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2200,7 +2200,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Maintenance mode for host with one VM</title>
+      <title>Maintenance mode for host with one VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-one-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2209,7 +2209,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
     </item>
     
     <item>
-      <title>Maintenance mode on node with no vms</title>
+      <title>Maintenance mode on node with no vms (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-no-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2400,7 +2400,7 @@ Verify Items  VM can be migrate to any node with any times  Case: Migrate a rest
     </item>
     
     <item>
-      <title>Negative delete Volume that is in use</title>
+      <title>Negative delete Volume that is in use (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/negative-delete-volume-that-is-in-use/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2454,7 +2454,7 @@ Verify Items  VM can be migrate to any node with any times  Case: Migrate a rest
     </item>
     
     <item>
-      <title>Negative network comes back up after reboot external VLAN</title>
+      <title>Negative network comes back up after reboot external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2463,7 +2463,7 @@ Verify Items  VM can be migrate to any node with any times  Case: Migrate a rest
     </item>
     
     <item>
-      <title>Negative network comes back up after reboot management network</title>
+      <title>Negative network comes back up after reboot management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-management-after-reboot/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2544,7 +2544,7 @@ Verify Items  VM can be migrate to any node with any times  Case: Migrate a rest
     </item>
     
     <item>
-      <title>Negative restore backup replace existing VM with backup from same VM that is turned on</title>
+      <title>Negative restore backup replace existing VM with backup from same VM that is turned on (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-turned-on/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2618,7 +2618,7 @@ Verify Items  Project&amp;rsquo;s Resource quotas can be updated correctly Names
     </item>
     
     <item>
-      <title>Reboot host that is in maintenance mode</title>
+      <title>Reboot host that is in maintenance mode (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-reboot-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2672,7 +2672,7 @@ Verify Items  Project&amp;rsquo;s Resource quotas can be updated correctly Names
     </item>
     
     <item>
-      <title>Restore backup create new vm</title>
+      <title>Restore backup create new vm (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2681,7 +2681,7 @@ Verify Items  Project&amp;rsquo;s Resource quotas can be updated correctly Names
     </item>
     
     <item>
-      <title>Restore Backup for VM that was live migrated</title>
+      <title>Restore Backup for VM that was live migrated (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-for-vm-live-migrated/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2690,7 +2690,7 @@ Verify Items  Project&amp;rsquo;s Resource quotas can be updated correctly Names
     </item>
     
     <item>
-      <title>Restore backup replace existing VM with backup from same VM</title>
+      <title>Restore backup replace existing VM with backup from same VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-replace-existing/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2781,7 +2781,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Start Host in maintenance mode</title>
+      <title>Start Host in maintenance mode (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-start-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2799,7 +2799,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Start VM Negative</title>
+      <title>Start VM Negative (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-start-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2817,7 +2817,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Take host out of maintenance mode that has been rebooted</title>
+      <title>Take host out of maintenance mode that has been rebooted	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2826,7 +2826,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Take host out of maintenance mode that has not been rebooted</title>
+      <title>Take host out of maintenance mode that has not been rebooted (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-not-rebooted/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2835,7 +2835,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Target Harvester by setting the variable kubeconfig with your kubeconfig file in the provider.tf file</title>
+      <title>Target Harvester by setting the variable kubeconfig with your kubeconfig file in the provider.tf file (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-variasble/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2844,7 +2844,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Target Harvester with the default kubeconfig located in $HOME/.kube/config</title>
+      <title>Target Harvester with the default kubeconfig located in $HOME/.kube/config (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-home/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2862,7 +2862,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Test a deployment with ALL resources at the same time</title>
+      <title>Test a deployment with ALL resources at the same time (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/deployment-all-resources/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2880,7 +2880,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Test the harvester_clusternetwork resource</title>
+      <title>Test the harvester_clusternetwork resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-clusternetwork-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2889,7 +2889,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Test the harvester_image resource</title>
+      <title>Test the harvester_image resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-image-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2898,7 +2898,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Test the harvester_network resource</title>
+      <title>Test the harvester_network resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-network-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2907,7 +2907,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Test the harvester_ssh_key resource</title>
+      <title>Test the harvester_ssh_key resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-ssh-key-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2917,7 +2917,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Test the harvester_virtualmachine resource</title>
+      <title>Test the harvester_virtualmachine resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-virtualmachine-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2926,7 +2926,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
     </item>
     
     <item>
-      <title>Test the harvester_volume resource</title>
+      <title>Test the harvester_volume resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-volume-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2963,7 +2963,7 @@ Verify Items  An Timeout Option can be configured for support bundle Error messa
     </item>
     
     <item>
-      <title>Try to add a network with no name</title>
+      <title>Try to add a network with no name (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-add-network-no-name/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2972,7 +2972,7 @@ Verify Items  An Timeout Option can be configured for support bundle Error messa
     </item>
     
     <item>
-      <title>Turn off host that is in maintenance mode</title>
+      <title>Turn off host that is in maintenance mode (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-turn-off-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2991,7 +2991,7 @@ Verify Items  Password field in login page can be toggle show/hide  Case: Toggle
     </item>
     
     <item>
-      <title>Upload Cloud Image</title>
+      <title>Upload Cloud Image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/upload-cloud-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3027,7 +3027,7 @@ Verify Items  Password field in login page can be toggle show/hide  Case: Toggle
     </item>
     
     <item>
-      <title>Validate network connectivity external VLAN</title>
+      <title>Validate network connectivity external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/validate-network-external-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3036,7 +3036,7 @@ Verify Items  Password field in login page can be toggle show/hide  Case: Toggle
     </item>
     
     <item>
-      <title>Validate network connectivity invalid external VLAN</title>
+      <title>Validate network connectivity invalid external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-network-connectivity-invalid-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3045,7 +3045,7 @@ Verify Items  Password field in login page can be toggle show/hide  Case: Toggle
     </item>
     
     <item>
-      <title>Validate network connectivity management network</title>
+      <title>Validate network connectivity management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/validate-network-management-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3054,7 +3054,7 @@ Verify Items  Password field in login page can be toggle show/hide  Case: Toggle
     </item>
     
     <item>
-      <title>Validate volume shows as in use when attached</title>
+      <title>Validate volume shows as in use when attached (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/validate-volume-shows-in-use-while-attached/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3072,7 +3072,7 @@ Verify Items  Password field in login page can be toggle show/hide  Case: Toggle
     </item>
     
     <item>
-      <title>Verify and Configure Networking Connection</title>
+      <title>Verify and Configure Networking Connection (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/verify-network-connection/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3108,7 +3108,7 @@ Verify Items  Password field in login page can be toggle show/hide  Case: Toggle
     </item>
     
     <item>
-      <title>Verify operations like Stop, restart, pause, download YAML, generate template</title>
+      <title>Verify operations like Stop, restart, pause, download YAML, generate template (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3235,7 +3235,7 @@ Verify Items  VIP should be accessible when VLAN enabled on management port  Cas
     </item>
     
     <item>
-      <title>VIP Load balancer verification</title>
+      <title>VIP Load balancer verification (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/verify-vip-load-balancer/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

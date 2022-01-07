@@ -16,7 +16,7 @@
     </item>
     
     <item>
-      <title>Add multiple Networks via YAML</title>
+      <title>Add multiple Networks via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/add-multiple-networks-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -25,7 +25,7 @@
     </item>
     
     <item>
-      <title>Add VLAN network</title>
+      <title>Add VLAN network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/add-vlan-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -34,7 +34,7 @@
     </item>
     
     <item>
-      <title>Create new network</title>
+      <title>Create new network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/create-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -52,7 +52,7 @@
     </item>
     
     <item>
-      <title>Delete external VLAN network via YAML</title>
+      <title>Delete external VLAN network via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/delete-vlan-network-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -70,7 +70,7 @@
     </item>
     
     <item>
-      <title>Delete management network via YAML</title>
+      <title>Delete management network via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/delete-management-network-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -97,7 +97,7 @@
     </item>
     
     <item>
-      <title>Edit network via YAML change external VLAN to management network</title>
+      <title>Edit network via YAML change external VLAN to management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/edit-network-yaml-change-vlan-to-management/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -106,7 +106,7 @@
     </item>
     
     <item>
-      <title>Edit network via YAML change management network to external VLAN</title>
+      <title>Edit network via YAML change management network to external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/edit-network-yaml-change-management-to-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -115,7 +115,7 @@
     </item>
     
     <item>
-      <title>Negative network comes back up after reboot external VLAN</title>
+      <title>Negative network comes back up after reboot external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -124,7 +124,7 @@
     </item>
     
     <item>
-      <title>Negative network comes back up after reboot management network</title>
+      <title>Negative network comes back up after reboot management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-management-after-reboot/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -133,7 +133,7 @@
     </item>
     
     <item>
-      <title>Try to add a network with no name</title>
+      <title>Try to add a network with no name (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-add-network-no-name/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -142,7 +142,7 @@
     </item>
     
     <item>
-      <title>Validate network connectivity external VLAN</title>
+      <title>Validate network connectivity external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/validate-network-external-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -151,7 +151,7 @@
     </item>
     
     <item>
-      <title>Validate network connectivity invalid external VLAN</title>
+      <title>Validate network connectivity invalid external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-network-connectivity-invalid-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -160,7 +160,7 @@
     </item>
     
     <item>
-      <title>Validate network connectivity management network</title>
+      <title>Validate network connectivity management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/validate-network-management-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
