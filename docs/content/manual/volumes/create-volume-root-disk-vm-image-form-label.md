@@ -1,5 +1,5 @@
 ---
-title: Create volume root disk VM Image Form with label
+title: Create volume root disk VM Image Form with label (e2e_be)
 ---
 1. Navigate to volumes page
 1. Click Create

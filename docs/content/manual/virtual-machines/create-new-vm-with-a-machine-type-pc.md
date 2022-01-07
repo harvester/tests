@@ -1,5 +1,5 @@
 ---
-title: Create new VM with a machine type of PC	
+title: Create new VM with a machine type of PC (e2e_be)
 ---
 1. Set up the VM with the appropriate machine type
 1. Save/create

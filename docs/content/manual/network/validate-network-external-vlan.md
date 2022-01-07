@@ -1,5 +1,5 @@
 ---
-title: Validate network connectivity external VLAN
+title: Validate network connectivity external VLAN (e2e_be)
 ---
 1. Create a new VM
 1. Make sure that the network is set to the external VLAN with bridge as the type

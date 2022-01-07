@@ -1,5 +1,5 @@
 ---
-title: Edit a VM from the YAML to add Network Data
+title: Edit a VM from the YAML to add Network Data (e2e_be)
 ---
 1. Add Network Data to the VM
     - Here is an example of Network Data config to add DHCP to the physical interface eth0

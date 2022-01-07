@@ -1,5 +1,5 @@
 ---
-title: Edit an existing VM to another machine type
+title: Edit an existing VM to another machine type (e2e_be)
 ---
 1. Set up the VM with the appropriate machine type
 1. Save/create

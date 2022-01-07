@@ -1,5 +1,5 @@
 ---
-title: Edit network via YAML change external VLAN to management network
+title: Edit network via YAML change external VLAN to management network (e2e_be)
 ---
 1. Edit VM and change external VLAN to management network with bridge type via YAML
 1. Ping VM

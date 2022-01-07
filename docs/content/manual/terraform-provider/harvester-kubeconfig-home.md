@@ -1,5 +1,5 @@
 ---
-title: Target Harvester with the default kubeconfig located in $HOME/.kube/config
+title: Target Harvester with the default kubeconfig located in $HOME/.kube/config (e2e_be)
 ---
 1. Make sure the kubeconfig is defined in the file `$HOME/.kube/config`
 1. Check if you can interact with the Harvester by creating resource like a SSH key

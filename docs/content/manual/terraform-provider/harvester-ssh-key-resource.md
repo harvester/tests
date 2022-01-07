@@ -1,5 +1,5 @@
 ---
-title: Test the harvester_ssh_key resource	
+title: Test the harvester_ssh_key resource (e2e_be)
 ---
 These following steps must be done for every resources, for avoiding repetitions, look at the detailed instructions at the beginning of the page.
 1. Import a resource

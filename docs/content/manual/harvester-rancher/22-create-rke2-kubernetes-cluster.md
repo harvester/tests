@@ -1,5 +1,5 @@
 ---
-title: 22-Create RKE2 Kubernetes Cluster	
+title: 22-Create RKE2 Kubernetes Cluster (e2e_be)
 ---
 1. Click Cluster Management
 1. Click Cloud Credentials

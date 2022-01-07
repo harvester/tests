@@ -1,5 +1,5 @@
 ---
-title: Add a network to an existing VM with only 1 network	
+title: Add a network to an existing VM with only 1 network (e2e_be)
 ---
 1. Add a network to the VM
 1. Save the VM

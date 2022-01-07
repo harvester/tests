@@ -1,5 +1,5 @@
 ---
-title: Installation of the Harvester terraform provider
+title: Installation of the Harvester terraform provider (e2e_be)
 ---
 Follow the instruction of the [README](https://github.com/harvester/terraform-provider-harvester#install-the-provider)
 ## Expected Results

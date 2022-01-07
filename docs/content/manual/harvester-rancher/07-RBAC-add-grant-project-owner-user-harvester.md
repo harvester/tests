@@ -1,5 +1,5 @@
 ---
-title: 07-Add and grant project-owner user to harvester
+title: 07-Add and grant project-owner user to harvester (e2e_be)
 ---
 1. Open `Users & Authentication` 
 1. Click `Users` and Create

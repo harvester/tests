@@ -1,5 +1,5 @@
 ---
-title: Edit a VM and add install guest agent option	
+title: Edit a VM and add install guest agent option (e2e_be)
 ---
 1. Add install Guest Agent Option
 1. Save/Create VM

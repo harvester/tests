@@ -1,5 +1,5 @@
 ---
-title: Try to add a network with no name
+title: Try to add a network with no name (e2e_be)
 ---
 1. Navigate to the networks page in harvester
 1. Click Create

@@ -1,5 +1,5 @@
 ---
-title: Edit vm network and verify the network is working as per configuration	
+title: Edit vm network and verify the network is working as per configuration (e2e_be)
 ---
 1. Edit VM network
 1. Save

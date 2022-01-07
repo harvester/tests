@@ -1,5 +1,5 @@
 ---
-title: Verify and Configure Networking Connection	
+title: Verify and Configure Networking Connection (e2e_be)
 ---
 1. Provide the hostName
 2. Select management NIC bond

@@ -1,5 +1,5 @@
 ---
-title: Create Single instances of the vm with raw image		
+title: Create Single instances of the vm with raw image	(e2e_be)
 ---
 1. Create vm using the external path for cloud image.
 1. In user data mention the below to access the vm. 

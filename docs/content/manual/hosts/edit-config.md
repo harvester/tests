@@ -1,5 +1,5 @@
 ---
-title: Edit Config	
+title: Edit Config (e2e_be)
 ---
 1. Navigate to the Hosts page and select the node
 2. Click edit config.

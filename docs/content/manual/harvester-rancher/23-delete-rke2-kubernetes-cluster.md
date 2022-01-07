@@ -1,5 +1,5 @@
 ---
-title: 23-Delete RKE2 Kubernetes Cluster	
+title: 23-Delete RKE2 Kubernetes Cluster (e2e_be)
 ---
 1. Open Cluster Management
 1. Check provisioned RKE2 cluster 
