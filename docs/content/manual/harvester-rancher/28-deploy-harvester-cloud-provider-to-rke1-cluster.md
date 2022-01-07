@@ -1,38 +1,38 @@
 ---
 title: 28-Deploy Harvester cloud provider to RKE1 Cluster	
 ---
-1 Open `Cluster Management` page
-1 Click Create 
-1 Expand RKE1 Configuration
-1 Add Template in `Node template`
-1 Select Harvester
-1 Select created cloud credential created
-1 Select `default` namespace
-1 Select ubuntu image 
-1 Select network: `vlan1`
-1. Provide SSH User: `ubuntu`
-1. Provide template name, click create
-1. Open Cluster page, click Create
-1. Toggle `RKE1`
-1. Provide cluster name
-1. Provide Name Prefix
-1. Select node template we just created
-1. Check `etcd`
-1. Check `Control Panel`
-1. Select `External` under `Cloud Provider`
-1. SSH to harvester cluster node 
-1. Run the following command to generate add-on configuration 
+
+* Related task: [#1396](https://github.com/harvester/harvester/issues/1396) Integration Cloud Provider for RKE1 with Rancher
+
+### Environment Setup
+1. Docker install rancher v2.6.3
+1. Create one node harvester with enough resource
+
+### Verify steps
+1. Environment preparation as above steps
+1. Import harvester to rancher from harvester settings
+1. Create cloud credential
+1. Create RKE1 node template 
+![image](https://user-images.githubusercontent.com/29251855/146299688-3875c18f-61d6-48e6-a15e-250d59c177ba.png)
+1. Provision a RKE1 cluster, check the `Harvester` as cloud provider 
+![image](https://user-images.githubusercontent.com/29251855/146342214-568bf017-e0e2-4b3a-9f38-894eff77d439.png)
+1. Access RKE1 cluster 
+1. Open charts in Apps & Market page 
+1. Install harvester cloud provider
+1. Make sure cloud provider installed complete
 ```
-curl -sfL https://raw.githubusercontent.com/harvester/cloud-provider-harvester/master/deploy/generate_addon.sh | sh -s <serviceAccount name e.g `admin`> <namespace e.g `default`>
+NAME: harvester-cloud-provider
+LAST DEPLOYED: Thu Dec 16 03:57:26 2021
+NAMESPACE: kube-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+---------------------------------------------------------------------
+SUCCESS: helm install --namespace=kube-system --timeout=10m0s --values=/home/shell/helm/values-harvester-cloud-provider-100.0.0-up0.1.7.yaml --version=100.0.0+up0.1.7 --wait=true harvester-cloud-provider /home/shell/helm/harvester-cloud-provider-100.0.0-up0.1.7.tgz
 ```
-1. Click the ```Edit as YAML``` button and add above command to it
-1. Add the result to RKE YAML file 
-1. Click create
 
 ## Expected Results
 1. Provision RKE1 cluster successfully with `Running` status
-1. Can acccess RKE1 cluster to check all resources and services
+2. Can install the Harvester cloud provider correctly
+![image](https://user-images.githubusercontent.com/29251855/146220089-a261311c-7455-45f6-ac50-3ec9828ce034.png)
 
-## Known issues
-This issue block the RKE 1 provisioning task
-- [#1519 Unable to create RKE1 cluster in rancher by node driver, shows "waiting for ssh to be available"](https://github.com/harvester/harvester/issues/1519) 

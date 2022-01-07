@@ -1,8 +1,11 @@
 ---
-title: #1401 Support Volume Hot Unplug	
+title: Support Volume Hot Unplug	
 ---
 
-* Related issues: [#1401](https://github.com/harvester/harvester/issues/1401) Http proxy setting download image
+* Related issues: [#1401](https://github.com/harvester/harvester/issues/1401) Support volume hot-unplug
+
+## Category: 
+* Storage
 
 ## Environment setup
 Setup an airgapped harvester

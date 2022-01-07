@@ -1,5 +1,5 @@
 ---
-title: 38-Import Airgapped Harvester From the Airgapped Rancher
+title: 57-Import airgapped harvester from airgapped rancher rke1
 ---
 
 * Related task: [#1052](https://github.com/harvester/harvester/issues/1052) Test Air gap with Rancher integration
@@ -46,37 +46,24 @@ $sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 \
 --privileged rancher/rancher:v2.6.3-rc6
 ```
 1. Login rancher and set access url
-1. Import harvester to rancher dashboard 
-1. Create cloud credential in rancher
-1. Enable virtual network in harvester with `harvester-mgmt` 
-1. Create the virtual network vlan1 with id 1 
-1. Create RKE1 template
-1. Input the following content in user data 
-      ```
-      #cloud-config
-      apt:
-      http_proxy: http://192.168.0.254:3128
-      https_proxy: http://192.168.0.254:3128
-      write_files:
-      - path: /etc/environment
-      content: |
-      HTTP_PROXY="http://192.168.0.254:3128"
-      HTTPS_PROXY="http://192.168.0.254:3128"
-      append: true
-      ```
-      ![image](https://user-images.githubusercontent.com/29251855/146871485-082f6f12-2c24-4f9b-bdda-3e92ec07e952.png)
+1. Set the following in Advanced - user data in the create RKE2 cluster page
+  ```
+  #cloud-config
+  apt:
+    http_proxy: http://192.168.0.254:3128
+    https_proxy: http://192.168.0.254:3128
+  ```
+  ![image](https://user-images.githubusercontent.com/29251855/146680197-d78ef411-7ef8-42ce-b2b8-0036c7dc85c9.png)
+1. In Cluster Configuration - Agent Environment Vars, add the following
+  ```
+  HTTP_PROXY: http://192.168.0.254:3128
+  HTTPS_PROXY: http://192.168.0.254:3128
+  NO_PROXY: localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,cattle-system.svc,.svc,.cluster.local
+  ```
 
-1. Expand Engine Options, add the following engine environment 
-      ```
-      HTTP_PROXY: http://192.168.0.254:3128
-      HTTPS_PROXY: http://192.168.0.254:3128
-      NO_PROXY: localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,cattle-system.svc,.svc,.cluster.local
-      ```
-      ![image](https://user-images.githubusercontent.com/29251855/146890084-7ac0ea03-e29a-4d06-90b8-03cfe4b99c62.png)
+  ![image](https://user-images.githubusercontent.com/29251855/146680338-922b0c6c-ebac-49c7-b4d5-dc68c534689b.png)
 
-1. Create a RKE1 cluster 
-1. Select harvester as cloud provider
-1. Click Create button 
+1. Create 4 core, 8GB RKE2 cluster in harvester   
 
 ### Test steps
 

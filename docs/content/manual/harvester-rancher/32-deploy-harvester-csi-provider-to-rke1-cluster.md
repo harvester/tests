@@ -1,38 +1,38 @@
 ---
 title: 32-Deploy Harvester CSI provider to RKE 1 Cluster
 ---
-1. Open `Cluster Management` page
-1. Click Create 
-1. Expand RKE1 Configuration
-1. Add Template in `Node template`
-1. Select Harvester
-1. Select created cloud credential created
-1. Select `default` namespace
-1. Select ubuntu image 
-1. Select network: `vlan1`
-1. Provide SSH User: `ubuntu`
-1. Provide template name, click create
-1. Open Cluster page, click Create
-1. Toggle `RKE1`
-1. Provide cluster name
-1. Provide Name Prefix
-1. Select node template we just created
-1. Check `etcd`
-1. Check `Control Panel`
-1. SSH to harvester cluster node 
-1. Run the following command to generate add-on configuration 
+
+* Related task: [#1396](https://github.com/harvester/harvester/issues/1396) Integration Cloud Provider for RKE1 with Rancher
+
+### Environment Setup
+1. Docker install rancher v2.6.3
+1. Create one node harvester with enough resource
+
+### Verify steps
+1. Environment preparation as above steps
+1. Import harvester to rancher from harvester settings
+1. Create cloud credential
+1. Create RKE1 node template 
+![image](https://user-images.githubusercontent.com/29251855/146299688-3875c18f-61d6-48e6-a15e-250d59c177ba.png)
+1. Provision a RKE1 cluster, check the `Harvester` as cloud provider 
+![image](https://user-images.githubusercontent.com/29251855/146342214-568bf017-e0e2-4b3a-9f38-894eff77d439.png)
+1. Access RKE1 cluster 
+1. Open charts in Apps & Market page 
+1. Install Harvester CSI driver
+1. Make sure CSI driver installed complete
 ```
-./deploy/generate_addon.sh <serviceaccount name> <namespace>
+NAME: harvester-csi-driver
+LAST DEPLOYED: Thu Dec 16 03:59:54 2021
+NAMESPACE: kube-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Successfully deployed Harvester CSI driver to the kube-system namespace.
+---------------------------------------------------------------------
+SUCCESS: helm install --namespace=kube-system --timeout=10m0s --values=/home/shell/helm/values-harvester-csi-driver-100.0.0-up0.1.8.yaml --version=100.0.0+up0.1.8 --wait=true harvester-csi-driver /home/shell/helm/harvester-csi-driver-100.0.0-up0.1.8.tgz
 ```
-1. Click the ```Edit as YAML``` button and add above command to it
-1. Add the result to RKE YAML file 
-1. Click create
 
 ## Expected Results
 1. Provision RKE1 cluster successfully with `Running` status
-1. Can acccess RKE1 cluster to check all resources and services
-1. Check CSI provider installed and configured on RKE2 cluster
-
-## Known issues
-This issue block the RKE 1 provisioning task
-- [#1519 Unable to create RKE1 cluster in rancher by node driver, shows "waiting for ssh to be available"](https://github.com/harvester/harvester/issues/1519) 
+1. Can install the Harvester CSI driver correctly

@@ -3,9 +3,9 @@ title: 22-Create RKE2 Kubernetes Cluster (e2e_be)
 ---
 1. Click Cluster Management
 1. Click Cloud Credentials
-1. Click createa and select `Harvester`
+1. Click create and select `Harvester`
 1. Input credential name
-1. Select existing cluster in the `Imprted Cluster` list
+1. Select existing cluster in the `Imported Cluster` list
 1. Click Create
 
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/4a2f6a52-dac7-4a27-84b3-14cbeb4156aa)

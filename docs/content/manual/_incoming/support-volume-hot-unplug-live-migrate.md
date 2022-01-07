@@ -1,8 +1,11 @@
 ---
-title: #1401 Support volume hot plug live migrate
+title: Support volume hot plug live migrate
 ---
 
-* Related issues: [#1401](https://github.com/harvester/harvester/issues/1401) Http proxy setting download image
+* Related issues: [#1401](https://github.com/harvester/harvester/issues/1401) Support volume hot-unplug
+
+## Category: 
+* Storage
 
 ## Environment setup
 Setup an airgapped harvester
@@ -15,14 +18,14 @@ Setup an airgapped harvester
 
 
 1. Create a virtual machine
-2. Create several volumes (without image)
-3. Add volume, hot-plug volume to virtual machine
-4. Open virtual machine, find hot-plugged volume
-5. Click Detach volume
-6. Add volume again
-7. Migrate VM from one node to another
-8. Detach volume
-9. Add unplugged volume again
+1. Create several volumes (without image)
+1. Add volume, hot-plug volume to virtual machine
+1. Open virtual machine, find hot-plugged volume
+1. Click Detach volume
+1. Add volume again
+1. Migrate VM from one node to another
+1. Detach volume
+1. Add unplugged volume again
 
 ## Expected Results
 1. Can hot-plug volume without error

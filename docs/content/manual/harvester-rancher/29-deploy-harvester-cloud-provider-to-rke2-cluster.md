@@ -25,3 +25,7 @@ title: 29-Deploy Harvester cloud provider to RKE2 Cluster
 1. Can acccess RKE2 cluster to check all resources and services
 
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/682dccdc-cc0b-427f-ab7a-fdfaa1f82e06)
+
+1. Check cloud provider installed and configured on RKE2 cluster
+
+![image](https://user-images.githubusercontent.com/29251855/147912570-3ff2f817-ded5-417c-8e01-551dee986ebf.png)
