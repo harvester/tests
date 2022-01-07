@@ -26,4 +26,5 @@ title: 33-Deploy Harvester CSI provider to RKE 2 Cluster
 
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/682dccdc-cc0b-427f-ab7a-fdfaa1f82e06)
 
-1. Check CSI provider installed and configured on RKE2 cluster
+1. Check CSI driver installed and configured on RKE2 cluster
+![image](https://user-images.githubusercontent.com/29251855/147912570-3ff2f817-ded5-417c-8e01-551dee986ebf.png)
