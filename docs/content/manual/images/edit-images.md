@@ -1,5 +1,5 @@
 ---
-title: Edit images	
+title: Edit images (e2e_be)
 ---
 1. Edit image.
     - Try to edit the description

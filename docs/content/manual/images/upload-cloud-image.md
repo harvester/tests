@@ -1,5 +1,5 @@
 ---
-title: Upload Cloud Image	
+title: Upload Cloud Image (e2e_be)
 ---
 1. Upload image to images page
 1. Create new vm with image using appropriate template

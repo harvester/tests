@@ -1,5 +1,5 @@
 ---
-title: Create VM with resources that are only on one node in cluster CPU
+title: Create VM with resources that are only on one node in cluster CPU (e2e_be)
 ---
 1. Create a VM with resources that are only available on one node in cluster
 

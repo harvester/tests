@@ -1,5 +1,5 @@
 ---
-title: Delete external VLAN network via YAML
+title: Delete external VLAN network via YAML (e2e_be)
 ---
 1. On a VM with both an external VLAN and a management VLAN delete the external VLAN via YAML
 1. Validate interface was removed with

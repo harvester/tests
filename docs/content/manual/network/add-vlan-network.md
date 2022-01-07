@@ -1,5 +1,5 @@
 ---
-title: Add VLAN network
+title: Add VLAN network (e2e_be)
 ---
 1. Open settings on a harvester cluster
 1. Navigate to the VLAN settings page

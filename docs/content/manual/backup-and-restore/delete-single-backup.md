@@ -1,5 +1,5 @@
 ---
-title: Delete backup from backups list
+title: Delete backup from backups list (e2e_be)
 ---
 1. Delete backup from backups list
 

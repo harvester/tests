@@ -1,5 +1,5 @@
 ---
-title: Create a new VM and add Enable USB tablet option	
+title: Create a new VM and add Enable USB tablet option	(e2e_be)
 ---
 1. Add Enable usb tablet Option
 1. Save/Create VM

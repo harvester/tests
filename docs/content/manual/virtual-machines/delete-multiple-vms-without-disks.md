@@ -1,5 +1,5 @@
 ---
-title: Delete multiple VMs without disks	
+title: Delete multiple VMs without disks (e2e_be)
 ---
 1. Delete VM
 1. Select whether you want to delete disks

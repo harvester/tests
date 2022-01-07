@@ -1,5 +1,5 @@
 ---
-title: Add Labels	
+title: Add Labels (e2e_be)
 ---
 1. Add multiple labels to the images.
 1. Click save

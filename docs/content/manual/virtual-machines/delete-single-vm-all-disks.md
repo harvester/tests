@@ -1,5 +1,5 @@
 ---
-title: Delete single vm all disks	
+title: Delete single vm all disks (e2e_be)
 ---
 1. Delete VM
 1. Select whether you want to delete disks

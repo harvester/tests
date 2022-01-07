@@ -1,5 +1,5 @@
 ---
-title: 17-Delete Imported Harvester Cluster	
+title: 17-Delete Imported Harvester Cluster (e2e_be)
 ---
 1. Finish 01-Import existing Harvester clusters in Rancher	
 1. Open `Virtualization Management` page

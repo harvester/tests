@@ -1,5 +1,5 @@
 ---
-title: Edit a VM from the YAML to add user data
+title: Edit a VM from the YAML to add user data (e2e_be)
 ---
 1. Add User data to the VM
     - Here is an example of user data config to add a password

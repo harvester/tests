@@ -1,5 +1,5 @@
 ---
-title: Edit VM via YAML with CPU and Memory	
+title: Edit VM via YAML with CPU and Memory (e2e_be)
 ---
 1. Edit VM
 1. Save

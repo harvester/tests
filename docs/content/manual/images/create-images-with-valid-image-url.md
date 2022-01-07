@@ -1,5 +1,5 @@
 ---
-title: Create Images with valid image URL	
+title: Create Images with valid image URL (e2e_be)
 ---
 1. Create image with cloud image available for openSUSE.
 http://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2

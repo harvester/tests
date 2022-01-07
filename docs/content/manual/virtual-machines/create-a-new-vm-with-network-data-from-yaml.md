@@ -1,5 +1,5 @@
 ---
-title: Create a new VM with Network Data from YAML	
+title: Create a new VM with Network Data from YAML (e2e_be)
 ---
 1. Add Network Data to the VM via YAML
     - Here is an example of Network Data config to add DHCP to the physical interface eth0

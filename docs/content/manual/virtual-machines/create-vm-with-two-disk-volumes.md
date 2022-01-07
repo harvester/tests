@@ -1,5 +1,5 @@
 ---
-title: Create VM with two disk volumes	
+title: Create VM with two disk volumes (e2e_be)
 ---
 1. Create a VM with the appropriate number of volumes
 

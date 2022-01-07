@@ -1,5 +1,5 @@
 ---
-title: Validate network connectivity management network
+title: Validate network connectivity management network (e2e_be)
 ---
 1. Create a new VM
 1. Make sure that the network is set to the management network with masquerade as the type

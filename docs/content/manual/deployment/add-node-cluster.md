@@ -1,5 +1,5 @@
 ---
-title: Add a node to existing cluster	
+title: Add a node to existing cluster (e2e_be)
 ---
 1. Start with harvester installer and select 'Join an existing Harvester cluster'
 2. Provide the management ip and cluster token
