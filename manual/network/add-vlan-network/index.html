@@ -1242,11 +1242,15 @@
   <h1 id="title">Add VLAN network (e2e_be)</h1>
   <div>
     <article id="content">
-       <ol>
+       <h2 id="environment-setup">Environment setup</h2>
+<p>This should be done on a Harvester setup with at least 2 NICs and at least 2 nodes. This is easily tested in Vagrant</p>
+<h2 id="verification-steps">Verification Steps</h2>
+<ol>
 <li>Open settings on a harvester cluster</li>
 <li>Navigate to the VLAN settings page</li>
 <li>Click Enabled</li>
-<li>Add the default Physical NIC</li>
+<li>Check dropdown for NICs and verify that percentage is showing 100%</li>
+<li>Add the NIC</li>
 <li>Click Save</li>
 <li>Validate that it has updated in settings</li>
 </ol>

@@ -30,7 +30,8 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/network/add-vlan-network/</guid>
-      <description> Open settings on a harvester cluster Navigate to the VLAN settings page Click Enabled Add the default Physical NIC Click Save Validate that it has updated in settings  Expected Results  You should be able to add the VLAN network device You should see in the settings list that it has your new default NIC  </description>
+      <description>Environment setup This should be done on a Harvester setup with at least 2 NICs and at least 2 nodes. This is easily tested in Vagrant
+Verification Steps  Open settings on a harvester cluster Navigate to the VLAN settings page Click Enabled Check dropdown for NICs and verify that percentage is showing 100% Add the NIC Click Save Validate that it has updated in settings  Expected Results  You should be able to add the VLAN network device You should see in the settings list that it has your new default NIC  </description>
     </item>
     
     <item>
