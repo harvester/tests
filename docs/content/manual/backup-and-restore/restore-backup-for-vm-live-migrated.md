@@ -1,5 +1,5 @@
 ---
-title: Restore Backup for VM that was live migrated
+title: Restore Backup for VM that was live migrated (e2e_be)
 ---
 1. Navigate to backups list
 1. Click restore Backup

@@ -1,5 +1,5 @@
 ---
-title: Create a VM with 2 networks	
+title: Create a VM with 2 networks (e2e_be)
 ---
 1. Add a network to the VM
 1. Save the VM

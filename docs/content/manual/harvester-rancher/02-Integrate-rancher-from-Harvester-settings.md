@@ -1,5 +1,5 @@
 ---
-title: 02-Integrate to Rancher from Harvester settings	
+title: 02-Integrate to Rancher from Harvester settings (e2e_be)
 ---
 
 ## Environment setup

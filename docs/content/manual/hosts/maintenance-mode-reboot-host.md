@@ -1,5 +1,5 @@
 ---
-title: Reboot host that is in maintenance mode	
+title: Reboot host that is in maintenance mode (e2e_be)
 ---
 1. For Host that is in maintenance mode and turned on
 2. Reboot host

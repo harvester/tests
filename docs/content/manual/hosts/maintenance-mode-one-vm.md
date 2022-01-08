@@ -1,5 +1,5 @@
 ---
-title: Maintenance mode for host with one VM	
+title: Maintenance mode for host with one VM (e2e_be)
 ---
 1. Put host in maintenance mode
 2. Migrate VMs

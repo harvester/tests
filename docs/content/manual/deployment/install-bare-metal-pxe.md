@@ -1,5 +1,5 @@
 ---
-title: Install Harvester on a bare Metal node using PXE boot		
+title: Install Harvester on a bare Metal node using PXE boot (e2e_be)		
 ---
 Install Harvester using PXE boot
 https://docs.harvesterhci.io/v0.3/install/pxe-boot-install/

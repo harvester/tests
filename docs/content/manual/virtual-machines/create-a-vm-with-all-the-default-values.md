@@ -1,5 +1,5 @@
 ---
-title: Create a vm with all the default values		
+title: Create a vm with all the default values (e2e_be)
 ---
 1. Create a VM with all default values
 1. Save

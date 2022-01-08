@@ -1,5 +1,5 @@
 ---
-title: Create Backup Target
+title: Create Backup Target (e2e_be)
 ---
 1. Open up Backup-target in settings
 1. Input server info

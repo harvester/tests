@@ -1,5 +1,5 @@
 ---
-title: Restore backup replace existing VM with backup from same VM
+title: Restore backup replace existing VM with backup from same VM (e2e_be)
 ---
 1. Create a new file before restoring the backup and add some data
 1. Stop the VM

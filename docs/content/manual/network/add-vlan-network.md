@@ -1,5 +1,5 @@
 ---
-title: Add VLAN network
+title: Add VLAN network (e2e_be)
 ---
 ## Environment setup
 This should be done on a Harvester setup with at least 2 NICs and at least 2 nodes. This is easily tested in Vagrant

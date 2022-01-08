@@ -1,5 +1,5 @@
 ---
-title: Delete first backup in chained backup
+title: Delete first backup in chained backup (e2e_be)
 ---
 1. Create a new VM
 1. Create a file named 1 and add text

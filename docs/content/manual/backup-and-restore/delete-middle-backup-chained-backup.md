@@ -1,5 +1,5 @@
 ---
-title: Delete middle backup in chained backup
+title: Delete middle backup in chained backup (e2e_be)
 ---
 1. Create a new VM
 1. Create a file named 1 and add some data using command `dd if=/dev/urandom of=file1.txt count=100 bs=1M`

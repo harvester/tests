@@ -1,5 +1,5 @@
 ---
-title: Test a deployment with ALL resources at the same time	
+title: Test a deployment with ALL resources at the same time (e2e_be)
 ---
 1. Re-use the previous generated TF files and group them all either in one directory or in the same file
 1. Generates a speculative execution plan with terraform plan command

@@ -1,5 +1,5 @@
 ---
-title: Create two VMs in the same VLAN	
+title: Create two VMs in the same VLAN (e2e_be)
 ---
 1. Create/edit VM/VMs with the appropriate VLAN
 

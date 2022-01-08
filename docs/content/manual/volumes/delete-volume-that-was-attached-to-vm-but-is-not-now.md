@@ -1,5 +1,5 @@
 ---
-title: Delete volume that was attached to VM but now is not
+title: Delete volume that was attached to VM but now is not (e2e_be)
 ---
 1. Create a VM with a root volume
 1. Write 10Gi data into it.

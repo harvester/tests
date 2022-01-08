@@ -1,5 +1,5 @@
 ---
-title: Create VM with the default network	
+title: Create VM with the default network (e2e_be)
 ---
 1. Create a VM with the default network
 1. Let VM boot up after creation
