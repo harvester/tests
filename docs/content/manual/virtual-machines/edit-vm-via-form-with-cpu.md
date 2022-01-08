@@ -10,3 +10,4 @@ title: Edit VM via form with CPU
 1. Changes should show
     - In Form
     - In YAML
+    - In VM list

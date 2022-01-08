@@ -10,3 +10,4 @@ title: Edit VM via form with Memory
 1. Changes should show
     - In Form
     - In YAML
+    - In VM list
