@@ -7,6 +7,15 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/_incoming/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Add network reachability detection from host for the VLAN network</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/add-network-reachability-detection-from-host-for-vlan-network/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/add-network-reachability-detection-from-host-for-vlan-network/</guid>
+      <description>Related issue: #1476 Add network reachability detection from host for the VLAN network  Category:  Network  Environment Setup  The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan  Verification Steps  Enable virtual network with harvester-mgmt in harvester Create VLAN 806 with id 806 and set to default auto mode Import harvester to rancher 1 .Create cloud credential Provision a rke2 cluster to harvester    Deploy a nginx server workload     Open Service Discover -&amp;gt; Services</description>
+    </item>
+    
+    <item>
       <title>Additional trusted CA configure-ability</title>
       <link>https://harvester.github.io/tests/manual/_incoming/additional-trusted-ca/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -24,6 +33,24 @@ Verify Items  Image download with self-signed additional-ca VM backup with self-
       <guid>https://harvester.github.io/tests/manual/_incoming/agent_node_connectivity/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1521
 Verify Items  Agent Node should keep connection when any master Node is down  Case: Agent Node&amp;rsquo;s connecting status  Install Harvester with 4 nodes which joining node MUST join by VIP (point server-url to use VIP) Make sure all nodes are ready  Login to dashboard, check host state become Active SSH to the 1st node, run command kubectl get node to check all STATUS should be Ready   SSH to agent nodes which ROLES IS &amp;lt;none&amp;gt; in Step 2i&amp;rsquo;s output  Output should contains VIP in the server URL, by run command cat /etc/rancher/rke2/config.</description>
+    </item>
+    
+    <item>
+      <title>allow users to create cloud-config template on the VM creating page</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/allow-users-to-create-cloud-config-template-on-vm-creating-page/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/allow-users-to-create-cloud-config-template-on-vm-creating-page/</guid>
+      <description> Related issues: #1433 allow users to create cloud-config template on the VM creating page  Category:  Virtual Machine  Verification Steps  Create a new virtual machine Click advanced options Drop down user data template -&amp;gt; create new Drop down network data template -&amp;gt; create new  Expected Results  User can create user and network data template when create virtual machine Created cloud-init template template can be saved and auto selected to the latest one   </description>
+    </item>
+    
+    <item>
+      <title>Attach unpartitioned NVMe disks to host</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/attach-unpartitioned-nvme-disks-to-host/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/attach-unpartitioned-nvme-disks-to-host/</guid>
+      <description>Related issues: #1414 Adding unpartitioned NVMe disks fails  Category:  Storage  Verification Steps  Use qemu-img create -f qcow2 command to create three disk image locally Shutdown target node VM machine Directly edit VM xml content in virt manager page Add to the first line Add the following line before the end of quote  &amp;lt;qemu:commandline&amp;gt; &amp;lt;qemu:arg value=&amp;quot;-drive&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme301.img,if=none,id=D22&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;-device&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;nvme,drive=D22,serial=1234&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;-drive&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme302.</description>
     </item>
     
     <item>
@@ -47,6 +74,15 @@ Verify Items  Backup target should check input before Click Save Error message s
     </item>
     
     <item>
+      <title>Better Load Balancer Config of Harvester cloud provider</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/better-load-balancer-config-rke2-cloud-provider/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/better-load-balancer-config-rke2-cloud-provider/</guid>
+      <description>Related issue: #1435 better loadblancer config of Harvester cloud provider  Category:  Rancher Integration  Environment setup  Install rancher 2.6.3 by docker  docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Import harvester to rancher virtualization management Create a harvester cluster by harvester driver Access the new harvester cluster from rancher cluster management Create a load balancer from service discovery -&amp;gt; services Re login rancher Open create load-balance page Click ctrl+R to refresh page Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs  Expected Results   User can configure port, IPAM and health check related setting on Add-on Config page   Can create load balancer correctly with health check setting</description>
+    </item>
+    
+    <item>
       <title>Button of `Download KubeConfig`</title>
       <link>https://harvester.github.io/tests/manual/_incoming/download_kubeconfig/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -54,6 +90,33 @@ Verify Items  Backup target should check input before Click Save Error message s
       <guid>https://harvester.github.io/tests/manual/_incoming/download_kubeconfig/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1349
 Verify Items  Download KubeConfig should not exist in general views Download Kubeconfig should exist in Support page Downloaded file should be named with suffix .yaml  Case: Download KubeConfig  navigate to every pages to make sure download kubeconfig icon will not appear in header section navigate to support page to check Download KubeConfig is work normally  </description>
+    </item>
+    
+    <item>
+      <title>Check can apply the resource quota limit to project and namespace</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/check-can-apply-the-resource-quota-limit-to-project-and-namespace-/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/check-can-apply-the-resource-quota-limit-to-project-and-namespace-/</guid>
+      <description>Related issues: #1454 Incorrect memory unit conversion in namespace resource quota  Category:  Rancher Integration  Environment setup  Install the latest rancher from docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Access Rancher dashboard Open Cluster management -&amp;gt; Explore the active cluster Create a new project test-1454-proj in Projects/Namespaces Set resource quota for the project   Memory Limit:  Project Limit: 512 Namespace default limit: 256   Memory Reservation:  Project Limit: 256 Namespace default limit: 128     Click create namespace test-1454-ns under project test-1454-proj Click Kubectl Shell and run the following command   kubectl get ns kubectl get quota -n test-1454-ns   Check the output Click Workload -&amp;gt; Deployments -&amp;gt; Create Given the Name, Namespace and Container image  Click Create  Expected Results Based on configured project resource limit and namespace default limit,</description>
+    </item>
+    
+    <item>
+      <title>Check default and customized project and namespace details page</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/check-default-customized-project-and-namespace-details-page/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/check-default-customized-project-and-namespace-details-page/</guid>
+      <description> Related issue: #1574 Multi-cluster projectNamespace details page error  Category:  Rancher Integration  Environment setup  Install rancher 2.6.3 by docker  docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Import harvester from rancher dashboard Access harvester from virtualization management page Create several new projects Create several new namespaces under each new projects Access all default and self created namespace Check can display namespace details Check all new namespaces can display correctly under each projects  Expected Results  Access harvester from rancher virtualization management page Click any namespace in the Projects/Namespace can display details correctly with no page error  Default namespace Customized namespace  Newly created namespace will display under project list   </description>
+    </item>
+    
+    <item>
+      <title>check detailed network status in host page</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/check-detailed-network-status-in-host-page/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/check-detailed-network-status-in-host-page/</guid>
+      <description>Related issues: #531 Better error messages when misconfiguring multiple nics  Category:  Host  Verification Steps  Enable vlan cluster network setting and set a default network interface Wait a while for the setting take effect on all harvester nodes Click nodes on host page Check the network tab  Expected Results On the Host view page, now we can see detailed network status including Name, Type, IP Address, Status etc.</description>
     </item>
     
     <item>
@@ -77,6 +140,33 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
     </item>
     
     <item>
+      <title>Create VM without memory provided</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/create-vm-without-memory-provided/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/create-vm-without-memory-provided/</guid>
+      <description>Related issues: #1477 intimidating error message when missing mandatory field  Category:  Virtual Machine  Verification Steps  Create some image and volume Create virtual machine Fill out all mandatory field but leave memory blank. Click create  Expected Results Leave empty memory field empty when create virtual machine will show &amp;ldquo;Memory is required&amp;rdquo; error message</description>
+    </item>
+    
+    <item>
+      <title>Detach volume from virtual machine</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/detach-volume-from-virtual-machine/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/detach-volume-from-virtual-machine/</guid>
+      <description>Related issues: #1708 After click &amp;ldquo;Detach volume&amp;rdquo; button, nothing happend  Category:  Volume  Verification Steps  Create several new volume in volumes page  Create a virtual machine Click the config button on the selected virtual machine Click Add volume and add at least two new volume  Click the Detach volume button on the attached volume    Repeat above steps several times  Expected Results Currently when click the Detach volume button, attached volume can be detach successfully.</description>
+    </item>
+    
+    <item>
+      <title>Disable and enable vlan cluster network</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/disable-and-enable-vlan-cluster-network/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/disable-and-enable-vlan-cluster-network/</guid>
+      <description> Related issues: #1529 Failed to enable vlan cluster network after disable and enable again, display &amp;ldquo;Network Error&amp;rdquo;  Category:  Network  Verification Steps  Open settings and config vlan network Enable network and set default harvester-mgmt Disable network Enable network again Check Host, Network and harvester dashboard Repeat above steps several times  Expected Results  User can disable and enable network with default harvester-mgmt. Harvester dashboard and network work as expected  </description>
+    </item>
+    
+    <item>
       <title>Disk can only be added once on UI</title>
       <link>https://harvester.github.io/tests/manual/_incoming/add_disk_on_ui/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -84,6 +174,62 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
       <guid>https://harvester.github.io/tests/manual/_incoming/add_disk_on_ui/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1608
 Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on dashboard UI  Install Harvester with 2 nodes Power off 2nd node Update VM&amp;rsquo;s xml definition (by using virsh edit or virt-manager)  Create nvme.img block: dd if=/dev/zero of=/var/lib/libvirt/images/nvme.img bs=1M count=4096 change owner chown qemu:qemu /var/lib/libvirt/images/nvme.img update &amp;lt;domain type=&amp;quot;kvm&amp;quot;&amp;gt; to &amp;lt;domain type=&amp;quot;kvm&amp;quot; xmlns:qemu=&amp;quot;http://libvirt.org/schemas/domain/qemu/1.0&amp;quot;&amp;gt; append xml node into domain as below:    &amp;lt;qemu:commandline&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/var/lib/libvirt/images/nvme.</description>
+    </item>
+    
+    <item>
+      <title>Disk devices used for VM storage should be globally configurable</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/disk-devices-used-for-vm-storage-globally-configurable/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/disk-devices-used-for-vm-storage-globally-configurable/</guid>
+      <description>Related issue: #1241 Disk devices used for VM storage should be globally configurable
+  Related issue: #1382 Exclude OS root disk and partitions on forced GPT partition
+  Related issue: #1599 Extra disk auto provision from installation may cause NDM can&amp;rsquo;t find a valid longhorn node to provision
+  Category:  Storage  Test Scenarios (Checked means verification PASS)
+ BIOS firmware + No MBR (Default) + Auto disk` provisioning config BIOS firmware + MBR + Auto disk provisioning config UEFI firmware + GPT (Default) + Auto disk provisioning config BIOS firmware + GPT (Default) +Auto Provisioning on harvester-config  Environment setup   Scenario 1: Node type: Create</description>
+    </item>
+    
+    <item>
+      <title>Download kubeconfig after shutting down harvester cluster</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/download-kubeconfig-after-shutting-down-harvester-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/download-kubeconfig-after-shutting-down-harvester-cluster/</guid>
+      <description>Related issues: #1475 After shutting down the cluster the kubeconfig becomes invalid  Category:  Host  Verification Steps   Shutdown harvester node 3, wait for fully power off
+  Shutdown harvester node 2, wait for fully power off
+  Shutdown harvester node 1, wait for fully power off
+  Wait for more than hours or over night
+  Power on node 1 to console page until you see management url   Power on node 2 to console page until you see management url</description>
+    </item>
+    
+    <item>
+      <title>Enabling vlan on a bonded NIC on vagrant install</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/enabling-vlan-on-bonded-nic-vagrant-install/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/enabling-vlan-on-bonded-nic-vagrant-install/</guid>
+      <description>Related issues: #1541 Enabling vlan on a bonded NIC breaks the Harvester setup  Category:  Network  Verification Steps  Pull ipxe example from https://github.com/harvester/ipxe-examples Vagrant pxe install 3 nodes harvester Access harvester settings page Open settings -&amp;gt; vlan Enable virtual network and set with bond0 Navigate to every page to check harvester is working Create a vlan based on bon0  Expected Results Enable virtual network with bond0 will not make harvester service out of work.</description>
+    </item>
+    
+    <item>
+      <title>Host list should display the disk error message on failure</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/host-list-should-display-disk-error-message-on-failure/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/host-list-should-display-disk-error-message-on-failure/</guid>
+      <description> Related issue: #1167 Host list should display the disk error message on table  Category:  Storage  Verification Steps  Shutdown existing node vm machine Run &amp;ldquo;qemu-img create&amp;rdquo; command to make a nvme.img Edit quem/kvm xml setting to attach the nvme image Start VM Open hostpage and edit your target node config Add the new nvme disk Shutdown VM Remove the attach device setting in VＭ xml file Start VM Open Host page, the targe node will show warning with unready and unscheduable disk exists  Expected Results  If host encounter disk ready or schedule failure, on host page the &amp;ldquo;disk state&amp;rdquo; will show warning With a hover tip &amp;ldquo;Host have unready or unschedulable disks&amp;rdquo;   Can create load balancer correctly with health check setting  </description>
+    </item>
+    
+    <item>
+      <title>Http proxy setting on harvester</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/http-proxy-setting-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/http-proxy-setting-harvester/</guid>
+      <description>Related issue: #1218 Missing http proxy settings on rke2 and rancher pod
+  Related issue: #1012 Failed to create image when deployed in private network environment
+  Category:  Network  Environment setup Setup an airgapped harvester
+ Clone ipxe example repository https://github.com/harvester/ipxe-examples Edit the setting.xml file under vagrant ipxe example Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster  Verification Steps  Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
     </item>
     
     <item>
@@ -127,6 +273,18 @@ Verify Items  Disk&amp;rsquo;s symbolic link can be used in install configure op
     </item>
     
     <item>
+      <title>Manual upgrade from 0.3.0 to 1.0.0</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/manual-upgrade-from-0.3.0-to-1.0.0/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/manual-upgrade-from-0.3.0-to-1.0.0/</guid>
+      <description>Related issues: #1644 Harvester pod crashes after upgrading from v0.3.0 to v1.0.0-rc1 (contain vm backup before upgrade)
+  Related issues: #1588 VM backup cause harvester pod to crash
+  Notice We recommend using zero downtime upgrade to upgrade harvester. Manual upgrade is for advance usage and purpose.
+Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and do checksum Download harvester v1.0.0 iso and do checksum Use ISO Install a 4 nodes harvester cluster Create several OS images from URL Create ssh key Enable vlan network with harvester-mgmt Create virtual network vlan1 with id 1 Create 2 virtual machines   ubuntu-vm: 2 core, 4GB memory, 30GB disk   Setup backup target Take a backup from ubuntu vm Peform manual upgrade steps in the following docudment  upgrade process Follow the manual upgrade steps to upgrade from v0.</description>
+    </item>
+    
+    <item>
       <title>Memory overcommit on VM</title>
       <link>https://harvester.github.io/tests/manual/_incoming/memory_overcommit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -147,6 +305,15 @@ Verify Items  VM can be migrate to any node with any times  Case: Migrate a rest
     </item>
     
     <item>
+      <title>Move Longhorn storage to another partition</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/move-longhorn-storage-to-another-partition/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/move-longhorn-storage-to-another-partition/</guid>
+      <description>Related issue: #1316 Move Longhorn storage to another partition  Category:  Storage  Test Scenarios  Case 1: UEFI + GPT (Disk &amp;lt; MBR Limit) Case 2: BIOS + No MBR (Disk &amp;lt; MBR Limit) Case 3: BIOS + Force MBR (Disk &amp;lt; MBR Limit) Case 4: BIOS + No MBR (Disk &amp;gt; MBR Limit) Case 5: BIOS + Force MBR (Disk &amp;gt; MBR Limit) Case 6: UEFI + GPT (Disk &amp;gt; MBR Limit)  Environment setup   Test Environment: 1 node harvester on local kvm machine</description>
+    </item>
+    
+    <item>
       <title>Node Labeling for VM scheduling</title>
       <link>https://harvester.github.io/tests/manual/_incoming/node_labeling/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -154,6 +321,36 @@ Verify Items  VM can be migrate to any node with any times  Case: Migrate a rest
       <guid>https://harvester.github.io/tests/manual/_incoming/node_labeling/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1416
 Verify Items  Host labels can be assigned during installation via config-create / config-join YAML. Host labels can be managed post installation via the Harvester UI. Host label information can be accessed in Rancher Virtualization Management UI.  Case: Label node when installing  Install Harvester with config file and os.labels option Navigate to Host details then navigate to Labels in Config Check additional labels should be displayed  Case: Label node after installed  Install Harvester with at least 2 nodes Navigate to Host details then navigate to Labels in Config Use edit config to modify labels Reboot the Node and wait until its state become active Navigate to Host details then Navigate to Labels in Config Check modified labels should be displayed  Case: Node&amp;rsquo;s Label availability  Install Harvester with at least 2 nodes Navigate to Host details then navigate to Labels in Config Use edit config to modify labels Reboot the Node and wait until its state become active Navigate to Host details then Navigate to Labels in Config Check modified labels should be displayed Install Rancher with any nodes Navigate to Virtualization Management and import former created Harvester Wait Until state become Active Click Name field to visit dashboard repeat step 2-7, and both compare from Harvester&amp;rsquo;s dashboard (accessing via Harvester&amp;rsquo;s VIP)  </description>
+    </item>
+    
+    <item>
+      <title>Nodes with cordoned status should not be in VM migration list</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/nodes-with-cordoned-status-should-not-be-in-vm-migration-list/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/nodes-with-cordoned-status-should-not-be-in-vm-migration-list/</guid>
+      <description>Related issues: #1501 Nodes with cordoned status should not be in the selection list for VM migration  Category:  Host  Verification Steps  Create multiple VMs on two of the nodes Set the idle node to cordoned state Edit any config of VM, click migrate Check the available node in the migration list  Expected Results Node set in cordoned state will not show up in the available migration list</description>
+    </item>
+    
+    <item>
+      <title>Provision RKE2 cluster with resource quota configured</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/provision-rke2-cluster-with-resource-quota-configured/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/provision-rke2-cluster-with-resource-quota-configured/</guid>
+      <description>Related issues: #1455 Node driver provisioning fails when resource quota configured in project
+  Related issues: #1449 Incorrect naming of project resource configuration
+  Category:  Rancher Integration  Environment setup  Install the latest rancher from docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Test Scenarios   Scenario 1:
+ Project with resource quota:  CPU Limit / CPU Reservation: 6000 / 6144 Memory Limit / Memory Reservation: 6000 / 6144      Scenario 2:</description>
+    </item>
+    
+    <item>
+      <title>Rancher import harvester enhancement</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/rancher-import-harvester-enhacement/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/rancher-import-harvester-enhacement/</guid>
+      <description>Related issues: #1330 Http proxy setting download image  Category:  Rancher Integration  Environment setup  Install the latest rancher from docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Installed a 3 nodes harvester cluster Import harvester to rancher in virtualization management Enable node driver and create cloud credential Provision a RKE2 cluster in rancher Confirm RKE2 cluster is fully operated, can explore it  Shutdown all 3 nodes server machine  Wait for 10 minutes Power on all harvester nodes server machines Confirm harvester is fully operated Confirm RKE2 vm is back to running  Check the RKE2 cluster status in rancher  Expected Results The RKE2 cluster in rancher should turn back to Running with no error after harvester server node machine is fully power off and power on.</description>
     </item>
     
     <item>
@@ -167,6 +364,28 @@ Verify Items  Project&amp;rsquo;s Resource quotas can be updated correctly Names
     </item>
     
     <item>
+      <title>Recover cordon and maintenace node after harvester node machine reboot</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/recover-cordon-or-maintenace-node-after-harvester-node-machine-reboot/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/recover-cordon-or-maintenace-node-after-harvester-node-machine-reboot/</guid>
+      <description>Related issues: #1493 When hosts are stuck in maintenance mode and the cluster is unstable you can&amp;rsquo;t access the UI  Category:  Host  Verification Steps  Create 3 virtual machine on 3 harvester nodes Cordon 1st and 2nd node,  Enable maintenance mode on 1st and 2nd node  We can&amp;rsquo;t cordon and enable maintenance node on the remaining node  Reboot 1st and 2nd node bare machine Wait for harvester machine back to service Login dashboard Disable maintenance mode on 1st and 2nd node  Expected Results  Cordon node and enter maintenance mode, after machine reboot, user can login harvester dashboard.</description>
+    </item>
+    
+    <item>
+      <title>Set maintenance mode on the last available node shouldn&#39;t be allowed</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/set-maintenance-mode-on-the-last-available-node-shouldnt-be-allowed/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/set-maintenance-mode-on-the-last-available-node-shouldnt-be-allowed/</guid>
+      <description>Related issues: #1014 Trying to set maintenance mode on the last available node shouldn&amp;rsquo;t be allowed  Category:  Host  Verification Steps   Create 3 vms located on node2 and node3   Open host page
+  Set node 3 into maintenance mode
+  Wait for virtual machine migrate to node 2
+  Set node 2 into maintenance mode
+  wait for virtual machine migrate to node 1</description>
+    </item>
+    
+    <item>
       <title>SSL Certificate</title>
       <link>https://harvester.github.io/tests/manual/_incoming/ssl-certificate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -174,6 +393,35 @@ Verify Items  Project&amp;rsquo;s Resource quotas can be updated correctly Names
       <guid>https://harvester.github.io/tests/manual/_incoming/ssl-certificate/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/761
 Verify Items  generated kubeconfig is able to access kubenetes API new node able to join the cluster using the configured Domain Name create node with ssl-certificates settings is working as expected.  Case: Kubeconfig  Install Harvester with at least 2 nodes Generate self-signed TLS certificates from https://www.selfsignedcertificate.com/ with specific name Navigate to advanced settings, edit ssl-certificates settings Update generated .cert file to CA and Public Certificate, .</description>
+    </item>
+    
+    <item>
+      <title>Support volume hot plug live migrate</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/support-volume-hot-unplug-live-migrate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/support-volume-hot-unplug-live-migrate/</guid>
+      <description> Related issues: #1401 Support volume hot-unplug  Category:  Storage  Environment setup Setup an airgapped harvester
+ Create an 3 nodes harvester cluster with large size disks  Verification Steps Scenario2: Live migrate VM not have hot-plugged volume before, do hot-plugged the unplugged.  Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click Detach volume Add volume again Migrate VM from one node to another Detach volume Add unplugged volume again  Expected Results  Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM  </description>
+    </item>
+    
+    <item>
+      <title>Support Volume Hot Unplug</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/support-volume-hot-unplug/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/support-volume-hot-unplug/</guid>
+      <description> Related issues: #1401 Support volume hot-unplug  Category:  Storage  Environment setup Setup an airgapped harvester
+ Create an 3 nodes harvester cluster with large size disks  Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps  Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again  Expected Results  Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM  </description>
+    </item>
+    
+    <item>
+      <title>Switch the vlan interface of harvester node</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/switch-the-vlan-interface-of-harvester-node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/switch-the-vlan-interface-of-harvester-node/</guid>
+      <description>Related issues: #1464 VM pods turn to the terminating state after switching the VLAN interface  Category:  Network  Verification Steps  User ipxe-example to build up 3 nodes harvester Login harvester dashboard -&amp;gt; Access Settings Enable vlan network with harvester-mgmt NIC interface Create a VM using harvester-mgmt Disable vlan network Enable vlan network and select bond0 interface  Check host and vm is working Directly switch network interface from bond0 to harvester-mgmt without disable it.</description>
     </item>
     
     <item>
@@ -187,6 +435,15 @@ Verify Items  An Timeout Option can be configured for support bundle Error messa
     </item>
     
     <item>
+      <title>toggle harvester node driver with the harvester global flag</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/toggle-harvester-node-driver-with-harvester-global-flag/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/toggle-harvester-node-driver-with-harvester-global-flag/</guid>
+      <description>Related issue: #1465 toggle harvester node driver with the harvester global flag  Category:  Rancher Integration  Environment setup  Install rancher 2.6.3 by docker  docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Environment preparation as above steps Open global setting -&amp;gt; feature flag in rancher Check harvester feature flag Open cluster management -&amp;gt; Driver page Check harvester node driver Deactivate harvester feature flag Activate harvester feature flag Deactivate harvester node driver Activate harvester node driver Deactivate both harvester flag and node driver Activate harvester feature flag  Expected Results  Harvester feature flag will be enabled by default and turned on harvester node driver accordingly    If the feature flag was turned off, nothing will change to the Harvester node driver.</description>
+    </item>
+    
+    <item>
       <title>UI enables option to display password on login page</title>
       <link>https://harvester.github.io/tests/manual/_incoming/ui_password_show_btn/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -194,6 +451,24 @@ Verify Items  An Timeout Option can be configured for support bundle Error messa
       <guid>https://harvester.github.io/tests/manual/_incoming/ui_password_show_btn/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1550
 Verify Items  Password field in login page can be toggle show/hide  Case: Toggle of Password field  install harvester with any nodes setup password logout then login with password toggled  </description>
+    </item>
+    
+    <item>
+      <title>Use template to create cluster through virtualization management</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/use-template-to-create-cluster-through-virtualization-management/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/use-template-to-create-cluster-through-virtualization-management/</guid>
+      <description>Related issue: #1620 User is unable to use template to create cluster through virtualization management  Category:  Rancher Integration  Environment setup  Install rancher 2.6.3 by docker  docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Import harvester from rancher through harvester settings Access harvester from rancher virtualization management page Open Virtual Machine page Click create Check Use VM Template Select one of the template Create VM according to the template  Expected Results Access harvester from Rancher, on virtual machine page can load default three template to create VM.</description>
+    </item>
+    
+    <item>
+      <title>VIP configured in a VLAN network should be reached</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/vip-configured-on-vlan-network-should-be-reached/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/vip-configured-on-vlan-network-should-be-reached/</guid>
+      <description> Related issue: #1424 VIP configured in a VLAN network can not be reached  Category:  Network  Environment Setup  The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan  Verification Steps  Enable virtual network with harvester-mgmt Open Network -&amp;gt; Create a virtual network Provide network name and correct vlan id  Open Route, use the default auto setting  Create a VM and use the created route SSH to harvester node Ping the IP of the created VM Create a virutal network Provide network name and correct vlan id Open Route, use the manual setting Provide the CIDR and Gateway value  Repeat step 5 - 7  Expected Results  Check the auto route vlan can be detected with running status  Check the manual route vlan can be detected with running status Check the VM can get IP based on auto or manual vlan route Check can ping VM IP from harvester node  </description>
     </item>
     
     <item>

@@ -189,7 +189,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/20-create-rke1-kubernetes-cluster/</guid>
-      <description>Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imprted Cluster list Click Create   Expand RKE1 Configuration Add Template in Node template Select Harvester Select created cloud credential created Select default namespace Select ubuntu image Select network: vlan1 Provide SSH User: ubuntu   Provide template name, click create Open Cluster page, click Create Toggle RKE1 Provide cluster name Provide Name Prefix Select node template we just created Check etcd Check Control Panel   Click create  Expected Results  Provision RKE1 cluster successfully with Running status Can acccess RKE1 cluster to check all resources and services  Known issues This issue block the RKE 1 provisioning task</description>
+      <description>Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imported Cluster list Click Create   Expand RKE1 Configuration Add Template in Node template Select Harvester Select created cloud credential created Select default namespace Select ubuntu image Select network: vlan1 Provide SSH User: ubuntu    Provide template name, click create   Open Cluster page, click Create</description>
     </item>
     
     <item>
@@ -207,7 +207,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/22-create-rke2-kubernetes-cluster/</guid>
-      <description> Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imprted Cluster list Click Create   Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Click Create   Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services  </description>
+      <description> Click Cluster Management Click Cloud Credentials Click create and select Harvester Input credential name Select existing cluster in the Imported Cluster list Click Create   Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Click Create   Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services  </description>
     </item>
     
     <item>
@@ -261,8 +261,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/28-deploy-harvester-cloud-provider-to-rke1-cluster/</guid>
-      <description>1 Open Cluster Management page 1 Click Create 1 Expand RKE1 Configuration 1 Add Template in Node template 1 Select Harvester 1 Select created cloud credential created 1 Select default namespace 1 Select ubuntu image 1 Select network: vlan1
- Provide SSH User: ubuntu Provide template name, click create Open Cluster page, click Create Toggle RKE1 Provide cluster name Provide Name Prefix Select node template we just created Check etcd Check Control Panel Select External under Cloud Provider SSH to harvester cluster node Run the following command to generate add-on configuration  curl -sfL https://raw.</description>
+      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher  Environment Setup  Docker install rancher v2.6.3 Create one node harvester with enough resource  Verify steps  Environment preparation as above steps Import harvester to rancher from harvester settings Create cloud credential Create RKE1 node template  Provision a RKE1 cluster, check the Harvester as cloud provider  Access RKE1 cluster Open charts in Apps &amp;amp; Market page Install harvester cloud provider Make sure cloud provider installed complete  NAME: harvester-cloud-provider LAST DEPLOYED: Thu Dec 16 03:57:26 2021 NAMESPACE: kube-system STATUS: deployed REVISION: 1 TEST SUITE: None --------------------------------------------------------------------- SUCCESS: helm install --namespace=kube-system --timeout=10m0s --values=/home/shell/helm/values-harvester-cloud-provider-100.</description>
     </item>
     
     <item>
@@ -271,7 +270,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/29-deploy-harvester-cloud-provider-to-rke2-cluster/</guid>
-      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider   Click Create Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services  </description>
+      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider   Click Create Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services   Check cloud provider installed and configured on RKE2 cluster  </description>
     </item>
     
     <item>
@@ -300,7 +299,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/32-deploy-harvester-csi-provider-to-rke1-cluster/</guid>
-      <description>Open Cluster Management page Click Create Expand RKE1 Configuration Add Template in Node template Select Harvester Select created cloud credential created Select default namespace Select ubuntu image Select network: vlan1 Provide SSH User: ubuntu Provide template name, click create Open Cluster page, click Create Toggle RKE1 Provide cluster name Provide Name Prefix Select node template we just created Check etcd Check Control Panel SSH to harvester cluster node Run the following command to generate add-on configuration  .</description>
+      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher  Environment Setup  Docker install rancher v2.6.3 Create one node harvester with enough resource  Verify steps  Environment preparation as above steps Import harvester to rancher from harvester settings Create cloud credential Create RKE1 node template  Provision a RKE1 cluster, check the Harvester as cloud provider  Access RKE1 cluster Open charts in Apps &amp;amp; Market page Install Harvester CSI driver Make sure CSI driver installed complete  NAME: harvester-csi-driver LAST DEPLOYED: Thu Dec 16 03:59:54 2021 NAMESPACE: kube-system STATUS: deployed REVISION: 1 TEST SUITE: None NOTES: Successfully deployed Harvester CSI driver to the kube-system namespace.</description>
     </item>
     
     <item>
@@ -309,7 +308,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/33-deploy-harvester-csi-provider-to-rke2-cluster/</guid>
-      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider   Click Create Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services   Check CSI provider installed and configured on RKE2 cluster  </description>
+      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider   Click Create Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services   Check CSI driver installed and configured on RKE2 cluster   </description>
     </item>
     
     <item>
@@ -318,11 +317,10 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/34-hotplug-unplug-volumes-in-rke1-cluster/</guid>
-      <description>Prerequisite: Already provisioned RKE1 cluster machine on Harvester
-TBD
-Expected Results TBD
-Known issues This issue blocks the RKE 1 provisioning task
- #1519 Unable to create RKE1 cluster in rancher by node driver, shows &amp;ldquo;waiting for ssh to be available&amp;rdquo;  </description>
+      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher  Environment Setup  Docker install rancher v2.6.3 Create one node harvester with enough resource  Verify Steps   Environment preparation as above steps
+  Import harvester to rancher from harvester settings
+  Create cloud credential
+  Create RKE1 node template   Provision a RKE1 cluster, check the Harvester as cloud provider   Access RKE1 cluster</description>
     </item>
     
     <item>
@@ -331,8 +329,12 @@ Known issues This issue blocks the RKE 1 provisioning task
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/35-hotplug-unplug-volumes-in-rke2-cluster/</guid>
-      <description>Prerequisite: Already provisioned RKE2 cluster machine on Harvester
- Open RKE2 harvester from hamburger menu Open Storage Select PersistentVolumes Click Create Provide Name Select volume plugin to Local Open Custom Select harvester in Assign to Storage Class   Click create  Expected Results  Can create persistent volume correctly Can remove persistent volume correctly  </description>
+      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher  Environment Setup  Docker install rancher v2.6.3 Create one node harvester with enough resource  Verify Steps   Environment preparation as above steps
+  Import harvester to rancher from harvester settings
+  Create cloud credential
+  Create RKE2 cluster as test case #34
+  Access RKE2 cluster
+  Open charts in Apps &amp;amp; Market page</description>
     </item>
     
     <item>
@@ -346,10 +348,10 @@ Known issues This issue blocks the RKE 1 provisioning task
     
     <item>
       <title>37-Import Online Harvester From the Airgapped Rancher</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</guid>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher/</guid>
       <description>Environment Setup Setup the online harvester
  Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address  Setup squid HTTP proxy server
  Move to vagrant pxe harvester folder Execute vagrant ssh pxe_server Run apt-get install squid Edit /etc/squid/squid.</description>
@@ -361,8 +363,8 @@ Known issues This issue blocks the RKE 1 provisioning task
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</guid>
-      <description>Environment Setup Setup the airgapped harvester
- Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt;  Create ubuntu cloud image from URL Create virtual machine and assign vlan network, confirm can get ip address  Setup squid HTTP proxy server</description>
+      <description>Related task: #1052 Test Air gap with Rancher integration  Environment Setup Setup the airgapped harvester
+ Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
     </item>
     
     <item>
@@ -538,6 +540,27 @@ Setup the airgapped harvester
 Setup the online harvester
  Iso or vagrant ipxe install harvester on network with internet connection Enable vlan on harvester-mgmt Create virtual machine with name vlan1 and id: 1 Create ubuntu cloud image from URL Create virtual machine and assign vlan network, confirm can get ip address  Setup the online rancher
  Install rancher on network with internet connection throug docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.</description>
+    </item>
+    
+    <item>
+      <title>57-Import airgapped harvester from airgapped rancher rke1</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-rke1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-rke1/</guid>
+      <description>Related task: #1052 Test Air gap with Rancher integration  Environment Setup Setup the airgapped harvester
+ Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
+    </item>
+    
+    <item>
+      <title>58-Negative-Fully power cycle harvester node machine should recover RKE2 cluster</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/58-negative-fully-power-cycle-harvester-node-machine-should-recover-rke2-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/58-negative-fully-power-cycle-harvester-node-machine-should-recover-rke2-cluster/</guid>
+      <description>Related issue: #1561 Fully shutdown then power on harvester node machine can&amp;rsquo;t get provisioned RKE2 cluster back to work
+  Related issue: #1428 rke2-coredns-rke2-coredns-autoscaler timeout
+  Environment Setup  The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan  Verification Step  Prepare a 3 nodes harvester cluster (provo bare machine) Enable virtual network with harvester-mgmt Create vlan1 with id 1 Import harvester from rancher and create cloud credential Provision a RKE2 cluster with vlan 1 Wait for build up ready Shutdown harvester node 3 Shutdown harvester node 2 Shutdown harvester node 1 Wait for 20 minutes Power on node 1, wait 10 seconds Power on node 2, wait 10 seconds Power on node 3 Wait for harvester startup complete Wait for RKE2 cluster back to work Check node and VIP accessibility Check the rke2-coredns pod status kubectl get pods --all-namespaces | grep rke2-coredns  Expected Results   RKE2 cluster on harvester can recover to Active status</description>
     </item>
     
   </channel>
