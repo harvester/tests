@@ -1,5 +1,5 @@
 ---
-title: Verify network data template
+title: Check Terms and Conditions Link
 ---
 
 * Related issues: [#1634](https://github.com/harvester/harvester/issues/1634) Welcome screen asks to agree to T&Cs for using Rancher not Harvester
