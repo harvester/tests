@@ -76,6 +76,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/36-remove-harvester-loadbalancer-service/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</loc>
@@ -150,6 +152,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/cluster-add-remove-node/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1623-add-disk-to-host/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/additional-trusted-ca/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/</loc>
@@ -163,6 +167,8 @@
     <loc>https://harvester.github.io/tests/manual/authentication/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/authentication/general-authentication/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1410-pxe-installation-automatically-get-vip/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/</loc>
   </url><url>
@@ -184,9 +190,13 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/download_kubeconfig/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/760-chained-vm-templates/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/chage-api-ui-source-bundled/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/chage-api-ui-source-external/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1590-change-dns-server-for-install/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/change-log-level-debug/</loc>
   </url><url>
@@ -194,13 +204,27 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/change-log-level-trace/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1409-change-password/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/check-can-apply-the-resource-quota-limit-to-project-and-namespace-/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1357-kernel-panic-check-crash-dump/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/check-default-customized-project-and-namespace-details-page/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/check-detailed-network-status-in-host-page/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1520-check-title-and-favicon/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1667-check-longhorn-volume-mount/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1489-redirect-for-server-url-setting/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1634-terms-and-conditions-link/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/terraformer/harvester-cluster-communicate/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1283-vm-creation-required-fields/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-and-dont-select-start-after-creation/</loc>
   </url><url>
@@ -248,6 +272,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-on-a-vlan-with-an-existing-machine-and-then-change-the-existing-machines-vlan/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1613-create-vm-through-rancher-dashboard/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-2-networks/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/</loc>
@@ -284,6 +310,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-one-vm-on-a-vlan-that-has-other-vms-then-change-it-to-a-different-vlan/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1577-create-rke2-cluster-no-cloud-provider/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-pc/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</loc>
@@ -293,6 +321,10 @@
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-windows-image/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1619-create-ssh-key-from-templates-page/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1524-create-support-bundle-with-one-node-off/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-in-the-same-vlan/</loc>
   </url><url>
@@ -350,6 +382,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/deactivate-activate-deletenode-driver/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1311-delete-3-node-rke2-cluster/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/delete-single-backup/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/cluster-delete/</loc>
@@ -383,6 +417,8 @@
     <loc>https://harvester.github.io/tests/manual/images/delete-image/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/negative-delete-vm/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1602-delete-vm-with-exported-image/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/delete-volume-that-is-not-attached-to-vm/</loc>
   </url><url>
@@ -506,6 +542,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/live-migration/initiate-multple-migrations-same-time/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/812-multiple-word-harvester-token/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/install_via_usb/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/deployment/install-bare-metal-iso/</loc>
@@ -539,6 +577,8 @@
     <loc>https://harvester.github.io/tests/manual/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/manual-upgrade-from-0.3.0-to-1.0.0/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1671-mark-experimental-features/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/memory_overcommit/</loc>
   </url><url>
@@ -636,9 +676,13 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/provision-rke2-cluster-with-resource-quota-configured/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1439-pxe-install-without-iso-url-field/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/rancher-import-harvester-enhacement/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/resource_quota/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1669-reboot-cluster-check-vip/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/maintenance-mode-reboot-host/</loc>
   </url><url>
@@ -678,6 +722,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/set-maintenance-mode-on-the-last-available-node-shouldnt-be-allowed/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1272-shutdown-host-in-maintenance-mode/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/ssl-certificate/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/maintenance-mode-start-host/</loc>
@@ -712,6 +758,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/live-migration/abort-live-migration/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1535-test-ntp-timesync/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/terraform-provider/harvester-clusternetwork-resource/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/terraform-provider/harvester-image-resource/</loc>
@@ -740,6 +788,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/ui_password_show_btn/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1602-update-labels-on-image-after-vm-delete/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/images/upload-cloud-image/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/images/negative-upload-invalid-image-file/</loc>
@@ -756,6 +806,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/network/validate-network-management-network/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1235-check-qemu-installation/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/validate-volume-shows-in-use-while-attached/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/verify-add-node-pool/</loc>
@@ -768,9 +820,17 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/verify-enabling-maintenance-mode/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1655-network-data-template/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/authentication/verify-github-ssh/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1660-volume-unit-vm-details/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1661-vm-force-reset-policy/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1334-evict-disks-check-vms/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/ui/verify-bottom-links/</loc>
   </url><url>

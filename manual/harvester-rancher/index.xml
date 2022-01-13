@@ -348,6 +348,17 @@
     
     <item>
       <title>37-Import Online Harvester From the Airgapped Rancher</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</guid>
+      <description>Environment Setup Setup the online harvester
+ Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address  Setup squid HTTP proxy server
+ Move to vagrant pxe harvester folder Execute vagrant ssh pxe_server Run apt-get install squid Edit /etc/squid/squid.</description>
+    </item>
+    
+    <item>
+      <title>37-Import Online Harvester From the Airgapped Rancher</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
