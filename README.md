@@ -30,11 +30,11 @@ This repo contains Harvester end-to-end (e2e) test suite, implemented using Pyth
 
 The (e2e) tests are expected to be ran against a given Harvester cluster. In addition, the tests are executed via [tox][tox] so make sure it is installed, either via [Python pip][pip] or vendor package manager.
 
-Optionally, in order to run the Rancher integration tests, an extern Rancher cluster is also required. The Rancher integration tests are disabled unless the Rancher (API) endpoint is specified.
+Optionally, in order to run the Rancher integration tests, an external Rancher cluster is also required. The Rancher integration tests are disabled unless the Rancher (API) endpoint is specified.
 
 To run the NFS backup & restore tests, an NFS endpoint is required. Likewise, in order to run the [AWS S3][AWS S3] backup & restore tests, S3 bucket name and access credential must be provided. The backup & restore tests are disabled unless the required NFS endpoint or S3 access parameters are specified.
 
-### Virtial Harvester Cluster <a name="virtual_harvester_cluster" />
+### Virtual Harvester Cluster <a name="virtual_harvester_cluster" />
 
 For test case development, we recommend using a virtual Harvester cluster as it is self-contained, disposable, and repeatable. Please refer to the instructions in https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester on how to setup a virtual Harvester cluster.
 
@@ -48,14 +48,14 @@ When using the virtual Harvester cluster (i.e. vagrant-pxe-harvester), the VLAN 
 
 Some tests required manipulating the hosts where the VMs are running in order to
 test scheduling resiliency and disaster recovery scenarios. Therefore, we need
-external scripts to power-on, power-off, and to reboot a given node. The
+external scripts to power-on, power-off, and to reboot a given Harvester node. The
 host management scripts are expected to be provided by users out-of-band for the following reasons:
 
 1. the scripts are specific to the Harvester environment. For example,
    for a virtual vagrant environment, the scripts may simply just performing
    `vagrant halt <node name>` and `vagrant up <node name>`. However for a
    baremetal environment managed by IPMI, the scripts may need to
-   use IPMI or RedFish CLI.
+   use IPMI CLI.
 2. for certain environments (i.e. IPMI, RedFish, etc), credential is required.
 
 The host management scripts must all be placed into the same directory and must
