@@ -14,3 +14,4 @@ test_result.html
 terraform_test_artifacts/bin
 *.DS_Store
 *config
+.idea
