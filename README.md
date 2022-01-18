@@ -215,7 +215,7 @@ To run the backup tests for both S3 and NFS endpoint, provide the S3 and nfs
 endpoint either on command line or in [config.yml](config.yml).
 
 ```console
-tox -e py38 -- harvester_e2e_tests --html=test_result.html --accessKeyId <accessKey> --secretAccessKey <secretaccesskey> --bucketName <bucket> --region <region> --nfs-endpoint nfs://<IP>/<path> -m backup
+tox -e py38 -- harvester_e2e_tests --html=test_result.html --accessKeyId <accessKey> --secretAccessKey <secretaccesskey> --bucketName <bucket> --region <region> --nfs-endpoint nfs://<IP>/<path> -m "backup_and_restore_p1 and backup_and_restore_p2"
 ```
 
 ### Run Rancher Integration Tests Only <a name="run_rancher_integration_tests_only" />
