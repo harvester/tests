@@ -32,8 +32,6 @@ image-cache-url: ''
 
 terraform-scripts-location: 'terraform_test_artifacts'
 
-workaround-restartvm: False
-
 # Backup Target S3
 region: ''
 accessKeyId: ''

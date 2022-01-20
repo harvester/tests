@@ -106,13 +106,6 @@ def pytest_addoption(parser):
         help=('URL for the local images cache')
     )
     parser.addoption(
-        '--workaround-restartvm',
-        action='store_true',
-        default=config_data['workaround-restartvm'],
-        help=('when enabled reboot the VM as a workaound for '
-              'https://github.com/harvester/harvester/issues/1059')
-    )
-    parser.addoption(
         '--accessKeyId',
         action='store',
         default=config_data['accessKeyId'],
