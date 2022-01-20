@@ -198,7 +198,7 @@ def vms_with_same_vlan(request, admin_session, image, keypair,
         vms.append(utils.create_vm(request, admin_session, image,
                                    harvester_api_endpoints,
                                    keypair=keypair,
-                                   template='vm_with_one_vlan',
+                                   template='vm_with_vlan_as_default_network',
                                    network=network,
                                    network_data=network_data,
                                    user_data=user_data_with_guest_agent))

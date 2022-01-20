@@ -492,7 +492,8 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
     request_json['spec']['running'] = running
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
-    assert resp.status_code == 201, 'Failed to create VM'
+    assert resp.status_code == 201, (
+        'Failed to create VM %s: %s' % (resp.status_code, resp.content))
     vm_resp_json = resp.json()
     if running:
         assert_vm_ready(request, admin_session, harvester_api_endpoints,
