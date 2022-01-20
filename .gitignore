@@ -14,3 +14,10 @@ test_result.html
 terraform_test_artifacts/bin
 *.DS_Store
 *config
+cypress/node_modules
+*yarn.lock
+*package-lock.json
+cypress/videos/*
+cypress/support/*
+cypress/screenshots/*
+cypress/plugins/*
