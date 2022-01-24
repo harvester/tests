@@ -42,7 +42,7 @@ For test case development, we recommend using a virtual Harvester cluster as it 
 
 Some tests required VLAN networking. Those tests are disabled unless a VLAN ID and VLAN interface (NIC) are specified. For those tests to be successful, the VLAN routing and DHCP must be properly setup prior to running the tests. Setting up VLAN networking is infrastructure-specific, and therefore outside the scope of this document. Please work with your IT infrastructure team create the appropriate VLANs.
 
-When using the virtual Harvester cluster (i.e. vagrant-pxe-harvester), the VLAN ID must be **1**, and the VLAN NIC must be **harvester-mgmt**.
+When using the virtual Harvester cluster (i.e. vagrant-pxe-harvester), the VLAN ID must be `1`, and the VLAN NIC must be `harvester-mgmt`.
 
 ### Host Management Scripts <a name="host_management_scripts" />
 
@@ -254,7 +254,7 @@ The e2e tests were implemented using the Python [pytest][pytest] framework. An e
 Here are the general guidelines for adding a new e2e test:
 
 - If the test requires new configurations, make sure to add them to both [config.yml](config.yml) and [harvester_e2e_tests/conftest.py](harvester_e2e_tests/conftest.py). [config.yml](config.yml) should have the default values.
-- Add the common [fixtures][pytest fixtures] in [harvester_e2e_tests/fixtures](harvester_e2e_tests/fixtures). If the [fixtures][[pytest fixtures] is specific to a test only, it should be added to that particular test file.
+- Add the common [fixtures][pytest fixtures] in [harvester_e2e_tests/fixtures](harvester_e2e_tests/fixtures). If the [fixtures][pytest fixtures] is specific to a test only, it should be added to that particular test file.
 - All [fixtures][pytest fixtures] must be able to cleanup itself using the [recommended yield technique](https://docs.pytest.org/en/6.2.x/fixture.html#yield-fixtures-recommended)
 - All fixtures must implement the `--do-not-cleanup` option. Here's an [example](https://github.com/harvester/tests/blob/main/harvester_e2e_tests/fixtures/image.py#L42-L44).
 - Add new Harvester API endpoints must be added to [harvester_e2e_tests/templates/api_endpoints.json.j2](harvester_e2e_tests/templates/api_endpoints.json.j2).
@@ -263,8 +263,12 @@ Here are the general guidelines for adding a new e2e test:
 - Add new API tests in [harvester_e2e_tests/apis](harvester_e2e_tests/apis).
 - Add new scenario tests in [harvester_e2e_tests/scenarios](harvester_e2e_tests/scenarios).
 - Any sharable, common helper functionalities should be added in [harvester_e2e_tests/utils.py](harvester_e2e_tests/utils.py).
-- Tests should be using fixtures as much as possible as the fixtures should be able to cleanup after itself upon exit. Otherwise, the test must cleanup whatever artifacts it create upon exit.
-
+- Tests should be using [fixtures][pytest fixtures] as much as possible as the [fixtures][pytest fixtures] should be able to cleanup after itself upon exit. Otherwise, the test must cleanup whatever artifacts it create upon exit.
+- A test should have one or more [pytest markers][pytest markers] which corresponding to one or more [Harvester manual test cases][Harvester manual test cases]. For example, https://github.com/harvester/tests/blob/main/harvester_e2e_tests/scenarios/test_create_vm.py#L88-L112.
+- Use `@pytest.mark.p1` marker if the test is a priority 1 test.
+- Use `@pytest.mark.p2` marker if the test is a priority 2 test.
+- New custom markers should be added in [harvester_e2e_tests/conftest.py](harvester_e2e_tests/conftest.py). For example, https://github.com/harvester/tests/blob/main/harvester_e2e_tests/conftest.py#L190
+- By using markers, you can skip a test based on specified parameters. For example, you can skip S3 backup tests if access key is not provided. See https://github.com/harvester/tests/blob/main/harvester_e2e_tests/conftest.py#L339-L344.
 
 # Manual Test Cases <a name="manual_test_cases" />
 
@@ -308,6 +312,7 @@ The site will be accessible at http://localhost:1313.
 [jinja2]: https://jinja2docs.readthedocs.io/en/stable/
 [pytest]: https://docs.pytest.org/en/6.2.x/
 [pytest fixtures]: https://docs.pytest.org/en/6.2.x/fixture.html#fixture
+[pytest markers]: https://docs.pytest.org/en/6.2.x/example/markers.html
 [terraform]: https://www.terraform.io/
 [AWS S3]: https://aws.amazon.com/s3/
 [Harvester manual test cases]: https://github.com/harvester/tests/tree/main/docs/content/manual
