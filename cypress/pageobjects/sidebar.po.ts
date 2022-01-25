@@ -1,4 +1,4 @@
-import { Constants } from '../../constants/constants'
+import { Constants } from '../constants/constants'
 const constants = new Constants();
 
 export class SidebarPage {

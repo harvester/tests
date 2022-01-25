@@ -1,0 +1,17 @@
+{
+    "out": "docs",
+    "tsconfig": "tsconfig.json",
+    "excludeExternals": true,
+    "excludePrivate": true,
+    "theme": "default",
+    "name": "Typedoc project reference documentation",
+    "entryPoints": [
+        "./pageobjects/login.po.ts",
+        "./pageobjects/support.po.ts",
+        "./pageobjects/editHosts.po.ts",
+        "./pageobjects/editYaml.po.ts",
+        "./pageobjects/hosts.po.ts",
+        "./pageobjects/settings.po.ts",
+        "./pageobjects/sidebar.po.ts"
+    ]
+}

@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - docs/**
+      - cypress/**
 
 jobs:
   gh-pages:
@@ -33,3 +34,11 @@ jobs:
         run: |
           hugo
         working-directory: ./docs/
+      - name: install typedoc
+        run: |
+          npm install
+        working-directory: ./cypress/
+      - name: run typedoc
+        run: |
+          ./node_modules/.bin/typedoc --options ./typedoc.json
+        working-directory: ./cypress/
