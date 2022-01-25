@@ -22,3 +22,5 @@ cypress/videos/*
 cypress/support/*
 cypress/screenshots/*
 cypress/plugins/*
+*.mp4
+node_modules
