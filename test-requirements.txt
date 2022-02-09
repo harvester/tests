@@ -14,3 +14,7 @@ polling2
 cryptography
 boto3
 scp
+requests
+urllib3
+lxml
+pyyaml
