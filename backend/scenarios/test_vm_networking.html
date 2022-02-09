@@ -1,0 +1,2624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>harvester_e2e_tests.scenarios.test_vm_networking API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>harvester_e2e_tests.scenarios.test_vm_networking</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Copyright (c) 2021 SUSE LLC
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of version 3 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE about this file by physical or electronic mail,
+# you may find current contact information at www.suse.com
+
+from harvester_e2e_tests import utils
+from scp import SCPClient
+import pytest
+import subprocess
+import time
+
+
+pytest_plugins = [
+    &#39;harvester_e2e_tests.fixtures.vm&#39;,
+    &#39;harvester_e2e_tests.fixtures.backuptarget&#39;
+]
+
+
+def restart_vm(request, admin_session, harvester_api_endpoints, vm_json):
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    vm_name = vm_json[&#39;metadata&#39;][&#39;name&#39;]
+    previous_uid = vm_json[&#39;metadata&#39;][&#39;uid&#39;]
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, timeout)
+
+
+def assert_ssh_into_vm(ip, timeout, keypair=None):
+    client = utils.wait_for_ssh_client(ip, timeout, keypair)
+    # execute a simple command
+    stdin, stdout, stderr = client.exec_command(&#39;ls&#39;)
+    client.close()
+    err = stderr.read()
+    assert len(err) == 0, (&#39;Error while SSH into %s: %s&#39; % (ip, err))
+
+
+def fileactions_into_vm(ip, timeout, keypair=None,
+                        createfile=None, chkfileexist=None,
+                        chkmd5=None, script=None):
+    filesPresent = []
+    md5pass = []
+    client = utils.wait_for_ssh_client(ip, timeout, keypair)
+    # execute a simple command
+    if script:
+        with SCPClient(client.get_transport()) as scp:
+            scp.put(script, &#39;/tmp&#39;)
+        scp.close()
+        stdin, stdout, stderr = client.exec_command(&#39;ls&#39;)
+    if createfile:
+        stdin, stdout, stderr = client.exec_command(
+            &#39;bash /tmp/createFiles.sh {0}&#39;.format(createfile))
+    if chkfileexist:
+        stdin, stdout, stderr = client.exec_command(&#39;ls *.txt 2&gt; /dev/null&#39;)
+        for line in stdout.readlines():
+            filesPresent.append(line.strip())
+    if chkmd5:
+        stdin, stdout, stderr = client.exec_command(&#39;ls *.md5 2&gt; /dev/null&#39;)
+        for line in stdout.readlines():
+            stdin, stdout, stderr = client.exec_command(
+                &#39;md5sum --status -c {0} &amp;&amp; echo PASS&#39;.format(line.strip()))
+            out = stdout.read().strip()
+            if out.decode(&#39;utf-8&#39;) == &#39;PASS&#39;:
+                md5pass.append(line.strip())
+    client.close()
+    err = stderr.read()
+    assert len(err) == 0, (&#39;Error while SSH into %s: %s&#39; % (ip, err))
+    return (filesPresent, md5pass)
+
+
+def get_vm_public_ip(admin_session, harvester_api_endpoints, vm, timeout,
+                     nic_name=&#39;nic-1&#39;):
+    return utils.get_vm_ip_address(admin_session, harvester_api_endpoints, vm,
+                                   timeout, nic_name=nic_name)
+
+
+@pytest.mark.virtual_machines_p1
+@pytest.mark.p1
+def backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vms_with_vlan_as_default_network,
+                      backuptarget,
+                      vm_new=None,
+                      new_vm_name=None):
+    &#34;&#34;&#34;
+        Test create virutal machines
+        Covers:
+            virtual-machines-37-Create a VM with Start VM on
+            Creation checked
+    &#34;&#34;&#34;
+    vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+    backup_name = utils.random_name()
+    backup_json = None
+    restored_vm_json = None
+    try:
+        backup_json = utils.create_vm_backup(request, admin_session,
+                                             harvester_api_endpoints,
+                                             backuptarget,
+                                             name=backup_name,
+                                             vm_name=vm_name)
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            vms_with_vlan_as_default_network, timeout)
+        script = utils.get_backup_create_files_script(
+            request, &#39;createFiles.sh&#39;, &#39;backup&#39;)
+        # Create a file in VM
+        fileactions_into_vm(public_ip, timeout,
+                            createfile=1,
+                            script=script)
+        time.sleep(50)
+        # Check file exists after taking backup
+        fileExists = []
+        filesmd5pass = []
+        (fileExists, filesmd5pass) = fileactions_into_vm(public_ip, timeout,
+                                                         keypair=keypair,
+                                                         chkfileexist=True,
+                                                         chkmd5=True)
+        assert fileExists == [&#39;file1.txt&#39;], &#39;File1 not exist in VM&#39;
+        assert filesmd5pass == [&#39;file1.md5&#39;], &#39;MD5 chksum failed for file1&#39;
+
+        # Stop VM
+        utils.stop_vm(request, admin_session,
+                      harvester_api_endpoints, vm_name)
+        # Restore existing VM from backup
+        restore_name = utils.random_name()
+        if new_vm_name:
+            vm_name = new_vm_name
+        utils.restore_vm_backup(request, admin_session,
+                                harvester_api_endpoints,
+                                name=restore_name,
+                                vm_name=vm_name,
+                                backup_name=backup_name,
+                                vm_new=vm_new)
+        utils.assert_vm_ready(request, admin_session,
+                              harvester_api_endpoints,
+                              vm_name, running=True)
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_name))
+        assert resp.status_code == 200, &#39;Failed to get restor VM %s: %s&#39; % (
+            vm_name, resp.content)
+
+        restored_vm_json = resp.json()
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            restored_vm_json, timeout)
+        if vm_new is None:
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vms_with_vlan_as_default_network)
+        fileExists = []
+        filesmd5pass = []
+        (fileExists, filesmd5pass) = fileactions_into_vm(public_ip, timeout,
+                                                         keypair=keypair,
+                                                         chkfileexist=True)
+        assert len(fileExists) == 0, &#39;File1 still exist in VM&#39;
+
+    finally:
+        if not request.config.getoption(&#39;--do-not-cleanup&#39;):
+            if backup_json:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints,
+                                vms_with_vlan_as_default_network)
+                utils.delete_vm_backup(request, admin_session,
+                                       harvester_api_endpoints,
+                                       backuptarget, backup_json)
+            if new_vm_name:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, restored_vm_json)
+
+
+@pytest.mark.network_p2
+@pytest.mark.p2
+def backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vms_with_vlan_as_default_network,
+                                   backuptarget,
+                                   delbackup=None):
+    &#34;&#34;&#34;
+       Test Network connectivity and VM
+       Covers:
+           network-10-Validate network connectivity Mgmt Network
+           Delete single network from multiple networks vm
+        &#34;&#34;&#34;
+
+    vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+    backup_name = utils.random_name()
+    backup_lst = []
+    backup_json = None
+    restored_vm_json = None
+    restore_lst = []
+    try:
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            vms_with_vlan_as_default_network, timeout)
+        script = utils.get_backup_create_files_script(
+            request, &#39;createFiles.sh&#39;, &#39;backup&#39;)
+        # scp createFiles script on VM
+        fileactions_into_vm(public_ip, timeout,
+                            script=script)
+        for x in range(1, 4):
+            # Create a file in VM
+            fileactions_into_vm(public_ip, timeout,
+                                createfile=x)
+            time.sleep(70)
+            backup_name = &#34;bk&#34; + str(x) + &#34;-&#34; + utils.random_name()
+            backup_json = utils.create_vm_backup(request, admin_session,
+                                                 harvester_api_endpoints,
+                                                 backuptarget,
+                                                 name=backup_name,
+                                                 vm_name=vm_name)
+            backup_lst.append(backup_json)
+
+        if delbackup == &#39;first&#39;:
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[0])
+            del backup_lst[0]
+        elif delbackup == &#39;middle&#39;:
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[1])
+            del backup_lst[1]
+        elif delbackup == &#39;last&#39;:
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[2])
+            del backup_lst[2]
+        # Restore backup 1
+        # Restore existing VM from backup
+        for backup in backup_lst:
+            restore_name = utils.random_name()
+            utils.stop_vm(request, admin_session,
+                          harvester_api_endpoints, vm_name)
+            backup_name = backup[&#39;metadata&#39;][&#39;name&#39;]
+            utils.restore_vm_backup(request, admin_session,
+                                    harvester_api_endpoints,
+                                    name=restore_name,
+                                    vm_name=vm_name,
+                                    backup_name=backup_name)
+            utils.assert_vm_ready(request, admin_session,
+                                  harvester_api_endpoints,
+                                  vm_name, running=True)
+            resp = admin_session.get(harvester_api_endpoints.get_vm % (
+                vm_name))
+            assert resp.status_code == 200, &#39;Failed to get VM %s: %s&#39; % (
+                vm_name, resp.content)
+
+            restored_vm_json = resp.json()
+            restore_lst.append(restored_vm_json)
+            timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+            (vm_instance_json, public_ip) = get_vm_public_ip(
+                admin_session, harvester_api_endpoints,
+                restored_vm_json, timeout)
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vms_with_vlan_as_default_network)
+            fileExists = []
+            filesmd5pass = []
+            (fileExists, filesmd5pass) = fileactions_into_vm(public_ip,
+                                                             timeout,
+                                                             keypair=keypair,
+                                                             chkfileexist=True,
+                                                             chkmd5=True)
+            backup_seq = backup[&#39;metadata&#39;][&#39;name&#39;].split(&#34;-&#34;)[0]
+            if backup_seq == &#39;bk1&#39;:
+                assert fileExists == [&#39;file1.txt&#39;], &#39;File1 not exist in VM&#39;
+                assert filesmd5pass == [&#39;file1.md5&#39;], (
+                    &#39;MD5 chksum failed for file1&#39;)
+            elif backup_seq == &#39;bk2&#39;:
+                assert fileExists == [&#39;file1.txt&#39;, &#39;file2.txt&#39;], (
+                    &#39;All files dont exist&#39;)
+                assert filesmd5pass == [&#39;file1-2.md5&#39;, &#39;file2.md5&#39;], (
+                    &#39;MD5 ckecksum failed while restoring middle backup&#39;)
+            elif backup_seq == &#39;bk3&#39;:
+                assert fileExists == [&#39;file1.txt&#39;, &#39;file2.txt&#39;, &#39;file3.txt&#39;], (
+                    &#39;All files dont exist&#39;)
+                assert filesmd5pass == [
+                    &#39;file1-2.md5&#39;, &#39;file2-2.md5&#39;, &#39;file3.md5&#39;], (
+                    &#39;MD5 checksum failed while restoring last backup&#39;)
+    finally:
+        if not request.config.getoption(&#39;--do-not-cleanup&#39;):
+            if backup_lst:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints,
+                                vms_with_vlan_as_default_network)
+                for backup_json in backup_lst:
+                    utils.delete_vm_backup(request, admin_session,
+                                           harvester_api_endpoints,
+                                           backuptarget, backup_json)
+
+
+@pytest.mark.network_p1
+@pytest.mark.p1
+@pytest.mark.public_network
+class TestVMNetworking:
+
+    def test_ssh_to_vm(self, request, admin_session,
+                       harvester_api_endpoints, keypair,
+                       vms_with_vlan_as_default_network):
+        &#34;&#34;&#34;
+        Test Network connectivity and VM
+        Covers:
+            network-01-Validate network connectivity Mgmt Network
+            network-08-Validate network connectivity both Mgmt and ext VLAN
+            virtual-machines-22-Create a VM with 2 networks,
+            one default management network
+            and one VLAN
+        &#34;&#34;&#34;
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            vms_with_vlan_as_default_network, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+
+    def test_vlan_ip_pingable_after_reboot(self, request, admin_session,
+                                           harvester_api_endpoints, keypair,
+                                           vms_with_vlan_as_default_network):
+        &#34;&#34;&#34;
+        Negative Test network connectivity after reboot
+        Covers:
+            network-01-Network Negative Test Case #1: Test VLAN network
+            after reboot In this scenario, we want to make sure the
+            VLAN IP of a VM is still pingable after the reboot.
+        &#34;&#34;&#34;
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (vm_name))
+        assert resp.status_code == 200, (
+            &#39;Failed to lookup VM %s: %s:%s&#39; % (
+                vm_name, resp.status_code, resp.content))
+        vm_with_one_vlan = resp.json()
+
+        previous_uid = vm_with_one_vlan[&#39;metadata&#39;][&#39;uid&#39;]
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        # make sure the public_ip is pingable
+        assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) == 0, (
+            &#39;Failed to ping VM %s public IP %s&#39; % (vm_name, public_ip))
+        # reboot the instance
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, timeout)
+        # make sure the public_ip is pingable
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) == 0, (
+            &#39;Failed to ping VM %s public IP %s&#39; % (vm_name, public_ip))
+
+    def test_add_vlan_network_to_vm(self, request, admin_session,
+                                    harvester_api_endpoints, basic_vm,
+                                    network, keypair):
+        &#34;&#34;&#34;
+        Test Network connectivity
+        Covers:
+            network-01-Validate network connectivity Mgmt Network
+            network-02-Validate network connectivity External VLAN
+            network-53-Edit vm network and verify the network is
+            working as per configuration
+            network-13-Add VLAN network
+        &#34;&#34;&#34;
+        vm_name = basic_vm[&#39;metadata&#39;][&#39;name&#39;]
+        previous_uid = basic_vm[&#39;metadata&#39;][&#39;uid&#39;]
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        # add a new network to the VM
+        network_name = &#39;nic-1&#39;
+        new_network = {
+            &#39;name&#39;: network_name,
+            &#39;multus&#39;: {&#39;networkName&#39;: network[&#39;metadata&#39;][&#39;name&#39;]}
+        }
+        new_network_interface = {
+            &#39;bridge&#39;: {},
+            &#39;model&#39;: &#39;virtio&#39;,
+            &#39;name&#39;: network_name
+        }
+        spec = basic_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+        if &#39;interfaces&#39; not in spec[&#39;domain&#39;][&#39;devices&#39;]:
+            spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = []
+        spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;].append(new_network_interface)
+        if &#39;networks&#39; not in spec:
+            spec[&#39;networks&#39;] = []
+        spec[&#39;networks&#39;].append(new_network)
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm % (vm_name),
+            basic_vm,
+            harvester_api_endpoints.get_vm % (vm_name))
+        updated_vm_data = resp.json()
+        # restart the VM instance for the changes to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption(&#39;--wait-timeout&#39;))
+        # check to make sure the network device is in the updated spec
+        found = False
+        updated_spec = updated_vm_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+        for i in updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]:
+            if (network_name == i[&#39;name&#39;] and i[&#39;model&#39;] == &#39;virtio&#39; and
+                    &#39;bridge&#39; in i):
+                found = True
+                break
+        assert found, &#39;Failed to add new network device to VM %s&#39; % (vm_name)
+        # check to make sure network is in the updated spec
+        found = False
+        for n in updated_spec[&#39;networks&#39;]:
+            if network_name == n[&#39;name&#39;]:
+                found = True
+                break
+        assert found, &#39;Failed to add new network to VM %s&#39; % (vm_name)
+        # reboot the VM as a workaound for
+        # https://github.com/harvester/harvester/issues/1059
+        restart_vm(request, admin_session, harvester_api_endpoints,
+                   updated_vm_data)
+        # now make sure we have network connectivity
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, updated_vm_data, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+
+    # NOTE: make sure to run this test case last as the vm_with_one_vlan
+    # fixture has a class scope
+    def test_remove_vlan_network_from_vm(self, request, admin_session,
+                                         harvester_api_endpoints,
+                                         vm_with_one_vlan, network):
+        &#34;&#34;&#34;
+        Test Network connectivity
+        Covers:
+            network-12-Delete single network from multiple networks VM
+            Delete external VLAN
+        &#34;&#34;&#34;
+        vm_name = vm_with_one_vlan[&#39;metadata&#39;][&#39;name&#39;]
+        previous_uid = vm_with_one_vlan[&#39;metadata&#39;][&#39;uid&#39;]
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        # wait for the VM to boot with a public IP
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        # now remove the second (public IP) NIC from the VM and reboot
+        spec = vm_with_one_vlan[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+        interfaces = spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]
+        spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = [
+            i for i in interfaces if not (i[&#39;name&#39;] == &#39;nic-1&#39;)]
+        networks = spec[&#39;networks&#39;]
+        spec[&#39;networks&#39;] = [n for n in networks if not (n[&#39;name&#39;] == &#39;nic-1&#39;)]
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm % (vm_name),
+            vm_with_one_vlan,
+            harvester_api_endpoints.get_vm % (vm_name))
+        updated_vm_data = resp.json()
+        # restart the VM instance for the changes to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption(&#39;--wait-timeout&#39;))
+        # check to make sure the second NIC&#39;s been removed
+        found = False
+        updated_spec = updated_vm_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+        for i in updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]:
+            if i[&#39;name&#39;] == &#39;nic-1&#39;:
+                found = True
+                break
+        assert not found, &#39;Failed to remove network interface from VM %s&#39; % (
+            vm_name)
+        # make sure it&#39;s public IP is no longer pingable
+        assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) != 0, (
+            &#39;Failed to remove network interface from VM %s. Public IP %s &#39;
+            &#39;still accessible.&#39; % (vm_name, public_ip))
+
+
+@pytest.mark.public_network
+def test_two_vms_on_same_vlan(request, admin_session,
+                              harvester_api_endpoints, keypair,
+                              vms_with_same_vlan, network):
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    network_name = network[&#39;metadata&#39;][&#39;name&#39;]
+    for vm_json in vms_with_same_vlan:
+        # make sure the VM is on the same VLAN
+        networks = vm_json[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;networks&#39;]
+        match_network = [n for n in networks if (n[&#39;name&#39;] == &#39;nic-1&#39;)]
+        assert len(match_network) == 1, (
+            &#39;Found multiple network interfaces with name &#34;nic-1&#34;&#39;)
+        assert &#39;multus&#39; in match_network[0], (
+            &#39;Expecting &#34;multus&#34; network interface.&#39;)
+        assert match_network[0][&#39;multus&#39;][&#39;networkName&#39;] == network_name, (
+            &#39;Expecting network name %s, got %s instead.&#39; % (
+                network_name, match_network[0][&#39;multus&#39;][&#39;networkName&#39;]))
+        # now make sure it has connectivity
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_json, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+
+
+@pytest.mark.public_network
+def test_update_vm_management_network_to_vlan(request, admin_session,
+                                              harvester_api_endpoints, keypair,
+                                              basic_vm, network):
+    &#34;&#34;&#34;
+    Test Network connectivity
+    Covers:
+        network-04-Change management network to external VLAN
+    &#34;&#34;&#34;
+    vm_name = basic_vm[&#39;metadata&#39;][&#39;name&#39;]
+    previous_uid = basic_vm[&#39;metadata&#39;][&#39;uid&#39;]
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    # update VM to use VLAN as it&#39;s default network
+    basic_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = [
+        {
+            &#39;bridge&#39;: {},
+            &#39;model&#39;: &#39;virtio&#39;,
+            &#39;name&#39;: &#39;nic-1&#39;
+        }
+    ]
+    basic_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;networks&#39;] = [
+        {
+            &#39;multus&#39;: {
+                &#39;networkName&#39;: network[&#39;metadata&#39;][&#39;name&#39;]
+            },
+            &#39;name&#39;: &#39;nic-1&#39;
+        }
+    ]
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_vm % (vm_name),
+        basic_vm,
+        harvester_api_endpoints.get_vm % (vm_name))
+    updated_vm_data = resp.json()
+    # restart the VM instance for the changes to take effect
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, timeout)
+    # make sure it has only one interface
+    updated_spec = updated_vm_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+    num_interfaces = len(updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;])
+    assert num_interfaces == 1, (
+        &#39;Expecting one interface, got %s instead: %s&#39; % (
+            num_interfaces, updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]))
+    # it should have a public IP
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints, updated_vm_data, timeout)
+    # make sure it has connectivity
+    assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+
+
+@pytest.mark.public_network
+def test_update_vm_vlan_network_to_management(request, admin_session,
+                                              harvester_api_endpoints, keypair,
+                                              vms_with_vlan_as_default_network,
+                                              network):
+    &#34;&#34;&#34;
+    Test Network connectivity
+    Covers:
+        network-06-Change external VLAN to management network
+    &#34;&#34;&#34;
+    vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+    previous_uid = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;uid&#39;]
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    # make sure it has only the public IP
+    spec = vms_with_vlan_as_default_network[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+    num_interfaces = len(spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;])
+    assert num_interfaces == 1, (
+        &#39;Expecting one interface, got %s instead: %s&#39; % (
+            num_interfaces, spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]))
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints,
+        vms_with_vlan_as_default_network, timeout)
+    # now update VM to use default management interface only
+    spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = [
+        {
+            &#39;masquerade&#39;: {},
+            &#39;model&#39;: &#39;virtio&#39;,
+            &#39;name&#39;: &#39;default&#39;
+        }
+    ]
+    spec[&#39;networks&#39;] = [
+        {
+            &#39;name&#39;: &#39;default&#39;,
+            &#39;pod&#39;: {}
+        }
+    ]
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_vm % (vm_name),
+        vms_with_vlan_as_default_network,
+        harvester_api_endpoints.get_vm % (vm_name))
+    updated_vm_data = resp.json()
+    # restart the VM instance for the changes to take effect
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, timeout)
+    # make sure the instance has only one IP in 10.52.0.0/24 subnet
+    vm_instance_json = utils.lookup_vm_instance(
+        admin_session, harvester_api_endpoints, updated_vm_data)
+    num_interfaces = len(vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;])
+    assert num_interfaces == 1, (
+        &#39;Expecting one interface, got %s instead: %s&#39; % (
+            num_interfaces, vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;]))
+    assert vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;][0][&#39;name&#39;] == &#39;default&#39;, (
+        &#39;Expecting interface name to be &#34;default&#34;, got %s instead&#39; % (
+            vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;][0][&#39;name&#39;]))
+    ip = vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;][0][&#39;ipAddress&#39;]
+    assert ip.startswith(&#39;10.52.&#39;), (
+        &#39;Expecting IP address to be in 10.52.0.0/24 subnet, got %s instead&#39; % (
+            ip))
+
+
+@pytest.mark.network_p2
+@pytest.mark.p2
+@pytest.mark.public_network
+def test_vm_network_with_bogus_vlan(request, admin_session,
+                                    harvester_api_endpoints,
+                                    vm_with_one_bogus_vlan):
+    &#34;&#34;&#34;
+    Negative Test creating VM with a bogus VLAN ID
+    Covers
+        network-04-Invalid network scenario, we expect the VM to be
+        successfully created. But the network interface associated
+        with the VLAN should not successfully gotten a valid
+        IPv4 address.
+    &#34;&#34;&#34;
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints,
+        vm_with_one_bogus_vlan, timeout)
+    # the VM instance should not be getting a IPv4 address
+    ip_parts = public_ip.split(&#39;.&#39;)
+    assert len(ip_parts) != 4, (
+        &#39;VM should not have gotten an IPv4 address. Got %s&#39; % (public_ip))
+
+
+@pytest.mark.public_network
+def test_create_update_vm_user_data(request, admin_session, image,
+                                    keypair, harvester_api_endpoints, network,
+                                    user_data_with_guest_agent, network_data):
+    created = False
+    try:
+        single_vm = utils.create_vm(
+            request, admin_session, image,
+            harvester_api_endpoints, keypair=keypair,
+            template=&#39;vm_with_vlan_as_default_network&#39;,
+            network=network)
+        created = True
+        # make sure the VM instance is successfully created
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, single_vm)
+        vm_name = single_vm[&#39;metadata&#39;][&#39;name&#39;]
+        previous_uid = vm_instance_json[&#39;metadata&#39;][&#39;uid&#39;]
+        devices = (
+            single_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;devices&#39;][&#39;disks&#39;]
+        )
+        device_data = {
+            &#39;disk&#39;: {
+                &#39;bus&#39;: &#39;virtio&#39;
+            },
+            &#39;name&#39;: &#39;cloudinitdisk&#39;
+        }
+        devices.append(device_data)
+        vol_data = single_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;volumes&#39;]
+        assert &#39;cloudInitNoCloud&#39; not in vol_data
+        userdata = user_data_with_guest_agent.replace(&#39;\\n&#39;, &#39;\n&#39;)
+        netdata = network_data.replace(&#39;\\n&#39;, &#39;\n&#39;)
+        user_data = {
+            &#39;cloudInitNoCloud&#39;: {
+                &#39;networkData&#39;: netdata,
+                &#39;userData&#39;: userdata
+            },
+            &#39;name&#39;: &#39;cloudinitdisk&#39;
+        }
+        vol_data.append(user_data)
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm % (vm_name),
+            single_vm,
+            harvester_api_endpoints.get_vm % (vm_name),
+            use_yaml=True)
+        # restart the VM instance for the updated machine type to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption(&#39;--wait-timeout&#39;))
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_name))
+        updated_data = resp.json()
+        updated_vol_data = updated_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;volumes&#39;]
+        found = False
+        for i in updated_vol_data:
+            if i[&#39;name&#39;] == &#39;cloudinitdisk&#39;:
+                if (i[&#39;cloudInitNoCloud&#39;][&#39;networkData&#39;] == netdata and
+                        i[&#39;cloudInitNoCloud&#39;][&#39;userData&#39;] == userdata):
+                    found = True
+                    break
+
+        assert found, &#39;Failed to update VM %s to add userDate &amp; NetData&#39; % (
+            vm_name)
+
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, updated_data, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+    finally:
+        if created:
+            if not request.config.getoption(&#39;--do-not-cleanup&#39;):
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, single_vm)
+
+
+@pytest.mark.terraform
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
+def test_create_vm_using_terraform(request, admin_session,
+                                   harvester_api_endpoints,
+                                   image_using_terraform,
+                                   volume_using_terraform,
+                                   keypair_using_terraform,
+                                   network_using_terraform,
+                                   user_data_with_guest_agent_using_terraform,
+                                   network_data):
+    &#34;&#34;&#34;
+    Test creates VM using terraform
+    Covers:
+    terraform-provider-09-Test harvester_virtualmachine resource
+    terraform-provider-01-install, terraform-provider-02-kube config,
+    terraform-provider-03-define kube config
+    &#34;&#34;&#34;
+    created = False
+    try:
+        vm_json = utils.create_vm_terraform(
+            request,
+            admin_session,
+            harvester_api_endpoints,
+            template_name=&#39;resource_vm&#39;,
+            keypair=keypair_using_terraform,
+            image=image_using_terraform,
+            volume=volume_using_terraform,
+            net=network_using_terraform,
+            user_data=user_data_with_guest_agent_using_terraform,
+            net_data=network_data)
+        created = True
+        # make sure the VM instance is successfully created
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_json)
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_json, timeout)
+
+#       assert_ssh_into_vm(public_ip, timeout, keypair=keypair_using_terraform)
+
+    finally:
+        if created:
+            if not request.config.getoption(&#39;--do-not-cleanup&#39;):
+                utils.destroy_resource(request, admin_session, &#39;all&#39;)
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_backup_restore_new_vm(request, admin_session,
+                               harvester_api_endpoints,
+                               keypair, vm_with_one_vlan,
+                               backuptarget_s3,
+                               vm_new=True):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-06-Restore Backup Replace New VM
+    &#34;&#34;&#34;
+    new_vm_name = &#34;new-vm-&#34; + utils.random_name()
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget_s3,
+                      vm_new=vm_new,
+                      new_vm_name=new_vm_name
+                      )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_backup_restore_existing_vm(request, admin_session,
+                                    harvester_api_endpoints,
+                                    keypair, vm_with_one_vlan,
+                                    backuptarget_s3):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-04-Restore Backup Replace existing VM
+            with backup from same VM
+    &#34;&#34;&#34;
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget_s3
+                      )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_chained_del_middle_backup(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=&#39;middle&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-15-Delete middle backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup_and_restore_p2
+@pytest.mark.p2
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_chained_del_first_backup(request, admin_session,
+                                  harvester_api_endpoints,
+                                  keypair, vm_with_one_vlan,
+                                  backuptarget_s3,
+                                  delbackup=&#39;first&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-16-Delete first backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_chained_del_last_backup(request, admin_session,
+                                 harvester_api_endpoints,
+                                 keypair, vm_with_one_vlan,
+                                 backuptarget_s3,
+                                 delbackup=&#39;last&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-17-Delete last backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_restore_chained_backups(request, admin_session,
+                                 harvester_api_endpoints,
+                                 keypair, vms_with_vlan_as_default_network,
+                                 backuptarget_s3):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-18-Delete last backup in chained backup
+            backup-and-restore-19-Delete middle backup in chained backup
+            backup-and-restore-20-Delete first backup in chained backup
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vms_with_vlan_as_default_network,
+                                   backuptarget_s3
+                                   )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_backup_restore_new_vm_nfs(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vms_with_vlan_as_default_network,
+                                   backuptarget_nfs,
+                                   vm_new=True):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-06-Restore Backup Create new VM
+    &#34;&#34;&#34;
+    new_vm_name = &#34;new-vm-&#34; + utils.random_name()
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vms_with_vlan_as_default_network,
+                      backuptarget_nfs,
+                      vm_new=vm_new,
+                      new_vm_name=new_vm_name
+                      )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_backup_restore_existing_vm_nfs(request, admin_session,
+                                        harvester_api_endpoints,
+                                        keypair,
+                                        vms_with_vlan_as_default_network,
+                                        backuptarget_nfs):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-04-Restore Backup Replace existing VM nfs
+            with backup from same VM
+    &#34;&#34;&#34;
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vms_with_vlan_as_default_network,
+                      backuptarget_nfs
+                      )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_chained_del_middle_backup_nfs(request, admin_session,
+                                       harvester_api_endpoints,
+                                       keypair,
+                                       vms_with_vlan_as_default_network,
+                                       backuptarget_nfs,
+                                       delbackup=&#39;middle&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-15-Delete middle backup in chained backup nfs
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_chained_del_first_backup_nfs(request, admin_session,
+                                      harvester_api_endpoints,
+                                      keypair,
+                                      vms_with_vlan_as_default_network,
+                                      backuptarget_nfs,
+                                      delbackup=&#39;first&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-16-Delete first backup in chained backup nfs
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_chained_del_last_backup_nfs(request, admin_session,
+                                     harvester_api_endpoints,
+                                     keypair,
+                                     vms_with_vlan_as_default_network,
+                                     backuptarget_nfs,
+                                     delbackup=&#39;last&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-17-Delete last backup in chained backup nfs
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vms_with_vlan_as_default_network,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )
+
+
+@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_restore_chained_backups_nfs(request, admin_session,
+                                     harvester_api_endpoints,
+                                     keypair,
+                                     vms_with_vlan_as_default_network,
+                                     backuptarget_nfs):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-18-Delete last backup in chained backup nfs
+            backup-and-restore-19-Delete middle backup in chained backup nfs
+            backup-and-restore-20-Delete first backup in chained backup nfs
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
+                                   backuptarget_nfs
+                                   )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.assert_ssh_into_vm"><code class="name flex">
+<span>def <span class="ident">assert_ssh_into_vm</span></span>(<span>ip, timeout, keypair=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def assert_ssh_into_vm(ip, timeout, keypair=None):
+    client = utils.wait_for_ssh_client(ip, timeout, keypair)
+    # execute a simple command
+    stdin, stdout, stderr = client.exec_command(&#39;ls&#39;)
+    client.close()
+    err = stderr.read()
+    assert len(err) == 0, (&#39;Error while SSH into %s: %s&#39; % (ip, err))</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.backup_restore_chained_backups"><code class="name flex">
+<span>def <span class="ident">backup_restore_chained_backups</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget, delbackup=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test Network connectivity and VM</p>
+<h2 id="covers">Covers</h2>
+<p>network-10-Validate network connectivity Mgmt Network
+Delete single network from multiple networks vm</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.network_p2
+@pytest.mark.p2
+def backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vms_with_vlan_as_default_network,
+                                   backuptarget,
+                                   delbackup=None):
+    &#34;&#34;&#34;
+       Test Network connectivity and VM
+       Covers:
+           network-10-Validate network connectivity Mgmt Network
+           Delete single network from multiple networks vm
+        &#34;&#34;&#34;
+
+    vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+    backup_name = utils.random_name()
+    backup_lst = []
+    backup_json = None
+    restored_vm_json = None
+    restore_lst = []
+    try:
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            vms_with_vlan_as_default_network, timeout)
+        script = utils.get_backup_create_files_script(
+            request, &#39;createFiles.sh&#39;, &#39;backup&#39;)
+        # scp createFiles script on VM
+        fileactions_into_vm(public_ip, timeout,
+                            script=script)
+        for x in range(1, 4):
+            # Create a file in VM
+            fileactions_into_vm(public_ip, timeout,
+                                createfile=x)
+            time.sleep(70)
+            backup_name = &#34;bk&#34; + str(x) + &#34;-&#34; + utils.random_name()
+            backup_json = utils.create_vm_backup(request, admin_session,
+                                                 harvester_api_endpoints,
+                                                 backuptarget,
+                                                 name=backup_name,
+                                                 vm_name=vm_name)
+            backup_lst.append(backup_json)
+
+        if delbackup == &#39;first&#39;:
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[0])
+            del backup_lst[0]
+        elif delbackup == &#39;middle&#39;:
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[1])
+            del backup_lst[1]
+        elif delbackup == &#39;last&#39;:
+            utils.delete_vm_backup(request, admin_session,
+                                   harvester_api_endpoints, backuptarget,
+                                   backup_lst[2])
+            del backup_lst[2]
+        # Restore backup 1
+        # Restore existing VM from backup
+        for backup in backup_lst:
+            restore_name = utils.random_name()
+            utils.stop_vm(request, admin_session,
+                          harvester_api_endpoints, vm_name)
+            backup_name = backup[&#39;metadata&#39;][&#39;name&#39;]
+            utils.restore_vm_backup(request, admin_session,
+                                    harvester_api_endpoints,
+                                    name=restore_name,
+                                    vm_name=vm_name,
+                                    backup_name=backup_name)
+            utils.assert_vm_ready(request, admin_session,
+                                  harvester_api_endpoints,
+                                  vm_name, running=True)
+            resp = admin_session.get(harvester_api_endpoints.get_vm % (
+                vm_name))
+            assert resp.status_code == 200, &#39;Failed to get VM %s: %s&#39; % (
+                vm_name, resp.content)
+
+            restored_vm_json = resp.json()
+            restore_lst.append(restored_vm_json)
+            timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+            (vm_instance_json, public_ip) = get_vm_public_ip(
+                admin_session, harvester_api_endpoints,
+                restored_vm_json, timeout)
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vms_with_vlan_as_default_network)
+            fileExists = []
+            filesmd5pass = []
+            (fileExists, filesmd5pass) = fileactions_into_vm(public_ip,
+                                                             timeout,
+                                                             keypair=keypair,
+                                                             chkfileexist=True,
+                                                             chkmd5=True)
+            backup_seq = backup[&#39;metadata&#39;][&#39;name&#39;].split(&#34;-&#34;)[0]
+            if backup_seq == &#39;bk1&#39;:
+                assert fileExists == [&#39;file1.txt&#39;], &#39;File1 not exist in VM&#39;
+                assert filesmd5pass == [&#39;file1.md5&#39;], (
+                    &#39;MD5 chksum failed for file1&#39;)
+            elif backup_seq == &#39;bk2&#39;:
+                assert fileExists == [&#39;file1.txt&#39;, &#39;file2.txt&#39;], (
+                    &#39;All files dont exist&#39;)
+                assert filesmd5pass == [&#39;file1-2.md5&#39;, &#39;file2.md5&#39;], (
+                    &#39;MD5 ckecksum failed while restoring middle backup&#39;)
+            elif backup_seq == &#39;bk3&#39;:
+                assert fileExists == [&#39;file1.txt&#39;, &#39;file2.txt&#39;, &#39;file3.txt&#39;], (
+                    &#39;All files dont exist&#39;)
+                assert filesmd5pass == [
+                    &#39;file1-2.md5&#39;, &#39;file2-2.md5&#39;, &#39;file3.md5&#39;], (
+                    &#39;MD5 checksum failed while restoring last backup&#39;)
+    finally:
+        if not request.config.getoption(&#39;--do-not-cleanup&#39;):
+            if backup_lst:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints,
+                                vms_with_vlan_as_default_network)
+                for backup_json in backup_lst:
+                    utils.delete_vm_backup(request, admin_session,
+                                           harvester_api_endpoints,
+                                           backuptarget, backup_json)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.backup_restore_vm"><code class="name flex">
+<span>def <span class="ident">backup_restore_vm</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget, vm_new=None, new_vm_name=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test create virutal machines</p>
+<h2 id="covers">Covers</h2>
+<p>virtual-machines-37-Create a VM with Start VM on
+Creation checked</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.virtual_machines_p1
+@pytest.mark.p1
+def backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vms_with_vlan_as_default_network,
+                      backuptarget,
+                      vm_new=None,
+                      new_vm_name=None):
+    &#34;&#34;&#34;
+        Test create virutal machines
+        Covers:
+            virtual-machines-37-Create a VM with Start VM on
+            Creation checked
+    &#34;&#34;&#34;
+    vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+    backup_name = utils.random_name()
+    backup_json = None
+    restored_vm_json = None
+    try:
+        backup_json = utils.create_vm_backup(request, admin_session,
+                                             harvester_api_endpoints,
+                                             backuptarget,
+                                             name=backup_name,
+                                             vm_name=vm_name)
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            vms_with_vlan_as_default_network, timeout)
+        script = utils.get_backup_create_files_script(
+            request, &#39;createFiles.sh&#39;, &#39;backup&#39;)
+        # Create a file in VM
+        fileactions_into_vm(public_ip, timeout,
+                            createfile=1,
+                            script=script)
+        time.sleep(50)
+        # Check file exists after taking backup
+        fileExists = []
+        filesmd5pass = []
+        (fileExists, filesmd5pass) = fileactions_into_vm(public_ip, timeout,
+                                                         keypair=keypair,
+                                                         chkfileexist=True,
+                                                         chkmd5=True)
+        assert fileExists == [&#39;file1.txt&#39;], &#39;File1 not exist in VM&#39;
+        assert filesmd5pass == [&#39;file1.md5&#39;], &#39;MD5 chksum failed for file1&#39;
+
+        # Stop VM
+        utils.stop_vm(request, admin_session,
+                      harvester_api_endpoints, vm_name)
+        # Restore existing VM from backup
+        restore_name = utils.random_name()
+        if new_vm_name:
+            vm_name = new_vm_name
+        utils.restore_vm_backup(request, admin_session,
+                                harvester_api_endpoints,
+                                name=restore_name,
+                                vm_name=vm_name,
+                                backup_name=backup_name,
+                                vm_new=vm_new)
+        utils.assert_vm_ready(request, admin_session,
+                              harvester_api_endpoints,
+                              vm_name, running=True)
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_name))
+        assert resp.status_code == 200, &#39;Failed to get restor VM %s: %s&#39; % (
+            vm_name, resp.content)
+
+        restored_vm_json = resp.json()
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            restored_vm_json, timeout)
+        if vm_new is None:
+            restart_vm(request, admin_session, harvester_api_endpoints,
+                       vms_with_vlan_as_default_network)
+        fileExists = []
+        filesmd5pass = []
+        (fileExists, filesmd5pass) = fileactions_into_vm(public_ip, timeout,
+                                                         keypair=keypair,
+                                                         chkfileexist=True)
+        assert len(fileExists) == 0, &#39;File1 still exist in VM&#39;
+
+    finally:
+        if not request.config.getoption(&#39;--do-not-cleanup&#39;):
+            if backup_json:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints,
+                                vms_with_vlan_as_default_network)
+                utils.delete_vm_backup(request, admin_session,
+                                       harvester_api_endpoints,
+                                       backuptarget, backup_json)
+            if new_vm_name:
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, restored_vm_json)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.fileactions_into_vm"><code class="name flex">
+<span>def <span class="ident">fileactions_into_vm</span></span>(<span>ip, timeout, keypair=None, createfile=None, chkfileexist=None, chkmd5=None, script=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fileactions_into_vm(ip, timeout, keypair=None,
+                        createfile=None, chkfileexist=None,
+                        chkmd5=None, script=None):
+    filesPresent = []
+    md5pass = []
+    client = utils.wait_for_ssh_client(ip, timeout, keypair)
+    # execute a simple command
+    if script:
+        with SCPClient(client.get_transport()) as scp:
+            scp.put(script, &#39;/tmp&#39;)
+        scp.close()
+        stdin, stdout, stderr = client.exec_command(&#39;ls&#39;)
+    if createfile:
+        stdin, stdout, stderr = client.exec_command(
+            &#39;bash /tmp/createFiles.sh {0}&#39;.format(createfile))
+    if chkfileexist:
+        stdin, stdout, stderr = client.exec_command(&#39;ls *.txt 2&gt; /dev/null&#39;)
+        for line in stdout.readlines():
+            filesPresent.append(line.strip())
+    if chkmd5:
+        stdin, stdout, stderr = client.exec_command(&#39;ls *.md5 2&gt; /dev/null&#39;)
+        for line in stdout.readlines():
+            stdin, stdout, stderr = client.exec_command(
+                &#39;md5sum --status -c {0} &amp;&amp; echo PASS&#39;.format(line.strip()))
+            out = stdout.read().strip()
+            if out.decode(&#39;utf-8&#39;) == &#39;PASS&#39;:
+                md5pass.append(line.strip())
+    client.close()
+    err = stderr.read()
+    assert len(err) == 0, (&#39;Error while SSH into %s: %s&#39; % (ip, err))
+    return (filesPresent, md5pass)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.get_vm_public_ip"><code class="name flex">
+<span>def <span class="ident">get_vm_public_ip</span></span>(<span>admin_session, harvester_api_endpoints, vm, timeout, nic_name='nic-1')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_vm_public_ip(admin_session, harvester_api_endpoints, vm, timeout,
+                     nic_name=&#39;nic-1&#39;):
+    return utils.get_vm_ip_address(admin_session, harvester_api_endpoints, vm,
+                                   timeout, nic_name=nic_name)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.restart_vm"><code class="name flex">
+<span>def <span class="ident">restart_vm</span></span>(<span>request, admin_session, harvester_api_endpoints, vm_json)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def restart_vm(request, admin_session, harvester_api_endpoints, vm_json):
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    vm_name = vm_json[&#39;metadata&#39;][&#39;name&#39;]
+    previous_uid = vm_json[&#39;metadata&#39;][&#39;uid&#39;]
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, timeout)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_existing_vm"><code class="name flex">
+<span>def <span class="ident">test_backup_restore_existing_vm</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vm_with_one_vlan, backuptarget_s3)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-04-Restore Backup Replace existing VM
+with backup from same VM</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_backup_restore_existing_vm(request, admin_session,
+                                    harvester_api_endpoints,
+                                    keypair, vm_with_one_vlan,
+                                    backuptarget_s3):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-04-Restore Backup Replace existing VM
+            with backup from same VM
+    &#34;&#34;&#34;
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget_s3
+                      )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_existing_vm_nfs"><code class="name flex">
+<span>def <span class="ident">test_backup_restore_existing_vm_nfs</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget_nfs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-04-Restore Backup Replace existing VM nfs
+with backup from same VM</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_backup_restore_existing_vm_nfs(request, admin_session,
+                                        harvester_api_endpoints,
+                                        keypair,
+                                        vms_with_vlan_as_default_network,
+                                        backuptarget_nfs):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-04-Restore Backup Replace existing VM nfs
+            with backup from same VM
+    &#34;&#34;&#34;
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vms_with_vlan_as_default_network,
+                      backuptarget_nfs
+                      )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_new_vm"><code class="name flex">
+<span>def <span class="ident">test_backup_restore_new_vm</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vm_with_one_vlan, backuptarget_s3, vm_new=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-06-Restore Backup Replace New VM</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_backup_restore_new_vm(request, admin_session,
+                               harvester_api_endpoints,
+                               keypair, vm_with_one_vlan,
+                               backuptarget_s3,
+                               vm_new=True):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-06-Restore Backup Replace New VM
+    &#34;&#34;&#34;
+    new_vm_name = &#34;new-vm-&#34; + utils.random_name()
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vm_with_one_vlan,
+                      backuptarget_s3,
+                      vm_new=vm_new,
+                      new_vm_name=new_vm_name
+                      )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_new_vm_nfs"><code class="name flex">
+<span>def <span class="ident">test_backup_restore_new_vm_nfs</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget_nfs, vm_new=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-06-Restore Backup Create new VM</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_backup_restore_new_vm_nfs(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vms_with_vlan_as_default_network,
+                                   backuptarget_nfs,
+                                   vm_new=True):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-06-Restore Backup Create new VM
+    &#34;&#34;&#34;
+    new_vm_name = &#34;new-vm-&#34; + utils.random_name()
+    backup_restore_vm(request, admin_session,
+                      harvester_api_endpoints,
+                      keypair, vms_with_vlan_as_default_network,
+                      backuptarget_nfs,
+                      vm_new=vm_new,
+                      new_vm_name=new_vm_name
+                      )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_first_backup"><code class="name flex">
+<span>def <span class="ident">test_chained_del_first_backup</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vm_with_one_vlan, backuptarget_s3, delbackup='first')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-16-Delete first backup in chained backup
+backup-and-restore-08-Delete multiple backups</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p2
+@pytest.mark.p2
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_chained_del_first_backup(request, admin_session,
+                                  harvester_api_endpoints,
+                                  keypair, vm_with_one_vlan,
+                                  backuptarget_s3,
+                                  delbackup=&#39;first&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-16-Delete first backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_first_backup_nfs"><code class="name flex">
+<span>def <span class="ident">test_chained_del_first_backup_nfs</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget_nfs, delbackup='first')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-16-Delete first backup in chained backup nfs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_chained_del_first_backup_nfs(request, admin_session,
+                                      harvester_api_endpoints,
+                                      keypair,
+                                      vms_with_vlan_as_default_network,
+                                      backuptarget_nfs,
+                                      delbackup=&#39;first&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-16-Delete first backup in chained backup nfs
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_last_backup"><code class="name flex">
+<span>def <span class="ident">test_chained_del_last_backup</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vm_with_one_vlan, backuptarget_s3, delbackup='last')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-17-Delete last backup in chained backup
+backup-and-restore-08-Delete multiple backups</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_chained_del_last_backup(request, admin_session,
+                                 harvester_api_endpoints,
+                                 keypair, vm_with_one_vlan,
+                                 backuptarget_s3,
+                                 delbackup=&#39;last&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-17-Delete last backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_last_backup_nfs"><code class="name flex">
+<span>def <span class="ident">test_chained_del_last_backup_nfs</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget_nfs, delbackup='last')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-17-Delete last backup in chained backup nfs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_chained_del_last_backup_nfs(request, admin_session,
+                                     harvester_api_endpoints,
+                                     keypair,
+                                     vms_with_vlan_as_default_network,
+                                     backuptarget_nfs,
+                                     delbackup=&#39;last&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-17-Delete last backup in chained backup nfs
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vms_with_vlan_as_default_network,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_middle_backup"><code class="name flex">
+<span>def <span class="ident">test_chained_del_middle_backup</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vm_with_one_vlan, backuptarget_s3, delbackup='middle')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-15-Delete middle backup in chained backup
+backup-and-restore-08-Delete multiple backups</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_chained_del_middle_backup(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=&#39;middle&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-15-Delete middle backup in chained backup
+            backup-and-restore-08-Delete multiple backups
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vm_with_one_vlan,
+                                   backuptarget_s3,
+                                   delbackup=delbackup
+                                   )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_middle_backup_nfs"><code class="name flex">
+<span>def <span class="ident">test_chained_del_middle_backup_nfs</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget_nfs, delbackup='middle')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-15-Delete middle backup in chained backup nfs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_chained_del_middle_backup_nfs(request, admin_session,
+                                       harvester_api_endpoints,
+                                       keypair,
+                                       vms_with_vlan_as_default_network,
+                                       backuptarget_nfs,
+                                       delbackup=&#39;middle&#39;):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-15-Delete middle backup in chained backup nfs
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
+                                   backuptarget_nfs,
+                                   delbackup=delbackup
+                                   )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_create_update_vm_user_data"><code class="name flex">
+<span>def <span class="ident">test_create_update_vm_user_data</span></span>(<span>request, admin_session, image, keypair, harvester_api_endpoints, network, user_data_with_guest_agent, network_data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.public_network
+def test_create_update_vm_user_data(request, admin_session, image,
+                                    keypair, harvester_api_endpoints, network,
+                                    user_data_with_guest_agent, network_data):
+    created = False
+    try:
+        single_vm = utils.create_vm(
+            request, admin_session, image,
+            harvester_api_endpoints, keypair=keypair,
+            template=&#39;vm_with_vlan_as_default_network&#39;,
+            network=network)
+        created = True
+        # make sure the VM instance is successfully created
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, single_vm)
+        vm_name = single_vm[&#39;metadata&#39;][&#39;name&#39;]
+        previous_uid = vm_instance_json[&#39;metadata&#39;][&#39;uid&#39;]
+        devices = (
+            single_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;devices&#39;][&#39;disks&#39;]
+        )
+        device_data = {
+            &#39;disk&#39;: {
+                &#39;bus&#39;: &#39;virtio&#39;
+            },
+            &#39;name&#39;: &#39;cloudinitdisk&#39;
+        }
+        devices.append(device_data)
+        vol_data = single_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;volumes&#39;]
+        assert &#39;cloudInitNoCloud&#39; not in vol_data
+        userdata = user_data_with_guest_agent.replace(&#39;\\n&#39;, &#39;\n&#39;)
+        netdata = network_data.replace(&#39;\\n&#39;, &#39;\n&#39;)
+        user_data = {
+            &#39;cloudInitNoCloud&#39;: {
+                &#39;networkData&#39;: netdata,
+                &#39;userData&#39;: userdata
+            },
+            &#39;name&#39;: &#39;cloudinitdisk&#39;
+        }
+        vol_data.append(user_data)
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm % (vm_name),
+            single_vm,
+            harvester_api_endpoints.get_vm % (vm_name),
+            use_yaml=True)
+        # restart the VM instance for the updated machine type to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption(&#39;--wait-timeout&#39;))
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (
+            vm_name))
+        updated_data = resp.json()
+        updated_vol_data = updated_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;volumes&#39;]
+        found = False
+        for i in updated_vol_data:
+            if i[&#39;name&#39;] == &#39;cloudinitdisk&#39;:
+                if (i[&#39;cloudInitNoCloud&#39;][&#39;networkData&#39;] == netdata and
+                        i[&#39;cloudInitNoCloud&#39;][&#39;userData&#39;] == userdata):
+                    found = True
+                    break
+
+        assert found, &#39;Failed to update VM %s to add userDate &amp; NetData&#39; % (
+            vm_name)
+
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, updated_data, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+    finally:
+        if created:
+            if not request.config.getoption(&#39;--do-not-cleanup&#39;):
+                utils.delete_vm(request, admin_session,
+                                harvester_api_endpoints, single_vm)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_create_vm_using_terraform"><code class="name flex">
+<span>def <span class="ident">test_create_vm_using_terraform</span></span>(<span>request, admin_session, harvester_api_endpoints, image_using_terraform, volume_using_terraform, keypair_using_terraform, network_using_terraform, user_data_with_guest_agent_using_terraform, network_data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test creates VM using terraform
+Covers:
+terraform-provider-09-Test harvester_virtualmachine resource
+terraform-provider-01-install, terraform-provider-02-kube config,
+terraform-provider-03-define kube config</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.terraform
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
+def test_create_vm_using_terraform(request, admin_session,
+                                   harvester_api_endpoints,
+                                   image_using_terraform,
+                                   volume_using_terraform,
+                                   keypair_using_terraform,
+                                   network_using_terraform,
+                                   user_data_with_guest_agent_using_terraform,
+                                   network_data):
+    &#34;&#34;&#34;
+    Test creates VM using terraform
+    Covers:
+    terraform-provider-09-Test harvester_virtualmachine resource
+    terraform-provider-01-install, terraform-provider-02-kube config,
+    terraform-provider-03-define kube config
+    &#34;&#34;&#34;
+    created = False
+    try:
+        vm_json = utils.create_vm_terraform(
+            request,
+            admin_session,
+            harvester_api_endpoints,
+            template_name=&#39;resource_vm&#39;,
+            keypair=keypair_using_terraform,
+            image=image_using_terraform,
+            volume=volume_using_terraform,
+            net=network_using_terraform,
+            user_data=user_data_with_guest_agent_using_terraform,
+            net_data=network_data)
+        created = True
+        # make sure the VM instance is successfully created
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, vm_json)
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_json, timeout)
+
+#       assert_ssh_into_vm(public_ip, timeout, keypair=keypair_using_terraform)
+
+    finally:
+        if created:
+            if not request.config.getoption(&#39;--do-not-cleanup&#39;):
+                utils.destroy_resource(request, admin_session, &#39;all&#39;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_restore_chained_backups"><code class="name flex">
+<span>def <span class="ident">test_restore_chained_backups</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget_s3)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-18-Delete last backup in chained backup
+backup-and-restore-19-Delete middle backup in chained backup
+backup-and-restore-20-Delete first backup in chained backup</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
+@pytest.mark.backups3
+def test_restore_chained_backups(request, admin_session,
+                                 harvester_api_endpoints,
+                                 keypair, vms_with_vlan_as_default_network,
+                                 backuptarget_s3):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-18-Delete last backup in chained backup
+            backup-and-restore-19-Delete middle backup in chained backup
+            backup-and-restore-20-Delete first backup in chained backup
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair, vms_with_vlan_as_default_network,
+                                   backuptarget_s3
+                                   )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_restore_chained_backups_nfs"><code class="name flex">
+<span>def <span class="ident">test_restore_chained_backups_nfs</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, backuptarget_nfs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Backup Restore Testing</p>
+<h2 id="covers">Covers</h2>
+<p>backup-and-restore-18-Delete last backup in chained backup nfs
+backup-and-restore-19-Delete middle backup in chained backup nfs
+backup-and-restore-20-Delete first backup in chained backup nfs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.backup_and_restore_p1
+@pytest.mark.p1
+@pytest.mark.backupnfs
+def test_restore_chained_backups_nfs(request, admin_session,
+                                     harvester_api_endpoints,
+                                     keypair,
+                                     vms_with_vlan_as_default_network,
+                                     backuptarget_nfs):
+    &#34;&#34;&#34;
+        Backup Restore Testing
+        Covers:
+            backup-and-restore-18-Delete last backup in chained backup nfs
+            backup-and-restore-19-Delete middle backup in chained backup nfs
+            backup-and-restore-20-Delete first backup in chained backup nfs
+    &#34;&#34;&#34;
+    backup_restore_chained_backups(request, admin_session,
+                                   harvester_api_endpoints,
+                                   keypair,
+                                   vms_with_vlan_as_default_network,
+                                   backuptarget_nfs
+                                   )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_two_vms_on_same_vlan"><code class="name flex">
+<span>def <span class="ident">test_two_vms_on_same_vlan</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_same_vlan, network)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.public_network
+def test_two_vms_on_same_vlan(request, admin_session,
+                              harvester_api_endpoints, keypair,
+                              vms_with_same_vlan, network):
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    network_name = network[&#39;metadata&#39;][&#39;name&#39;]
+    for vm_json in vms_with_same_vlan:
+        # make sure the VM is on the same VLAN
+        networks = vm_json[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;networks&#39;]
+        match_network = [n for n in networks if (n[&#39;name&#39;] == &#39;nic-1&#39;)]
+        assert len(match_network) == 1, (
+            &#39;Found multiple network interfaces with name &#34;nic-1&#34;&#39;)
+        assert &#39;multus&#39; in match_network[0], (
+            &#39;Expecting &#34;multus&#34; network interface.&#39;)
+        assert match_network[0][&#39;multus&#39;][&#39;networkName&#39;] == network_name, (
+            &#39;Expecting network name %s, got %s instead.&#39; % (
+                network_name, match_network[0][&#39;multus&#39;][&#39;networkName&#39;]))
+        # now make sure it has connectivity
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_json, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_update_vm_management_network_to_vlan"><code class="name flex">
+<span>def <span class="ident">test_update_vm_management_network_to_vlan</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, basic_vm, network)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test Network connectivity</p>
+<h2 id="covers">Covers</h2>
+<p>network-04-Change management network to external VLAN</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.public_network
+def test_update_vm_management_network_to_vlan(request, admin_session,
+                                              harvester_api_endpoints, keypair,
+                                              basic_vm, network):
+    &#34;&#34;&#34;
+    Test Network connectivity
+    Covers:
+        network-04-Change management network to external VLAN
+    &#34;&#34;&#34;
+    vm_name = basic_vm[&#39;metadata&#39;][&#39;name&#39;]
+    previous_uid = basic_vm[&#39;metadata&#39;][&#39;uid&#39;]
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    # update VM to use VLAN as it&#39;s default network
+    basic_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = [
+        {
+            &#39;bridge&#39;: {},
+            &#39;model&#39;: &#39;virtio&#39;,
+            &#39;name&#39;: &#39;nic-1&#39;
+        }
+    ]
+    basic_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;networks&#39;] = [
+        {
+            &#39;multus&#39;: {
+                &#39;networkName&#39;: network[&#39;metadata&#39;][&#39;name&#39;]
+            },
+            &#39;name&#39;: &#39;nic-1&#39;
+        }
+    ]
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_vm % (vm_name),
+        basic_vm,
+        harvester_api_endpoints.get_vm % (vm_name))
+    updated_vm_data = resp.json()
+    # restart the VM instance for the changes to take effect
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, timeout)
+    # make sure it has only one interface
+    updated_spec = updated_vm_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+    num_interfaces = len(updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;])
+    assert num_interfaces == 1, (
+        &#39;Expecting one interface, got %s instead: %s&#39; % (
+            num_interfaces, updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]))
+    # it should have a public IP
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints, updated_vm_data, timeout)
+    # make sure it has connectivity
+    assert_ssh_into_vm(public_ip, timeout, keypair=keypair)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_update_vm_vlan_network_to_management"><code class="name flex">
+<span>def <span class="ident">test_update_vm_vlan_network_to_management</span></span>(<span>request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network, network)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test Network connectivity</p>
+<h2 id="covers">Covers</h2>
+<p>network-06-Change external VLAN to management network</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.public_network
+def test_update_vm_vlan_network_to_management(request, admin_session,
+                                              harvester_api_endpoints, keypair,
+                                              vms_with_vlan_as_default_network,
+                                              network):
+    &#34;&#34;&#34;
+    Test Network connectivity
+    Covers:
+        network-06-Change external VLAN to management network
+    &#34;&#34;&#34;
+    vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+    previous_uid = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;uid&#39;]
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    # make sure it has only the public IP
+    spec = vms_with_vlan_as_default_network[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+    num_interfaces = len(spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;])
+    assert num_interfaces == 1, (
+        &#39;Expecting one interface, got %s instead: %s&#39; % (
+            num_interfaces, spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]))
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints,
+        vms_with_vlan_as_default_network, timeout)
+    # now update VM to use default management interface only
+    spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = [
+        {
+            &#39;masquerade&#39;: {},
+            &#39;model&#39;: &#39;virtio&#39;,
+            &#39;name&#39;: &#39;default&#39;
+        }
+    ]
+    spec[&#39;networks&#39;] = [
+        {
+            &#39;name&#39;: &#39;default&#39;,
+            &#39;pod&#39;: {}
+        }
+    ]
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_vm % (vm_name),
+        vms_with_vlan_as_default_network,
+        harvester_api_endpoints.get_vm % (vm_name))
+    updated_vm_data = resp.json()
+    # restart the VM instance for the changes to take effect
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, timeout)
+    # make sure the instance has only one IP in 10.52.0.0/24 subnet
+    vm_instance_json = utils.lookup_vm_instance(
+        admin_session, harvester_api_endpoints, updated_vm_data)
+    num_interfaces = len(vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;])
+    assert num_interfaces == 1, (
+        &#39;Expecting one interface, got %s instead: %s&#39; % (
+            num_interfaces, vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;]))
+    assert vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;][0][&#39;name&#39;] == &#39;default&#39;, (
+        &#39;Expecting interface name to be &#34;default&#34;, got %s instead&#39; % (
+            vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;][0][&#39;name&#39;]))
+    ip = vm_instance_json[&#39;status&#39;][&#39;interfaces&#39;][0][&#39;ipAddress&#39;]
+    assert ip.startswith(&#39;10.52.&#39;), (
+        &#39;Expecting IP address to be in 10.52.0.0/24 subnet, got %s instead&#39; % (
+            ip))</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.test_vm_network_with_bogus_vlan"><code class="name flex">
+<span>def <span class="ident">test_vm_network_with_bogus_vlan</span></span>(<span>request, admin_session, harvester_api_endpoints, vm_with_one_bogus_vlan)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Negative Test creating VM with a bogus VLAN ID
+Covers
+network-04-Invalid network scenario, we expect the VM to be
+successfully created. But the network interface associated
+with the VLAN should not successfully gotten a valid
+IPv4 address.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.network_p2
+@pytest.mark.p2
+@pytest.mark.public_network
+def test_vm_network_with_bogus_vlan(request, admin_session,
+                                    harvester_api_endpoints,
+                                    vm_with_one_bogus_vlan):
+    &#34;&#34;&#34;
+    Negative Test creating VM with a bogus VLAN ID
+    Covers
+        network-04-Invalid network scenario, we expect the VM to be
+        successfully created. But the network interface associated
+        with the VLAN should not successfully gotten a valid
+        IPv4 address.
+    &#34;&#34;&#34;
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints,
+        vm_with_one_bogus_vlan, timeout)
+    # the VM instance should not be getting a IPv4 address
+    ip_parts = public_ip.split(&#39;.&#39;)
+    assert len(ip_parts) != 4, (
+        &#39;VM should not have gotten an IPv4 address. Got %s&#39; % (public_ip))</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking"><code class="flex name class">
+<span>class <span class="ident">TestVMNetworking</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestVMNetworking:
+
+    def test_ssh_to_vm(self, request, admin_session,
+                       harvester_api_endpoints, keypair,
+                       vms_with_vlan_as_default_network):
+        &#34;&#34;&#34;
+        Test Network connectivity and VM
+        Covers:
+            network-01-Validate network connectivity Mgmt Network
+            network-08-Validate network connectivity both Mgmt and ext VLAN
+            virtual-machines-22-Create a VM with 2 networks,
+            one default management network
+            and one VLAN
+        &#34;&#34;&#34;
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints,
+            vms_with_vlan_as_default_network, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+
+    def test_vlan_ip_pingable_after_reboot(self, request, admin_session,
+                                           harvester_api_endpoints, keypair,
+                                           vms_with_vlan_as_default_network):
+        &#34;&#34;&#34;
+        Negative Test network connectivity after reboot
+        Covers:
+            network-01-Network Negative Test Case #1: Test VLAN network
+            after reboot In this scenario, we want to make sure the
+            VLAN IP of a VM is still pingable after the reboot.
+        &#34;&#34;&#34;
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+        resp = admin_session.get(harvester_api_endpoints.get_vm % (vm_name))
+        assert resp.status_code == 200, (
+            &#39;Failed to lookup VM %s: %s:%s&#39; % (
+                vm_name, resp.status_code, resp.content))
+        vm_with_one_vlan = resp.json()
+
+        previous_uid = vm_with_one_vlan[&#39;metadata&#39;][&#39;uid&#39;]
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        # make sure the public_ip is pingable
+        assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) == 0, (
+            &#39;Failed to ping VM %s public IP %s&#39; % (vm_name, public_ip))
+        # reboot the instance
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, timeout)
+        # make sure the public_ip is pingable
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) == 0, (
+            &#39;Failed to ping VM %s public IP %s&#39; % (vm_name, public_ip))
+
+    def test_add_vlan_network_to_vm(self, request, admin_session,
+                                    harvester_api_endpoints, basic_vm,
+                                    network, keypair):
+        &#34;&#34;&#34;
+        Test Network connectivity
+        Covers:
+            network-01-Validate network connectivity Mgmt Network
+            network-02-Validate network connectivity External VLAN
+            network-53-Edit vm network and verify the network is
+            working as per configuration
+            network-13-Add VLAN network
+        &#34;&#34;&#34;
+        vm_name = basic_vm[&#39;metadata&#39;][&#39;name&#39;]
+        previous_uid = basic_vm[&#39;metadata&#39;][&#39;uid&#39;]
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        # add a new network to the VM
+        network_name = &#39;nic-1&#39;
+        new_network = {
+            &#39;name&#39;: network_name,
+            &#39;multus&#39;: {&#39;networkName&#39;: network[&#39;metadata&#39;][&#39;name&#39;]}
+        }
+        new_network_interface = {
+            &#39;bridge&#39;: {},
+            &#39;model&#39;: &#39;virtio&#39;,
+            &#39;name&#39;: network_name
+        }
+        spec = basic_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+        if &#39;interfaces&#39; not in spec[&#39;domain&#39;][&#39;devices&#39;]:
+            spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = []
+        spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;].append(new_network_interface)
+        if &#39;networks&#39; not in spec:
+            spec[&#39;networks&#39;] = []
+        spec[&#39;networks&#39;].append(new_network)
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm % (vm_name),
+            basic_vm,
+            harvester_api_endpoints.get_vm % (vm_name))
+        updated_vm_data = resp.json()
+        # restart the VM instance for the changes to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption(&#39;--wait-timeout&#39;))
+        # check to make sure the network device is in the updated spec
+        found = False
+        updated_spec = updated_vm_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+        for i in updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]:
+            if (network_name == i[&#39;name&#39;] and i[&#39;model&#39;] == &#39;virtio&#39; and
+                    &#39;bridge&#39; in i):
+                found = True
+                break
+        assert found, &#39;Failed to add new network device to VM %s&#39; % (vm_name)
+        # check to make sure network is in the updated spec
+        found = False
+        for n in updated_spec[&#39;networks&#39;]:
+            if network_name == n[&#39;name&#39;]:
+                found = True
+                break
+        assert found, &#39;Failed to add new network to VM %s&#39; % (vm_name)
+        # reboot the VM as a workaound for
+        # https://github.com/harvester/harvester/issues/1059
+        restart_vm(request, admin_session, harvester_api_endpoints,
+                   updated_vm_data)
+        # now make sure we have network connectivity
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, updated_vm_data, timeout)
+        assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
+
+    # NOTE: make sure to run this test case last as the vm_with_one_vlan
+    # fixture has a class scope
+    def test_remove_vlan_network_from_vm(self, request, admin_session,
+                                         harvester_api_endpoints,
+                                         vm_with_one_vlan, network):
+        &#34;&#34;&#34;
+        Test Network connectivity
+        Covers:
+            network-12-Delete single network from multiple networks VM
+            Delete external VLAN
+        &#34;&#34;&#34;
+        vm_name = vm_with_one_vlan[&#39;metadata&#39;][&#39;name&#39;]
+        previous_uid = vm_with_one_vlan[&#39;metadata&#39;][&#39;uid&#39;]
+        timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+        # wait for the VM to boot with a public IP
+        (vm_instance_json, public_ip) = get_vm_public_ip(
+            admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+        # now remove the second (public IP) NIC from the VM and reboot
+        spec = vm_with_one_vlan[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+        interfaces = spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]
+        spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = [
+            i for i in interfaces if not (i[&#39;name&#39;] == &#39;nic-1&#39;)]
+        networks = spec[&#39;networks&#39;]
+        spec[&#39;networks&#39;] = [n for n in networks if not (n[&#39;name&#39;] == &#39;nic-1&#39;)]
+        resp = utils.poll_for_update_resource(
+            request, admin_session,
+            harvester_api_endpoints.update_vm % (vm_name),
+            vm_with_one_vlan,
+            harvester_api_endpoints.get_vm % (vm_name))
+        updated_vm_data = resp.json()
+        # restart the VM instance for the changes to take effect
+        utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                         vm_name, request.config.getoption(&#39;--wait-timeout&#39;))
+        # check to make sure the second NIC&#39;s been removed
+        found = False
+        updated_spec = updated_vm_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+        for i in updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]:
+            if i[&#39;name&#39;] == &#39;nic-1&#39;:
+                found = True
+                break
+        assert not found, &#39;Failed to remove network interface from VM %s&#39; % (
+            vm_name)
+        # make sure it&#39;s public IP is no longer pingable
+        assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) != 0, (
+            &#39;Failed to remove network interface from VM %s. Public IP %s &#39;
+            &#39;still accessible.&#39; % (vm_name, public_ip))</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_add_vlan_network_to_vm"><code class="name flex">
+<span>def <span class="ident">test_add_vlan_network_to_vm</span></span>(<span>self, request, admin_session, harvester_api_endpoints, basic_vm, network, keypair)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test Network connectivity</p>
+<h2 id="covers">Covers</h2>
+<p>network-01-Validate network connectivity Mgmt Network
+network-02-Validate network connectivity External VLAN
+network-53-Edit vm network and verify the network is
+working as per configuration
+network-13-Add VLAN network</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_add_vlan_network_to_vm(self, request, admin_session,
+                                harvester_api_endpoints, basic_vm,
+                                network, keypair):
+    &#34;&#34;&#34;
+    Test Network connectivity
+    Covers:
+        network-01-Validate network connectivity Mgmt Network
+        network-02-Validate network connectivity External VLAN
+        network-53-Edit vm network and verify the network is
+        working as per configuration
+        network-13-Add VLAN network
+    &#34;&#34;&#34;
+    vm_name = basic_vm[&#39;metadata&#39;][&#39;name&#39;]
+    previous_uid = basic_vm[&#39;metadata&#39;][&#39;uid&#39;]
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    # add a new network to the VM
+    network_name = &#39;nic-1&#39;
+    new_network = {
+        &#39;name&#39;: network_name,
+        &#39;multus&#39;: {&#39;networkName&#39;: network[&#39;metadata&#39;][&#39;name&#39;]}
+    }
+    new_network_interface = {
+        &#39;bridge&#39;: {},
+        &#39;model&#39;: &#39;virtio&#39;,
+        &#39;name&#39;: network_name
+    }
+    spec = basic_vm[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+    if &#39;interfaces&#39; not in spec[&#39;domain&#39;][&#39;devices&#39;]:
+        spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = []
+    spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;].append(new_network_interface)
+    if &#39;networks&#39; not in spec:
+        spec[&#39;networks&#39;] = []
+    spec[&#39;networks&#39;].append(new_network)
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_vm % (vm_name),
+        basic_vm,
+        harvester_api_endpoints.get_vm % (vm_name))
+    updated_vm_data = resp.json()
+    # restart the VM instance for the changes to take effect
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, request.config.getoption(&#39;--wait-timeout&#39;))
+    # check to make sure the network device is in the updated spec
+    found = False
+    updated_spec = updated_vm_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+    for i in updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]:
+        if (network_name == i[&#39;name&#39;] and i[&#39;model&#39;] == &#39;virtio&#39; and
+                &#39;bridge&#39; in i):
+            found = True
+            break
+    assert found, &#39;Failed to add new network device to VM %s&#39; % (vm_name)
+    # check to make sure network is in the updated spec
+    found = False
+    for n in updated_spec[&#39;networks&#39;]:
+        if network_name == n[&#39;name&#39;]:
+            found = True
+            break
+    assert found, &#39;Failed to add new network to VM %s&#39; % (vm_name)
+    # reboot the VM as a workaound for
+    # https://github.com/harvester/harvester/issues/1059
+    restart_vm(request, admin_session, harvester_api_endpoints,
+               updated_vm_data)
+    # now make sure we have network connectivity
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints, updated_vm_data, timeout)
+    assert_ssh_into_vm(public_ip, timeout, keypair=keypair)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_remove_vlan_network_from_vm"><code class="name flex">
+<span>def <span class="ident">test_remove_vlan_network_from_vm</span></span>(<span>self, request, admin_session, harvester_api_endpoints, vm_with_one_vlan, network)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test Network connectivity</p>
+<h2 id="covers">Covers</h2>
+<p>network-12-Delete single network from multiple networks VM
+Delete external VLAN</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_remove_vlan_network_from_vm(self, request, admin_session,
+                                     harvester_api_endpoints,
+                                     vm_with_one_vlan, network):
+    &#34;&#34;&#34;
+    Test Network connectivity
+    Covers:
+        network-12-Delete single network from multiple networks VM
+        Delete external VLAN
+    &#34;&#34;&#34;
+    vm_name = vm_with_one_vlan[&#39;metadata&#39;][&#39;name&#39;]
+    previous_uid = vm_with_one_vlan[&#39;metadata&#39;][&#39;uid&#39;]
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    # wait for the VM to boot with a public IP
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+    # now remove the second (public IP) NIC from the VM and reboot
+    spec = vm_with_one_vlan[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+    interfaces = spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]
+    spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;] = [
+        i for i in interfaces if not (i[&#39;name&#39;] == &#39;nic-1&#39;)]
+    networks = spec[&#39;networks&#39;]
+    spec[&#39;networks&#39;] = [n for n in networks if not (n[&#39;name&#39;] == &#39;nic-1&#39;)]
+    resp = utils.poll_for_update_resource(
+        request, admin_session,
+        harvester_api_endpoints.update_vm % (vm_name),
+        vm_with_one_vlan,
+        harvester_api_endpoints.get_vm % (vm_name))
+    updated_vm_data = resp.json()
+    # restart the VM instance for the changes to take effect
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, request.config.getoption(&#39;--wait-timeout&#39;))
+    # check to make sure the second NIC&#39;s been removed
+    found = False
+    updated_spec = updated_vm_data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;]
+    for i in updated_spec[&#39;domain&#39;][&#39;devices&#39;][&#39;interfaces&#39;]:
+        if i[&#39;name&#39;] == &#39;nic-1&#39;:
+            found = True
+            break
+    assert not found, &#39;Failed to remove network interface from VM %s&#39; % (
+        vm_name)
+    # make sure it&#39;s public IP is no longer pingable
+    assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) != 0, (
+        &#39;Failed to remove network interface from VM %s. Public IP %s &#39;
+        &#39;still accessible.&#39; % (vm_name, public_ip))</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_ssh_to_vm"><code class="name flex">
+<span>def <span class="ident">test_ssh_to_vm</span></span>(<span>self, request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test Network connectivity and VM</p>
+<h2 id="covers">Covers</h2>
+<p>network-01-Validate network connectivity Mgmt Network
+network-08-Validate network connectivity both Mgmt and ext VLAN
+virtual-machines-22-Create a VM with 2 networks,
+one default management network
+and one VLAN</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_ssh_to_vm(self, request, admin_session,
+                   harvester_api_endpoints, keypair,
+                   vms_with_vlan_as_default_network):
+    &#34;&#34;&#34;
+    Test Network connectivity and VM
+    Covers:
+        network-01-Validate network connectivity Mgmt Network
+        network-08-Validate network connectivity both Mgmt and ext VLAN
+        virtual-machines-22-Create a VM with 2 networks,
+        one default management network
+        and one VLAN
+    &#34;&#34;&#34;
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints,
+        vms_with_vlan_as_default_network, timeout)
+    assert_ssh_into_vm(public_ip, timeout, keypair=keypair)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_vlan_ip_pingable_after_reboot"><code class="name flex">
+<span>def <span class="ident">test_vlan_ip_pingable_after_reboot</span></span>(<span>self, request, admin_session, harvester_api_endpoints, keypair, vms_with_vlan_as_default_network)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Negative Test network connectivity after reboot</p>
+<h2 id="covers">Covers</h2>
+<p>network-01-Network Negative Test Case #1: Test VLAN network
+after reboot In this scenario, we want to make sure the
+VLAN IP of a VM is still pingable after the reboot.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_vlan_ip_pingable_after_reboot(self, request, admin_session,
+                                       harvester_api_endpoints, keypair,
+                                       vms_with_vlan_as_default_network):
+    &#34;&#34;&#34;
+    Negative Test network connectivity after reboot
+    Covers:
+        network-01-Network Negative Test Case #1: Test VLAN network
+        after reboot In this scenario, we want to make sure the
+        VLAN IP of a VM is still pingable after the reboot.
+    &#34;&#34;&#34;
+    timeout = request.config.getoption(&#39;--wait-timeout&#39;)
+    vm_name = vms_with_vlan_as_default_network[&#39;metadata&#39;][&#39;name&#39;]
+    resp = admin_session.get(harvester_api_endpoints.get_vm % (vm_name))
+    assert resp.status_code == 200, (
+        &#39;Failed to lookup VM %s: %s:%s&#39; % (
+            vm_name, resp.status_code, resp.content))
+    vm_with_one_vlan = resp.json()
+
+    previous_uid = vm_with_one_vlan[&#39;metadata&#39;][&#39;uid&#39;]
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+    # make sure the public_ip is pingable
+    assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) == 0, (
+        &#39;Failed to ping VM %s public IP %s&#39; % (vm_name, public_ip))
+    # reboot the instance
+    utils.restart_vm(admin_session, harvester_api_endpoints, previous_uid,
+                     vm_name, timeout)
+    # make sure the public_ip is pingable
+    (vm_instance_json, public_ip) = get_vm_public_ip(
+        admin_session, harvester_api_endpoints, vm_with_one_vlan, timeout)
+    assert subprocess.call([&#39;ping&#39;, &#39;-c&#39;, &#39;3&#39;, public_ip]) == 0, (
+        &#39;Failed to ping VM %s public IP %s&#39; % (vm_name, public_ip))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="harvester_e2e_tests.scenarios" href="index.html">harvester_e2e_tests.scenarios</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.assert_ssh_into_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.assert_ssh_into_vm">assert_ssh_into_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.backup_restore_chained_backups" href="#harvester_e2e_tests.scenarios.test_vm_networking.backup_restore_chained_backups">backup_restore_chained_backups</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.backup_restore_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.backup_restore_vm">backup_restore_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.fileactions_into_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.fileactions_into_vm">fileactions_into_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.get_vm_public_ip" href="#harvester_e2e_tests.scenarios.test_vm_networking.get_vm_public_ip">get_vm_public_ip</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.restart_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.restart_vm">restart_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_existing_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_existing_vm">test_backup_restore_existing_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_existing_vm_nfs" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_existing_vm_nfs">test_backup_restore_existing_vm_nfs</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_new_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_new_vm">test_backup_restore_new_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_new_vm_nfs" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_backup_restore_new_vm_nfs">test_backup_restore_new_vm_nfs</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_first_backup" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_first_backup">test_chained_del_first_backup</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_first_backup_nfs" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_first_backup_nfs">test_chained_del_first_backup_nfs</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_last_backup" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_last_backup">test_chained_del_last_backup</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_last_backup_nfs" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_last_backup_nfs">test_chained_del_last_backup_nfs</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_middle_backup" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_middle_backup">test_chained_del_middle_backup</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_middle_backup_nfs" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_chained_del_middle_backup_nfs">test_chained_del_middle_backup_nfs</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_create_update_vm_user_data" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_create_update_vm_user_data">test_create_update_vm_user_data</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_create_vm_using_terraform" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_create_vm_using_terraform">test_create_vm_using_terraform</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_restore_chained_backups" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_restore_chained_backups">test_restore_chained_backups</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_restore_chained_backups_nfs" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_restore_chained_backups_nfs">test_restore_chained_backups_nfs</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_two_vms_on_same_vlan" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_two_vms_on_same_vlan">test_two_vms_on_same_vlan</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_update_vm_management_network_to_vlan" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_update_vm_management_network_to_vlan">test_update_vm_management_network_to_vlan</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_update_vm_vlan_network_to_management" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_update_vm_vlan_network_to_management">test_update_vm_vlan_network_to_management</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.test_vm_network_with_bogus_vlan" href="#harvester_e2e_tests.scenarios.test_vm_networking.test_vm_network_with_bogus_vlan">test_vm_network_with_bogus_vlan</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking" href="#harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking">TestVMNetworking</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.pytestmark" href="#harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_add_vlan_network_to_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_add_vlan_network_to_vm">test_add_vlan_network_to_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_remove_vlan_network_from_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_remove_vlan_network_from_vm">test_remove_vlan_network_from_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_ssh_to_vm" href="#harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_ssh_to_vm">test_ssh_to_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_vlan_ip_pingable_after_reboot" href="#harvester_e2e_tests.scenarios.test_vm_networking.TestVMNetworking.test_vlan_ip_pingable_after_reboot">test_vlan_ip_pingable_after_reboot</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
