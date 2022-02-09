@@ -6,6 +6,7 @@ on:
     paths:
       - docs/**
       - cypress/**
+      - harvester_e2e_tests/**
 
 jobs:
   gh-pages:
@@ -34,6 +35,18 @@ jobs:
         run: |
           hugo
         working-directory: ./docs/
+      - name: Install pdoc3
+        run: |
+          pip install pdoc3
+      - name: install requirements
+        run: |
+          pip install -r test-requirements.txt
+        working-directory: ./
+      - name: Run pdoc3
+        run: |
+          pdoc -o . .
+          mv harvester_e2e_tests/ ../docs/public/backend
+        working-directory: ./harvester_e2e_tests
       - name: install typedoc
         run: |
           npm install
