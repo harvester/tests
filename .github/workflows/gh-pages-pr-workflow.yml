@@ -41,4 +41,5 @@ jobs:
       - name: run typedoc
         run: |
           ./node_modules/.bin/typedoc --options ./typedoc.json
+          mv docs/ ../docs/public/integration
         working-directory: ./cypress/
