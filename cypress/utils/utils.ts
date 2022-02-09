@@ -17,7 +17,7 @@ export const validateZip = (filename: string) => {
         console.log(zipEntry.toString()); // outputs zip entries information
         // if (zipEntry.entryName == "my_file.txt") {
         //     console.log(zipEntry.getData().toString("utf8"));
-        // }
+        // } 
     });
 }
 
