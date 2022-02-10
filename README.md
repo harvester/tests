@@ -19,7 +19,7 @@
      - [Running Linter](#running_linter)
 - [Adding New Tests](#adding_new_tests)
 - [Manual Test Cases](#manual_test_cases)
-     - [Preview The Website](#preview_the_website)
+     - [Generating the test doc sites](#generating_docs)
 
 
 # Overview <a name="overview" />
@@ -296,14 +296,28 @@ Description of the test case.
 
 Both of these files can contain Markdown in the title and page body.
 
-## Preview The Website <a name="preview_the_website" />
+# Generating the test doc sites <a name="generating_docs" />
 
-To preview the website changes, you will need to [install Hugo](https://gohugo.io/getting-started/installing/).
-Once Hugo is installed, run the following:
-```shell
-hugo server --buildDrafts --buildFuture
-```
-The site will be accessible at http://localhost:1313.
+You can generate all of the test sites locally with the `Makefile`. There are a couple of pre-requisites for it to work.
+- [install Hugo](https://gohugo.io/getting-started/installing/)
+- install pip
+- install npm
+
+The makefile allows you to do the following
+- `make all`
+     - This will create all of the docs sites and put them into `docs/public/`
+- `make run`
+     - This will clean out all of the directories, then generate backend and frontend docs, then generate a hugo server that outputs at `/tmp/hugo/` and run a local web server that you can use to look at all of the docs locally. 
+     - It will auto-regenerate any hugo manual tests, but won't update with the backend and frontend in real time. You will have to run it again.
+- `make backend`
+     - this will generate the docs for the Python e2e tests. They will generate at `harvester_e2e_tests/harvester_e2e_tests/`
+- `make frontend`
+     - This will generate the docs for the Cypress frontend e2e tests at `cypress/docs/`
+- `make clean`
+     - This will delete all of the static site assets in
+          - `docs/public/`
+          - `cypress/docs`
+          - `harvester_e2e_tests/harvester_e2e_tests`
 
 
 [tox]: https://tox.readthedocs.io/en/latest/
