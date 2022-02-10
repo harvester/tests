@@ -20,7 +20,7 @@ live-copy:
 	mv harvester_e2e_tests/harvester_e2e_tests /tmp/hugo/backend;
 
 preview-hugo:
-	cd docs; hugo server --buildDrafts --buildFuture --destination /tmp/hugo
+	cd docs; hugo server --buildDrafts --buildFuture --destination /tmp/hugo --bind 0.0.0.0
 
 run: clean backend frontend live-copy preview-hugo
 
