@@ -19,7 +19,8 @@
      - [Running Linter](#running_linter)
 - [Adding New Tests](#adding_new_tests)
 - [Manual Test Cases](#manual_test_cases)
-     - [Generating the test doc sites](#generating_docs)
+- [Generating the test doc sites](#generating_docs)
+- [Generating test skeletongs](#generating_skels)
 
 
 # Overview <a name="overview" />
@@ -318,6 +319,13 @@ The makefile allows you to do the following
           - `docs/public/`
           - `cypress/docs`
           - `harvester_e2e_tests/harvester_e2e_tests`
+
+# Creating test skeletons for new features/tickets <a name="generating_skels">
+
+There is a test skel spec to use as a template in `tests/cypress/skel/`.
+- If you are adding a test to an existing suite like `tests/integration/login.spec.ts` then you can just use the template jsdoc and function call then add the test steps.
+- If you are creating a new logical group of tests you can copy the `skel.spec.ts` file into integration or into a subdirectory if it fits more into that category then rename it appropriately
+- Add the `@notImplemented` tag to the test case if it hasn't been implemented yet. This will have it shown with that tag on the static site.
 
 
 [tox]: https://tox.readthedocs.io/en/latest/
