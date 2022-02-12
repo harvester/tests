@@ -330,3 +330,44 @@ The makefile allows you to do the following
 [terraform]: https://www.terraform.io/
 [AWS S3]: https://aws.amazon.com/s3/
 [Harvester manual test cases]: https://github.com/harvester/tests/tree/main/docs/content/manual
+
+# Test skeletons
+
+Test skeletons are codes that needs to be checked into the code base to describe the test steps.
+
+## Frontend test skeletons
+
+## Backend test skeletons
+
+Backend test is driven by pytest. Code are located at [`harvester_e2e_tests`](harvester_e2e_tests/) directory.
+
+There are two types of tests, [APIs](harvester_e2e_tests/apis) and [scenarios](harvester_e2e_tests/scenarios) respectively. [APIs](harvester_e2e_tests/apis) tests are designed to test simple resource creation using backend APIs, while the [scenarios](harvester_e2e_tests/scenarios) tests are intended for testing workflows involving multiple resources.
+
+Make sure to choose the proper directory and file to place the test skeleton.
+
+A backend test skeleton looks like this:
+
+```
+@pytest.mark.skip(reason="TODO")
+def test_single_replica_failed_during_engine_start():
+    """
+    Test if the volume still works fine when there is
+    an invalid replica/backend in the engine starting phase.
+
+    Prerequisite:
+    Setting abc = true
+
+    1. Create a pod using Longhorn volume.
+    2. Write some data to the volume then get the md5sum.
+    3...
+    """
+    pass
+```
+
+Make sure:
+1. Add @pytest.mark.skip(reason="TODO") to indicate this test should be skipped due to it’s not implemented.
+1. Don’t fill in the parameter (fixture) of the function.
+1. Describe the test case purpose and steps well in the docstring/comment.
+1. Add pass at the end of the function.
+1. Don’t assume the default setting will always work. Call out the expected settings in the prerequisite and they should be set explicitly at the beginning of the test. Use the fixture client or others to reset any changed settings back to default.
+
