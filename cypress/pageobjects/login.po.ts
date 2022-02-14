@@ -17,9 +17,11 @@ export class LoginPage {
         cy.visit(constants.loginUrl);
         cy.get(this.usernameInput).type(constants.username);
         cy.get(this.passwordInput).type(constants.password)
-        cy.get(this.submitButton).click().then(() => {
-            expect(cy.url().should('contain', constants.dashboardUrl) );
-        });
+        cy.get(this.submitButton).click()
+
+        cy.intercept('GET', '/v1/harvester/pods').as('loadIndexPage');
+        cy.wait('@loadIndexPage');
+        expect(cy.url().should('contain', constants.dashboardUrl) );
         // this.validateLogin();
     }
     /**
