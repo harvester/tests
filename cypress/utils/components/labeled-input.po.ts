@@ -1,4 +1,4 @@
-import ComponentPo from '@/pageobjects/components/component.po';
+import ComponentPo from './component.po';
 
 export default class LabeledSelectPo extends ComponentPo {
   input(string: string | undefined) {

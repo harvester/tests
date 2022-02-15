@@ -1,6 +1,6 @@
 import { Constants } from "../constants/constants";
-import LabeledSelectPo from './components/labeled-select.po';
-import LabeledInputPo from './components/labeled-input.po';
+import LabeledSelectPo from '../utils/components/labeled-select.po';
+import LabeledInputPo from '../utils/components/labeled-input.po';
 const constants = new Constants();
 
 interface ValueInterface {
