@@ -348,7 +348,7 @@ Test skeletons are codes that needs to be checked into the code base to describe
 Frontend tests are done in [Cypress](https://cypress.io). Code is located at [`cypress`](cypress/). The test cases are in [`cypress/testcases`](cypress/testcases/). The way that they are organized are in `describe` and `it` blocks. Cypress uses [Mocha](https://mochajs.org/) to do [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development). An `it` block is a test case, and a `describe` block it a suite of tests with `it` blocks inside of it. 
 
 The test skeleton is just a stub method with JSDoc comments that add steps. Here's an example of a test skeleton for logging in. You would put this in the appropriate test spec in [`cypress/testcases`](cypress/testcases/). For login it would be [`login.spec.ts`](cypress/testcases/login.spec.ts). Since it's not implemented you will also add the `notImplemented` tag. 
-```
+```typescript
 /**
 * 1. Load login page
 * 2. Enter in username and password
@@ -361,7 +361,7 @@ export function loginTest() {}
 It's worth noting that this function and docs can't be inside of a `describe` or `it` block for them to show correctly in our static site generator.
 
 The test skel does not include the `describe` or `it` block, but here's an example of a fully implemented test spec with just an `it` block from [settings.spec.ts](cypress/testcases/settings.spec.ts)
-```
+```typescript
 /**
  * 1. Login
  * 2. Navigate to the Advanced Settings Page via the sidebar
@@ -374,7 +374,7 @@ it('should navigate to the Advanced Settings Page', () => {
 ```
 
 Here's an example with a `describe` block from [login.spec.ts](cypress/testcases/login.spec.ts)
-```
+```typescript
 /**
  * This is the login spec
  * 1. Login for first time
@@ -395,7 +395,7 @@ describe('login page for harvester', () => {
 
 Here's an example with both a `describe` and an `it` block from [support.spec.ts](cypress/testcases/support.spec.ts)
 
-```
+```typescript
 /**
  * 1. Login
  * 2. Navigate to the support page
@@ -437,7 +437,7 @@ Make sure to choose the proper directory and file to place the test skeleton.
 
 A backend test skeleton looks like this:
 
-```
+```python
 @pytest.mark.skip(reason="TODO")
 def test_single_replica_failed_during_engine_start():
     """
