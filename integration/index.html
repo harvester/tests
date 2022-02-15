@@ -28,7 +28,7 @@
 </li>
 <li><a href="#adding_new_tests">Adding New Tests</a></li>
 <li><a href="#manual_test_cases">Manual Test Cases</a><ul>
-<li><a href="#preview_the_website">Preview The Website</a></li>
+<li><a href="#generating_docs">Generating the test doc sites</a></li>
 </ul>
 </li>
 </ul>
@@ -265,12 +265,69 @@ These sub-directories must contain a file named <code>_index.md</code> with the 
 </code></pre>
 <p>Both of these files can contain Markdown in the title and page body.</p>
 
-<a href="#preview-the-website-" id="preview-the-website-" style="color: inherit; text-decoration: none;">
-  <h2>Preview The Website <a name="preview_the_website" /></h2>
+<a href="#generating-the-test-doc-sites-" id="generating-the-test-doc-sites-" style="color: inherit; text-decoration: none;">
+  <h1>Generating the test doc sites <a name="generating_docs" /></h1>
 </a>
-<p>To preview the website changes, you will need to <a href="https://gohugo.io/getting-started/installing/">install Hugo</a>.
-Once Hugo is installed, run the following:</p>
-<pre><code class="language-shell"><span class="hl-0">hugo server --buildDrafts --buildFuture</span>
+<p>You can generate all of the test sites locally with the <code>Makefile</code>. There are a couple of pre-requisites for it to work.</p>
+<ul>
+<li><a href="https://gohugo.io/getting-started/installing/">install Hugo</a></li>
+<li>install pip</li>
+<li>install npm</li>
+</ul>
+<p>The makefile allows you to do the following</p>
+<ul>
+<li><code>make all</code><ul>
+<li>This will create all of the docs sites and put them into <code>docs/public/</code></li>
+</ul>
+</li>
+<li><code>make run</code><ul>
+<li>This will clean out all of the directories, then generate backend and frontend docs, then generate a hugo server that outputs at <code>/tmp/hugo/</code> and run a local web server that you can use to look at all of the docs locally. </li>
+<li>It will auto-regenerate any hugo manual tests, but won&#39;t update with the backend and frontend in real time. You will have to run it again.</li>
+</ul>
+</li>
+<li><code>make backend</code><ul>
+<li>this will generate the docs for the Python e2e tests. They will generate at <code>harvester_e2e_tests/harvester_e2e_tests/</code></li>
+</ul>
+</li>
+<li><code>make frontend</code><ul>
+<li>This will generate the docs for the Cypress frontend e2e tests at <code>cypress/docs/</code></li>
+</ul>
+</li>
+<li><code>make clean</code><ul>
+<li>This will delete all of the static site assets in<ul>
+<li><code>docs/public/</code></li>
+<li><code>cypress/docs</code></li>
+<li><code>harvester_e2e_tests/harvester_e2e_tests</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<a href="#test-skeletons" id="test-skeletons" style="color: inherit; text-decoration: none;">
+  <h1>Test skeletons</h1>
+</a>
+<p>Test skeletons are codes that needs to be checked into the code base to describe the test steps.</p>
+
+<a href="#frontend-test-skeletons" id="frontend-test-skeletons" style="color: inherit; text-decoration: none;">
+  <h2>Frontend test skeletons</h2>
+</a>
+
+<a href="#backend-test-skeletons" id="backend-test-skeletons" style="color: inherit; text-decoration: none;">
+  <h2>Backend test skeletons</h2>
+</a>
+<p>Backend test is driven by pytest. Code are located at <a href="harvester_e2e_tests/"><code>harvester_e2e_tests</code></a> directory.</p>
+<p>There are two types of tests, <a href="harvester_e2e_tests/apis">APIs</a> and <a href="harvester_e2e_tests/scenarios">scenarios</a> respectively. <a href="harvester_e2e_tests/apis">APIs</a> tests are designed to test simple resource creation using backend APIs, while the <a href="harvester_e2e_tests/scenarios">scenarios</a> tests are intended for testing workflows involving multiple resources.</p>
+<p>Make sure to choose the proper directory and file to place the test skeleton.</p>
+<p>A backend test skeleton looks like this:</p>
+<pre><code><span class="hl-0">@</span><span class="hl-4">pytest</span><span class="hl-0">.</span><span class="hl-4">mark</span><span class="hl-0">.</span><span class="hl-5">skip</span><span class="hl-0">(</span><span class="hl-4">reason</span><span class="hl-0">=</span><span class="hl-6">&quot;TODO&quot;</span><span class="hl-0">)</span><br/><span class="hl-4">def</span><span class="hl-0"> </span><span class="hl-5">test_single_replica_failed_during_engine_start</span><span class="hl-0">():</span><br/><span class="hl-0">    </span><span class="hl-6">&quot;&quot;&quot;</span><br/><span class="hl-6">    Test if the volume still works fine when there i</span><span class="hl-7">s</span><br/><span class="hl-0">    </span><span class="hl-4">an</span><span class="hl-0"> </span><span class="hl-4">invalid</span><span class="hl-0"> </span><span class="hl-4">replica</span><span class="hl-0">/</span><span class="hl-4">backend</span><span class="hl-0"> </span><span class="hl-8">in</span><span class="hl-0"> </span><span class="hl-4">the</span><span class="hl-0"> </span><span class="hl-4">engine</span><span class="hl-0"> </span><span class="hl-4">starting</span><span class="hl-0"> </span><span class="hl-4">phase</span><span class="hl-0">.</span><br/><br/><span class="hl-0">    </span><span class="hl-9">Prerequisite</span><span class="hl-0">:</span><br/><span class="hl-0">    </span><span class="hl-4">Setting</span><span class="hl-0"> </span><span class="hl-4">abc</span><span class="hl-0"> = </span><span class="hl-8">true</span><br/><br/><span class="hl-0">    </span><span class="hl-10">1.</span><span class="hl-0"> </span><span class="hl-4">Create</span><span class="hl-0"> </span><span class="hl-4">a</span><span class="hl-0"> </span><span class="hl-4">pod</span><span class="hl-0"> </span><span class="hl-4">using</span><span class="hl-0"> </span><span class="hl-4">Longhorn</span><span class="hl-0"> </span><span class="hl-4">volume</span><span class="hl-0">.</span><br/><span class="hl-0">    </span><span class="hl-10">2.</span><span class="hl-0"> </span><span class="hl-4">Write</span><span class="hl-0"> </span><span class="hl-4">some</span><span class="hl-0"> </span><span class="hl-4">data</span><span class="hl-0"> </span><span class="hl-4">to</span><span class="hl-0"> </span><span class="hl-4">the</span><span class="hl-0"> </span><span class="hl-4">volume</span><span class="hl-0"> </span><span class="hl-4">then</span><span class="hl-0"> </span><span class="hl-4">get</span><span class="hl-0"> </span><span class="hl-4">the</span><span class="hl-0"> </span><span class="hl-4">md5sum</span><span class="hl-0">.</span><br/><span class="hl-0">    </span><span class="hl-10">3.</span><span class="hl-0">..</span><br/><span class="hl-0">    </span><span class="hl-6">&quot;&quot;&quot;</span><br/><span class="hl-6">    pas</span><span class="hl-7">s</span>
 </code></pre>
-<p>The site will be accessible at <a href="http://localhost:1313">http://localhost:1313</a>.</p>
+<p>Make sure:</p>
+<ol>
+<li>Add @pytest.mark.skip(reason=&quot;TODO&quot;) to indicate this test should be skipped due to it’s not implemented.</li>
+<li>Don’t fill in the parameter (fixture) of the function.</li>
+<li>Describe the test case purpose and steps well in the docstring/comment.</li>
+<li>Add pass at the end of the function.</li>
+<li>Don’t assume the default setting will always work. Call out the expected settings in the prerequisite and they should be set explicitly at the beginning of the test. Use the fixture client or others to reset any changed settings back to default.</li>
+</ol>
 </div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Modules</a></li><li class=" tsd-kind-module"><a href="modules/editHosts_po.html">edit<wbr/>Hosts.po</a></li><li class=" tsd-kind-module"><a href="modules/editYaml_po.html">edit<wbr/>Yaml.po</a></li><li class=" tsd-kind-module"><a href="modules/hosts_po.html">hosts.po</a></li><li class=" tsd-kind-module"><a href="modules/login_po.html">login.po</a></li><li class=" tsd-kind-module"><a href="modules/settings_po.html">settings.po</a></li><li class=" tsd-kind-module"><a href="modules/sidebar_po.html">sidebar.po</a></li><li class=" tsd-kind-module"><a href="modules/support_po.html">support.po</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
