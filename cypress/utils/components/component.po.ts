@@ -1,4 +1,4 @@
-import { CypressChainable } from '@/integration/po.types';
+import { CypressChainable } from '@/utils/po.types';
 
 export default class ComponentPo {
   public self: () => CypressChainable

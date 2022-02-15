@@ -19,7 +19,7 @@ it('should navigate to the Advanced Settings Page', () => {
  * 2. Navigate to the Advanced Settings Page via URL
  * 3. Edit UI Source via UI
  */
- export function editUiSource() {};
+export function editUiSource() {};
 it('should edit the uisource setting', () => {
     login.login();
     sidebar.advancedSettings();
@@ -32,7 +32,7 @@ it('should edit the uisource setting', () => {
  * 4. Change the UISource Type
  * 5. Validate that the URL changed
  */
- export function changeUiSourceType() {};
+export function changeUiSourceType() {};
 it('change UI source type to external', () => {
     login.login();
     settings.changeUiSourceType(1);
