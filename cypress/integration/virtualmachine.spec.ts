@@ -8,7 +8,18 @@ describe('VM Page', () => {
   it('Create a vm with all the default values', () => {
     login.login();
     vms.goToCreate();
-    vms.setDefaultValue();
+
+    const defaultValue = {
+      namespace: 'default',
+      name: 'test-vm-name-automation',
+      description: 'test-vm-description-automation',
+      cpu: '2',
+      memory: '4',
+      image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+      network: 'vlan1',
+    }
+    vms.setValue(defaultValue);
+
     vms.save();
   });
 });

@@ -3,6 +3,15 @@ import LabeledSelectPo from './components/labeled-select.po';
 import LabeledInputPo from './components/labeled-input.po';
 const constants = new Constants();
 
+interface ValueInterface {
+  namespace?: string,
+  name?: string,
+  description?: string,
+  cpu?: string,
+  memory?: string,
+  image?: string,
+  network?: string,
+}
 export class VmsPage {
   public goToList() {
     cy.visit(constants.vmPage);
@@ -18,16 +27,16 @@ export class VmsPage {
     cy.wait('@loadVMCreate')
   }
 
-  public setDefaultValue() {
-    this.namespace().select('default')
-    this.name().input('test-vm-name-automation')
-    this.description().input('test-vm-description-automation')
-    this.cpu().input('2')
-    this.memory().input('4')
+  public setValue(value: ValueInterface) {
+    this.namespace().select(value?.namespace)
+    this.name().input(value?.name)
+    this.description().input(value?.description)
+    this.cpu().input(value?.cpu)
+    this.memory().input(value?.memory)
     cy.get('.tab#Volume').click()
-    this.image().select('ubuntu-18.04-server-cloudimg-amd64.img')
+    this.image().select(value?.image)
     cy.get('.tab#Network').click()
-    this.network().select('vlan1')
+    this.network().select(value?.network)
   }
 
   public save() {
