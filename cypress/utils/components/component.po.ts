@@ -7,6 +7,7 @@ export default class ComponentPo {
   constructor(selector: string, parent?: CypressChainable);// selector should be jquery.Selector
   constructor(selector: string, filter?: string, parent?: CypressChainable);
   constructor(...args: Array<any>) {
+    // TODO: parent should use .find() https://docs.cypress.io/api/commands/get#Get-vs-Find
     if (typeof args[0] === 'string' && typeof args[1] === 'string') {
       const [selector, filter, parent] = args as [string, string, CypressChainable];
 
