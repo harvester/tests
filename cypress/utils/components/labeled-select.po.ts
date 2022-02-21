@@ -9,4 +9,8 @@ export default class LabeledSelectPo extends ComponentPo {
 
     return
   }
+
+  text() {
+    return this.self().find('.vs__selected').invoke('text')
+  }
 }
