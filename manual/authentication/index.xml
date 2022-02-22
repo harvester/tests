@@ -16,6 +16,24 @@
     </item>
     
     <item>
+      <title>Change user passowrd</title>
+      <link>https://harvester.github.io/tests/manual/authentication/1409-change-password/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/authentication/1409-change-password/</guid>
+      <description> Related issues: #1409 There&amp;rsquo;s no way to change user password in single cluster UI  Verification Steps  Logged in with user Changed password Logged out Logged back in with new password Verified old password didn&amp;rsquo;t work  Expected Results  Password should change and be accepted on new login Old password shouldn&amp;rsquo;t work  </description>
+    </item>
+    
+    <item>
+      <title>Create SSH key from templates page</title>
+      <link>https://harvester.github.io/tests/manual/authentication/1619-create-ssh-key-from-templates-page/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/authentication/1619-create-ssh-key-from-templates-page/</guid>
+      <description> Related issues: #1619 User is unable to create ssh key through the templates page  Verification Steps  on a harvester deployment, navigate to advanced -&amp;gt; templates and click create Click create new under SSH section enter valid credentials and save  Expected Results  SSH key should be created and show in the SSH key section  </description>
+    </item>
+    
+    <item>
       <title>First Time Login</title>
       <link>https://harvester.github.io/tests/manual/authentication/first-time-login/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -49,6 +67,16 @@
       
       <guid>https://harvester.github.io/tests/manual/authentication/multi-browser-login/</guid>
       <description> Login via Chrome, firefox, edge, safari etc  Expected Results  Chrome, firefox, edge, safari etc should have same behavior.  </description>
+    </item>
+    
+    <item>
+      <title>UI enables option to display password on login page</title>
+      <link>https://harvester.github.io/tests/manual/authentication/ui_password_show_btn/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/authentication/ui_password_show_btn/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1550
+Verify Items  Password field in login page can be toggle show/hide  Case: Toggle of Password field  install harvester with any nodes setup password logout then login with password toggled  </description>
     </item>
     
     <item>

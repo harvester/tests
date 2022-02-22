@@ -7,6 +7,34 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/volumes/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title></title>
+      <link>https://harvester.github.io/tests/manual/volumes/1401-support-volume-hot-unplug/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/volumes/1401-support-volume-hot-unplug/</guid>
+      <description> Related issues: #1401 Http proxy setting download image  Environment setup Setup an airgapped harvester
+ Create an 3 nodes harvester cluster with large size disks  Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps  Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again  Expected Results  Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM  </description>
+    </item>
+    
+    <item>
+      <title>Add/remove disk to Host config</title>
+      <link>https://harvester.github.io/tests/manual/volumes/1623-add-disk-to-host/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/volumes/1623-add-disk-to-host/</guid>
+      <description> Related issues: #1623 Unable to add additional disks to host config  Environment setup  Add Disk that isn&amp;rsquo;t assigned to host  Verification Steps  Head to &amp;ldquo;Hosts&amp;rdquo; page Click &amp;ldquo;Edit Config&amp;rdquo; on a node and switch to &amp;ldquo;Disks&amp;rdquo; tab Validate: Open dropdown and see no disks Attach a disk on that node Validate: Open dropdown and see some disks Verify that host shows new disk as available storage and Longhorn is showing new schedulable space Detach a disk on that node Validate: Open dropdown and see no disks Verify that host shows new disk as available storage and Longhorn is showing new schedulable space  Expected Results  Disk space should show appropriately   </description>
+    </item>
+    
+    <item>
+      <title>Check Longhorn volume mount point</title>
+      <link>https://harvester.github.io/tests/manual/volumes/1667-check-longhorn-volume-mount/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/volumes/1667-check-longhorn-volume-mount/</guid>
+      <description> Related issues: #1667 data partition is not mounted to the LH path properly  Verification Steps  Install Harvester node in VM from ISO Check partitions with lsblk -f Verify mount point of /var/lib/longhorn  Expected Results  Mount point should show /var/lib/longhorn   </description>
+    </item>
+    
+    <item>
       <title>Create image from Volume</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-image-from-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -58,6 +86,15 @@
       
       <guid>https://harvester.github.io/tests/manual/volumes/delete-volume-that-was-attached-to-vm-but-is-not-now/</guid>
       <description> Create a VM with a root volume Write 10Gi data into it. Delete the VM but not the volume Verify Volume still exists Check disk space on node Delete the volume Verify that volume is removed from list Check disk space on node  Expected Results  VM should create 10Gi space should be consumed on the disk. VM should delete Volume should still show in Volume list Disk space should show 10Gi + Volume should delete Volume should be removed from list Space should be less than before  </description>
+    </item>
+    
+    <item>
+      <title>Detach volume from virtual machine</title>
+      <link>https://harvester.github.io/tests/manual/volumes/detach-volume-from-virtual-machine/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/volumes/detach-volume-from-virtual-machine/</guid>
+      <description>Related issues: #1708 After click &amp;ldquo;Detach volume&amp;rdquo; button, nothing happend  Category:  Volume  Verification Steps  Create several new volume in volumes page  Create a virtual machine Click the config button on the selected virtual machine Click Add volume and add at least two new volume  Click the Detach volume button on the attached volume    Repeat above steps several times  Expected Results Currently when click the Detach volume button, attached volume can be detach successfully.</description>
     </item>
     
     <item>
@@ -124,12 +161,40 @@
     </item>
     
     <item>
+      <title>Support Volume Hot Unplug</title>
+      <link>https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</guid>
+      <description> Related issues: #1401 Support volume hot-unplug  Category:  Storage  Environment setup Setup an airgapped harvester
+ Create an 3 nodes harvester cluster with large size disks  Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps  Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again  Expected Results  Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM  </description>
+    </item>
+    
+    <item>
       <title>Validate volume shows as in use when attached (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/validate-volume-shows-in-use-while-attached/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/volumes/validate-volume-shows-in-use-while-attached/</guid>
       <description> Navigate to Volumes and check for a volume in use by a VM Verify that the state says In Use  Expected Results  State should show correctly  </description>
+    </item>
+    
+    <item>
+      <title>Verify that vm-force-reset-policy works</title>
+      <link>https://harvester.github.io/tests/manual/volumes/1660-volume-unit-vm-details/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/volumes/1660-volume-unit-vm-details/</guid>
+      <description> Related issues: #1660 The volume unit on the vm details page is incorrect  Verification Steps  Create new .1G volume Create new VM Create with raw-image template Add opensuse base image Add .1G Volume Verify size in VM details on volume tab   Expected Results  Size should show as .1G  </description>
+    </item>
+    
+    <item>
+      <title>Verify that VMs stay up when disks are evicted</title>
+      <link>https://harvester.github.io/tests/manual/volumes/1334-evict-disks-check-vms/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/volumes/1334-evict-disks-check-vms/</guid>
+      <description>Related issues: #1334 Volumes fail with Scheduling Failure after evicting disc on multi-disc node  Verification Steps  Created 3 node Harvester setup with ipxe example in KVM/libvirt Added formatted disk to node0 VM Created three VMs on node0 Created large files on three VMs to see where they were located with dd if=/dev/urandom of=file1.txt count=5192 bs=1M Checked Longhorn to be sure that some VMs were on new disk Deleted disk from Harvester Checked Longhorn to be sure that disk was marked for eviction Verified that VMs were still available while evicting replicas by running commands from serial console/SSH Verified that disk was removed from Longhorn and VMS were still up.</description>
     </item>
     
   </channel>

@@ -25,6 +25,24 @@
     </item>
     
     <item>
+      <title>Chain VM templates and images</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/760-chained-vm-templates/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/760-chained-vm-templates/</guid>
+      <description> Related issues: #760 cloud config byte limit  Verification Steps  Create a vm and add userData or networkData, test if it works Run VM health checks create a vm template and add userData create a new vm and use the template Run VM health checks use the existing vm to generate a template, then use the template to create a new vm Run VM health Checks  Expected Results  All VM&amp;rsquo;s should create All VM Health Checks should pass  </description>
+    </item>
+    
+    <item>
+      <title>Check VM creation required-fields</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/1283-vm-creation-required-fields/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/1283-vm-creation-required-fields/</guid>
+      <description> Related issues: #1283 Fix required fields on VM creation page  Verification Steps  Create VM without image name and size Create VM without size Create VM wihout image name Create VM without hostname  Expected Results  You should get an error trying to create VM without image name and size You should get an error trying to create VM without image name You should get an error trying to create VM without size You should not get an error trying to create a VM without hostname  </description>
+    </item>
+    
+    <item>
       <title>Clone VM and don&#39;t select start after creation</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-and-dont-select-start-after-creation/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -76,6 +94,16 @@
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-not-created-from-image/</guid>
       <description> Clone VM from Virtual Machine list  Expected Results  Machine should start if start VM after creation was checked Machine should match the origin machine  in Config In YAML   You should be able to connect to new VM via console  </description>
+    </item>
+    
+    <item>
+      <title>CPU overcommit on VM</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/cpu_overcommit/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/cpu_overcommit/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1429
+Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on the host Node VM can chage allocated CPU after created  Case: Update Overcommit configuration  Install Harvester with any Node Login to Dashboard, then navigate to Advanced Settings Edit overcommit-config The field of CPU should be editable Created VM can allocate maximum CPU should be &amp;lt;HostCPUs&amp;gt; * [&amp;lt;overcommit-CPU&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt;  Case: VM can allocate CPUs more than Host have  Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostCPUs&amp;gt; * 5 CPUs VM should start successfully lscpu in VM should display allocated CPUs Page of Virtual Machines should display allocated CPUs correctly  Case: Update VM allocated CPUs  Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostCPUs&amp;gt; * 5 CPUs VM should start successfully Increase/Reduce VM allocated CPUs to minimum/maximum VM should start successfully lscpu in VM should display allocated CPUs Page of Virtual Machines should display allocated CPUs correctly  </description>
     </item>
     
     <item>
@@ -457,6 +485,15 @@
     </item>
     
     <item>
+      <title>Create VM without memory provided</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-without-memory-provided/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-without-memory-provided/</guid>
+      <description>Related issues: #1477 intimidating error message when missing mandatory field  Category:  Virtual Machine  Verification Steps  Create some image and volume Create virtual machine Fill out all mandatory field but leave memory blank. Click create  Expected Results Leave empty memory field empty when create virtual machine will show &amp;ldquo;Memory is required&amp;rdquo; error message</description>
+    </item>
+    
+    <item>
       <title>Create Windows VM</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-windows-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -499,6 +536,15 @@
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/negative-delete-vm/</guid>
       <description> In a multi-node setup disconnect/shutdown the node where the VM is running Delete VM and all disks  Expected Results  You should not be able to delete the VM  </description>
+    </item>
+    
+    <item>
+      <title>Delete VM with exported image</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/1602-delete-vm-with-exported-image/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/1602-delete-vm-with-exported-image/</guid>
+      <description> Related issues: #1602 exported image can&amp;rsquo;t be deleted after vm removed  Verification Steps  create vm &amp;ldquo;vm-1&amp;rdquo; create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo; delete vm &amp;ldquo;vm-1&amp;rdquo; delete image &amp;ldquo;img-1&amp;rdquo;  Expected Results  image &amp;ldquo;img-1&amp;rdquo; will be deleted  </description>
     </item>
     
     <item>
@@ -664,6 +710,16 @@
     </item>
     
     <item>
+      <title>Memory overcommit on VM</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/memory_overcommit/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/memory_overcommit/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1537
+Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed Memory on the host Node VM can chage allocated Memory after created  Case: Update Overcommit configuration  Install Harvester with any Node Login to Dashboard, then navigate to Advanced Settings Edit overcommit-config The field of Memory should be editable Created VM can allocate maximum Memory should be &amp;lt;HostMemory&amp;gt; * [&amp;lt;overcommit-Memory&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt;  Case: VM can allocate Memory more than Host have  Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostMemory&amp;gt; * 1.</description>
+    </item>
+    
+    <item>
       <title>Run multiple instances of the console</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/run-multiple-instances-console/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -700,12 +756,69 @@
     </item>
     
     <item>
+      <title>Update image labels after deleting source VM</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/1602-update-labels-on-image-after-vm-delete/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/1602-update-labels-on-image-after-vm-delete/</guid>
+      <description> Related issues: #1602 exported image can&amp;rsquo;t be deleted after vm removed  Verification Steps  create vm &amp;ldquo;vm-1&amp;rdquo; create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo; delete vm &amp;ldquo;vm-1&amp;rdquo; update image &amp;ldquo;img-1&amp;rdquo; labels  Expected Results  image &amp;ldquo;img-1&amp;rdquo; will be updated  </description>
+    </item>
+    
+    <item>
+      <title>Validate QEMU agent installation</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/1235-check-qemu-installation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/1235-check-qemu-installation/</guid>
+      <description> Related issues: #1235 QEMU agent is not installed by default when creating VMs  Verification Steps  Creat openSUSE VM Start VM check for qemu-ga package Create Ubuntu VM Start VM Check for qemu-ga package  Expected Results  VMs should start Packages should be present  </description>
+    </item>
+    
+    <item>
       <title>Verify operations like Stop, restart, pause, download YAML, generate template (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</guid>
       <description> Take an existing VM and Press the appropriate buttons for the associated operations  Stop Restart Pause Download YAML Generate Template    Expected Results  All operations should complete successfully  </description>
+    </item>
+    
+    <item>
+      <title>Verify that vm-force-reset-policy works</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/1660-volume-unit-vm-details/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/1660-volume-unit-vm-details/</guid>
+      <description> Related issues: #1660 The volume unit on the vm details page is incorrect  Verification Steps  Create new .1G volume Create new VM Create with raw-image template Add opensuse base image Add .1G Volume Verify size in VM details on volume tab   Expected Results  Size should show as .1G  </description>
+    </item>
+    
+    <item>
+      <title>VM on error state</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/vm_on_error_state/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_on_error_state/</guid>
+      <description>Ref:
+ https://github.com/harvester/harvester/issues/1446 https://github.com/harvester/harvester/issues/982  Verify Items  Error message should displayed when VM can&amp;rsquo;t be scheduled VM&amp;rsquo;s state should be changed when host is down  Case: Create a VM that no Node can host it  Install Harvester with any nodes download a image to create VM create a VM with over-commit (consider to over-provisioning feature, double or triple the host resource would be more reliable.) VM should shows Starting state, and an alart icon shows aside.</description>
+    </item>
+    
+    <item>
+      <title>VM scheduling on Specific node</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1350
+Verify Items  Node which is not active should not be listed in Node Scheduling list  Case: Schedule VM on the Node which is Enable Maintenance Mode  Install Harvester with at least 2 nodes Login and Navigate to Virtual Machines Create VM and Select Run VM on specific node(s)... All Active nodes should in the list Navigate to Host and pick node(s) to Enable Maintenance Mode Make sure Node(s) state changed into Maintenance Mode Repeat step 2 and 3 Picked Node(s) should not in the list Revert picked Node(s) to back to state of Active Repeat step 2 to 4  </description>
+    </item>
+    
+    <item>
+      <title>VM&#39;s CPU maximum limitation</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/vm_cpu_limits/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_cpu_limits/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1565
+Verify Items  VM&amp;rsquo;s maximum CPU amount should not have limitation.  Case: Create VM with large CPU amount  Install harvester with any nodes Create image for VM creation Create a VM with vCPU over than 100 Start VM and verify lscpu shows the same amount  </description>
     </item>
     
   </channel>

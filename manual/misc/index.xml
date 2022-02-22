@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Misc on Harvester manual test cases</title>
+    <link>https://harvester.github.io/tests/manual/misc/</link>
+    <description>Recent content in Misc on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/misc/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Button of `Download KubeConfig`</title>
+      <link>https://harvester.github.io/tests/manual/misc/download_kubeconfig/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/misc/download_kubeconfig/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1349
+Verify Items  Download KubeConfig should not exist in general views Download Kubeconfig should exist in Support page Downloaded file should be named with suffix .yaml  Case: Download KubeConfig  navigate to every pages to make sure download kubeconfig icon will not appear in header section navigate to support page to check Download KubeConfig is work normally  </description>
+    </item>
+    
+    <item>
+      <title>Check favicon and title on pages</title>
+      <link>https://harvester.github.io/tests/manual/misc/1520-check-title-and-favicon/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/misc/1520-check-title-and-favicon/</guid>
+      <description> Related issues: #1520 incorrect title and favicon  Verification Steps  Log into Harvester Check page title and favicon on each of these pages  dashboard main page settings support Volumes SSH Keys Host info    Expected Results  Harvester favicon and title should show on each page  </description>
+    </item>
+    
+    <item>
+      <title>Create support bundle in multi-node Harvester cluster with one node off</title>
+      <link>https://harvester.github.io/tests/manual/misc/1524-create-support-bundle-with-one-node-off/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/misc/1524-create-support-bundle-with-one-node-off/</guid>
+      <description> Related issues: #1524 Can&amp;rsquo;t create support bundle if one node is off  Verification Steps  On a multi-node harvester cluster power off one node Navigate to support create support bundle  Expected Results  Support bundle should create and be downloaded YOu should be able to extract and examine support bundle  </description>
+    </item>
+    
+    <item>
+      <title>Download kubeconfig after shutting down harvester cluster</title>
+      <link>https://harvester.github.io/tests/manual/misc/download-kubeconfig-after-shutting-down-harvester-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/misc/download-kubeconfig-after-shutting-down-harvester-cluster/</guid>
+      <description>Related issues: #1475 After shutting down the cluster the kubeconfig becomes invalid  Category:  Host  Verification Steps   Shutdown harvester node 3, wait for fully power off
+  Shutdown harvester node 2, wait for fully power off
+  Shutdown harvester node 1, wait for fully power off
+  Wait for more than hours or over night
+  Power on node 1 to console page until you see management url   Power on node 2 to console page until you see management url</description>
+    </item>
+    
+    <item>
+      <title>Test NTP server timesync</title>
+      <link>https://harvester.github.io/tests/manual/misc/1535-test-ntp-timesync/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/misc/1535-test-ntp-timesync/</guid>
+      <description> Related issues: #1535 NTP daemon in host OS  Environment setup This should be on at least a 3 node setup that has been running for several hours that had NTP servers setup during install
+Verification Steps  SSH into nodes and verify times are close Verify NTP is active with sudo timedatectl status  Expected Results  Times should be within a minute of each other NTP should show as active  </description>
+    </item>
+    
+    <item>
+      <title>Verify network data template</title>
+      <link>https://harvester.github.io/tests/manual/misc/1634-terms-and-conditions-link/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/misc/1634-terms-and-conditions-link/</guid>
+      <description> Related issues: #1634 Welcome screen asks to agree to T&amp;amp;Cs for using Rancher not Harvester  Verification Steps  Install Harvester Go to management page and see last line (before Continue button) Verify link to SUSE EULA https://www.suse.com/licensing/eula/  Expected Results  Link should go to SUSE EULA   </description>
+    </item>
+    
+  </channel>
+</rss>

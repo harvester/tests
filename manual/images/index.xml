@@ -43,12 +43,30 @@
     </item>
     
     <item>
+      <title>Delete VM with exported image</title>
+      <link>https://harvester.github.io/tests/manual/images/1602-delete-vm-with-exported-image/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/images/1602-delete-vm-with-exported-image/</guid>
+      <description> Related issues: #1602 exported image can&amp;rsquo;t be deleted after vm removed  Verification Steps  create vm &amp;ldquo;vm-1&amp;rdquo; create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo; delete vm &amp;ldquo;vm-1&amp;rdquo; delete image &amp;ldquo;img-1&amp;rdquo;  Expected Results  image &amp;ldquo;img-1&amp;rdquo; will be deleted  </description>
+    </item>
+    
+    <item>
       <title>Edit images (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/edit-images/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/images/edit-images/</guid>
       <description> Edit image.  Try to edit the description Try to edit the URL Try to edit the Labels    Expected Results  User should be able to edit the description and Labels User should not be able to edit the URL  </description>
+    </item>
+    
+    <item>
+      <title>Update image labels after deleting source VM</title>
+      <link>https://harvester.github.io/tests/manual/images/1602-update-labels-on-image-after-vm-delete/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/images/1602-update-labels-on-image-after-vm-delete/</guid>
+      <description> Related issues: #1602 exported image can&amp;rsquo;t be deleted after vm removed  Verification Steps  create vm &amp;ldquo;vm-1&amp;rdquo; create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo; delete vm &amp;ldquo;vm-1&amp;rdquo; update image &amp;ldquo;img-1&amp;rdquo; labels  Expected Results  image &amp;ldquo;img-1&amp;rdquo; will be updated  </description>
     </item>
     
     <item>

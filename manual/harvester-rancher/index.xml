@@ -7,6 +7,15 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/harvester-rancher/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title></title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/1330-rancher-import-harvester-enhacement/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/1330-rancher-import-harvester-enhacement/</guid>
+      <description>Related issues: #1330 Http proxy setting download image  Environment setup  Install the latest rancher from docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6-head Create an one node harvester cluster Both harvester and rancher have internet connection  Verification Steps  Access rancher dashboard Open Virtualization Management page Import existing harvester Copy the registration url  Create image from URL (change folder date to latest) https://cloud-images.</description>
+    </item>
+    
+    <item>
       <title>01-Import existing Harvester clusters in Rancher</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -572,6 +581,127 @@ Setup the online harvester
       <description>Related issue: #1561 Fully shutdown then power on harvester node machine can&amp;rsquo;t get provisioned RKE2 cluster back to work
   Related issue: #1428 rke2-coredns-rke2-coredns-autoscaler timeout
   Environment Setup  The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan  Verification Step  Prepare a 3 nodes harvester cluster (provo bare machine) Enable virtual network with harvester-mgmt Create vlan1 with id 1 Import harvester from rancher and create cloud credential Provision a RKE2 cluster with vlan 1 Wait for build up ready Shutdown harvester node 3 Shutdown harvester node 2 Shutdown harvester node 1 Wait for 20 minutes Power on node 1, wait 10 seconds Power on node 2, wait 10 seconds Power on node 3 Wait for harvester startup complete Wait for RKE2 cluster back to work Check node and VIP accessibility Check the rke2-coredns pod status kubectl get pods --all-namespaces | grep rke2-coredns  Expected Results   RKE2 cluster on harvester can recover to Active status</description>
+    </item>
+    
+    <item>
+      <title>Better Load Balancer Config of Harvester cloud provider</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/better-load-balancer-config-rke2-cloud-provider/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/better-load-balancer-config-rke2-cloud-provider/</guid>
+      <description>Related issue: #1435 better loadblancer config of Harvester cloud provider  Category:  Rancher Integration  Environment setup  Install rancher 2.6.3 by docker  docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Import harvester to rancher virtualization management Create a harvester cluster by harvester driver Access the new harvester cluster from rancher cluster management Create a load balancer from service discovery -&amp;gt; services Re login rancher Open create load-balance page Click ctrl+R to refresh page Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs  Expected Results   User can configure port, IPAM and health check related setting on Add-on Config page   Can create load balancer correctly with health check setting</description>
+    </item>
+    
+    <item>
+      <title>Check can apply the resource quota limit to project and namespace</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/check-can-apply-the-resource-quota-limit-to-project-and-namespace-/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/check-can-apply-the-resource-quota-limit-to-project-and-namespace-/</guid>
+      <description>Related issues: #1454 Incorrect memory unit conversion in namespace resource quota  Category:  Rancher Integration  Environment setup  Install the latest rancher from docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Access Rancher dashboard Open Cluster management -&amp;gt; Explore the active cluster Create a new project test-1454-proj in Projects/Namespaces Set resource quota for the project   Memory Limit:  Project Limit: 512 Namespace default limit: 256   Memory Reservation:  Project Limit: 256 Namespace default limit: 128     Click create namespace test-1454-ns under project test-1454-proj Click Kubectl Shell and run the following command   kubectl get ns kubectl get quota -n test-1454-ns   Check the output Click Workload -&amp;gt; Deployments -&amp;gt; Create Given the Name, Namespace and Container image  Click Create  Expected Results Based on configured project resource limit and namespace default limit,</description>
+    </item>
+    
+    <item>
+      <title>Check default and customized project and namespace details page</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/check-default-customized-project-and-namespace-details-page/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/check-default-customized-project-and-namespace-details-page/</guid>
+      <description> Related issue: #1574 Multi-cluster projectNamespace details page error  Category:  Rancher Integration  Environment setup  Install rancher 2.6.3 by docker  docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Import harvester from rancher dashboard Access harvester from virtualization management page Create several new projects Create several new namespaces under each new projects Access all default and self created namespace Check can display namespace details Check all new namespaces can display correctly under each projects  Expected Results  Access harvester from rancher virtualization management page Click any namespace in the Projects/Namespace can display details correctly with no page error  Default namespace Customized namespace  Newly created namespace will display under project list   </description>
+    </item>
+    
+    <item>
+      <title>Create a VM through the Rancher dashboard</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/1613-create-vm-through-rancher-dashboard/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/1613-create-vm-through-rancher-dashboard/</guid>
+      <description> Related issues: #1613 VM memory shows NaN Gi  Verification Steps  import harvester into rancher&amp;rsquo;s virtualization management Load Harvester dashboard by going to virtualization management then clicking on harvester cluster Create a new VM on Harvester Validate the following in the VM list page, the form, and YAML&amp;gt;  Memory CPU Disk space    Expected Results  VM should create VM should start All specifications should show correctly  </description>
+    </item>
+    
+    <item>
+      <title>Create RKE2 cluster with no cloud provider</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/1577-create-rke2-cluster-no-cloud-provider/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/1577-create-rke2-cluster-no-cloud-provider/</guid>
+      <description> Related issues: #1577 Option to disable load balancer feature in cloud provider  Verification Steps  Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imprted Cluster list Click Create   Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Select None for cloud provider  Click Create   Wait for RKE2 cluster provisioning complete (~20min)  Expected Results  Provision RKE2 cluster successfully with Running status   Can acccess RKE2 cluster to check all resources and services by clicking manage  </description>
+    </item>
+    
+    <item>
+      <title>Delete 3 node RKE2 cluster</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/1311-delete-3-node-rke2-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/1311-delete-3-node-rke2-cluster/</guid>
+      <description> Related issues: #1311 Deleting a cluster in rancher dashboard doesn&amp;rsquo;t fully remove  Verification Steps  Create 3 node RKE2 cluster on Harvester through node driver with Rancher Wait fo the nodes to create, but not fully provision Delete the cluster Wait for them to be removed from Harvester Check Rancher cluster management  Expected Results  Cluster should be removed from Rancher VMs should be removed from Harvester  </description>
+    </item>
+    
+    <item>
+      <title>Mark some features as experimental</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/1671-mark-experimental-features/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/1671-mark-experimental-features/</guid>
+      <description> Related issues: #1671 Mark external Harvester cluster provisioning support as experimental  Verification Steps  Verify that external Harvester is marked as experiemental  Verify that Cloud Credentials is marked as experimental  Verify that external is marked as experimental in add node template   Expected Results  All external Harvester fields should be marked as experimental  </description>
+    </item>
+    
+    <item>
+      <title>Provision RKE2 cluster with resource quota configured</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/provision-rke2-cluster-with-resource-quota-configured/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/provision-rke2-cluster-with-resource-quota-configured/</guid>
+      <description>Related issues: #1455 Node driver provisioning fails when resource quota configured in project
+  Related issues: #1449 Incorrect naming of project resource configuration
+  Category:  Rancher Integration  Environment setup  Install the latest rancher from docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Test Scenarios   Scenario 1:
+ Project with resource quota:  CPU Limit / CPU Reservation: 6000 / 6144 Memory Limit / Memory Reservation: 6000 / 6144      Scenario 2:</description>
+    </item>
+    
+    <item>
+      <title>Rancher import harvester enhancement</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/rancher-import-harvester-enhacement/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/rancher-import-harvester-enhacement/</guid>
+      <description>Related issues: #1330 Http proxy setting download image  Category:  Rancher Integration  Environment setup  Install the latest rancher from docker command  $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Installed a 3 nodes harvester cluster Import harvester to rancher in virtualization management Enable node driver and create cloud credential Provision a RKE2 cluster in rancher Confirm RKE2 cluster is fully operated, can explore it  Shutdown all 3 nodes server machine  Wait for 10 minutes Power on all harvester nodes server machines Confirm harvester is fully operated Confirm RKE2 vm is back to running  Check the RKE2 cluster status in rancher  Expected Results The RKE2 cluster in rancher should turn back to Running with no error after harvester server node machine is fully power off and power on.</description>
+    </item>
+    
+    <item>
+      <title>Rancher Resource quota management</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/resource_quota/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/resource_quota/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1450
+Verify Items  Project&amp;rsquo;s Resource quotas can be updated correctly Namespace Default Limit should be assigned as the Project configured Namespace moving between projects should work correctly  Case: Create Namespace with Resource quotas  Install Harvester with any nodes Install Rancher Login to Rancher, import Harvester from Virtualization Management Access Harvester dashboard via Virtualization Management Navigate to Project/Namespaces, Create Project A with Resource quotas Create Namespace N1 based on Project A The Default value of Resource Quotas should be the same as Namespace Default Limit assigned in Project A Modifying resource limit should work correctly (when increasing/decreasing, the value should increased/decreased) After N1 Created, Click Edit Config on N1 resource limit should be the same as we assigned Increase/decrease resource limit then Save Click Edit Config on N1, resource limit should be the same as we assigned Click Edit Config on N1, then increase resource limit exceeds Project A&amp;rsquo;s Limit Click Save Button, error message should shown.</description>
+    </item>
+    
+    <item>
+      <title>Reboot a cluster and check VIP</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/1669-reboot-cluster-check-vip/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/1669-reboot-cluster-check-vip/</guid>
+      <description> Related issues: #1669 Unable to access harvester VIP nor node IP after reboot or fully power cycle node machines (Intermittent)  Verification Steps  Enable VLAN with NIC harvester-mgmt Create VLAN 1 Disable VLAN Enable VLAN again shutdown node 3, 2, 1 server machine Wait for 15 minutes Power on node 1 server machine, wait for 20 seconds Power on node 2 server machine, wait for 20 seconds Power on node 3 server machine Check if you can access VIP and each node IP  Expected Results  VIP should load the page and show on every node in the terminal  </description>
+    </item>
+    
+    <item>
+      <title>toggle harvester node driver with the harvester global flag</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/toggle-harvester-node-driver-with-harvester-global-flag/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/toggle-harvester-node-driver-with-harvester-global-flag/</guid>
+      <description>Related issue: #1465 toggle harvester node driver with the harvester global flag  Category:  Rancher Integration  Environment setup  Install rancher 2.6.3 by docker  docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Environment preparation as above steps Open global setting -&amp;gt; feature flag in rancher Check harvester feature flag Open cluster management -&amp;gt; Driver page Check harvester node driver Deactivate harvester feature flag Activate harvester feature flag Deactivate harvester node driver Activate harvester node driver Deactivate both harvester flag and node driver Activate harvester feature flag  Expected Results  Harvester feature flag will be enabled by default and turned on harvester node driver accordingly    If the feature flag was turned off, nothing will change to the Harvester node driver.</description>
+    </item>
+    
+    <item>
+      <title>Use template to create cluster through virtualization management</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/use-template-to-create-cluster-through-virtualization-management/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/use-template-to-create-cluster-through-virtualization-management/</guid>
+      <description>Related issue: #1620 User is unable to use template to create cluster through virtualization management  Category:  Rancher Integration  Environment setup  Install rancher 2.6.3 by docker  docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps  Import harvester from rancher through harvester settings Access harvester from rancher virtualization management page Open Virtual Machine page Click create Check Use VM Template Select one of the template Create VM according to the template  Expected Results Access harvester from Rancher, on virtual machine page can load default three template to create VM.</description>
     </item>
     
   </channel>

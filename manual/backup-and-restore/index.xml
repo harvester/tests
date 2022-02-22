@@ -7,6 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/backup-and-restore/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Backup S3 reduce permissions</title>
+      <link>https://harvester.github.io/tests/manual/backup-and-restore/backup_s3_permission/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup_s3_permission/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1339
+Verify Items  Backup target connect to S3 should only require the permission to access the specific bucket  Case: S3 Backup with single-bucket-user  Install Harvester with any nodes Setup Minio  then follow the instruction to create a single-bucket-user. Create specific bucket for the user Create other buckets   setup backup-target with the single-bucket-user permission  When assign the dedicated bucket (for the user), connection should success.</description>
+    </item>
+    
+    <item>
       <title>Backup Single VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -32,6 +42,16 @@
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-node-off/</guid>
       <description>On multi-node setup bring down node that is hosting VM Click take backup in virtual machine list  Expected Results  The backup should complete successfully  Comments We do allow taking backup even if the VM is down, as you can take backup when the VM is off, this is because the volume still exists with longhorn&amp;rsquo;s multi replicas, but weneed to check the data integrity.
 Known Bugs https://github.</description>
+    </item>
+    
+    <item>
+      <title>Backup Target error message</title>
+      <link>https://harvester.github.io/tests/manual/backup-and-restore/backup_target_errmsg/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup_target_errmsg/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/1051
+Verify Items  Backup target should check input before Click Save Error message should displayed on edit page when input is wrong  Case: Connect to invalid Backup Target  Install Harvester with any node Login to dashboard, then navigate to Advanced Settings Edit backup-target,then input invalid data for NFS/S3 and click Save The Page should not be redirect to Advanced Settings Error Message should displayed under Save button  </description>
     </item>
     
     <item>
@@ -293,6 +313,16 @@ Known Bugs https://github.</description>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-middle-backup-chained-backup/</guid>
       <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 2 Validate that  md5sum -c file1-2.</description>
+    </item>
+    
+    <item>
+      <title>VM Backup with metadata</title>
+      <link>https://harvester.github.io/tests/manual/backup-and-restore/vm_backup_metadata/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/backup-and-restore/vm_backup_metadata/</guid>
+      <description>Ref: https://github.com/harvester/harvester/issues/988
+Verify Items  Metadata should be removed along with VM deleted Metadata should be synced after backup target switched Metadata can be used in new cluster  Case: Metadata create and delete  Install Harvester with any nodes Create an image for VM creation Setup NFS/S3 backup target Create a VM, then create a backup named backup1 File default-backup1.cfg should be exist in the backup target path &amp;lt;backup root&amp;gt;/harvester/vmbackups Delete the VM Backup backup1 File default-backup1.</description>
     </item>
     
   </channel>
