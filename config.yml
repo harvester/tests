@@ -1,11 +1,11 @@
 # Harvester API endpoint
-endpoint: 'https://localhost:30443'
+endpoint: 'https:/localhost'
 
 #Harvester username
 username: 'admin'
 
 #Harvester password
-password: 'admin'
+password: 'password1234'
 
 #Do not cleanup the test artifacts
 do-not-cleanup: False
@@ -55,7 +55,7 @@ rancher-version: 'v2.6-head'
 #rancher-admin-password: 'rancher_password'
 
 # Kubernetes version to use for Rancher integration tests
-kubernetes-version: 'v1.21.7+rke2r2'
+kubernetes-version: 'v1.21.10+rke2r2'
 
 # Wait time for polling Rancher cluster status.
 rancher-cluster-wait-timeout: 1200

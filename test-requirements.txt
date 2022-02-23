@@ -19,3 +19,4 @@ urllib3
 lxml
 pyyaml
 pdoc3
+tox
