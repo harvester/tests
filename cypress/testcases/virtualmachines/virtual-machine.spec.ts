@@ -3,6 +3,7 @@ import YAML from 'js-yaml'
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { LoginPage } from "@/pageobjects/login.po";
 
+
 const vms = new VmsPage();
 const login = new LoginPage();
 
@@ -14,30 +15,30 @@ const login = new LoginPage();
  * 5. Validate the config and yaml should show
 */
 describe('Create a vm with all the default values', () => {
-  const VM_NAME = 'test-vm-name-automation'
+  const VM_NAME = 'test-vm-automation'
 
   beforeEach(() => {
     login.login();
   });
 
   it('Step 1: Create a vm with all the default values', () => {
-    vms.goToCreate();
-
     const value = {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
       image: 'ubuntu-18.04-server-cloudimg-amd64.img',
     }
-    vms.setValue(value);
-
-    vms.save();
+    vms.create(value);
   });
 
   it('Step 2: Config and YAML should show', () => {
     vms.goToConfigDetail(VM_NAME);
 
     vms.goToYamlDetail(VM_NAME);
+  })
+
+  it('Step 3: Delete VM', () => {
+    vms.delete(VM_NAME)
   })
 });
 
@@ -47,8 +48,7 @@ describe('Create a vm with all the default values', () => {
  * 3. Input required values
  * 4. Check "Start VM on Creation"
  * 4. Validate the create request
- * 5. Validate the config
- * 6. Validate the yaml
+ * 5. Validate the yaml
 */
 describe('Create a VM with Start VM on Creation checked', () => {
   const VM_NAME = 'test-vm-running-checked-automation'
@@ -72,13 +72,7 @@ describe('Create a VM with Start VM on Creation checked', () => {
     vms.save();
   });
 
-  it('Step 2: Check config', () => {
-    vms.goToConfigDetail(VM_NAME);
-    
-    cy.wrap(vms.createRunning().value()).should('eq', true)
-  });
-
-  it('Step 3: Check yaml', () => {
+  it('Step 2: Check yaml', () => {
     cy.intercept('GET', `/apis/kubevirt.io/v1/namespaces/*/virtualmachines/${VM_NAME}`).as('vmDetail');
 
     vms.goToYamlDetail(VM_NAME);
@@ -99,8 +93,7 @@ describe('Create a VM with Start VM on Creation checked', () => {
  * 3. Input required values
  * 4. uncheck "Start VM on Creation"
  * 4. Validate the create request
- * 5. Validate the config
- * 6. Validate the yaml
+ * 5. Validate the yaml
 */
 describe('Create a VM with Start VM on Creation unchecked', () => {
   const VM_NAME = 'test-vm-running-unchecked-automation'
@@ -124,13 +117,7 @@ describe('Create a VM with Start VM on Creation unchecked', () => {
     vms.save();
   });
 
-  it('Step 2: Check config', () => {
-    vms.goToConfigDetail(VM_NAME);
-    
-    cy.wrap(vms.createRunning().value()).should('eq', false)
-  });
-
-  it('Step 3: Check yaml', () => {
+  it('Step 2: Check yaml', () => {
     cy.intercept('GET', `/apis/kubevirt.io/v1/namespaces/*/virtualmachines/${VM_NAME}`).as('vmDetail');
 
     vms.goToYamlDetail(VM_NAME);
