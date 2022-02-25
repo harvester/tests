@@ -1483,19 +1483,20 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">Try to add a network with no name (e2e_be)</h1>
+  <h1 id="title">Restore backup create new vm in another namespace</h1>
   <div>
     <article id="content">
        <ol>
-<li>Navigate to the networks page in harvester</li>
-<li>Click Create</li>
-<li>Don&rsquo;t add a name</li>
-<li>Add a VLAN ID</li>
-<li>Click Create</li>
+<li>Create a VM <code>vm</code> in namespace <code>default</code>.</li>
+<li>Create a file <code>~/test.txt</code> with content <code>test</code>.</li>
+<li>Create a VMBackup <code>default-vm-backup</code> for it.</li>
+<li>Create a new namepsace <code>new-ns</code>.</li>
+<li>Create a VMRestore <code>restore-default-vm-backup-to-new-ns</code> in <code>new-ns</code> namespace based on the VMBackup <code>default-vm-backup</code> to create a new VM.</li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>
 <ol>
-<li>You should get an error that says you need to add a name</li>
+<li>A new VM in <code>new-ns</code> namespace should be created.</li>
+<li>It should have the file <code>~/test.txt</code> with content <code>test</code>.</li>
 </ol>
 
     </article>

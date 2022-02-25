@@ -271,6 +271,15 @@ Verify Items  Backup target should check input before Click Save Error message s
     </item>
     
     <item>
+      <title>Restore backup create new vm in another namespace</title>
+      <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm-in-another-namespace/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm-in-another-namespace/</guid>
+      <description> Create a VM vm in namespace default. Create a file ~/test.txt with content test. Create a VMBackup default-vm-backup for it. Create a new namepsace new-ns. Create a VMRestore restore-default-vm-backup-to-new-ns in new-ns namespace based on the VMBackup default-vm-backup to create a new VM.  Expected Results  A new VM in new-ns namespace should be created. It should have the file ~/test.txt with content test.  </description>
+    </item>
+    
+    <item>
       <title>Restore Backup for VM that was live migrated (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-for-vm-live-migrated/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
