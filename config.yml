@@ -1,5 +1,5 @@
 # Harvester API endpoint
-endpoint: 'https:/localhost'
+endpoint: 'https://localhost'
 
 #Harvester username
 username: 'admin'
