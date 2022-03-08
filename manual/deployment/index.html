@@ -18,6 +18,12 @@
   
     <ul>
 
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/">Check DNS on install with Github SSH keys</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/">Check IPAM configuration with IPAM</a></li>
+  
+
 </ul>
 
   
@@ -343,7 +349,7 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/">09-Add and grant project-member user to harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
@@ -1515,8 +1521,8 @@ os:
     - kvm
     - nvme
   sysctl:
-    kernel.printk: &quot;4 4 1 7&quot;
-    kernel.kptr_restrict: &quot;1&quot;
+    kernel.printk: &#34;4 4 1 7&#34;
+    kernel.kptr_restrict: &#34;1&#34;
   dns_nameservers:
     - 8.8.8.8
     - 1.1.1.1
@@ -1527,11 +1533,11 @@ os:
   environment:
     test_env: test_env
   write_files:
-  - encoding: &quot;&quot;
+  - encoding: &#34;&#34;
     content: test content
     owner: root
     path: /etc/test.txt
-    permissions: '0755'
+    permissions: &#39;0755&#39;
 install:
   debug: true
   poweroff: true

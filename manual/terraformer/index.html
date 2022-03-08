@@ -18,6 +18,12 @@
   
     <ul>
 
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/">Check DNS on install with Github SSH keys</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/">Check IPAM configuration with IPAM</a></li>
+  
+
 </ul>
 
   
@@ -343,7 +349,7 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/">09-Add and grant project-member user to harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
@@ -1510,8 +1516,8 @@ sudo mv terraformer-harvester-linux-amd64 /usr/local/bin/terraformer
 terraformer import harvester -r image
 Replace the provider to registry.terraform.io/harvester/harvester
 cd generated/harvester/image
-vim provider.tf (add source  = &quot;registry.terraform.io/harvester/harvester&quot; to terraform.required_providers.harvester)
-terraform state replace-provider &quot;registry.terraform.io/-/harvester&quot; &quot;registry.terraform.io/harvester/harvester&quot;
+vim provider.tf (add source  = &#34;registry.terraform.io/harvester/harvester&#34; to terraform.required_providers.harvester)
+terraform state replace-provider &#34;registry.terraform.io/-/harvester&#34; &#34;registry.terraform.io/harvester/harvester&#34;
 </code></pre><ol>
 <li>Use the tf files and tfstate files to manage the existing resources.</li>
 </ol>

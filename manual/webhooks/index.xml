@@ -48,7 +48,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/webhooks/virtualmachinerestores.harvesterhci.io/</guid>
-      <description>GUI  Setup a backup target Create a backup from a VM. Assume the VM name is vm-test Wait until backup is done Restore the backup to a VM, enter vm-test in the Virtual Machine Name field  kube-api $ cat restore.yaml 1 --- apiVersion: harvesterhci.io/v1beta1 kind: VirtualMachineRestore metadata: name: restore-aaaa namespace: default spec: newVM: false target: apiGroup: kubevirt.io kind: VirtualMachine name: &amp;quot;&amp;quot; virtualMachineBackupName: test $ kubectl create -f restore.yaml Expected Results GUI  The operation should fail with admission webhook &amp;ldquo;validator.</description>
+      <description>GUI  Setup a backup target Create a backup from a VM. Assume the VM name is vm-test Wait until backup is done Restore the backup to a VM, enter vm-test in the Virtual Machine Name field  kube-api $ cat restore.yaml 1 --- apiVersion: harvesterhci.io/v1beta1 kind: VirtualMachineRestore metadata: name: restore-aaaa namespace: default spec: newVM: false target: apiGroup: kubevirt.io kind: VirtualMachine name: &amp;#34;&amp;#34; virtualMachineBackupName: test $ kubectl create -f restore.yaml Expected Results GUI  The operation should fail with admission webhook &amp;ldquo;validator.</description>
     </item>
     
     <item>

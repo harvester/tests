@@ -18,6 +18,12 @@
   
     <ul>
 
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/">Check DNS on install with Github SSH keys</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/">Check IPAM configuration with IPAM</a></li>
+  
+
 </ul>
 
   
@@ -343,7 +349,7 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/">09-Add and grant project-member user to harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
@@ -1566,11 +1572,10 @@ virt-operator-56c5bdc7b8-cgwc8                           1/1     Running     28 
 <p>Check whether longhornBackupName is in each VM Backup.</p>
 <pre tabindex="0"><code>$ kubectl get backup -A
 longhorn-system   backup-7933c0d09ec04d1a   snapshot-b1fbfcf4-ad45-442d-9bb6-8119e713d892   1367343104     2021-12-17T07:13:00Z   Completed   2021-12-17T07:17:51.097572079Z
-
 </code></pre><pre tabindex="0"><code>$ kubectl get vmbackup ubuntu-backup -o yaml | less
 
 volumeBackups:
-- creationTime: &quot;2021-12-17T07:12:59Z&quot;
+- creationTime: &#34;2021-12-17T07:12:59Z&#34;
     longhornBackupName: backup-7933c0d09ec04d1a
     name: ubuntu-backup-volume-ubuntu-vm-disk-0-ylodf
 </code></pre></li>
@@ -1584,8 +1589,6 @@ There is a default-ubuntu-backup.cfg file exists on S3 backup remote bucket</p>
 <p>Check whether you can restore VM.
 Can create a new vm from restore the existing backup</p>
 <pre tabindex="0"><code>![image](https://user-images.githubusercontent.com/29251855/146564664-46809072-a320-44a6-8665-29aa1b8d936f.png)
-
-
 </code></pre></li>
 </ol>
 

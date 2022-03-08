@@ -18,6 +18,12 @@
   
     <ul>
 
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/">Check DNS on install with Github SSH keys</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/">Check IPAM configuration with IPAM</a></li>
+  
+
 </ul>
 
   
@@ -343,7 +349,7 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/">09-Add and grant project-member user to harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
@@ -1489,7 +1495,7 @@
        <ol>
 <li>deploy rancher with harvester enabled</li>
 <li>docker: &ndash;features=harvester=enabled</li>
-<li>helm: &ndash;set &lsquo;extraEnv[0].name=CATTLE_FEATURES&rsquo; &ndash;set &lsquo;extraEnv[0].value=harvester=enabled</li>
+<li>helm: &ndash;set &rsquo;extraEnv[0].name=CATTLE_FEATURES&rsquo; &ndash;set &rsquo;extraEnv[0].value=harvester=enabled</li>
 <li>import a harvester setup</li>
 <li>go to fleet → repos -&gt; create</li>
 <li>validate that that the harvester cluster is NOT in the dropdown for cluster deployments</li>

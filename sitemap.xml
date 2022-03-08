@@ -30,7 +30,7 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/</loc>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/</loc>
   </url><url>
@@ -228,7 +228,11 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/check-detailed-network-status-in-host-page/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/misc/1520-check-title-and-favicon/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/1667-check-longhorn-volume-mount/</loc>
   </url><url>

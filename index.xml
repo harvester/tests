@@ -133,10 +133,10 @@
     
     <item>
       <title>10-Add and grant project-custom user to harvester</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/</guid>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/</guid>
       <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-custom and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project   Search project-custom user Assign Custom role to it   Set Create Namespace, Manage Volumes and View Volumes Logout current user from Rancher Login with project-custom Open harvester from Virtualization Management page  Expected Results  Can create project-custom and set password Can assign Custom role to project-custom in default Can login correctly with project-custom Can do Create Namespace, Manage Volumes and View Volumes in default project  </description>
     </item>
     
@@ -528,7 +528,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/50-fleet-with-harvester/</guid>
-      <description> deploy rancher with harvester enabled docker: &amp;ndash;features=harvester=enabled helm: &amp;ndash;set &amp;lsquo;extraEnv[0].name=CATTLE_FEATURES&amp;rsquo; &amp;ndash;set &amp;lsquo;extraEnv[0].value=harvester=enabled import a harvester setup go to fleet → repos -&amp;gt; create validate that that the harvester cluster is NOT in the dropdown for cluster deployments validate that selecting the &amp;lsquo;all clusters&amp;rsquo; option for deployment does NOT deploy to the harvester cluster  </description>
+      <description> deploy rancher with harvester enabled docker: &amp;ndash;features=harvester=enabled helm: &amp;ndash;set &amp;rsquo;extraEnv[0].name=CATTLE_FEATURES&amp;rsquo; &amp;ndash;set &amp;rsquo;extraEnv[0].value=harvester=enabled import a harvester setup go to fleet → repos -&amp;gt; create validate that that the harvester cluster is NOT in the dropdown for cluster deployments validate that selecting the &amp;lsquo;all clusters&amp;rsquo; option for deployment does NOT deploy to the harvester cluster  </description>
     </item>
     
     <item>
@@ -802,7 +802,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/attach-unpartitioned-nvme-disks-to-host/</guid>
-      <description>Related issues: #1414 Adding unpartitioned NVMe disks fails  Category:  Storage  Verification Steps  Use qemu-img create -f qcow2 command to create three disk image locally Shutdown target node VM machine Directly edit VM xml content in virt manager page Add to the first line Add the following line before the end of quote  &amp;lt;qemu:commandline&amp;gt; &amp;lt;qemu:arg value=&amp;quot;-drive&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme301.img,if=none,id=D22&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;-device&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;nvme,drive=D22,serial=1234&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;-drive&amp;quot;/&amp;gt; &amp;lt;qemu:arg value=&amp;quot;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme302.</description>
+      <description>Related issues: #1414 Adding unpartitioned NVMe disks fails  Category:  Storage  Verification Steps  Use qemu-img create -f qcow2 command to create three disk image locally Shutdown target node VM machine Directly edit VM xml content in virt manager page Add to the first line Add the following line before the end of quote  &amp;lt;qemu:commandline&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme301.img,if=none,id=D22&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-device&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;nvme,drive=D22,serial=1234&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme302.</description>
     </item>
     
     <item>
@@ -1036,12 +1036,30 @@ Verification Steps   Because configuring the network of the installation environ
     </item>
     
     <item>
+      <title>Check DNS on install with Github SSH keys</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/</guid>
+      <description>Related issues: #1903 DNS server not available during install  Verification Steps Without PXE  Start a new install Set DNS as 8.8.8.8 Add in github SSH keys Finish install SSH into node with SSH keys from github (rancher@hostname) Verify login was successful  With PXE  Got vagrant setup from https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Changed settings.yml DHCP config and added dns: 8.8.8.8  dhcp_server: ip: 192.168.0.254 subnet: 192.168.0.0 netmask: 255.255.255.0 range: 192.</description>
+    </item>
+    
+    <item>
       <title>Check favicon and title on pages</title>
       <link>https://harvester.github.io/tests/manual/misc/1520-check-title-and-favicon/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/misc/1520-check-title-and-favicon/</guid>
       <description> Related issues: #1520 incorrect title and favicon  Verification Steps  Log into Harvester Check page title and favicon on each of these pages  dashboard main page settings support Volumes SSH Keys Host info    Expected Results  Harvester favicon and title should show on each page  </description>
+    </item>
+    
+    <item>
+      <title>Check IPAM configuration with IPAM</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/</guid>
+      <description> Related issues: #1697 Optimization for the Harvester load balancer  Verification Steps  Install the latest rancher and import a Harvester cluster Create a cluster by Harvester node driver Navigate to the workload Page, create a workload Click &amp;ldquo;Add ports&amp;rdquo;, select type as LB, protocol as TCP Check IPAM selector Navigate to the service page, create a LB Click &amp;ldquo;Add-on config&amp;rdquo; tab and check IPAM and port   </description>
     </item>
     
     <item>
@@ -2027,7 +2045,7 @@ Verify Items  Overcommit can be edit on Dashboard VM can allocate exceed CPU on 
       
       <guid>https://harvester.github.io/tests/manual/hosts/add_disk_on_ui/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1608
-Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on dashboard UI  Install Harvester with 2 nodes Power off 2nd node Update VM&amp;rsquo;s xml definition (by using virsh edit or virt-manager)  Create nvme.img block: dd if=/dev/zero of=/var/lib/libvirt/images/nvme.img bs=1M count=4096 change owner chown qemu:qemu /var/lib/libvirt/images/nvme.img update &amp;lt;domain type=&amp;quot;kvm&amp;quot;&amp;gt; to &amp;lt;domain type=&amp;quot;kvm&amp;quot; xmlns:qemu=&amp;quot;http://libvirt.org/schemas/domain/qemu/1.0&amp;quot;&amp;gt; append xml node into domain as below:    &amp;lt;qemu:commandline&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/var/lib/libvirt/images/nvme.</description>
+Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on dashboard UI  Install Harvester with 2 nodes Power off 2nd node Update VM&amp;rsquo;s xml definition (by using virsh edit or virt-manager)  Create nvme.img block: dd if=/dev/zero of=/var/lib/libvirt/images/nvme.img bs=1M count=4096 change owner chown qemu:qemu /var/lib/libvirt/images/nvme.img update &amp;lt;domain type=&amp;quot;kvm&amp;quot;&amp;gt; to &amp;lt;domain type=&amp;quot;kvm&amp;quot; xmlns:qemu=&amp;quot;http://libvirt.org/schemas/domain/qemu/1.0&amp;quot;&amp;gt; append xml node into domain as below:     &amp;lt;qemu:commandline&amp;gt;  &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt;  &amp;lt;qemu:arg value=&amp;#34;file=/var/lib/libvirt/images/nvme.</description>
     </item>
     
     <item>
@@ -2588,7 +2606,7 @@ Verify Items  Disk&amp;rsquo;s symbolic link can be used in install configure op
       <guid>https://harvester.github.io/tests/manual/terraform-provider/install-terraform-provider/</guid>
       <description>Follow the instruction of the README
 Expected Results The provider is initialized and the terraform init command succeeds:
-Initializing provider plugins... - Finding harvester/harvester versions matching &amp;quot;~&amp;gt; 0.1.0&amp;quot;... - Installing harvester/harvester v0.1.0... - Installed harvester/harvester v0.1.0 (unauthenticated) ... Terraform has been successfully initialized! </description>
+Initializing provider plugins... - Finding harvester/harvester versions matching &amp;#34;~&amp;gt; 0.1.0&amp;#34;... - Installing harvester/harvester v0.1.0... - Installed harvester/harvester v0.1.0 (unauthenticated) ... Terraform has been successfully initialized! </description>
     </item>
     
     <item>
@@ -3435,7 +3453,7 @@ Verify Items  generated kubeconfig is able to access kubenetes API new node able
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-variasble/</guid>
-      <description>Define the kubeconfig variable in the provider.tf file  terraform { required_providers { harvester = { source = &amp;quot;registry.terraform.io/harvester/harvester&amp;quot; version = &amp;quot;~&amp;gt; 0.1.0&amp;quot; } } } provider &amp;quot;harvester&amp;quot; { kubeconfig = &amp;quot;/path/of/my/kubeconfig&amp;quot; }  Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command  Expected Results  The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed.</description>
+      <description>Define the kubeconfig variable in the provider.tf file  terraform { required_providers { harvester = { source = &amp;#34;registry.terraform.io/harvester/harvester&amp;#34; version = &amp;#34;~&amp;gt; 0.1.0&amp;#34; } } } provider &amp;#34;harvester&amp;#34; { kubeconfig = &amp;#34;/path/of/my/kubeconfig&amp;#34; }  Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command  Expected Results  The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed.</description>
     </item>
     
     <item>
@@ -3982,7 +4000,7 @@ Verify Items  VIP should be accessible when VLAN enabled on management port  Cas
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/webhooks/virtualmachinerestores.harvesterhci.io/</guid>
-      <description>GUI  Setup a backup target Create a backup from a VM. Assume the VM name is vm-test Wait until backup is done Restore the backup to a VM, enter vm-test in the Virtual Machine Name field  kube-api $ cat restore.yaml 1 --- apiVersion: harvesterhci.io/v1beta1 kind: VirtualMachineRestore metadata: name: restore-aaaa namespace: default spec: newVM: false target: apiGroup: kubevirt.io kind: VirtualMachine name: &amp;quot;&amp;quot; virtualMachineBackupName: test $ kubectl create -f restore.yaml Expected Results GUI  The operation should fail with admission webhook &amp;ldquo;validator.</description>
+      <description>GUI  Setup a backup target Create a backup from a VM. Assume the VM name is vm-test Wait until backup is done Restore the backup to a VM, enter vm-test in the Virtual Machine Name field  kube-api $ cat restore.yaml 1 --- apiVersion: harvesterhci.io/v1beta1 kind: VirtualMachineRestore metadata: name: restore-aaaa namespace: default spec: newVM: false target: apiGroup: kubevirt.io kind: VirtualMachine name: &amp;#34;&amp;#34; virtualMachineBackupName: test $ kubectl create -f restore.yaml Expected Results GUI  The operation should fail with admission webhook &amp;ldquo;validator.</description>
     </item>
     
     <item>

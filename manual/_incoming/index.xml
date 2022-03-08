@@ -6,5 +6,23 @@
     <description>Recent content in Incoming Test Cases on Harvester manual test cases</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/_incoming/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Check DNS on install with Github SSH keys</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/</guid>
+      <description>Related issues: #1903 DNS server not available during install  Verification Steps Without PXE  Start a new install Set DNS as 8.8.8.8 Add in github SSH keys Finish install SSH into node with SSH keys from github (rancher@hostname) Verify login was successful  With PXE  Got vagrant setup from https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Changed settings.yml DHCP config and added dns: 8.8.8.8  dhcp_server: ip: 192.168.0.254 subnet: 192.168.0.0 netmask: 255.255.255.0 range: 192.</description>
+    </item>
+    
+    <item>
+      <title>Check IPAM configuration with IPAM</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/</guid>
+      <description> Related issues: #1697 Optimization for the Harvester load balancer  Verification Steps  Install the latest rancher and import a Harvester cluster Create a cluster by Harvester node driver Navigate to the workload Page, create a workload Click &amp;ldquo;Add ports&amp;rdquo;, select type as LB, protocol as TCP Check IPAM selector Navigate to the service page, create a LB Click &amp;ldquo;Add-on config&amp;rdquo; tab and check IPAM and port   </description>
+    </item>
+    
   </channel>
 </rss>

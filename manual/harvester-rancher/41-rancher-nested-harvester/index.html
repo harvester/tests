@@ -18,6 +18,12 @@
   
     <ul>
 
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/">Check DNS on install with Github SSH keys</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/">Check IPAM configuration with IPAM</a></li>
+  
+
 </ul>
 
   
@@ -343,7 +349,7 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/">09-Add and grant project-member user to harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
@@ -1499,14 +1505,14 @@
 <code>curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f -</code></li>
 <li>Run <code>sudo chmod 775 /etc/rancher/rke2/rke2.yaml</code> to solve the permission denied error</li>
 <li>Run curl command again, you should see the following successful import message
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">namespace/cattle-system configured
-serviceaccount/cattle created
-clusterrolebinding.rbac.authorization.k8s.io/cattle-admin-binding created
-secret/cattle-credentials-413137f created
-clusterrole.rbac.authorization.k8s.io/cattle-admin created
-deployment.apps/cattle-cluster-agent created
-service/cattle-cluster-agent created
-</code></pre></div></li>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>namespace/cattle-system configured
+</span></span><span style="display:flex;"><span>serviceaccount/cattle created
+</span></span><span style="display:flex;"><span>clusterrolebinding.rbac.authorization.k8s.io/cattle-admin-binding created
+</span></span><span style="display:flex;"><span>secret/cattle-credentials-413137f created
+</span></span><span style="display:flex;"><span>clusterrole.rbac.authorization.k8s.io/cattle-admin created
+</span></span><span style="display:flex;"><span>deployment.apps/cattle-cluster-agent created
+</span></span><span style="display:flex;"><span>service/cattle-cluster-agent created
+</span></span></code></pre></div></li>
 <li>Check import status in Virtualization Management page on Rancher</li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>

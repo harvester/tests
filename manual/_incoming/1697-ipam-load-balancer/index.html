@@ -18,6 +18,12 @@
   
     <ul>
 
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/">Check DNS on install with Github SSH keys</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/">Check IPAM configuration with IPAM</a></li>
+  
+
 </ul>
 
   
@@ -343,7 +349,7 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/">09-Add and grant project-member user to harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
@@ -1483,36 +1489,23 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">10-Add and grant project-custom user to harvester</h1>
+  <h1 id="title">Check IPAM configuration with IPAM</h1>
   <div>
     <article id="content">
-       <ol>
-<li>Open <code>Users &amp; Authentication</code></li>
-<li>Click <code>Users</code> and Create</li>
-<li>Create user name <code>project-custom</code> and set password</li>
-<li>Select <code>Standard User</code> in the Global permission</li>
-<li>Open harvester from <code>Virtualization Management</code> page</li>
-<li>Click <code>Projects/Namespaces</code></li>
-<li>Edit config of <code>default</code> project</li>
-</ol>
-<p><img src="https://images.zenhubusercontent.com/61519853321ea20d65443929/25221ce8-909a-4532-85d0-5a1912528f37" alt="image.png"></p>
+       <ul>
+<li>Related issues: <a href="https://github.com/harvester/harvester/issues/1697">#1697</a> Optimization for the Harvester load balancer</li>
+</ul>
+<h2 id="verification-steps">Verification Steps</h2>
 <ol>
-<li>Search project-custom user</li>
-<li>Assign <code>Custom</code> role to it</li>
-</ol>
-<p><img src="https://images.zenhubusercontent.com/61519853321ea20d65443929/70098173-d9b5-43f5-85ab-5011f8c7d7c0" alt="image.png"></p>
-<ol>
-<li>Set <code>Create Namespace</code>, <code>Manage Volumes</code> and <code>View Volumes</code></li>
-<li>Logout current user from Rancher</li>
-<li>Login with <code>project-custom</code></li>
-<li>Open harvester from <code>Virtualization Management</code> page</li>
-</ol>
-<h2 id="expected-results">Expected Results</h2>
-<ol>
-<li>Can create <code>project-custom</code> and set password</li>
-<li>Can assign <code>Custom</code> role to <code>project-custom</code> in default</li>
-<li>Can login correctly with <code>project-custom</code></li>
-<li>Can do <code>Create Namespace</code>, <code>Manage Volumes</code> and <code>View Volumes</code> in default project</li>
+<li>Install the latest rancher and import a Harvester cluster</li>
+<li>Create a cluster by Harvester node driver</li>
+<li>Navigate to the workload Page, create a workload</li>
+<li>Click &ldquo;Add ports&rdquo;, select type as LB, protocol as TCP</li>
+<li>Check IPAM selector</li>
+<li>Navigate to the service page, create a LB</li>
+<li>Click &ldquo;Add-on config&rdquo; tab and check IPAM and port
+<img src="https://user-images.githubusercontent.com/83787952/152212105-2b2335be-b12b-42ac-bfcf-aa1d2aeb6fd3.png" alt="image.png">
+<img src="https://user-images.githubusercontent.com/83787952/152212109-039a3e23-9eae-4ffc-9318-58f048a112c1.png" alt="image.png"></li>
 </ol>
 
     </article>

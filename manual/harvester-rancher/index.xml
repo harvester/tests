@@ -103,10 +103,10 @@
     
     <item>
       <title>10-Add and grant project-custom user to harvester</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/</link>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/</guid>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/</guid>
       <description> Open Users &amp;amp; Authentication Click Users and Create Create user name project-custom and set password Select Standard User in the Global permission Open harvester from Virtualization Management page Click Projects/Namespaces Edit config of default project   Search project-custom user Assign Custom role to it   Set Create Namespace, Manage Volumes and View Volumes Logout current user from Rancher Login with project-custom Open harvester from Virtualization Management page  Expected Results  Can create project-custom and set password Can assign Custom role to project-custom in default Can login correctly with project-custom Can do Create Namespace, Manage Volumes and View Volumes in default project  </description>
     </item>
     
@@ -498,7 +498,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/50-fleet-with-harvester/</guid>
-      <description> deploy rancher with harvester enabled docker: &amp;ndash;features=harvester=enabled helm: &amp;ndash;set &amp;lsquo;extraEnv[0].name=CATTLE_FEATURES&amp;rsquo; &amp;ndash;set &amp;lsquo;extraEnv[0].value=harvester=enabled import a harvester setup go to fleet → repos -&amp;gt; create validate that that the harvester cluster is NOT in the dropdown for cluster deployments validate that selecting the &amp;lsquo;all clusters&amp;rsquo; option for deployment does NOT deploy to the harvester cluster  </description>
+      <description> deploy rancher with harvester enabled docker: &amp;ndash;features=harvester=enabled helm: &amp;ndash;set &amp;rsquo;extraEnv[0].name=CATTLE_FEATURES&amp;rsquo; &amp;ndash;set &amp;rsquo;extraEnv[0].value=harvester=enabled import a harvester setup go to fleet → repos -&amp;gt; create validate that that the harvester cluster is NOT in the dropdown for cluster deployments validate that selecting the &amp;lsquo;all clusters&amp;rsquo; option for deployment does NOT deploy to the harvester cluster  </description>
     </item>
     
     <item>

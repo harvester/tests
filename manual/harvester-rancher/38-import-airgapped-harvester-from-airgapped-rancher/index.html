@@ -18,6 +18,12 @@
   
     <ul>
 
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/">Check DNS on install with Github SSH keys</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/">Check IPAM configuration with IPAM</a></li>
+  
+
 </ul>
 
   
@@ -343,7 +349,7 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/">09-Add and grant project-member user to harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
@@ -1523,9 +1529,9 @@ NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc
 <li>Run rancher container by command:</li>
 </ol>
 <pre tabindex="0"><code>$sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 \
--e HTTP_PROXY=&quot;http://192.168.0.254:3128&quot; \
--e HTTPS_PROXY=&quot;http://192.168.0.254:3128&quot; \
--e NO_PROXY=&quot;localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,cattle-system.svc,192.168.0.0/16,.svc,.cluster.local,example.com&quot; \
+-e HTTP_PROXY=&#34;http://192.168.0.254:3128&#34; \
+-e HTTPS_PROXY=&#34;http://192.168.0.254:3128&#34; \
+-e NO_PROXY=&#34;localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,cattle-system.svc,192.168.0.0/16,.svc,.cluster.local,example.com&#34; \
 --privileged rancher/rancher:v2.6.3-rc6
 </code></pre><ol>
 <li>
@@ -1555,8 +1561,8 @@ https_proxy: http://192.168.0.254:3128
 write_files:
 - path: /etc/environment
 content: |
-HTTP_PROXY=&quot;http://192.168.0.254:3128&quot;
-HTTPS_PROXY=&quot;http://192.168.0.254:3128&quot;
+HTTP_PROXY=&#34;http://192.168.0.254:3128&#34;
+HTTPS_PROXY=&#34;http://192.168.0.254:3128&#34;
 append: true
 </code></pre><p><img src="https://user-images.githubusercontent.com/29251855/146871485-082f6f12-2c24-4f9b-bdda-3e92ec07e952.png" alt="image"></p>
 </li>

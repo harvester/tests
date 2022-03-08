@@ -18,6 +18,12 @@
   
     <ul>
 
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/">Check DNS on install with Github SSH keys</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/">Check IPAM configuration with IPAM</a></li>
+  
+
 </ul>
 
   
@@ -343,7 +349,7 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/09-rbac-add-grant-project-member-user-harvester/">09-Add and grant project-member user to harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10-rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/10--rbacadd-grant-project-custom-user-harvester/">10-Add and grant project-custom user to harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
@@ -1504,13 +1510,13 @@
 </ul>
 </li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">  <span style="color:#f92672">&lt;qemu:commandline&gt;</span>
-    <span style="color:#f92672">&lt;qemu:arg</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#34;-drive&#34;</span><span style="color:#f92672">/&gt;</span>
-    <span style="color:#f92672">&lt;qemu:arg</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#34;file=/var/lib/libvirt/images/nvme.img,if=none,id=D22,format=raw&#34;</span><span style="color:#f92672">/&gt;</span>
-    <span style="color:#f92672">&lt;qemu:arg</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#34;-device&#34;</span><span style="color:#f92672">/&gt;</span>
-    <span style="color:#f92672">&lt;qemu:arg</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#34;nvme,drive=D22,serial=1234&#34;</span><span style="color:#f92672">/&gt;</span>
-  <span style="color:#f92672">&lt;/qemu:commandline&gt;</span>
-</code></pre></div><ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span>  <span style="color:#f92672">&lt;qemu:commandline&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;qemu:arg</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#34;-drive&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;qemu:arg</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#34;file=/var/lib/libvirt/images/nvme.img,if=none,id=D22,format=raw&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;qemu:arg</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#34;-device&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;qemu:arg</span> <span style="color:#a6e22e">value=</span><span style="color:#e6db74">&#34;nvme,drive=D22,serial=1234&#34;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/qemu:commandline&gt;</span>
+</span></span></code></pre></div><ol>
 <li>Power on 2nd node</li>
 <li>login to dashboard, then click <code>Edit Config</code> on 2nd node</li>
 <li>Navigate to <strong>Disks</strong> tab, then add the NVMe disk from the drop-down list of <strong>Add Disk</strong></li>

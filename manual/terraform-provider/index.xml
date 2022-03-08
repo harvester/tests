@@ -14,7 +14,7 @@
       <guid>https://harvester.github.io/tests/manual/terraform-provider/install-terraform-provider/</guid>
       <description>Follow the instruction of the README
 Expected Results The provider is initialized and the terraform init command succeeds:
-Initializing provider plugins... - Finding harvester/harvester versions matching &amp;quot;~&amp;gt; 0.1.0&amp;quot;... - Installing harvester/harvester v0.1.0... - Installed harvester/harvester v0.1.0 (unauthenticated) ... Terraform has been successfully initialized! </description>
+Initializing provider plugins... - Finding harvester/harvester versions matching &amp;#34;~&amp;gt; 0.1.0&amp;#34;... - Installing harvester/harvester v0.1.0... - Installed harvester/harvester v0.1.0 (unauthenticated) ... Terraform has been successfully initialized! </description>
     </item>
     
     <item>
@@ -23,7 +23,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-variasble/</guid>
-      <description>Define the kubeconfig variable in the provider.tf file  terraform { required_providers { harvester = { source = &amp;quot;registry.terraform.io/harvester/harvester&amp;quot; version = &amp;quot;~&amp;gt; 0.1.0&amp;quot; } } } provider &amp;quot;harvester&amp;quot; { kubeconfig = &amp;quot;/path/of/my/kubeconfig&amp;quot; }  Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command  Expected Results  The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed.</description>
+      <description>Define the kubeconfig variable in the provider.tf file  terraform { required_providers { harvester = { source = &amp;#34;registry.terraform.io/harvester/harvester&amp;#34; version = &amp;#34;~&amp;gt; 0.1.0&amp;#34; } } } provider &amp;#34;harvester&amp;#34; { kubeconfig = &amp;#34;/path/of/my/kubeconfig&amp;#34; }  Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command  Expected Results  The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed.</description>
     </item>
     
     <item>
