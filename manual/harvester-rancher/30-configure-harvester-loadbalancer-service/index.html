@@ -1494,7 +1494,7 @@
     <article id="content">
        <p>Prerequisite:
 Already provision RKE1/RKE2 cluster in previous test case</p>
-<ol>
+<ul>
 <li>Open <code>Global Settings</code> in hamburger menu</li>
 <li>Replace <code>ui-dashboard-index</code> to <code>https://releases.rancher.com/harvester-ui/dashboard/latest/index.html</code></li>
 <li>Change <code>ui-offline-preferred</code> to <code>Remote</code></li>
@@ -1504,32 +1504,35 @@ Already provision RKE1/RKE2 cluster in previous test case</p>
 <li>Click <code>Services</code></li>
 <li>Click Create</li>
 <li>Select <code>Load Balancer</code></li>
-</ol>
+</ul>
 <p><img src="https://images.zenhubusercontent.com/61519853321ea20d65443929/f628094c-a195-4f99-9fb7-858d759dc019" alt="image.png"></p>
-<ol>
-<li>Given service name</li>
-<li>Provide Listending port and Target port</li>
-</ol>
+<ul>
+<li>Given service name to make the load balancer name composed of the cluster name, namespace, svc name, and suffix(8 characters) more than 63 characters</li>
+<li>Provide Listening port and Target port</li>
+</ul>
 <p><img src="https://images.zenhubusercontent.com/61519853321ea20d65443929/2c20c759-4769-438b-94ad-5b995ba66873" alt="image.png"></p>
-<ol>
+<ul>
 <li>Click <code>Add-on Config</code></li>
-<li>Provide Health Check port</li>
+<li>Select Health Check port</li>
 <li>Select <code>dhcp</code> as IPAM mode</li>
 <li>Provide Health Check Threshold</li>
 <li>Provide Health Check Failure Threshold</li>
 <li>Provide Health Check Period</li>
 <li>Provide Health Check Timeout</li>
 <li>Click Create button</li>
-</ol>
+</ul>
 <p><img src="https://images.zenhubusercontent.com/61519853321ea20d65443929/a8d11df6-cc76-4897-8310-def670682775" alt="image.png"></p>
+<ul>
+<li>Create another load balancer service with the name  characters.</li>
+</ul>
 <h2 id="expected-results">Expected Results</h2>
-<ol>
-<li>Can create load balance service correctly</li>
-</ol>
+<ul>
+<li>Can create the load balance service correctly</li>
+</ul>
 <p><img src="https://images.zenhubusercontent.com/61519853321ea20d65443929/4fbf9271-e3fa-4490-b1e9-8bb9c20060bf" alt="image.png"></p>
-<ol>
-<li>Can operate and foward workload as expected</li>
-</ol>
+<ul>
+<li>Can operate and forward workload as expected</li>
+</ul>
 
     </article>
   </div>
