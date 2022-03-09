@@ -131,3 +131,16 @@ describe('Create a VM with Start VM on Creation unchecked', () => {
     })
   });
 })
+
+/**
+ * 1. Login
+ * 2. Navigate to the vm page
+ * 3. click Create button, choose create "Multiple Instance"
+ * Expected Results
+ * 1. vm assignment to different nodes
+ * @notImplemented
+ */
+export function CheckMultiVMScheduler() {}
+it("automatic assignment to different nodes when creating multiple vm's", () => {
+
+});
