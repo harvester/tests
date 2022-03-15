@@ -1,6 +1,13 @@
 import { Constants } from '../constants/constants'
 const constants = new Constants();
+import LabeledInputPo from '@/utils/components/labeled-input.po';
+import { HCI } from '@/constants/types'
 
+interface OvercommitInterface {
+  cpu?: string,
+  memory?: string,
+  storage?: string,
+}
 export class SettingsPage {
     private uiSourceButton = '#ui-source';
     private editSettingsButton = '.icon-edit';
@@ -59,5 +66,31 @@ export class SettingsPage {
      */
     private validateSettingsUrl() {
         expect(cy.url().should('eq', constants.settingsUrl));
+    }
+
+    /**
+     * Go to setting edit page
+     * @param id setting id
+    */
+    public goToEditSetting(id: string) {
+      cy.visit(constants.settingsUrl);
+      expect(cy.url().should('eq', constants.settingsUrl) );
+      cy.get(`#${id}`).click();
+      cy.get(this.editSettingsButton).click();
+      expect(cy.url().should('eq', `${constants.settingBaseUrl}/${id}?mode=edit`) );
+    }
+
+    public setOvercommit(value: OvercommitInterface) {
+      const cpu = new LabeledInputPo('.labeled-input', `:contains("CPU")`)
+
+      cpu.input(value.cpu)
+    }
+
+    public save() {
+      cy.intercept('PUT', `/v1/harvester/${HCI.SETTING}s/*`).as('createSetting');
+      cy.get('.cru-resource-footer').contains('Save').click()
+      cy.wait('@createSetting').then(res => {
+        expect(res.response?.statusCode).to.equal(200);
+      })
     }
 }

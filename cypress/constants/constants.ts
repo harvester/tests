@@ -11,4 +11,5 @@ export class Constants {
     public hostsPage = this.baseUrl + 'dashboard/c/local/harvester/harvesterhci.io.host';
     public supportPage = this.baseUrl + 'dashboard/c/local/harvester/support'
     public vmPage = this.baseUrl + 'dashboard/c/local/harvester/kubevirt.io.virtualmachine'
+    public settingBaseUrl = this.baseUrl + 'dashboard/c/local/harvester/harvesterhci.io.setting'
 }
