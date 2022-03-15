@@ -21,6 +21,7 @@ interface ValueInterface {
   image?: string,
   networks?: Array<Network>,
   createRunning?: boolean,
+  usbTablet?: boolean,
 }
 
 export class VmsPage {
@@ -48,6 +49,8 @@ export class VmsPage {
     this.image().select(value?.image)
     this.networks(value?.networks)
     this.createRunning().check(value?.createRunning)
+    cy.get('.tab#advanced').click()
+    this.usbTablet().check(value?.usbTablet)
   }
 
   public save() {
@@ -202,5 +205,9 @@ export class VmsPage {
     this.goToEdit(name);
     this.setValue(value);
     cy.get('.cru-resource-footer').contains('Save').click()
+  }
+
+  usbTablet() {
+    return new CheckboxPo('.checkbox-container', `:contains("Enable USB Tablet")`)
   }
 }
