@@ -1492,36 +1492,31 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">datavolumes.cdi.kubevirt.io</h1>
+  <h1 id="title">Multiple Disks Swapping Paths</h1>
   <div>
     <article id="content">
-       <h2 id="gui">GUI</h2>
+       <ul>
+<li>Related issues: <a href="https://github.com/harvester/harvester/issues/1874">#1874</a> Multiple Disks Swapping Paths</li>
+</ul>
+<h2 id="verification-steps">Verification Steps</h2>
 <ol>
-<li>Create a VM in GUI and wait until it&rsquo;s running. Assume its name is test.</li>
+<li>Prepare a harvester cluster (single node is sufficient)</li>
+<li>Prepare two additional disks and format both of them.</li>
+<li>Hotplug both disks and add them to the host via Harvester Dashboard (&ldquo;Hosts&rdquo; &gt; &ldquo;Edit Config&rdquo; &gt; &ldquo;Disks&rdquo;)</li>
+<li>Shutdown the host.</li>
+<li>Swap the address and slot of the two disks in order to make their dev paths swapped
+<ul>
+<li>For libvirt environment, you can swap <code>&lt;address&gt;</code> and <code>&lt;target&gt;</code> in the XML of the disk.</li>
+</ul>
+</li>
+<li>Reboot the host</li>
+<li>Navigate to the &ldquo;Host&rdquo; page, both disks should be healthy and scheduled.</li>
 </ol>
-<h3 id="kube-api">kube-api</h3>
+<h2 id="expected-results">Expected Results</h2>
 <ol>
-<li>Try to delete its datavolume:</li>
+<li>Disks should be healthy and <code>scheduable</code> after paths swapped.</li>
 </ol>
-<pre tabindex="0"><code>$ kubectl get vms
-NAME AGE   STATUS  READY
-test 5m16s Running True
-</code></pre><ol>
-<li>There should be an datavolume bound to that VM</li>
-</ol>
-<pre tabindex="0"><code>$ kubectl get dvs
-NAME              PHASE     PROGRESS RESTARTS AGE
-test-disk-0-klrft Succeeded 100.0%            5m18s
-</code></pre><ol>
-<li>The user should not be able to delete the datavolume</li>
-</ol>
-<pre tabindex="0"><code>$ kubectl delete dv test-disk-0-klrft The request is invalid: : can not delete the volume test-disk-0-klrft which is currently attached to VMs: default/test
-``
 
-## Expected Results
-### kube-api
-The deletion of its datavolume should fail.
-</code></pre>
     </article>
   </div>
 </main>
