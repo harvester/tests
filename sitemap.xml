@@ -146,6 +146,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/add-cluster-driver/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/extra-disk-using-raw-disk/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/images/add-labels/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/network/add-multiple-networks-form/</loc>
@@ -177,6 +179,8 @@
     <loc>https://harvester.github.io/tests/manual/authentication/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/authentication/general-authentication/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/large-amount-of-extra-disks/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/deployment/1410-pxe-installation-automatically-get-vip/</loc>
   </url><url>

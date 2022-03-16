@@ -686,6 +686,15 @@ Setup the online harvester
     </item>
     
     <item>
+      <title>Add extra disks by using raw disks</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/extra-disk-using-raw-disk/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/extra-disk-using-raw-disk/</guid>
+      <description>Prepare a disk (with WWN) and attach it to the node. Navigate to &amp;ldquo;Host&amp;rdquo; &amp;gt; &amp;ldquo;Edit Config&amp;rdquo; &amp;gt; &amp;ldquo;Disks&amp;rdquo; and open the dropdown menu &amp;ldquo;Add disks&amp;rdquo;. Choose a disk to add, e.g. /dev/sda but not /dev/sda1.  Expected Results  The raw disk shall be schedulable as a longhorn disk as a whole (without any partition). Ths raw disk shall be in provisioned phase. Reboot the host and the disk shall be reattached and added back as a longhorn disk.</description>
+    </item>
+    
+    <item>
       <title>Add Labels (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/add-labels/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -812,6 +821,17 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       
       <guid>https://harvester.github.io/tests/manual/authentication/general-authentication/</guid>
       <description>Enable Access Control . Choose “Allow any valid User” as “Site Access”. Make sure any user is able to access the site. Enable Access Control . Choose “Restrict to Specific User” and add few users. Make sure only the specified users have access to the server. Others should get authentication error. Enable Access Control . Choose “Restrict to Specific User” and add a group. Make sure only all users belonging to the group have access to the server Others should get authentication error.</description>
+    </item>
+    
+    <item>
+      <title>Auto provision lots of extra disks</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/large-amount-of-extra-disks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/large-amount-of-extra-disks/</guid>
+      <description>:warning: This is a heuristic test plan since real world race condition is hard to reproduce. If you find any better alternative, feel free to update.
+This test is better to perform under QEMU/libvirt environment.
+  Related issues: #1718 [BUG] Automatic disk provisioning result in unusable ghost disks on NVMe drives  Category:  Storage  Verification Steps  Create a harvester cluster and attach 10 or more extra disks (needs WWN so that they can be identified uniquely).</description>
     </item>
     
     <item>

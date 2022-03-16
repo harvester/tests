@@ -7,6 +7,26 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/_incoming/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Add extra disks by using raw disks</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/extra-disk-using-raw-disk/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/extra-disk-using-raw-disk/</guid>
+      <description>Prepare a disk (with WWN) and attach it to the node. Navigate to &amp;ldquo;Host&amp;rdquo; &amp;gt; &amp;ldquo;Edit Config&amp;rdquo; &amp;gt; &amp;ldquo;Disks&amp;rdquo; and open the dropdown menu &amp;ldquo;Add disks&amp;rdquo;. Choose a disk to add, e.g. /dev/sda but not /dev/sda1.  Expected Results  The raw disk shall be schedulable as a longhorn disk as a whole (without any partition). Ths raw disk shall be in provisioned phase. Reboot the host and the disk shall be reattached and added back as a longhorn disk.</description>
+    </item>
+    
+    <item>
+      <title>Auto provision lots of extra disks</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/large-amount-of-extra-disks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/large-amount-of-extra-disks/</guid>
+      <description>:warning: This is a heuristic test plan since real world race condition is hard to reproduce. If you find any better alternative, feel free to update.
+This test is better to perform under QEMU/libvirt environment.
+  Related issues: #1718 [BUG] Automatic disk provisioning result in unusable ghost disks on NVMe drives  Category:  Storage  Verification Steps  Create a harvester cluster and attach 10 or more extra disks (needs WWN so that they can be identified uniquely).</description>
+    </item>
+    
+    <item>
       <title>Check DNS on install with Github SSH keys</title>
       <link>https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
