@@ -3254,6 +3254,15 @@ Verify Items  Project&amp;rsquo;s Resource quotas can be updated correctly Names
     </item>
     
     <item>
+      <title>Restart/Stop VM with in progress Backup</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1702-do-not-allow-restart-or-stop-vm-when-backup-is-in-progress/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1702-do-not-allow-restart-or-stop-vm-when-backup-is-in-progress/</guid>
+      <description> Related issues: #1702 Don&amp;rsquo;t allow restart/stop vm when backup is in progress  Verification Steps  Create a VM. Create a VMBackup for it. Before VMBackup is done, stop/restart the VM. Verify VM can&amp;rsquo;t be stopped/restarted.  </description>
+    </item>
+    
+    <item>
       <title>Restore backup create new vm (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

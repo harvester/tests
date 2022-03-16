@@ -53,5 +53,14 @@ This test is better to perform under QEMU/libvirt environment.
       <description>Related issues: #1874 Multiple Disks Swapping Paths  Verification Steps  Prepare a harvester cluster (single node is sufficient) Prepare two additional disks and format both of them. Hotplug both disks and add them to the host via Harvester Dashboard (&amp;ldquo;Hosts&amp;rdquo; &amp;gt; &amp;ldquo;Edit Config&amp;rdquo; &amp;gt; &amp;ldquo;Disks&amp;rdquo;) Shutdown the host. Swap the address and slot of the two disks in order to make their dev paths swapped  For libvirt environment, you can swap &amp;lt;address&amp;gt; and &amp;lt;target&amp;gt; in the XML of the disk.</description>
     </item>
     
+    <item>
+      <title>Restart/Stop VM with in progress Backup</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1702-do-not-allow-restart-or-stop-vm-when-backup-is-in-progress/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1702-do-not-allow-restart-or-stop-vm-when-backup-is-in-progress/</guid>
+      <description> Related issues: #1702 Don&amp;rsquo;t allow restart/stop vm when backup is in progress  Verification Steps  Create a VM. Create a VMBackup for it. Before VMBackup is done, stop/restart the VM. Verify VM can&amp;rsquo;t be stopped/restarted.  </description>
+    </item>
+    
   </channel>
 </rss>
