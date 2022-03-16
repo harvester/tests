@@ -1504,30 +1504,24 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">Backup S3 reduce permissions</h1>
+  <h1 id="title">Check conditions when stop/pause VM</h1>
   <div>
     <article id="content">
-       <p>Ref: <a href="https://github.com/harvester/harvester/issues/1339">https://github.com/harvester/harvester/issues/1339</a></p>
-<h2 id="verify-items">Verify Items</h2>
-<ul>
-<li>Backup target connect to S3 should only require the permission to access the specific bucket</li>
+       <ul>
+<li>Related issues: <a href="https://github.com/harvester/harvester/issues/1987">#1987</a></li>
 </ul>
-<h2 id="case-s3-backup-with-single-bucket-user">Case: S3 Backup with <code>single-bucket-user</code></h2>
+<h2 id="verification-steps">Verification Steps</h2>
+<p>Stop Request should not have failure message</p>
 <ol>
-<li>Install Harvester with any nodes</li>
-<li>Setup Minio
-<ol>
-<li>then follow the <a href="https://objectivefs.com/howto/how-to-restrict-s3-bucket-policy-to-only-one-aws-s3-bucket">instruction</a> to create a <code>single-bucket-user</code>.</li>
-<li>Create specific bucket for the user</li>
-<li>Create other buckets</li>
+<li>Create a VM with <code>runStrategy: RunStrategyAlways</code>.</li>
+<li>Stop the VM.</li>
+<li>Check there is no <code>Failure attempting to delete VMI: &lt;nil&gt;</code> in VM status.</li>
 </ol>
-</li>
-<li>setup <code>backup-target</code> with the <strong>single-bucket-user</strong> permission
+<p>UI should not show pause message</p>
 <ol>
-<li>When assign the dedicated bucket (for the user), connection should success.</li>
-<li>When assign other buckets, connection should failed with <strong>AccessDenied</strong> error message</li>
-</ol>
-</li>
+<li>Create a VM.</li>
+<li>Pause the VM.</li>
+<li>Although the message <code>The status of pod readliness gate &quot;kubevirt.io/virtual-machine-unpaused&quot; is not &quot;True&quot;, but False</code> is in the VM condition, UI should not show it.</li>
 </ol>
 
     </article>

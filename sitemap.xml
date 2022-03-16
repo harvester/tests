@@ -226,6 +226,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/check-can-apply-the-resource-quota-limit-to-project-and-namespace-/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1987-failure-message-in-stopping-vm/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/1357-kernel-panic-check-crash-dump/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/check-default-customized-project-and-namespace-details-page/</loc>

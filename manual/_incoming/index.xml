@@ -27,6 +27,17 @@ This test is better to perform under QEMU/libvirt environment.
     </item>
     
     <item>
+      <title>Check conditions when stop/pause VM</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1987-failure-message-in-stopping-vm/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1987-failure-message-in-stopping-vm/</guid>
+      <description>Related issues: #1987  Verification Steps Stop Request should not have failure message
+ Create a VM with runStrategy: RunStrategyAlways. Stop the VM. Check there is no Failure attempting to delete VMI: &amp;lt;nil&amp;gt; in VM status.  UI should not show pause message
+ Create a VM. Pause the VM. Although the message The status of pod readliness gate &amp;quot;kubevirt.io/virtual-machine-unpaused&amp;quot; is not &amp;quot;True&amp;quot;, but False is in the VM condition, UI should not show it.</description>
+    </item>
+    
+    <item>
       <title>Check DNS on install with Github SSH keys</title>
       <link>https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
