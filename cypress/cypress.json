@@ -1,6 +1,14 @@
 {
     "integrationFolder": "./testcases",
-    "testFiles": "**.spec.ts",
+    "fixturesFolder": "./fixtures",
+    "pluginsFile": "./plugins/index.js",
+    "supportFile": "./support/index.js",
+    "testFiles": "**/*.spec.ts",
     "viewportWidth": 1920,
-    "viewportHeight": 1080
+    "viewportHeight": 1080,
+    "env": {
+        "username": "username",
+        "password": "password",
+        "baseUrl": "https://online-url/dashboard"
+    }
 }

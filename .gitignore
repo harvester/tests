@@ -18,9 +18,8 @@ terraform_test_artifacts/bin
 cypress/node_modules
 *yarn.lock
 *package-lock.json
-cypress/videos/*
-cypress/support/*
-cypress/screenshots/*
-cypress/plugins/*
+cypress/cypress/videos/*
+cypress/cypress/screenshots/*
 *.mp4
 node_modules
+cypress/cypress.env.json

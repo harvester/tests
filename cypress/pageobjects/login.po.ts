@@ -9,6 +9,7 @@ export class LoginPage {
     private checkboxTelemetry = '#checkbox-telemetry';
     private allRadios = '.radio-container';
     private checkbox = '.checkbox-custom';
+    private mainPageHeader = 'main .outlet header h1 span'
 
     /**
      * This visits the login page and logs in
@@ -18,42 +19,48 @@ export class LoginPage {
         cy.get(this.usernameInput).type(constants.username);
         cy.get(this.passwordInput).type(constants.password)
         cy.get(this.submitButton).click()
-
-        cy.intercept('GET', '/v1/harvester/pods').as('loadIndexPage');
-        cy.wait('@loadIndexPage');
-        expect(cy.url().should('contain', constants.dashboardUrl) );
-        // this.validateLogin();
+        
+        cy.get(this.mainPageHeader, { timeout: constants.timeout.maxTimeout }).then($el => {
+            this.validateLogin()
+        })
     }
     /**
     * Parameters may be declared in a variety of syntactic forms
     */
     private validateLogin() {
-        expect(cy.url().should('contain', constants.dashboardUrl) );
+        cy.url().should('contain', constants.dashboardUrl);
     }
     /**
      * Method for logging in first time. Sets password to not be random, accepts terms, 
      * and disables telemetry
      */
     public firstLogin() {
-        cy.visit(constants.baseUrl);
         // cy.url().should('include', constants.baseUrl);
         // expect(cy.url().should('eq', constants.loginUrl));
         // this.checkTerms(false);
+        cy.intercept('GET', '/v1/management.cattle.io.setting').as('getFirstLogin');
+        cy.visit(constants.baseUrl);
 
-        cy.get(this.checkboxEula).click('left')
-        cy.get(this.checkboxTelemetry).click('left');
-        cy.get(this.allRadios)
-        .each(($elem, index) => {
-          if (index === 1) {
-            cy.wrap($elem).click('left');
-          }
+        cy.wait('@getFirstLogin').then((login) => {
+            const data: any[] = login.response?.body.data;
+            const firstLogin = data.find(value => value?.id === 'first-login');
+            if (firstLogin.value === 'true') {
+                cy.get(this.checkboxEula).click('left')
+                cy.get(this.checkboxTelemetry).click('left');
+                cy.get(this.allRadios)
+                .each(($elem, index) => {
+                    if (index === 1) {
+                        cy.wrap($elem).click('left');
+                    }
+                });
+                // This enters the password into both of the password fields
+                cy.get('[type=Password]')
+                .each(($elem) => {
+                    cy.wrap($elem).type(constants.password);
+                });
+                cy.get(this.submitButton).click();
+            }
         });
-        // This enters the password into both of the password fields
-        cy.get('[type=Password]')
-        .each(($elem) => {
-            cy.wrap($elem).type(constants.password);
-        });
-        cy.get(this.submitButton).click();
     }
     /**
      * Checks whether or not eula is checked and the submit button
@@ -67,6 +74,5 @@ export class LoginPage {
         if (eula == true) {
             expect(cy.get('#submit').should('be.enabled'));
         }
-        
     }
 }
