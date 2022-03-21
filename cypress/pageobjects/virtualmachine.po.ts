@@ -2,7 +2,7 @@ import { Constants } from "@/constants/constants";
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
-import ImagePage from "@/pageobjects/image.po";
+import { ImagePage } from "@/pageobjects/image.po";
 import { find } from "cypress/types/lodash";
 
 const constants = new Constants();
