@@ -17,7 +17,7 @@ const sidebar = new SidebarPage();
 */
 describe('Update Overcommit configuration', () => {
   beforeEach(() => {
-    login.login();
+    cy.login();
   });
 
   it('Step1: Edit overcommit-config cpu', () => {

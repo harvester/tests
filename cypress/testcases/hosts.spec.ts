@@ -10,8 +10,8 @@ const login = new LoginPage();
  */
 export function insertCustomYAML() {}
 it('should insert custom name into YAML', () => {
-    login.login();
+    cy.login();
     hosts.navigateHostsPage();
     hosts.editHostsYaml();
     editYaml.insertCustomName('This is a custom name');
-    });
+});

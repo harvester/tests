@@ -9,7 +9,7 @@ const login = new LoginPage();
 
 describe('Create a new VM and add Enable USB tablet option', () => { 
   beforeEach(() => {
-    login.login();
+    cy.login();
   });
 
   it('Create a new VM with USB tablet checked', () => {
@@ -54,7 +54,7 @@ describe('Create a new VM and add Enable USB tablet option', () => {
 
 describe("Create a new VM and add Install guest agent option", () => {
   beforeEach(() => {
-    login.login();
+    cy.login();
   });
 
   it('Create a new VM with Install guest agent checked', () => {

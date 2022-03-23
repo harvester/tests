@@ -3,7 +3,6 @@ import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
 import { ImagePage } from "@/pageobjects/image.po";
-import { find } from "cypress/types/lodash";
 
 const constants = new Constants();
 const image = new ImagePage();
@@ -27,16 +26,16 @@ interface ValueInterface {
 export class VmsPage {
   public goToList() {
     cy.visit(constants.vmPage);
-    cy.intercept('GET', '/v1/harvester/kubevirt.io.virtualmachines').as('loadVM');
-    cy.wait('@loadVM')
-    expect(cy.url().should('eq', constants.vmPage));
+
+    cy.get('nav.side-nav .list-unstyled').find('li').contains('Virtual Machines').click();
+    cy.get('main .outlet header h1').then($el => {
+      cy.url().should('exist', constants.vmPage);
+    })
   }
 
   public goToCreate() {
     this.goToList()
-    cy.intercept('GET', '/v1/harvester/configmaps').as('loadVMCreate');
-    cy.contains('Create').click()
-    cy.wait('@loadVMCreate')
+    cy.get('.outlet .actions-container').find('a').contains(' Create ').click();
   }
 
   public setValue(value: ValueInterface) {
@@ -140,13 +139,18 @@ export class VmsPage {
   }
 
   public init() {
-    cy.intercept('GET', `/v1/harvester/harvesterhci.io.virtualmachineimages`).as('getImages');
-
     image.goToList();
-    
-    cy.wait('@getImages').then(res => {
-      expect(res.response?.statusCode).to.equal(200);
-      const images = res.response?.body?.data || []
+    cy.request({
+      url: 'v1/harvester/harvesterhci.io.virtualmachineimages',
+      headers: {
+        accept: 'application/json'
+      }
+    }).as('vmList')
+
+    cy.get('@vmList').should((res: any) => {
+      
+      expect(res?.status).to.equal(200);
+      const images = res?.body?.data || []
       const name = 'ubuntu-18.04-server-cloudimg-amd64.img'
       const url = 'https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img'
       const imageFound = images.find((i:any) => i?.spec?.displayName === 'ubuntu-18.04-server-cloudimg-amd64.img')
