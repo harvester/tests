@@ -11,7 +11,7 @@ const sidebar = new SidebarPage();
  */
 export function navigateAdvanceSettingsPage() {};
 it('should navigate to the Advanced Settings Page', () => {
-    login.login();
+    cy.login();
     sidebar.advancedSettings();
 });
 /**
@@ -21,7 +21,7 @@ it('should navigate to the Advanced Settings Page', () => {
  */
 export function editUiSource() {};
 it('should edit the uisource setting', () => {
-    login.login();
+    cy.login();
     sidebar.advancedSettings();
     settings.editUiSource();
 });
@@ -34,6 +34,6 @@ it('should edit the uisource setting', () => {
  */
 export function changeUiSourceType() {};
 it('change UI source type to external', () => {
-    login.login();
+    cy.login();
     settings.changeUiSourceType(1);
 });

@@ -12,7 +12,7 @@ describe('Add a network to an existing VM with only 1 network', () => {
   const NETWORK_2 = 'vlan188'
 
   beforeEach(() => {
-    login.login();
+    cy.login();
   });
 
   it('Step 1: VM should start successfully', () => {

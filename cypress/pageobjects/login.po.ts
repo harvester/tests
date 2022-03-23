@@ -39,7 +39,7 @@ export class LoginPage {
         // expect(cy.url().should('eq', constants.loginUrl));
         // this.checkTerms(false);
         cy.intercept('GET', '/v1/management.cattle.io.setting').as('getFirstLogin');
-        cy.visit(constants.baseUrl);
+        cy.visit('/');
 
         cy.wait('@getFirstLogin').then((login) => {
             const data: any[] = login.response?.body.data;

@@ -3,6 +3,8 @@ import YAML from 'js-yaml'
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { LoginPage } from "@/pageobjects/login.po";
 
+import { Constants } from "@/constants/constants";
+const constants = new Constants();
 
 const vms = new VmsPage();
 const login = new LoginPage();
@@ -15,10 +17,11 @@ const login = new LoginPage();
  * 5. Validate the config and yaml should show
 */
 describe('Create a vm with all the default values', () => {
+  // randomstring.generate(7)
   const VM_NAME = 'test-vm-automation'
 
   beforeEach(() => {
-    login.login();
+    cy.login();
   });
 
   it('Step 1: Create a vm with all the default values', () => {
@@ -54,7 +57,7 @@ describe('Create a VM with Start VM on Creation checked', () => {
   const VM_NAME = 'test-vm-running-checked-automation'
 
   beforeEach(() => {
-    login.login();
+    cy.login();
   });
   
   it('Step 1: Create VM', () => {
@@ -99,7 +102,7 @@ describe('Create a VM with Start VM on Creation unchecked', () => {
   const VM_NAME = 'test-vm-running-unchecked-automation'
 
   beforeEach(() => {
-    login.login();
+    cy.login();
   });
   
   it('Step 1: Create VM', () => {

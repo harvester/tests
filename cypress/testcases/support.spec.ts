@@ -11,7 +11,7 @@ const support = new SupportPage();
 export function checkSupportPage() {}
 describe('Support Page', () => {
     it('Check suport page', () => {
-        login.login();
+        cy.login();
         support.visitSupportPage();
     });
 });
@@ -28,6 +28,6 @@ describe('Support Page', () => {
  */
 export function generateSupportBundle() {}
 it('Generate Support Bundle', () => {
-    login.login();
+    cy.login();
     support.generateSupportBundle('this ia a test description');
 });

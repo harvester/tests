@@ -35,11 +35,10 @@ export class ImagePage {
   }
 
   public goToList() {
-    // cy.get('.nav').contains('Images').click();
     cy.visit(constants.imagePage);
-    cy.intercept('GET', '/v1/harvester/harvesterhci.io.virtualmachineimages').as('goToImageList');
-    cy.wait('@goToImageList');
-    cy.url().should('eq', constants.imagePage);
+    cy.get('main .outlet header h1').then($el => {
+      cy.url().should('exist', constants.imagePage);
+    })
   }
 
   public goToCreate() {

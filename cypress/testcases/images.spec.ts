@@ -1,9 +1,7 @@
 import YAML from 'js-yaml'
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { ImagePage } from "@/pageobjects/image.po";
-import { LoginPage } from "@/pageobjects/login.po";
 
-const login = new LoginPage();
 const vms = new VmsPage();
 const image = new ImagePage();
 
@@ -34,7 +32,7 @@ describe('Create an image with valid image URL', () => {
     }
 
     it('Create an image with valid image URL', () => {
-        login.login();
+        cy.login();
 
         // create IMAGE
         image.goToCreate();
@@ -77,7 +75,7 @@ describe('Create an image with valid image URL', () => {
     const IMAGE_NAME = 'auto-image-invalid-url-test';
 
     it('Create image with invalid URL', () => {
-        login.login();
+        cy.login();
 
         // create invalid IMAGE
         image.goToCreate();
@@ -108,7 +106,7 @@ describe('Delete VM with exported image', () => {
     const VM_NAME = 'vm-1';
 
     it('Delete VM with exported image', () => {
-        login.login();
+        cy.login();
 
         // create VM
         const value = {
@@ -155,7 +153,7 @@ describe('Update image labels after deleting source VM', () => {
     const VM_NAME = 'vm-1';
 
     it('Update image labels after deleting source VM', () => {
-        login.login();
+        cy.login();
 
         const value = {
             name: VM_NAME,
@@ -267,7 +265,7 @@ describe('Create a ISO image via upload', () => {
     const VM_NAME = 'auto-image-iso-test-vm';
 
     it('Create a ISO image via upload', () => {
-        login.login();
+        cy.login();
 
         // create IMAGE
         image.goToCreate();

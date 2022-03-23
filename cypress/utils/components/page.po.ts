@@ -14,7 +14,7 @@ export default class PagePo extends ComponentPo {
   }
 
   isCurrentPage(): Cypress.Chainable<boolean> {
-    return cy.url().then(url => url === Cypress.config().baseUrl + this.path);
+    return cy.url().then(url => url === Cypress.env('baseUrl') + this.path);
   }
 
   checkIsCurrentPage() {

@@ -1,0 +1,356 @@
+<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Cypress Integration Tests for Harvester</title><meta name="description" content="Documentation for Cypress Integration Tests for Harvester"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">Cypress Integration Tests for Harvester</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1> Cypress Integration Tests for Harvester</h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><div class="tsd-panel tsd-typography">
+<a href="#table-of-contents" id="table-of-contents" style="color: inherit; text-decoration: none;">
+  <h1>Table Of Contents</h1>
+</a>
+<ul>
+<li><a href="#overview">Overview</a><ul>
+<li><a href="#prerequisites">Prerequisites</a><ul>
+<li><a href="#virtual_harvester_cluster">Virtual Harvester Cluster</a></li>
+<li><a href="#networking">Networking</a></li>
+<li><a href="#host_management_scripts">Host Management Scripts</a></li>
+<li><a href="#terraform_cli">Terraform</a></li>
+<li><a href="#image_caching">Image Caching</a></li>
+</ul>
+</li>
+<li><a href="#running_tests">Running Tests</a><ul>
+<li><a href="#do_not_cleanup">The --do-not-cleanup option</a></li>
+<li><a href="#run_all_tests">Run All Tests</a></li>
+<li><a href="#run_api_tests_only">Run API Tests Only</a></li>
+<li><a href="#run_scenario_tests_only">Run Scenario Tests Only</a></li>
+<li><a href="#run_terraform_tests_only">Run Terraform Tests Only</a></li>
+<li><a href="#run_delete_host_tests_only">Run Delete Host Tests Only</a></li>
+<li><a href="#run_backup_and_restore_tests_only">Run Backup &amp; Restore Tests Only</a></li>
+<li><a href="#run_rancher_integration_tests_only">Run Rancher Integration Tests Only</a></li>
+</ul>
+</li>
+<li><a href="#running_linter">Running Linter</a></li>
+</ul>
+</li>
+<li><a href="#adding_new_tests">Adding New Tests</a></li>
+<li><a href="#manual_test_cases">Manual Test Cases</a></li>
+<li><a href="#generating_docs">Generating the test doc sites</a></li>
+<li><a href="#generating_skels">Generating test skeletons</a></li>
+</ul>
+
+<a href="#overview-" id="overview-" style="color: inherit; text-decoration: none;">
+  <h1>Overview <a name="overview" /></h1>
+</a>
+<p>This repo contains Harvester end-to-end (e2e) test suite, implemented using Python <a href="https://docs.pytest.org/en/6.2.x/">pytest</a> framework. In addition, it is also the home of all the <a href="https://github.com/harvester/tests/tree/main/docs/content/manual">Harvester manual test cases</a>. The e2e test suite is a subset of <a href="https://github.com/harvester/tests/tree/main/docs/content/manual">Harvester manual test cases</a>, which is intended to be utilized by CI (i.e. Jenkins) to automatically test Harvester backend functionality.</p>
+
+<a href="#prerequisites-" id="prerequisites-" style="color: inherit; text-decoration: none;">
+  <h2>Prerequisites <a name="prerequisites" /></h2>
+</a>
+<p>The (e2e) tests are expected to be ran against a given Harvester cluster. In addition, the tests are executed via <a href="https://tox.readthedocs.io/en/latest/">tox</a> so make sure it is installed, either via <a href="https://pip.pypa.io/en/stable/">Python pip</a> or vendor package manager.</p>
+<p>Optionally, in order to run the Rancher integration tests, an external Rancher cluster is also required. The Rancher integration tests are disabled unless the Rancher (API) endpoint is specified.</p>
+<p>To run the NFS backup &amp; restore tests, an NFS endpoint is required. Likewise, in order to run the <a href="https://aws.amazon.com/s3/">AWS S3</a> backup &amp; restore tests, S3 bucket name and access credential must be provided. The backup &amp; restore tests are disabled unless the required NFS endpoint or S3 access parameters are specified.</p>
+
+<a href="#virtual-harvester-cluster-" id="virtual-harvester-cluster-" style="color: inherit; text-decoration: none;">
+  <h3>Virtual Harvester Cluster <a name="virtual_harvester_cluster" /></h3>
+</a>
+<p>For test case development, we recommend using a virtual Harvester cluster as it is self-contained, disposable, and repeatable. Please refer to the instructions in https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester on how to setup a virtual Harvester cluster.</p>
+
+<a href="#networking-" id="networking-" style="color: inherit; text-decoration: none;">
+  <h3>Networking <a name="networking" /></h3>
+</a>
+<p>Some tests required VLAN networking. Those tests are disabled unless a VLAN ID and VLAN interface (NIC) are specified. For those tests to be successful, the VLAN routing and DHCP must be properly setup prior to running the tests. Setting up VLAN networking is infrastructure-specific, and therefore outside the scope of this document. Please work with your IT infrastructure team create the appropriate VLANs.</p>
+<p>When using the virtual Harvester cluster (i.e. vagrant-pxe-harvester), the VLAN ID must be <code>1</code>, and the VLAN NIC must be <code>harvester-mgmt</code>.</p>
+
+<a href="#host-management-scripts-" id="host-management-scripts-" style="color: inherit; text-decoration: none;">
+  <h3>Host Management Scripts <a name="host_management_scripts" /></h3>
+</a>
+<p>Some tests required manipulating the hosts where the VMs are running in order to
+test scheduling resiliency and disaster recovery scenarios. Therefore, we need
+external scripts to power-on, power-off, and to reboot a given Harvester node. The
+host management scripts are expected to be provided by users out-of-band for the following reasons:</p>
+<ol>
+<li>the scripts are specific to the Harvester environment. For example,
+for a virtual vagrant environment, the scripts may simply just performing
+<code>vagrant halt &lt;node name&gt;</code> and <code>vagrant up &lt;node name&gt;</code>. However for a
+baremetal environment managed by IPMI, the scripts may need to
+use IPMI CLI.</li>
+<li>for certain environments (i.e. IPMI, RedFish, etc), credential is required.</li>
+</ol>
+<p>The host management scripts must all be placed into the same directory and must
+be named <code>power_on.sh</code>, <code>power_off.sh</code>, and <code>reboot.sh</code>. All the scripts must
+accept exactly two parameters, which are host name and host IP. Please see the
+<a href="scripts/vagrant">scripts/vagrant</a> directory for examples.</p>
+<p>Host management tests must be invoked with the <code>host_management</code> marker, along with the <code>--node-scripts-location</code> parameter which points to the directory that contains the host management shell scripts.</p>
+<p>For example, to run the host management tests:</p>
+<pre><code class="language-console">tox -e py38 -- -m &quot;host_management&quot; --node-scripts-location ./scripts
+</code></pre>
+
+<a href="#terraform-cli-" id="terraform-cli-" style="color: inherit; text-decoration: none;">
+  <h3>Terraform CLI <a name="terraform_cli" /></h3>
+</a>
+<p>The Harvester <a href="https://www.terraform.io/">terraform</a> test requires <a href="https://www.terraform.io/">terraform</a> CLI. Please refer to <a href="https://www.terraform.io/">terraform</a> on how to download and install the CLI.</p>
+
+<a href="#image-caching-" id="image-caching-" style="color: inherit; text-decoration: none;">
+  <h3>Image Caching <a name="image_caching" /></h3>
+</a>
+<p>While running the tests, the image fixtures will attempt to create the test images by providing the download URLs for the various cloud image providers (e.g. <code>htps://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2</code>). Sometimes a given cloud image provider URL can be slow or inaccessible, which cause the underlying tests to fail. Therefore, it is recommended to create a local web server to cache the images that the tests depended on. We can then use the <code>--image-cache-url</code> parameter to convey the image cache URL to the tests. The absence of the <code>--image-cache-url</code> parameter means the tests will attempt to directly download the images directly from the cloud image providers instead.</p>
+
+<a href="#running-tests-" id="running-tests-" style="color: inherit; text-decoration: none;">
+  <h2>Running Tests <a name="running_tests" /></h2>
+</a>
+<p>There are two types of tests, <a href="harvester_e2e_tests/apis">APIs</a> and <a href="harvester_e2e_tests/scenarios">scenarios</a> respectively. <a href="harvester_e2e_tests/apis">APIs</a> tests are designed to test simple resource creation using backend APIs, while the <a href="harvester_e2e_tests/scenarios">scenarios</a> tests are intended for testing workflows involving multiple resources.</p>
+<p>Tests are executed in Python <a href="https://tox.readthedocs.io/en/latest/">tox</a> environments. Both Python3.6 and Python 3.8 are supported.</p>
+<p>Prior to running the (e2e) tests, you must edit <a href="config.yml">config.yml</a> to provide the correct configuration. Each configuration option is self-documented. </p>
+<hr>
+<p><strong>NOTE:</strong></p>
+
+<a href="#the-configuration-options-in-configyml-can-be-overwritten-by-command-line-parameters-for-example-to-overwrite-the-endpoint-option-we-can-use-the---endpoint-parameter-while-running-the-tests" id="the-configuration-options-in-configyml-can-be-overwritten-by-command-line-parameters-for-example-to-overwrite-the-endpoint-option-we-can-use-the---endpoint-parameter-while-running-the-tests" style="color: inherit; text-decoration: none;">
+  <h2>The configuration options in <a href="config.yml">config.yml</a> can be overwritten by command line parameters. For example, to overwrite the <code>endpoint</code> option, we can use the <code>--endpoint</code> parameter while running the tests. </h2>
+</a>
+
+<a href="#the---do-not-cleanup-option-" id="the---do-not-cleanup-option-" style="color: inherit; text-decoration: none;">
+  <h3>The --do-not-cleanup option <a name="do_not_cleanup" /></h3>
+</a>
+<p>All the resources/artifacts created by the tests will be cleaned up upon exit. If you need to preserve them for debugging purposes, you may use the <code>--do-not-cleanup</code> parameter when running the tests. For example:</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests --html=test_result.html --do-not-cleanup
+</code></pre>
+
+<a href="#run-all-tests-" id="run-all-tests-" style="color: inherit; text-decoration: none;">
+  <h3>Run All Tests <a name="run_all_tests" /></h3>
+</a>
+<p>To run the entire test suite, all the configuration option in <a href="config.yml">config.yml</a> are required.</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests --html=test_result.html
+</code></pre>
+
+<a href="#run-api-tests-only-" id="run-api-tests-only-" style="color: inherit; text-decoration: none;">
+  <h3>Run API Tests Only <a name="run_api_tests_only" /></h3>
+</a>
+<p>API Tests are designed to test REST APIs for one resource (i.e. keypairs,
+vitualmachines, virtualmachineimages, etc) at a time. For example:</p>
+<pre><code class="language-console">tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html
+</code></pre>
+<hr>
+<p><strong>NOTE:</strong></p>
+
+<a href="#since-deleting-the-host-is-irreversible-process-run-delete_host-test-after-running-all-the-other-tests" id="since-deleting-the-host-is-irreversible-process-run-delete_host-test-after-running-all-the-other-tests" style="color: inherit; text-decoration: none;">
+  <h2>Since deleting the host is irreversible process, run <code>delete_host</code> test after running all the other tests</h2>
+</a>
+<p>For example, to run the API tests in a Python3.6 environment for the first time,
+and skipping the delete_host test:</p>
+<pre><code class="language-console">tox -e py36 -- harvester_e2e_tests/apis --html=test_result.html -m &quot;not delete_host&quot;
+</code></pre>
+<p>To run the API tests in a Python3.8 environment:</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests/apis --html=test_result.html -m &quot;not delete_host&quot;
+</code></pre>
+<p>To skip multiple marker tests, for example: delete_host, host_management, multi_node_scheduling</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests/apis --html=test_result.html -m &quot;not delete_host and not host_management and not multi_node_scheduling&quot;
+</code></pre>
+<p>Example Output:</p>
+<pre><code class="language-console">============================= test session starts ==============================
+platform linux -- Python 3.6.12, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
+rootdir: &lt;Folder from where tests are running&gt; 
+plugins: metadata-1.11.0, html-3.1.1
+collected 22 items                                                             
+
+apis/test_images.py .....                                                [ 22%]
+apis/test_keypairs.py .....                                              [ 45%]
+apis/test_settings.py ..                                                 [ 54%]
+apis/test_users.py ...                                                   [ 68%]
+apis/test_vm_templates.py ...                                            [ 81%]
+apis/test_volumes.py ....                                                [100%]
+
+----------- generated html file: file:///&lt;home Folder&gt;/tests/test_result.html -----------
+</code></pre>
+
+<a href="#run-scenario-tests-only-" id="run-scenario-tests-only-" style="color: inherit; text-decoration: none;">
+  <h3>Run Scenario Tests Only <a name="run_scenario_tests_only" /></h3>
+</a>
+<p>Scenario tests are designed to test a specific use case or scenario at a time,
+which may involved a combination of resources in an orchestrated workflow.</p>
+<p>To run the scenario tests in a Python3.6 environment:</p>
+<pre><code class="language-console">tox -r -e py36 -- harvester_e2e_tests/scenarios --html=test_result.html
+</code></pre>
+<p>To skip the multi_node_scheduling tests which are run in a multi-node cluster where some
+hosts have more resources than others in order to test VM scheduling behavior</p>
+<pre><code class="language-console">tox -r -e py36 -- harvester_e2e_tests/scenarios --html=test_result.html -m &quot;not multi_node_scheduling&quot;
+</code></pre>
+<p>To run just the multi_node_scheduling tests</p>
+<pre><code class="language-console">tox -r -e py36 -- harvester_e2e_tests/scenarios --html=test_result.html -m muti_node_scheduling
+</code></pre>
+<p>To run the scenario tests in a Python3.8 environment:</p>
+<pre><code class="language-console">tox -r -e py38 -- harvester_e2e_tests/scenarios --html=test_result.html
+</code></pre>
+<p>By default the tests will cleanup after themselves. If you want to preserve the
+test artifact for debugging purposes, you may specific the <code>--do-not-cleanup</code>
+flag. For example:</p>
+<pre><code class="language-console">tox -r -e py38 -- harvester_e2e_tests/scenarios --html=test_result.html --do-not-cleanup
+</code></pre>
+
+<a href="#run-terraform-tests-only--" id="run-terraform-tests-only--" style="color: inherit; text-decoration: none;">
+  <h3>Run Terraform Tests Only  <a name="run_terraform_tests_only" /></h3>
+</a>
+<p>To run the tests which uses terraform to create each resource, it uses the 
+scripts in <a href="terraform_test_artifacts">terraform_test_artifacts</a> folder. For example:</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests --html=test_result.html -m terraform
+</code></pre>
+
+<a href="#run-delete-host-tests-only-" id="run-delete-host-tests-only-" style="color: inherit; text-decoration: none;">
+  <h3>Run Delete Host Tests Only <a name="run_delete_host_tests_only" /></h3>
+</a>
+<p>To run the delete_host tests at the end when all tests are done running. For example:</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests/apis --html=test_result.html -m delete_host
+</code></pre>
+
+<a href="#run-backup-amp-restore-tests-only-" id="run-backup-amp-restore-tests-only-" style="color: inherit; text-decoration: none;">
+  <h3>Run Backup &amp; Restore Tests Only <a name="run_backup_and_restore_tests_only" /></h3>
+</a>
+<p>To run the backup tests for both S3 and NFS endpoint, provide the S3 and nfs
+endpoint either on command line or in <a href="config.yml">config.yml</a>.</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests --html=test_result.html --accessKeyId &lt;accessKey&gt; --secretAccessKey &lt;secretaccesskey&gt; --bucketName &lt;bucket&gt; --region &lt;region&gt; --nfs-endpoint nfs://&lt;IP&gt;/&lt;path&gt; -m &quot;backup_and_restore_p1 and backup_and_restore_p2&quot;
+</code></pre>
+
+<a href="#run-rancher-integration-tests-only-" id="run-rancher-integration-tests-only-" style="color: inherit; text-decoration: none;">
+  <h3>Run Rancher Integration Tests Only <a name="run_rancher_integration_tests_only" /></h3>
+</a>
+<p>An external Rancher instance is required in order to run Harvester Rancher integration tests. Furthermore, the external Rancher instance must be reachable by
+the Harvester nodes. Conversely, the Harvester VIP must also be reachable by
+Rancher during cluster provisioning. Both <code>--rancher-endpoint</code> and <code>--rancher-admin-password</code> arguments must be specified in order to run the Rancher integration tests. Optionally, user may specify <code>--kubernetes-version</code> argument to for a specific Kubernetes version to use when provisioning an RKE cluster via Harvester node driver. If <code>--kubernetes-version</code> is absent, Kubernetes version <code>v1.21.6+rke2r1</code> will be used.</p>
+<p>To run Rancher integration tests, for example:</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests/scenarios/test_rancher_integration.py --endpoint https://192.168.0.131 --rancher-endpoint https://rancher-instance --rancher-admin-password rancher_password --kubernetes-version v1.27.1+rke2r2
+</code></pre>
+<p>If the external Rancher instance is shared by multiple Harvester environments, user should also provide the <code>--test-environment</code> argument to distinguish the artifacts created by the current test environment in case manual cleanup is needed. All the artifacts (e.g. RKE2 clusters, cloud credentials, import Harvester cluster, etc) have the test environment name it their names (e.g. harvester-<test environment>-<random string>). For example:</p>
+<pre><code class="language-console">tox -e py38 -- harvester_e2e_tests/scenarios/test_rancher_integration.py --endpoint https://192.168.0.131 --rancher-endpoint https://rancher-instance --rancher-admin-password rancher_password --kubernetes-version v1.27.1+rke2r2 --test-environment browns
+</code></pre>
+
+<a href="#running-linter-" id="running-linter-" style="color: inherit; text-decoration: none;">
+  <h2>Running Linter <a name="running_linter" /></h2>
+</a>
+<p>We are using the standard <a href="https://flake8.pycqa.org/en/latest/">flake8</a> linter to enforce coding style. To
+run the linter:</p>
+<pre><code class="language-console">tox -e pep8
+</code></pre>
+
+<a href="#adding-new-tests-" id="adding-new-tests-" style="color: inherit; text-decoration: none;">
+  <h1>Adding New Tests <a name="adding_new_tests" /></h1>
+</a>
+<p>The e2e tests were implemented using the Python <a href="https://docs.pytest.org/en/6.2.x/">pytest</a> framework. An e2e test case should be corresponding to one or more manual test cases <a href="https://harvesterhci.io/tests/manual/">here</a>. Likewise, if a manual test case is implemented by e2e, it should have the <em><strong>(e2e_be)</strong></em> designation in it&#39;s title.</p>
+<p><a href="https://docs.pytest.org/en/6.2.x/">Pytest</a> expects tests to be located in files whose names begin with <em><strong>test_</strong></em> or end with <em><strong>_test.py</strong></em>.</p>
+<p>Here are the general guidelines for adding a new e2e test:</p>
+<ul>
+<li>If the test requires new configurations, make sure to add them to both <a href="config.yml">config.yml</a> and <a href="harvester_e2e_tests/conftest.py">harvester_e2e_tests/conftest.py</a>. <a href="config.yml">config.yml</a> should have the default values.</li>
+<li>Add the common <a href="https://docs.pytest.org/en/6.2.x/fixture.html#fixture">fixtures</a> in <a href="harvester_e2e_tests/fixtures">harvester_e2e_tests/fixtures</a>. If the <a href="https://docs.pytest.org/en/6.2.x/fixture.html#fixture">fixtures</a> is specific to a test only, it should be added to that particular test file.</li>
+<li>All <a href="https://docs.pytest.org/en/6.2.x/fixture.html#fixture">fixtures</a> must be able to cleanup itself using the <a href="https://docs.pytest.org/en/6.2.x/fixture.html#yield-fixtures-recommended">recommended yield technique</a></li>
+<li>All fixtures must implement the <code>--do-not-cleanup</code> option. Here&#39;s an <a href="https://github.com/harvester/tests/blob/main/harvester_e2e_tests/fixtures/image.py#L42-L44">example</a>.</li>
+<li>Add new Harvester API endpoints must be added to <a href="harvester_e2e_tests/templates/api_endpoints.json.j2">harvester_e2e_tests/templates/api_endpoints.json.j2</a>.</li>
+<li>Add new Rancher API endpoints to <a href="harvester_e2e_tests/templates/rancher_api_endpoints.json.j2">harvester_e2e_tests/templates/rancher_api_endpoints.json.j2</a>.</li>
+<li>Backend API request contents should be templatize whenever possible. We are using Python <a href="https://jinja2docs.readthedocs.io/en/stable/">jinja2</a> for templating. Add the new API request templates should be added in <a href="harvester_e2e_tests/templates">harvester_e2e_tests/templates</a>.</li>
+<li>Add new API tests in <a href="harvester_e2e_tests/apis">harvester_e2e_tests/apis</a>.</li>
+<li>Add new scenario tests in <a href="harvester_e2e_tests/scenarios">harvester_e2e_tests/scenarios</a>.</li>
+<li>Any sharable, common helper functionalities should be added in <a href="harvester_e2e_tests/utils.py">harvester_e2e_tests/utils.py</a>.</li>
+<li>Tests should be using <a href="https://docs.pytest.org/en/6.2.x/fixture.html#fixture">fixtures</a> as much as possible as the <a href="https://docs.pytest.org/en/6.2.x/fixture.html#fixture">fixtures</a> should be able to cleanup after itself upon exit. Otherwise, the test must cleanup whatever artifacts it create upon exit.</li>
+<li>A test should have one or more <a href="https://docs.pytest.org/en/6.2.x/example/markers.html">pytest markers</a> which corresponding to one or more <a href="https://github.com/harvester/tests/tree/main/docs/content/manual">Harvester manual test cases</a>. For example, <a href="https://github.com/harvester/tests/blob/main/harvester_e2e_tests/scenarios/test_create_vm.py#L88-L112">https://github.com/harvester/tests/blob/main/harvester_e2e_tests/scenarios/test_create_vm.py#L88-L112</a>.</li>
+<li>Use <code>@pytest.mark.p1</code> marker if the test is a priority 1 test.</li>
+<li>Use <code>@pytest.mark.p2</code> marker if the test is a priority 2 test.</li>
+<li>New custom markers should be added in <a href="harvester_e2e_tests/conftest.py">harvester_e2e_tests/conftest.py</a>. For example, <a href="https://github.com/harvester/tests/blob/main/harvester_e2e_tests/conftest.py#L190">https://github.com/harvester/tests/blob/main/harvester_e2e_tests/conftest.py#L190</a></li>
+<li>By using markers, you can skip a test based on specified parameters. For example, you can skip S3 backup tests if access key is not provided. See <a href="https://github.com/harvester/tests/blob/main/harvester_e2e_tests/conftest.py#L339-L344">https://github.com/harvester/tests/blob/main/harvester_e2e_tests/conftest.py#L339-L344</a>.</li>
+</ul>
+
+<a href="#manual-test-cases-" id="manual-test-cases-" style="color: inherit; text-decoration: none;">
+  <h1>Manual Test Cases <a name="manual_test_cases" /></h1>
+</a>
+<p>Some scenarios are hard to test using the automation tests and are documented as manual test cases that need to be verified before release.
+The manual test cases are accessible <a href="https://harvesterhci.io/tests/manual/">here</a>.</p>
+<p>The manual test case pages can be edited under <code>docs/content/manual/</code>.</p>
+<p>To categorize tests, place them in sub-directories under <code>docs/content/manual/</code>.
+These sub-directories must contain a file named <code>_index.md</code> with the following:</p>
+<pre><code class="language-markdown"><span class="hl-0">---</span><br/><span class="hl-1">title</span><span class="hl-2">: </span><span class="hl-3">Name of Test Category</span><br/><span class="hl-0">---</span><br/><span class="hl-0">Optional description regarding the test category.</span>
+</code></pre>
+<p>Each test page should be structured as such:</p>
+<pre><code class="language-markdown"><span class="hl-0">---</span><br/><span class="hl-1">title</span><span class="hl-2">: </span><span class="hl-3">Name of Test Case</span><br/><span class="hl-0">---</span><br/><span class="hl-0">Description of the test case.</span>
+</code></pre>
+<p>Both of these files can contain Markdown in the title and page body.</p>
+
+<a href="#generating-the-test-doc-sites-" id="generating-the-test-doc-sites-" style="color: inherit; text-decoration: none;">
+  <h1>Generating the test doc sites <a name="generating_docs" /></h1>
+</a>
+<p>You can generate all of the test sites locally with the <code>Makefile</code>. There are a couple of pre-requisites for it to work.</p>
+<ul>
+<li><a href="https://gohugo.io/getting-started/installing/">install Hugo</a></li>
+<li>install pip</li>
+<li>install npm</li>
+</ul>
+<p>The makefile allows you to do the following</p>
+<ul>
+<li><code>make all</code><ul>
+<li>This will create all of the docs sites and put them into <code>docs/public/</code></li>
+</ul>
+</li>
+<li><code>make run</code><ul>
+<li>This will clean out all of the directories, then generate backend and frontend docs, then generate a hugo server that outputs at <code>/tmp/hugo/</code> and run a local web server that you can use to look at all of the docs locally. </li>
+<li>It will auto-regenerate any hugo manual tests, but won&#39;t update with the backend and frontend in real time. You will have to run it again.</li>
+</ul>
+</li>
+<li><code>make backend</code><ul>
+<li>this will generate the docs for the Python e2e tests. They will generate at <code>harvester_e2e_tests/harvester_e2e_tests/</code></li>
+</ul>
+</li>
+<li><code>make frontend</code><ul>
+<li>This will generate the docs for the Cypress frontend e2e tests at <code>cypress/docs/</code></li>
+</ul>
+</li>
+<li><code>make clean</code><ul>
+<li>This will delete all of the static site assets in<ul>
+<li><code>docs/public/</code></li>
+<li><code>cypress/docs</code></li>
+<li><code>harvester_e2e_tests/harvester_e2e_tests</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<a href="#creating-test-skeletons-for-new-featurestickets-" id="creating-test-skeletons-for-new-featurestickets-" style="color: inherit; text-decoration: none;">
+  <h1>Creating test skeletons for new features/tickets <a name="generating_skels"></h1>
+</a>
+<p>There is a test skel spec to use as a template in <code>tests/cypress/skel/</code>.</p>
+<ul>
+<li>If you are adding a test to an existing suite like <code>tests/integration/login.spec.ts</code> then you can just use the template jsdoc and function call then add the test steps.</li>
+<li>If you are creating a new logical group of tests you can copy the <code>skel.spec.ts</code> file into integration or into a subdirectory if it fits more into that category then rename it appropriately</li>
+<li>Add the <code>@notImplemented</code> tag to the test case if it hasn&#39;t been implemented yet. This will have it shown with that tag on the static site.</li>
+</ul>
+
+<a href="#test-skeletons" id="test-skeletons" style="color: inherit; text-decoration: none;">
+  <h1>Test skeletons</h1>
+</a>
+<p>Test skeletons are codes that needs to be checked into the code base to describe the test steps.</p>
+
+<a href="#frontend-test-skeletons" id="frontend-test-skeletons" style="color: inherit; text-decoration: none;">
+  <h2>Frontend test skeletons</h2>
+</a>
+<p>Frontend tests are done in <a href="https://cypress.io">Cypress</a>. Code is located at <a href="cypress/"><code>cypress</code></a>. The test cases are in <a href="cypress/testcases/"><code>cypress/testcases</code></a>. The way that they are organized are in <code>describe</code> and <code>it</code> blocks. Cypress uses <a href="https://mochajs.org/">Mocha</a> to do <a href="https://en.wikipedia.org/wiki/Behavior-driven_development">BDD</a>. An <code>it</code> block is a test case, and a <code>describe</code> block it a suite of tests with <code>it</code> blocks inside of it. </p>
+<p>The test skeleton is just a stub method with JSDoc comments that add steps. Here&#39;s an example of a test skeleton for logging in. You would put this in the appropriate test spec in <a href="cypress/testcases/"><code>cypress/testcases</code></a>. For login it would be <a href="cypress/testcases/login.spec.ts"><code>login.spec.ts</code></a>. Since it&#39;s not implemented you will also add the <code>notImplemented</code> tag. </p>
+<pre><code class="language-typescript"><span class="hl-4">/**</span><br/><span class="hl-4">* 1. Load login page</span><br/><span class="hl-4">* 2. Enter in username and password</span><br/><span class="hl-4">* 3. Click Login</span><br/><span class="hl-4">* 4. Verify that the dashboard loads</span><br/><span class="hl-4">* </span><span class="hl-5">@notImplemented</span><br/><span class="hl-4">*/</span><br/><span class="hl-6">export</span><span class="hl-0"> </span><span class="hl-5">function</span><span class="hl-0"> </span><span class="hl-7">loginTest</span><span class="hl-0">() {}</span>
+</code></pre>
+<p>It&#39;s worth noting that this function and docs can&#39;t be inside of a <code>describe</code> or <code>it</code> block for them to show correctly in our static site generator.</p>
+<p>The test skel does not include the <code>describe</code> or <code>it</code> block, but here&#39;s an example of a fully implemented test spec with just an <code>it</code> block from <a href="cypress/testcases/settings.spec.ts">settings.spec.ts</a></p>
+<pre><code class="language-typescript"><span class="hl-4">/**</span><br/><span class="hl-4"> * 1. Login</span><br/><span class="hl-4"> * 2. Navigate to the Advanced Settings Page via the sidebar</span><br/><span class="hl-4"> */</span><br/><span class="hl-6">export</span><span class="hl-0"> </span><span class="hl-5">function</span><span class="hl-0"> </span><span class="hl-7">navigateAdvanceSettingsPage</span><span class="hl-0">() {};</span><br/><span class="hl-7">it</span><span class="hl-0">(</span><span class="hl-8">&#39;should navigate to the Advanced Settings Page&#39;</span><span class="hl-0">, () </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-9">login</span><span class="hl-0">.</span><span class="hl-7">login</span><span class="hl-0">();</span><br/><span class="hl-0">    </span><span class="hl-9">sidebar</span><span class="hl-0">.</span><span class="hl-7">advancedSettings</span><span class="hl-0">();</span><br/><span class="hl-0">});</span>
+</code></pre>
+<p>Here&#39;s an example with a <code>describe</code> block from <a href="cypress/testcases/login.spec.ts">login.spec.ts</a></p>
+<pre><code class="language-typescript"><span class="hl-4">/**</span><br/><span class="hl-4"> * This is the login spec</span><br/><span class="hl-4"> * 1. Login for first time</span><br/><span class="hl-4"> * 2. Login with already set password</span><br/><span class="hl-4"> */</span><br/><span class="hl-7">describe</span><span class="hl-0">(</span><span class="hl-8">&#39;login page for harvester&#39;</span><span class="hl-0">, () </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-7">it</span><span class="hl-0">(</span><span class="hl-8">&#39;should login the first time&#39;</span><span class="hl-0">, () </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">        </span><span class="hl-5">const</span><span class="hl-0"> </span><span class="hl-10">login</span><span class="hl-0"> = </span><span class="hl-5">new</span><span class="hl-0"> </span><span class="hl-7">LoginPage</span><span class="hl-0">();</span><br/><span class="hl-0">        </span><span class="hl-9">login</span><span class="hl-0">.</span><span class="hl-7">firstLogin</span><span class="hl-0">();</span><br/><span class="hl-0">    });</span><br/><span class="hl-0">    </span><br/><span class="hl-0">    </span><span class="hl-7">it</span><span class="hl-0">(</span><span class="hl-8">&#39;should login successfully&#39;</span><span class="hl-0">, () </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">        </span><span class="hl-5">const</span><span class="hl-0"> </span><span class="hl-10">login</span><span class="hl-0"> = </span><span class="hl-5">new</span><span class="hl-0"> </span><span class="hl-7">LoginPage</span><span class="hl-0">();</span><br/><span class="hl-0">        </span><span class="hl-9">login</span><span class="hl-0">.</span><span class="hl-7">login</span><span class="hl-0">();</span><br/><span class="hl-0">    });</span><br/><span class="hl-0">});</span>
+</code></pre>
+<p>Here&#39;s an example with both a <code>describe</code> and an <code>it</code> block from <a href="cypress/testcases/support.spec.ts">support.spec.ts</a></p>
+<pre><code class="language-typescript"><span class="hl-4">/**</span><br/><span class="hl-4"> * 1. Login</span><br/><span class="hl-4"> * 2. Navigate to the support page</span><br/><span class="hl-4"> * 3. Validate the URL</span><br/><span class="hl-4"> */</span><br/><span class="hl-6">export</span><span class="hl-0"> </span><span class="hl-5">function</span><span class="hl-0"> </span><span class="hl-7">checkSupportPage</span><span class="hl-0">() {}</span><br/><span class="hl-7">describe</span><span class="hl-0">(</span><span class="hl-8">&#39;Support Page&#39;</span><span class="hl-0">, () </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-7">it</span><span class="hl-0">(</span><span class="hl-8">&#39;Check suport page&#39;</span><span class="hl-0">, () </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">        </span><span class="hl-9">login</span><span class="hl-0">.</span><span class="hl-7">login</span><span class="hl-0">();</span><br/><span class="hl-0">        </span><span class="hl-9">support</span><span class="hl-0">.</span><span class="hl-7">visitSupportPage</span><span class="hl-0">();</span><br/><span class="hl-0">    });</span><br/><span class="hl-0">});</span><br/><br/><span class="hl-4">/**</span><br/><span class="hl-4"> * 1. Login</span><br/><span class="hl-4"> * 2. Navigate to the support page</span><br/><span class="hl-4"> * 3. Click Generate Support Bundle</span><br/><span class="hl-4"> * 4. Input Description</span><br/><span class="hl-4"> * 5. Click Generate</span><br/><span class="hl-4"> * 6. Wait for download</span><br/><span class="hl-4"> * 7. Verify Downlaod</span><br/><span class="hl-4"> * </span><span class="hl-5">@notImplementedFully</span><br/><span class="hl-4"> */</span><br/><span class="hl-6">export</span><span class="hl-0"> </span><span class="hl-5">function</span><span class="hl-0"> </span><span class="hl-7">generateSupportBundle</span><span class="hl-0">() {}</span><br/><span class="hl-7">it</span><span class="hl-0">(</span><span class="hl-8">&#39;Generate Support Bundle&#39;</span><span class="hl-0">, () </span><span class="hl-5">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-9">login</span><span class="hl-0">.</span><span class="hl-7">login</span><span class="hl-0">();</span><br/><span class="hl-0">    </span><span class="hl-9">support</span><span class="hl-0">.</span><span class="hl-7">generateSupportBundle</span><span class="hl-0">(</span><span class="hl-8">&#39;this ia a test description&#39;</span><span class="hl-0">);</span><br/><span class="hl-0">});</span><br/>
+</code></pre>
+
+<a href="#backend-test-skeletons" id="backend-test-skeletons" style="color: inherit; text-decoration: none;">
+  <h2>Backend test skeletons</h2>
+</a>
+<p>Backend test is driven by pytest. Code are located at <a href="harvester_e2e_tests/"><code>harvester_e2e_tests</code></a> directory.</p>
+<p>There are two types of tests, <a href="harvester_e2e_tests/apis">APIs</a> and <a href="harvester_e2e_tests/scenarios">scenarios</a> respectively. <a href="harvester_e2e_tests/apis">APIs</a> tests are designed to test simple resource creation using backend APIs, while the <a href="harvester_e2e_tests/scenarios">scenarios</a> tests are intended for testing workflows involving multiple resources.</p>
+<p>Make sure to choose the proper directory and file to place the test skeleton.</p>
+<p>A backend test skeleton looks like this:</p>
+<pre><code class="language-python"><span class="hl-7">@pytest.mark.skip</span><span class="hl-0">(</span><span class="hl-9">reason</span><span class="hl-0">=</span><span class="hl-8">&quot;TODO&quot;</span><span class="hl-0">)</span><br/><span class="hl-5">def</span><span class="hl-0"> </span><span class="hl-7">test_single_replica_failed_during_engine_start</span><span class="hl-0">():</span><br/><span class="hl-0">    </span><span class="hl-8">&quot;&quot;&quot;</span><br/><span class="hl-8">    Test if the volume still works fine when there is</span><br/><span class="hl-8">    an invalid replica/backend in the engine starting phase.</span><br/><br/><span class="hl-8">    Prerequisite:</span><br/><span class="hl-8">    Setting abc = true</span><br/><br/><span class="hl-8">    1. Create a pod using Longhorn volume.</span><br/><span class="hl-8">    2. Write some data to the volume then get the md5sum.</span><br/><span class="hl-8">    3...</span><br/><span class="hl-8">    &quot;&quot;&quot;</span><br/><span class="hl-0">    </span><span class="hl-6">pass</span>
+</code></pre>
+<p>Make sure:</p>
+<ol>
+<li>Add @pytest.mark.skip(reason=&quot;TODO&quot;) to indicate this test should be skipped due to it’s not implemented.</li>
+<li>Don’t fill in the parameter (fixture) of the function.</li>
+<li>Describe the test case purpose and steps well in the docstring/comment.</li>
+<li>Add pass at the end of the function.</li>
+<li>Don’t assume the default setting will always work. Call out the expected settings in the prerequisite and they should be set explicitly at the beginning of the test. Use the fixture client or others to reset any changed settings back to default.</li>
+</ol>
+</div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Modules</a></li><li class=" tsd-kind-module"><a href="modules/skel_skel_spec.html">skel/skel.spec</a></li><li class=" tsd-kind-module"><a href="modules/testcases_hosts_spec.html">testcases/hosts.spec</a></li><li class=" tsd-kind-module"><a href="modules/testcases_settings_spec.html">testcases/settings.spec</a></li><li class=" tsd-kind-module"><a href="modules/testcases_support_spec.html">testcases/support.spec</a></li><li class=" tsd-kind-module"><a href="modules/testcases_virtualmachines_virtual_machine_spec.html">testcases/virtualmachines/virtual-<wbr/>machine.spec</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
