@@ -12,7 +12,7 @@ export default class ComponentPo {
       const [selector, filter, parent] = args as [string, string, CypressChainable];
 
       this.self = () => (parent || cy).get(selector).filter(filter);
-    } else if (typeof args[0] === 'string' && typeof args[0] !== 'string') {
+    } else if (typeof args[0] === 'string' && typeof args[1] !== 'string') {
       const [selector, parent] = args as [string, CypressChainable];
 
       this.self = () => (parent || cy).get(selector);
