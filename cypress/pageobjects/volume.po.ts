@@ -13,12 +13,20 @@ interface ValueInterface {
 }
 
 export class VolumePage {
+  private search: string = '.search';
+  private actionMenu: string = '.list-unstyled.menu';
+  private exportImageActions: string = '.card-actions';
+
   name() {
     return new LabeledInputPo('.namespace-select > .labeled-input', `:contains("Name")`)
   }
 
   description() {
     return new LabeledInputPo('.labeled-input', `:contains("Description")`)
+  }
+
+  exportImageName() {
+    return new LabeledInputPo('.card-container .labeled-input', `:contains("Name")`)
   }
 
   public goToList() {
@@ -36,12 +44,12 @@ export class VolumePage {
 
   public goToEdit(name: string) {
     this.goToList();
-    cy.get('.search').type(name);
+    cy.get(this.search).type(name);
     const volume = cy.contains(name);
 
     volume.should('be.visible')
     volume.parentsUntil('tbody', 'tr').find('.icon-actions').click();
-    cy.get('.list-unstyled.menu').contains('Edit Config').click();
+    cy.get(this.actionMenu).contains('Edit Config').click();
   }
 
   goToDetail(name: string) {
@@ -53,11 +61,11 @@ export class VolumePage {
 
   public exportImage(volumeName: string, imageName: string) {
     cy.contains(volumeName).parentsUntil('tbody', 'tr').find('.icon-actions').click();
-    cy.get('.list-unstyled.menu').contains('Export Image').click();
-    cy.get('.labeled-input.edit').find('input').type(imageName);
+    cy.get(this.actionMenu).contains('Export Image').click();
+    this.exportImageName().input(imageName);
 
     cy.intercept('POST', `v1/harvester/persistentvolumeclaims/*/${ volumeName }?action=export`).as('exportImage');
-    cy.get('.card-actions').contains('Create').click();
+    cy.get(this.exportImageActions).contains('Create').click();
     cy.wait('@exportImage').then(res => {
       expect(res.response?.statusCode).to.equal(200);
       expect(cy.contains('Succeed'));

@@ -1,5 +1,5 @@
 export class Constants {
-    public timeout = { timeout: 10000, maxTimeout: 30000 };
+    public timeout = { timeout: 10000, maxTimeout: 30000, uploadTimeout: 300000 };
     public username = Cypress.env("username");
     public password = Cypress.env("password");
     public baseUrl = Cypress.env("baseUrl");
