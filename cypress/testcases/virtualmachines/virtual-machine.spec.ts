@@ -3,9 +3,6 @@ import YAML from 'js-yaml'
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { LoginPage } from "@/pageobjects/login.po";
 
-import { Constants } from "@/constants/constants";
-const constants = new Constants();
-
 const vms = new VmsPage();
 const login = new LoginPage();
 
