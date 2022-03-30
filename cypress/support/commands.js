@@ -32,10 +32,10 @@ Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cy
         method: 'POST',
         url: '/v3-public/localProviders/local?action=login',
         body: {
-          "description":"UI session",
-          "responseType":"cookie",
-          "username":"admin",
-          "password":"password1234"
+          description:"UI session",
+          responseType:"cookie",
+          username,
+          password
         },
         headers: {
           'Content-Type': 'application/json;charset=UTF-8',

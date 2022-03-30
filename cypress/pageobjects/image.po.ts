@@ -21,6 +21,7 @@ export class ImagePage {
   private fileButton: string = '#file';
   private search: string = '.search';
   private deleteButton: string = '.card-container.prompt-remove';
+  private pageHead = 'main .outlet header h1';
 
   name() {
     return new LabeledInputPo('.namespace-select > .labeled-input', `:contains("Name")`)
@@ -36,7 +37,7 @@ export class ImagePage {
 
   public goToList() {
     cy.visit(constants.imagePage);
-    cy.get('main .outlet header h1').then($el => {
+    cy.get(this.pageHead).then($el => {
       cy.url().should('exist', constants.imagePage);
     })
   }
