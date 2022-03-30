@@ -1,4 +1,5 @@
 import { Constants } from "@/constants/constants";
+import { HCI } from '@/constants/types';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
@@ -24,18 +25,22 @@ interface ValueInterface {
 }
 
 export class VmsPage {
+  private actionButton = '.outlet .actions-container';
+  private pageHead = 'main .outlet header h1';
+  private sideBar = 'nav.side-nav .list-unstyled';
+
   public goToList() {
     cy.visit(constants.vmPage);
 
-    cy.get('nav.side-nav .list-unstyled').find('li').contains('Virtual Machines').click();
-    cy.get('main .outlet header h1').then($el => {
+    cy.get(this.sideBar).find('li').contains('Virtual Machines').click();
+    cy.get(this.pageHead).then($el => {
       cy.url().should('exist', constants.vmPage);
     })
   }
 
   public goToCreate() {
     this.goToList()
-    cy.get('.outlet .actions-container').find('a').contains(' Create ').click();
+    cy.get(this.actionButton).find('a').contains(' Create ').click();
   }
 
   public setValue(value: ValueInterface) {
@@ -141,7 +146,7 @@ export class VmsPage {
   public init() {
     image.goToList();
     cy.request({
-      url: 'v1/harvester/harvesterhci.io.virtualmachineimages',
+      url: `v1/harvester/${HCI.IMAGE}s`,
       headers: {
         accept: 'application/json'
       }
