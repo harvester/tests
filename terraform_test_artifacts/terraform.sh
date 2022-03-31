@@ -21,7 +21,7 @@ pushd "$TMPDIR"
 
 "$TERDIR"/bin/terraform init
 if [ $1 == "cluster" ]; then
-   "$TERDIR"/bin/terraform import harvester_clusternetwork.vlan harvester-system/vlan
+   "$TERDIR"/bin/terraform import harvester_clusternetwork.vlan vlan
 fi
 
 if [ $1 == "network" ]; then
