@@ -274,7 +274,7 @@ Here are the general guidelines for adding a new e2e test:
 # Manual Test Cases <a name="manual_test_cases" />
 
 Some scenarios are hard to test using the automation tests and are documented as manual test cases that need to be verified before release.
-The manual test cases are accessible [here](https://harvesterhci.io/tests/manual/).
+The manual test cases are accessible [here](https://harvester.github.io/tests/manual/).
 
 The manual test case pages can be edited under `docs/content/manual/`.
 
