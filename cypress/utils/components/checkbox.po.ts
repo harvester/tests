@@ -6,11 +6,11 @@ export default class CheckboxPo extends ComponentPo {
       return
     }
 
-    const value = this.value()
-
-    if (newValue !== value) {
-      this.self().click()
-    }
+    this.self().find('[role="checkbox"]').invoke('attr', 'aria-checked').then(isChecked => {
+      if ((newValue && !isChecked) || (!newValue && isChecked)) {
+        this.self().click()
+      }
+    })
 
     return
   }

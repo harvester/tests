@@ -16,11 +16,13 @@ describe('Add a network to an existing VM with only 1 network', () => {
   });
 
   it('Step 1: VM should start successfully', () => {
+    const imageEnv = Cypress.env('image');
+
     const value = {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+      image: imageEnv.name,
       networks: [{
         network: 'vlan178',
       }]

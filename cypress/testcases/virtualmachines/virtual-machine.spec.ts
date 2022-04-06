@@ -22,11 +22,13 @@ describe('Create a vm with all the default values', () => {
   });
 
   it('Step 1: Create a vm with all the default values', () => {
+    const imageEnv = Cypress.env('image');
+
     const value = {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+      image: imageEnv.name,
     }
     vms.create(value);
   });
@@ -59,12 +61,12 @@ describe('Create a VM with Start VM on Creation checked', () => {
   
   it('Step 1: Create VM', () => {
     vms.goToCreate();
-
+    const imageEnv = Cypress.env('image');
     const value = {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+      image: imageEnv.name,
       createRunning: true,
     }
     vms.setValue(value);
@@ -104,12 +106,12 @@ describe('Create a VM with Start VM on Creation unchecked', () => {
   
   it('Step 1: Create VM', () => {
     vms.goToCreate();
-
+    const imageEnv = Cypress.env('image');
     const value = {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+      image: imageEnv.name,
       createRunning: false,
     }
     vms.setValue(value);
@@ -131,6 +133,38 @@ describe('Create a VM with Start VM on Creation unchecked', () => {
     })
   });
 })
+
+/**
+ * 1. Create some image and volume
+ * 2. Create virtual machine
+ * 3. Fill out all mandatory field but leave memory blank.
+ * 4. Click create
+*/
+export function CheckMemoryRequired() {}
+it('Create VM without memory provided', () => {
+  const VM_NAME = 'test-memory-required'
+  const NAMESPACE = 'default'
+
+  cy.login();
+
+  const imageEnv = Cypress.env('image');
+
+  const value = {
+    name: VM_NAME,
+    cpu: '2',
+    image: imageEnv.name,
+    createRunning: false,
+  }
+
+  vms.goToCreate();
+  vms.setValue(value);
+
+  cy.get('.cru-resource-footer').contains('Create').click()
+
+  cy.contains('"Memory" is required').should('exist')
+});
+
+
 
 /**
  * 1. Login

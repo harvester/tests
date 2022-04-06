@@ -4,6 +4,7 @@ import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
 import { ImagePage } from "@/pageobjects/image.po";
+import { find } from "cypress/types/lodash";
 
 const constants = new Constants();
 const image = new ImagePage();
@@ -22,6 +23,7 @@ interface ValueInterface {
   networks?: Array<Network>,
   createRunning?: boolean,
   usbTablet?: boolean,
+  efiEnabled?: boolean,
 }
 
 export class VmsPage {
@@ -55,6 +57,7 @@ export class VmsPage {
     this.createRunning().check(value?.createRunning)
     cy.get('.tab#advanced').click()
     this.usbTablet().check(value?.usbTablet)
+    this.efiEnabled().check(value?.efiEnabled)
   }
 
   public save() {
@@ -150,16 +153,19 @@ export class VmsPage {
       headers: {
         accept: 'application/json'
       }
-    }).as('vmList')
+    }).as('imageList')
 
-    cy.get('@vmList').should((res: any) => {
-      
-      expect(res?.status).to.equal(200);
+    cy.get('@imageList').should((res: any) => {
+      expect(res?.status, 'Check Image list').to.equal(200);
       const images = res?.body?.data || []
-      const name = 'ubuntu-18.04-server-cloudimg-amd64.img'
-      const url = 'https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img'
-      const imageFound = images.find((i:any) => i?.spec?.displayName === 'ubuntu-18.04-server-cloudimg-amd64.img')
 
+      const imageEnv = Cypress.env('image');
+
+      const name = imageEnv.name
+      const url = imageEnv.url
+      const imageFound = images.find((i:any) => i?.spec?.displayName === name)
+      console.log(imageFound, 'imageFound')
+      console.log(res, 'res')
       if (imageFound) {
         return
       } else {
@@ -218,5 +224,21 @@ export class VmsPage {
 
   usbTablet() {
     return new CheckboxPo('.checkbox-container', `:contains("Enable USB Tablet")`)
+  }
+
+  efiEnabled() {
+    return new CheckboxPo('.checkbox-container', `:contains("Booting in EFI mode ")`)
+  }
+
+  deleteProgramlly(id:string) {
+    cy.window().then((win:any) => {
+      const vm = win.byId(HCI.VM, id, 'harvester')
+
+      cy.intercept('DELETE', `/v1/harvester/${ HCI.VM }s/${ id }`).as('delete');
+      vm.remove()
+      cy.wait('@delete').then(res => {
+        expect(res.response?.statusCode).to.equal(200);
+      })
+    })
   }
 }

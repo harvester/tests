@@ -26,3 +26,7 @@ export const deleteDownloadsFolder = () => {
   
     cy.task('deleteFolder', downloadsFolder)
   }
+
+export const generateName = (prefix: string) => {
+    return `${prefix}-${Date.now()}`
+}

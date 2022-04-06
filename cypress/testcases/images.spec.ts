@@ -108,12 +108,14 @@ describe('Delete VM with exported image', () => {
     it('Delete VM with exported image', () => {
         cy.login();
 
+        const imageEnv = Cypress.env('image');
+
         // create VM
         const value = {
             name: VM_NAME,
             cpu: '2',
             memory: '4',
-            image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+            image: imageEnv.name,
         }
 
         vms.create(value);
@@ -155,11 +157,13 @@ describe('Update image labels after deleting source VM', () => {
     it('Update image labels after deleting source VM', () => {
         cy.login();
 
+        const imageEnv = Cypress.env('image');
+
         const value = {
             name: VM_NAME,
             cpu: '2',
             memory: '4',
-            image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+            image: imageEnv.name,
         }
 
         // create VM

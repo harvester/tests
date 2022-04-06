@@ -1,26 +1,66 @@
 import { Constants } from "../constants/constants";
 const constants = new Constants();
+import CruResourcePo from '@/utils/components/cru-resource.po';
+import { HCI } from '@/constants/types'
+import LabeledInputPo from '@/utils/components/labeled-input.po';
 
-export class HostsPage {
-    private hostList = '.host-list';
-    private actionsDropdown = '.role-multi-action';
-    private editButton = '.icon-edit';
-    private editYamlButton = '.icon-file';
+interface ValueInterface {
+  namespace?: string,
+  name?: string,
+  description?: string,
+  customName?: string,
+  consoleUrl?: string,
+}
 
-    public navigateHostsPage() {
-        cy.visit(constants.hostsPage);
-        expect(cy.url().should('eq', constants.hostsPage));
-    }
+export class HostsPage extends CruResourcePo {
+  private hostList = '.host-list';
+  private actionsDropdown = '.role-multi-action';
+  private editButton = '.icon-edit';
+  private editYamlButton = '.icon-file';
 
-    public editHosts() {
-        this.navigateHostsPage();
-        cy.get(this.actionsDropdown).first().click();
-        cy.get(this.editButton).click();
-    }
+  constructor() {
+    super({
+      type: HCI.HOST,
+      realType: 'node',
+    });
+  }
 
-    public editHostsYaml() {
-        this.navigateHostsPage();
-        cy.get(this.actionsDropdown).first().click();
-        cy.get(this.editYamlButton).click();
-    }
+  public navigateHostsPage() {
+    cy.visit(constants.hostsPage);
+  }
+
+  public editHosts() {
+    this.navigateHostsPage();
+    cy.get(this.actionsDropdown).first().click();
+    cy.get(this.editButton).click();
+  }
+
+  public editHostsYaml() {
+    this.navigateHostsPage();
+    cy.get(this.actionsDropdown).first().click();
+    cy.get(this.editYamlButton).click();
+  }
+
+  customName() {
+    return new LabeledInputPo('.labeled-input', `:contains("Custom Name")`)
+  }
+
+  consoleUrl() {
+    return new LabeledInputPo('.labeled-input', `:contains("Console URL")`)
+  }
+
+  setValue(value:ValueInterface) {
+    this.customName().input(value.customName)
+    this.consoleUrl().input(value.consoleUrl)
+  }
+
+  public update(id:string) {
+    const saveButtons = '.buttons > .right'
+    
+    cy.intercept('PUT', `/v1/harvester/${this.realType}s/${id}`).as('update');
+    cy.get(saveButtons).contains('Save').click()
+    cy.wait('@update').then(res => {
+      expect(res.response?.statusCode, `Check edit ${id}`).to.equal(200);
+    })
+  }
 }
