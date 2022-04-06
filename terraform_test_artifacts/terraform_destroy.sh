@@ -26,6 +26,7 @@ pushd "$TMPDIR"
 
 #Remove resource for destroytype all
 if [[ "$DESTROYTYPE" == "all" ]] ; then
+  "$TERDIR"/bin/terraform state rm harvester_clusternetwork.vlan
   "$TERDIR"/bin/terraform destroy -auto-approve
 else
   "$TERDIR"/bin/terraform destroy -auto-approve --target $DESTROYTYPE
