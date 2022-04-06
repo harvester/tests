@@ -14,15 +14,19 @@ describe('Create a new VM and add Enable USB tablet option', () => {
 
   it('Create a new VM with USB tablet checked', () => {
     const VM_NAME = 'test-usb-tablet'
+    const NAMESPACE = 'default'
 
     vms.goToCreate();
+    
+    const imageEnv = Cypress.env('image');
 
     const value = {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+      image: imageEnv.name,
       usbTablet: true,
+      namespace: NAMESPACE,
     }
     vms.setValue(value);
 
@@ -48,7 +52,7 @@ describe('Create a new VM and add Enable USB tablet option', () => {
       expect(foundTablet).to.equal(true);
     })
 
-    vms.delete(VM_NAME)
+    vms.deleteProgramlly(`${NAMESPACE}/${VM_NAME}`)
   })
 })
 
@@ -59,15 +63,19 @@ describe("Create a new VM and add Install guest agent option", () => {
 
   it('Create a new VM with Install guest agent checked', () => {
     const VM_NAME = 'test-guest-agent'
+    const NAMESPACE = 'default'
 
     vms.goToCreate();
+
+    const imageEnv = Cypress.env('image');
 
     const value = {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+      image: imageEnv.name,
       guestAgent: true,
+      namespace: NAMESPACE,
     }
     vms.setValue(value);
 
@@ -78,6 +86,45 @@ describe("Create a new VM and add Install guest agent option", () => {
     cy.get('.tab#advanced').click()
     vms.usbTablet().expectChecked()
 
-    vms.delete(VM_NAME)
+    vms.deleteProgramlly(`${NAMESPACE}/${VM_NAME}`)
   })
 })
+
+describe("Verify Booting in EFI mode checkbox", () => {
+  beforeEach(() => {
+    cy.login();
+  });
+
+  it.only('Create a new VM with Booting in EFI mode checked', () => {
+    const VM_NAME = 'test-efi'
+    const NAMESPACE = 'default'
+
+    const imageEnv = Cypress.env('image');
+
+    const value = {
+      name: VM_NAME,
+      cpu: '2',
+      memory: '4',
+      image: imageEnv.name,
+      efiEnabled: true,
+      namespace: NAMESPACE,
+    }
+
+    cy.intercept('POST', '/v1/harvester/kubevirt.io.virtualmachines/*').as('createVM');
+
+    vms.create(value);
+
+    cy.wait('@createVM').then(res => {
+      expect(res.response?.statusCode, 'Check create VM').to.equal(201);
+      expect(res.response?.body?.spec?.template?.spec?.domain?.features?.smm?.enabled, 'Check smm.enabled').to.equal(true);
+      expect(res.response?.body?.spec?.template?.spec?.domain?.firmware?.bootloader?.efi?.secureBoot, 'Check efi.secureBoot').to.equal(true);
+    })
+
+    vms.goToConfigDetail(VM_NAME);
+
+    cy.get('.tab#advanced').click()
+    vms.efiEnabled().expectChecked()
+
+    vms.deleteProgramlly(`${NAMESPACE}/${VM_NAME}`)
+  })
+}) 

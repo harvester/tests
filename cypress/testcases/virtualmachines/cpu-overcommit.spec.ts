@@ -20,7 +20,7 @@ describe('Update Overcommit configuration', () => {
     cy.login();
   });
 
-  it('Step1: Edit overcommit-config cpu', () => {
+  it('Edit overcommit-config cpu', () => {
     const VM_NAME = 'test-cpu-overcommit'
 
     settings.goToEditSetting('overcommit-config')
@@ -31,11 +31,13 @@ describe('Update Overcommit configuration', () => {
 
     settings.save()
 
+    const imageEnv = Cypress.env('image');
+
     const value = {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: 'ubuntu-18.04-server-cloudimg-amd64.img',
+      image: imageEnv.name,
     }
 
     cy.intercept('POST', '/v1/harvester/kubevirt.io.virtualmachines/*').as('createVM');
