@@ -204,6 +204,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/better-load-balancer-config-rke2-cloud-provider/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2023-boot-installer-legacy-and-uefi/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/misc/download_kubeconfig/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/templates/760-chained-vm-templates/</loc>

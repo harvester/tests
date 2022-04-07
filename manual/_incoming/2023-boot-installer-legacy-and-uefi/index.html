@@ -1507,16 +1507,24 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">Delete Cluster</h1>
+  <h1 id="title">Boot installer under Legacy BIOS and UEFI</h1>
   <div>
     <article id="content">
-       <ol>
-<li>Delete Cluster</li>
-</ol>
-<h2 id="expected-results">Expected Results</h2>
+       <ul>
+<li>Related issues <a href="https://github.com/harvester/harvester/issues/2023">#2023</a> Legacy Iso for older servers</li>
+</ul>
+<h2 id="verification-steps">Verification Steps</h2>
+<h3 id="bios-test">BIOS Test</h3>
 <ol>
-<li>successful cluster deletion in rancher</li>
-<li>the corresponding VM node in harvester is deleted successfully</li>
+<li>Build <a href="https://github.com/harvester/harvester-installer">harvester-installer</a></li>
+<li>Boot build artifact using BIOS Legacy mode: <code>qemu-system-x86_64 -m 2048 -cdrom ../dist/artifacts/harvester-master-amd64</code></li>
+<li>Verify that the installer boot process reaches the screen that says &ldquo;Create New Cluster&rdquo; or &ldquo;Join existing cluster&rdquo;</li>
+</ol>
+<h3 id="uefi-test">UEFI Test</h3>
+<ol>
+<li>Build <a href="https://github.com/harvester/harvester-installer">harvester-installer</a> (or use the same one from the BIOS Test, it&rsquo;s a hybrid ISO)</li>
+<li>Boot build artifact using UEFI mode: <code>qemu-system-x86_64 -m 2048 -cdrom ../dist/artifacts/harvester-master-amd64 -bios /usr/share/qemu/ovmf-x86_64.bin</code> (OVMF is a port of the UEFI firmware to qemu)</li>
+<li>Verify that the installer boot process reaches the screen that says &ldquo;Create New Cluster&rdquo; or &ldquo;Join existing cluster&rdquo;</li>
 </ol>
 
     </article>

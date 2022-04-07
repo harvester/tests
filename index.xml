@@ -928,6 +928,15 @@ Verify Items  Backup target should check input before Click Save Error message s
     </item>
     
     <item>
+      <title>Boot installer under Legacy BIOS and UEFI</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2023-boot-installer-legacy-and-uefi/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2023-boot-installer-legacy-and-uefi/</guid>
+      <description>Related issues #2023 Legacy Iso for older servers  Verification Steps BIOS Test  Build harvester-installer Boot build artifact using BIOS Legacy mode: qemu-system-x86_64 -m 2048 -cdrom ../dist/artifacts/harvester-master-amd64 Verify that the installer boot process reaches the screen that says &amp;ldquo;Create New Cluster&amp;rdquo; or &amp;ldquo;Join existing cluster&amp;rdquo;  UEFI Test  Build harvester-installer (or use the same one from the BIOS Test, it&amp;rsquo;s a hybrid ISO) Boot build artifact using UEFI mode: qemu-system-x86_64 -m 2048 -cdrom .</description>
+    </item>
+    
+    <item>
       <title>Button of `Download KubeConfig`</title>
       <link>https://harvester.github.io/tests/manual/misc/download_kubeconfig/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
