@@ -117,6 +117,10 @@ export class VmsPage {
     return new CheckboxPo('.checkbox-container', `:contains("Start virtual machine on creation")`)
   }
 
+  rootDisk() {
+    return new CheckboxPo('.checkbox-container', `:contains("disk-0")`)
+  }
+
   goToConfigDetail(name: string) {
     this.goToList();
     cy.get('.search').type(name)
@@ -180,7 +184,7 @@ export class VmsPage {
     this.save();
   }
 
-  public delete(name: string) {
+  public delete(name: string, { removeRootDisk }: { removeRootDisk?: boolean } = { removeRootDisk: true }) {
     this.goToList()
     cy.get('.search').type(name)
     const vm = cy.contains(name)
@@ -189,6 +193,11 @@ export class VmsPage {
     cy.contains('Delete').click()
 
     cy.intercept('DELETE', `/v1/harvester/kubevirt.io.virtualmachines/*/${name}?*`).as('delete');
+    
+    if (!removeRootDisk) {
+      this.rootDisk().check(false);
+    }
+
     cy.get('.card-container.prompt-remove').contains('Delete').click();
     cy.wait('@delete').then(res => {
       expect(res.response?.statusCode).to.equal(200);
