@@ -1,5 +1,5 @@
 ---
-title: Update image labels after deleting source VM
+title: Update image labels after deleting source VM(e2e_fe)
 ---
 
 * Related issues: [#1602](https://github.com/harvester/harvester/issues/1602) exported image can't be deleted after vm removed

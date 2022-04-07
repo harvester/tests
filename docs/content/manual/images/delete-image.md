@@ -1,5 +1,5 @@
 ---
-title: Delete the image	(e2e_be)
+title: Delete the image	(e2e_be_fe)
 ---
 1. Select an image with state active.
 1. Delete the image.
