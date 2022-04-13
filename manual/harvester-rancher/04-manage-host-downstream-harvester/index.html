@@ -346,16 +346,16 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/">02-Integrate to Rancher from Harvester settings (e2e_be)</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/03-manage-vm-downstream-harvster/">03-Manage VM in Downstream Harvster</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/03-manage-vm-downstream-harvester/">03-Manage VM in Downstream Harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/04-manage-host-downstream-harvster/">04-Manage Node in Downstream Harvster</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/04-manage-host-downstream-harvester/">04-Manage Node in Downstream Harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/05-manage-image-volume-downstream-harvster/">05-Manage Image in Downstream Harvster</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/05-manage-image-volume-downstream-harvester/">05-Manage Image in Downstream Harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/06-manage-network-in-downstream-harvster/">06-Manage Network in Downstream Harvster</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/06-manage-network-in-downstream-harvester/">06-Manage Network in Downstream Harvester</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/07-rbac-add-grant-project-owner-user-harvester/">07-Add and grant project-owner user to harvester (e2e_be)</a></li>
@@ -1507,23 +1507,25 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">05-Manage Image in Downstream Harvster</h1>
+  <h1 id="title">04-Manage Node in Downstream Harvester</h1>
   <div>
     <article id="content">
        <p>Prerequisite: Harvester already imported to Rancher Dashboard</p>
 <ol>
 <li>Open harvester from <code>Virtualization Management</code> page</li>
-<li>Open <code>Images</code> page</li>
-<li>Create an image from URL</li>
-<li>Create an image from file</li>
-<li>Delete created images</li>
+<li>Open <code>Host</code> page</li>
+<li>Access and check node details</li>
+<li>Edit node config, change network and add disk</li>
+<li>Try to <code>Cordon</code> and <code>decordon</code> node</li>
+<li>Enable and disable <code>Maintenance mode</code></li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>
 <ol>
-<li>Can create an image from URL</li>
-<li>Can create an image from file</li>
-<li>Can create an image from file</li>
-<li>Can delete created images correctly</li>
+<li>Can diaply all node&rsquo;s information</li>
+<li>Can add disk to node correctly</li>
+<li>Can change network of node correctly</li>
+<li>Can <code>Cordon</code> and <code>decordon</code> node correctly</li>
+<li>Can enable and disable <code>Maintenance mode</code></li>
 </ol>
 
     </article>
