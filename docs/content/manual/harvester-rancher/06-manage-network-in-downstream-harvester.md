@@ -1,5 +1,5 @@
 ---
-title: 06-Manage Network in Downstream Harvster	
+title: 06-Manage Network in Downstream Harvester
 ---
 Prerequisite: Harvester already imported to Rancher Dashboard
 

@@ -1,5 +1,5 @@
 ---
-title: 04-Manage Node in Downstream Harvster
+title: 04-Manage Node in Downstream Harvester
 ---
 Prerequisite: Harvester already imported to Rancher Dashboard
 

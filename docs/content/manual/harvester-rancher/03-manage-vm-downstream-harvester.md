@@ -1,5 +1,5 @@
 ---
-title: 03-Manage VM in Downstream Harvster	
+title: 03-Manage VM in Downstream Harvester
 ---
 Prerequisite: Harvester already imported to Rancher Dashboard
 
