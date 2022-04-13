@@ -1,5 +1,5 @@
 ---
-title: 05-Manage Image in Downstream Harvster	
+title: 05-Manage Image in Downstream Harvester
 ---
 Prerequisite: Harvester already imported to Rancher Dashboard
 
