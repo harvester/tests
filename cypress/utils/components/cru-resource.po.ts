@@ -130,11 +130,7 @@ export default class CruResourcePo extends PagePo {
   
     this.setValue(value)
     
-    if (namespace) {
-      this.save()
-    } else {
-      this.save()
-    }
+    this.save()
   }
 
   public goToList() {

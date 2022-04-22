@@ -21,6 +21,8 @@ interface ValueInterface {
 }
 
 export default class NetworkPage extends CruResourcePo {
+  private networkTab = '.tab#layer3Network';
+
   constructor() {
     super({
       type: HCI.NETWORK_ATTACHMENT,
@@ -33,7 +35,7 @@ export default class NetworkPage extends CruResourcePo {
     this.name().input(value?.name)
     this.description().input(value?.description)
     this.vlan().input(value?.vlan)
-    cy.get('.tab#layer3Network').click()
+    cy.get(this.networkTab).click()
     this.mode().input(value.mode)
     this.dhcp().input(value.dhcp)
     this.cidr().input(value.cidr)

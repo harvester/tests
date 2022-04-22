@@ -57,7 +57,7 @@ it("Check create cloud config template", () => {
  * 2. Edit previous cloud config template success
  * 3. Clone previous cloud config template
 */
-it("Check Creaet network data && Edit && clone", () => {
+it("Check Create network data && Edit && clone", () => {
   cy.login();
 
   const namespace = 'default'
