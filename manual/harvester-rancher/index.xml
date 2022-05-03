@@ -299,7 +299,7 @@
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/31-specify-pool-ipam-mode-loadbalancer-service/</guid>
       <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
- Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer   Given service name Provide Listending port and Target port   Click Add-on Config Provide Health Check port Select pool as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button  Expected Results  Can create load balance service correctly Can operate and foward workload as expected  </description>
+ Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Access Harvester dashboard UI Go to Settings Create a vip-pool in Harvester settings.  Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer   Given service name Provide Listending port and Target port   Click Add-on Config Provide Health Check port Select pool as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button  Expected Results  Can create load balance service correctly Can operate and route to deployed service correctly  </description>
     </item>
     
     <item>
@@ -563,11 +563,11 @@ Setup the online harvester
     </item>
     
     <item>
-      <title>57-Import airgapped harvester from airgapped rancher rke1</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-rke1/</link>
+      <title>57-Import airgapped harvester from airgapped rancher with Proxy</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-proxy/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-rke1/</guid>
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-proxy/</guid>
       <description>Related task: #1052 Test Air gap with Rancher integration  Environment Setup Setup the airgapped harvester
  Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
     </item>
@@ -581,6 +581,147 @@ Setup the online harvester
       <description>Related issue: #1561 Fully shutdown then power on harvester node machine can&amp;rsquo;t get provisioned RKE2 cluster back to work
   Related issue: #1428 rke2-coredns-rke2-coredns-autoscaler timeout
   Environment Setup  The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan  Verification Step  Prepare a 3 nodes harvester cluster (provo bare machine) Enable virtual network with harvester-mgmt Create vlan1 with id 1 Import harvester from rancher and create cloud credential Provision a RKE2 cluster with vlan 1 Wait for build up ready Shutdown harvester node 3 Shutdown harvester node 2 Shutdown harvester node 1 Wait for 20 minutes Power on node 1, wait 10 seconds Power on node 2, wait 10 seconds Power on node 3 Wait for harvester startup complete Wait for RKE2 cluster back to work Check node and VIP accessibility Check the rke2-coredns pod status kubectl get pods --all-namespaces | grep rke2-coredns  Expected Results   RKE2 cluster on harvester can recover to Active status</description>
+    </item>
+    
+    <item>
+      <title>59-Create K3s Kubernetes Cluster</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/59-create-k3s-kubernetes-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/59-create-k3s-kubernetes-cluster/</guid>
+      <description>Click Cluster Management Click Cloud Credentials Click create and select Harvester Input credential name Select existing cluster in the Imported Cluster list Click Create    Click Clusters
+  Click Create
+  Toggle RKE2/K3s
+  Select Harvester
+  Input Cluster Name
+  Select default namespace
+  Select ubuntu image
+  Select network vlan1
+  Input SSH User: ubuntu   Click Show Advanced</description>
+    </item>
+    
+    <item>
+      <title>60-Delete K3s Kubernetes Cluster</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/60-delete-k3s-kubernetes-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/60-delete-k3s-kubernetes-cluster/</guid>
+      <description> Open Cluster Management Check provisioned K3s cluster Click Delete from menu  Expected Results  Can remove K3s Cluster and disapper on Cluster page K3s Cluster will be removed from rancher menu under explore cluster K3s virtual machine should be also be removed from Harvester  </description>
+    </item>
+    
+    <item>
+      <title>61-Deploy Harvester cloud provider to k3s Cluster</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/61-deploy-harvester-cloud-provider-to-k3s-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/61-deploy-harvester-cloud-provider-to-k3s-cluster/</guid>
+      <description>Related task: #1812 K3s cloud provider and csi driver support  Environment Setup  Docker install rancher v2.6.4 Create one node harvester with enough resource  Verify steps Follow step 1~13 in tets plan 59-Create K3s Kubernetes Cluster
+ Click the Edit yaml button  Set disable-cloud-provider: true to disable default k3s cloud provider.  Add cloud-provider=external to use harvester cloud provider.  Create K3s cluster  Download the Generate addon configuration for cloud provider Download Harvester kubeconfig and add into your local ~/.</description>
+    </item>
+    
+    <item>
+      <title>62-Configure the K3s &#34;DHCP&#34; LoadBalancer service</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/62-configure-k3s-dhcp-loadbalancer/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/62-configure-k3s-dhcp-loadbalancer/</guid>
+      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan
+ 59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster  Create Nginx workload for testing  Create a test-nginx deployment with image nginx:latest.  Add pod label test: test.   Create a DHCP LoadBalancer  Open Kubectl shell. Create test-dhcp-lb.yaml file. apiVersion: v1 kind: Service metadata: annotations: cloudprovider.harvesterhci.io/ipam: dhcp name: test-dhcp-lb namespace: default spec: ports: - name: http nodePort: 30172 port: 8080 protocol: TCP targetPort: 80 selector: test: test sessionAffinity: None type: LoadBalancer  Run k apply -f test-dhcp-lb.</description>
+    </item>
+    
+    <item>
+      <title>62-Configure the K3s &#34;DHCP&#34; LoadBalancer service</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/64-configure-k3s-dhcp-lb-healcheck/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/64-configure-k3s-dhcp-lb-healcheck/</guid>
+      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan
+ 59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster 62-Configure the K3s &amp;ldquo;DHCP&amp;rdquo; LoadBalancer service   A Working DHCP load balancer service created on K3s cluster Edit Load balancer config Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs Configure port, IPAM and health check related setting on Add-on Config page   Expected Results  Can create load balance service correctly Can route workload to nginx deployment  </description>
+    </item>
+    
+    <item>
+      <title>63-Configure the K3s &#34;Pool&#34; LoadBalancer service</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/63-configure-k3s-pool-loadbalancer/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/63-configure-k3s-pool-loadbalancer/</guid>
+      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan
+ 59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster  Create Nginx workload for testing  Create a test-nginx deployment with image nginx:latest.  Add pod label test: test.   Create a Pool LoadBalancer   Modify vip-pool in Harvester settings.   Open Kubectl shell.
+  Create test-pool-lb.yaml file.
+apiVersion: v1 kind: Service metadata: annotations: cloudprovider.</description>
+    </item>
+    
+    <item>
+      <title>65-Configure the K3s &#34;Pool&#34; LoadBalancer health check</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/65-configure-k3s-pool-lb-healthcheck/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/65-configure-k3s-pool-lb-healthcheck/</guid>
+      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan
+ 59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster 63-Configure the K3s &amp;ldquo;Pool&amp;rdquo; LoadBalancer service   A Working DHCP load balancer service created on K3s cluster Edit Load balancer config Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs Configure port, IPAM and health check related setting on Add-on Config page   Expected Results  Can create load balance service correctly Can route workload to nginx deployment  </description>
+    </item>
+    
+    <item>
+      <title>66-Deploy Harvester csi driver to k3s Cluster</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/66-deploy-harvester-csi-driver-to-k3s-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/66-deploy-harvester-csi-driver-to-k3s-cluster/</guid>
+      <description>Related task: #1812 K3s cloud provider and csi driver support  Environment Setup  Docker install rancher v2.6.4 Create one node harvester with enough resource  Verify steps Follow step 1~13 in tets plan 59-Create K3s Kubernetes Cluster
+  Download the Generate addon configuration for csi driver
+  ssh to harvester node 1
+  Execute cat /etc/rancher/rke2/rke2.yaml
+  change the server value from https://127.0.0.1:6443 to your node1 IP</description>
+    </item>
+    
+    <item>
+      <title>67-Harvester persistent volume on k3s Cluster</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/67-harvester-persistent-volume-on-k3s-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/67-harvester-persistent-volume-on-k3s-cluster/</guid>
+      <description>Related task: #1812 K3s cloud provider and csi driver support  Environment Setup  Docker install rancher v2.6.4 Create one node harvester with enough resource  Verify steps Follow step 1~6 in tets plan 66-Deploy Harvester csi driver to k3s Cluster
+Create Nginx workload for testing   Create a nginx-csi deployment with image nginx:latest.   Create a new PVC in storage tab:   Complete the nginx deployment, create related PV in Harvester volume   Click Execute shell to access Nginx container.</description>
+    </item>
+    
+    <item>
+      <title>68-Fully airgapped rancher integrate with harvester with no proxy</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/68-fully-airgapped-rancher-integrate-harvester-no-proxy/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/68-fully-airgapped-rancher-integrate-harvester-no-proxy/</guid>
+      <description>Related task: #1808 RKE2 provisioning fails when Rancher has no internet access (air-gapped)
+  Note1: in fully air gapped environment, you have to setup private docker hub registry and pull all rancher related offline image
+  Note2: Please use SUSE SLES JeOS image, it have qemu-guest-agent already installed, thus the guest VM can get IP correctly
+  Environment Setup Setup the airgapped harvester
+ Fetch ipxe vagrant example with new offline feature https://github.</description>
+    </item>
+    
+    <item>
+      <title>69-DHCP Harvester LoadBalancer service no health check</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/69-dhcp-loadbalancer-service-no-health-check/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/69-dhcp-loadbalancer-service-no-health-check/</guid>
+      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
+ Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer   Given service name to make the load balancer name composed of the cluster name, namespace, svc name, and suffix(8 characters) more than 63 characters Provide Listening port and Target port    Click Add-on Config</description>
+    </item>
+    
+    <item>
+      <title>70-Pool LoadBalancer service no health check</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/70-pool-loadbalancer-service-no-health-check/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/70-pool-loadbalancer-service-no-health-check/</guid>
+      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
+  Open Global Settings in hamburger menu
+  Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html
+  Change ui-offline-preferred to Remote
+  Refresh the current page (ctrl + r)
+  Access Harvester dashboard UI
+  Go to Settings
+  Create a vip-pool in Harvester settings.   Open provisioned RKE2 cluster from hamburger menu
+  Drop down Service Discovery</description>
     </item>
     
     <item>

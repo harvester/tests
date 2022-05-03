@@ -511,10 +511,46 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/">56-Import Harvester to Rancher in airgapped different subnet</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-rke1/">57-Import airgapped harvester from airgapped rancher rke1</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-proxy/">57-Import airgapped harvester from airgapped rancher with Proxy</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/58-negative-fully-power-cycle-harvester-node-machine-should-recover-rke2-cluster/">58-Negative-Fully power cycle harvester node machine should recover RKE2 cluster</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/59-create-k3s-kubernetes-cluster/">59-Create K3s Kubernetes Cluster</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/60-delete-k3s-kubernetes-cluster/">60-Delete K3s Kubernetes Cluster</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/61-deploy-harvester-cloud-provider-to-k3s-cluster/">61-Deploy Harvester cloud provider to k3s Cluster</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/62-configure-k3s-dhcp-loadbalancer/">62-Configure the K3s &ldquo;DHCP&rdquo; LoadBalancer service</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/64-configure-k3s-dhcp-lb-healcheck/">62-Configure the K3s &ldquo;DHCP&rdquo; LoadBalancer service</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/63-configure-k3s-pool-loadbalancer/">63-Configure the K3s &ldquo;Pool&rdquo; LoadBalancer service</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/65-configure-k3s-pool-lb-healthcheck/">65-Configure the K3s &ldquo;Pool&rdquo; LoadBalancer health check</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/66-deploy-harvester-csi-driver-to-k3s-cluster/">66-Deploy Harvester csi driver to k3s Cluster</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/67-harvester-persistent-volume-on-k3s-cluster/">67-Harvester persistent volume on k3s Cluster</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/68-fully-airgapped-rancher-integrate-harvester-no-proxy/">68-Fully airgapped rancher integrate with harvester with no proxy</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/69-dhcp-loadbalancer-service-no-health-check/">69-DHCP Harvester LoadBalancer service no health check</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/70-pool-loadbalancer-service-no-health-check/">70-Pool LoadBalancer service no health check</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/better-load-balancer-config-rke2-cloud-provider/">Better Load Balancer Config of Harvester cloud provider</a></li>
@@ -1507,81 +1543,19 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">57-Import airgapped harvester from airgapped rancher rke1</h1>
+  <h1 id="title">60-Delete K3s Kubernetes Cluster</h1>
   <div>
     <article id="content">
-       <ul>
-<li>Related task: <a href="https://github.com/harvester/harvester/issues/1052">#1052</a> Test Air gap with Rancher integration</li>
-</ul>
-<h3 id="environment-setup">Environment Setup</h3>
-<p>Setup the airgapped harvester</p>
-<ol>
-<li>Fetch ipxe vagrant example with new offline feature
-<a href="https://github.com/harvester/ipxe-examples/pull/32">https://github.com/harvester/ipxe-examples/pull/32</a></li>
-<li>Edit the setting.xml file</li>
-<li>Set offline: <code>true</code></li>
-<li>Use ipxe vagrant example to setup a 3 nodes cluster</li>
-<li>Enable vlan on <code>harvester-mgmt</code></li>
-<li>Now harvester dashboard page will out of work</li>
-<li>Create virtual machine with name <code>vlan1</code> and id: <code>1</code></li>
-<li>Open Settings, edit <code>http-proxy</code> with the following values</li>
-</ol>
-<pre tabindex="0"><code>HTTP_PROXY=http://proxy-host:port
-HTTPS_PROXY=http://proxy-host:port
-NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&lt;internal domain&gt;
-</code></pre><p><img src="https://user-images.githubusercontent.com/29251855/141812497-6664b1ae-42f9-4602-8e36-bd70f0b410c5.png" alt="image"></p>
-<ol>
-<li>Create ubuntu cloud image from URL</li>
-<li>Create virtual machine and assign vlan network, confirm can get ip address</li>
-</ol>
-<p>Setup squid HTTP proxy server</p>
-<ol>
-<li>When you enabled <code>offline</code> in vagrant example, you don&rsquo;t need to install squid http proxy</li>
-</ol>
-<p>Setup the airgapped harvester</p>
-<ol>
-<li>Create an ubuntu virtual machine on localhost machine</li>
-<li>Assign <code>harvester</code> and <code>vagrant-libvirt</code> network to the virtual machine</li>
-<li>Run <code>curl -fsSL https://get.docker.com | bash</code> to install docker</li>
-<li>Pull latest rancher image <code>docker pull rancher/rancher:2.6.3-rc6</code></li>
-<li>Run rancher container by command:</li>
-</ol>
-<pre tabindex="0"><code>$sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 \
--e HTTP_PROXY=&#34;http://192.168.0.254:3128&#34; \
--e HTTPS_PROXY=&#34;http://192.168.0.254:3128&#34; \
--e NO_PROXY=&#34;localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,cattle-system.svc,192.168.0.0/16,.svc,.cluster.local,example.com&#34; \
---privileged rancher/rancher:v2.6.3-rc6
-</code></pre><ol>
-<li>Login rancher and set access url</li>
-<li>Set the following in Advanced - user data in the create RKE2 cluster page</li>
-</ol>
-<pre tabindex="0"><code>#cloud-config
-apt:
-  http_proxy: http://192.168.0.254:3128
-  https_proxy: http://192.168.0.254:3128
-</code></pre><p><img src="https://user-images.githubusercontent.com/29251855/146680197-d78ef411-7ef8-42ce-b2b8-0036c7dc85c9.png" alt="image"></p>
-<ol>
-<li>In Cluster Configuration - Agent Environment Vars, add the following</li>
-</ol>
-<pre tabindex="0"><code>HTTP_PROXY: http://192.168.0.254:3128
-HTTPS_PROXY: http://192.168.0.254:3128
-NO_PROXY: localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,cattle-system.svc,.svc,.cluster.local
-</code></pre><p><img src="https://user-images.githubusercontent.com/29251855/146680338-922b0c6c-ebac-49c7-b4d5-dc68c534689b.png" alt="image"></p>
-<ol>
-<li>Create 4 core, 8GB RKE2 cluster in harvester</li>
-</ol>
-<h3 id="test-steps">Test steps</h3>
-<ol>
-<li>Follow steps in <code>01-Import existing Harvester clusters in Rancher</code> to import harvester</li>
-<li>Follow steps in <code>22-Create RKE2 Kubernetes Cluster</code> to provision RKE2 cluster</li>
+       <ol>
+<li>Open Cluster Management</li>
+<li>Check provisioned K3s cluster</li>
+<li>Click <code>Delete</code> from menu</li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>
 <ol>
-<li>Can import harvester from Rancher correctly</li>
-<li>Can access downstream harvester cluster from Rancher dashboard</li>
-<li>Can provision at least one node RKE2 cluster to harvester correctly with running status</li>
-<li>Can explore provisioned RKE2 cluster nodes</li>
-<li>RKE2 cluster VM created running correctly on harvester node</li>
+<li>Can remove K3s Cluster and disapper on Cluster page</li>
+<li>K3s Cluster will be removed from rancher menu under explore cluster</li>
+<li>K3s virtual machine should be also be removed from Harvester</li>
 </ol>
 
     </article>
