@@ -1,5 +1,5 @@
 ---
-title: 57-Import airgapped harvester from airgapped rancher rke1
+title: 57-Import airgapped harvester from airgapped rancher with Proxy
 ---
 
 * Related task: [#1052](https://github.com/harvester/harvester/issues/1052) Test Air gap with Rancher integration

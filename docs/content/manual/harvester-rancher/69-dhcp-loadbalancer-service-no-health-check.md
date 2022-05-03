@@ -1,5 +1,5 @@
 ---
-title: 30-Configure Harvester LoadBalancer service	
+title: 69-DHCP Harvester LoadBalancer service no health check 	
 ---
 Prerequisite: 
 Already provision RKE1/RKE2 cluster in previous test case
@@ -24,13 +24,7 @@ Already provision RKE1/RKE2 cluster in previous test case
 1. Click `Add-on Config`
 1. Select Health Check port
 1. Select `dhcp` as IPAM mode
-1. Provide Health Check Threshold
-1. Provide Health Check Failure Threshold
-1. Provide Health Check Period
-1. Provide Health Check Timeout
-1. Click Create button
 
-![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/a8d11df6-cc76-4897-8310-def670682775)
 
 1. Create another load balancer service with the name  characters.
 
