@@ -1546,26 +1546,47 @@
 </aside>
 
 <main style="padding: 1%; width: 70%;">
-  <h1 id="title">Verify the Installer Options</h1>
+  <h1 id="title">Generate Install Support Config Bundle For Single Node</h1>
   <div>
     <article id="content">
-       <ol>
-<li>Verify the following options available while installing the Harvester is working
-<ul>
-<li>Installation target</li>
-<li>Cluster token</li>
-<li>Password</li>
-<li>VIP</li>
-<li>NTP Address</li>
-</ul>
+       <ul>
+<li>
+<p>Related issue: <a href="https://github.com/harvester/harvester/issues/1864">#1864</a>  Support bundle for a single node (Live/Installed)</p>
 </li>
+<li>
+<p>Related issue: <a href="https://github.com/harvester/harvester-installer/pull/272">#272</a>  Generate supportconfig for failed installations</p>
+</li>
+</ul>
+<h2 id="category">Category:</h2>
+<ul>
+<li>Support</li>
+</ul>
+<h2 id="environment-setup">Environment setup</h2>
+<p>Setup a single node harvester from ISO install but don&rsquo;t complete the installation</p>
+<ol>
+<li>Gain SSH Access to the Single Harvester Node</li>
+<li>Once Shelled into the Single Harvester Node edit the <code>/usr/sbin/harv-install</code></li>
+<li>Using: <a href="https://github.com/harvester/harvester-installer/blob/master/package/harvester-os/files/usr/sbin/harv-install#L362">harvester-installer&rsquo;s harv-install as a reference</a> edit around line #362 adding <code>exit 1</code>:</li>
+</ol>
+<pre tabindex="0"><code>exit 1
+trap cleanup exit
+check_iso
+</code></pre><p>save the file.</p>
+<ol>
+<li>Continue to configure the node, when asked to Optionally provide a Harvester Configuration URL, do so and have the <code>config.yaml</code> have debug enabled on install like:</li>
+</ol>
+<pre tabindex="0"><code>install:
+  debug: true
+</code></pre><h2 id="verification-steps">Verification Steps</h2>
+<ol>
+<li>SCP the *.txz file provided at the path shown in ISO install something like: /var/log/__.txz from your Single Harvester Node to your remote machine</li>
+<li>Untar <code>tar xvf</code> the *.txz file</li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>
-<ul>
-<li>Should show all the disks available.</li>
-<li>Verify the min and max length acceptable for cluster token.</li>
-<li>Verify the password rule</li>
-</ul>
+<ol>
+<li>Install should fail - reference <img src="https://user-images.githubusercontent.com/5370752/165647594-b3529472-e606-4d12-8953-54ff5d86c00e.png" alt="image"></li>
+<li>Install should generate a support config with a similar directory structure to: <img src="https://user-images.githubusercontent.com/5370752/165647582-d487b4ec-dcf1-451d-a063-6502ebd97012.png" alt="image"> - you can examine the files</li>
+</ol>
 
     </article>
   </div>

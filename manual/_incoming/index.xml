@@ -65,6 +65,18 @@ This test is better to perform under QEMU/libvirt environment.
     </item>
     
     <item>
+      <title>Generate Install Support Config Bundle For Single Node</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1864-generate-install-support-config/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1864-generate-install-support-config/</guid>
+      <description>Related issue: #1864 Support bundle for a single node (Live/Installed)
+  Related issue: #272 Generate supportconfig for failed installations
+  Category:  Support  Environment setup Setup a single node harvester from ISO install but don&amp;rsquo;t complete the installation
+ Gain SSH Access to the Single Harvester Node Once Shelled into the Single Harvester Node edit the /usr/sbin/harv-install Using: harvester-installer&amp;rsquo;s harv-install as a reference edit around line #362 adding exit 1:  exit 1 trap cleanup exit check_iso save the file.</description>
+    </item>
+    
+    <item>
       <title>Multiple Disks Swapping Paths</title>
       <link>https://harvester.github.io/tests/manual/_incoming/1874-extra-disk-swap-path/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
