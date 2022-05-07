@@ -15,11 +15,11 @@ export default class CruResourcePo extends PagePo {
   public realType = '';
   public storeType: string|undefined = undefined;
   
-  private footerButtons = '.cru-resource-footer'
-  private confirmRemove = '.card-container.prompt-remove'
-  private searchInput = '.search'
-  private actionMenu = '.list-unstyled.menu'
-  private actionMenuIcon = '.icon-actions'
+  public footerButtons = '.cru-resource-footer'
+  public confirmRemove = '.card-container.prompt-remove'
+  public searchInput = '.search'
+  public actionMenu = '.list-unstyled.menu'
+  public actionMenuIcon = '.icon-actions'
 
   namespace() {
     return new LabeledSelectPo('.labeled-select', `:contains("Namespace")`)

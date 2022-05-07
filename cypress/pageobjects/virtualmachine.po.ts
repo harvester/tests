@@ -151,17 +151,12 @@ export class VmsPage {
   }
 
   public init() {
+    cy.intercept('GET', `v1/harvester/${HCI.IMAGE}s`).as('imageList');
     image.goToList();
-    cy.request({
-      url: `v1/harvester/${HCI.IMAGE}s`,
-      headers: {
-        accept: 'application/json'
-      }
-    }).as('imageList')
 
-    cy.get('@imageList').should((res: any) => {
-      expect(res?.status, 'Check Image list').to.equal(200);
-      const images = res?.body?.data || []
+    cy.wait('@imageList').should((res: any) => {
+      expect(res.response?.statusCode, 'Check Image list').to.equal(200);
+      const images = res?.response?.body?.data || []
 
       const imageEnv = Cypress.env('image');
 
@@ -179,6 +174,7 @@ export class VmsPage {
           url,
         })
         image.save()
+        image.checkState({ name, size: '16 MB' });
       }
     })
   }
