@@ -3,21 +3,17 @@ import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 
 export default class CruResourcePo extends PagePo {
-  constructor({
-    type,
-    realType,
-  }: {
-    type: string,
-    realType?: string,
-  }) {
+  constructor({ type, realType, storeType}:  {type: string, realType?: string, storeType?: string}) {
     super(`/c/local/harvester/${type}`);
 
     this.type = type
     this.realType = realType || type
+    this.storeType = storeType || realType
   }
 
   public type = '';
   public realType = '';
+  public storeType: string|undefined = undefined;
   
   private footerButtons = '.cru-resource-footer'
   private confirmRemove = '.card-container.prompt-remove'
@@ -76,7 +72,8 @@ export default class CruResourcePo extends PagePo {
 
   public deleteProgramlly(id:string, retries:number = 3) {
     cy.window().then((win:any) => {
-      const resource = win.byId(this.realType, id, 'harvester')
+      const storeType = this.storeType || this.realType
+      const resource = win.byId(storeType, id, 'harvester')
 
       cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${ id }`).as('delete');
 
