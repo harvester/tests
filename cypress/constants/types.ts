@@ -16,7 +16,7 @@ export const HCI = {
   NODE_NETWORK:       'network.harvesterhci.io.nodenetwork',
   CLUSTER_NETWORK:    'network.harvesterhci.io.clusternetwork',
   SUPPORT_BUNDLE:     'harvesterhci.io.supportbundle',
-  NETWORK_ATTACHMENT: 'k8s.cni.cncf.io.networkattachmentdefinition',
+  NETWORK_ATTACHMENT: 'harvesterhci.io.networkattachmentdefinition',
   CLUSTER:            'harvesterhci.io.management.cluster',
   DASHBOARD:          'harvesterhci.io.dashboard',
   BLOCK_DEVICE:       'harvesterhci.io.blockdevice',
@@ -25,3 +25,5 @@ export const HCI = {
   VERSION:            'harvesterhci.io.version',
   MANAGED_CHART:      'harvesterhci.io.managedchart',
 };
+
+export const NETWORK_ATTACHMENT = 'k8s.cni.cncf.io.networkattachmentdefinition';

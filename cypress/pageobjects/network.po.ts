@@ -4,7 +4,7 @@ import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledTextAreaPo from '@/utils/components/labeled-textarea.po';
 import RadioButtonPo from '@/utils/components/radio-button.po';
-import { HCI } from '@/constants/types'
+import { HCI, NETWORK_ATTACHMENT } from '@/constants/types'
 import CruResourcePo from '@/utils/components/cru-resource.po';
 
 const constants = new Constants();
@@ -27,6 +27,7 @@ export default class NetworkPage extends CruResourcePo {
     super({
       type: HCI.NETWORK_ATTACHMENT,
       realType: 'k8s.cni.cncf.io.network-attachment-definition',
+      storeType: NETWORK_ATTACHMENT
     });
   }
 

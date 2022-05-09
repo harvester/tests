@@ -1,19 +1,14 @@
-import YAML from 'js-yaml'
+import NetworkPage from "@/pageobjects/network.po";
+import { generateName } from '@/utils/utils';
 
-import networkPage from "@/pageobjects/network.po";
-import { LoginPage } from "@/pageobjects/login.po";
-import {generateName} from '@/utils/utils';
-
-
-const network = new networkPage();
-const login = new LoginPage();
+const network = new NetworkPage();
 
 /**
  * 1. Login
  * 2. Navigate to the network create page
  * 3. click Create button
  * Expected Results
- * 1. Create network success
+ * 1. create/delete network success
 */
 export function CheckCreateNetwork() {}
 it("Check create/delete network", () => {
@@ -109,4 +104,3 @@ it("Check network with Manual Mode", () => {
 
   network.deleteProgramlly(`${namespace}/${name}`)
 });
-
