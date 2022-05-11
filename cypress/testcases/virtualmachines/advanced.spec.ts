@@ -95,7 +95,7 @@ describe("Verify Booting in EFI mode checkbox", () => {
     cy.login();
   });
 
-  it.only('Create a new VM with Booting in EFI mode checked', () => {
+  it('Create a new VM with Booting in EFI mode checked', () => {
     const VM_NAME = 'test-efi'
     const NAMESPACE = 'default'
 

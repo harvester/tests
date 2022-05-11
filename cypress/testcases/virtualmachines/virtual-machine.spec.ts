@@ -141,30 +141,30 @@ describe('Create a VM with Start VM on Creation unchecked', () => {
  * 4. Click create
 */
 export function CheckMemoryRequired() {}
-it('Create VM without memory provided', () => {
-  const VM_NAME = 'test-memory-required'
-  const NAMESPACE = 'default'
-
-  cy.login();
-
-  const imageEnv = Cypress.env('image');
-
-  const value = {
-    name: VM_NAME,
-    cpu: '2',
-    image: imageEnv.name,
-    createRunning: false,
-  }
-
-  vms.goToCreate();
-  vms.setValue(value);
-
-  cy.get('.cru-resource-footer').contains('Create').click()
-
-  cy.contains('"Memory" is required').should('exist')
-});
-
-
+describe('Create VM without memory provided', () => {
+  it('Create VM without memory provided', () => {
+    const VM_NAME = 'test-memory-required'
+    const NAMESPACE = 'default'
+  
+    cy.login();
+  
+    const imageEnv = Cypress.env('image');
+  
+    const value = {
+      name: VM_NAME,
+      cpu: '2',
+      image: imageEnv.name,
+      createRunning: false,
+    }
+  
+    vms.goToCreate();
+    vms.setValue(value);
+  
+    cy.get('.cru-resource-footer').contains('Create').click()
+  
+    cy.contains('"Memory" is required').should('exist')
+  });
+})
 
 /**
  * 1. Login
@@ -175,6 +175,8 @@ it('Create VM without memory provided', () => {
  * @notImplemented
  */
 export function CheckMultiVMScheduler() {}
-it("automatic assignment to different nodes when creating multiple vm's", () => {
+describe("automatic assignment to different nodes when creating multiple vm's", () => {
+  it("automatic assignment to different nodes when creating multiple vm's", () => {
 
-});
+  });
+})

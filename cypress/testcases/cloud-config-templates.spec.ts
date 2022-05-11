@@ -18,30 +18,32 @@ const constants = new Constants();
  * 1. Create cloud config template with user data success
 */
 export function CheckUserData() {}
-it("Check create cloud config template", () => {
-  cy.login();
+describe("Check create cloud config template", () => {
+  it("Check create cloud config template", () => {
+    cy.login();
 
-  const namespace = 'default'
-  const name = generateName('test-cloud-config-template-create')
+    const namespace = 'default'
+    const name = generateName('test-cloud-config-template-create')
 
-  cy.intercept('POST', `/v1/harvester/configmaps`).as('create');
+    cy.intercept('POST', `/v1/harvester/configmaps`).as('create');
 
-  cloudConfig.create({
-    name,
-    namespace,
-    data: 'test-data'
-  })
+    cloudConfig.create({
+      name,
+      namespace,
+      data: 'test-data'
+    })
 
-  cy.wait('@create').then(res => {
-    expect(res.response?.statusCode).to.equal(201);
-    const type = res.response?.body?.metadata?.labels['harvesterhci.io/cloud-init-template']
-    const data = res.response?.body?.data
+    cy.wait('@create').then(res => {
+      expect(res.response?.statusCode).to.equal(201);
+      const type = res.response?.body?.metadata?.labels['harvesterhci.io/cloud-init-template']
+      const data = res.response?.body?.data
 
-    expect(type, 'Check selected template type').to.equal('user');
-    expect(data?.cloudInit, 'Check user data').to.equal('test-data');
-  })
+      expect(type, 'Check selected template type').to.equal('user');
+      expect(data?.cloudInit, 'Check user data').to.equal('test-data');
+    })
 
-  cloudConfig.delete(namespace, name)
+    cloudConfig.delete(namespace, name)
+  });
 });
 
 /**
@@ -57,64 +59,66 @@ it("Check create cloud config template", () => {
  * 2. Edit previous cloud config template success
  * 3. Clone previous cloud config template
 */
-it("Check Create network data && Edit && clone", () => {
-  cy.login();
+describe("Check Create network data && Edit && clone", () => {
+  it("Check Create network data && Edit && clone", () => {
+    cy.login();
 
-  const namespace = 'default'
-  const name = generateName('test-template-type')
+    const namespace = 'default'
+    const name = generateName('test-template-type')
 
-  cy.intercept('POST', `/v1/harvester/configmaps`).as('create');
+    cy.intercept('POST', `/v1/harvester/configmaps`).as('create');
 
-  cloudConfig.create({
-    name,
-    namespace,
-    templateType: 'Network Data',
-    data: 'test-network-data',
-  })
-
-  cy.wait('@create').then(res => {
-    expect(res.response?.statusCode).to.equal(201);
-    const type = res.response?.body?.metadata?.labels['harvesterhci.io/cloud-init-template']
-    const data = res.response?.body?.data
-
-    expect(type, 'Check template type').to.equal('network');
-    expect(data?.cloudInit, 'Check network data').to.equal('test-network-data');
-
-    cy.intercept('PUT', `/v1/harvester/configmaps/${namespace}/${name}`).as('update');
-
-    const editedData = 'test-edit-data'
-  
-    cloudConfig.checkEdit(name, namespace, {
-      data: editedData,
+    cloudConfig.create({
+      name,
+      namespace,
+      templateType: 'Network Data',
+      data: 'test-network-data',
     })
-  
-    cy.wait('@update').then(res => {
-      expect(res.response?.statusCode, `Check update ${namespace}/${name}`).to.equal(200);
+
+    cy.wait('@create').then(res => {
+      expect(res.response?.statusCode).to.equal(201);
+      const type = res.response?.body?.metadata?.labels['harvesterhci.io/cloud-init-template']
       const data = res.response?.body?.data
-  
-      expect(data?.cloudInit, 'Check edited data').to.equal(editedData);
 
-      cy.intercept('POST', `/v1/harvester/configmaps`).as('create');
+      expect(type, 'Check template type').to.equal('network');
+      expect(data?.cloudInit, 'Check network data').to.equal('test-network-data');
 
-      const cloneName = generateName('test-clone-clone')
+      cy.intercept('PUT', `/v1/harvester/configmaps/${namespace}/${name}`).as('update');
+
+      const editedData = 'test-edit-data'
     
-      const value = {
-        name: cloneName,
-      }
+      cloudConfig.checkEdit(name, namespace, {
+        data: editedData,
+      })
     
-      cloudConfig.checkClone(name, namespace, value)
-    
-      cy.wait('@create').then(res => {
-        expect(res.response?.statusCode).to.equal(201);
-        const type = res.response?.body?.metadata?.labels['harvesterhci.io/cloud-init-template']
+      cy.wait('@update').then(res => {
+        expect(res.response?.statusCode, `Check update ${namespace}/${name}`).to.equal(200);
         const data = res.response?.body?.data
     
-        expect(type, 'Check template data').to.equal('network');
-        expect(data?.cloudInit, 'Check clouded network data').to.equal(editedData);
-    
-        cloudConfig.deleteProgramlly(`${namespace}/${name}`)
-        cloudConfig.deleteProgramlly(`${namespace}/${cloneName}`)
+        expect(data?.cloudInit, 'Check edited data').to.equal(editedData);
+
+        cy.intercept('POST', `/v1/harvester/configmaps`).as('create');
+
+        const cloneName = generateName('test-clone-clone')
+      
+        const value = {
+          name: cloneName,
+        }
+      
+        cloudConfig.checkClone(name, namespace, value)
+      
+        cy.wait('@create').then(res => {
+          expect(res.response?.statusCode).to.equal(201);
+          const type = res.response?.body?.metadata?.labels['harvesterhci.io/cloud-init-template']
+          const data = res.response?.body?.data
+      
+          expect(type, 'Check template data').to.equal('network');
+          expect(data?.cloudInit, 'Check clouded network data').to.equal(editedData);
+      
+          cloudConfig.deleteProgramlly(`${namespace}/${name}`)
+          cloudConfig.deleteProgramlly(`${namespace}/${cloneName}`)
+        })
       })
     })
-  })
+  });
 });
