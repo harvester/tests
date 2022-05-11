@@ -4,7 +4,17 @@
     "fixturesFolder": "./fixtures",
     "pluginsFile": "./plugins/index.js",
     "supportFile": "./support/index.js",
-    "testFiles": "**/*.spec.ts",
+    "testFiles": [
+      "login.spec.ts",
+      "settings.spec.ts",
+      "images.spec.ts",
+      "hosts.spec.ts",
+      "virtualmachines/*.ts",
+      "cloud-config-templates.spec.ts",
+      "ssh-keys.spec.ts",
+      "network.spec.ts",
+      "support.spec.ts"
+    ],
     "viewportWidth": 1920,
     "viewportHeight": 1080,
     "numTestsKeptInMemory": 5,

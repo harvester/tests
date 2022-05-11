@@ -27,7 +27,9 @@ describe('Support Page', () => {
  * @notImplementedFully
  */
 export function generateSupportBundle() {}
-it('Generate Support Bundle', () => {
-    cy.login();
-    support.generateSupportBundle('this ia a test description');
+describe('Generate Support Bundle', () => {
+    it('Generate Support Bundle', () => {
+        cy.login();
+        support.generateSupportBundle('this ia a test description');
+    });
 });

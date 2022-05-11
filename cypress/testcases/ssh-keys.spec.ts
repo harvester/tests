@@ -17,24 +17,26 @@ const login = new LoginPage();
  * 1. Create ssh success
 */
 export function CheckCreateSsh() {}
-it("Create a ssh key", () => {
-  cy.login();
+describe('Create a ssh key', () => {
+  it('Create a ssh key', () => {
+    cy.login();
 
-  const name = generateName('test-ssh-create');
-  const namespace = 'default'
+    const name = generateName('test-ssh-create');
+    const namespace = 'default'
 
-  ssh.create({
-    name,
-    namespace,
-    sshKey: sshKeyExample,
-  })
+    ssh.create({
+      name,
+      namespace,
+      sshKey: sshKeyExample,
+    })
 
-  const cloneName = generateName('test-ssh-clone');
-  ssh.clone(`${namespace}/${ name }`, {
-    name: cloneName,
-    namespace,
-  })
-  
-  ssh.delete(namespace, name)
-  ssh.deleteProgramlly(`${namespace}/${cloneName}`)
+    const cloneName = generateName('test-ssh-clone');
+    ssh.clone(`${namespace}/${ name }`, {
+      name: cloneName,
+      namespace,
+    })
+    
+    ssh.delete(namespace, name)
+    ssh.deleteProgramlly(`${namespace}/${cloneName}`)
+  });
 });

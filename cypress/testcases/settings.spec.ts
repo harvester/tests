@@ -10,9 +10,11 @@ const sidebar = new SidebarPage();
  * 2. Navigate to the Advanced Settings Page via the sidebar
  */
 export function navigateAdvanceSettingsPage() {};
-it('should navigate to the Advanced Settings Page', () => {
-    cy.login();
-    sidebar.advancedSettings();
+describe('should navigate to the Advanced Settings Page', () => {
+    it('should navigate to the Advanced Settings Page', () => {
+        cy.login();
+        sidebar.advancedSettings();
+    });
 });
 /**
  * 1. Login
@@ -20,10 +22,12 @@ it('should navigate to the Advanced Settings Page', () => {
  * 3. Edit UI Source via UI
  */
 export function editUiSource() {};
-it('should edit the uisource setting', () => {
-    cy.login();
-    sidebar.advancedSettings();
-    settings.editUiSource();
+describe('should edit the uisource setting', () => {
+    it('should edit the uisource setting', () => {
+        cy.login();
+        sidebar.advancedSettings();
+        settings.editUiSource();
+    });
 });
 /**
  * 1. Login
@@ -33,7 +37,9 @@ it('should edit the uisource setting', () => {
  * 5. Validate that the URL changed
  */
 export function changeUiSourceType() {};
-it('change UI source type to external', () => {
-    cy.login();
-    settings.changeUiSourceType(1);
+describe('change UI source type to external', () => {
+    it('change UI source type to external', () => {
+        cy.login();
+        settings.changeUiSourceType(1);
+    });
 });
