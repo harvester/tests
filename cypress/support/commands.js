@@ -29,6 +29,13 @@ Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cy
     })
 });
 
+Cypress.Commands.add('stopOnFailed', () => {
+  Cypress.on('fail', (e, test) => {
+    Cypress.runner.stop();
+    throw new Error(e.message);
+  })
+})
+
 Cypress.Commands.overwrite('visit', (originalFn, url = '', options) => {
   const isDev = Cypress.env('NODE_ENV') === 'dev';
 
