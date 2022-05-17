@@ -1,0 +1,11 @@
+# nodejs
+node_modules
+*yarn.lock
+*package-lock.json
+
+# cypress
+docs
+cypress.env.json
+cypress/videos/*
+cypress/screenshots/*
+*.mp4

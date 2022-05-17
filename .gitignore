@@ -15,12 +15,3 @@ terraform_test_artifacts/bin
 *.DS_Store
 *config
 .idea
-cypress/node_modules
-*yarn.lock
-*package-lock.json
-cypress/cypress/videos/*
-cypress/cypress/screenshots/*
-*.mp4
-node_modules
-cypress/cypress.env.json
-cypress/docs
