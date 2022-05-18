@@ -1,6 +1,6 @@
-import { HostsPage } from "../pageobjects/hosts.po";
-import { EditYamlPage } from "../pageobjects/editYaml.po";
-import { LoginPage } from "../pageobjects/login.po";
+import { HostsPage } from "@/pageobjects/hosts.po";
+import { EditYamlPage } from "@/pageobjects/editYaml.po";
+import { LoginPage } from "@/pageobjects/login.po";
 import { HCI } from '@/constants/types'
 
 const hosts = new HostsPage();
