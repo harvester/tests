@@ -1,7 +1,7 @@
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { LoginPage } from "@/pageobjects/login.po";
-import { SidebarPage } from "@/pageobjects/sidebar.po";
-import { SettingsPage } from "@/pageobjects/settings.po";
+import SidebarPage from "@/pageobjects/sidebar.po";
+import SettingsPage from "@/pageobjects/settings.po";
 
 const vms = new VmsPage();
 const login = new LoginPage();
@@ -22,14 +22,15 @@ describe('Update Overcommit configuration', () => {
 
   it('Edit overcommit-config cpu', () => {
     const VM_NAME = 'test-cpu-overcommit'
-
-    settings.goToEditSetting('overcommit-config')
+    settings.goTo();
+    settings.checkIsCurrentPage();
+    settings.clickMenu('overcommit-config', 'Edit Setting', 'overcommit-config')
 
     settings.setOvercommit({
       cpu: '2000',
     })
 
-    settings.save()
+    settings.update('overcommit-config');
 
     const imageEnv = Cypress.env('image');
 

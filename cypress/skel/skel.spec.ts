@@ -1,5 +1,5 @@
 import { LoginPage } from "../pageobjects/login.po";
-import { SettingsPage } from "../pageobjects/settings.po";
+import SettingsPage from "../pageobjects/settings.po";
 const login = new LoginPage();
 const settings = new SettingsPage();
 
@@ -13,7 +13,9 @@ export function testSkelTest() {}
 describe('Test Skel Page', () => {
     it('Change the type for test skel page', () => {
         login.login();
-        settings.changeUiSourceType(1);
+        settings.goTo();
+        const address = 'https://releases.rancher.com/harvester-ui/dashboard/latest/**';
+        settings.checkUiSource('External', address);
     });
 });
 

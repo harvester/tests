@@ -25,7 +25,7 @@ export const deleteDownloadsFolder = () => {
     const downloadsFolder = Cypress.config('downloadsFolder')
   
     cy.task('deleteFolder', downloadsFolder)
-  }
+}
 
 export const generateName = (prefix: string) => {
     return `${prefix}-${Date.now()}`

@@ -20,9 +20,11 @@ Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cy
           password
         },
         headers: {
-          'Content-Type': 'application/json;charset=UTF-8',
           'x-api-csrf': CSRF
         }
+      }).then(() => {
+        cy.visit('/'); // Login successfully to the dashboard page
+        cy.get('.initial-load-spinner', { timeout: constants.timeout.maxTimeout })
       });
     })
 });
