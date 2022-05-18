@@ -73,8 +73,8 @@ export class ImagePage {
     cy.get('.tab#labels').click();
     keys.forEach((key, index) => {
       cy.contains('Add Label').click();
-      cy.get('.kv-item.key input').eq(index).type(key);
-      cy.get('.kv-item.value textarea').eq(index).type(value.labels[key]);
+      cy.get('.kv-item.key input').eq(index + 2).type(key);
+      cy.get('.kv-item.value input').eq(index + 2).type(value.labels[key]);
     });
   }
 
