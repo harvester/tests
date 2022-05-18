@@ -59,6 +59,11 @@ export class LoginPage {
                     cy.wrap($elem).type(constants.password);
                 });
                 cy.get(this.submitButton).click();
+                cy.get(this.mainPageHeader, { timeout: constants.timeout.maxTimeout }).then($el => {
+                    this.validateLogin()
+                })
+            } else {
+                cy.log('Not the first time login');
             }
         });
     }

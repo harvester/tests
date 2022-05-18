@@ -14,10 +14,24 @@ export default class PagePo extends ComponentPo {
   }
 
   isCurrentPage(): Cypress.Chainable<boolean> {
-    return cy.url().then(url => url === Cypress.env('baseUrl') + this.path);
+    return cy.url().then(url => url === Cypress.env('baseUrl') + this.wrapPath(this.path));
   }
 
   checkIsCurrentPage() {
     return this.isCurrentPage().should('eq', true);
+  }
+
+  wrapPath(path: string) {
+    const isDev = Cypress.env('NODE_ENV') === 'dev';
+    let url = path;
+    if (!isDev) {
+      url = `/dashboard${path}`;
+    }
+
+    return url
+  }
+
+  basePath() {
+    return Cypress.env('NODE_ENV') === 'dev' ? Cypress.env('baseUrl') : `${Cypress.env('baseUrl')}/dashboard`;
   }
 }

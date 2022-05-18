@@ -1,96 +1,79 @@
-import { Constants } from '../constants/constants'
-const constants = new Constants();
+import { Constants } from '@/constants/constants'
 import LabeledInputPo from '@/utils/components/labeled-input.po';
+import LabeledSelectPo from '@/utils/components/labeled-select.po';
+import RadioButtonPo from '@/utils/components/radio-button.po'
+import CruResource from '@/utils/components/cru-resource.po';
 import { HCI } from '@/constants/types'
+const constants = new Constants();
 
 interface OvercommitInterface {
   cpu?: string,
   memory?: string,
   storage?: string,
 }
-export class SettingsPage {
-    private uiSourceButton = '#ui-source';
-    private editSettingsButton = '.icon-edit';
-    private settingsDropdown = '.labeled-select';
-    private listBox = '[role="listbox"]';
+export default class SettingsPagePo extends CruResource {
+    private detailPageHead = 'main .outlet header h1 a';
+
+    constructor() {
+       super({ type: HCI.SETTING })
+    }
 
     /**
-     * Visits the Advanced Settings page and checks URL
+     * Go to the setting edit page. Then it checks the URL
      */
-    public visitSettings() {
-        cy.visit(constants.settingsUrl).then(() => {
-            this.validateSettingsUrl();
+    clickMenu(name: string, actionText: string, urlSuffix: string, type?: string) {
+        const editPageUrl = type ? `/c/local/harvester/${type}` : constants.settingsUrl;
+
+        cy.get(`.advanced-setting #${name} button`).click()
+  
+        cy.get('span').contains(actionText).click();
+        
+        cy.get(this.detailPageHead).then(() => {
+            cy.url().should('eq', `${this.basePath()}${editPageUrl}/${urlSuffix}?mode=edit`)
+        })
+    }
+
+    changeLogLevel(id: string, value: string) {
+        new LabeledSelectPo('.labeled-select', `:contains("Value")`).select(value)
+
+        this.update(id);
+    }
+
+    checkSettingValue(title: string, value: string) {
+        const select = new LabeledSelectPo('.labeled-select', `:contains(${title})`)
+        cy.wrap(select).then(() => {
+            select.text().should(($text) => {
+                expect($text.trim()).to.equal(value)
+            })
+        })
+    }
+
+    checkUiSource(type: string, address: string) {
+        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Value")`).select(type)
+        this.update('ui-source');
+        this.checkIsCurrentPage();
+        cy.reload();
+
+        cy.intercept('GET', address).as('fetch');
+        cy.wait('@fetch', { timeout: constants.timeout.maxTimeout}).then(res => {
+            cy.log(`Check Passed ui-source (${type})`)
         });
     }
-    /**
-     * visits advanced settings page and opens the edit ui source page. Then it checks the URL
-     */
-    public editUiSource() {
-        cy.visit(constants.settingsUrl);
-        expect(cy.url().should('eq', constants.settingsUrl) );
-        cy.get(this.uiSourceButton).click();
-        cy.get(this.editSettingsButton).click();;
-        expect(cy.url().should('eq', constants.uiSourceUrl) );
-    }
-    /**
-         * @param type this is the type of ui source type
-         * @value 0 This is Auto
-         * @value 1 This is External
-         * @value 2 This is Bundled
-     */
-    public changeUiSourceType(type: number) {
-        this.editUiSource();
-        cy.get(this.settingsDropdown).click();
-        // This iterates through the list of options and matches it to the type.
-        // If the order changes then we will need to change this
-        this.selectFromDropdown(type);
-        cy.get('.btn').contains('Save').click();
-        this.validateSettingsUrl();
-    }
-    /**
-     * Selects the selection by index from the listbox element
-     * @param selection selection is the index array that you want to select from the list
-     */
-    private selectFromDropdown(selection: number) {
-        cy.get(this.listBox).within(() => {
-            cy.get('li').each(($elem, index) => {
-                if(index === selection) {
-                    cy.wrap($elem).click();
-                }
-            });
-        });
 
-    }
-    /**
-     * This validates that you are on the advanced settings URL
-     */
-    private validateSettingsUrl() {
-        expect(cy.url().should('eq', constants.settingsUrl));
+    openVlan(value: string) {
+        const radio = new RadioButtonPo('.radio-group .radio-container', `:contains("Enabled")`);
+        radio.input('Enabled');
+        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Default Network Interface ")`).select(value)
     }
 
-    /**
-     * Go to setting edit page
-     * @param id setting id
-    */
-    public goToEditSetting(id: string) {
-      cy.visit(constants.settingsUrl);
-      expect(cy.url().should('eq', constants.settingsUrl) );
-      cy.get(`#${id}`).click();
-      cy.get(this.editSettingsButton).click();
-      expect(cy.url().should('eq', `${constants.settingBaseUrl}/${id}?mode=edit`) );
-    }
-
-    public setOvercommit(value: OvercommitInterface) {
+    setOvercommit(value: OvercommitInterface) {
       const cpu = new LabeledInputPo('.labeled-input', `:contains("CPU")`)
 
       cpu.input(value.cpu)
     }
 
-    public save() {
-      cy.intercept('PUT', `/v1/harvester/${HCI.SETTING}s/*`).as('createSetting');
-      cy.get('.cru-resource-footer').contains('Save').click()
-      cy.wait('@createSetting').then(res => {
-        expect(res.response?.statusCode).to.equal(200);
-      })
+    setNFSBackupTarget(type: string, endpoint: string) {
+        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Type")`).select(type);
+        new LabeledInputPo('.labeled-input', `:contains("Endpoint")`).input(endpoint);
     }
 }
