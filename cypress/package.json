@@ -26,7 +26,7 @@
   },
   "scripts": {
     "delete:reports": "rm cypress/results/* || true",
-    "prereport": "yarn run delete:reports",
+    "prereport": "npm run delete:reports",
     "report": "node scripts/run.js"
   }
 }
