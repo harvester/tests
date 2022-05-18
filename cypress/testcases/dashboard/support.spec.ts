@@ -1,5 +1,5 @@
-import { LoginPage } from "../pageobjects/login.po";
-import { SupportPage } from "../pageobjects/support.po";
+import { LoginPage } from "@/pageobjects/login.po";
+import { SupportPage } from "@/pageobjects/support.po";
 const login = new LoginPage();
 const support = new SupportPage();
 

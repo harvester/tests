@@ -1,4 +1,4 @@
-import { LoginPage } from "../pageobjects/login.po";
+import { LoginPage } from "@/pageobjects/login.po";
 
 /**
  * This is the login spec
