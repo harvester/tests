@@ -6,6 +6,7 @@
     "pluginsFile": "./plugins/index.js",
     "supportFile": "./support/index.js",
     "testFiles": [
+      "login.spec.ts"
       "dashboard/*.ts",
       "settings/*.ts",
       "namespaces/*.ts",
