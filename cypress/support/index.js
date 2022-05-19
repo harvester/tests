@@ -19,4 +19,5 @@
 
 
 import './commands'
-
+import '@cypress/skip-test/support'
+// https://github.com/cypress-io/cypress-skip-test

@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@cypress/skip-test": "^2.6.1",
     "@cypress/vue": "^2.2.3",
     "@types/adm-zip": "^0.4.34",
     "@types/js-yaml": "^4.0.5",
