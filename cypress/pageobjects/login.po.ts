@@ -30,6 +30,24 @@ export class LoginPage {
     private validateLogin() {
         cy.url().should('contain', constants.dashboardUrl);
     }
+
+    /**
+    * To check whether the Harvester is first time to login.
+    * @returns the boolean value to identify is first time login or not.
+    */
+    public static isFirstTimeLogin(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            cy.intercept('GET', '/v1/management.cattle.io.setting').as('getFirstLogin')
+              .visit("/")
+              .wait('@getFirstLogin').then(login => {
+                const data: any[] = login.response?.body.data;
+                const firstLogin = data.find(v => v?.id === "first-login");
+                resolve(firstLogin.value === 'true');
+               })
+              .end();
+        });
+    }
+
     /**
      * Method for logging in first time. Sets password to not be random, accepts terms, 
      * and disables telemetry
