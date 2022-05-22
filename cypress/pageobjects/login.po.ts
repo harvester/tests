@@ -1,3 +1,4 @@
+import type { CypressChainable } from '@/utils/po.types'
 import { Constants } from '../constants/constants'
 const constants = new Constants();
 
