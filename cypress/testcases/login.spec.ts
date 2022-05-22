@@ -63,6 +63,18 @@ describe("First Time Login Page", () => {
       expect(page.submitBtn.should("be.enabled"));
     });
   });
+
+  after(() => {
+    // side-effect of login
+    onlyOn(isFirstTimeLogin);
+    const page = new LoginPage();
+    page.visit()
+        .selectSpecificPassword()
+        .checkTelemetry(false)
+        .checkEula(true)
+        .inputPassword()
+        .submitBtn.click();
+  })
 });
 
 
