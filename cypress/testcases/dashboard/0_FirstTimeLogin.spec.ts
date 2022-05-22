@@ -66,26 +66,14 @@ describe("First Time Login Page", () => {
 
   after(() => {
     // side-effect of login
-    onlyOn(isFirstTimeLogin);
-    const page = new LoginPage();
-    page.visit()
-        .selectSpecificPassword()
-        .checkTelemetry(false)
-        .checkEula(true)
-        .inputPassword()
-        .submitBtn.click();
+    if (isFirstTimeLogin) {
+      const page = new LoginPage();
+      page.visit()
+          .selectSpecificPassword()
+          .checkTelemetry(false)
+          .checkEula(true)
+          .inputPassword()
+          .submitBtn.click();
+    }
   })
-});
-
-
-/**
- * This is the login spec
- * 1. Login for first time
- * 2. Login with already set password
- */
-describe('login page for harvester', () => {
-    it('should login successfully', () => {
-        const login = new LoginPage();
-        login.login();
-    });
 });
