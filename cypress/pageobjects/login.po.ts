@@ -11,25 +11,8 @@ export class LoginPage {
     private checkbox = '.checkbox-custom';
     private mainPageHeader = 'main .outlet header h1 span'
 
-    /**
-     * This visits the login page and logs in
-     */
-    public login() {
-        cy.visit(constants.loginUrl);
-        cy.get(this.usernameInput).type(constants.username);
-        cy.get(this.passwordInput).type(constants.password)
-        cy.get(this.submitButton).click()
-        
-        cy.get(this.mainPageHeader, { timeout: constants.timeout.maxTimeout }).then($el => {
-            this.validateLogin()
-        })
-    }
-    /**
-    * Parameters may be declared in a variety of syntactic forms
-    */
-    private validateLogin() {
-        cy.url().should('contain', constants.dashboardUrl);
-    }
+    public username: string;
+    public password: string;
 
     /**
     * To check whether the Harvester is first time to login.
@@ -46,6 +29,78 @@ export class LoginPage {
                })
               .end();
         });
+    }
+
+    constructor(username:string = constants.username, passwd: string = constants.password) {
+        this.username = username;
+        this.password = passwd;
+    }
+
+    public get submitBtn():CypressChainable {
+        return cy.get(`${this.submitButton} >button`)
+    }
+
+    /**
+     * This visits the login page and logs in
+     */
+    public login() {
+        cy.visit(constants.loginUrl);
+        cy.get(this.usernameInput).type(this.username);
+        cy.get(this.passwordInput).type(this.password)
+        cy.get(this.submitButton).click()
+        
+        cy.get(this.mainPageHeader, { timeout: constants.timeout.maxTimeout }).then($el => {
+            this.validateLogin()
+        })
+    }
+    /**
+    * Parameters may be declared in a variety of syntactic forms
+    */
+    private validateLogin() {
+        cy.url().should('contain', constants.dashboardUrl);
+    }
+
+    public visit() {
+        cy.visit("/");
+        return this
+    }
+
+    public selectRandomPassword() {
+        cy.get(`form ${this.allRadios}`).eq(0).click();
+        return this
+    }
+
+    public selectSpecificPassword() {
+        cy.get(`form ${this.allRadios}`).eq(1).click();
+        return this
+    }
+
+    public checkEula(checked:boolean = true) {
+        cy.get(`${this.checkboxEula} ${this.checkbox}`).then($el => {
+            if(!!$el.attr("aria-checked") === checked) {
+                cy.get(this.checkboxEula)
+            } else {
+                cy.get(this.checkboxEula).click("left")
+            }
+        })
+        return this
+    }
+
+    public checkTelemetry(checked:boolean = true) {
+        cy.get(`${this.checkboxTelemetry} ${this.checkbox}`).then($el => {
+            if (!!$el.attr("aria-checked") === checked) {
+                cy.get(this.checkboxTelemetry)
+            } else {
+                cy.get(this.checkboxTelemetry).click("left")
+            }
+        })
+        return this
+    }
+
+    public inputPassword(first:string = this.password, second:string = this.password) {
+        const passwds = [first, second];
+        cy.get("[type=Password]").each(($el, idx) => cy.wrap($el).type(passwds[idx]))
+        return this
     }
 
     /**
