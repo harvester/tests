@@ -38,7 +38,14 @@ export class LoginPage {
     }
 
     public get submitBtn():CypressChainable {
-        return cy.get(`${this.submitButton} >button`)
+        return cy.get(`${this.submitButton}`).then($el => {
+            // first time page wrap the `button` inside #button.
+            return $el.children("button").length ? $el.children("button") : $el
+        })
+    }
+
+    public Message({iserror=true}: {iserror:boolean}):CypressChainable {
+        return cy.get(`main .login-messages ${iserror? ".error": ".text-success"}`)
     }
 
     /**
@@ -49,15 +56,13 @@ export class LoginPage {
         cy.get(this.usernameInput).type(this.username);
         cy.get(this.passwordInput).type(this.password)
         cy.get(this.submitButton).click()
-        
-        cy.get(this.mainPageHeader, { timeout: constants.timeout.maxTimeout }).then($el => {
-            this.validateLogin()
-        })
+        this.validateLogin()
     }
     /**
     * Parameters may be declared in a variety of syntactic forms
     */
-    private validateLogin() {
+    public validateLogin() {
+        cy.get(this.mainPageHeader, { timeout: constants.timeout.maxTimeout })
         cy.url().should('contain', constants.dashboardUrl);
     }
 
@@ -98,9 +103,14 @@ export class LoginPage {
         return this
     }
 
+    public inputUsername(account:string = this.username) {
+        cy.get(this.usernameInput).type(this.username);
+        return this
+    }
+
     public inputPassword(first:string = this.password, second:string = this.password) {
         const passwds = [first, second];
-        cy.get("[type=Password]").each(($el, idx) => cy.wrap($el).type(passwds[idx]))
+        cy.get("form [type=Password]").each(($el, idx) => cy.wrap($el).type(passwds[idx]))
         return this
     }
 
@@ -133,9 +143,7 @@ export class LoginPage {
                     cy.wrap($elem).type(constants.password);
                 });
                 cy.get(this.submitButton).click();
-                cy.get(this.mainPageHeader, { timeout: constants.timeout.maxTimeout }).then($el => {
-                    this.validateLogin()
-                })
+                this.validateLogin();
             } else {
                 cy.log('Not the first time login');
             }
