@@ -1,3 +1,4 @@
+import type { CypressChainable } from '@/utils/po.types'
 import ComponentPo from './component.po';
 
 class Navbar {
