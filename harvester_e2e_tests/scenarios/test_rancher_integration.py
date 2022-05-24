@@ -125,11 +125,14 @@ def _wait_for_cluster_ready(request, rancher_admin_session,
                     'ready' in cluster_json['status']):
                 return cluster_json['status']['ready']
 
-    ready = polling2.poll(
-        _wait_for_cluster_ready_status,
-        step=5,
-        timeout=request.config.getoption('--rancher-cluster-wait-timeout'))
-    assert ready, 'Timed out while waiting to import Harvester.'
+    try:
+        polling2.poll(
+            _wait_for_cluster_ready_status,
+            step=5,
+            timeout=request.config.getoption('--rancher-cluster-wait-timeout'))
+    except polling2.TimeoutException as e:
+        errmsg = 'Timed out while waiting to import Harvester.'
+        raise AssertionError(errmsg) from e
 
 
 def _import_harvester_cluster_into_rancher(request, admin_session,

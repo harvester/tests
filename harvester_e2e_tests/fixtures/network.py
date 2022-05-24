@@ -70,11 +70,14 @@ def _cleanup_network(admin_session, harvester_api_endpoints, network_id,
 
     # NOTE(gyee): there's no way we know how many VMs the network is currently
     # attached to. Will need to keep trying till all the VMs had been deleted
-    success = polling2.poll(
-        _delete_network,
-        step=5,
-        timeout=wait_timeout)
-    assert success, 'Unable to cleanup network: %s' % (network_id)
+    try:
+        polling2.poll(
+            _delete_network,
+            step=5,
+            timeout=wait_timeout)
+    except polling2.TimeoutException as e:
+        errmsg = 'Unable to cleanup network: %s' % (network_id)
+        raise AssertionError(errmsg) from e
 
 
 def _lookup_network(request, admin_session, harvester_api_endpoints, vlan_id):
