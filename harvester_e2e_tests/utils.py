@@ -355,11 +355,14 @@ def delete_image_by_name(request, admin_session,
             return True
         return False
 
-    success = polling2.poll(
-        _wait_for_image_to_be_deleted,
-        step=5,
-        timeout=request.config.getoption('--wait-timeout'))
-    assert success, 'Timed out while waiting for image to be deleted'
+    try:
+        polling2.poll(
+            _wait_for_image_to_be_deleted,
+            step=5,
+            timeout=request.config.getoption('--wait-timeout'))
+    except polling2.TimeoutException as e:
+        errmsg = 'Timed out while waiting for image to be deleted'
+        raise AssertionError(errmsg) from e
 
 
 def create_image(request, admin_session, harvester_api_endpoints, url,
@@ -452,11 +455,14 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
                     return True
         return False
 
-    success = polling2.poll(
-        _check_vm_ready,
-        step=5,
-        timeout=request.config.getoption('--wait-timeout'))
-    assert success, 'Timed out while waiting for VM to be ready.'
+    try:
+        polling2.poll(
+            _check_vm_ready,
+            step=5,
+            timeout=request.config.getoption('--wait-timeout'))
+    except polling2.TimeoutException as e:
+        errmsg = 'Timed out while waiting for VM to be ready.'
+        raise AssertionError(errmsg) from e
 
 
 def create_vm(request, admin_session, image, harvester_api_endpoints,
@@ -1441,14 +1447,13 @@ def get_vm_ip_address(admin_session, harvester_api_endpoints, vm, timeout,
                     'ipAddress' in interface):
                 return interface['ipAddress']
 
-    ip = polling2.poll(
-        _wait_for_ip,
-        step=5,
-        timeout=timeout)
+    try:
+        ip = polling2.poll(_wait_for_ip, step=5, timeout=timeout)
+    except polling2.TimeoutException as e:
+        errmsg = ('Timed out while waiting for IP address for NIC %s to be '
+                  ' assigned: %s' % (nic_name, vm_instance_json))
+        raise AssertionError(errmsg) from e
 
-    assert ip, (
-        'Timed out while waiting for IP address for NIC %s to be '
-        ' assigned: %s' % (nic_name, vm_instance_json))
     return (vm_instance_json, ip)
 
 
