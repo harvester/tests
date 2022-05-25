@@ -74,6 +74,8 @@ describe("First Time Login Page", () => {
           .checkEula(true)
           .inputPassword()
           .submitBtn.click();
+
+      page.validateLogin();
     }
   })
 });
