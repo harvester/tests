@@ -78,9 +78,12 @@ class TestHostDown:
         Covers:
             Negative virtual-machines-05-Delete VM Negative
         """
-        # make sure the VM instance is successfully created
+        # make sure the VM instance is successfully created and running
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
+        utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                              vm_instance_json["metadata"]["name"], True)
+
         # abruptly shutdown the node where it is running
         node_name = vm_instance_json['status']['nodeName']
         utils.power_off_node(request, admin_session, harvester_api_endpoints,
@@ -95,9 +98,12 @@ class TestHostDown:
     @pytest.mark.host_management
     def test_vm_after_host_reboot(self, request, admin_session,
                                   harvester_api_endpoints, basic_vm):
-        # make sure the VM instance is successfully created
+        # make sure the VM instance is successfully created and running
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
+        utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                              vm_instance_json["metadata"]["name"], True)
+
         node_name = vm_instance_json['status']['nodeName']
         # Reboot VM
         utils.reboot_node(request, admin_session, harvester_api_endpoints,
