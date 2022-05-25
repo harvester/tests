@@ -1,7 +1,9 @@
+import TablePo from "@/utils/components/table.po";
 import NetworkPage from "@/pageobjects/network.po";
 import { generateName } from '@/utils/utils';
 
 const network = new NetworkPage();
+const table = new TablePo();
 
 /**
  * 1. Login
@@ -108,5 +110,27 @@ describe('Check network with Manual Mode', () => {
     })
 
     network.deleteProgramlly(`${namespace}/${name}`)
+  });
+});
+
+
+export function CreateVlan1() {}
+describe('Create Vlan1', () => {
+  it('Create Vlan1', () => {
+    cy.login();
+
+    cy.intercept('POST', `/v1/harvester/k8s.cni.cncf.io.network-attachment-definitions`).as('create');
+
+    const name = 'vlan1';
+    const namespace = 'default';
+    network.create({
+      name,
+      namespace,
+      vlan: '1',
+    })
+
+    table.clickFlatListBtn();
+
+    table.find(name, 1, namespace, 2).find('td').eq(5).should('contain', 'Active')
   });
 });
