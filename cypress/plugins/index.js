@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 const dotenvPlugin = require('cypress-dotenv');
+const fs = require("fs");
+const yaml = require('js-yaml');
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
 //
@@ -23,6 +25,18 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   config.baseUrl = config.env.baseUrl;
+
+  on("task", {
+    readYaml(filename) {
+      return new Promise((res, rej) => {
+        try {
+          res(yaml.load(fs.readFileSync(filename)))
+        } catch (e) {
+          res(e.message)
+        }
+      })
+    }
+  })
 
   return config;
 }
