@@ -383,11 +383,14 @@ def delete_image_by_name(request, admin_session,
             return True
         return False
 
-    success = polling2.poll(
-        _wait_for_image_to_be_deleted,
-        step=5,
-        timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    assert success, &#39;Timed out while waiting for image to be deleted&#39;
+    try:
+        polling2.poll(
+            _wait_for_image_to_be_deleted,
+            step=5,
+            timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+    except polling2.TimeoutException as e:
+        errmsg = &#39;Timed out while waiting for image to be deleted&#39;
+        raise AssertionError(errmsg) from e
 
 
 def create_image(request, admin_session, harvester_api_endpoints, url,
@@ -480,11 +483,14 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
                     return True
         return False
 
-    success = polling2.poll(
-        _check_vm_ready,
-        step=5,
-        timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    assert success, &#39;Timed out while waiting for VM to be ready.&#39;
+    try:
+        polling2.poll(
+            _check_vm_ready,
+            step=5,
+            timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+    except polling2.TimeoutException as e:
+        errmsg = &#39;Timed out while waiting for VM to be ready.&#39;
+        raise AssertionError(errmsg) from e
 
 
 def create_vm(request, admin_session, image, harvester_api_endpoints,
@@ -1469,14 +1475,13 @@ def get_vm_ip_address(admin_session, harvester_api_endpoints, vm, timeout,
                     &#39;ipAddress&#39; in interface):
                 return interface[&#39;ipAddress&#39;]
 
-    ip = polling2.poll(
-        _wait_for_ip,
-        step=5,
-        timeout=timeout)
+    try:
+        ip = polling2.poll(_wait_for_ip, step=5, timeout=timeout)
+    except polling2.TimeoutException as e:
+        errmsg = (&#39;Timed out while waiting for IP address for NIC %s to be &#39;
+                  &#39; assigned: %s&#39; % (nic_name, vm_instance_json))
+        raise AssertionError(errmsg) from e
 
-    assert ip, (
-        &#39;Timed out while waiting for IP address for NIC %s to be &#39;
-        &#39; assigned: %s&#39; % (nic_name, vm_instance_json))
     return (vm_instance_json, ip)
 
 
@@ -1536,11 +1541,14 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
                     return True
         return False
 
-    success = polling2.poll(
-        _check_vm_ready,
-        step=5,
-        timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    assert success, &#39;Timed out while waiting for VM to be ready.&#39;</code></pre>
+    try:
+        polling2.poll(
+            _check_vm_ready,
+            step=5,
+            timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+    except polling2.TimeoutException as e:
+        errmsg = &#39;Timed out while waiting for VM to be ready.&#39;
+        raise AssertionError(errmsg) from e</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.utils.assert_vm_restarted"><code class="name flex">
@@ -2291,11 +2299,14 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
             return True
         return False
 
-    success = polling2.poll(
-        _wait_for_image_to_be_deleted,
-        step=5,
-        timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    assert success, &#39;Timed out while waiting for image to be deleted&#39;</code></pre>
+    try:
+        polling2.poll(
+            _wait_for_image_to_be_deleted,
+            step=5,
+            timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+    except polling2.TimeoutException as e:
+        errmsg = &#39;Timed out while waiting for image to be deleted&#39;
+        raise AssertionError(errmsg) from e</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.utils.delete_vm"><code class="name flex">
@@ -2738,14 +2749,13 @@ Jinja2 template</p></div>
                     &#39;ipAddress&#39; in interface):
                 return interface[&#39;ipAddress&#39;]
 
-    ip = polling2.poll(
-        _wait_for_ip,
-        step=5,
-        timeout=timeout)
+    try:
+        ip = polling2.poll(_wait_for_ip, step=5, timeout=timeout)
+    except polling2.TimeoutException as e:
+        errmsg = (&#39;Timed out while waiting for IP address for NIC %s to be &#39;
+                  &#39; assigned: %s&#39; % (nic_name, vm_instance_json))
+        raise AssertionError(errmsg) from e
 
-    assert ip, (
-        &#39;Timed out while waiting for IP address for NIC %s to be &#39;
-        &#39; assigned: %s&#39; % (nic_name, vm_instance_json))
     return (vm_instance_json, ip)</code></pre>
 </details>
 </dd>

@@ -106,9 +106,12 @@ class TestHostDown:
         Covers:
             Negative virtual-machines-05-Delete VM Negative
         &#34;&#34;&#34;
-        # make sure the VM instance is successfully created
+        # make sure the VM instance is successfully created and running
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
+        utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                              vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+
         # abruptly shutdown the node where it is running
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         utils.power_off_node(request, admin_session, harvester_api_endpoints,
@@ -123,9 +126,12 @@ class TestHostDown:
     @pytest.mark.host_management
     def test_vm_after_host_reboot(self, request, admin_session,
                                   harvester_api_endpoints, basic_vm):
-        # make sure the VM instance is successfully created
+        # make sure the VM instance is successfully created and running
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
+        utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                              vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         # Reboot VM
         utils.reboot_node(request, admin_session, harvester_api_endpoints,
@@ -211,9 +217,12 @@ class TestHostDown:
         Covers:
             Negative virtual-machines-05-Delete VM Negative
         &#34;&#34;&#34;
-        # make sure the VM instance is successfully created
+        # make sure the VM instance is successfully created and running
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
+        utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                              vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+
         # abruptly shutdown the node where it is running
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         utils.power_off_node(request, admin_session, harvester_api_endpoints,
@@ -228,9 +237,12 @@ class TestHostDown:
     @pytest.mark.host_management
     def test_vm_after_host_reboot(self, request, admin_session,
                                   harvester_api_endpoints, basic_vm):
-        # make sure the VM instance is successfully created
+        # make sure the VM instance is successfully created and running
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
+        utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                              vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         # Reboot VM
         utils.reboot_node(request, admin_session, harvester_api_endpoints,
@@ -265,9 +277,12 @@ def test_delete_vm_while_host_shutdown(self, request, admin_session,
     Covers:
         Negative virtual-machines-05-Delete VM Negative
     &#34;&#34;&#34;
-    # make sure the VM instance is successfully created
+    # make sure the VM instance is successfully created and running
     vm_instance_json = utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, basic_vm)
+    utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                          vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+
     # abruptly shutdown the node where it is running
     node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
     utils.power_off_node(request, admin_session, harvester_api_endpoints,
@@ -348,9 +363,12 @@ def test_host_shutdown(self, request, admin_session,
 <pre><code class="python">@pytest.mark.host_management
 def test_vm_after_host_reboot(self, request, admin_session,
                               harvester_api_endpoints, basic_vm):
-    # make sure the VM instance is successfully created
+    # make sure the VM instance is successfully created and running
     vm_instance_json = utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, basic_vm)
+    utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                          vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+
     node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
     # Reboot VM
     utils.reboot_node(request, admin_session, harvester_api_endpoints,

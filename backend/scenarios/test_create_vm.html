@@ -737,12 +737,14 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
                     return True
             return False
 
-        success = polling2.poll(
-            _check_vm_instance_migrated,
-            step=5,
-            timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-        assert success, &#39;Timed out while waiting for VM to be migrated: %s&#39; % (
-            vm_json[&#39;metadata&#39;][&#39;name&#39;])
+        try:
+            polling2.poll(
+                _check_vm_instance_migrated,
+                step=5,
+                timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+        except polling2.TimeoutException as e:
+            errfmt = &#39;Timed out while waiting for VM to be migrated: %s&#39;
+            raise AssertionError(errfmt % vm_json[&#39;metadata&#39;][&#39;name&#39;]) from e
 
         vmi_json_after_migrate = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
@@ -761,12 +763,16 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
             vm_json[&#39;metadata&#39;][&#39;name&#39;], vm_node_before_migrate)
         # give it some time for the VM to migrate
         time.sleep(120)
-        success = polling2.poll(
-            _check_vm_instance_migrated,
-            step=5,
-            timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-        assert success, &#39;Timed out as waiting for VM to migrate back: %s&#39; % (
-            vm_json[&#39;metadata&#39;][&#39;name&#39;])
+
+        try:
+            polling2.poll(
+                _check_vm_instance_migrated,
+                step=5,
+                timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+        except polling2.TimeoutException as e:
+            errfmt = &#39;Timed out as waiting for VM to migrate back: %s&#39;
+            raise AssertionError(errfmt % vm_json[&#39;metadata&#39;][&#39;name&#39;]) from e
+
         vmi_json_after_migrate = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
         orig_node_name = vmi_json_after_migrate[&#39;status&#39;][&#39;nodeName&#39;]
@@ -1527,12 +1533,14 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
                     return True
             return False
 
-        success = polling2.poll(
-            _check_vm_instance_migrated,
-            step=5,
-            timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-        assert success, &#39;Timed out while waiting for VM to be migrated: %s&#39; % (
-            vm_json[&#39;metadata&#39;][&#39;name&#39;])
+        try:
+            polling2.poll(
+                _check_vm_instance_migrated,
+                step=5,
+                timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+        except polling2.TimeoutException as e:
+            errfmt = &#39;Timed out while waiting for VM to be migrated: %s&#39;
+            raise AssertionError(errfmt % vm_json[&#39;metadata&#39;][&#39;name&#39;]) from e
 
         vmi_json_after_migrate = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
@@ -1551,12 +1559,16 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
             vm_json[&#39;metadata&#39;][&#39;name&#39;], vm_node_before_migrate)
         # give it some time for the VM to migrate
         time.sleep(120)
-        success = polling2.poll(
-            _check_vm_instance_migrated,
-            step=5,
-            timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-        assert success, &#39;Timed out as waiting for VM to migrate back: %s&#39; % (
-            vm_json[&#39;metadata&#39;][&#39;name&#39;])
+
+        try:
+            polling2.poll(
+                _check_vm_instance_migrated,
+                step=5,
+                timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+        except polling2.TimeoutException as e:
+            errfmt = &#39;Timed out as waiting for VM to migrate back: %s&#39;
+            raise AssertionError(errfmt % vm_json[&#39;metadata&#39;][&#39;name&#39;]) from e
+
         vmi_json_after_migrate = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
         orig_node_name = vmi_json_after_migrate[&#39;status&#39;][&#39;nodeName&#39;]
