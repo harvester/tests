@@ -42,22 +42,10 @@ describe("Support Page", () => {
     })
   })
 
-
-  /**
-   * 1. Login
-   * 2. Navigate to the support page
-   * 3. Click Generate Support Bundle
-   * 4. Input Description
-   * 5. Click Generate
-   * 6. Wait for download
-   * 7. Verify Downlaod
-   * @notImplementedFully
-   */
-  export function generateSupportBundle() {}
   context('Generate Support Bundle', () => {
     it('Generate Support Bundle', () => {
       cy.login();
-      support.generateSupportBundle('this ia a test description');
+      page.generateSupportBundle('this ia a test description');
     });
   });
 })
