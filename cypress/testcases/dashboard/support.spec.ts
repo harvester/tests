@@ -2,6 +2,7 @@ import { SupportPage } from "@/pageobjects/support.po";
 
 describe("Support Page", () => {
   const page = new SupportPage();
+
   beforeEach(() => {
     page.visit();
   })
@@ -43,9 +44,27 @@ describe("Support Page", () => {
   })
 
   context('Generate Support Bundle', () => {
-    it('Generate Support Bundle', () => {
-      cy.login();
-      page.generateSupportBundle('this ia a test description');
-    });
+    it('is required to input Description', () => {
+      page.generateSupportBundleBtn.click()
+
+      page.inputSupportBundle()
+          .get("@generateBtn").click()
+
+      // to verify the button renamed with `Error`
+      cy.get("@generateBtn")
+        .should("be.not.disabled")
+        .should("contain", "Error")
+
+      // to verify the error message displayed
+      cy.get("@generateView")
+        .get(".banner.error")
+        .should("be.visible")
+
+      // to verify the view disappeared.
+      cy.get("@closeBtn").click()
+      cy.get("@generateView")
+        .children()
+        .should($el => expect($el).to.have.length(0))
+    })
   });
 })

@@ -30,6 +30,10 @@ export class SupportPage {
         return cy.get("main button").contains("Download KubeConfig")
     }
 
+    public get generateSupportBundleBtn(): CypressChainable {
+        return cy.get("main button").contains("Generate Support Bundle")
+    }
+
     public visit() {
         cy.url().then(url => {
             if(!url.includes(constants.dashboardUrl)) {
@@ -38,6 +42,16 @@ export class SupportPage {
             Dashboard.nav.SupportLink.click()
             cy.get("main h1").should("contain","Harvester Support")
             cy.url().should("contain", constants.supportPage)
+        })
+    }
+
+    public inputSupportBundle(description?:string, issueURL?:string): CypressChainable {
+        return cy.get("main .bundleModal").as("generateView").then($el => {
+            if(description) cy.wrap($el).get("textarea").type(description)
+            if (issueURL) cy.wrap($el).get("input").type(issueURL)
+
+            cy.wrap($el).get(".footer button").contains("Close").as("closeBtn")
+            cy.wrap($el).get('[type="submit"]').as("generateBtn")
         })
     }
 
