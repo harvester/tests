@@ -35,6 +35,28 @@ module.exports = (on, config) => {
           res(e.message)
         }
       })
+    },
+    deleteFolder (folderName) {
+      return new Promise((resolve, reject) => {
+        fs.rmdir(folderName, {maxRetries: 5, recursive: true}, err => {
+          if (err && err.code !== "ENOENT") {
+            console.error(err)
+            reject(err.message)
+          }
+          resolve(true)
+        })
+      })
+    },
+    deleteFile (fileName) {
+      return new Promise((resolve, reject) => {
+        fs.rm(fileName, {maxRetries: 5, force: true}, err => {
+          if (err && err.code !== "ENOENT") {
+            console.error(err)
+            reject(err.message)
+          }
+          resolve(true)
+        })
+      })
     }
   })
 
