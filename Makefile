@@ -24,6 +24,12 @@ preview-hugo:
 
 run: clean backend frontend live-copy preview-hugo
 
+build-docker-e2e-ci-image:
+	docker build -f dockerfile-ci-e2e . -t harvester_installer_e2e_ci_image:latest;
+
+destroy-docker-e2e-ci-image:
+	docker image rm harvester_installer_e2e_ci_image:latest --force
+
 clean:
 	rm -rf docs/public;
 	rm -rf cypress/docs;
