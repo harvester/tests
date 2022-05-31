@@ -68,6 +68,7 @@ class TestHostDown:
         utils.power_on_node(request, admin_session, harvester_api_endpoints,
                             node_name)
 
+    @pytest.mark.skip("https://github.com/harvester/harvester/issues/2148")
     @pytest.mark.host_management
     @pytest.mark.virtual_machines_p1
     @pytest.mark.p1
