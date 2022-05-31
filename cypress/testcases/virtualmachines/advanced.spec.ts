@@ -2,6 +2,7 @@ import YAML from 'js-yaml'
 
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { LoginPage } from "@/pageobjects/login.po";
+import { generateName } from '@/utils/utils';
 
 
 const vms = new VmsPage();
@@ -13,7 +14,7 @@ describe('Create a new VM and add Enable USB tablet option', () => {
   });
 
   it('Create a new VM with USB tablet checked', () => {
-    const VM_NAME = 'test-usb-tablet'
+    const VM_NAME = generateName('test-usb-tablet')
     const NAMESPACE = 'default'
 
     vms.goToCreate();
@@ -62,7 +63,7 @@ describe("Create a new VM and add Install guest agent option", () => {
   });
 
   it('Create a new VM with Install guest agent checked', () => {
-    const VM_NAME = 'test-guest-agent'
+    const VM_NAME = generateName('test-guest-agent')
     const NAMESPACE = 'default'
 
     vms.goToCreate();
@@ -96,7 +97,7 @@ describe("Verify Booting in EFI mode checkbox", () => {
   });
 
   it('Create a new VM with Booting in EFI mode checked', () => {
-    const VM_NAME = 'test-efi'
+    const VM_NAME = generateName('test-efi')
     const NAMESPACE = 'default'
 
     const imageEnv = Cypress.env('image');
@@ -116,8 +117,8 @@ describe("Verify Booting in EFI mode checkbox", () => {
 
     cy.wait('@createVM').then(res => {
       expect(res.response?.statusCode, 'Check create VM').to.equal(201);
-      expect(res.response?.body?.spec?.template?.spec?.domain?.features?.smm?.enabled, 'Check smm.enabled').to.equal(true);
-      expect(res.response?.body?.spec?.template?.spec?.domain?.firmware?.bootloader?.efi?.secureBoot, 'Check efi.secureBoot').to.equal(true);
+      expect(res.response?.body?.spec?.template?.spec?.domain?.features?.smm?.enabled, 'Check smm.enabled').to.equal(false);
+      expect(res.response?.body?.spec?.template?.spec?.domain?.firmware?.bootloader?.efi?.secureBoot, 'Check efi.secureBoot').to.equal(false);
     })
 
     vms.goToConfigDetail(VM_NAME);

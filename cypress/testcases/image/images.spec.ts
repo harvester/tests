@@ -42,13 +42,16 @@ describe('Create an image with valid image URL', () => {
         // edit IMAGE
         image.goToEdit(IMAGE_NAME);
 
+        const namespace = 'default';
+
         const editValue = {
             name: IMAGE_NAME,
             url: 'xx',
             description: 'Edit image test',
             labels: {
                 edit: 'edit'
-            }
+            },
+            namespace,
         }
         
         image.edit(editValue);
@@ -79,6 +82,7 @@ describe('Create an image with valid image URL', () => {
 
         // create invalid IMAGE
         image.goToCreate();
+        const namespace = 'default';
 
         const value = {
             name: IMAGE_NAME,
@@ -109,6 +113,7 @@ describe('Delete VM with exported image', () => {
         cy.login();
 
         const imageEnv = Cypress.env('image');
+        const namespace = 'default';
 
         // create VM
         const value = {
@@ -116,6 +121,7 @@ describe('Delete VM with exported image', () => {
             cpu: '2',
             memory: '4',
             image: imageEnv.name,
+            namespace,
         }
 
         vms.create(value);
@@ -135,7 +141,7 @@ describe('Delete VM with exported image', () => {
         });
 
         // delete VM
-        vms.delete(VM_NAME);
+        vms.delete(namespace, VM_NAME);
 
         // delete IMAGE
         image.delete(IMAGE_NAME);
@@ -158,12 +164,14 @@ describe('Update image labels after deleting source VM', () => {
         cy.login();
 
         const imageEnv = Cypress.env('image');
+        const namespace = 'default';
 
         const value = {
             name: VM_NAME,
             cpu: '2',
             memory: '4',
             image: imageEnv.name,
+            namespace,
         }
 
         // create VM
@@ -184,7 +192,7 @@ describe('Update image labels after deleting source VM', () => {
         });
 
         // delete VM
-        vms.delete(VM_NAME);
+        vms.delete(namespace, VM_NAME);
 
         // edit IMAGE
         image.goToEdit(IMAGE_NAME);
@@ -273,6 +281,7 @@ describe('Create a ISO image via upload', () => {
 
         // create IMAGE
         image.goToCreate();
+        const namespace = 'default';
 
         const value = {
             name: IMAGE_NAME,
@@ -293,6 +302,7 @@ describe('Create a ISO image via upload', () => {
             cpu: '2',
             memory: '4',
             image: IMAGE_NAME,
+            namespace,
         }
 
         vms.create(vmValue);
@@ -302,7 +312,7 @@ describe('Create a ISO image via upload', () => {
         vms.goToYamlDetail(VM_NAME);
         
         // delete VM
-        vms.delete(VM_NAME)
+        vms.delete(namespace, VM_NAME)
 
         // delete IMAGE
         image.delete(IMAGE_NAME)

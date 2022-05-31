@@ -1,5 +1,5 @@
 ---
-title: Create a new VM and add Install guest agent option (e2e_be)
+title: Create a new VM and add Install guest agent option (e2e_be_fe)
 ---
 1. Add install Guest Agent Option
 1. Save/Create VM
@@ -7,8 +7,9 @@ title: Create a new VM and add Install guest agent option (e2e_be)
     - You can do this on ubuntu with the command `dpkg -l | grep qemu`
 
 ## Expected Results
+
 1. Machine starts successfully
-1. Guest Agent Option shows 
+1. Guest Agent Option shows
     - In YAML
     - In Form
 1. Guest Agent is installed

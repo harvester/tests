@@ -34,7 +34,7 @@ export class VolumePage {
     cy.visit(constants.volumePage)
     cy.intercept('GET', '/v1/harvester/persistentvolumeclaims').as('goToVolumeList');
     cy.wait('@goToVolumeList');
-    cy.url().should('eq', constants.volumePage)
+    cy.url().should('eq', `${this.basePath()}${constants.volumePage}`)
   }
 
   public goToCreate() {
@@ -72,4 +72,7 @@ export class VolumePage {
     });
   }
 
+  basePath() {
+    return Cypress.env('NODE_ENV') === 'dev' ? Cypress.env('baseUrl') : `${Cypress.env('baseUrl')}/dashboard`;
+  }
 }

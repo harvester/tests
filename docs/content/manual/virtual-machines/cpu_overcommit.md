@@ -1,14 +1,16 @@
 ---
-title: CPU overcommit on VM
+title: CPU overcommit on VM (e2e_fe)
 ---
-Ref: https://github.com/harvester/harvester/issues/1429
+Ref: <https://github.com/harvester/harvester/issues/1429>
 
 ## Verify Items
-  - Overcommit can be edit on Dashboard
-  - VM can allocate exceed CPU on the host Node
-  - VM can chage allocated CPU after created
+
+- Overcommit can be edit on Dashboard
+- VM can allocate exceed CPU on the host Node
+- VM can chage allocated CPU after created
 
 ## Case: Update Overcommit configuration
+
 1. Install Harvester with any Node
 1. Login to Dashboard, then navigate to **Advanced Settings**
 1. Edit `overcommit-config`
@@ -16,6 +18,7 @@ Ref: https://github.com/harvester/harvester/issues/1429
 1. Created VM can allocate maximum CPU should be `<HostCPUs> * [<overcommit-CPU>/100] - <Host Reserved>`
 
 ## Case: VM can allocate CPUs more than Host have
+
 1. Install Harvester with any Node
 1. Create a cloud image for VM Creation
 1. Create a VM with `<HostCPUs> * 5` CPUs
@@ -24,6 +27,7 @@ Ref: https://github.com/harvester/harvester/issues/1429
 1. Page of Virtual Machines should display allocated CPUs correctly
 
 ## Case: Update VM allocated CPUs
+
 1. Install Harvester with any Node
 1. Create a cloud image for VM Creation
 1. Create a VM with `<HostCPUs> * 5` CPUs
