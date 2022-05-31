@@ -714,7 +714,7 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
                 _check_vm_instance_migrated,
                 step=5,
                 timeout=request.config.getoption('--wait-timeout'))
-        except polling2.TimeoutException as e:
+        except polling2.TimeoutException:
             errfmt = 'Timed out while waiting for VM to be migrated: %s'
             raise AssertionError(errfmt % vm_json['metadata']['name'])
 
