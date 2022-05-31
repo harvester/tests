@@ -116,10 +116,13 @@ def _delete_rke1_cluster(request, rancher_admin_session, rancher_api_endpoints,
 
 def _wait_for_cluster_ready(request, rancher_admin_session,
                             rancher_api_endpoints, cluster_name):
+    cluster_json = dict()
+
     def _wait_for_cluster_ready_status():
         resp = rancher_admin_session.get(
             rancher_api_endpoints.get_provisioning_cluster % (cluster_name))
         if resp.status_code == 200:
+            nonlocal cluster_json
             cluster_json = resp.json()
             if ('status' in cluster_json and
                     'ready' in cluster_json['status']):
@@ -130,9 +133,19 @@ def _wait_for_cluster_ready(request, rancher_admin_session,
             _wait_for_cluster_ready_status,
             step=5,
             timeout=request.config.getoption('--rancher-cluster-wait-timeout'))
-    except polling2.TimeoutException as e:
-        errmsg = 'Timed out while waiting to import Harvester.'
-        raise AssertionError(errmsg) from e
+    except polling2.TimeoutException:
+        from datetime import datetime
+        from json import dumps
+        fmt = "%Y-%m-%dT%H:%M:%SZ"
+
+        def _key(item):
+            t = item['lastUpdateTime']
+            return datetime.strptime(t, fmt) if t else datetime(2000, 1, 1)
+
+        items = sorted(cluster_json['status']['conditions'], key=_key)
+        errmsg = ('Timed out while waiting to import Harvester.\n'
+                  f'Last 5 conditions: {dumps(items[-5:])}')
+        raise AssertionError(errmsg)
 
 
 def _import_harvester_cluster_into_rancher(request, admin_session,

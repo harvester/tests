@@ -362,7 +362,7 @@ def delete_image_by_name(request, admin_session,
             timeout=request.config.getoption('--wait-timeout'))
     except polling2.TimeoutException as e:
         errmsg = 'Timed out while waiting for image to be deleted'
-        raise AssertionError(errmsg) from e
+        raise AssertionError(errmsg)
 
 
 def create_image(request, admin_session, harvester_api_endpoints, url,
@@ -437,11 +437,13 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
                     vm_name, running):
     # give it some time for the VM to boot up
     time.sleep(180)
+    resp_json = dict()
 
     def _check_vm_ready():
         resp = admin_session.get(harvester_api_endpoints.get_vm_instance %
                                  (vm_name))
         if resp.status_code == 200:
+            nonlocal resp_json
             resp_json = resp.json()
             if running:
                 if ('status' in resp_json and
@@ -461,8 +463,9 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
             step=5,
             timeout=request.config.getoption('--wait-timeout'))
     except polling2.TimeoutException as e:
-        errmsg = 'Timed out while waiting for VM to be ready.'
-        raise AssertionError(errmsg) from e
+        errmsg = ('Timed out while waiting for VM to be ready.\n'
+                  f"Stucking in Phase {resp_json['status']['phase']}")
+        raise AssertionError(errmsg)
 
 
 def create_vm(request, admin_session, image, harvester_api_endpoints,
@@ -1452,7 +1455,7 @@ def get_vm_ip_address(admin_session, harvester_api_endpoints, vm, timeout,
     except polling2.TimeoutException as e:
         errmsg = ('Timed out while waiting for IP address for NIC %s to be '
                   ' assigned: %s' % (nic_name, vm_instance_json))
-        raise AssertionError(errmsg) from e
+        raise AssertionError(errmsg)
 
     return (vm_instance_json, ip)
 
