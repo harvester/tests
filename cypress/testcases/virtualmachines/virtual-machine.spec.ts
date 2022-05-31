@@ -2,6 +2,7 @@ import YAML from 'js-yaml'
 
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { LoginPage } from "@/pageobjects/login.po";
+import { generateName } from '@/utils/utils';
 
 const vms = new VmsPage();
 const login = new LoginPage();
@@ -14,14 +15,14 @@ const login = new LoginPage();
  * 5. Validate the config and yaml should show
 */
 describe('Create a vm with all the default values', () => {
-  // randomstring.generate(7)
-  const VM_NAME = 'test-vm-automation'
+  const VM_NAME = generateName('test-vm-create');
+  const namespace = 'default'
 
   beforeEach(() => {
     cy.login();
   });
 
-  it('Step 1: Create a vm with all the default values', () => {
+  it('Create a vm with all the default values', () => {
     const imageEnv = Cypress.env('image');
 
     const value = {
@@ -29,110 +30,18 @@ describe('Create a vm with all the default values', () => {
       cpu: '2',
       memory: '4',
       image: imageEnv.name,
+      namespace,
     }
-    vms.create(value);
-  });
 
-  it('Step 2: Config and YAML should show', () => {
+    vms.create(value)
+
     vms.goToConfigDetail(VM_NAME);
 
     vms.goToYamlDetail(VM_NAME);
-  })
 
-  it('Step 3: Delete VM', () => {
-    vms.delete(VM_NAME)
-  })
+    vms.delete(namespace, VM_NAME)
+  });
 });
-
-/**
- * 1. Login
- * 2. Navigate to the VM create page
- * 3. Input required values
- * 4. Check "Start VM on Creation"
- * 4. Validate the create request
- * 5. Validate the yaml
-*/
-describe('Create a VM with Start VM on Creation checked', () => {
-  const VM_NAME = 'test-vm-running-checked-automation'
-
-  beforeEach(() => {
-    cy.login();
-  });
-  
-  it('Step 1: Create VM', () => {
-    vms.goToCreate();
-    const imageEnv = Cypress.env('image');
-    const value = {
-      name: VM_NAME,
-      cpu: '2',
-      memory: '4',
-      image: imageEnv.name,
-      createRunning: true,
-    }
-    vms.setValue(value);
-
-    vms.save();
-  });
-
-  it('Step 2: Check yaml', () => {
-    cy.intercept('GET', `/apis/kubevirt.io/v1/namespaces/*/virtualmachines/${VM_NAME}`).as('vmDetail');
-
-    vms.goToYamlDetail(VM_NAME);
-    
-    cy.wait('@vmDetail').then(res => {
-      expect(res.response?.statusCode).to.equal(200);
-      const yaml = res.response?.body
-
-      const value:any = YAML.load(yaml)
-      expect(value?.spec?.running).to.equal(true);
-    })
-  });
-})
-
-/**
- * 1. Login
- * 2. Navigate to the VM create page
- * 3. Input required values
- * 4. uncheck "Start VM on Creation"
- * 4. Validate the create request
- * 5. Validate the yaml
-*/
-describe('Create a VM with Start VM on Creation unchecked', () => {
-  const VM_NAME = 'test-vm-running-unchecked-automation'
-
-  beforeEach(() => {
-    cy.login();
-  });
-  
-  it('Step 1: Create VM', () => {
-    vms.goToCreate();
-    const imageEnv = Cypress.env('image');
-    const value = {
-      name: VM_NAME,
-      cpu: '2',
-      memory: '4',
-      image: imageEnv.name,
-      createRunning: false,
-    }
-    vms.setValue(value);
-
-    vms.save();
-  });
-
-  it('Step 2: Check yaml', () => {
-    cy.intercept('GET', `/apis/kubevirt.io/v1/namespaces/*/virtualmachines/${VM_NAME}`).as('vmDetail');
-
-    vms.goToYamlDetail(VM_NAME);
-    
-    cy.wait('@vmDetail').then(res => {
-      expect(res.response?.statusCode).to.equal(200);
-      const yaml = res.response?.body
-
-      const value:any = YAML.load(yaml)
-      expect(value?.spec?.running).to.equal(false);
-    })
-  });
-})
 
 /**
  * 1. Create some image and volume
@@ -143,8 +52,8 @@ describe('Create a VM with Start VM on Creation unchecked', () => {
 export function CheckMemoryRequired() {}
 describe('Create VM without memory provided', () => {
   it('Create VM without memory provided', () => {
-    const VM_NAME = 'test-memory-required'
-    const NAMESPACE = 'default'
+    const VM_NAME = generateName('test-memory-required');
+    const namespace = 'default'
   
     cy.login();
   
@@ -154,7 +63,7 @@ describe('Create VM without memory provided', () => {
       name: VM_NAME,
       cpu: '2',
       image: imageEnv.name,
-      createRunning: false,
+      namespace,
     }
   
     vms.goToCreate();

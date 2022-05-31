@@ -3,6 +3,8 @@ import { LoginPage } from "@/pageobjects/login.po";
 import SidebarPage from "@/pageobjects/sidebar.po";
 import SettingsPage from "@/pageobjects/settings.po";
 
+import { generateName } from '@/utils/utils';
+
 const vms = new VmsPage();
 const login = new LoginPage();
 const settings = new SettingsPage();
@@ -21,7 +23,9 @@ describe('Update Overcommit configuration', () => {
   });
 
   it('Edit overcommit-config cpu', () => {
-    const VM_NAME = 'test-cpu-overcommit'
+    const VM_NAME = generateName('test-cpu-overcommit')
+    const NAMESPACE = 'default'
+
     settings.goTo();
     settings.checkIsCurrentPage();
     settings.clickMenu('overcommit-config', 'Edit Setting', 'overcommit-config')
@@ -39,6 +43,7 @@ describe('Update Overcommit configuration', () => {
       cpu: '2',
       memory: '4',
       image: imageEnv.name,
+      namespace: NAMESPACE,
     }
 
     cy.intercept('POST', '/v1/harvester/kubevirt.io.virtualmachines/*').as('createVM');
@@ -50,6 +55,6 @@ describe('Update Overcommit configuration', () => {
       expect(res.response?.body?.spec?.template?.spec?.domain?.resources?.requests?.cpu).to.equal('100m');
     })
 
-    vms.delete(VM_NAME)
+    vms.delete(NAMESPACE, VM_NAME)
   })
 });
