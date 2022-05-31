@@ -158,7 +158,7 @@ def test_update_using_yaml(request, admin_session, harvester_api_endpoints):
                 harvester_api_endpoints.get_node % (updated_host_data['id']))
 
 
-@pytest.mark.last
+@pytest.mark.trylast
 @pytest.mark.delete_host
 @pytest.mark.hosts_p1
 @pytest.mark.p1
@@ -171,6 +171,10 @@ def test_delete_host(request, admin_session, harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_nodes)
     assert resp.status_code == 200, 'Failed to list nodes: %s' % (resp.content)
     host_data = resp.json()
+
+    if len(host_data["data"]) == 1:
+        pytest.skip("It will break the cluster as it is single node.")
+
     # FIXME(gyee): for now only delete the last node in the cluster due to
     # https://github.com/harvester/harvester/issues/1398
     # This is assuming that the orders are correct. We'll need to test

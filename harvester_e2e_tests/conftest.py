@@ -49,14 +49,14 @@ def pytest_addoption(parser):
     parser.addoption(
         '--harvester_cluster_nodes',
         action='store',
-        type='int',
+        type=int,
         default=config_data['harvester_cluster_nodes'],
         help='Set count of test framework harvester cluster nodes.'
     )
     parser.addoption(
         '--vlan-id',
         action='store',
-        type='int',
+        type=int,
         default=config_data['vlan-id'],
         help=('VLAN ID, if specified, will invoke the tests depended on '
               'external networking.')
@@ -70,7 +70,7 @@ def pytest_addoption(parser):
     parser.addoption(
         '--wait-timeout',
         action='store',
-        type='int',
+        type=int,
         default=config_data['wait-timeout'],
         help='Wait time for polling operations'
     )
@@ -173,7 +173,7 @@ def pytest_addoption(parser):
     parser.addoption(
         '--rancher-cluster-wait-timeout',
         action='store',
-        type='int',
+        type=int,
         default=config_data['rancher-cluster-wait-timeout'],
         help='Wait time for polling Rancher cluster ready status'
     )
