@@ -716,7 +716,7 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
                 timeout=request.config.getoption('--wait-timeout'))
         except polling2.TimeoutException as e:
             errfmt = 'Timed out while waiting for VM to be migrated: %s'
-            raise AssertionError(errfmt % vm_json['metadata']['name']) from e
+            raise AssertionError(errfmt % vm_json['metadata']['name'])
 
         vmi_json_after_migrate = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
