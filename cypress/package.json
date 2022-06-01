@@ -4,6 +4,7 @@
     "@cypress/vue": "^2.2.3",
     "@types/adm-zip": "^0.4.34",
     "@types/js-yaml": "^4.0.5",
+    "cy-verify-downloads": "^0.1.8",
     "cypress-dotenv": "^2.0.0",
     "dotenv": "^16.0.0",
     "mochawesome": "^7.1.3",

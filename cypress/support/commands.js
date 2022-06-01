@@ -3,6 +3,7 @@ import cookie from 'cookie';
 import { Constants } from '../constants/constants'
 const constants = new Constants();
 
+require('cy-verify-downloads').addCustomCommand();
 Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cypress.env('password')) => {
     const isDev = Cypress.env('NODE_ENV') === 'dev';
     const baseUrl = isDev ? Cypress.config('baseUrl') : `${Cypress.config('baseUrl')}/dashboard`;
