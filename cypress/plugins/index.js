@@ -2,6 +2,8 @@
 const dotenvPlugin = require('cypress-dotenv');
 const fs = require("fs");
 const yaml = require('js-yaml');
+const { isFileExist, findFiles } = require('cy-verify-downloads');
+
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
 //
@@ -25,7 +27,7 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   config.baseUrl = config.env.baseUrl;
-
+  on('task', { isFileExist, findFiles }),
   on("task", {
     readYaml(filename) {
       return new Promise((res, rej) => {

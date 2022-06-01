@@ -24,7 +24,9 @@
     },
     "types": [
       "@types/node",
-      "cypress"
+      "cypress",
+      "cy-verify-downloads"
+
     ]
   },
   "include": ["**/*.ts"],

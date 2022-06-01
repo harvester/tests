@@ -1,4 +1,5 @@
 {
+    "pageLoadTimeout": 120000,
     "experimentalSessionSupport": true,
     "modifyObstructiveCode": false,
     "integrationFolder": "./testcases",
