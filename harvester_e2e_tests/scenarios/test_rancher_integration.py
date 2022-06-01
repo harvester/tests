@@ -365,12 +365,16 @@ def rke1_cluster(request, rancher_admin_session, rancher_api_endpoints, image,
 
 
 @pytest.fixture(scope='class')
-def rke2_cluster(request, rancher_admin_session, rancher_api_endpoints, image,
+def rke2_cluster(request, admin_session, harvester_api_endpoints,
+                 rancher_admin_session, rancher_api_endpoints, image,
                  network, cloud_credential,
                  external_rancher_with_imported_harvester):
     test_environment = request.config.getoption('--test-environment')
     cluster_id = external_rancher_with_imported_harvester
     cloud_credential_id = cloud_credential
+
+    utils.assert_image_ready(request, admin_session, harvester_api_endpoints,
+                             image['metadata']['name'])
 
     # Harvester Kubeconfig
     rke2_cluster_name = 'rke2-' + test_environment
