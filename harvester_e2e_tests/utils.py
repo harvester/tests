@@ -365,6 +365,35 @@ def delete_image_by_name(request, admin_session,
         raise AssertionError(errmsg)
 
 
+def assert_image_ready(request, admin_session,
+                       harvester_api_endpoints, image_name):
+
+    resp = admin_session.get(harvester_api_endpoints.get_image % (image_name))
+    if resp.status_code == 404:
+        raise AssertionError(f"Image ${image_name} not exists")
+
+    resp_json = dict()
+
+    def _check_image_ready():
+        resp = admin_session.get(harvester_api_endpoints.get_image %
+                                 (image_name))
+        nonlocal resp_json
+        resp_json = resp.json()
+        if resp_json['status'].get("progress", 0) == 100:
+            return True
+        return False
+
+    try:
+        polling2.poll(
+            _check_image_ready,
+            step=5,
+            timeout=request.config.getoption("--wait-timeout"))
+    except polling2.TimeoutException:
+        errmsg = ("Timed out while waiting for image to be ready\n"
+                  f"Stucking in the status {resp_json['status']}")
+        raise AssertionError(errmsg)
+
+
 def create_image(request, admin_session, harvester_api_endpoints, url,
                  name=None, description='', source_type='download'):
     request_json = get_json_object_from_template(
