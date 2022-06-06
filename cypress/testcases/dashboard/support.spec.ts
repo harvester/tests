@@ -31,9 +31,8 @@ describe("Support Page", () => {
       const kubeconfig = `${Cypress.config("downloadsFolder")}/local.yaml`
       page.downloadKubeConfigBtn.click()
 
-      // cy.readFile(kubeconfig)
-      //   .should("exist")
-      cy.verifyDownload('local.yaml', {timeout: constants.timeout.downloadTimeout});
+      cy.readFile(kubeconfig)
+        .should("exist")
 
       cy.task("readYaml", kubeconfig)
         .should(val => expect(val).to.not.be.a('string'))
@@ -63,32 +62,62 @@ describe("Support Page", () => {
       cy.get("@generateView")
         .children()
         .should($el => expect($el).to.have.length(0))
-    }),
-    // This will download the support bundle and check if it 
+    })
+
     it('is should download', () => {
+      let filename = undefined
       page.generateSupportBundleBtn.click()
-      // This creates an event listener that adds a timeout on the reload account. If the download exceeds
-      // the downloadTimeout, or the pageLoadTimeout in cypress.json then it will not pass correctly
-      cy.window().document().then(function (doc) {
-        doc.addEventListener('click', () => {
-          setTimeout(function () { doc.location.reload() }, constants.timeout.downloadTimeout)
-        })
-
-          page.inputSupportBundle('this is a test bundle')
-            .get("@generateBtn").click()
-            // Verify that the download has completed
-            .verifyDownload('supportbundle', {timeout: constants.timeout.downloadTimeout, contains: true})
-            .intercept('/v1/harvester/supportbundles*/download', (req) => {
-              req.reply((res) => {
-                expect(res.statusCode).to.equal(200);
-                });
-              })
-
+      page.inputSupportBundle('this is a test bundle')
+          .get("@generateBtn").click()
+          .intercept("/v1/harvester/*supportbundles/**/bundle*", req => 
+            req.continue(res => {
+              cy.log(res.body.status)
+              filename = res.body.status?.filename || undefined
             })
-            // This verified the file after the event listenter in case the
-            // reload timeout triggered before the other timeouts. Then it will give a false success. This should catch that use case
-            cy.verifyDownload('supportbundle', {timeout: constants.timeout.downloadTimeout, contains: true});
+          )
 
+      cy.window().then(win => {
+        let timeout = {timeout: constants.timeout.downloadTimeout}
+        return cy.get("@generateView").then(timeout, $el => {
+          return new Promise((resolve, reject) => {
+            // delay 3s to refresh page, this will fix page reload bug
+            // `DOMNodeRemoved` is deprecated, we probably need to use `MutationObserver`
+            // in the future
+            $el.one("DOMNodeRemoved", () => setTimeout(() => resolve(win.history.go(0)), 3000))
           })
-  });
+        })
+      })
+      .then(() => { // the scope will execute after page reloaded
+        new Promise((resolve, reject) => {
+          if (filename !== undefined) {
+            cy.task("findFiles", {path: Cypress.config("downloadsFolder"), fileName: "supportbundle"})
+              .then(files => files.length == 1 ? resolve(files[0]) : reject(files))
+          }
+          resolve(filename)
+        })
+        .then(filename => {
+          cy.log("Downloaded SupportBundle: ", filename)
+          let zipfilename = `${Cypress.config("downloadsFolder")}/${filename}`
+          return new Promise((resolve, reject) => {
+            cy.task("readZipFile", zipfilename)
+              .then(entries => resolve(entries))
+          })
+        })
+        .then((items) => {
+          cy.log(`ZipFile entries: ${items.length}`)
+          let {dirs, files} = items.reduce((groups,e) => {
+            e.isDirectory ? groups.dirs.push(e) : groups.files.push(e)
+            return groups
+          }, {dirs:[], files:[]})
+
+          cy.log("Total Dirs:", dirs)
+          cy.log("Total Files:", files)
+          return {dirs, files}
+        })
+        // .then(({dirs, files}) => {}) // new verfiers here
+
+      })
+    })
+
+  })
 })
