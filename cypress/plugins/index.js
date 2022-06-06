@@ -3,6 +3,7 @@ const dotenvPlugin = require('cypress-dotenv');
 const fs = require("fs");
 const yaml = require('js-yaml');
 const { isFileExist, findFiles } = require('cy-verify-downloads');
+const AdmZip = require("adm-zip");
 
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
@@ -27,8 +28,9 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   config.baseUrl = config.env.baseUrl;
-  on('task', { isFileExist, findFiles }),
   on("task", {
+    isFileExist,
+    findFiles,
     readYaml(filename) {
       return new Promise((res, rej) => {
         try {
@@ -58,6 +60,16 @@ module.exports = (on, config) => {
           }
           resolve(true)
         })
+      })
+    },
+    readZipFile (fileName) {
+      return new Promise((resolve, reject) => {
+        try {
+          resolve(new AdmZip(fileName).getEntries())
+        } catch (e) {
+          console.error(e)
+          resolve(e.message)
+        }
       })
     }
   })
