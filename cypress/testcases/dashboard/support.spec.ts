@@ -65,7 +65,7 @@ describe("Support Page", () => {
     })
 
     it('is should download', () => {
-      let filename = undefined
+      let filename: string | undefined = undefined
       page.generateSupportBundleBtn.click()
       page.inputSupportBundle('this is a test bundle')
           .get("@generateBtn").click()
@@ -91,7 +91,7 @@ describe("Support Page", () => {
         new Promise((resolve, reject) => {
           if (filename !== undefined) {
             cy.task("findFiles", {path: Cypress.config("downloadsFolder"), fileName: "supportbundle"})
-              .then(files => files.length == 1 ? resolve(files[0]) : reject(files))
+              .then((files: any) => files.length == 1 ? resolve(files[0]) : reject(files))
           }
           resolve(filename)
         })
@@ -103,9 +103,9 @@ describe("Support Page", () => {
               .then(entries => resolve(entries))
           })
         })
-        .then((items) => {
+        .then((items: any) => {
           cy.log(`ZipFile entries: ${items.length}`)
-          let {dirs, files} = items.reduce((groups,e) => {
+          let {dirs, files} = items.reduce((groups: any, e: any) => {
             e.isDirectory ? groups.dirs.push(e) : groups.files.push(e)
             return groups
           }, {dirs:[], files:[]})
