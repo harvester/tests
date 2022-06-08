@@ -12,8 +12,8 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/1218-http-proxy-setting-harvester/</guid>
-      <description>Related issue: #1218 Missing http proxy settings on rke2 and rancher pod  Environment setup Setup an airgapped harvester
- Clone ipxe example repository https://github.com/harvester/ipxe-examples Edit the setting.xml file under vagrant ipxe example Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster  Verification Steps  Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt; Create image from URL (change folder date to latest) https://cloud-images.</description>
+      <description>Related issue: #1218 Missing http proxy settings on rke2 and rancher pod Environment setup Setup an airgapped harvester
+Clone ipxe example repository https://github.com/harvester/ipxe-examples Edit the setting.xml file under vagrant ipxe example Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Verification Steps Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt; Create image from URL (change folder date to latest) https://cloud-images.ubuntu.com/focal/20211122/focal-server-cloudimg-amd64.img Create a virtual machine Prepare an S3 account with Bucket, Bucket region, Access Key ID and Secret Access Key Setup backup target in settings Edit virtual machine and take backup ssh to server node with user rancher Run kubectl create deployment nginx --image=nginx:latest on Harvester cluster Run kubectl get pods Expected Results At Step 2, Can download and create image from URL without error At step 6, Can backup running VM to external S3 storage correctly At step 6, Can delete backup from external S3 correctly At step 9, Can pull image from internet and deploy nginx pod in running status harvester-node-0:/home/rancher # kubectl create deployment nginx --image=nginx:latest deployment.</description>
     </item>
     
     <item>
@@ -22,7 +22,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/add-node-cluster/</guid>
-      <description> Start with harvester installer and select &amp;lsquo;Join an existing Harvester cluster&amp;rsquo; Provide the management ip and cluster token  Expected Results  On completion, Harvester should show the same management url as of existing node and status as ready. Check the host section, the joined node must appear  </description>
+      <description> Start with harvester installer and select &amp;lsquo;Join an existing Harvester cluster&amp;rsquo; Provide the management ip and cluster token Expected Results On completion, Harvester should show the same management url as of existing node and status as ready. Check the host section, the joined node must appear </description>
     </item>
     
     <item>
@@ -32,7 +32,7 @@
       
       <guid>https://harvester.github.io/tests/manual/deployment/additional-trusted-ca/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1260
-Verify Items  Image download with self-signed additional-ca VM backup with self-signed additional-ca  Case: Image downlaod  Install Harvester with ipxe-example which includes https://github.com/harvester/ipxe-examples/pull/36 Upload any valid iso to pxe-server&amp;rsquo;s /var/www/ Use Browser to access https://&amp;lt;pxe-server-ip&amp;gt;/&amp;lt;iso-file&amp;gt; should be valid Add self-signed cert to Harvester  Navigate to Harvester Advanced Settings, edit additional-ca cert content can be retrieved in pxe-server /etc/ssl/certs/nginx-selfsigned.crt   Create Image with the same URL https://&amp;lt;pxe-server-ip&amp;gt;/&amp;lt;iso-file&amp;gt; Image should be downloaded  Case: VM backup  Install Harvester with ipxe-example setup Minio in pxe-server  follow instruction to download binary and start the service login to UI console then add region and create bucket follow instruction to generate self-signed cert with IP SANs restart service with self-signed cert   Add self-signed cert to Harvester Add local Minio info as S3 into backup-target Backup-Target Should not pop up any Error Message Create Image for VM creation Create VM with any resource Perform VM backup VM&amp;rsquo;s data Should be backup into Minio&amp;rsquo;s folder  </description>
+Verify Items Image download with self-signed additional-ca VM backup with self-signed additional-ca Case: Image downlaod Install Harvester with ipxe-example which includes https://github.com/harvester/ipxe-examples/pull/36 Upload any valid iso to pxe-server&amp;rsquo;s /var/www/ Use Browser to access https://&amp;lt;pxe-server-ip&amp;gt;/&amp;lt;iso-file&amp;gt; should be valid Add self-signed cert to Harvester Navigate to Harvester Advanced Settings, edit additional-ca cert content can be retrieved in pxe-server /etc/ssl/certs/nginx-selfsigned.crt Create Image with the same URL https://&amp;lt;pxe-server-ip&amp;gt;/&amp;lt;iso-file&amp;gt; Image should be downloaded Case: VM backup Install Harvester with ipxe-example setup Minio in pxe-server follow instruction to download binary and start the service login to UI console then add region and create bucket follow instruction to generate self-signed cert with IP SANs restart service with self-signed cert Add self-signed cert to Harvester Add local Minio info as S3 into backup-target Backup-Target Should not pop up any Error Message Create Image for VM creation Create VM with any resource Perform VM backup VM&amp;rsquo;s data Should be backup into Minio&amp;rsquo;s folder </description>
     </item>
     
     <item>
@@ -41,7 +41,7 @@ Verify Items  Image download with self-signed additional-ca VM backup with self-
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/1410-pxe-installation-automatically-get-vip/</guid>
-      <description> Related issues: #1410 Support getting VIP automatically during PXE boot installation  Verification Steps  Comment vip and vip_hw_addr in ipxe-examples/vagrant-pxe-harvester/ansible/roles/harvester/templates/config-create.yaml.j2 Start vagrant-pxe-harvester Run kubectl get cm -n harvester-system vip  Check whether we can get ip and hwAddress in it   Run ip a show harvester-mgmt  Check whether there are two IPs in it and one is the vip.    Expected Results  VIP should automatically be assigned  </description>
+      <description> Related issues: #1410 Support getting VIP automatically during PXE boot installation Verification Steps Comment vip and vip_hw_addr in ipxe-examples/vagrant-pxe-harvester/ansible/roles/harvester/templates/config-create.yaml.j2 Start vagrant-pxe-harvester Run kubectl get cm -n harvester-system vip Check whether we can get ip and hwAddress in it Run ip a show harvester-mgmt Check whether there are two IPs in it and one is the vip. Expected Results VIP should automatically be assigned </description>
     </item>
     
     <item>
@@ -50,8 +50,8 @@ Verify Items  Image download with self-signed additional-ca VM backup with self-
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/1590-change-dns-server-for-install/</guid>
-      <description>Related issues: #1590 Harvester installer can&amp;rsquo;t resolve hostnames  Known Issues When supplying multiple ip=&amp;hellip; kernel cmdline arguments, only one of them will be configured by dracut, therefore only the configured interface would have ifcfg generated. So for now, we can&amp;rsquo;t support multiple ip=&amp;hellip; kernel cmdline arguments
-Verification Steps   Because configuring the network of the installation environment only works with PXE installation, you could use ipxe-examples/vagrant-pxe-harvester/ to set it up.</description>
+      <description>Related issues: #1590 Harvester installer can&amp;rsquo;t resolve hostnames Known Issues When supplying multiple ip=&amp;hellip; kernel cmdline arguments, only one of them will be configured by dracut, therefore only the configured interface would have ifcfg generated. So for now, we can&amp;rsquo;t support multiple ip=&amp;hellip; kernel cmdline arguments
+Verification Steps Because configuring the network of the installation environment only works with PXE installation, you could use ipxe-examples/vagrant-pxe-harvester/ to set it up. Be sure you can run setup_harvester.</description>
     </item>
     
     <item>
@@ -61,9 +61,9 @@ Verification Steps   Because configuring the network of the installation environ
       
       <guid>https://harvester.github.io/tests/manual/deployment/http-proxy-setting-harvester/</guid>
       <description>Related issue: #1218 Missing http proxy settings on rke2 and rancher pod
-  Related issue: #1012 Failed to create image when deployed in private network environment
-  Category:  Network  Environment setup Setup an airgapped harvester
- Clone ipxe example repository https://github.com/harvester/ipxe-examples Edit the setting.xml file under vagrant ipxe example Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster  Verification Steps  Open Settings, edit http-proxy with the following values  HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
+Related issue: #1012 Failed to create image when deployed in private network environment
+Category: Network Environment setup Setup an airgapped harvester
+Clone ipxe example repository https://github.com/harvester/ipxe-examples Edit the setting.xml file under vagrant ipxe example Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Verification Steps Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
     </item>
     
     <item>
@@ -72,7 +72,7 @@ Verification Steps   Because configuring the network of the installation environ
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/812-multiple-word-harvester-token/</guid>
-      <description> Related issues: #812 ISO install accepts multiple words for &amp;lsquo;cluster token&amp;rsquo; value resulting in failure to join cluster  Verification Steps  Start Harvester install from ISO At the &amp;lsquo;Cluster token&amp;rsquo; prompt, enter, here are words Proceed to complete the installation Boot a secondary host from the installation ISO and select the option to join an existing cluster At the &amp;lsquo;Cluster token&amp;rsquo; prompt, enter, here are words Proceed to complete the installation Verify both hosts show in hosts list at VIP  Expected Results  Install should complete successfully Host should add with no errors Both hosts should show up  </description>
+      <description> Related issues: #812 ISO install accepts multiple words for &amp;lsquo;cluster token&amp;rsquo; value resulting in failure to join cluster Verification Steps Start Harvester install from ISO At the &amp;lsquo;Cluster token&amp;rsquo; prompt, enter, here are words Proceed to complete the installation Boot a secondary host from the installation ISO and select the option to join an existing cluster At the &amp;lsquo;Cluster token&amp;rsquo; prompt, enter, here are words Proceed to complete the installation Verify both hosts show in hosts list at VIP Expected Results Install should complete successfully Host should add with no errors Both hosts should show up </description>
     </item>
     
     <item>
@@ -82,7 +82,7 @@ Verification Steps   Because configuring the network of the installation environ
       
       <guid>https://harvester.github.io/tests/manual/deployment/install_via_usb/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1200
-Verify Items  Harvester can be installed via USB stick  Case: Install Harvester via USB disk  Follow the instruction to create USB disk Harvester should able to be installed via the USB on UEFI-based bare metals  </description>
+Verify Items Harvester can be installed via USB stick Case: Install Harvester via USB disk Follow the instruction to create USB disk Harvester should able to be installed via the USB on UEFI-based bare metals </description>
     </item>
     
     <item>
@@ -92,7 +92,7 @@ Verify Items  Harvester can be installed via USB stick  Case: Install Harvester 
       
       <guid>https://harvester.github.io/tests/manual/deployment/install-bare-metal-iso/</guid>
       <description>Install using ISO image https://docs.harvesterhci.io/v0.3/install/iso-install/
-Expected Results  On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI  </description>
+Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
     </item>
     
     <item>
@@ -102,7 +102,7 @@ Expected Results  On completion of the installation, Harvester should provide th
       
       <guid>https://harvester.github.io/tests/manual/deployment/install-nested-virtualization/</guid>
       <description>Install using ISO image https://docs.harvesterhci.io/v0.3/install/iso-install/
-Expected Results  On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI  </description>
+Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
     </item>
     
     <item>
@@ -112,7 +112,7 @@ Expected Results  On completion of the installation, Harvester should provide th
       
       <guid>https://harvester.github.io/tests/manual/deployment/install-bare-metal-pxe/</guid>
       <description>Install Harvester using PXE boot https://docs.harvesterhci.io/v0.3/install/pxe-boot-install/
-Expected Results  On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI  </description>
+Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
     </item>
     
     <item>
@@ -122,7 +122,7 @@ Expected Results  On completion of the installation, Harvester should provide th
       
       <guid>https://harvester.github.io/tests/manual/deployment/install_on_nvme/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1627
-Verify Items  Harvester can detect NVMe SSD when installing Harvester can be installed on NVMe SSD  Case: Install Harvester on NVMe disk  Create block image as NVMe disk  Run dd if=/dev/zero of=/var/lib/libvirt/images/nvme145.img bs=1M count=148480 Then Change file owner chown qemu:qemu /var/lib/libvirt/images/nvme145.img   Create VM via virt-manager  Select Manual install, set Generic OS, Memory:9216, CPUs:8, Uncheck enable storage&amp;hellip; and check customize configuration before install Select Firmware to use UEFI x86_64 (use usr/share/qemu/ovmf-x86_64-code.</description>
+Verify Items Harvester can detect NVMe SSD when installing Harvester can be installed on NVMe SSD Case: Install Harvester on NVMe disk Create block image as NVMe disk Run dd if=/dev/zero of=/var/lib/libvirt/images/nvme145.img bs=1M count=148480 Then Change file owner chown qemu:qemu /var/lib/libvirt/images/nvme145.img Create VM via virt-manager Select Manual install, set Generic OS, Memory:9216, CPUs:8, Uncheck enable storage&amp;hellip; and check customize configuration before install Select Firmware to use UEFI x86_64 (use usr/share/qemu/ovmf-x86_64-code.</description>
     </item>
     
     <item>
@@ -132,7 +132,7 @@ Verify Items  Harvester can detect NVMe SSD when installing Harvester can be ins
       
       <guid>https://harvester.github.io/tests/manual/deployment/hwaddr_configre_option/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1064
-Verify Items  Configure Option HwAddr is working on install configuration  Case: Use HwAddr to install harvester via PXE  Install Harvester with PXE installation, set hwAddr instead of name in install.networks Harvester should installed successfully  </description>
+Verify Items Configure Option HwAddr is working on install configuration Case: Use HwAddr to install harvester via PXE Install Harvester with PXE installation, set hwAddr instead of name in install.networks Harvester should installed successfully </description>
     </item>
     
     <item>
@@ -142,7 +142,7 @@ Verify Items  Configure Option HwAddr is working on install configuration  Case:
       
       <guid>https://harvester.github.io/tests/manual/deployment/install_symblic_link/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1462
-Verify Items  Disk&amp;rsquo;s symbolic link can be used in install configure option install.device  Case: Harvester install with configure symbolic link on install.device  Install Harvester with any nodes login to console, use ls -l /dev/disk/by-path to get disk&amp;rsquo;s link name Re-install Harvester with configure file, with set the disk&amp;rsquo;s link name instead. Harvester should be install successfully  </description>
+Verify Items Disk&amp;rsquo;s symbolic link can be used in install configure option install.device Case: Harvester install with configure symbolic link on install.device Install Harvester with any nodes login to console, use ls -l /dev/disk/by-path to get disk&amp;rsquo;s link name Re-install Harvester with configure file, with set the disk&amp;rsquo;s link name instead. Harvester should be install successfully </description>
     </item>
     
     <item>
@@ -152,9 +152,9 @@ Verify Items  Disk&amp;rsquo;s symbolic link can be used in install configure op
       
       <guid>https://harvester.github.io/tests/manual/deployment/manual-upgrade-from-0.3.0-to-1.0.0/</guid>
       <description>Related issues: #1644 Harvester pod crashes after upgrading from v0.3.0 to v1.0.0-rc1 (contain vm backup before upgrade)
-  Related issues: #1588 VM backup cause harvester pod to crash
-  Notice We recommend using zero downtime upgrade to upgrade harvester. Manual upgrade is for advance usage and purpose.
-Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and do checksum Download harvester v1.0.0 iso and do checksum Use ISO Install a 4 nodes harvester cluster Create several OS images from URL Create ssh key Enable vlan network with harvester-mgmt Create virtual network vlan1 with id 1 Create 2 virtual machines   ubuntu-vm: 2 core, 4GB memory, 30GB disk   Setup backup target Take a backup from ubuntu vm Peform manual upgrade steps in the following docudment  upgrade process Follow the manual upgrade steps to upgrade from v0.</description>
+Related issues: #1588 VM backup cause harvester pod to crash
+Notice We recommend using zero downtime upgrade to upgrade harvester. Manual upgrade is for advance usage and purpose.
+Category: Manual Upgrade Verification Steps Download harvester v0.3.0 iso and do checksum Download harvester v1.0.0 iso and do checksum Use ISO Install a 4 nodes harvester cluster Create several OS images from URL Create ssh key Enable vlan network with harvester-mgmt Create virtual network vlan1 with id 1 Create 2 virtual machines ubuntu-vm: 2 core, 4GB memory, 30GB disk Setup backup target Take a backup from ubuntu vm Peform manual upgrade steps in the following docudment upgrade process Follow the manual upgrade steps to upgrade from v0.</description>
     </item>
     
     <item>
@@ -163,7 +163,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/negative-power-off-one-node-cluster/</guid>
-      <description> Create a three nodes cluster for Harvester. Power down an added node.  Expected Results  On power down the node, the status of the node should become down. Harvester system system should be still up.  </description>
+      <description> Create a three nodes cluster for Harvester. Power down an added node. Expected Results On power down the node, the status of the node should become down. Harvester system system should be still up. </description>
     </item>
     
     <item>
@@ -172,7 +172,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/negative-power-down-management-node/</guid>
-      <description> Create a three nodes cluster for Harvester. Power down the first node which was added to the cluster.  Expected Results  On power down the node, the status of the node should become down. Harvester system system should be still up.  </description>
+      <description> Create a three nodes cluster for Harvester. Power down the first node which was added to the cluster. Expected Results On power down the node, the status of the node should become down. Harvester system system should be still up. </description>
     </item>
     
     <item>
@@ -181,8 +181,8 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/1439-pxe-install-without-iso-url-field/</guid>
-      <description> Related issues: #1439 PXE boot installation doesn&amp;rsquo;t give an error if iso_url field is missing  Environment setup This is easiest to test with the vagrant setup at https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester
- edit https://github.com/harvester/ipxe-examples/blob/main/vagrant-pxe-harvester/ansible/roles/harvester/templates/config-create.yaml.j2#L27 to be blank  Verification Steps  Run the vagrant ./setup.sh from the vagrant repo  Expected Results  You should get an error in the console for the VM when installing  </description>
+      <description> Related issues: #1439 PXE boot installation doesn&amp;rsquo;t give an error if iso_url field is missing Environment setup This is easiest to test with the vagrant setup at https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester
+edit https://github.com/harvester/ipxe-examples/blob/main/vagrant-pxe-harvester/ansible/roles/harvester/templates/config-create.yaml.j2#L27 to be blank Verification Steps Run the vagrant ./setup.sh from the vagrant repo Expected Results You should get an error in the console for the VM when installing </description>
     </item>
     
     <item>
@@ -191,7 +191,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/negative-reboot-management-node/</guid>
-      <description> Create a three nodes cluster for Harvester. Reboot the management node/added node.  Expected Results  Once the node is up after reboot, the node should become available in the cluster.  </description>
+      <description> Create a three nodes cluster for Harvester. Reboot the management node/added node. Expected Results Once the node is up after reboot, the node should become available in the cluster. </description>
     </item>
     
     <item>
@@ -200,7 +200,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/remove-node-cluster/</guid>
-      <description>Remove node from the Harvester cluster using the Harvester UI  Expected Results The components of Harvester should get cleaned up from the node.</description>
+      <description>Remove node from the Harvester cluster using the Harvester UI Expected Results The components of Harvester should get cleaned up from the node.</description>
     </item>
     
     <item>
@@ -209,7 +209,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/verify-network-connection/</guid>
-      <description>Provide the hostName Select management NIC bond Select the IPv4 (Automatic and Static)  Expected Results This value of hostname should be overwritten by DHCP if DHCP supplies a hostname for the system. If DHCP doesn&amp;rsquo;t offer a hostname and this value is empty, a random hostname will be generated.</description>
+      <description>Provide the hostName Select management NIC bond Select the IPv4 (Automatic and Static) Expected Results This value of hostname should be overwritten by DHCP if DHCP supplies a hostname for the system. If DHCP doesn&amp;rsquo;t offer a hostname and this value is empty, a random hostname will be generated.</description>
     </item>
     
     <item>
@@ -218,7 +218,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/verify-ssh/</guid>
-      <description>Provide SSH keys while installing the Harvester. Verify user is able to login the node using that ssh key.  Expected Results User should be able to login to the node using that ssh key.</description>
+      <description>Provide SSH keys while installing the Harvester. Verify user is able to login the node using that ssh key. Expected Results User should be able to login to the node using that ssh key.</description>
     </item>
     
     <item>
@@ -227,7 +227,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/verify-http-config/</guid>
-      <description>Provide the remote Harvester config, you can find an example of the config I&amp;rsquo;m using in the deployment test plan description  Expected Results  Check that all values are taking into account  If you are using my config file, check: the node must be off after the installation the nvme and kvm modules are loaded the file /etc/test.txt exists with the correct rights the systcl values the env variable test_env should exist dns configured in /etc/resolv.</description>
+      <description>Provide the remote Harvester config, you can find an example of the config I&amp;rsquo;m using in the deployment test plan description Expected Results Check that all values are taking into account If you are using my config file, check: the node must be off after the installation the nvme and kvm modules are loaded the file /etc/test.txt exists with the correct rights the systcl values the env variable test_env should exist dns configured in /etc/resolv.</description>
     </item>
     
     <item>
@@ -236,7 +236,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/verify-installation-confirmation/</guid>
-      <description>Verify all the details shown on the screen  Expected Results The info should reflect all the user filled data.</description>
+      <description>Verify all the details shown on the screen Expected Results The info should reflect all the user filled data.</description>
     </item>
     
     <item>
@@ -245,7 +245,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/verify-installer-options/</guid>
-      <description> Verify the following options available while installing the Harvester is working  Installation target Cluster token Password VIP NTP Address    Expected Results  Should show all the disks available. Verify the min and max length acceptable for cluster token. Verify the password rule  </description>
+      <description> Verify the following options available while installing the Harvester is working Installation target Cluster token Password VIP NTP Address Expected Results Should show all the disks available. Verify the min and max length acceptable for cluster token. Verify the password rule </description>
     </item>
     
     <item>
@@ -254,7 +254,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/verify-proxy/</guid>
-      <description>Provide a valid proxy address, verify it works after installation is complete. Provide empty proxy address.  Expected Results For empty proxy address, by default DHCP should provide the management url and it should navigate to the Harvester UI.</description>
+      <description>Provide a valid proxy address, verify it works after installation is complete. Provide empty proxy address. Expected Results For empty proxy address, by default DHCP should provide the management url and it should navigate to the Harvester UI.</description>
     </item>
     
     <item>
@@ -263,7 +263,7 @@ Category:  Manual Upgrade  Verification Steps  Download harvester v0.3.0 iso and
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/deployment/verify-vip-load-balancer/</guid>
-      <description> Install Harvester on one Node  Install with VIP pulling from DHCP Verify that IP is assigned via DHCP    Add at least one additional node  Use VIP address as management address for adding node   Finish install of additional nodes Create new VM Connect to VM via web console  Expected Results  Install of all nodes should complete New nodes should show up in hosts list via web UI at VIP VMs should create Console should open  </description>
+      <description> Install Harvester on one Node Install with VIP pulling from DHCP Verify that IP is assigned via DHCP Add at least one additional node Use VIP address as management address for adding node Finish install of additional nodes Create new VM Connect to VM via web console Expected Results Install of all nodes should complete New nodes should show up in hosts list via web UI at VIP VMs should create Console should open </description>
     </item>
     
   </channel>

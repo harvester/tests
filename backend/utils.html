@@ -388,9 +388,38 @@ def delete_image_by_name(request, admin_session,
             _wait_for_image_to_be_deleted,
             step=5,
             timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    except polling2.TimeoutException as e:
+    except polling2.TimeoutException:
         errmsg = &#39;Timed out while waiting for image to be deleted&#39;
-        raise AssertionError(errmsg) from e
+        raise AssertionError(errmsg)
+
+
+def assert_image_ready(request, admin_session,
+                       harvester_api_endpoints, image_name):
+
+    resp = admin_session.get(harvester_api_endpoints.get_image % (image_name))
+    if resp.status_code == 404:
+        raise AssertionError(f&#34;Image ${image_name} not exists&#34;)
+
+    resp_json = dict()
+
+    def _check_image_ready():
+        resp = admin_session.get(harvester_api_endpoints.get_image %
+                                 (image_name))
+        nonlocal resp_json
+        resp_json = resp.json()
+        if resp_json[&#39;status&#39;].get(&#34;progress&#34;, 0) == 100:
+            return True
+        return False
+
+    try:
+        polling2.poll(
+            _check_image_ready,
+            step=5,
+            timeout=request.config.getoption(&#34;--wait-timeout&#34;))
+    except polling2.TimeoutException:
+        errmsg = (&#34;Timed out while waiting for image to be ready\n&#34;
+                  f&#34;Stucking in the status {resp_json[&#39;status&#39;]}&#34;)
+        raise AssertionError(errmsg)
 
 
 def create_image(request, admin_session, harvester_api_endpoints, url,
@@ -465,11 +494,13 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
                     vm_name, running):
     # give it some time for the VM to boot up
     time.sleep(180)
+    resp_json = dict()
 
     def _check_vm_ready():
         resp = admin_session.get(harvester_api_endpoints.get_vm_instance %
                                  (vm_name))
         if resp.status_code == 200:
+            nonlocal resp_json
             resp_json = resp.json()
             if running:
                 if (&#39;status&#39; in resp_json and
@@ -488,9 +519,10 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
             _check_vm_ready,
             step=5,
             timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    except polling2.TimeoutException as e:
-        errmsg = &#39;Timed out while waiting for VM to be ready.&#39;
-        raise AssertionError(errmsg) from e
+    except polling2.TimeoutException:
+        errmsg = (&#39;Timed out while waiting for VM to be ready.\n&#39;
+                  f&#34;Stucking in Phase {resp_json[&#39;status&#39;][&#39;phase&#39;]}&#34;)
+        raise AssertionError(errmsg)
 
 
 def create_vm(request, admin_session, image, harvester_api_endpoints,
@@ -1477,10 +1509,10 @@ def get_vm_ip_address(admin_session, harvester_api_endpoints, vm, timeout,
 
     try:
         ip = polling2.poll(_wait_for_ip, step=5, timeout=timeout)
-    except polling2.TimeoutException as e:
+    except polling2.TimeoutException:
         errmsg = (&#39;Timed out while waiting for IP address for NIC %s to be &#39;
                   &#39; assigned: %s&#39; % (nic_name, vm_instance_json))
-        raise AssertionError(errmsg) from e
+        raise AssertionError(errmsg)
 
     return (vm_instance_json, ip)
 
@@ -1510,6 +1542,44 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="harvester_e2e_tests.utils.assert_image_ready"><code class="name flex">
+<span>def <span class="ident">assert_image_ready</span></span>(<span>request, admin_session, harvester_api_endpoints, image_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def assert_image_ready(request, admin_session,
+                       harvester_api_endpoints, image_name):
+
+    resp = admin_session.get(harvester_api_endpoints.get_image % (image_name))
+    if resp.status_code == 404:
+        raise AssertionError(f&#34;Image ${image_name} not exists&#34;)
+
+    resp_json = dict()
+
+    def _check_image_ready():
+        resp = admin_session.get(harvester_api_endpoints.get_image %
+                                 (image_name))
+        nonlocal resp_json
+        resp_json = resp.json()
+        if resp_json[&#39;status&#39;].get(&#34;progress&#34;, 0) == 100:
+            return True
+        return False
+
+    try:
+        polling2.poll(
+            _check_image_ready,
+            step=5,
+            timeout=request.config.getoption(&#34;--wait-timeout&#34;))
+    except polling2.TimeoutException:
+        errmsg = (&#34;Timed out while waiting for image to be ready\n&#34;
+                  f&#34;Stucking in the status {resp_json[&#39;status&#39;]}&#34;)
+        raise AssertionError(errmsg)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.utils.assert_vm_ready"><code class="name flex">
 <span>def <span class="ident">assert_vm_ready</span></span>(<span>request, admin_session, harvester_api_endpoints, vm_name, running)</span>
 </code></dt>
@@ -1523,11 +1593,13 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
                     vm_name, running):
     # give it some time for the VM to boot up
     time.sleep(180)
+    resp_json = dict()
 
     def _check_vm_ready():
         resp = admin_session.get(harvester_api_endpoints.get_vm_instance %
                                  (vm_name))
         if resp.status_code == 200:
+            nonlocal resp_json
             resp_json = resp.json()
             if running:
                 if (&#39;status&#39; in resp_json and
@@ -1546,9 +1618,10 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
             _check_vm_ready,
             step=5,
             timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    except polling2.TimeoutException as e:
-        errmsg = &#39;Timed out while waiting for VM to be ready.&#39;
-        raise AssertionError(errmsg) from e</code></pre>
+    except polling2.TimeoutException:
+        errmsg = (&#39;Timed out while waiting for VM to be ready.\n&#39;
+                  f&#34;Stucking in Phase {resp_json[&#39;status&#39;][&#39;phase&#39;]}&#34;)
+        raise AssertionError(errmsg)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.utils.assert_vm_restarted"><code class="name flex">
@@ -2304,9 +2377,9 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
             _wait_for_image_to_be_deleted,
             step=5,
             timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    except polling2.TimeoutException as e:
+    except polling2.TimeoutException:
         errmsg = &#39;Timed out while waiting for image to be deleted&#39;
-        raise AssertionError(errmsg) from e</code></pre>
+        raise AssertionError(errmsg)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.utils.delete_vm"><code class="name flex">
@@ -2751,10 +2824,10 @@ Jinja2 template</p></div>
 
     try:
         ip = polling2.poll(_wait_for_ip, step=5, timeout=timeout)
-    except polling2.TimeoutException as e:
+    except polling2.TimeoutException:
         errmsg = (&#39;Timed out while waiting for IP address for NIC %s to be &#39;
                   &#39; assigned: %s&#39; % (nic_name, vm_instance_json))
-        raise AssertionError(errmsg) from e
+        raise AssertionError(errmsg)
 
     return (vm_instance_json, ip)</code></pre>
 </details>
@@ -3400,6 +3473,7 @@ Jinja2 template</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.utils.assert_image_ready" href="#harvester_e2e_tests.utils.assert_image_ready">assert_image_ready</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.assert_vm_ready" href="#harvester_e2e_tests.utils.assert_vm_ready">assert_vm_ready</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.assert_vm_restarted" href="#harvester_e2e_tests.utils.assert_vm_restarted">assert_vm_restarted</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.assert_vm_unschedulable" href="#harvester_e2e_tests.utils.assert_vm_unschedulable">assert_vm_unschedulable</a></code></li>

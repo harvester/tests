@@ -12,7 +12,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-custom-docker-install-url/</guid>
-      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -21,7 +21,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-custom-insecure-registries/</guid>
-      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Go to node, execute docker info, check the &amp;ldquo;Insecure Registries&amp;rdquo; setting is &amp;ldquo;harbor.wujing.site&amp;rdquo;  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Go to node, execute docker info, check the &amp;ldquo;Insecure Registries&amp;rdquo; setting is &amp;ldquo;harbor.wujing.site&amp;rdquo; Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -30,7 +30,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-custom-registry-mirrors/</guid>
-      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Go to node, execute &amp;ldquo;docker info&amp;rdquo;, check the &amp;ldquo;Registry Mirrors&amp;rdquo; setting is &amp;ldquo;https://s06nkgus.mirror.aliyuncs.com&amp;rdquo;  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Go to node, execute &amp;ldquo;docker info&amp;rdquo;, check the &amp;ldquo;Registry Mirrors&amp;rdquo; setting is &amp;ldquo;https://s06nkgus.mirror.aliyuncs.com&amp;rdquo; Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -39,7 +39,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-custom-storage-driver/</guid>
-      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Go to node, execute &amp;ldquo;docker info&amp;rdquo;, check the Storage Driver setting is overlay  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Go to node, execute &amp;ldquo;docker info&amp;rdquo;, check the Storage Driver setting is overlay Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -48,7 +48,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/add-cluster-driver/</guid>
-      <description> Cluster Management &amp;gt; Drivers &amp;gt; Node Drivers Click &amp;ldquo;Add Node driver&amp;rdquo; Add the correct configuration and save  Expected Results  Created successfully, status is active  </description>
+      <description> Cluster Management &amp;gt; Drivers &amp;gt; Node Drivers Click &amp;ldquo;Add Node driver&amp;rdquo; Add the correct configuration and save Expected Results Created successfully, status is active </description>
     </item>
     
     <item>
@@ -57,7 +57,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/q-cluster-different-roles/</guid>
-      <description> Create three users user1, user2, user3 Give the roles of Cluster Owner to user1, Create Project to user2 and Cluster Member to user3 respectively. Login with these three roles  Expected Results </description>
+      <description> Create three users user1, user2, user3 Give the roles of Cluster Owner to user1, Create Project to user2 and Cluster Member to user3 respectively. Login with these three roles Expected Results </description>
     </item>
     
     <item>
@@ -66,7 +66,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-add-remove-node/</guid>
-      <description> add/remove a node in the created harvester cluster  Expected Results  rancher on the cluster modified successfully harvester corresponding VM node added/removed successfully  </description>
+      <description> add/remove a node in the created harvester cluster Expected Results rancher on the cluster modified successfully harvester corresponding VM node added/removed successfully </description>
     </item>
     
     <item>
@@ -75,7 +75,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/q-cluster-backup-restore/</guid>
-      <description> create a deployment in harvester cluster Go to the rancher&amp;rsquo;s cluster list and make a backup of the harvester cluster After the backup is complete, delete the deployment created in the harvester cluster go to the list of clusters in the rancher and restore the harvester cluster  Expected Results </description>
+      <description> create a deployment in harvester cluster Go to the rancher&amp;rsquo;s cluster list and make a backup of the harvester cluster After the backup is complete, delete the deployment created in the harvester cluster go to the list of clusters in the rancher and restore the harvester cluster Expected Results </description>
     </item>
     
     <item>
@@ -84,7 +84,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/verify-cluster-functionality/</guid>
-      <description> create the project. deploy deployment  Expected Results  The project is created successfully Deployment successfully deployed  </description>
+      <description> create the project. deploy deployment Expected Results The project is created successfully Deployment successfully deployed </description>
     </item>
     
     <item>
@@ -93,7 +93,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/create-add-labs/</guid>
-      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster  Expected Results  Use the command &amp;ldquo;kubectl get node &amp;ndash;show-labels&amp;rdquo; to see the success of the added tabs Go to the node details page of UI, click the &amp;ldquo;Edit Node&amp;rdquo; button, and check Labels  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster Expected Results Use the command &amp;ldquo;kubectl get node &amp;ndash;show-labels&amp;rdquo; to see the success of the added tabs Go to the node details page of UI, click the &amp;ldquo;Edit Node&amp;rdquo; button, and check Labels Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -102,7 +102,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-add-taints/</guid>
-      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster  Expected Results  Use the command kubectl describe node test-tain5 | grep Taint to see if Taint was added successfully. Go to the node details page of UI, click the &amp;ldquo;Edit Node&amp;rdquo; button, and check Taint  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster Expected Results Use the command kubectl describe node test-tain5 | grep Taint to see if Taint was added successfully. Go to the node details page of UI, click the &amp;ldquo;Edit Node&amp;rdquo; button, and check Taint Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -111,7 +111,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/create-3-node-rke1/</guid>
-      <description> From the Rancher home page, click on Create Select RKE1 on the right and click on Harvester Enter a cluster name Give a prefix name for the VMs Increase count to 3 nodes Check etcd, Control Plane and Worker boxes Select or create a node template if needed  Click on Add node template Create credentials by selecting your harvester cluster Fill the instance option fields, pay attention to correctly write the default ssh user of the chosen image in the SSH user field Give a name to the rancher template and click on Create   Click on create to spin the cluster up  Expected Results  The status of the created cluster shows active The status of the corresponding vm on harvester active The 3 nodes should be with the active status  </description>
+      <description> From the Rancher home page, click on Create Select RKE1 on the right and click on Harvester Enter a cluster name Give a prefix name for the VMs Increase count to 3 nodes Check etcd, Control Plane and Worker boxes Select or create a node template if needed Click on Add node template Create credentials by selecting your harvester cluster Fill the instance option fields, pay attention to correctly write the default ssh user of the chosen image in the SSH user field Give a name to the rancher template and click on Create Click on create to spin the cluster up Expected Results The status of the created cluster shows active The status of the corresponding vm on harvester active The 3 nodes should be with the active status </description>
     </item>
     
     <item>
@@ -120,7 +120,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/create-3-node-rke2/</guid>
-      <description> From the Rancher home page, click on Create Select RKE2 on the right and click on Harvester Create the credential to talk with the harvester provider  Select your harvester cluster (external or internal)   Enter a cluster name Increase machine count to 3 Fill the mandatory fields  Namespace Image Network SSH User (default ssh user of the chosen image)   Click on create to spin the cluster up  Expected Results  The status of the created cluster shows active The status of the corresponding vm on harvester active The 3 nodes should be with the active status  </description>
+      <description> From the Rancher home page, click on Create Select RKE2 on the right and click on Harvester Create the credential to talk with the harvester provider Select your harvester cluster (external or internal) Enter a cluster name Increase machine count to 3 Fill the mandatory fields Namespace Image Network SSH User (default ssh user of the chosen image) Click on create to spin the cluster up Expected Results The status of the created cluster shows active The status of the corresponding vm on harvester active The 3 nodes should be with the active status </description>
     </item>
     
     <item>
@@ -138,7 +138,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/add-3-master-nodes/</guid>
-      <description> add a harvester node template Create harvester cluster count set to 3  Expected Results  The status of the created cluster shows active show the 3 created node status running in harvester&amp;rsquo;s vm list the information displayed on rancher and harvester matches the template configuration  </description>
+      <description> add a harvester node template Create harvester cluster count set to 3 Expected Results The status of the created cluster shows active show the 3 created node status running in harvester&amp;rsquo;s vm list the information displayed on rancher and harvester matches the template configuration </description>
     </item>
     
     <item>
@@ -147,7 +147,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-non-default-k8s/</guid>
-      <description> Verify versions 1.19.10, 1.18.18, 1.17.17, 1.16.15 respectively  Expected Results  k8s displayed on the UI is consistent with the created version (cluster list, host list) Use kubectl version to see that the version information is the same as the created version  </description>
+      <description> Verify versions 1.19.10, 1.18.18, 1.17.17, 1.16.15 respectively Expected Results k8s displayed on the UI is consistent with the created version (cluster list, host list) Use kubectl version to see that the version information is the same as the created version </description>
     </item>
     
     <item>
@@ -156,7 +156,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-different-images/</guid>
-      <description>d a harvester node template Set the image, it should be a drop-down list, refer to &amp;ldquo;Test Data&amp;rdquo; for other values  ubuntu-18.04-server-cloudimg-amd64.img focal-server-cloudimg-amd64-disk-kvm.img   Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active The status of the corresponding vm on harvester active The information displayed on rancher and harvester matches the template configuration The drop-down list of images in the harvester node template corresponds to the list of images in the harvester  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>d a harvester node template Set the image, it should be a drop-down list, refer to &amp;ldquo;Test Data&amp;rdquo; for other values ubuntu-18.04-server-cloudimg-amd64.img focal-server-cloudimg-amd64-disk-kvm.img Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active The status of the corresponding vm on harvester active The information displayed on rancher and harvester matches the template configuration The drop-down list of images in the harvester node template corresponds to the list of images in the harvester Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -165,7 +165,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-template-dropdown-multi-user/</guid>
-      <description> Create multiple harvester Node Templates with different users Add harvester cluster and set Template  Expected Results  pop up a template list pop-up box Show the templates you created and the templates created by other users  </description>
+      <description> Create multiple harvester Node Templates with different users Add harvester cluster and set Template Expected Results pop up a template list pop-up box Show the templates you created and the templates created by other users </description>
     </item>
     
     <item>
@@ -174,7 +174,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-non-default-resources/</guid>
-      <description>add a harvester node template The set CPUs, Memory, and Disk values, refer to &amp;ldquo;Test Data&amp;rdquo; for other values Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:4 Memorys:8 Disk:50 Bus:Virtlo Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template The set CPUs, Memory, and Disk values, refer to &amp;ldquo;Test Data&amp;rdquo; for other values Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:4 Memorys:8 Disk:50 Bus:Virtlo Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -183,7 +183,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-different-bus/</guid>
-      <description>add a harvester node template Set the “Network Name”, it should be a drop-down list, refer to &amp;ldquo;Test Data&amp;rdquo; for other values  VirtIO SATA SCSI   Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration The drop-down list of &amp;ldquo;BUS&amp;rdquo; in the harvester node template corresponds to the list of “BUS” in the harvester  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template Set the “Network Name”, it should be a drop-down list, refer to &amp;ldquo;Test Data&amp;rdquo; for other values VirtIO SATA SCSI Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration The drop-down list of &amp;ldquo;BUS&amp;rdquo; in the harvester node template corresponds to the list of “BUS” in the harvester Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -192,7 +192,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-different-networks/</guid>
-      <description>add a harvester node template Set the “Network Name”, it should be a drop-down list, refer to &amp;ldquo;Test Data&amp;rdquo; for other values  vlan1 vlan2   Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration The drop-down list of &amp;ldquo;Network Name&amp;rdquo; in the harvester node template corresponds to the list of “Network Name” in the harvester  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>add a harvester node template Set the “Network Name”, it should be a drop-down list, refer to &amp;ldquo;Test Data&amp;rdquo; for other values vlan1 vlan2 Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration The drop-down list of &amp;ldquo;Network Name&amp;rdquo; in the harvester node template corresponds to the list of “Network Name” in the harvester Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -202,7 +202,7 @@
       
       <guid>https://harvester.github.io/tests/manual/node-driver/deactivate-activate-deletenode-driver/</guid>
       <description>With Rancher &amp;lt; 2.6:
- Tools-&amp;gt;Driver Management→Node Driver Deactivate/activate/delete Harvester Node Driver With Rancher 2.6: Cluster Management &amp;gt; Drivers &amp;gt; Node Drivers Deactivate/activate/delete Harvester Node Driver  Expected Results  Harvester icon is not visible when creating a cluster / Harvester icon is visible when creating a cluster /Harvester icon is not visible when creating a cluster  </description>
+Tools-&amp;gt;Driver Management→Node Driver Deactivate/activate/delete Harvester Node Driver With Rancher 2.6: Cluster Management &amp;gt; Drivers &amp;gt; Node Drivers Deactivate/activate/delete Harvester Node Driver Expected Results Harvester icon is not visible when creating a cluster / Harvester icon is visible when creating a cluster /Harvester icon is not visible when creating a cluster </description>
     </item>
     
     <item>
@@ -211,7 +211,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/cluster-delete/</guid>
-      <description> Delete Cluster  Expected Results  successful cluster deletion in rancher the corresponding VM node in harvester is deleted successfully  </description>
+      <description> Delete Cluster Expected Results successful cluster deletion in rancher the corresponding VM node in harvester is deleted successfully </description>
     </item>
     
     <item>
@@ -230,7 +230,7 @@
       
       <guid>https://harvester.github.io/tests/manual/node-driver/import-external-harvester/</guid>
       <description>With Rancher &amp;lt; 2.6:
- Deploy the rancher and harvester clusters separately In the rancher, add a harvester node template Select &amp;ldquo;External Harvester&amp;rdquo;, and refer to &amp;ldquo;Test Data&amp;rdquo; for other value settings. Use this template to create the corresponding cluster With Rancher 2.6: Home page / Import Existing / Generic Add cluster name and click on Create Follow the registration steps  Expected Results  The status of the created cluster shows active The status of the corresponding vm on harvester active The information displayed on rancher and harvester matches the template configuration  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access External Harvester Host: Port: 443 Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo Image: openSUSE-Leap-15.</description>
+Deploy the rancher and harvester clusters separately In the rancher, add a harvester node template Select &amp;ldquo;External Harvester&amp;rdquo;, and refer to &amp;ldquo;Test Data&amp;rdquo; for other value settings. Use this template to create the corresponding cluster With Rancher 2.6: Home page / Import Existing / Generic Add cluster name and click on Create Follow the registration steps Expected Results The status of the created cluster shows active The status of the corresponding vm on harvester active The information displayed on rancher and harvester matches the template configuration Test Data Harvester Node Template HARVESTER OPTIONS Account Access External Harvester Host: Port: 443 Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -239,7 +239,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/import-internal-harvester/</guid>
-      <description>enable harvester&amp;rsquo;s rancher-enabled setting Click the rancher button in the upper right corner to access the internal rancher add a harvester node template Select &amp;ldquo;Internal Harvester&amp;rdquo;, and refer to &amp;ldquo;Test Data&amp;rdquo; for other value settings. Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo Image: openSUSE-Leap-15.</description>
+      <description>enable harvester&amp;rsquo;s rancher-enabled setting Click the rancher button in the upper right corner to access the internal rancher add a harvester node template Select &amp;ldquo;Internal Harvester&amp;rdquo;, and refer to &amp;ldquo;Test Data&amp;rdquo; for other value settings. Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active the status of the corresponding vm on harvester active the information displayed on rancher and harvester matches the template configuration Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -248,7 +248,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/non-admin-user/</guid>
-      <description>create harvester user ltang, password ltang add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster  Expected Results  The status of the created cluster shows active The status of the corresponding vm on harvester active The information displayed on rancher and harvester matches the template configuration  Test Data Harvester Node Template HARVESTER OPTIONS  Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
+      <description>create harvester user ltang, password ltang add a harvester node template Refer to the &amp;ldquo;Test Data&amp;rdquo; value setting. Use this template to create the corresponding cluster Expected Results The status of the created cluster shows active The status of the corresponding vm on harvester active The information displayed on rancher and harvester matches the template configuration Test Data Harvester Node Template HARVESTER OPTIONS Account Access Internal Harvester Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo/SATA/SCSI Image: openSUSE-Leap-15.</description>
     </item>
     
     <item>
@@ -257,7 +257,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/node-driver/verify-add-node-pool/</guid>
-      <description> Create a cluster of 3 nodes, One node with etcd, Control Plane, Worker, the other two with Worker The cluster is created successfully, use the command kubectl get node to view the node roles  Expected Results  The status of the created cluster shows active show the 3 created node status running in harvester&amp;rsquo;s vm list the information displayed on rancher and harvester matches the template configuration Check that the node role is correct  </description>
+      <description> Create a cluster of 3 nodes, One node with etcd, Control Plane, Worker, the other two with Worker The cluster is created successfully, use the command kubectl get node to view the node roles Expected Results The status of the created cluster shows active show the 3 created node status running in harvester&amp;rsquo;s vm list the information displayed on rancher and harvester matches the template configuration Check that the node role is correct </description>
     </item>
     
   </channel>

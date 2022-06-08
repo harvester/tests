@@ -12,7 +12,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/_incoming/extra-disk-using-raw-disk/</guid>
-      <description>Prepare a disk (with WWN) and attach it to the node. Navigate to &amp;ldquo;Host&amp;rdquo; &amp;gt; &amp;ldquo;Edit Config&amp;rdquo; &amp;gt; &amp;ldquo;Disks&amp;rdquo; and open the dropdown menu &amp;ldquo;Add disks&amp;rdquo;. Choose a disk to add, e.g. /dev/sda but not /dev/sda1.  Expected Results  The raw disk shall be schedulable as a longhorn disk as a whole (without any partition). Ths raw disk shall be in provisioned phase. Reboot the host and the disk shall be reattached and added back as a longhorn disk.</description>
+      <description>Prepare a disk (with WWN) and attach it to the node. Navigate to &amp;ldquo;Host&amp;rdquo; &amp;gt; &amp;ldquo;Edit Config&amp;rdquo; &amp;gt; &amp;ldquo;Disks&amp;rdquo; and open the dropdown menu &amp;ldquo;Add disks&amp;rdquo;. Choose a disk to add, e.g. /dev/sda but not /dev/sda1. Expected Results The raw disk shall be schedulable as a longhorn disk as a whole (without any partition). Ths raw disk shall be in provisioned phase. Reboot the host and the disk shall be reattached and added back as a longhorn disk.</description>
     </item>
     
     <item>
@@ -23,7 +23,7 @@
       <guid>https://harvester.github.io/tests/manual/_incoming/large-amount-of-extra-disks/</guid>
       <description>:warning: This is a heuristic test plan since real world race condition is hard to reproduce. If you find any better alternative, feel free to update.
 This test is better to perform under QEMU/libvirt environment.
-  Related issues: #1718 [BUG] Automatic disk provisioning result in unusable ghost disks on NVMe drives  Category:  Storage  Verification Steps  Create a harvester cluster and attach 10 or more extra disks (needs WWN so that they can be identified uniquely).</description>
+Related issues: #1718 [BUG] Automatic disk provisioning result in unusable ghost disks on NVMe drives Category: Storage Verification Steps Create a harvester cluster and attach 10 or more extra disks (needs WWN so that they can be identified uniquely).</description>
     </item>
     
     <item>
@@ -32,7 +32,7 @@ This test is better to perform under QEMU/libvirt environment.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/_incoming/2023-boot-installer-legacy-and-uefi/</guid>
-      <description>Related issues #2023 Legacy Iso for older servers  Verification Steps BIOS Test  Build harvester-installer Boot build artifact using BIOS Legacy mode: qemu-system-x86_64 -m 2048 -cdrom ../dist/artifacts/harvester-master-amd64 Verify that the installer boot process reaches the screen that says &amp;ldquo;Create New Cluster&amp;rdquo; or &amp;ldquo;Join existing cluster&amp;rdquo;  UEFI Test  Build harvester-installer (or use the same one from the BIOS Test, it&amp;rsquo;s a hybrid ISO) Boot build artifact using UEFI mode: qemu-system-x86_64 -m 2048 -cdrom .</description>
+      <description>Related issues #2023 Legacy Iso for older servers Verification Steps BIOS Test Build harvester-installer Boot build artifact using BIOS Legacy mode: qemu-system-x86_64 -m 2048 -cdrom ../dist/artifacts/harvester-master-amd64 Verify that the installer boot process reaches the screen that says &amp;ldquo;Create New Cluster&amp;rdquo; or &amp;ldquo;Join existing cluster&amp;rdquo; UEFI Test Build harvester-installer (or use the same one from the BIOS Test, it&amp;rsquo;s a hybrid ISO) Boot build artifact using UEFI mode: qemu-system-x86_64 -m 2048 -cdrom .</description>
     </item>
     
     <item>
@@ -41,9 +41,9 @@ This test is better to perform under QEMU/libvirt environment.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/_incoming/1987-failure-message-in-stopping-vm/</guid>
-      <description>Related issues: #1987  Verification Steps Stop Request should not have failure message
- Create a VM with runStrategy: RunStrategyAlways. Stop the VM. Check there is no Failure attempting to delete VMI: &amp;lt;nil&amp;gt; in VM status.  UI should not show pause message
- Create a VM. Pause the VM. Although the message The status of pod readliness gate &amp;quot;kubevirt.io/virtual-machine-unpaused&amp;quot; is not &amp;quot;True&amp;quot;, but False is in the VM condition, UI should not show it.</description>
+      <description>Related issues: #1987 Verification Steps Stop Request should not have failure message
+Create a VM with runStrategy: RunStrategyAlways. Stop the VM. Check there is no Failure attempting to delete VMI: &amp;lt;nil&amp;gt; in VM status. UI should not show pause message
+Create a VM. Pause the VM. Although the message The status of pod readliness gate &amp;quot;kubevirt.io/virtual-machine-unpaused&amp;quot; is not &amp;quot;True&amp;quot;, but False is in the VM condition, UI should not show it.</description>
     </item>
     
     <item>
@@ -52,7 +52,7 @@ This test is better to perform under QEMU/libvirt environment.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/_incoming/1903-dns-github-ssh-keys/</guid>
-      <description>Related issues: #1903 DNS server not available during install  Verification Steps Without PXE  Start a new install Set DNS as 8.8.8.8 Add in github SSH keys Finish install SSH into node with SSH keys from github (rancher@hostname) Verify login was successful  With PXE  Got vagrant setup from https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Changed settings.yml DHCP config and added dns: 8.8.8.8  dhcp_server: ip: 192.168.0.254 subnet: 192.168.0.0 netmask: 255.255.255.0 range: 192.</description>
+      <description>Related issues: #1903 DNS server not available during install Verification Steps Without PXE Start a new install Set DNS as 8.8.8.8 Add in github SSH keys Finish install SSH into node with SSH keys from github (rancher@hostname) Verify login was successful With PXE Got vagrant setup from https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Changed settings.yml DHCP config and added dns: 8.8.8.8 dhcp_server: ip: 192.168.0.254 subnet: 192.168.0.0 netmask: 255.255.255.0 range: 192.168.0.50 192.168.0.130 dns: 8.8.8.8 https: false Also changed ssh_authorized_keys and commented out default SSH key and added username for github</description>
     </item>
     
     <item>
@@ -61,7 +61,7 @@ This test is better to perform under QEMU/libvirt environment.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/</guid>
-      <description> Related issues: #1697 Optimization for the Harvester load balancer  Verification Steps  Install the latest rancher and import a Harvester cluster Create a cluster by Harvester node driver Navigate to the workload Page, create a workload Click &amp;ldquo;Add ports&amp;rdquo;, select type as LB, protocol as TCP Check IPAM selector Navigate to the service page, create a LB Click &amp;ldquo;Add-on config&amp;rdquo; tab and check IPAM and port   </description>
+      <description> Related issues: #1697 Optimization for the Harvester load balancer Verification Steps Install the latest rancher and import a Harvester cluster Create a cluster by Harvester node driver Navigate to the workload Page, create a workload Click &amp;ldquo;Add ports&amp;rdquo;, select type as LB, protocol as TCP Check IPAM selector Navigate to the service page, create a LB Click &amp;ldquo;Add-on config&amp;rdquo; tab and check IPAM and port </description>
     </item>
     
     <item>
@@ -71,9 +71,9 @@ This test is better to perform under QEMU/libvirt environment.
       
       <guid>https://harvester.github.io/tests/manual/_incoming/1864-generate-install-support-config/</guid>
       <description>Related issue: #1864 Support bundle for a single node (Live/Installed)
-  Related issue: #272 Generate supportconfig for failed installations
-  Category:  Support  Environment setup Setup a single node harvester from ISO install but don&amp;rsquo;t complete the installation
- Gain SSH Access to the Single Harvester Node Once Shelled into the Single Harvester Node edit the /usr/sbin/harv-install Using: harvester-installer&amp;rsquo;s harv-install as a reference edit around line #362 adding exit 1:  exit 1 trap cleanup exit check_iso save the file.</description>
+Related issue: #272 Generate supportconfig for failed installations
+Category: Support Environment setup Setup a single node harvester from ISO install but don&amp;rsquo;t complete the installation
+Gain SSH Access to the Single Harvester Node Once Shelled into the Single Harvester Node edit the /usr/sbin/harv-install Using: harvester-installer&amp;rsquo;s harv-install as a reference edit around line #362 adding exit 1: exit 1 trap cleanup exit check_iso save the file.</description>
     </item>
     
     <item>
@@ -82,7 +82,7 @@ This test is better to perform under QEMU/libvirt environment.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/_incoming/1874-extra-disk-swap-path/</guid>
-      <description>Related issues: #1874 Multiple Disks Swapping Paths  Verification Steps  Prepare a harvester cluster (single node is sufficient) Prepare two additional disks and format both of them. Hotplug both disks and add them to the host via Harvester Dashboard (&amp;ldquo;Hosts&amp;rdquo; &amp;gt; &amp;ldquo;Edit Config&amp;rdquo; &amp;gt; &amp;ldquo;Disks&amp;rdquo;) Shutdown the host. Swap the address and slot of the two disks in order to make their dev paths swapped  For libvirt environment, you can swap &amp;lt;address&amp;gt; and &amp;lt;target&amp;gt; in the XML of the disk.</description>
+      <description>Related issues: #1874 Multiple Disks Swapping Paths Verification Steps Prepare a harvester cluster (single node is sufficient) Prepare two additional disks and format both of them. Hotplug both disks and add them to the host via Harvester Dashboard (&amp;ldquo;Hosts&amp;rdquo; &amp;gt; &amp;ldquo;Edit Config&amp;rdquo; &amp;gt; &amp;ldquo;Disks&amp;rdquo;) Shutdown the host. Swap the address and slot of the two disks in order to make their dev paths swapped For libvirt environment, you can swap &amp;lt;address&amp;gt; and &amp;lt;target&amp;gt; in the XML of the disk.</description>
     </item>
     
     <item>
@@ -91,7 +91,7 @@ This test is better to perform under QEMU/libvirt environment.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/_incoming/1702-do-not-allow-restart-or-stop-vm-when-backup-is-in-progress/</guid>
-      <description> Related issues: #1702 Don&amp;rsquo;t allow restart/stop vm when backup is in progress  Verification Steps  Create a VM. Create a VMBackup for it. Before VMBackup is done, stop/restart the VM. Verify VM can&amp;rsquo;t be stopped/restarted.  </description>
+      <description> Related issues: #1702 Don&amp;rsquo;t allow restart/stop vm when backup is in progress Verification Steps Create a VM. Create a VMBackup for it. Before VMBackup is done, stop/restart the VM. Verify VM can&amp;rsquo;t be stopped/restarted. </description>
     </item>
     
   </channel>

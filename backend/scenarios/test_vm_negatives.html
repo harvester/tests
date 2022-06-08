@@ -96,6 +96,7 @@ class TestHostDown:
         utils.power_on_node(request, admin_session, harvester_api_endpoints,
                             node_name)
 
+    @pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/2148&#34;)
     @pytest.mark.host_management
     @pytest.mark.virtual_machines_p1
     @pytest.mark.p1
@@ -207,6 +208,7 @@ class TestHostDown:
         utils.power_on_node(request, admin_session, harvester_api_endpoints,
                             node_name)
 
+    @pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/2148&#34;)
     @pytest.mark.host_management
     @pytest.mark.virtual_machines_p1
     @pytest.mark.p1
@@ -267,7 +269,8 @@ class TestHostDown:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.host_management
+<pre><code class="python">@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/2148&#34;)
+@pytest.mark.host_management
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
 def test_delete_vm_while_host_shutdown(self, request, admin_session,

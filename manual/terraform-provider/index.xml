@@ -23,7 +23,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-variasble/</guid>
-      <description>Define the kubeconfig variable in the provider.tf file  terraform { required_providers { harvester = { source = &amp;#34;registry.terraform.io/harvester/harvester&amp;#34; version = &amp;#34;~&amp;gt; 0.1.0&amp;#34; } } } provider &amp;#34;harvester&amp;#34; { kubeconfig = &amp;#34;/path/of/my/kubeconfig&amp;#34; }  Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command  Expected Results  The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed.</description>
+      <description> Define the kubeconfig variable in the provider.tf file terraform { required_providers { harvester = { source = &amp;#34;registry.terraform.io/harvester/harvester&amp;#34; version = &amp;#34;~&amp;gt; 0.1.0&amp;#34; } } } provider &amp;#34;harvester&amp;#34; { kubeconfig = &amp;#34;/path/of/my/kubeconfig&amp;#34; } Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command Expected Results The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed. Check if you can see your resource in the Harvester WebUI </description>
     </item>
     
     <item>
@@ -32,7 +32,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-home/</guid>
-      <description> Make sure the kubeconfig is defined in the file $HOME/.kube/config Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command  Expected Results  The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed. Check if you can see your resource in the Harvester WebUI  </description>
+      <description> Make sure the kubeconfig is defined in the file $HOME/.kube/config Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command Expected Results The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed. Check if you can see your resource in the Harvester WebUI </description>
     </item>
     
     <item>
@@ -41,7 +41,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/terraform-provider/deployment-all-resources/</guid>
-      <description>Re-use the previous generated TF files and group them all either in one directory or in the same file Generates a speculative execution plan with terraform plan command Create the resources with terraform apply command Check that all resources are correctly created/running on the Harvester cluster Destroy the resources with the command terraform destroy  Expected Results Refer to the harvester_ssh_key resource expected results</description>
+      <description>Re-use the previous generated TF files and group them all either in one directory or in the same file Generates a speculative execution plan with terraform plan command Create the resources with terraform apply command Check that all resources are correctly created/running on the Harvester cluster Destroy the resources with the command terraform destroy Expected Results Refer to the harvester_ssh_key resource expected results</description>
     </item>
     
     <item>
@@ -78,7 +78,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
       
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-ssh-key-resource/</guid>
       <description>These following steps must be done for every resources, for avoiding repetitions, look at the detailed instructions at the beginning of the page.
- Import a resource Generates a speculative execution plan with terraform plan command Create the resource with terraform apply command Use terraform plan again Use terraform apply again Destroy the resource with the command terraform destroy  Expected Results  The resource is well imported in the terraform.</description>
+Import a resource Generates a speculative execution plan with terraform plan command Create the resource with terraform apply command Use terraform plan again Use terraform apply again Destroy the resource with the command terraform destroy Expected Results The resource is well imported in the terraform.tfstate file and you can print it with the terraform show command The command should display the difference between the actual status and the configured status Plan: 1 to add, 0 to change, 0 to destroy.</description>
     </item>
     
     <item>

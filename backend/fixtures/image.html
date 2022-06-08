@@ -161,8 +161,8 @@ def image_using_terraform(request, admin_session, harvester_api_endpoints):
     base_url = request.config.getoption(
         &#39;--image-cache-url&#39;,
         (&#39;http://download.opensuse.org/repositories/Cloud:/Images:/&#39;
-         &#39;Leap_15.2/images&#39;))
-    url = os.path.join(base_url, &#39;openSUSE-Leap-15.2.x86_64-NoCloud.qcow2&#39;)
+         &#39;Leap_15.3/images&#39;))
+    url = os.path.join(base_url, &#39;openSUSE-Leap-15.3.x86_64-NoCloud.qcow2&#39;)
 
     # when use parameterized fixture, use the URL from the parameter instead
     if getattr(request, &#39;param&#39;, None):
@@ -249,8 +249,8 @@ def image_using_terraform(request, admin_session, harvester_api_endpoints):
     base_url = request.config.getoption(
         &#39;--image-cache-url&#39;,
         (&#39;http://download.opensuse.org/repositories/Cloud:/Images:/&#39;
-         &#39;Leap_15.2/images&#39;))
-    url = os.path.join(base_url, &#39;openSUSE-Leap-15.2.x86_64-NoCloud.qcow2&#39;)
+         &#39;Leap_15.3/images&#39;))
+    url = os.path.join(base_url, &#39;openSUSE-Leap-15.3.x86_64-NoCloud.qcow2&#39;)
 
     # when use parameterized fixture, use the URL from the parameter instead
     if getattr(request, &#39;param&#39;, None):

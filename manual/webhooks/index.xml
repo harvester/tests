@@ -12,7 +12,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/webhooks/datavolumes.cdi.kubevirt.io/</guid>
-      <description>GUI  Create a VM in GUI and wait until it&amp;rsquo;s running. Assume its name is test.  kube-api  Try to delete its datavolume:  $ kubectl get vms NAME AGE STATUS READY test 5m16s Running True  There should be an datavolume bound to that VM  $ kubectl get dvs NAME PHASE PROGRESS RESTARTS AGE test-disk-0-klrft Succeeded 100.0% 5m18s  The user should not be able to delete the datavolume  $ kubectl delete dv test-disk-0-klrft The request is invalid: : can not delete the volume test-disk-0-klrft which is currently attached to VMs: default/test `` ## Expected Results ### kube-api The deletion of its datavolume should fail.</description>
+      <description>GUI Create a VM in GUI and wait until it&amp;rsquo;s running. Assume its name is test. kube-api Try to delete its datavolume: $ kubectl get vms NAME AGE STATUS READY test 5m16s Running True There should be an datavolume bound to that VM $ kubectl get dvs NAME PHASE PROGRESS RESTARTS AGE test-disk-0-klrft Succeeded 100.0% 5m18s The user should not be able to delete the datavolume $ kubectl delete dv test-disk-0-klrft The request is invalid: : can not delete the volume test-disk-0-klrft which is currently attached to VMs: default/test `` ## Expected Results ### kube-api The deletion of its datavolume should fail.</description>
     </item>
     
     <item>
@@ -21,7 +21,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/webhooks/keypairs.harvesterhci.io/</guid>
-      <description>GUI  Enable VLAN network in settings Create a network with VLAN 5 and assume its name is my-network. C1. reate another network with VLAN 5: it should fails with: admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: VLAN ID 5 is already allocated Create a VM on VLAN 5, delete network my-network and it should fail with: admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: network my-network is still used by vm(s): vm-test in a modal.</description>
+      <description>GUI Enable VLAN network in settings Create a network with VLAN 5 and assume its name is my-network. C1. reate another network with VLAN 5: it should fails with: admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: VLAN ID 5 is already allocated Create a VM on VLAN 5, delete network my-network and it should fail with: admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: network my-network is still used by vm(s): vm-test in a modal.</description>
     </item>
     
     <item>
@@ -30,7 +30,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/webhooks/q-network-attachment-definitions.k8s.cni.cncf.io/</guid>
-      <description>GUI  Enable VLAN network in settings Create a network with VLAN 5 and assume its name is my-network. Create another network with VLAN 5: it should fails with: admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: VLAN ID 5 is already allocated Create a VM on VLAN 5, delete network my-network and it should fail with: admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: network my-network is still used by vm(s): vm-test in a modal  Expected Results GUI Unsure of desired behavior.</description>
+      <description>GUI Enable VLAN network in settings Create a network with VLAN 5 and assume its name is my-network. Create another network with VLAN 5: it should fails with: admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: VLAN ID 5 is already allocated Create a VM on VLAN 5, delete network my-network and it should fail with: admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: network my-network is still used by vm(s): vm-test in a modal Expected Results GUI Unsure of desired behavior.</description>
     </item>
     
     <item>
@@ -39,7 +39,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/webhooks/virtualmachineimages.harvesterhci.io/</guid>
-      <description>GUI  Create an image from GUI Create another image with the same name. The operation should fail with admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: A resource with the same name exists  kube-api  Create an image from the manifest:  $ cat image.yaml --- apiVersion: harvesterhci.io/v1beta1 kind: VirtualMachineImage metadata: generateName: image- namespace: default spec: sourceType: download displayName: cirros-0.5.1-x86_64-disk2.img url: http://192.168.2.106/cirros-0.5.1-x86_64-disk.img $ kubectl create -f image.yml virtualmachineimage.harvesterhci.io/image-8dkbq created  Try to create an image with the same manifest:  $ kubectl create -f image.</description>
+      <description>GUI Create an image from GUI Create another image with the same name. The operation should fail with admission webhook &amp;ldquo;validator.harvesterhci.io&amp;rdquo; denied the request: A resource with the same name exists kube-api Create an image from the manifest: $ cat image.yaml --- apiVersion: harvesterhci.io/v1beta1 kind: VirtualMachineImage metadata: generateName: image- namespace: default spec: sourceType: download displayName: cirros-0.5.1-x86_64-disk2.img url: http://192.168.2.106/cirros-0.5.1-x86_64-disk.img $ kubectl create -f image.yml virtualmachineimage.harvesterhci.io/image-8dkbq created Try to create an image with the same manifest: $ kubectl create -f image.</description>
     </item>
     
     <item>
@@ -48,7 +48,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/webhooks/virtualmachinerestores.harvesterhci.io/</guid>
-      <description>GUI  Setup a backup target Create a backup from a VM. Assume the VM name is vm-test Wait until backup is done Restore the backup to a VM, enter vm-test in the Virtual Machine Name field  kube-api $ cat restore.yaml 1 --- apiVersion: harvesterhci.io/v1beta1 kind: VirtualMachineRestore metadata: name: restore-aaaa namespace: default spec: newVM: false target: apiGroup: kubevirt.io kind: VirtualMachine name: &amp;#34;&amp;#34; virtualMachineBackupName: test $ kubectl create -f restore.yaml Expected Results GUI  The operation should fail with admission webhook &amp;ldquo;validator.</description>
+      <description>GUI Setup a backup target Create a backup from a VM. Assume the VM name is vm-test Wait until backup is done Restore the backup to a VM, enter vm-test in the Virtual Machine Name field kube-api $ cat restore.yaml 1 --- apiVersion: harvesterhci.io/v1beta1 kind: VirtualMachineRestore metadata: name: restore-aaaa namespace: default spec: newVM: false target: apiGroup: kubevirt.io kind: VirtualMachine name: &amp;#34;&amp;#34; virtualMachineBackupName: test $ kubectl create -f restore.yaml Expected Results GUI The operation should fail with admission webhook &amp;ldquo;validator.</description>
     </item>
     
     <item>
@@ -57,7 +57,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/webhooks/virtualmachinetemplateversions.harvesterhci.io/</guid>
-      <description>kube-api  List default templates: $ kubectl get virtualmachinetemplateversions.harvesterhci.io -n harvester-public  GUI  Go to Advanced -&amp;gt; Templates page Create a new template and set it as the default version Try to delete the default version  Expected Results kube-api  Default templates should exist:  NAME TEMPLATE_ID VERSION AGE iso-image-base-version 1 39m raw-image-base-version 1 39m windows-iso-image-base-version 1 39m GUI  Creating a new template should succeed Deleting the default version of a template should fail with: admission webhook &amp;ldquo;validator.</description>
+      <description>kube-api List default templates: $ kubectl get virtualmachinetemplateversions.harvesterhci.io -n harvester-public GUI Go to Advanced -&amp;gt; Templates page Create a new template and set it as the default version Try to delete the default version Expected Results kube-api Default templates should exist: NAME TEMPLATE_ID VERSION AGE iso-image-base-version 1 39m raw-image-base-version 1 39m windows-iso-image-base-version 1 39m GUI Creating a new template should succeed Deleting the default version of a template should fail with: admission webhook &amp;ldquo;validator.</description>
     </item>
     
   </channel>

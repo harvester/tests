@@ -12,7 +12,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1623-add-disk-to-host/</guid>
-      <description> Related issues: #1623 Unable to add additional disks to host config  Environment setup  Add Disk that isn&amp;rsquo;t assigned to host  Verification Steps  Head to &amp;ldquo;Hosts&amp;rdquo; page Click &amp;ldquo;Edit Config&amp;rdquo; on a node and switch to &amp;ldquo;Disks&amp;rdquo; tab Validate: Open dropdown and see no disks Attach a disk on that node Validate: Open dropdown and see some disks Verify that host shows new disk as available storage and Longhorn is showing new schedulable space Detach a disk on that node Validate: Open dropdown and see no disks Verify that host shows new disk as available storage and Longhorn is showing new schedulable space  Expected Results  Disk space should show appropriately   </description>
+      <description> Related issues: #1623 Unable to add additional disks to host config Environment setup Add Disk that isn&amp;rsquo;t assigned to host Verification Steps Head to &amp;ldquo;Hosts&amp;rdquo; page Click &amp;ldquo;Edit Config&amp;rdquo; on a node and switch to &amp;ldquo;Disks&amp;rdquo; tab Validate: Open dropdown and see no disks Attach a disk on that node Validate: Open dropdown and see some disks Verify that host shows new disk as available storage and Longhorn is showing new schedulable space Detach a disk on that node Validate: Open dropdown and see no disks Verify that host shows new disk as available storage and Longhorn is showing new schedulable space Expected Results Disk space should show appropriately </description>
     </item>
     
     <item>
@@ -22,7 +22,7 @@
       
       <guid>https://harvester.github.io/tests/manual/hosts/agent_node_connectivity/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1521
-Verify Items  Agent Node should keep connection when any master Node is down  Case: Agent Node&amp;rsquo;s connecting status  Install Harvester with 4 nodes which joining node MUST join by VIP (point server-url to use VIP) Make sure all nodes are ready  Login to dashboard, check host state become Active SSH to the 1st node, run command kubectl get node to check all STATUS should be Ready   SSH to agent nodes which ROLES IS &amp;lt;none&amp;gt; in Step 2i&amp;rsquo;s output  Output should contains VIP in the server URL, by run command cat /etc/rancher/rke2/config.</description>
+Verify Items Agent Node should keep connection when any master Node is down Case: Agent Node&amp;rsquo;s connecting status Install Harvester with 4 nodes which joining node MUST join by VIP (point server-url to use VIP) Make sure all nodes are ready Login to dashboard, check host state become Active SSH to the 1st node, run command kubectl get node to check all STATUS should be Ready SSH to agent nodes which ROLES IS &amp;lt;none&amp;gt; in Step 2i&amp;rsquo;s output Output should contains VIP in the server URL, by run command cat /etc/rancher/rke2/config.</description>
     </item>
     
     <item>
@@ -31,7 +31,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/attach-unpartitioned-nvme-disks-to-host/</guid>
-      <description>Related issues: #1414 Adding unpartitioned NVMe disks fails  Category:  Storage  Verification Steps  Use qemu-img create -f qcow2 command to create three disk image locally Shutdown target node VM machine Directly edit VM xml content in virt manager page Add to the first line Add the following line before the end of quote  &amp;lt;qemu:commandline&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme301.img,if=none,id=D22&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-device&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;nvme,drive=D22,serial=1234&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme302.</description>
+      <description>Related issues: #1414 Adding unpartitioned NVMe disks fails Category: Storage Verification Steps Use qemu-img create -f qcow2 command to create three disk image locally Shutdown target node VM machine Directly edit VM xml content in virt manager page Add to the first line Add the following line before the end of quote &amp;lt;qemu:commandline&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme301.img,if=none,id=D22&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-device&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;nvme,drive=D22,serial=1234&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme302.img,if=none,id=D23&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-device&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;nvme,drive=D23,serial=1235&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/home/davidtclin/Documents/Software/qemu_kvm/node_3/nvme303.</description>
     </item>
     
     <item>
@@ -40,7 +40,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1410-pxe-installation-automatically-get-vip/</guid>
-      <description> Related issues: #1410 Support getting VIP automatically during PXE boot installation  Verification Steps  Comment vip and vip_hw_addr in ipxe-examples/vagrant-pxe-harvester/ansible/roles/harvester/templates/config-create.yaml.j2 Start vagrant-pxe-harvester Run kubectl get cm -n harvester-system vip  Check whether we can get ip and hwAddress in it   Run ip a show harvester-mgmt  Check whether there are two IPs in it and one is the vip.    Expected Results  VIP should automatically be assigned  </description>
+      <description> Related issues: #1410 Support getting VIP automatically during PXE boot installation Verification Steps Comment vip and vip_hw_addr in ipxe-examples/vagrant-pxe-harvester/ansible/roles/harvester/templates/config-create.yaml.j2 Start vagrant-pxe-harvester Run kubectl get cm -n harvester-system vip Check whether we can get ip and hwAddress in it Run ip a show harvester-mgmt Check whether there are two IPs in it and one is the vip. Expected Results VIP should automatically be assigned </description>
     </item>
     
     <item>
@@ -49,7 +49,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1357-kernel-panic-check-crash-dump/</guid>
-      <description> Related issues: #1357 Crash dump not written when kernel panic occurs  Verification Steps  Created new single node cluster with 16GB RAM Booted into debug mode from GRUB entry Created several VMs triggered kernel panic with echo c &amp;gt;/proc/sysrq-trigger Waited for reboot Verified that dump was saved in /var/crash  Expected Results  dump should be saved in /var/crash  </description>
+      <description> Related issues: #1357 Crash dump not written when kernel panic occurs Verification Steps Created new single node cluster with 16GB RAM Booted into debug mode from GRUB entry Created several VMs triggered kernel panic with echo c &amp;gt;/proc/sysrq-trigger Waited for reboot Verified that dump was saved in /var/crash Expected Results dump should be saved in /var/crash </description>
     </item>
     
     <item>
@@ -58,7 +58,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/check-detailed-network-status-in-host-page/</guid>
-      <description>Related issues: #531 Better error messages when misconfiguring multiple nics  Category:  Host  Verification Steps  Enable vlan cluster network setting and set a default network interface Wait a while for the setting take effect on all harvester nodes Click nodes on host page Check the network tab  Expected Results On the Host view page, now we can see detailed network status including Name, Type, IP Address, Status etc.</description>
+      <description> Related issues: #531 Better error messages when misconfiguring multiple nics Category: Host Verification Steps Enable vlan cluster network setting and set a default network interface Wait a while for the setting take effect on all harvester nodes Click nodes on host page Check the network tab Expected Results On the Host view page, now we can see detailed network status including Name, Type, IP Address, Status etc.. Check all network interface can display Check the Name, Type, IP Address, Status display correct values </description>
     </item>
     
     <item>
@@ -67,7 +67,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1667-check-longhorn-volume-mount/</guid>
-      <description> Related issues: #1667 data partition is not mounted to the LH path properly  Verification Steps  Install Harvester node in VM from ISO Check partitions with lsblk -f Verify mount point of /var/lib/longhorn  Expected Results  Mount point should show /var/lib/longhorn   </description>
+      <description> Related issues: #1667 data partition is not mounted to the LH path properly Verification Steps Install Harvester node in VM from ISO Check partitions with lsblk -f Verify mount point of /var/lib/longhorn Expected Results Mount point should show /var/lib/longhorn </description>
     </item>
     
     <item>
@@ -76,7 +76,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1489-redirect-for-server-url-setting/</guid>
-      <description> Related issues: #1489 Edit Advanced Setting option server-url will redirect to inappropriate page  Verification Steps  Install harvester Access harvester Edit server-url form settings Check server-url save, cancel, and back. Additional context:   Expected Results  URL should stay the same when navigating  </description>
+      <description> Related issues: #1489 Edit Advanced Setting option server-url will redirect to inappropriate page Verification Steps Install harvester Access harvester Edit server-url form settings Check server-url save, cancel, and back. Additional context: Expected Results URL should stay the same when navigating </description>
     </item>
     
     <item>
@@ -85,7 +85,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/delete-host/</guid>
-      <description> Navigate to the Hosts page and select the node Click Delete  Expected Results  SSH to the node and check the nodes has components deleted.  </description>
+      <description> Navigate to the Hosts page and select the node Click Delete Expected Results SSH to the node and check the nodes has components deleted. </description>
     </item>
     
     <item>
@@ -94,7 +94,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/delete-host-with-vm/</guid>
-      <description>Navigate to the Hosts page and select the node Click Delete  Expected Results  An alert message should appear. If VM exists it should stop user to delete the node or move VM to other node. If VM is getting moved to another node and there is no space, it should stop user to delete the node.  Existing bugs https://github.com/harvester/harvester/issues/1004</description>
+      <description>Navigate to the Hosts page and select the node Click Delete Expected Results An alert message should appear. If VM exists it should stop user to delete the node or move VM to other node. If VM is getting moved to another node and there is no space, it should stop user to delete the node. Existing bugs https://github.com/harvester/harvester/issues/1004</description>
     </item>
     
     <item>
@@ -104,7 +104,7 @@ Verify Items  Agent Node should keep connection when any master Node is down  Ca
       
       <guid>https://harvester.github.io/tests/manual/hosts/add_disk_on_ui/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1608
-Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on dashboard UI  Install Harvester with 2 nodes Power off 2nd node Update VM&amp;rsquo;s xml definition (by using virsh edit or virt-manager)  Create nvme.img block: dd if=/dev/zero of=/var/lib/libvirt/images/nvme.img bs=1M count=4096 change owner chown qemu:qemu /var/lib/libvirt/images/nvme.img update &amp;lt;domain type=&amp;quot;kvm&amp;quot;&amp;gt; to &amp;lt;domain type=&amp;quot;kvm&amp;quot; xmlns:qemu=&amp;quot;http://libvirt.org/schemas/domain/qemu/1.0&amp;quot;&amp;gt; append xml node into domain as below:     &amp;lt;qemu:commandline&amp;gt;  &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt;  &amp;lt;qemu:arg value=&amp;#34;file=/var/lib/libvirt/images/nvme.</description>
+Verify Items NVMe disk can only be added once on UI Case: add new NVMe disk on dashboard UI Install Harvester with 2 nodes Power off 2nd node Update VM&amp;rsquo;s xml definition (by using virsh edit or virt-manager) Create nvme.img block: dd if=/dev/zero of=/var/lib/libvirt/images/nvme.img bs=1M count=4096 change owner chown qemu:qemu /var/lib/libvirt/images/nvme.img update &amp;lt;domain type=&amp;quot;kvm&amp;quot;&amp;gt; to &amp;lt;domain type=&amp;quot;kvm&amp;quot; xmlns:qemu=&amp;quot;http://libvirt.org/schemas/domain/qemu/1.0&amp;quot;&amp;gt; append xml node into domain as below: &amp;lt;qemu:commandline&amp;gt; &amp;lt;qemu:arg value=&amp;#34;-drive&amp;#34;/&amp;gt; &amp;lt;qemu:arg value=&amp;#34;file=/var/lib/libvirt/images/nvme.</description>
     </item>
     
     <item>
@@ -114,10 +114,10 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       
       <guid>https://harvester.github.io/tests/manual/hosts/disk-devices-used-for-vm-storage-globally-configurable/</guid>
       <description>Related issue: #1241 Disk devices used for VM storage should be globally configurable
-  Related issue: #1382 Exclude OS root disk and partitions on forced GPT partition
-  Related issue: #1599 Extra disk auto provision from installation may cause NDM can&amp;rsquo;t find a valid longhorn node to provision
-  Category:  Storage  Test Scenarios (Checked means verification PASS)
- BIOS firmware + No MBR (Default) + Auto disk` provisioning config BIOS firmware + MBR + Auto disk provisioning config UEFI firmware + GPT (Default) + Auto disk provisioning config BIOS firmware + GPT (Default) +Auto Provisioning on harvester-config  Environment setup   Scenario 1: Node type: Create</description>
+Related issue: #1382 Exclude OS root disk and partitions on forced GPT partition
+Related issue: #1599 Extra disk auto provision from installation may cause NDM can&amp;rsquo;t find a valid longhorn node to provision
+Category: Storage Test Scenarios (Checked means verification PASS)
+BIOS firmware + No MBR (Default) + Auto disk` provisioning config BIOS firmware + MBR + Auto disk provisioning config UEFI firmware + GPT (Default) + Auto disk provisioning config BIOS firmware + GPT (Default) +Auto Provisioning on harvester-config Environment setup Scenario 1: Node type: Create</description>
     </item>
     
     <item>
@@ -126,7 +126,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/download-host-yaml/</guid>
-      <description> Navigate to the Hosts page and select the node Click Download Yaml  Expected Results  The Yaml should get downloaded.  </description>
+      <description> Navigate to the Hosts page and select the node Click Download Yaml Expected Results The Yaml should get downloaded. </description>
     </item>
     
     <item>
@@ -135,7 +135,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/edit-config/</guid>
-      <description> Navigate to the Hosts page and select the node Click edit config. Add description and other details Try to modify the network config  Expected Results  The edited values should be saved and reflected on the page.  </description>
+      <description> Navigate to the Hosts page and select the node Click edit config. Add description and other details Try to modify the network config Expected Results The edited values should be saved and reflected on the page. </description>
     </item>
     
     <item>
@@ -144,7 +144,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/edit-config-yaml/</guid>
-      <description> Navigate to the Hosts page and select the node Click edit config through YAML. Add description and other details Try to modify the network config  Expected Results  The edited values should be saved and reflected on the page.  </description>
+      <description> Navigate to the Hosts page and select the node Click edit config through YAML. Add description and other details Try to modify the network config Expected Results The edited values should be saved and reflected on the page. </description>
     </item>
     
     <item>
@@ -153,7 +153,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/host-list-should-display-disk-error-message-on-failure/</guid>
-      <description> Related issue: #1167 Host list should display the disk error message on table  Category:  Storage  Verification Steps  Shutdown existing node vm machine Run &amp;ldquo;qemu-img create&amp;rdquo; command to make a nvme.img Edit quem/kvm xml setting to attach the nvme image Start VM Open hostpage and edit your target node config Add the new nvme disk Shutdown VM Remove the attach device setting in VＭ xml file Start VM Open Host page, the targe node will show warning with unready and unscheduable disk exists  Expected Results  If host encounter disk ready or schedule failure, on host page the &amp;ldquo;disk state&amp;rdquo; will show warning With a hover tip &amp;ldquo;Host have unready or unschedulable disks&amp;rdquo;   Can create load balancer correctly with health check setting  </description>
+      <description> Related issue: #1167 Host list should display the disk error message on table Category: Storage Verification Steps Shutdown existing node vm machine Run &amp;ldquo;qemu-img create&amp;rdquo; command to make a nvme.img Edit quem/kvm xml setting to attach the nvme image Start VM Open hostpage and edit your target node config Add the new nvme disk Shutdown VM Remove the attach device setting in VＭ xml file Start VM Open Host page, the targe node will show warning with unready and unscheduable disk exists Expected Results If host encounter disk ready or schedule failure, on host page the &amp;ldquo;disk state&amp;rdquo; will show warning With a hover tip &amp;ldquo;Host have unready or unschedulable disks&amp;rdquo; Can create load balancer correctly with health check setting </description>
     </item>
     
     <item>
@@ -162,7 +162,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-multiple-vm/</guid>
-      <description> Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Do health check on VMs  Expected Results  Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode  </description>
+      <description> Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Do health check on VMs Expected Results Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode </description>
     </item>
     
     <item>
@@ -171,7 +171,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-one-vm/</guid>
-      <description> Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Do health check on VMs  Expected Results  Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode  </description>
+      <description> Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Do health check on VMs Expected Results Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode </description>
     </item>
     
     <item>
@@ -180,7 +180,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-no-vm/</guid>
-      <description> Put host in maintenance mode Wait for host to go from entering maintenance mode to maintenance mode.  Expected Results  Host should start to go into maintenance mode Host should go into maintenance mode  </description>
+      <description> Put host in maintenance mode Wait for host to go from entering maintenance mode to maintenance mode. Expected Results Host should start to go into maintenance mode Host should go into maintenance mode </description>
     </item>
     
     <item>
@@ -189,7 +189,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/q-maintenance-mode-migrate-back-vms/</guid>
-      <description>Migrate all VMs back to host that were migrated off  Expected Results I&amp;rsquo;m not sure about the expected behavior on this. I&amp;rsquo;m checking.</description>
+      <description>Migrate all VMs back to host that were migrated off Expected Results I&amp;rsquo;m not sure about the expected behavior on this. I&amp;rsquo;m checking.</description>
     </item>
     
     <item>
@@ -198,7 +198,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/move-longhorn-storage-to-another-partition/</guid>
-      <description>Related issue: #1316 Move Longhorn storage to another partition  Category:  Storage  Test Scenarios  Case 1: UEFI + GPT (Disk &amp;lt; MBR Limit) Case 2: BIOS + No MBR (Disk &amp;lt; MBR Limit) Case 3: BIOS + Force MBR (Disk &amp;lt; MBR Limit) Case 4: BIOS + No MBR (Disk &amp;gt; MBR Limit) Case 5: BIOS + Force MBR (Disk &amp;gt; MBR Limit) Case 6: UEFI + GPT (Disk &amp;gt; MBR Limit)  Environment setup   Test Environment: 1 node harvester on local kvm machine</description>
+      <description>Related issue: #1316 Move Longhorn storage to another partition Category: Storage Test Scenarios Case 1: UEFI + GPT (Disk &amp;lt; MBR Limit) Case 2: BIOS + No MBR (Disk &amp;lt; MBR Limit) Case 3: BIOS + Force MBR (Disk &amp;lt; MBR Limit) Case 4: BIOS + No MBR (Disk &amp;gt; MBR Limit) Case 5: BIOS + Force MBR (Disk &amp;gt; MBR Limit) Case 6: UEFI + GPT (Disk &amp;gt; MBR Limit) Environment setup Test Environment: 1 node harvester on local kvm machine</description>
     </item>
     
     <item>
@@ -208,7 +208,7 @@ Verify Items  NVMe disk can only be added once on UI  Case: add new NVMe disk on
       
       <guid>https://harvester.github.io/tests/manual/hosts/node_labeling/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1416
-Verify Items  Host labels can be assigned during installation via config-create / config-join YAML. Host labels can be managed post installation via the Harvester UI. Host label information can be accessed in Rancher Virtualization Management UI.  Case: Label node when installing  Install Harvester with config file and os.labels option Navigate to Host details then navigate to Labels in Config Check additional labels should be displayed  Case: Label node after installed  Install Harvester with at least 2 nodes Navigate to Host details then navigate to Labels in Config Use edit config to modify labels Reboot the Node and wait until its state become active Navigate to Host details then Navigate to Labels in Config Check modified labels should be displayed  Case: Node&amp;rsquo;s Label availability  Install Harvester with at least 2 nodes Navigate to Host details then navigate to Labels in Config Use edit config to modify labels Reboot the Node and wait until its state become active Navigate to Host details then Navigate to Labels in Config Check modified labels should be displayed Install Rancher with any nodes Navigate to Virtualization Management and import former created Harvester Wait Until state become Active Click Name field to visit dashboard repeat step 2-7, and both compare from Harvester&amp;rsquo;s dashboard (accessing via Harvester&amp;rsquo;s VIP)  </description>
+Verify Items Host labels can be assigned during installation via config-create / config-join YAML. Host labels can be managed post installation via the Harvester UI. Host label information can be accessed in Rancher Virtualization Management UI. Case: Label node when installing Install Harvester with config file and os.labels option Navigate to Host details then navigate to Labels in Config Check additional labels should be displayed Case: Label node after installed Install Harvester with at least 2 nodes Navigate to Host details then navigate to Labels in Config Use edit config to modify labels Reboot the Node and wait until its state become active Navigate to Host details then Navigate to Labels in Config Check modified labels should be displayed Case: Node&amp;rsquo;s Label availability Install Harvester with at least 2 nodes Navigate to Host details then navigate to Labels in Config Use edit config to modify labels Reboot the Node and wait until its state become active Navigate to Host details then Navigate to Labels in Config Check modified labels should be displayed Install Rancher with any nodes Navigate to Virtualization Management and import former created Harvester Wait Until state become Active Click Name field to visit dashboard repeat step 2-7, and both compare from Harvester&amp;rsquo;s dashboard (accessing via Harvester&amp;rsquo;s VIP) </description>
     </item>
     
     <item>
@@ -217,7 +217,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/nodes-with-cordoned-status-should-not-be-in-vm-migration-list/</guid>
-      <description>Related issues: #1501 Nodes with cordoned status should not be in the selection list for VM migration  Category:  Host  Verification Steps  Create multiple VMs on two of the nodes Set the idle node to cordoned state Edit any config of VM, click migrate Check the available node in the migration list  Expected Results Node set in cordoned state will not show up in the available migration list</description>
+      <description>Related issues: #1501 Nodes with cordoned status should not be in the selection list for VM migration Category: Host Verification Steps Create multiple VMs on two of the nodes Set the idle node to cordoned state Edit any config of VM, click migrate Check the available node in the migration list Expected Results Node set in cordoned state will not show up in the available migration list</description>
     </item>
     
     <item>
@@ -226,7 +226,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/negative-power-down-power-up-node/</guid>
-      <description>Create two vms on a cluster. Power down the node. Try to migrate a VM from the down node to active node. Leave the 2nd vm as it is. Power on the node  Expected Results  The 1st VM should be migrated to other node on manually doing it. The 2nd VM should be accessible once the node is up.  Known bugs https://github.com/harvester/harvester/issues/982</description>
+      <description>Create two vms on a cluster. Power down the node. Try to migrate a VM from the down node to active node. Leave the 2nd vm as it is. Power on the node Expected Results The 1st VM should be migrated to other node on manually doing it. The 2nd VM should be accessible once the node is up. Known bugs https://github.com/harvester/harvester/issues/982</description>
     </item>
     
     <item>
@@ -235,7 +235,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/negative-power-down-node/</guid>
-      <description> Create two vms on a cluster. Power down the node. Try to migrate a VM from the down node to active node. Leave the 2nd vm as it is.  Expected Results  The 1st VM should be migrated to other node on manually doing it. The 2nd VM should be recovered from the lost node  </description>
+      <description> Create two vms on a cluster. Power down the node. Try to migrate a VM from the down node to active node. Leave the 2nd vm as it is. Expected Results The 1st VM should be migrated to other node on manually doing it. The 2nd VM should be recovered from the lost node </description>
     </item>
     
     <item>
@@ -244,8 +244,8 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1439-pxe-install-without-iso-url-field/</guid>
-      <description> Related issues: #1439 PXE boot installation doesn&amp;rsquo;t give an error if iso_url field is missing  Environment setup This is easiest to test with the vagrant setup at https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester
- edit https://github.com/harvester/ipxe-examples/blob/main/vagrant-pxe-harvester/ansible/roles/harvester/templates/config-create.yaml.j2#L27 to be blank  Verification Steps  Run the vagrant ./setup.sh from the vagrant repo  Expected Results  You should get an error in the console for the VM when installing  </description>
+      <description> Related issues: #1439 PXE boot installation doesn&amp;rsquo;t give an error if iso_url field is missing Environment setup This is easiest to test with the vagrant setup at https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester
+edit https://github.com/harvester/ipxe-examples/blob/main/vagrant-pxe-harvester/ansible/roles/harvester/templates/config-create.yaml.j2#L27 to be blank Verification Steps Run the vagrant ./setup.sh from the vagrant repo Expected Results You should get an error in the console for the VM when installing </description>
     </item>
     
     <item>
@@ -254,7 +254,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1669-reboot-cluster-check-vip/</guid>
-      <description> Related issues: #1669 Unable to access harvester VIP nor node IP after reboot or fully power cycle node machines (Intermittent)  Verification Steps  Enable VLAN with NIC harvester-mgmt Create VLAN 1 Disable VLAN Enable VLAN again shutdown node 3, 2, 1 server machine Wait for 15 minutes Power on node 1 server machine, wait for 20 seconds Power on node 2 server machine, wait for 20 seconds Power on node 3 server machine Check if you can access VIP and each node IP  Expected Results  VIP should load the page and show on every node in the terminal  </description>
+      <description> Related issues: #1669 Unable to access harvester VIP nor node IP after reboot or fully power cycle node machines (Intermittent) Verification Steps Enable VLAN with NIC harvester-mgmt Create VLAN 1 Disable VLAN Enable VLAN again shutdown node 3, 2, 1 server machine Wait for 15 minutes Power on node 1 server machine, wait for 20 seconds Power on node 2 server machine, wait for 20 seconds Power on node 3 server machine Check if you can access VIP and each node IP Expected Results VIP should load the page and show on every node in the terminal </description>
     </item>
     
     <item>
@@ -263,7 +263,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-reboot-host/</guid>
-      <description>For Host that is in maintenance mode and turned on Reboot host  Expected Results  Host should reboot Maintenance mode label in hosts list should go from yellow to red to yellow  Known Bugs https://github.com/harvester/harvester/issues/1272</description>
+      <description>For Host that is in maintenance mode and turned on Reboot host Expected Results Host should reboot Maintenance mode label in hosts list should go from yellow to red to yellow Known Bugs https://github.com/harvester/harvester/issues/1272</description>
     </item>
     
     <item>
@@ -272,7 +272,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/negative-reboot-node/</guid>
-      <description> Create a vm on the cluster. Reboot the node where the vm exists. Reboot the node where there is no vm  Expected Results  On rebooting the node, once the node is back up and Harvester is started, the host should become available on the cluster.  </description>
+      <description> Create a vm on the cluster. Reboot the node where the vm exists. Reboot the node where there is no vm Expected Results On rebooting the node, once the node is back up and Harvester is started, the host should become available on the cluster. </description>
     </item>
     
     <item>
@@ -281,7 +281,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/recover-cordon-or-maintenace-node-after-harvester-node-machine-reboot/</guid>
-      <description>Related issues: #1493 When hosts are stuck in maintenance mode and the cluster is unstable you can&amp;rsquo;t access the UI  Category:  Host  Verification Steps  Create 3 virtual machine on 3 harvester nodes Cordon 1st and 2nd node,  Enable maintenance mode on 1st and 2nd node  We can&amp;rsquo;t cordon and enable maintenance node on the remaining node  Reboot 1st and 2nd node bare machine Wait for harvester machine back to service Login dashboard Disable maintenance mode on 1st and 2nd node  Expected Results  Cordon node and enter maintenance mode, after machine reboot, user can login harvester dashboard.</description>
+      <description>Related issues: #1493 When hosts are stuck in maintenance mode and the cluster is unstable you can&amp;rsquo;t access the UI Category: Host Verification Steps Create 3 virtual machine on 3 harvester nodes Cordon 1st and 2nd node, Enable maintenance mode on 1st and 2nd node We can&amp;rsquo;t cordon and enable maintenance node on the remaining node Reboot 1st and 2nd node bare machine Wait for harvester machine back to service Login dashboard Disable maintenance mode on 1st and 2nd node Expected Results Cordon node and enter maintenance mode, after machine reboot, user can login harvester dashboard.</description>
     </item>
     
     <item>
@@ -290,7 +290,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/remove-management-node-then-reinstall/</guid>
-      <description> From a HA cluster with 3 nodes Delete one of the nodes after the node promotion(all 3 nodes are management nodes) Reinstall the removed node with the same node name and IP The rejoined node will be promoted to master automatically  Expected Results  The removed node should be able to rejoin the cluster without issues  Comments  Purpose is to cover this scenario: https://github.com/harvester/harvester/issues/1040 Check the job promotion with the command kubectl get jobs -n harvester-system If a node is stuck in the removing status, you likely face to this issue, execute this command as workaround: kubectl get node -o name &amp;lt;nodename&amp;gt; | xargs -i kubectl patch {} -p &#39;{&amp;quot;metadata&amp;quot;:{&amp;quot;finalizers&amp;quot;:[]}}&#39; --type=merge  </description>
+      <description> From a HA cluster with 3 nodes Delete one of the nodes after the node promotion(all 3 nodes are management nodes) Reinstall the removed node with the same node name and IP The rejoined node will be promoted to master automatically Expected Results The removed node should be able to rejoin the cluster without issues Comments Purpose is to cover this scenario: https://github.com/harvester/harvester/issues/1040 Check the job promotion with the command kubectl get jobs -n harvester-system If a node is stuck in the removing status, you likely face to this issue, execute this command as workaround: kubectl get node -o name &amp;lt;nodename&amp;gt; | xargs -i kubectl patch {} -p &#39;{&amp;quot;metadata&amp;quot;:{&amp;quot;finalizers&amp;quot;:[]}}&#39; --type=merge </description>
     </item>
     
     <item>
@@ -299,7 +299,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/negative-remove-unavailable-node-with-vm/</guid>
-      <description>Create VMs on a host. Turn off Host Remove Host from hosts list  Expected Results  VMs should migrate to new host  Known Bugs https://github.com/harvester/harvester/issues/983</description>
+      <description>Create VMs on a host. Turn off Host Remove Host from hosts list Expected Results VMs should migrate to new host Known Bugs https://github.com/harvester/harvester/issues/983</description>
     </item>
     
     <item>
@@ -308,11 +308,13 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/set-maintenance-mode-on-the-last-available-node-shouldnt-be-allowed/</guid>
-      <description>Related issues: #1014 Trying to set maintenance mode on the last available node shouldn&amp;rsquo;t be allowed  Category:  Host  Verification Steps   Create 3 vms located on node2 and node3   Open host page
-  Set node 3 into maintenance mode
-  Wait for virtual machine migrate to node 2
-  Set node 2 into maintenance mode
-  wait for virtual machine migrate to node 1</description>
+      <description>Related issues: #1014 Trying to set maintenance mode on the last available node shouldn&amp;rsquo;t be allowed Category: Host Verification Steps Create 3 vms located on node2 and node3 Open host page
+Set node 3 into maintenance mode
+Wait for virtual machine migrate to node 2
+Set node 2 into maintenance mode
+wait for virtual machine migrate to node 1
+Set node 2 into maintenance mode
+Expected Results Within 3 nodes and 3 virtual machines testing environment.</description>
     </item>
     
     <item>
@@ -321,7 +323,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1272-shutdown-host-in-maintenance-mode/</guid>
-      <description> Related issues: #1272 Shut down a node with maintenance mode should show red label  Verification Steps  Open host page Set a node to maintenance mode Turn off host vm of the node Check node status Turn on host Check node status  Expected Results  The node should go into maintenance mode The node label should go red When turned on the node status should go back to yellow  </description>
+      <description> Related issues: #1272 Shut down a node with maintenance mode should show red label Verification Steps Open host page Set a node to maintenance mode Turn off host vm of the node Check node status Turn on host Check node status Expected Results The node should go into maintenance mode The node label should go red When turned on the node status should go back to yellow </description>
     </item>
     
     <item>
@@ -330,7 +332,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-start-host/</guid>
-      <description>For Host that is in maintenance mode and turned off Start host  Expected Results  Host should turn on Maintenance mode label in hosts list should go from red to yellow  Known bugs https://github.com/harvester/harvester/issues/1272</description>
+      <description>For Host that is in maintenance mode and turned off Start host Expected Results Host should turn on Maintenance mode label in hosts list should go from red to yellow Known bugs https://github.com/harvester/harvester/issues/1272</description>
     </item>
     
     <item>
@@ -339,7 +341,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</guid>
-      <description> For host in maintenance mode that has been rebooted take host out of maintenance mode  Expected Results  Host should go to Active Label shbould go green  </description>
+      <description> For host in maintenance mode that has been rebooted take host out of maintenance mode Expected Results Host should go to Active Label shbould go green </description>
     </item>
     
     <item>
@@ -348,7 +350,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-not-rebooted/</guid>
-      <description> For host in maintenance mode that has not been rebooted take host out of maintenance mode  Expected Results  Host should go to Active Label shbould go green  </description>
+      <description> For host in maintenance mode that has not been rebooted take host out of maintenance mode Expected Results Host should go to Active Label shbould go green </description>
     </item>
     
     <item>
@@ -357,7 +359,7 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/negative-network-disruption/</guid>
-      <description> Create a vms on the cluster. Disable network of a node for sometime. e.g. 5 sec, 5 mins  Expected Results  VM should be accessible after the network is up.  </description>
+      <description> Create a vms on the cluster. Disable network of a node for sometime. e.g. 5 sec, 5 mins Expected Results VM should be accessible after the network is up. </description>
     </item>
     
     <item>
@@ -366,8 +368,8 @@ Verify Items  Host labels can be assigned during installation via config-create 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/1535-test-ntp-timesync/</guid>
-      <description> Related issues: #1535 NTP daemon in host OS  Environment setup This should be on at least a 3 node setup that has been running for several hours that had NTP servers setup during install
-Verification Steps  SSH into nodes and verify times are close Verify NTP is active with sudo timedatectl status  Expected Results  Times should be within a minute of each other NTP should show as active  </description>
+      <description> Related issues: #1535 NTP daemon in host OS Environment setup This should be on at least a 3 node setup that has been running for several hours that had NTP servers setup during install
+Verification Steps SSH into nodes and verify times are close Verify NTP is active with sudo timedatectl status Expected Results Times should be within a minute of each other NTP should show as active </description>
     </item>
     
     <item>
@@ -376,7 +378,7 @@ Verification Steps  SSH into nodes and verify times are close Verify NTP is acti
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-turn-off-host/</guid>
-      <description>Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Shut down Host  Expected Results  Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode host should shut down Maintenance mode label in hosts list should go red  Known bugs https://github.com/harvester/harvester/issues/1272</description>
+      <description>Put host in maintenance mode Migrate VMs Wait for VMs to migrate Wait for any vms to migrate off Shut down Host Expected Results Host should start to go into maintenance mode Any VMs should migrate off Host should go into maintenance mode host should shut down Maintenance mode label in hosts list should go red Known bugs https://github.com/harvester/harvester/issues/1272</description>
     </item>
     
     <item>
@@ -385,7 +387,7 @@ Verification Steps  SSH into nodes and verify times are close Verify NTP is acti
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/verify-enabling-maintenance-mode/</guid>
-      <description> Navigate to the Hosts page and select the node Click Maintenance Mode  Expected Results  The existing VM should get migrated to other nodes. Verify the CRDs to see the maintenance mode is enabled.  Comments  Needs other test cases to be added If VM migration fails How does live migration work What happens if there are no schedulable resources on nodes  Check CRDs on hosts  On going into maintenance mode kubectl get virtualmachines &amp;ndash;all-namespaces   Kubectl get virtualmachines/name -o yaml  On coming out of maintenance mode kubectl get virtualmachines &amp;ndash;all-namespaces     Kubectl get virtualmachines/name -o yaml  Check that maintenance mode host isn&amp;rsquo;t schedulable  Fully provision all nodes and try to create a VM     It should fail  Migration with maintenance mode What if migration gets stuck, can you cancel VMs going to different hosts Canceling maintenance mode P1  Put in maintenance mode Check migration of VMs Check status of VMs modify filesystem on VMs Check status of host Take host out of maintenance mode Check status of host Migrate VMs back to host Check filesystem Create new VMs on host Check status of VMs      </description>
+      <description> Navigate to the Hosts page and select the node Click Maintenance Mode Expected Results The existing VM should get migrated to other nodes. Verify the CRDs to see the maintenance mode is enabled. Comments Needs other test cases to be added If VM migration fails How does live migration work What happens if there are no schedulable resources on nodes Check CRDs on hosts On going into maintenance mode kubectl get virtualmachines &amp;ndash;all-namespaces Kubectl get virtualmachines/name -o yaml On coming out of maintenance mode kubectl get virtualmachines &amp;ndash;all-namespaces Kubectl get virtualmachines/name -o yaml Check that maintenance mode host isn&amp;rsquo;t schedulable Fully provision all nodes and try to create a VM It should fail Migration with maintenance mode What if migration gets stuck, can you cancel VMs going to different hosts Canceling maintenance mode P1 Put in maintenance mode Check migration of VMs Check status of VMs modify filesystem on VMs Check status of host Take host out of maintenance mode Check status of host Migrate VMs back to host Check filesystem Create new VMs on host Check status of VMs </description>
     </item>
     
     <item>
@@ -394,7 +396,7 @@ Verification Steps  SSH into nodes and verify times are close Verify NTP is acti
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/verify-filter-on-host-page/</guid>
-      <description> Enter name of a host and verify the nodes get filtered out.  Expected Results  The edited name should be reflected on the host.  </description>
+      <description> Enter name of a host and verify the nodes get filtered out. Expected Results The edited name should be reflected on the host. </description>
     </item>
     
     <item>
@@ -403,7 +405,7 @@ Verification Steps  SSH into nodes and verify times are close Verify NTP is acti
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/verify-node-info/</guid>
-      <description> Navigate to the hosts tab and verify the following.  State Name Host IP CPU Memory Storage Size Age    Expected Results  All the data/status shown on the page should be correct.  </description>
+      <description> Navigate to the hosts tab and verify the following. State Name Host IP CPU Memory Storage Size Age Expected Results All the data/status shown on the page should be correct. </description>
     </item>
     
     <item>
@@ -412,7 +414,7 @@ Verification Steps  SSH into nodes and verify times are close Verify NTP is acti
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/negative-verify-state-powered-down-node/</guid>
-      <description> Power down the node and check the state of the node in the cluster  Expected Results  The node state should show unavilable  </description>
+      <description> Power down the node and check the state of the node in the cluster Expected Results The node state should show unavilable </description>
     </item>
     
   </channel>

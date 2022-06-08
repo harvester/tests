@@ -13,7 +13,7 @@
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup_s3_permission/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1339
-Verify Items  Backup target connect to S3 should only require the permission to access the specific bucket  Case: S3 Backup with single-bucket-user  Install Harvester with any nodes Setup Minio  then follow the instruction to create a single-bucket-user. Create specific bucket for the user Create other buckets   setup backup-target with the single-bucket-user permission  When assign the dedicated bucket (for the user), connection should success.</description>
+Verify Items Backup target connect to S3 should only require the permission to access the specific bucket Case: S3 Backup with single-bucket-user Install Harvester with any nodes Setup Minio then follow the instruction to create a single-bucket-user. Create specific bucket for the user Create other buckets setup backup-target with the single-bucket-user permission When assign the dedicated bucket (for the user), connection should success. When assign other buckets, connection should failed with AccessDenied error message </description>
     </item>
     
     <item>
@@ -22,7 +22,7 @@ Verify Items  Backup target connect to S3 should only require the permission to 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm/</guid>
-      <description> Click take backup in virtual machine list  Expected Results  Backup should be created Backup should be listed in backups list Backup should be available on remote storage (S3/NFS)  </description>
+      <description> Click take backup in virtual machine list Expected Results Backup should be created Backup should be listed in backups list Backup should be available on remote storage (S3/NFS) </description>
     </item>
     
     <item>
@@ -31,7 +31,7 @@ Verify Items  Backup target connect to S3 should only require the permission to 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-that-has-been-live-migrated/</guid>
-      <description> Click take backup in virtual machine list  Expected Results  Backup should be created Backup should be listed in backups list Backup should be available on remote storage (S3/NFS)  </description>
+      <description> Click take backup in virtual machine list Expected Results Backup should be created Backup should be listed in backups list Backup should be available on remote storage (S3/NFS) </description>
     </item>
     
     <item>
@@ -40,8 +40,8 @@ Verify Items  Backup target connect to S3 should only require the permission to 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-node-off/</guid>
-      <description>On multi-node setup bring down node that is hosting VM Click take backup in virtual machine list  Expected Results  The backup should complete successfully  Comments We do allow taking backup even if the VM is down, as you can take backup when the VM is off, this is because the volume still exists with longhorn&amp;rsquo;s multi replicas, but weneed to check the data integrity.
-Known Bugs https://github.</description>
+      <description>On multi-node setup bring down node that is hosting VM Click take backup in virtual machine list Expected Results The backup should complete successfully Comments We do allow taking backup even if the VM is down, as you can take backup when the VM is off, this is because the volume still exists with longhorn&amp;rsquo;s multi replicas, but weneed to check the data integrity.
+Known Bugs https://github.com/harvester/harvester/issues/1483</description>
     </item>
     
     <item>
@@ -51,7 +51,7 @@ Known Bugs https://github.</description>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup_target_errmsg/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1051
-Verify Items  Backup target should check input before Click Save Error message should displayed on edit page when input is wrong  Case: Connect to invalid Backup Target  Install Harvester with any node Login to dashboard, then navigate to Advanced Settings Edit backup-target,then input invalid data for NFS/S3 and click Save The Page should not be redirect to Advanced Settings Error Message should displayed under Save button  </description>
+Verify Items Backup target should check input before Click Save Error message should displayed on edit page when input is wrong Case: Connect to invalid Backup Target Install Harvester with any node Login to dashboard, then navigate to Advanced Settings Edit backup-target,then input invalid data for NFS/S3 and click Save The Page should not be redirect to Advanced Settings Error Message should displayed under Save button </description>
     </item>
     
     <item>
@@ -60,7 +60,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/create-backup-target/</guid>
-      <description> Open up Backup-target in settings Input server info Save  Expected Results  Backup Target should show in settings  </description>
+      <description> Open up Backup-target in settings Input server info Save Expected Results Backup Target should show in settings </description>
     </item>
     
     <item>
@@ -69,7 +69,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-single-backup/</guid>
-      <description> Delete backup from backups list  Expected Results  Backup should be removed from list Backup should be removed from remote storage  </description>
+      <description> Delete backup from backups list Expected Results Backup should be removed from list Backup should be removed from remote storage </description>
     </item>
     
     <item>
@@ -78,7 +78,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-first-backup-chained-backup/</guid>
-      <description> Create a new VM Create a file named 1 and add text Create a backup Edit text in file 1 create file 2 Create Backup Edit file 2 text Create file 3 and add text Create backup Delete backup 1 Validate file 2 and 3 are the same as they were Restore to backup 2 Validate that  md5sum -c file1-2.md5 file2.md5 file3.md5 file 1 is in second format file 2 is in first format file 3 doesn&amp;rsquo;t exist    Expected Results  Vm should create All file operations should create Backup should run All file operations should create Backup should run All file operations should create files should be as expected  </description>
+      <description> Create a new VM Create a file named 1 and add text Create a backup Edit text in file 1 create file 2 Create Backup Edit file 2 text Create file 3 and add text Create backup Delete backup 1 Validate file 2 and 3 are the same as they were Restore to backup 2 Validate that md5sum -c file1-2.md5 file2.md5 file3.md5 file 1 is in second format file 2 is in first format file 3 doesn&amp;rsquo;t exist Expected Results Vm should create All file operations should create Backup should run All file operations should create Backup should run All file operations should create files should be as expected </description>
     </item>
     
     <item>
@@ -87,7 +87,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-last-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup delete backup 3 Validate that files didn&amp;rsquo;t change Restore to backup 2 Validate that  md5sum -c file1-2.</description>
+      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup delete backup 3 Validate that files didn&amp;rsquo;t change Restore to backup 2 Validate that md5sum -c file1-2.</description>
     </item>
     
     <item>
@@ -96,7 +96,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-middle-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Delete backup 2 Validate file 2 and 3 are the same as they were Restore to backup 1 Validate that  md5sum -c file1.</description>
+      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Delete backup 2 Validate file 2 and 3 are the same as they were Restore to backup 1 Validate that md5sum -c file1.</description>
     </item>
     
     <item>
@@ -105,7 +105,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-multiple-backups/</guid>
-      <description> Select multiple Backups from Backups list Click Delete  Expected Results  Backups should be removed from list Backups should be removed from remote storage  </description>
+      <description> Select multiple Backups from Backups list Click Delete Expected Results Backups should be removed from list Backups should be removed from remote storage </description>
     </item>
     
     <item>
@@ -114,7 +114,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/edit-backup-read-yaml-from-file/</guid>
-      <description> Edit YAML for backup Read from File Show Diff Save  Expected Results  Diff should show changes Backup should be updated  </description>
+      <description> Edit YAML for backup Read from File Show Diff Save Expected Results Diff should show changes Backup should be updated </description>
     </item>
     
     <item>
@@ -123,7 +123,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/edit-backup-yaml/</guid>
-      <description> Edit YAML for backup Show Diff Save  Expected Results  Diff should show changes Backup should be updated  </description>
+      <description> Edit YAML for backup Show Diff Save Expected Results Diff should show changes Backup should be updated </description>
     </item>
     
     <item>
@@ -132,7 +132,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/filter-backups/</guid>
-      <description> Enter in string in filter input field  Columns available for matching:  State  &amp;ldquo;Ready&amp;rdquo; &amp;ldquo;Progressing&amp;rdquo;   Name Target VM   With string  With matching string  Input Clear   With non-matching string  Input Clear Clear String        Expected Results  List should filter based on string List should re-populate after clearing string  </description>
+      <description> Enter in string in filter input field Columns available for matching: State &amp;ldquo;Ready&amp;rdquo; &amp;ldquo;Progressing&amp;rdquo; Name Target VM With string With matching string Input Clear With non-matching string Input Clear Clear String Expected Results List should filter based on string List should re-populate after clearing string </description>
     </item>
     
     <item>
@@ -141,7 +141,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-full-backup-target/</guid>
-      <description> Initiate a backup with existing VM where the NFS store is full  Expected Results  You should get an error  </description>
+      <description> Initiate a backup with existing VM where the NFS store is full Expected Results You should get an error </description>
     </item>
     
     <item>
@@ -150,7 +150,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-create-backup-target/</guid>
-      <description> Open up Backup-target in settings Input Incorrect server info Save  Expected Results  You should get an error on saving  </description>
+      <description> Open up Backup-target in settings Input Incorrect server info Save Expected Results You should get an error on saving </description>
     </item>
     
     <item>
@@ -159,7 +159,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-backup-while-restoring/</guid>
-      <description> Create a backup of VM which has data more than 10Gi. Add 2Gi data in the same VM. Initiate deletion of the backup. While deletion is in progress, create another backup  Expected Results  Creation of backup should be prevented as there is a deletion is in progress. Once the deletion is completed, the backup creation should take place  </description>
+      <description> Create a backup of VM which has data more than 10Gi. Add 2Gi data in the same VM. Initiate deletion of the backup. While deletion is in progress, create another backup Expected Results Creation of backup should be prevented as there is a deletion is in progress. Once the deletion is completed, the backup creation should take place </description>
     </item>
     
     <item>
@@ -168,7 +168,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-multiple-backups/</guid>
-      <description> Disconnect Backup Target Select multiple Backups from Backups list Click Delete  Expected Results  You should get an error  </description>
+      <description> Disconnect Backup Target Select multiple Backups from Backups list Click Delete Expected Results You should get an error </description>
     </item>
     
     <item>
@@ -177,7 +177,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-single-backup/</guid>
-      <description> Take down backup target either by account, or via network blocking Delete backup from backups list  Expected Results  You should get an error  </description>
+      <description> Take down backup target either by account, or via network blocking Delete backup from backups list Expected Results You should get an error </description>
     </item>
     
     <item>
@@ -186,7 +186,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-disrupt-backup-target-while-restoring/</guid>
-      <description> Initiate a backup restore from NFS server. Disconnect network from NFS server for 5 secs Verify the restore status  Expected Results  The restore is not be interrupted and should complete. Data should be intact  </description>
+      <description> Initiate a backup restore from NFS server. Disconnect network from NFS server for 5 secs Verify the restore status Expected Results The restore is not be interrupted and should complete. Data should be intact </description>
     </item>
     
     <item>
@@ -195,7 +195,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-file/</guid>
-      <description> Disconnect backup target Edit YAML for backup Read from File Show Diff Save  Expected Results  You should get an error on saving  </description>
+      <description> Disconnect backup target Edit YAML for backup Read from File Show Diff Save Expected Results You should get an error on saving </description>
     </item>
     
     <item>
@@ -204,7 +204,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-yaml/</guid>
-      <description> Disconnect backup target Edit YAML for backup Show Diff Save  Expected Results  You should get an error on saving  </description>
+      <description> Disconnect backup target Edit YAML for backup Show Diff Save Expected Results You should get an error on saving </description>
     </item>
     
     <item>
@@ -213,7 +213,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-while-taking-backup/</guid>
-      <description> Start a VM backup, bk-1 of a VM which has data d1 While the backup is in progress, write some more data d2 in the VM disk and initiate another backup bk-2. Verify the backup 1 and backup 2  Expected Results  Backup bk-1 should have only d1 data backup bk-2 should have data d1 and d2  </description>
+      <description> Start a VM backup, bk-1 of a VM which has data d1 While the backup is in progress, write some more data d2 in the VM disk and initiate another backup bk-2. Verify the backup 1 and backup 2 Expected Results Backup bk-1 should have only d1 data backup bk-2 should have data d1 and d2 </description>
     </item>
     
     <item>
@@ -222,7 +222,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring-replace/</guid>
-      <description> Initiate a restore with existing VM. While the restore is in progress and VM is starting on a node, shut down the node  Expected Results  You should get an error  </description>
+      <description> Initiate a restore with existing VM. While the restore is in progress and VM is starting on a node, shut down the node Expected Results You should get an error </description>
     </item>
     
     <item>
@@ -231,7 +231,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring/</guid>
-      <description> Initiate a restore. While the restore is in progress and VM is starting on a node, shut down the node  Expected Results  The restore should fail  </description>
+      <description> Initiate a restore. While the restore is in progress and VM is starting on a node, shut down the node Expected Results The restore should fail </description>
     </item>
     
     <item>
@@ -240,7 +240,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace/</guid>
-      <description> On multi-node setup bring down node that is hosting VM Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore  Expected Results  You should get an error on restoring  </description>
+      <description> On multi-node setup bring down node that is hosting VM Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Expected Results You should get an error on restoring </description>
     </item>
     
     <item>
@@ -249,7 +249,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-deleting-backup/</guid>
-      <description> Make sure VM is turned on Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Delete backup while restoring  Expected Results  You should get an error  </description>
+      <description> Make sure VM is turned on Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Delete backup while restoring Expected Results You should get an error </description>
     </item>
     
     <item>
@@ -258,7 +258,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-turned-on/</guid>
-      <description> Make sure VM is turned on Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore  Expected Results  You get an error that you have to stop VM before restoring backup  </description>
+      <description> Make sure VM is turned on Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Expected Results You get an error that you have to stop VM before restoring backup </description>
     </item>
     
     <item>
@@ -267,7 +267,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm/</guid>
-      <description> Create a new file before restoring the backup and add some data Stop the VM where the backup was taken Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine  Expected Results  Backup should restore VM should update to previous backup File should no longer be present  </description>
+      <description> Create a new file before restoring the backup and add some data Stop the VM where the backup was taken Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine Expected Results Backup should restore VM should update to previous backup File should no longer be present </description>
     </item>
     
     <item>
@@ -276,7 +276,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm-in-another-namespace/</guid>
-      <description> Create a VM vm in namespace default. Create a file ~/test.txt with content test. Create a VMBackup default-vm-backup for it. Create a new namepsace new-ns. Create a VMRestore restore-default-vm-backup-to-new-ns in new-ns namespace based on the VMBackup default-vm-backup to create a new VM.  Expected Results  A new VM in new-ns namespace should be created. It should have the file ~/test.txt with content test.  </description>
+      <description> Create a VM vm in namespace default. Create a file ~/test.txt with content test. Create a VMBackup default-vm-backup for it. Create a new namepsace new-ns. Create a VMRestore restore-default-vm-backup-to-new-ns in new-ns namespace based on the VMBackup default-vm-backup to create a new VM. Expected Results A new VM in new-ns namespace should be created. It should have the file ~/test.txt with content test. </description>
     </item>
     
     <item>
@@ -285,7 +285,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-for-vm-live-migrated/</guid>
-      <description> Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine  Expected Results  Backup should restore VM should update to previous backup File should no longer be present  </description>
+      <description> Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine Expected Results Backup should restore VM should update to previous backup File should no longer be present </description>
     </item>
     
     <item>
@@ -294,7 +294,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-replace-existing/</guid>
-      <description> Create a new file before restoring the backup and add some data Stop the VM Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine  Expected Results  Backup should restore VM should update to previous backup File should no longer be present  </description>
+      <description> Create a new file before restoring the backup and add some data Stop the VM Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine Expected Results Backup should restore VM should update to previous backup File should no longer be present </description>
     </item>
     
     <item>
@@ -303,7 +303,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-first-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 1 Validate that  md5sum -c file1.</description>
+      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 1 Validate that md5sum -c file1.</description>
     </item>
     
     <item>
@@ -312,7 +312,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-last-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 3 Validate that  md5sum -c file1-2.</description>
+      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 3 Validate that md5sum -c file1-2.</description>
     </item>
     
     <item>
@@ -321,7 +321,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-middle-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 2 Validate that  md5sum -c file1-2.</description>
+      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 2 Validate that md5sum -c file1-2.</description>
     </item>
     
     <item>
@@ -331,7 +331,7 @@ Verify Items  Backup target should check input before Click Save Error message s
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/vm_backup_metadata/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/988
-Verify Items  Metadata should be removed along with VM deleted Metadata should be synced after backup target switched Metadata can be used in new cluster  Case: Metadata create and delete  Install Harvester with any nodes Create an image for VM creation Setup NFS/S3 backup target Create a VM, then create a backup named backup1 File default-backup1.cfg should be exist in the backup target path &amp;lt;backup root&amp;gt;/harvester/vmbackups Delete the VM Backup backup1 File default-backup1.</description>
+Verify Items Metadata should be removed along with VM deleted Metadata should be synced after backup target switched Metadata can be used in new cluster Case: Metadata create and delete Install Harvester with any nodes Create an image for VM creation Setup NFS/S3 backup target Create a VM, then create a backup named backup1 File default-backup1.cfg should be exist in the backup target path &amp;lt;backup root&amp;gt;/harvester/vmbackups Delete the VM Backup backup1 File default-backup1.</description>
     </item>
     
   </channel>

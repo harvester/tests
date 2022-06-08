@@ -77,14 +77,14 @@ def pytest_addoption(parser):
     parser.addoption(
         &#39;--harvester_cluster_nodes&#39;,
         action=&#39;store&#39;,
-        type=&#39;int&#39;,
+        type=int,
         default=config_data[&#39;harvester_cluster_nodes&#39;],
         help=&#39;Set count of test framework harvester cluster nodes.&#39;
     )
     parser.addoption(
         &#39;--vlan-id&#39;,
         action=&#39;store&#39;,
-        type=&#39;int&#39;,
+        type=int,
         default=config_data[&#39;vlan-id&#39;],
         help=(&#39;VLAN ID, if specified, will invoke the tests depended on &#39;
               &#39;external networking.&#39;)
@@ -98,7 +98,7 @@ def pytest_addoption(parser):
     parser.addoption(
         &#39;--wait-timeout&#39;,
         action=&#39;store&#39;,
-        type=&#39;int&#39;,
+        type=int,
         default=config_data[&#39;wait-timeout&#39;],
         help=&#39;Wait time for polling operations&#39;
     )
@@ -201,7 +201,7 @@ def pytest_addoption(parser):
     parser.addoption(
         &#39;--rancher-cluster-wait-timeout&#39;,
         action=&#39;store&#39;,
-        type=&#39;int&#39;,
+        type=int,
         default=config_data[&#39;rancher-cluster-wait-timeout&#39;],
         help=&#39;Wait time for polling Rancher cluster ready status&#39;
     )
@@ -433,14 +433,14 @@ def pytest_collection_modifyitems(config, items):
     parser.addoption(
         &#39;--harvester_cluster_nodes&#39;,
         action=&#39;store&#39;,
-        type=&#39;int&#39;,
+        type=int,
         default=config_data[&#39;harvester_cluster_nodes&#39;],
         help=&#39;Set count of test framework harvester cluster nodes.&#39;
     )
     parser.addoption(
         &#39;--vlan-id&#39;,
         action=&#39;store&#39;,
-        type=&#39;int&#39;,
+        type=int,
         default=config_data[&#39;vlan-id&#39;],
         help=(&#39;VLAN ID, if specified, will invoke the tests depended on &#39;
               &#39;external networking.&#39;)
@@ -454,7 +454,7 @@ def pytest_collection_modifyitems(config, items):
     parser.addoption(
         &#39;--wait-timeout&#39;,
         action=&#39;store&#39;,
-        type=&#39;int&#39;,
+        type=int,
         default=config_data[&#39;wait-timeout&#39;],
         help=&#39;Wait time for polling operations&#39;
     )
@@ -557,7 +557,7 @@ def pytest_collection_modifyitems(config, items):
     parser.addoption(
         &#39;--rancher-cluster-wait-timeout&#39;,
         action=&#39;store&#39;,
-        type=&#39;int&#39;,
+        type=int,
         default=config_data[&#39;rancher-cluster-wait-timeout&#39;],
         help=&#39;Wait time for polling Rancher cluster ready status&#39;
     )

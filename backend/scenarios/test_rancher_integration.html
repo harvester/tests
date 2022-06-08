@@ -144,10 +144,13 @@ def _delete_rke1_cluster(request, rancher_admin_session, rancher_api_endpoints,
 
 def _wait_for_cluster_ready(request, rancher_admin_session,
                             rancher_api_endpoints, cluster_name):
+    cluster_json = dict()
+
     def _wait_for_cluster_ready_status():
         resp = rancher_admin_session.get(
             rancher_api_endpoints.get_provisioning_cluster % (cluster_name))
         if resp.status_code == 200:
+            nonlocal cluster_json
             cluster_json = resp.json()
             if (&#39;status&#39; in cluster_json and
                     &#39;ready&#39; in cluster_json[&#39;status&#39;]):
@@ -158,9 +161,19 @@ def _wait_for_cluster_ready(request, rancher_admin_session,
             _wait_for_cluster_ready_status,
             step=5,
             timeout=request.config.getoption(&#39;--rancher-cluster-wait-timeout&#39;))
-    except polling2.TimeoutException as e:
-        errmsg = &#39;Timed out while waiting to import Harvester.&#39;
-        raise AssertionError(errmsg) from e
+    except polling2.TimeoutException:
+        from datetime import datetime
+        from json import dumps
+        fmt = &#34;%Y-%m-%dT%H:%M:%SZ&#34;
+
+        def _key(item):
+            t = item[&#39;lastUpdateTime&#39;]
+            return datetime.strptime(t, fmt) if t else datetime(2000, 1, 1)
+
+        items = sorted(cluster_json[&#39;status&#39;][&#39;conditions&#39;], key=_key)
+        errmsg = (&#39;Timed out while waiting to import Harvester.\n&#39;
+                  f&#39;Last 5 conditions: {dumps(items[-5:])}&#39;)
+        raise AssertionError(errmsg)
 
 
 def _import_harvester_cluster_into_rancher(request, admin_session,
@@ -380,12 +393,16 @@ def rke1_cluster(request, rancher_admin_session, rancher_api_endpoints, image,
 
 
 @pytest.fixture(scope=&#39;class&#39;)
-def rke2_cluster(request, rancher_admin_session, rancher_api_endpoints, image,
+def rke2_cluster(request, admin_session, harvester_api_endpoints,
+                 rancher_admin_session, rancher_api_endpoints, image,
                  network, cloud_credential,
                  external_rancher_with_imported_harvester):
     test_environment = request.config.getoption(&#39;--test-environment&#39;)
     cluster_id = external_rancher_with_imported_harvester
     cloud_credential_id = cloud_credential
+
+    utils.assert_image_ready(request, admin_session, harvester_api_endpoints,
+                             image[&#39;metadata&#39;][&#39;name&#39;])
 
     # Harvester Kubeconfig
     rke2_cluster_name = &#39;rke2-&#39; + test_environment
@@ -760,7 +777,7 @@ def rke1_cluster(request, rancher_admin_session, rancher_api_endpoints, image,
 </details>
 </dd>
 <dt id="harvester_e2e_tests.scenarios.test_rancher_integration.rke2_cluster"><code class="name flex">
-<span>def <span class="ident">rke2_cluster</span></span>(<span>request, rancher_admin_session, rancher_api_endpoints, image, network, cloud_credential, external_rancher_with_imported_harvester)</span>
+<span>def <span class="ident">rke2_cluster</span></span>(<span>request, admin_session, harvester_api_endpoints, rancher_admin_session, rancher_api_endpoints, image, network, cloud_credential, external_rancher_with_imported_harvester)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -769,12 +786,16 @@ def rke1_cluster(request, rancher_admin_session, rancher_api_endpoints, image,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
-def rke2_cluster(request, rancher_admin_session, rancher_api_endpoints, image,
+def rke2_cluster(request, admin_session, harvester_api_endpoints,
+                 rancher_admin_session, rancher_api_endpoints, image,
                  network, cloud_credential,
                  external_rancher_with_imported_harvester):
     test_environment = request.config.getoption(&#39;--test-environment&#39;)
     cluster_id = external_rancher_with_imported_harvester
     cloud_credential_id = cloud_credential
+
+    utils.assert_image_ready(request, admin_session, harvester_api_endpoints,
+                             image[&#39;metadata&#39;][&#39;name&#39;])
 
     # Harvester Kubeconfig
     rke2_cluster_name = &#39;rke2-&#39; + test_environment
