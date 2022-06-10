@@ -73,8 +73,8 @@ export class ImagePage {
     cy.get('.tab#labels').click();
     keys.forEach((key, index) => {
       cy.contains('Add Label').click();
-      cy.get('.kv-item.key input').eq(index + 2).type(key);
-      cy.get('.kv-item.value input').eq(index + 2).type(value.labels[key]);
+      cy.get('.kv-item.key input').eq(-1).type(key);
+      cy.get('.kv-item.value input').eq(-1).type(value.labels[key]);
     });
   }
 
@@ -125,10 +125,6 @@ export class ImagePage {
     cy.contains(value.name).parentsUntil('tbody', 'tr').find('td.col-image-percentage-bar').contains(valid ? 'Completed' : '0%', { timeout: constants.timeout.uploadTimeout }).should('be.visible');
     // state indicator for status of image upload status e.g. active or uploading
     cy.contains(value.name).parentsUntil('tbody', 'tr').find('td.col-badge-state-formatter').contains(valid ? 'Active' : 'Failed', { timeout: constants.timeout.uploadTimeout }).should('be.visible');
-
-    if (valid) {
-      cy.contains(value.size || 'Size need to be string').should('be.visible');
-    }
   }
 
   // public checkImageInLH(imageName: string) {

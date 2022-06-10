@@ -1,9 +1,52 @@
 import YAML from 'js-yaml'
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { ImagePage } from "@/pageobjects/image.po";
+import { generateName } from '@/utils/utils';
+import { HCI } from '@/constants/types';
 
 const vms = new VmsPage();
 const image = new ImagePage();
+
+describe('Auto setup image from cypress environment', () => {
+  it('Auto setup image from cypress environment', () => {
+    const imageEnv = Cypress.env('image');
+    const IMAGE_NAME = imageEnv.name;
+    const IMAGE_URL = imageEnv.url;
+    
+    const value = {
+        name: IMAGE_NAME,
+        url: IMAGE_URL,
+    }
+
+    cy.login();
+
+    cy.request({
+      url: `v1/harvester/${HCI.IMAGE}s`,
+      headers: {
+        accept: 'application/json'
+      }
+    }).as('imageList')
+
+    cy.get('@imageList').should((res: any) => {
+      expect(res?.status, 'Check Image list').to.equal(200);
+      const images = res?.body?.data || []
+
+      const imageEnv = Cypress.env('image');
+
+      const name = imageEnv.name
+      const url = imageEnv.url
+      const imageFound = images.find((i:any) => i?.spec?.displayName === name)
+
+      if (imageFound) {
+        return
+      } else {
+        image.goToCreate();
+        image.create(value);
+        image.checkState(value);
+      }
+    })
+  })
+})
 
 /**
  * 1. Create image with cloud image available for openSUSE. http://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2
@@ -19,12 +62,12 @@ const image = new ImagePage();
  * 5. User should be able to create a new image with same name.
  */
 describe('Create an image with valid image URL', () => {
-    const IMAGE_NAME = 'auto-image-valid-url-test';
-    const IMAGE_URL = 'http://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2';
+    const imageEnv = Cypress.env('image');
+    const IMAGE_NAME = generateName('auto-image-valid-url-test');
+    const IMAGE_URL = imageEnv.url;
     const value = {
         name: IMAGE_NAME,
         url: IMAGE_URL,
-        size: '544 MB',
         labels: {
             y1: 'z1',
             y2: 'z2'
@@ -106,8 +149,8 @@ describe('Create an image with valid image URL', () => {
  * 1. image “img-1” will be deleted
  */
 describe('Delete VM with exported image', () => {
-    const IMAGE_NAME = 'img-1';
-    const VM_NAME = 'vm-1';
+    const IMAGE_NAME = generateName('img-1');
+    const VM_NAME = generateName('vm-1');
 
     it('Delete VM with exported image', () => {
         cy.login();
@@ -137,14 +180,10 @@ describe('Delete VM with exported image', () => {
         image.goToList();
         image.checkState({
             name: IMAGE_NAME,
-            size: '10 GB'
         });
 
         // delete VM
         vms.delete(namespace, VM_NAME);
-
-        // delete IMAGE
-        image.delete(IMAGE_NAME);
     });
 });
 
@@ -157,8 +196,8 @@ describe('Delete VM with exported image', () => {
  * 1. image “img-1” will be updated
  */
 describe('Update image labels after deleting source VM', () => {
-    const IMAGE_NAME = 'img-1';
-    const VM_NAME = 'vm-1';
+    const IMAGE_NAME = generateName('img-1');
+    const VM_NAME = generateName('vm-1');
 
     it('Update image labels after deleting source VM', () => {
         cy.login();
@@ -273,8 +312,8 @@ describe('Update image labels after deleting source VM', () => {
  * 1. Image should upload.
  */
 describe('Create a ISO image via upload', () => {
-    const IMAGE_NAME = 'auto-image-iso-upload-test';
-    const VM_NAME = 'auto-image-iso-test-vm';
+    const IMAGE_NAME = generateName('auto-image-iso-upload-test');
+    const VM_NAME = generateName('auto-image-iso-test-vm');
 
     it('Create a ISO image via upload', () => {
         cy.login();
