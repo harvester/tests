@@ -67,7 +67,7 @@ export class VolumePage {
     cy.intercept('POST', `v1/harvester/persistentvolumeclaims/*/${ volumeName }?action=export`).as('exportImage');
     cy.get(this.exportImageActions).contains('Create').click();
     cy.wait('@exportImage').then(res => {
-      expect(res.response?.statusCode).to.equal(200);
+      expect(res.response?.statusCode, `Check Export Image`).to.be.oneOf([200, 204]);
       expect(cy.contains('Succeed'));
     });
   }
