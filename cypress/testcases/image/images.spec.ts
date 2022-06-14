@@ -25,9 +25,7 @@ describe('Auto setup image from cypress environment', () => {
       headers: {
         accept: 'application/json'
       }
-    }).as('imageList')
-
-    cy.get('@imageList').should((res: any) => {
+    }).then(res => {
       expect(res?.status, 'Check Image list').to.equal(200);
       const images = res?.body?.data || []
 
