@@ -31,6 +31,10 @@ pytest_plugins = [
 @pytest.fixture(scope='function')
 def windows_vm(request, admin_session, windows_image, keypair,
                harvester_api_endpoints):
+
+    utils.assert_image_ready(request, admin_session, harvester_api_endpoints,
+                             windows_image['metadata']['name'])
+
     vm_json = utils.create_vm(request, admin_session, windows_image,
                               harvester_api_endpoints, keypair=keypair)
     yield vm_json
@@ -120,8 +124,7 @@ def test_create_single_vm(admin_session, image, single_vm,
 @pytest.mark.virtual_machines_p2
 @pytest.mark.p2
 @pytest.mark.windows_vm
-def test_create_windows_vm(admin_session, image, windows_vm,
-                           harvester_api_endpoints):
+def test_create_windows_vm(admin_session, windows_vm, harvester_api_endpoints):
     """
     Test Virtual Machines with windows Image
     Covers:
