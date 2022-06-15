@@ -381,6 +381,11 @@ def assert_image_ready(request, admin_session,
         resp_json = resp.json()
         if resp_json['status'].get("progress", 0) == 100:
             return True
+
+        if resp_json['status']['conditions'][0].get("reason") == "ImportFailed":
+            reason = resp_json['status']['conditions'][0]['message']
+            raise AssertionError(f"Image import Failed with reason: {reason}")
+
         return False
 
     try:
