@@ -698,7 +698,7 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         assert s in ["running", "completed"]
 
         # give it some time for the VM to migrate
-        time.sleep(120)
+        time.sleep(60)
 
         def _check_vm_instance_migrated():
             resp = admin_session.get(
@@ -731,13 +731,13 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         utils.disable_maintenance_mode(request, admin_session,
                                        harvester_api_endpoints, host_json)
         # migrate VM back to old host
-        resp = admin_session.post(harvester_api_endpoints.migrate_vm % (
+        resp = admin_session.put(harvester_api_endpoints.migrate_vm % (
             vm_json['metadata']['name']),
             json={"nodeName": vm_node_before_migrate})
-        assert resp.status_code == 204, 'Failed to migrat VM %s to host %s' % (
+        assert resp.status_code == 202, 'Failed to migrat VM %s to host %s' % (
             vm_json['metadata']['name'], vm_node_before_migrate)
         # give it some time for the VM to migrate
-        time.sleep(120)
+        time.sleep(60)
 
         try:
             polling2.poll(
