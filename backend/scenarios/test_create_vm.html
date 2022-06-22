@@ -59,6 +59,10 @@ pytest_plugins = [
 @pytest.fixture(scope=&#39;function&#39;)
 def windows_vm(request, admin_session, windows_image, keypair,
                harvester_api_endpoints):
+
+    utils.assert_image_ready(request, admin_session, harvester_api_endpoints,
+                             windows_image[&#39;metadata&#39;][&#39;name&#39;])
+
     vm_json = utils.create_vm(request, admin_session, windows_image,
                               harvester_api_endpoints, keypair=keypair)
     yield vm_json
@@ -148,8 +152,7 @@ def test_create_single_vm(admin_session, image, single_vm,
 @pytest.mark.virtual_machines_p2
 @pytest.mark.p2
 @pytest.mark.windows_vm
-def test_create_windows_vm(admin_session, image, windows_vm,
-                           harvester_api_endpoints):
+def test_create_windows_vm(admin_session, windows_vm, harvester_api_endpoints):
     &#34;&#34;&#34;
     Test Virtual Machines with windows Image
     Covers:
@@ -723,7 +726,7 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         assert s in [&#34;running&#34;, &#34;completed&#34;]
 
         # give it some time for the VM to migrate
-        time.sleep(120)
+        time.sleep(60)
 
         def _check_vm_instance_migrated():
             resp = admin_session.get(
@@ -756,13 +759,13 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         utils.disable_maintenance_mode(request, admin_session,
                                        harvester_api_endpoints, host_json)
         # migrate VM back to old host
-        resp = admin_session.post(harvester_api_endpoints.migrate_vm % (
+        resp = admin_session.put(harvester_api_endpoints.migrate_vm % (
             vm_json[&#39;metadata&#39;][&#39;name&#39;]),
             json={&#34;nodeName&#34;: vm_node_before_migrate})
-        assert resp.status_code == 204, &#39;Failed to migrat VM %s to host %s&#39; % (
+        assert resp.status_code == 202, &#39;Failed to migrat VM %s to host %s&#39; % (
             vm_json[&#39;metadata&#39;][&#39;name&#39;], vm_node_before_migrate)
         # give it some time for the VM to migrate
-        time.sleep(120)
+        time.sleep(60)
 
         try:
             polling2.poll(
@@ -1447,7 +1450,7 @@ def test_create_vm_overcommit_memory_failed(
 </details>
 </dd>
 <dt id="harvester_e2e_tests.scenarios.test_create_vm.test_create_windows_vm"><code class="name flex">
-<span>def <span class="ident">test_create_windows_vm</span></span>(<span>admin_session, image, windows_vm, harvester_api_endpoints)</span>
+<span>def <span class="ident">test_create_windows_vm</span></span>(<span>admin_session, windows_vm, harvester_api_endpoints)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Test Virtual Machines with windows Image</p>
@@ -1460,8 +1463,7 @@ def test_create_vm_overcommit_memory_failed(
 <pre><code class="python">@pytest.mark.virtual_machines_p2
 @pytest.mark.p2
 @pytest.mark.windows_vm
-def test_create_windows_vm(admin_session, image, windows_vm,
-                           harvester_api_endpoints):
+def test_create_windows_vm(admin_session, windows_vm, harvester_api_endpoints):
     &#34;&#34;&#34;
     Test Virtual Machines with windows Image
     Covers:
@@ -1519,7 +1521,7 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         assert s in [&#34;running&#34;, &#34;completed&#34;]
 
         # give it some time for the VM to migrate
-        time.sleep(120)
+        time.sleep(60)
 
         def _check_vm_instance_migrated():
             resp = admin_session.get(
@@ -1552,13 +1554,13 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         utils.disable_maintenance_mode(request, admin_session,
                                        harvester_api_endpoints, host_json)
         # migrate VM back to old host
-        resp = admin_session.post(harvester_api_endpoints.migrate_vm % (
+        resp = admin_session.put(harvester_api_endpoints.migrate_vm % (
             vm_json[&#39;metadata&#39;][&#39;name&#39;]),
             json={&#34;nodeName&#34;: vm_node_before_migrate})
-        assert resp.status_code == 204, &#39;Failed to migrat VM %s to host %s&#39; % (
+        assert resp.status_code == 202, &#39;Failed to migrat VM %s to host %s&#39; % (
             vm_json[&#39;metadata&#39;][&#39;name&#39;], vm_node_before_migrate)
         # give it some time for the VM to migrate
-        time.sleep(120)
+        time.sleep(60)
 
         try:
             polling2.poll(
@@ -1727,6 +1729,10 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
 <pre><code class="python">@pytest.fixture(scope=&#39;function&#39;)
 def windows_vm(request, admin_session, windows_image, keypair,
                harvester_api_endpoints):
+
+    utils.assert_image_ready(request, admin_session, harvester_api_endpoints,
+                             windows_image[&#39;metadata&#39;][&#39;name&#39;])
+
     vm_json = utils.create_vm(request, admin_session, windows_image,
                               harvester_api_endpoints, keypair=keypair)
     yield vm_json

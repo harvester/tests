@@ -131,7 +131,7 @@ class TestHostDown:
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
         utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
-                              vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+                              basic_vm[&#34;metadata&#34;][&#34;name&#34;], True)
 
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         # Reboot VM
@@ -243,7 +243,7 @@ class TestHostDown:
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
         utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
-                              vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+                              basic_vm[&#34;metadata&#34;][&#34;name&#34;], True)
 
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         # Reboot VM
@@ -370,7 +370,7 @@ def test_vm_after_host_reboot(self, request, admin_session,
     vm_instance_json = utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, basic_vm)
     utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
-                          vm_instance_json[&#34;metadata&#34;][&#34;name&#34;], True)
+                          basic_vm[&#34;metadata&#34;][&#34;name&#34;], True)
 
     node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
     # Reboot VM

@@ -409,6 +409,12 @@ def assert_image_ready(request, admin_session,
         resp_json = resp.json()
         if resp_json[&#39;status&#39;].get(&#34;progress&#34;, 0) == 100:
             return True
+
+        status = resp_json[&#39;status&#39;]
+        if status[&#39;conditions&#39;][0].get(&#34;reason&#34;) == &#34;ImportFailed&#34;:
+            reason = status[&#39;conditions&#39;][0][&#39;message&#39;]
+            raise AssertionError(f&#34;Image import Failed with reason: {reason}&#34;)
+
         return False
 
     try:
@@ -555,7 +561,7 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         machine_type=machine_type,
         include_usb=include_usb
     )
-    request_json[&#39;spec&#39;][&#39;running&#39;] = running
+
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
     assert resp.status_code == 201, (
@@ -1567,6 +1573,12 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
         resp_json = resp.json()
         if resp_json[&#39;status&#39;].get(&#34;progress&#34;, 0) == 100:
             return True
+
+        status = resp_json[&#39;status&#39;]
+        if status[&#39;conditions&#39;][0].get(&#34;reason&#34;) == &#34;ImportFailed&#34;:
+            reason = status[&#39;conditions&#39;][0][&#39;message&#39;]
+            raise AssertionError(f&#34;Image import Failed with reason: {reason}&#34;)
+
         return False
 
     try:
@@ -2118,7 +2130,7 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
         machine_type=machine_type,
         include_usb=include_usb
     )
-    request_json[&#39;spec&#39;][&#39;running&#39;] = running
+
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
     assert resp.status_code == 201, (
