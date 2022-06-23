@@ -103,7 +103,7 @@ class TestHostDown:
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
         utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
-                              vm_instance_json["metadata"]["name"], True)
+                              basic_vm["metadata"]["name"], True)
 
         node_name = vm_instance_json['status']['nodeName']
         # Reboot VM

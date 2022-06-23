@@ -381,6 +381,12 @@ def assert_image_ready(request, admin_session,
         resp_json = resp.json()
         if resp_json['status'].get("progress", 0) == 100:
             return True
+
+        status = resp_json['status']
+        if status['conditions'][0].get("reason") == "ImportFailed":
+            reason = status['conditions'][0]['message']
+            raise AssertionError(f"Image import Failed with reason: {reason}")
+
         return False
 
     try:
@@ -527,7 +533,7 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         machine_type=machine_type,
         include_usb=include_usb
     )
-    request_json['spec']['running'] = running
+
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
     assert resp.status_code == 201, (
