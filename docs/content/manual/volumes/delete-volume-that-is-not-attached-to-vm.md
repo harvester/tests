@@ -1,5 +1,5 @@
 ---
-title: Delete volume that is not attached to a VM (e2e_be)
+title: Delete volume that is not attached to a VM (e2e_be_fe)
 ---
 1. Create volume
 1. Validate that it created
