@@ -443,6 +443,7 @@ def rke2_cluster(request, admin_session, harvester_api_endpoints,
                         rke2_cluster_name, cluster_id)
 
 
+@pytest.mark.skip(reason="https://github.com/harvester/tests/issues/384")
 @pytest.mark.rancher_integration_with_external_rancher
 class TestRancherIntegrationWithExternalRancher:
 
