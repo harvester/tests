@@ -12,8 +12,8 @@ export default defineConfig({
   env: {
     NODE_ENV: 'production',
     username: 'admin',
-    password: 'admin',
-    baseUrl: 'https://online-server',
+    password: 'password1234',
+    baseUrl: 'https://localhost',
     host: {
       name: '',
       disks: [
@@ -49,7 +49,7 @@ export default defineConfig({
     specPattern:
       './testcases/**/*.spec.ts',
     supportFile: './support/index.js',
-    baseUrl: 'https://online-server',
+    baseUrl: 'https://192.168.0.131',
     experimentalSessionAndOrigin: true,
   },
 })
