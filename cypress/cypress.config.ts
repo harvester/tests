@@ -13,7 +13,7 @@ export default defineConfig({
     NODE_ENV: 'production',
     username: 'admin',
     password: 'password1234',
-    baseUrl: 'https://localhost',
+    baseUrl: 'https://online-server',
     host: {
       name: '',
       disks: [
