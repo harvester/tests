@@ -29,7 +29,7 @@ describe('Create a vm with all the default values', () => {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: imageEnv.name,
+      image: Cypress._.toLower(imageEnv.name),
       namespace,
     }
 
@@ -62,7 +62,7 @@ describe('Create VM without memory provided', () => {
     const value = {
       name: VM_NAME,
       cpu: '2',
-      image: imageEnv.name,
+      image: Cypress._.toLower(imageEnv.name),
       namespace,
     }
   

@@ -42,7 +42,7 @@ describe('Update Overcommit configuration', () => {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: imageEnv.name,
+      image: Cypress._.toLower(imageEnv.name),
       namespace: NAMESPACE,
     }
 

@@ -1,4 +1,3 @@
-import YAML from 'js-yaml'
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { ImagePage } from "@/pageobjects/image.po";
 import { generateName } from '@/utils/utils';
@@ -10,7 +9,7 @@ const image = new ImagePage();
 describe('Auto setup image from cypress environment', () => {
   it('Auto setup image from cypress environment', () => {
     const imageEnv = Cypress.env('image');
-    const IMAGE_NAME = imageEnv.name;
+    const IMAGE_NAME = Cypress._.toLower(imageEnv.name);
     const IMAGE_URL = imageEnv.url;
     
     const value = {
@@ -29,11 +28,7 @@ describe('Auto setup image from cypress environment', () => {
       expect(res?.status, 'Check Image list').to.equal(200);
       const images = res?.body?.data || []
 
-      const imageEnv = Cypress.env('image');
-
-      const name = imageEnv.name
-      const url = imageEnv.url
-      const imageFound = images.find((i:any) => i?.spec?.displayName === name)
+      const imageFound = images.find((i:any) => i?.spec?.displayName === IMAGE_NAME)
 
       if (imageFound) {
         return
@@ -116,7 +111,7 @@ describe('Create an image with valid image URL', () => {
  * 1. Image state show as Failed
  */
  describe('Create image with invalid URL', () => {
-    const IMAGE_NAME = 'auto-image-invalid-url-test';
+    const IMAGE_NAME = generateName('auto-image-invalid-url-test');
 
     it('Create image with invalid URL', () => {
         cy.login();
@@ -161,7 +156,7 @@ describe('Delete VM with exported image', () => {
             name: VM_NAME,
             cpu: '2',
             memory: '4',
-            image: imageEnv.name,
+            image: Cypress._.toLower(imageEnv.name),
             namespace,
         }
 
@@ -169,7 +164,6 @@ describe('Delete VM with exported image', () => {
 
         // check VM state
         vms.goToConfigDetail(VM_NAME);
-        vms.goToYamlDetail(VM_NAME);
 
         // export IMAGE
         image.exportImage(VM_NAME, IMAGE_NAME);
@@ -207,7 +201,7 @@ describe('Update image labels after deleting source VM', () => {
             name: VM_NAME,
             cpu: '2',
             memory: '4',
-            image: imageEnv.name,
+            image: Cypress._.toLower(imageEnv.name),
             namespace,
         }
 
@@ -216,7 +210,6 @@ describe('Update image labels after deleting source VM', () => {
 
         // check VM state
         vms.goToConfigDetail(VM_NAME);
-        vms.goToYamlDetail(VM_NAME);
 
         // export IMAGE
         image.exportImage(VM_NAME, IMAGE_NAME);
@@ -346,12 +339,12 @@ describe('Create a ISO image via upload', () => {
 
         // check VM state
         vms.goToConfigDetail(VM_NAME);
-        vms.goToYamlDetail(VM_NAME);
         
         // delete VM
         vms.delete(namespace, VM_NAME)
 
         // delete IMAGE
-        image.delete(IMAGE_NAME)
+        // TODO: Delete image should check volume is deleted
+        // image.delete(IMAGE_NAME)
     });
 });

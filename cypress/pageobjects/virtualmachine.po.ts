@@ -156,7 +156,7 @@ export class VmsPage extends CruResourcePo {
 
       const imageEnv = Cypress.env('image');
 
-      const name = imageEnv.name
+      const name = Cypress._.toLower(imageEnv.name)
       const url = imageEnv.url
       const imageFound = images.find((i:any) => i?.spec?.displayName === name)
 

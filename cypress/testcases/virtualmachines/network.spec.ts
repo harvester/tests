@@ -25,7 +25,7 @@ describe('Add a network to an existing VM with only 1 network', () => {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: imageEnv.name,
+      image: Cypress._.toLower(imageEnv.name),
       networks: [{
         network: NETWORK_1,
       }],
