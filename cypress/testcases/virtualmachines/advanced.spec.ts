@@ -25,7 +25,7 @@ describe('Create a new VM and add Enable USB tablet option', () => {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: imageEnv.name,
+      image: Cypress._.toLower(imageEnv.name),
       usbTablet: true,
       namespace: NAMESPACE,
     }
@@ -74,7 +74,7 @@ describe("Create a new VM and add Install guest agent option", () => {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: imageEnv.name,
+      image: Cypress._.toLower(imageEnv.name),
       guestAgent: true,
       namespace: NAMESPACE,
     }
@@ -106,7 +106,7 @@ describe("Verify Booting in EFI mode checkbox", () => {
       name: VM_NAME,
       cpu: '2',
       memory: '4',
-      image: imageEnv.name,
+      image: Cypress._.toLower(imageEnv.name),
       efiEnabled: true,
       namespace: NAMESPACE,
     }
