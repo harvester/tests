@@ -155,11 +155,15 @@ export class ImagePage {
   //   });
   // }
 
-  public save( { upload, edit }: { upload?: boolean; edit?: boolean } = {} ) {
+  public save( { upload, edit, depth }: { upload?: boolean; edit?: boolean; depth?: number; } = {} ) {
     cy.intercept(edit? 'PUT' : 'POST', `/v1/harvester/harvesterhci.io.virtualmachineimages${ upload ? '/*' : edit ? '/*/*' : '' }`).as('createImage');
     cy.get('.cru-resource-footer').contains(!edit ? 'Create' : 'Save').click();
     cy.wait('@createImage').then(res => {
-      expect(res.response?.statusCode).to.equal( edit ? 200 : 201 );
+      if (edit && res.response?.statusCode === 409 && depth === 0) {
+        this.save({ upload, edit, depth: depth + 1})
+      } else {
+        expect(res.response?.statusCode, `Check save success`).to.equal( edit ? 200 : 201 );
+      }
     });
   }
 
