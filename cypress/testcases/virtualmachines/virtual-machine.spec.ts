@@ -37,7 +37,7 @@ describe('Create a vm with all the default values', () => {
 
     vms.goToConfigDetail(VM_NAME);
 
-    vms.goToYamlDetail(VM_NAME);
+    vms.goToYamlEdit(VM_NAME);
 
     vms.delete(namespace, VM_NAME)
   });

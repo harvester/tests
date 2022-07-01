@@ -24,7 +24,7 @@ export class ImagePage {
   private pageHead = 'main .outlet header h1';
 
   name() {
-    return new LabeledInputPo('.namespace-select > .labeled-input', `:contains("Name")`)
+    return new LabeledInputPo('.span-3 > .labeled-input', `:contains("Name")`)
   }
 
   url() {

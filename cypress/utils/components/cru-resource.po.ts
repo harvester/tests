@@ -26,7 +26,7 @@ export default class CruResourcePo extends PagePo {
   }
 
   name() {
-    return new LabeledInputPo('.namespace-select > .labeled-input', `:contains("Name")`)
+    return new LabeledInputPo('.span-3 >.labeled-input', `:contains("Name")`)
   }
 
   description() {

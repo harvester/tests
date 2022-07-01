@@ -285,7 +285,7 @@ describe('Update image labels after deleting source VM', () => {
 
 //         // check VM state
 //         vms.goToConfigDetail(VM_NAME);
-//         vms.goToYamlDetail(VM_NAME);
+//         vms.goToYamlEdit(VM_NAME);
 
 //         // delete VM
 //         vms.delete(VM_NAME)
