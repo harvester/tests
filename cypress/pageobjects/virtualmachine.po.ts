@@ -128,17 +128,10 @@ export class VmsPage extends CruResourcePo {
     cy.url().should('contain', 'as=config')
   }
 
-  goToYamlDetail(name: string) {
+  goToYamlEdit(name: string) {
     this.goToList();
-    cy.get('.search').type(name)
-    const vm = cy.contains(name)
-    expect(vm.should('be.visible'))
-    vm.click()
 
-    const config = cy.get('.masthead button').contains('YAML')
-    expect(config.should('be.visible'));
-    config.click()
-    cy.url().should('contain', 'as=yaml')
+    this.clickAction(name, 'Edit YAML')
   }
 
   public init() {

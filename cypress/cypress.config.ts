@@ -28,6 +28,7 @@ export default defineConfig({
       url: 'https://download.opensuse.org/pub/opensuse/distribution/leap/15.3/appliances/openSUSE-Leap-15.3-JeOS.x86_64-15.3-OpenStack-Cloud-Current.qcow2',
     },
     nfsEndPoint: 'nfs://ip',
+    vlans: ['[vlan name1]', '[vlan name2]'],
   },
   retries: {
     runMode: 1,

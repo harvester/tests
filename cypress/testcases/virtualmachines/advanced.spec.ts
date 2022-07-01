@@ -40,7 +40,7 @@ describe('Create a new VM and add Enable USB tablet option', () => {
 
     cy.intercept('GET', `/apis/kubevirt.io/v1/namespaces/*/virtualmachines/${VM_NAME}`).as('vmDetail');
 
-    vms.goToYamlDetail(VM_NAME);
+    vms.goToYamlEdit(VM_NAME);
     
     cy.wait('@vmDetail').then(res => {
       expect(res.response?.statusCode).to.equal(200);
