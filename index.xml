@@ -805,7 +805,7 @@ Provide Listening port and Target port Click Add-on Config</description>
     </item>
     
     <item>
-      <title>Add a network to an existing VM with only 1 network (e2e_be)</title>
+      <title>Add a network to an existing VM with only 1 network (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-only-1-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1386,7 +1386,7 @@ Verify Items Cluster&amp;rsquo;s SSL/TLS parameters could be configured in insta
     </item>
     
     <item>
-      <title>CPU overcommit on VM</title>
+      <title>CPU overcommit on VM (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/cpu_overcommit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1459,7 +1459,7 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on t
     </item>
     
     <item>
-      <title>Create a new VM and add Enable USB tablet option	(e2e_be)</title>
+      <title>Create a new VM and add Enable USB tablet option	(e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1468,7 +1468,7 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on t
     </item>
     
     <item>
-      <title>Create a new VM and add Install guest agent option (e2e_be)</title>
+      <title>Create a new VM and add Install guest agent option (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-install-guest-agent-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1531,7 +1531,7 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on t
     </item>
     
     <item>
-      <title>Create a vm with all the default values (e2e_be)</title>
+      <title>Create a vm with all the default values (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1945,12 +1945,12 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on t
     </item>
     
     <item>
-      <title>Create VM without memory provided</title>
+      <title>Create VM without memory provided (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-without-memory-provided/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-without-memory-provided/</guid>
-      <description>Related issues: #1477 intimidating error message when missing mandatory field Category: Virtual Machine Verification Steps Create some image and volume Create virtual machine Fill out all mandatory field but leave memory blank. Click create Expected Results Leave empty memory field empty when create virtual machine will show &amp;ldquo;Memory is required&amp;rdquo; error message</description>
+      <description>Related issues: #1477 intimidating error message when missing mandatory field Category Virtual Machine Verification Steps Create some image and volume Create virtual machine Fill out all mandatory field but leave memory blank. Click create Expected Results Leave empty memory field empty when create virtual machine will show &amp;ldquo;Memory is required&amp;rdquo; error message</description>
     </item>
     
     <item>
