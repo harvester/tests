@@ -35,6 +35,7 @@ import tempfile
 import time
 import uuid
 import yaml
+import re
 
 
 def retry_session():
@@ -61,6 +62,10 @@ def retry_session():
 def random_name():
     """Generate a random alphanumeric name using uuid.uuid4()"""
     return uuid.uuid4().hex
+
+
+def remove_ansicode(string):
+    return re.sub(r"\x1b|\[\d+m", "", string)
 
 
 def random_alphanumeric(length=5, upper_case=False):
@@ -937,6 +942,9 @@ def create_image_terraform(request, admin_session, harvester_api_endpoints,
         request, 'terraform.sh', 'terraform')
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -985,6 +993,9 @@ def destroy_resource(request, admin_session, destroy_type=None):
             request, 'terraform_destroy.sh', 'terraform') + ' ' + destroy_type
         result = subprocess.run([terraform_script], shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result.stdout = remove_ansicode(result.stdout.decode())
+        result.stderr = remove_ansicode(result.stderr.decode())
+
         assert result.returncode == 0, (
             'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
                 result.returncode, result.stderr, result.stdout))
@@ -1017,6 +1028,9 @@ def create_volume_terraform(request, admin_session, harvester_api_endpoints,
         request, 'terraform.sh', 'terraform')
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1050,6 +1064,9 @@ def create_keypair_terraform(request, admin_session, harvester_api_endpoints,
         request, 'terraform.sh', 'terraform')
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1092,6 +1109,9 @@ def create_network_terraform(request, admin_session, harvester_api_endpoints,
 
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1128,6 +1148,9 @@ def create_clusternetworks_terraform(request, admin_session,
         request, 'terraform.sh', 'terraform') + ' ' + 'cluster'
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1172,6 +1195,9 @@ def create_vm_terraform(request, admin_session, harvester_api_endpoints,
         request, 'terraform.sh', 'terraform')
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
