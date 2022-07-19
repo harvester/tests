@@ -63,6 +63,7 @@ import tempfile
 import time
 import uuid
 import yaml
+import re
 
 
 def retry_session():
@@ -89,6 +90,10 @@ def retry_session():
 def random_name():
     &#34;&#34;&#34;Generate a random alphanumeric name using uuid.uuid4()&#34;&#34;&#34;
     return uuid.uuid4().hex
+
+
+def remove_ansicode(string):
+    return re.sub(r&#34;\x1b|\[\d+m&#34;, &#34;&#34;, string)
 
 
 def random_alphanumeric(length=5, upper_case=False):
@@ -965,6 +970,9 @@ def create_image_terraform(request, admin_session, harvester_api_endpoints,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;)
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -1013,6 +1021,9 @@ def destroy_resource(request, admin_session, destroy_type=None):
             request, &#39;terraform_destroy.sh&#39;, &#39;terraform&#39;) + &#39; &#39; + destroy_type
         result = subprocess.run([terraform_script], shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result.stdout = remove_ansicode(result.stdout.decode())
+        result.stderr = remove_ansicode(result.stderr.decode())
+
         assert result.returncode == 0, (
             &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
                 result.returncode, result.stderr, result.stdout))
@@ -1045,6 +1056,9 @@ def create_volume_terraform(request, admin_session, harvester_api_endpoints,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;)
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -1078,6 +1092,9 @@ def create_keypair_terraform(request, admin_session, harvester_api_endpoints,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;)
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -1120,6 +1137,9 @@ def create_network_terraform(request, admin_session, harvester_api_endpoints,
 
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -1156,6 +1176,9 @@ def create_clusternetworks_terraform(request, admin_session,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;) + &#39; &#39; + &#39;cluster&#39;
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -1200,6 +1223,9 @@ def create_vm_terraform(request, admin_session, harvester_api_endpoints,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;)
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -1735,6 +1761,9 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;) + &#39; &#39; + &#39;cluster&#39;
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -1826,6 +1855,9 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;)
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -1963,6 +1995,9 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;)
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -2048,6 +2083,9 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -2251,6 +2289,9 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;)
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -2296,6 +2337,9 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
         request, &#39;terraform.sh&#39;, &#39;terraform&#39;)
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
             result.returncode, result.stderr, result.stdout))
@@ -2579,6 +2623,9 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
             request, &#39;terraform_destroy.sh&#39;, &#39;terraform&#39;) + &#39; &#39; + destroy_type
         result = subprocess.run([terraform_script], shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result.stdout = remove_ansicode(result.stdout.decode())
+        result.stderr = remove_ansicode(result.stderr.decode())
+
         assert result.returncode == 0, (
             &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
                 result.returncode, result.stderr, result.stdout))
@@ -3293,6 +3340,19 @@ Jinja2 template</p></div>
     assert success, &#39;Timed out while waiting for node to reboot&#39;</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.utils.remove_ansicode"><code class="name flex">
+<span>def <span class="ident">remove_ansicode</span></span>(<span>string)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_ansicode(string):
+    return re.sub(r&#34;\x1b|\[\d+m&#34;, &#34;&#34;, string)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.utils.restart_vm"><code class="name flex">
 <span>def <span class="ident">restart_vm</span></span>(<span>admin_session, harvester_api_endpoints, previous_uid, vm_name, wait_timeout)</span>
 </code></dt>
@@ -3532,6 +3592,7 @@ Jinja2 template</p></div>
 <li><code><a title="harvester_e2e_tests.utils.random_alphanumeric" href="#harvester_e2e_tests.utils.random_alphanumeric">random_alphanumeric</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.random_name" href="#harvester_e2e_tests.utils.random_name">random_name</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.reboot_node" href="#harvester_e2e_tests.utils.reboot_node">reboot_node</a></code></li>
+<li><code><a title="harvester_e2e_tests.utils.remove_ansicode" href="#harvester_e2e_tests.utils.remove_ansicode">remove_ansicode</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.restart_vm" href="#harvester_e2e_tests.utils.restart_vm">restart_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.restore_vm_backup" href="#harvester_e2e_tests.utils.restore_vm_backup">restore_vm_backup</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.retry_session" href="#harvester_e2e_tests.utils.retry_session">retry_session</a></code></li>
