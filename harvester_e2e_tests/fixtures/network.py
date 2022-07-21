@@ -127,9 +127,13 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
     yield network_data
 
     if not request.config.getoption('--do-not-cleanup'):
-        _cleanup_network(admin_session, harvester_api_endpoints,
-                         network_data['id'],
-                         request.config.getoption('--wait-timeout'))
+        # XXX: we would need to check the network not be deleted terraform yet
+        if not utils.is_marker_enabled(request, 'terraform') and \
+            _lookup_network(request, admin_session, harvester_api_endpoints,
+                            vlan_id) is not None:
+            _cleanup_network(admin_session, harvester_api_endpoints,
+                             network_data['id'],
+                             request.config.getoption('--wait-timeout'))
 
 
 @pytest.fixture(scope='class')

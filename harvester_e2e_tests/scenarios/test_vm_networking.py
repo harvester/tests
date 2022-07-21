@@ -740,9 +740,6 @@ def test_create_vm_using_terraform(request, admin_session,
         timeout = request.config.getoption('--wait-timeout')
         (vm_instance_json, public_ip) = get_vm_public_ip(
             admin_session, harvester_api_endpoints, vm_json, timeout)
-
-#       assert_ssh_into_vm(public_ip, timeout, keypair=keypair_using_terraform)
-
     finally:
         if created:
             if not request.config.getoption('--do-not-cleanup'):
