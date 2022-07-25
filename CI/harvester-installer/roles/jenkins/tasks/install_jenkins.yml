@@ -59,6 +59,7 @@
     - pam-auth
     - pipeline-github-lib
     - pipeline-stage-view
+    - pipeline-utility-steps
     - ssh-slaves
     - timestamper
     - workflow-aggregator
