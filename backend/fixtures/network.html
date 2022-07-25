@@ -155,9 +155,13 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
     yield network_data
 
     if not request.config.getoption(&#39;--do-not-cleanup&#39;):
-        _cleanup_network(admin_session, harvester_api_endpoints,
-                         network_data[&#39;id&#39;],
-                         request.config.getoption(&#39;--wait-timeout&#39;))
+        # XXX: we would need to check the network not be deleted terraform yet
+        if not utils.is_marker_enabled(request, &#39;terraform&#39;) and \
+            _lookup_network(request, admin_session, harvester_api_endpoints,
+                            vlan_id) is not None:
+            _cleanup_network(admin_session, harvester_api_endpoints,
+                             network_data[&#39;id&#39;],
+                             request.config.getoption(&#39;--wait-timeout&#39;))
 
 
 @pytest.fixture(scope=&#39;class&#39;)
@@ -334,9 +338,13 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
     yield network_data
 
     if not request.config.getoption(&#39;--do-not-cleanup&#39;):
-        _cleanup_network(admin_session, harvester_api_endpoints,
-                         network_data[&#39;id&#39;],
-                         request.config.getoption(&#39;--wait-timeout&#39;))</code></pre>
+        # XXX: we would need to check the network not be deleted terraform yet
+        if not utils.is_marker_enabled(request, &#39;terraform&#39;) and \
+            _lookup_network(request, admin_session, harvester_api_endpoints,
+                            vlan_id) is not None:
+            _cleanup_network(admin_session, harvester_api_endpoints,
+                             network_data[&#39;id&#39;],
+                             request.config.getoption(&#39;--wait-timeout&#39;))</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.network.network_for_update_test"><code class="name flex">

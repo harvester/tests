@@ -128,10 +128,10 @@ class TestHostDown:
     def test_vm_after_host_reboot(self, request, admin_session,
                                   harvester_api_endpoints, basic_vm):
         # make sure the VM instance is successfully created and running
-        vm_instance_json = utils.lookup_vm_instance(
-            admin_session, harvester_api_endpoints, basic_vm)
         utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
                               basic_vm[&#34;metadata&#34;][&#34;name&#34;], True)
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, basic_vm)
 
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         # Reboot VM
@@ -240,10 +240,10 @@ class TestHostDown:
     def test_vm_after_host_reboot(self, request, admin_session,
                                   harvester_api_endpoints, basic_vm):
         # make sure the VM instance is successfully created and running
-        vm_instance_json = utils.lookup_vm_instance(
-            admin_session, harvester_api_endpoints, basic_vm)
         utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
                               basic_vm[&#34;metadata&#34;][&#34;name&#34;], True)
+        vm_instance_json = utils.lookup_vm_instance(
+            admin_session, harvester_api_endpoints, basic_vm)
 
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         # Reboot VM
@@ -367,10 +367,10 @@ def test_host_shutdown(self, request, admin_session,
 def test_vm_after_host_reboot(self, request, admin_session,
                               harvester_api_endpoints, basic_vm):
     # make sure the VM instance is successfully created and running
-    vm_instance_json = utils.lookup_vm_instance(
-        admin_session, harvester_api_endpoints, basic_vm)
     utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
                           basic_vm[&#34;metadata&#34;][&#34;name&#34;], True)
+    vm_instance_json = utils.lookup_vm_instance(
+        admin_session, harvester_api_endpoints, basic_vm)
 
     node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
     # Reboot VM
