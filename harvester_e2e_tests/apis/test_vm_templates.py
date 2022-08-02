@@ -15,8 +15,6 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import pytest
-
 
 pytest_plugins = [
    'harvester_e2e_tests.fixtures.api_endpoints',
@@ -43,7 +41,6 @@ def test_verify_default_vm_template_versions(admin_session,
     assert len(vm_template_versions['items']) == 3
 
 
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/968')
 def test_create_verify_vm_template(vm_template_version):
     # NOTE: if the vm_template_version fixture is successfully create that
     # means the test is successful.
