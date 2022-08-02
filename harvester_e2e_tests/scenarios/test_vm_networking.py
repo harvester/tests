@@ -748,7 +748,6 @@ def test_create_vm_using_terraform(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_backup_restore_new_vm(request, admin_session,
                                harvester_api_endpoints,
@@ -772,7 +771,6 @@ def test_backup_restore_new_vm(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_backup_restore_existing_vm(request, admin_session,
                                     harvester_api_endpoints,
@@ -793,7 +791,6 @@ def test_backup_restore_existing_vm(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_chained_del_middle_backup(request, admin_session,
                                    harvester_api_endpoints,
@@ -816,7 +813,6 @@ def test_chained_del_middle_backup(request, admin_session,
 
 @pytest.mark.backup_and_restore_p2
 @pytest.mark.p2
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_chained_del_first_backup(request, admin_session,
                                   harvester_api_endpoints,
@@ -839,7 +835,6 @@ def test_chained_del_first_backup(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_chained_del_last_backup(request, admin_session,
                                  harvester_api_endpoints,
@@ -862,7 +857,6 @@ def test_chained_del_last_backup(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 def test_restore_chained_backups(request, admin_session,
                                  harvester_api_endpoints,
