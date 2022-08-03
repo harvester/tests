@@ -456,7 +456,6 @@ def test_create_update_vm_machine_type(request, admin_session, image, keypair,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
@@ -492,7 +491,6 @@ def test_create_vm_on_available_cpu_node(request, admin_session, image,
 @pytest.mark.p1
 @pytest.mark.virtual_machines_p2
 @pytest.mark.p2
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
@@ -545,7 +543,6 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
@@ -579,7 +576,6 @@ def test_create_vm_on_available_memory_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
@@ -631,7 +627,6 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
                                                      image, keypair,
