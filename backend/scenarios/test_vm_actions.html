@@ -435,7 +435,6 @@ class TestVMVolumes:
                                         harvester_api_endpoints, volume_name)
 
 
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
@@ -559,7 +558,6 @@ def test_update_backup_yaml_nfs(request, admin_session,
                        backuptarget_nfs)
 
 
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 @pytest.mark.backup_and_restore_p2
 @pytest.mark.p2
@@ -874,8 +872,7 @@ backup-and-restore-01-create backup target</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
-@pytest.mark.backups3
+<pre><code class="python">@pytest.mark.backups3
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
 def test_backup_single_vm_s3(request, admin_session,
@@ -1002,8 +999,7 @@ def test_update_backup_yaml_nfs(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
-@pytest.mark.backups3
+<pre><code class="python">@pytest.mark.backups3
 @pytest.mark.backup_and_restore_p2
 @pytest.mark.p2
 def test_update_backup_yaml_s3(request, admin_session,

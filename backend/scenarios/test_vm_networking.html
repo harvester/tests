@@ -776,7 +776,6 @@ def test_create_vm_using_terraform(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_backup_restore_new_vm(request, admin_session,
                                harvester_api_endpoints,
@@ -800,7 +799,6 @@ def test_backup_restore_new_vm(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_backup_restore_existing_vm(request, admin_session,
                                     harvester_api_endpoints,
@@ -821,7 +819,6 @@ def test_backup_restore_existing_vm(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_chained_del_middle_backup(request, admin_session,
                                    harvester_api_endpoints,
@@ -844,7 +841,6 @@ def test_chained_del_middle_backup(request, admin_session,
 
 @pytest.mark.backup_and_restore_p2
 @pytest.mark.p2
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_chained_del_first_backup(request, admin_session,
                                   harvester_api_endpoints,
@@ -867,7 +863,6 @@ def test_chained_del_first_backup(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_chained_del_last_backup(request, admin_session,
                                  harvester_api_endpoints,
@@ -890,7 +885,6 @@ def test_chained_del_last_backup(request, admin_session,
 
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_restore_chained_backups(request, admin_session,
                                  harvester_api_endpoints,
@@ -1397,7 +1391,6 @@ with backup from same VM</p></div>
 </summary>
 <pre><code class="python">@pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_backup_restore_existing_vm(request, admin_session,
                                     harvester_api_endpoints,
@@ -1462,7 +1455,6 @@ def test_backup_restore_existing_vm_nfs(request, admin_session,
 </summary>
 <pre><code class="python">@pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_backup_restore_new_vm(request, admin_session,
                                harvester_api_endpoints,
@@ -1532,7 +1524,6 @@ backup-and-restore-08-Delete multiple backups</p></div>
 </summary>
 <pre><code class="python">@pytest.mark.backup_and_restore_p2
 @pytest.mark.p2
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_chained_del_first_backup(request, admin_session,
                                   harvester_api_endpoints,
@@ -1601,7 +1592,6 @@ backup-and-restore-08-Delete multiple backups</p></div>
 </summary>
 <pre><code class="python">@pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_chained_del_last_backup(request, admin_session,
                                  harvester_api_endpoints,
@@ -1669,7 +1659,6 @@ backup-and-restore-08-Delete multiple backups</p></div>
 </summary>
 <pre><code class="python">@pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_chained_del_middle_backup(request, admin_session,
                                    harvester_api_endpoints,
@@ -1879,7 +1868,6 @@ backup-and-restore-20-Delete first backup in chained backup</p></div>
 </summary>
 <pre><code class="python">@pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
-@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1339&#34;)
 @pytest.mark.backups3
 def test_restore_chained_backups(request, admin_session,
                                  harvester_api_endpoints,

@@ -484,7 +484,6 @@ def test_create_update_vm_machine_type(request, admin_session, image, keypair,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
@@ -520,7 +519,6 @@ def test_create_vm_on_available_cpu_node(request, admin_session, image,
 @pytest.mark.p1
 @pytest.mark.virtual_machines_p2
 @pytest.mark.p2
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
@@ -573,7 +571,6 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
@@ -607,7 +604,6 @@ def test_create_vm_on_available_memory_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
@@ -659,7 +655,6 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
                                                      image, keypair,
@@ -1197,7 +1192,6 @@ cluster cpu &amp; memory</p></div>
 </summary>
 <pre><code class="python">@pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
                                                      image, keypair,
@@ -1243,7 +1237,6 @@ def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
 </summary>
 <pre><code class="python">@pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
@@ -1288,7 +1281,6 @@ def test_create_vm_on_available_cpu_node(request, admin_session, image,
 </summary>
 <pre><code class="python">@pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
@@ -1601,7 +1593,6 @@ cluster cpu&amp;memory</p></div>
 @pytest.mark.p1
 @pytest.mark.virtual_machines_p2
 @pytest.mark.p2
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
@@ -1667,7 +1658,6 @@ cpu&amp;memory</p></div>
 </summary>
 <pre><code class="python">@pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason=&#39;https://github.com/harvester/harvester/issues/1021&#39;)
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
