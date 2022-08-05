@@ -50,13 +50,15 @@ pytest_plugins = [
    &#39;harvester_e2e_tests.fixtures.session&#39;,
   ]
 
+DEFAULT_TEMPLATES = 4
+
 
 def test_verify_default_vm_templates(admin_session, harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_vm_templates)
     assert resp.status_code == 200, (
         &#39;Failed to list virtual machine templates: %s&#39; % (resp.content))
     vm_templates = resp.json()
-    assert len(vm_templates[&#39;items&#39;]) == 3
+    assert len(vm_templates[&#39;items&#39;]) == DEFAULT_TEMPLATES
 
 
 def test_verify_default_vm_template_versions(admin_session,
@@ -66,7 +68,7 @@ def test_verify_default_vm_template_versions(admin_session,
         &#39;Failed to list virtual machine template versions: %s&#39; % (
             resp.content))
     vm_template_versions = resp.json()
-    assert len(vm_template_versions[&#39;items&#39;]) == 3
+    assert len(vm_template_versions[&#39;items&#39;]) == DEFAULT_TEMPLATES
 
 
 def test_create_verify_vm_template(vm_template_version):
@@ -113,7 +115,7 @@ def test_create_verify_vm_template(vm_template_version):
         &#39;Failed to list virtual machine template versions: %s&#39; % (
             resp.content))
     vm_template_versions = resp.json()
-    assert len(vm_template_versions[&#39;items&#39;]) == 3</code></pre>
+    assert len(vm_template_versions[&#39;items&#39;]) == DEFAULT_TEMPLATES</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_vm_templates.test_verify_default_vm_templates"><code class="name flex">
@@ -130,7 +132,7 @@ def test_create_verify_vm_template(vm_template_version):
     assert resp.status_code == 200, (
         &#39;Failed to list virtual machine templates: %s&#39; % (resp.content))
     vm_templates = resp.json()
-    assert len(vm_templates[&#39;items&#39;]) == 3</code></pre>
+    assert len(vm_templates[&#39;items&#39;]) == DEFAULT_TEMPLATES</code></pre>
 </details>
 </dd>
 </dl>
