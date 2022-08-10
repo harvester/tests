@@ -24,7 +24,7 @@ export class ImagePage {
   private pageHead = 'main .outlet header h1';
 
   name() {
-    return new LabeledInputPo('.namespace-select > .labeled-input', `:contains("Name")`)
+    return new LabeledInputPo('.span-3 > .labeled-input', `:contains("Name")`)
   }
 
   url() {
@@ -73,8 +73,8 @@ export class ImagePage {
     cy.get('.tab#labels').click();
     keys.forEach((key, index) => {
       cy.contains('Add Label').click();
-      cy.get('.kv-item.key input').eq(index + 2).type(key);
-      cy.get('.kv-item.value input').eq(index + 2).type(value.labels[key]);
+      cy.get('.kv-item.key input').eq(-1).type(key);
+      cy.get('.kv-item.value input').eq(-1).type(value.labels[key]);
     });
   }
 
@@ -125,10 +125,6 @@ export class ImagePage {
     cy.contains(value.name).parentsUntil('tbody', 'tr').find('td.col-image-percentage-bar').contains(valid ? 'Completed' : '0%', { timeout: constants.timeout.uploadTimeout }).should('be.visible');
     // state indicator for status of image upload status e.g. active or uploading
     cy.contains(value.name).parentsUntil('tbody', 'tr').find('td.col-badge-state-formatter').contains(valid ? 'Active' : 'Failed', { timeout: constants.timeout.uploadTimeout }).should('be.visible');
-
-    if (valid) {
-      cy.contains(value.size || 'Size need to be string').should('be.visible');
-    }
   }
 
   // public checkImageInLH(imageName: string) {
@@ -159,11 +155,15 @@ export class ImagePage {
   //   });
   // }
 
-  public save( { upload, edit }: { upload?: boolean; edit?: boolean } = {} ) {
+  public save( { upload, edit, depth }: { upload?: boolean; edit?: boolean; depth?: number; } = {} ) {
     cy.intercept(edit? 'PUT' : 'POST', `/v1/harvester/harvesterhci.io.virtualmachineimages${ upload ? '/*' : edit ? '/*/*' : '' }`).as('createImage');
     cy.get('.cru-resource-footer').contains(!edit ? 'Create' : 'Save').click();
     cy.wait('@createImage').then(res => {
-      expect(res.response?.statusCode).to.equal( edit ? 200 : 201 );
+      if (edit && res.response?.statusCode === 409 && depth === 0) {
+        this.save({ upload, edit, depth: depth + 1})
+      } else {
+        expect(res.response?.statusCode, `Check save success`).to.equal( edit ? 200 : 201 );
+      }
     });
   }
 

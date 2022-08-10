@@ -68,6 +68,7 @@ class TestHostDown:
         utils.power_on_node(request, admin_session, harvester_api_endpoints,
                             node_name)
 
+    @pytest.mark.skip("https://github.com/harvester/harvester/issues/2148")
     @pytest.mark.host_management
     @pytest.mark.virtual_machines_p1
     @pytest.mark.p1
@@ -99,10 +100,10 @@ class TestHostDown:
     def test_vm_after_host_reboot(self, request, admin_session,
                                   harvester_api_endpoints, basic_vm):
         # make sure the VM instance is successfully created and running
+        utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
+                              basic_vm["metadata"]["name"], True)
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
-        utils.assert_vm_ready(request, admin_session, harvester_api_endpoints,
-                              vm_instance_json["metadata"]["name"], True)
 
         node_name = vm_instance_json['status']['nodeName']
         # Reboot VM

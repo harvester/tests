@@ -407,7 +407,6 @@ class TestVMVolumes:
                                         harvester_api_endpoints, volume_name)
 
 
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 @pytest.mark.backup_and_restore_p1
 @pytest.mark.p1
@@ -531,7 +530,6 @@ def test_update_backup_yaml_nfs(request, admin_session,
                        backuptarget_nfs)
 
 
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1339")
 @pytest.mark.backups3
 @pytest.mark.backup_and_restore_p2
 @pytest.mark.p2

@@ -31,6 +31,10 @@ pytest_plugins = [
 @pytest.fixture(scope='function')
 def windows_vm(request, admin_session, windows_image, keypair,
                harvester_api_endpoints):
+
+    utils.assert_image_ready(request, admin_session, harvester_api_endpoints,
+                             windows_image['metadata']['name'])
+
     vm_json = utils.create_vm(request, admin_session, windows_image,
                               harvester_api_endpoints, keypair=keypair)
     yield vm_json
@@ -120,8 +124,7 @@ def test_create_single_vm(admin_session, image, single_vm,
 @pytest.mark.virtual_machines_p2
 @pytest.mark.p2
 @pytest.mark.windows_vm
-def test_create_windows_vm(admin_session, image, windows_vm,
-                           harvester_api_endpoints):
+def test_create_windows_vm(admin_session, windows_vm, harvester_api_endpoints):
     """
     Test Virtual Machines with windows Image
     Covers:
@@ -453,7 +456,6 @@ def test_create_update_vm_machine_type(request, admin_session, image, keypair,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
@@ -489,7 +491,6 @@ def test_create_vm_on_available_cpu_node(request, admin_session, image,
 @pytest.mark.p1
 @pytest.mark.virtual_machines_p2
 @pytest.mark.p2
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_cpu_node(request, admin_session, image,
                                          keypair, harvester_api_endpoints):
@@ -542,7 +543,6 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
@@ -576,7 +576,6 @@ def test_create_vm_on_available_memory_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_update_vm_on_available_memory_node(request, admin_session, image,
                                             keypair, harvester_api_endpoints):
@@ -628,7 +627,6 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
 
 @pytest.mark.virtual_machines_p1
 @pytest.mark.p1
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/1021')
 @pytest.mark.multi_node_scheduling
 def test_create_vm_on_available_cpu_and_memory_nodes(request, admin_session,
                                                      image, keypair,
@@ -695,7 +693,7 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         assert s in ["running", "completed"]
 
         # give it some time for the VM to migrate
-        time.sleep(120)
+        time.sleep(60)
 
         def _check_vm_instance_migrated():
             resp = admin_session.get(
@@ -714,9 +712,9 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
                 _check_vm_instance_migrated,
                 step=5,
                 timeout=request.config.getoption('--wait-timeout'))
-        except polling2.TimeoutException as e:
+        except polling2.TimeoutException:
             errfmt = 'Timed out while waiting for VM to be migrated: %s'
-            raise AssertionError(errfmt % vm_json['metadata']['name']) from e
+            raise AssertionError(errfmt % vm_json['metadata']['name'])
 
         vmi_json_after_migrate = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, vm_json)
@@ -728,13 +726,13 @@ def test_host_maintenance_mode(request, admin_session, image, keypair,
         utils.disable_maintenance_mode(request, admin_session,
                                        harvester_api_endpoints, host_json)
         # migrate VM back to old host
-        resp = admin_session.post(harvester_api_endpoints.migrate_vm % (
+        resp = admin_session.put(harvester_api_endpoints.migrate_vm % (
             vm_json['metadata']['name']),
             json={"nodeName": vm_node_before_migrate})
-        assert resp.status_code == 204, 'Failed to migrat VM %s to host %s' % (
+        assert resp.status_code == 202, 'Failed to migrat VM %s to host %s' % (
             vm_json['metadata']['name'], vm_node_before_migrate)
         # give it some time for the VM to migrate
-        time.sleep(120)
+        time.sleep(60)
 
         try:
             polling2.poll(

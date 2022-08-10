@@ -15,8 +15,6 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import pytest
-
 
 pytest_plugins = [
    'harvester_e2e_tests.fixtures.api_endpoints',
@@ -24,13 +22,15 @@ pytest_plugins = [
    'harvester_e2e_tests.fixtures.session',
   ]
 
+DEFAULT_TEMPLATES = 4
+
 
 def test_verify_default_vm_templates(admin_session, harvester_api_endpoints):
     resp = admin_session.get(harvester_api_endpoints.list_vm_templates)
     assert resp.status_code == 200, (
         'Failed to list virtual machine templates: %s' % (resp.content))
     vm_templates = resp.json()
-    assert len(vm_templates['items']) == 3
+    assert len(vm_templates['items']) == DEFAULT_TEMPLATES
 
 
 def test_verify_default_vm_template_versions(admin_session,
@@ -40,10 +40,9 @@ def test_verify_default_vm_template_versions(admin_session,
         'Failed to list virtual machine template versions: %s' % (
             resp.content))
     vm_template_versions = resp.json()
-    assert len(vm_template_versions['items']) == 3
+    assert len(vm_template_versions['items']) == DEFAULT_TEMPLATES
 
 
-@pytest.mark.skip(reason='https://github.com/harvester/harvester/issues/968')
 def test_create_verify_vm_template(vm_template_version):
     # NOTE: if the vm_template_version fixture is successfully create that
     # means the test is successful.

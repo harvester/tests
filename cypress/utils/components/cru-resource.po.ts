@@ -26,19 +26,23 @@ export default class CruResourcePo extends PagePo {
   }
 
   name() {
-    return new LabeledInputPo('.namespace-select > .labeled-input', `:contains("Name")`)
+    return new LabeledInputPo('.span-3 >.labeled-input', `:contains("Name")`)
   }
 
   description() {
     return new LabeledInputPo('.labeled-input', `:contains("Description")`)
   }
 
-  public create(value: any) {
+  public create(value: any, urlWithNamespace?: boolean) {
     cy.visit(`/c/local/harvester/${this.type}/create`)
 
     this.setValue(value)
-
-    this.save()
+    
+    if (urlWithNamespace) {
+      this.save(value.namespace)
+    } else {
+      this.save()
+    }
   }
 
   public clone(id:string, value:any) {
@@ -50,8 +54,13 @@ export default class CruResourcePo extends PagePo {
   }
   
 
-  public save() {
-    cy.intercept('POST', `/v1/harvester/${this.realType}s`).as('create');
+  public save(namespace?:string) {
+    if (namespace) {
+      cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}`).as('create');
+    } else {
+      cy.intercept('POST', `/v1/harvester/${this.realType}s`).as('create');
+    }
+    
     cy.get(this.footerButtons).contains('Create').click()
     cy.wait('@create').then(res => {
       expect(res.response?.statusCode, `Create ${this.type} success`).to.equal(201);
@@ -63,7 +72,7 @@ export default class CruResourcePo extends PagePo {
 
     this.clickAction(name, 'Delete')
 
-    cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}`).as('delete');
+    cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}*`).as('delete');
     cy.get(this.confirmRemove).contains('Delete').click();
     cy.wait('@delete').then(res => {
       expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);

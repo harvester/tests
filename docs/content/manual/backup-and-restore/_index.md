@@ -6,7 +6,7 @@ All backup tests should be ran against both S3 and NFS backup targets
 - In user data mention the below to access the vm
     - 
     ```
-    # cloud-config
+    #cloud-config
     password: password
     chpasswd: {expire: False}
     sshpwauth: True

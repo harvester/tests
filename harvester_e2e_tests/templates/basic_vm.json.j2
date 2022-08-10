@@ -19,14 +19,14 @@
     "kind": "VirtualMachine",
     "metadata": {
         "annotations": {
-            "harvesterhci.io/volumeClaimTemplates": "[{\"metadata\":{\"name\":\"{{ disk_0_name }}\",\"annotations\":{\"harvesterhci.io/imageId\":\"{{ image_namespace | default('default') }}/{{ image_name }}\"}},\"spec\":{\"accessModes\":[\"ReadWriteMany\"],\"resources\":{\"requests\":{\"storage\":\"{{ disk_size_gb | default(10) }}Gi\"}},\"volumeMode\":\"Block\",\"storageClassName\":\"{{ image_storage_class }}\"}},{\"metadata\":{\"name\":\"{{ disk_1_name }}\"},\"spec\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"10Gi\"}},\"volumeMode\":\"Block\",\"storageClassName\":\"longhorn\"}}]",
+            "harvesterhci.io/volumeClaimTemplates": "[{\"metadata\":{\"name\":\"{{ disk_0_name }}\",\"annotations\":{\"harvesterhci.io/imageId\":\"{{ image_namespace | default('default') }}/{{ image_name }}\"}},\"spec\":{\"accessModes\":[\"ReadWriteMany\"],\"resources\":{\"requests\":{\"storage\":\"{{ disk_size_gb | default(10) }}Gi\"}},\"volumeMode\":\"Block\",\"storageClassName\":\"{{ image_storage_class }}\"}},{\"metadata\":{\"name\":\"{{ disk_1_name }}\"},\"spec\":{\"accessModes\":[\"ReadWriteMany\"],\"resources\":{\"requests\":{\"storage\":\"10Gi\"}},\"volumeMode\":\"Block\",\"storageClassName\":\"longhorn\"}}]",
             "field.cattle.io/description": "{{ description | default('') }}"
         },
         "name": "{{ name }}",
         "namespace": "{{ vm_namespace | default('default') }}"
     },
     "spec": {
-        "running": true,
+        "runStrategy": "RerunOnFailure",
         "template": {
             "metadata": {
                 "labels": {
@@ -35,6 +35,11 @@
             },
             "spec": {
                 "domain": {
+                    "features":{
+                        "acpi": {
+                            "enabled": true
+                        }
+                    },
                     "cpu": {
                         "cores": {{ cpu | default(1) }},
                         "sockets": 1,

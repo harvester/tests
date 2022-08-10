@@ -5,6 +5,5 @@ node_modules
 # cypress
 docs
 cypress.env.json
-cypress/videos/*
-cypress/screenshots/*
+cypress/*
 *.mp4

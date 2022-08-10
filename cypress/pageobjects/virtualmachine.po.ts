@@ -5,6 +5,7 @@ import LabeledInputPo from '@/utils/components/labeled-input.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
 import { ImagePage } from "@/pageobjects/image.po";
 import { find } from "cypress/types/lodash";
+import CruResourcePo from '@/utils/components/cru-resource.po';
 
 const constants = new Constants();
 const image = new ImagePage();
@@ -26,10 +27,16 @@ interface ValueInterface {
   efiEnabled?: boolean,
 }
 
-export class VmsPage {
+export class VmsPage extends CruResourcePo {
   private actionButton = '.outlet .actions-container';
   private pageHead = 'main .outlet header h1';
   private sideBar = 'nav.side-nav .list-unstyled';
+
+  constructor() {
+    super({
+      type: HCI.VM
+    });
+  }
 
   public goToList() {
     cy.visit(constants.vmPage);
@@ -66,18 +73,6 @@ export class VmsPage {
     cy.wait('@createVM').then(res => {
       expect(res.response?.statusCode).to.equal(201);
     })
-  }
-
-  namespace() {
-    return new LabeledSelectPo('.labeled-select', `:contains("Namespace")`)
-  }
-
-  name() {
-    return new LabeledInputPo('.namespace-select > .labeled-input', `:contains("Name")`)
-  }
-
-  description() {
-    return new LabeledInputPo('.labeled-input', `:contains("Description")`)
   }
 
   cpu() {
@@ -133,17 +128,10 @@ export class VmsPage {
     cy.url().should('contain', 'as=config')
   }
 
-  goToYamlDetail(name: string) {
+  goToYamlEdit(name: string) {
     this.goToList();
-    cy.get('.search').type(name)
-    const vm = cy.contains(name)
-    expect(vm.should('be.visible'))
-    vm.click()
 
-    const config = cy.get('.masthead button').contains('YAML')
-    expect(config.should('be.visible'));
-    config.click()
-    cy.url().should('contain', 'as=yaml')
+    this.clickAction(name, 'Edit YAML')
   }
 
   public init() {
@@ -161,11 +149,10 @@ export class VmsPage {
 
       const imageEnv = Cypress.env('image');
 
-      const name = imageEnv.name
+      const name = Cypress._.toLower(imageEnv.name)
       const url = imageEnv.url
       const imageFound = images.find((i:any) => i?.spec?.displayName === name)
-      console.log(imageFound, 'imageFound')
-      console.log(res, 'res')
+
       if (imageFound) {
         return
       } else {
@@ -176,28 +163,6 @@ export class VmsPage {
         })
         image.save()
       }
-    })
-  }
-
-  public create(value: ValueInterface) {
-    this.init()
-    this.goToCreate();
-    this.setValue(value);
-    this.save();
-  }
-
-  public delete(name: string) {
-    this.goToList()
-    cy.get('.search').type(name)
-    const vm = cy.contains(name)
-    expect(vm.should('be.visible'))
-    vm.parentsUntil('tbody', 'tr').click()
-    cy.contains('Delete').click()
-
-    cy.intercept('DELETE', `/v1/harvester/kubevirt.io.virtualmachines/*/${name}?*`).as('delete');
-    cy.get('.card-container.prompt-remove').contains('Delete').click();
-    cy.wait('@delete').then(res => {
-      expect(res.response?.statusCode).to.equal(200);
     })
   }
 

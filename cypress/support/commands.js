@@ -3,6 +3,7 @@ import cookie from 'cookie';
 import { Constants } from '../constants/constants'
 const constants = new Constants();
 
+require('cy-verify-downloads').addCustomCommand();
 Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cypress.env('password')) => {
     const isDev = Cypress.env('NODE_ENV') === 'dev';
     const baseUrl = isDev ? Cypress.config('baseUrl') : `${Cypress.config('baseUrl')}/dashboard`;
@@ -25,6 +26,7 @@ Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cy
       }).then(() => {
         cy.visit('/'); // Login successfully to the dashboard page
         cy.get('.initial-load-spinner', { timeout: constants.timeout.maxTimeout })
+        cy.get("main h1 span").contains("Harvester")
       });
     })
 });

@@ -35,6 +35,7 @@ import tempfile
 import time
 import uuid
 import yaml
+import re
 
 
 def retry_session():
@@ -61,6 +62,10 @@ def retry_session():
 def random_name():
     """Generate a random alphanumeric name using uuid.uuid4()"""
     return uuid.uuid4().hex
+
+
+def remove_ansicode(string):
+    return re.sub(r"\x1b|\[\d+m", "", string)
 
 
 def random_alphanumeric(length=5, upper_case=False):
@@ -360,9 +365,44 @@ def delete_image_by_name(request, admin_session,
             _wait_for_image_to_be_deleted,
             step=5,
             timeout=request.config.getoption('--wait-timeout'))
-    except polling2.TimeoutException as e:
+    except polling2.TimeoutException:
         errmsg = 'Timed out while waiting for image to be deleted'
-        raise AssertionError(errmsg) from e
+        raise AssertionError(errmsg)
+
+
+def assert_image_ready(request, admin_session,
+                       harvester_api_endpoints, image_name):
+
+    resp = admin_session.get(harvester_api_endpoints.get_image % (image_name))
+    if resp.status_code == 404:
+        raise AssertionError(f"Image ${image_name} not exists")
+
+    resp_json = dict()
+
+    def _check_image_ready():
+        resp = admin_session.get(harvester_api_endpoints.get_image %
+                                 (image_name))
+        nonlocal resp_json
+        resp_json = resp.json()
+        if resp_json['status'].get("progress", 0) == 100:
+            return True
+
+        status = resp_json['status']
+        if status['conditions'][0].get("reason") == "ImportFailed":
+            reason = status['conditions'][0]['message']
+            raise AssertionError(f"Image import Failed with reason: {reason}")
+
+        return False
+
+    try:
+        polling2.poll(
+            _check_image_ready,
+            step=5,
+            timeout=request.config.getoption("--wait-timeout"))
+    except polling2.TimeoutException:
+        errmsg = ("Timed out while waiting for image to be ready\n"
+                  f"Stucking in the status {resp_json['status']}")
+        raise AssertionError(errmsg)
 
 
 def create_image(request, admin_session, harvester_api_endpoints, url,
@@ -437,11 +477,13 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
                     vm_name, running):
     # give it some time for the VM to boot up
     time.sleep(180)
+    resp_json = dict()
 
     def _check_vm_ready():
         resp = admin_session.get(harvester_api_endpoints.get_vm_instance %
                                  (vm_name))
         if resp.status_code == 200:
+            nonlocal resp_json
             resp_json = resp.json()
             if running:
                 if ('status' in resp_json and
@@ -460,9 +502,10 @@ def assert_vm_ready(request, admin_session, harvester_api_endpoints,
             _check_vm_ready,
             step=5,
             timeout=request.config.getoption('--wait-timeout'))
-    except polling2.TimeoutException as e:
-        errmsg = 'Timed out while waiting for VM to be ready.'
-        raise AssertionError(errmsg) from e
+    except polling2.TimeoutException:
+        errmsg = ('Timed out while waiting for VM to be ready.\n'
+                  f"Stucking in Phase {resp_json['status']['phase']}")
+        raise AssertionError(errmsg)
 
 
 def create_vm(request, admin_session, image, harvester_api_endpoints,
@@ -495,7 +538,7 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         machine_type=machine_type,
         include_usb=include_usb
     )
-    request_json['spec']['running'] = running
+
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
     assert resp.status_code == 201, (
@@ -899,6 +942,9 @@ def create_image_terraform(request, admin_session, harvester_api_endpoints,
         request, 'terraform.sh', 'terraform')
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -947,6 +993,9 @@ def destroy_resource(request, admin_session, destroy_type=None):
             request, 'terraform_destroy.sh', 'terraform') + ' ' + destroy_type
         result = subprocess.run([terraform_script], shell=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result.stdout = remove_ansicode(result.stdout.decode())
+        result.stderr = remove_ansicode(result.stderr.decode())
+
         assert result.returncode == 0, (
             'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
                 result.returncode, result.stderr, result.stdout))
@@ -979,6 +1028,9 @@ def create_volume_terraform(request, admin_session, harvester_api_endpoints,
         request, 'terraform.sh', 'terraform')
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1012,6 +1064,9 @@ def create_keypair_terraform(request, admin_session, harvester_api_endpoints,
         request, 'terraform.sh', 'terraform')
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1054,6 +1109,9 @@ def create_network_terraform(request, admin_session, harvester_api_endpoints,
 
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1090,6 +1148,9 @@ def create_clusternetworks_terraform(request, admin_session,
         request, 'terraform.sh', 'terraform') + ' ' + 'cluster'
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1134,6 +1195,9 @@ def create_vm_terraform(request, admin_session, harvester_api_endpoints,
         request, 'terraform.sh', 'terraform')
     result = subprocess.run([terraform_script], shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result.stdout = remove_ansicode(result.stdout.decode())
+    result.stderr = remove_ansicode(result.stderr.decode())
+
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
             result.returncode, result.stderr, result.stdout))
@@ -1449,10 +1513,10 @@ def get_vm_ip_address(admin_session, harvester_api_endpoints, vm, timeout,
 
     try:
         ip = polling2.poll(_wait_for_ip, step=5, timeout=timeout)
-    except polling2.TimeoutException as e:
+    except polling2.TimeoutException:
         errmsg = ('Timed out while waiting for IP address for NIC %s to be '
                   ' assigned: %s' % (nic_name, vm_instance_json))
-        raise AssertionError(errmsg) from e
+        raise AssertionError(errmsg)
 
     return (vm_instance_json, ip)
 
