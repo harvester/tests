@@ -90,6 +90,7 @@
                     },
                     "resources": {
                         "requests": {
+                            "cpu": "{{ cpu | default(1) }}",
                             "memory": "{{ memory_gb | default(1) }}Gi"
                         }
                     }
