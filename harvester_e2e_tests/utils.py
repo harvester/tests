@@ -37,6 +37,9 @@ import uuid
 import yaml
 import re
 
+UNITS = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+FRACTIONAL = ['', 'm', 'u', 'n', 'p', 'f', 'a', 'z', 'y']
+
 
 def retry_session():
     """Create a session that will retry on connection errors"""
@@ -66,6 +69,34 @@ def random_name():
 
 def remove_ansicode(string):
     return re.sub(r"\x1b|\[\d+m", "", string)
+
+
+def parse_unit(value):
+    # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L83
+    try:
+        pattern = r"^([0-9.-]+)\s*([^0-9.-]?)([^0-9.-]?)"
+        val, unit, inc = re.match(pattern, value).groups()
+        val = float(val)
+        assert unit != ""
+    except AttributeError:
+        raise ValueError("Could not parse the value", value)
+    except (AssertionError, ValueError):
+        return val
+
+    # µ (mu) symbol -> u
+    unit = 'u' if ord(unit[0]) == 181 else unit
+
+    divide = unit in FRACTIONAL
+    multiply = unit.upper() in UNITS
+    inc_base = 1024 if inc == 'i' and (divide or multiply) else 1000
+
+    if divide:
+        exp = FRACTIONAL.index(unit)
+        return val / (inc_base ** exp)
+
+    if multiply:
+        exp = UNITS.index(unit.upper())
+        return val * (inc_base ** exp)
 
 
 def random_alphanumeric(length=5, upper_case=False):
@@ -188,23 +219,17 @@ def lookup_hosts_with_most_available_cpu(admin_session,
     most_available_cpu_nodes = None
     most_available_cpu = 0
     for node in nodes_json:
-        # look up CPU usage for the given node
-        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
-            node['metadata']['name']))
-        assert resp.status_code == 200, (
-            'Failed to lookup metrices for node %s: %s' % (
-                node['metadata']['name'], resp.content))
-        metrics_json = resp.json()
-        # NOTE: Kubernets CPU metrics are expressed in nanocores, or
-        # 1 billionth of a CPU. We need to convert it to a whole CPU core.
-        cpu_usage = math.ceil(
-            int(metrics_json['usage']['cpu'][:-1]) / 1000000000)
-        available_cpu = int(node['status']['allocatable']['cpu']) - cpu_usage
+        node_name = node['metadata']['name']
+        r = node['metadata']['annotations']["management.cattle.io/pod-requests"]
+        reserved = {k: parse_unit(v) for k, v in json.loads(r).items()
+                    if k in ('cpu', 'memory')}
+
+        available_cpu = int(node['status']['allocatable']['cpu']) - math.ceil(reserved['cpu'])
         if available_cpu > most_available_cpu:
             most_available_cpu = available_cpu
-            most_available_cpu_nodes = [node['metadata']['name']]
+            most_available_cpu_nodes = [node_name]
         elif available_cpu == most_available_cpu:
-            most_available_cpu_nodes.append(node['metadata']['name'])
+            most_available_cpu_nodes.append(node_name)
     return (most_available_cpu_nodes, most_available_cpu)
 
 
