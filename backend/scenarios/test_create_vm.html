@@ -534,7 +534,7 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
     # find out the node that has the most available CPU
     (nodes, available_cpu) = utils.lookup_hosts_with_most_available_cpu(
         admin_session, harvester_api_endpoints)
-    assert available_cpu &gt; 0, &#39;No nodes has enough CPU available to create VMs&#39;
+    assert available_cpu &gt; 1, &#39;No nodes has enough CPU available to create VMs&#39;
     vm_json = None
     try:
         # first create a vanilla VM with minimal CPU and memory
@@ -548,6 +548,7 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
         previous_uid = vm_instance_json[&#39;metadata&#39;][&#39;uid&#39;]
         domain_data = vm_json[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;]
         domain_data[&#39;cpu&#39;][&#39;cores&#39;] = available_cpu
+        domain_data[&#39;resources&#39;][&#39;requests&#39;][&#39;cpu&#39;] = str(available_cpu)
         utils.poll_for_update_resource(
             request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
@@ -617,7 +618,7 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
     # find out the node that has the most available memory
     (nodes, available_memory) = utils.lookup_hosts_with_most_available_memory(
         admin_session, harvester_api_endpoints)
-    assert available_memory &gt; 0, &#39;No nodes has enough memory to create VMs&#39;
+    assert available_memory &gt; 1, &#39;No nodes has enough memory to create VMs&#39;
     vm_json = None
     try:
         # first create a vanilla VM with minimal CPU and memory
@@ -630,8 +631,7 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
         vm_name = vm_json[&#39;metadata&#39;][&#39;name&#39;]
         previous_uid = vm_instance_json[&#39;metadata&#39;][&#39;uid&#39;]
         domain_data = vm_json[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;]
-        domain_data[&#39;resources&#39;][&#39;requests&#39;][&#39;memory&#39;] = &#39;%sGi&#39; % (
-            available_memory)
+        domain_data[&#39;resources&#39;][&#39;requests&#39;][&#39;memory&#39;] = f&#34;{available_memory}Gi&#34;
         utils.poll_for_update_resource(
             request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
@@ -1608,7 +1608,7 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
     # find out the node that has the most available CPU
     (nodes, available_cpu) = utils.lookup_hosts_with_most_available_cpu(
         admin_session, harvester_api_endpoints)
-    assert available_cpu &gt; 0, &#39;No nodes has enough CPU available to create VMs&#39;
+    assert available_cpu &gt; 1, &#39;No nodes has enough CPU available to create VMs&#39;
     vm_json = None
     try:
         # first create a vanilla VM with minimal CPU and memory
@@ -1622,6 +1622,7 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
         previous_uid = vm_instance_json[&#39;metadata&#39;][&#39;uid&#39;]
         domain_data = vm_json[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;]
         domain_data[&#39;cpu&#39;][&#39;cores&#39;] = available_cpu
+        domain_data[&#39;resources&#39;][&#39;requests&#39;][&#39;cpu&#39;] = str(available_cpu)
         utils.poll_for_update_resource(
             request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
@@ -1671,7 +1672,7 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
     # find out the node that has the most available memory
     (nodes, available_memory) = utils.lookup_hosts_with_most_available_memory(
         admin_session, harvester_api_endpoints)
-    assert available_memory &gt; 0, &#39;No nodes has enough memory to create VMs&#39;
+    assert available_memory &gt; 1, &#39;No nodes has enough memory to create VMs&#39;
     vm_json = None
     try:
         # first create a vanilla VM with minimal CPU and memory
@@ -1684,8 +1685,7 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
         vm_name = vm_json[&#39;metadata&#39;][&#39;name&#39;]
         previous_uid = vm_instance_json[&#39;metadata&#39;][&#39;uid&#39;]
         domain_data = vm_json[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;]
-        domain_data[&#39;resources&#39;][&#39;requests&#39;][&#39;memory&#39;] = &#39;%sGi&#39; % (
-            available_memory)
+        domain_data[&#39;resources&#39;][&#39;requests&#39;][&#39;memory&#39;] = f&#34;{available_memory}Gi&#34;
         utils.poll_for_update_resource(
             request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),

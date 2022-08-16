@@ -65,6 +65,9 @@ import uuid
 import yaml
 import re
 
+UNITS = [&#39;&#39;, &#39;K&#39;, &#39;M&#39;, &#39;G&#39;, &#39;T&#39;, &#39;P&#39;, &#39;E&#39;, &#39;Z&#39;, &#39;Y&#39;]
+FRACTIONAL = [&#39;&#39;, &#39;m&#39;, &#39;u&#39;, &#39;n&#39;, &#39;p&#39;, &#39;f&#39;, &#39;a&#39;, &#39;z&#39;, &#39;y&#39;]
+
 
 def retry_session():
     &#34;&#34;&#34;Create a session that will retry on connection errors&#34;&#34;&#34;
@@ -94,6 +97,60 @@ def random_name():
 
 def remove_ansicode(string):
     return re.sub(r&#34;\x1b|\[\d+m&#34;, &#34;&#34;, string)
+
+
+def format_unit(value, *, increment=1000, start_exp=0, min_exp=0, max_exp=99,
+                max_precision=2):
+    # type: (int, int, int, int, int, int) -&gt; str
+    # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L4
+
+    val, exp, divide = value, start_exp, max_exp &gt;= 0
+
+    if divide:
+        while exp &lt; min_exp or (val &gt;= increment and exp + 1 &lt; len(UNITS)
+                                and exp &lt; max_exp):
+            val = val / increment
+            exp += 1
+    else:
+        while exp &lt; (min_exp * -1) or (val &lt; increment and exp + 1 &lt; len(FRACTIONAL)
+                                       and exp &lt; (max_exp * -1)):
+            val = val * increment
+            exp += 1
+
+    if val &lt; 10 and max_precision &gt;= 1:
+        rv = f&#34;{round(val * (10 ** max_precision) / (10 ** max_precision))}&#34;
+    else:
+        rv = f&#34;{round(val)}&#34;
+
+    return rv
+
+
+def parse_unit(value):
+    # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L83
+    try:
+        pattern = r&#34;^([0-9.-]+)\s*([^0-9.-]?)([^0-9.-]?)&#34;
+        val, unit, inc = re.match(pattern, value).groups()
+        val = float(val)
+        assert unit != &#34;&#34;
+    except AttributeError:
+        raise ValueError(&#34;Could not parse the value&#34;, value)
+    except (AssertionError, ValueError):
+        return val
+
+    # µ (mu) symbol -&gt; u
+    unit = &#39;u&#39; if ord(unit[0]) == 181 else unit
+
+    divide = unit in FRACTIONAL
+    multiply = unit.upper() in UNITS
+    inc_base = 1024 if inc == &#39;i&#39; and (divide or multiply) else 1000
+
+    if divide:
+        exp = FRACTIONAL.index(unit)
+        return val / (inc_base ** exp)
+
+    if multiply:
+        exp = UNITS.index(unit.upper())
+        return val * (inc_base ** exp)
 
 
 def random_alphanumeric(length=5, upper_case=False):
@@ -216,23 +273,17 @@ def lookup_hosts_with_most_available_cpu(admin_session,
     most_available_cpu_nodes = None
     most_available_cpu = 0
     for node in nodes_json:
-        # look up CPU usage for the given node
-        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
-            node[&#39;metadata&#39;][&#39;name&#39;]))
-        assert resp.status_code == 200, (
-            &#39;Failed to lookup metrices for node %s: %s&#39; % (
-                node[&#39;metadata&#39;][&#39;name&#39;], resp.content))
-        metrics_json = resp.json()
-        # NOTE: Kubernets CPU metrics are expressed in nanocores, or
-        # 1 billionth of a CPU. We need to convert it to a whole CPU core.
-        cpu_usage = math.ceil(
-            int(metrics_json[&#39;usage&#39;][&#39;cpu&#39;][:-1]) / 1000000000)
-        available_cpu = int(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;cpu&#39;]) - cpu_usage
+        node_name = node[&#39;metadata&#39;][&#39;name&#39;]
+        r = node[&#39;metadata&#39;][&#39;annotations&#39;][&#34;management.cattle.io/pod-requests&#34;]
+        reserved = {k: parse_unit(v) for k, v in json.loads(r).items()
+                    if k in (&#39;cpu&#39;, &#39;memory&#39;)}
+
+        available_cpu = int(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;cpu&#39;]) - math.ceil(reserved[&#39;cpu&#39;])
         if available_cpu &gt; most_available_cpu:
             most_available_cpu = available_cpu
-            most_available_cpu_nodes = [node[&#39;metadata&#39;][&#39;name&#39;]]
+            most_available_cpu_nodes = [node_name]
         elif available_cpu == most_available_cpu:
-            most_available_cpu_nodes.append(node[&#39;metadata&#39;][&#39;name&#39;])
+            most_available_cpu_nodes.append(node_name)
     return (most_available_cpu_nodes, most_available_cpu)
 
 
@@ -243,28 +294,24 @@ def lookup_hosts_with_most_available_memory(admin_session,
     nodes_json = resp.json()[&#39;data&#39;]
     most_available_memory_nodes = None
     most_available_memory = 0
+    exp = 3
     for node in nodes_json:
-        # look up CPU usage for the given node
-        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
-            node[&#39;metadata&#39;][&#39;name&#39;]))
-        assert resp.status_code == 200, (
-            &#39;Failed to lookup metrices for node %s: %s&#39; % (
-                node[&#39;metadata&#39;][&#39;name&#39;], resp.content))
-        metrics_json = resp.json()
-        # NOTE: Kubernets memory metrics are expressed Kibibyte so convert it
-        # back to Gigabytes
-        memory_usage = math.ceil(
-            int(metrics_json[&#39;usage&#39;][&#39;memory&#39;][:-2]) * 1.024e-06)
+        node_name = node[&#39;metadata&#39;][&#39;name&#39;]
+        r = node[&#39;metadata&#39;][&#39;annotations&#39;][&#34;management.cattle.io/pod-requests&#34;]
+        reserved = {k: parse_unit(v) for k, v in json.loads(r).items()
+                    if k in (&#39;cpu&#39;, &#39;memory&#39;)}
+
         # NOTE: we want the floor here so we don&#39;t over commit
-        allocatable_memory = int(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;memory&#39;][:-2])
-        allocatable_memory = math.floor(
-            allocatable_memory * 1.024e-06)
-        available_memory = allocatable_memory - memory_usage
+        max_memory = parse_unit(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;memory&#39;]) * 0.99
+        available_memory = math.floor(float(format_unit(max_memory - reserved[&#39;memory&#39;],
+                                                        increment=1024, min_exp=exp)))
+
         if available_memory &gt; most_available_memory:
             most_available_memory = available_memory
-            most_available_memory_nodes = [node[&#39;metadata&#39;][&#39;name&#39;]]
+            most_available_memory_nodes = [node_name]
         elif available_memory == most_available_memory:
-            most_available_memory_nodes.append(node[&#39;metadata&#39;][&#39;name&#39;])
+            most_available_memory_nodes.append(node_name)
+
     return (most_available_memory_nodes, most_available_memory)
 
 
@@ -2734,6 +2781,41 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
     return stdout.read().strip().decode(&#39;utf-8&#39;)</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.utils.format_unit"><code class="name flex">
+<span>def <span class="ident">format_unit</span></span>(<span>value, *, increment=1000, start_exp=0, min_exp=0, max_exp=99, max_precision=2)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def format_unit(value, *, increment=1000, start_exp=0, min_exp=0, max_exp=99,
+                max_precision=2):
+    # type: (int, int, int, int, int, int) -&gt; str
+    # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L4
+
+    val, exp, divide = value, start_exp, max_exp &gt;= 0
+
+    if divide:
+        while exp &lt; min_exp or (val &gt;= increment and exp + 1 &lt; len(UNITS)
+                                and exp &lt; max_exp):
+            val = val / increment
+            exp += 1
+    else:
+        while exp &lt; (min_exp * -1) or (val &lt; increment and exp + 1 &lt; len(FRACTIONAL)
+                                       and exp &lt; (max_exp * -1)):
+            val = val * increment
+            exp += 1
+
+    if val &lt; 10 and max_precision &gt;= 1:
+        rv = f&#34;{round(val * (10 ** max_precision) / (10 ** max_precision))}&#34;
+    else:
+        rv = f&#34;{round(val)}&#34;
+
+    return rv</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.utils.get_backup_create_files_script"><code class="name flex">
 <span>def <span class="ident">get_backup_create_files_script</span></span>(<span>request, script_name=None, script_type=None)</span>
 </code></dt>
@@ -2990,23 +3072,17 @@ Jinja2 template</p></div>
     most_available_cpu_nodes = None
     most_available_cpu = 0
     for node in nodes_json:
-        # look up CPU usage for the given node
-        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
-            node[&#39;metadata&#39;][&#39;name&#39;]))
-        assert resp.status_code == 200, (
-            &#39;Failed to lookup metrices for node %s: %s&#39; % (
-                node[&#39;metadata&#39;][&#39;name&#39;], resp.content))
-        metrics_json = resp.json()
-        # NOTE: Kubernets CPU metrics are expressed in nanocores, or
-        # 1 billionth of a CPU. We need to convert it to a whole CPU core.
-        cpu_usage = math.ceil(
-            int(metrics_json[&#39;usage&#39;][&#39;cpu&#39;][:-1]) / 1000000000)
-        available_cpu = int(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;cpu&#39;]) - cpu_usage
+        node_name = node[&#39;metadata&#39;][&#39;name&#39;]
+        r = node[&#39;metadata&#39;][&#39;annotations&#39;][&#34;management.cattle.io/pod-requests&#34;]
+        reserved = {k: parse_unit(v) for k, v in json.loads(r).items()
+                    if k in (&#39;cpu&#39;, &#39;memory&#39;)}
+
+        available_cpu = int(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;cpu&#39;]) - math.ceil(reserved[&#39;cpu&#39;])
         if available_cpu &gt; most_available_cpu:
             most_available_cpu = available_cpu
-            most_available_cpu_nodes = [node[&#39;metadata&#39;][&#39;name&#39;]]
+            most_available_cpu_nodes = [node_name]
         elif available_cpu == most_available_cpu:
-            most_available_cpu_nodes.append(node[&#39;metadata&#39;][&#39;name&#39;])
+            most_available_cpu_nodes.append(node_name)
     return (most_available_cpu_nodes, most_available_cpu)</code></pre>
 </details>
 </dd>
@@ -3026,28 +3102,24 @@ Jinja2 template</p></div>
     nodes_json = resp.json()[&#39;data&#39;]
     most_available_memory_nodes = None
     most_available_memory = 0
+    exp = 3
     for node in nodes_json:
-        # look up CPU usage for the given node
-        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
-            node[&#39;metadata&#39;][&#39;name&#39;]))
-        assert resp.status_code == 200, (
-            &#39;Failed to lookup metrices for node %s: %s&#39; % (
-                node[&#39;metadata&#39;][&#39;name&#39;], resp.content))
-        metrics_json = resp.json()
-        # NOTE: Kubernets memory metrics are expressed Kibibyte so convert it
-        # back to Gigabytes
-        memory_usage = math.ceil(
-            int(metrics_json[&#39;usage&#39;][&#39;memory&#39;][:-2]) * 1.024e-06)
+        node_name = node[&#39;metadata&#39;][&#39;name&#39;]
+        r = node[&#39;metadata&#39;][&#39;annotations&#39;][&#34;management.cattle.io/pod-requests&#34;]
+        reserved = {k: parse_unit(v) for k, v in json.loads(r).items()
+                    if k in (&#39;cpu&#39;, &#39;memory&#39;)}
+
         # NOTE: we want the floor here so we don&#39;t over commit
-        allocatable_memory = int(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;memory&#39;][:-2])
-        allocatable_memory = math.floor(
-            allocatable_memory * 1.024e-06)
-        available_memory = allocatable_memory - memory_usage
+        max_memory = parse_unit(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;memory&#39;]) * 0.99
+        available_memory = math.floor(float(format_unit(max_memory - reserved[&#39;memory&#39;],
+                                                        increment=1024, min_exp=exp)))
+
         if available_memory &gt; most_available_memory:
             most_available_memory = available_memory
-            most_available_memory_nodes = [node[&#39;metadata&#39;][&#39;name&#39;]]
+            most_available_memory_nodes = [node_name]
         elif available_memory == most_available_memory:
-            most_available_memory_nodes.append(node[&#39;metadata&#39;][&#39;name&#39;])
+            most_available_memory_nodes.append(node_name)
+
     return (most_available_memory_nodes, most_available_memory)</code></pre>
 </details>
 </dd>
@@ -3068,6 +3140,43 @@ Jinja2 template</p></div>
     assert resp.status_code == 200, &#39;Failed to lookup VM instance %s: %s&#39; % (
         vm_json[&#39;metadata&#39;][&#39;name&#39;], resp.content)
     return resp.json()</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.utils.parse_unit"><code class="name flex">
+<span>def <span class="ident">parse_unit</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_unit(value):
+    # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L83
+    try:
+        pattern = r&#34;^([0-9.-]+)\s*([^0-9.-]?)([^0-9.-]?)&#34;
+        val, unit, inc = re.match(pattern, value).groups()
+        val = float(val)
+        assert unit != &#34;&#34;
+    except AttributeError:
+        raise ValueError(&#34;Could not parse the value&#34;, value)
+    except (AssertionError, ValueError):
+        return val
+
+    # µ (mu) symbol -&gt; u
+    unit = &#39;u&#39; if ord(unit[0]) == 181 else unit
+
+    divide = unit in FRACTIONAL
+    multiply = unit.upper() in UNITS
+    inc_base = 1024 if inc == &#39;i&#39; and (divide or multiply) else 1000
+
+    if divide:
+        exp = FRACTIONAL.index(unit)
+        return val / (inc_base ** exp)
+
+    if multiply:
+        exp = UNITS.index(unit.upper())
+        return val * (inc_base ** exp)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.utils.poll_for_resource_ready"><code class="name flex">
@@ -3572,6 +3681,7 @@ Jinja2 template</p></div>
 <li><code><a title="harvester_e2e_tests.utils.disable_maintenance_mode" href="#harvester_e2e_tests.utils.disable_maintenance_mode">disable_maintenance_mode</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.enable_maintenance_mode" href="#harvester_e2e_tests.utils.enable_maintenance_mode">enable_maintenance_mode</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.execute_script_on_vm" href="#harvester_e2e_tests.utils.execute_script_on_vm">execute_script_on_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.utils.format_unit" href="#harvester_e2e_tests.utils.format_unit">format_unit</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.get_backup_create_files_script" href="#harvester_e2e_tests.utils.get_backup_create_files_script">get_backup_create_files_script</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.get_json_object_from_template" href="#harvester_e2e_tests.utils.get_json_object_from_template">get_json_object_from_template</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.get_latest_resource_version" href="#harvester_e2e_tests.utils.get_latest_resource_version">get_latest_resource_version</a></code></li>
@@ -3584,6 +3694,7 @@ Jinja2 template</p></div>
 <li><code><a title="harvester_e2e_tests.utils.lookup_hosts_with_most_available_cpu" href="#harvester_e2e_tests.utils.lookup_hosts_with_most_available_cpu">lookup_hosts_with_most_available_cpu</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.lookup_hosts_with_most_available_memory" href="#harvester_e2e_tests.utils.lookup_hosts_with_most_available_memory">lookup_hosts_with_most_available_memory</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.lookup_vm_instance" href="#harvester_e2e_tests.utils.lookup_vm_instance">lookup_vm_instance</a></code></li>
+<li><code><a title="harvester_e2e_tests.utils.parse_unit" href="#harvester_e2e_tests.utils.parse_unit">parse_unit</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.poll_for_resource_ready" href="#harvester_e2e_tests.utils.poll_for_resource_ready">poll_for_resource_ready</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.poll_for_update_resource" href="#harvester_e2e_tests.utils.poll_for_update_resource">poll_for_update_resource</a></code></li>
 <li><code><a title="harvester_e2e_tests.utils.power_off_node" href="#harvester_e2e_tests.utils.power_off_node">power_off_node</a></code></li>
