@@ -361,24 +361,29 @@ def assert_vm_restarted(admin_session, harvester_api_endpoints,
                         previous_uid, vm_name, wait_timeout):
     # give it some time for the VM instance to restart
     time.sleep(180)
+    resp_json = dict()
 
     def _check_vm_instance_restarted():
         resp = admin_session.get(
             harvester_api_endpoints.get_vm_instance % (vm_name))
         if resp.status_code == 200:
+            nonlocal resp_json
             resp_json = resp.json()
-            if ('status' in resp_json and
-                    'phase' in resp_json['status'] and
-                    resp_json['status']['phase'] == 'Running' and
-                    resp_json['metadata']['uid'] != previous_uid):
+            if (resp_json.get('status', {}).get('phase') == "Running"
+                    and resp_json['metadata']['uid'] != previous_uid):
                 return True
         return False
 
-    success = polling2.poll(
-        _check_vm_instance_restarted,
-        step=5,
-        timeout=wait_timeout)
-    assert success, 'Failed to restart VM %s' % (vm_name)
+    try:
+        polling2.poll(
+            _check_vm_instance_restarted,
+            step=5,
+            timeout=wait_timeout)
+    except polling2.TimeoutException:
+        raise AssertionError(f'Failed to restart VM {vm_name}\n'
+                             f"previous uid: {previous_uid}, "
+                             f"current uid: {resp_json['metadata']['uid']}\n"
+                             f"VM's Phase: {resp_json.get('status', {}).get('phase')}")
 
 
 def delete_image(request, admin_session, harvester_api_endpoints, image_json):
@@ -585,6 +590,8 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         machine_type=machine_type,
         include_usb=include_usb
     )
+
+    request_json['spec']['runStrategy'] = "RerunOnFailure" if running else "Halted"
 
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
