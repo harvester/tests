@@ -389,24 +389,29 @@ def assert_vm_restarted(admin_session, harvester_api_endpoints,
                         previous_uid, vm_name, wait_timeout):
     # give it some time for the VM instance to restart
     time.sleep(180)
+    resp_json = dict()
 
     def _check_vm_instance_restarted():
         resp = admin_session.get(
             harvester_api_endpoints.get_vm_instance % (vm_name))
         if resp.status_code == 200:
+            nonlocal resp_json
             resp_json = resp.json()
-            if (&#39;status&#39; in resp_json and
-                    &#39;phase&#39; in resp_json[&#39;status&#39;] and
-                    resp_json[&#39;status&#39;][&#39;phase&#39;] == &#39;Running&#39; and
-                    resp_json[&#39;metadata&#39;][&#39;uid&#39;] != previous_uid):
+            if (resp_json.get(&#39;status&#39;, {}).get(&#39;phase&#39;) == &#34;Running&#34;
+                    and resp_json[&#39;metadata&#39;][&#39;uid&#39;] != previous_uid):
                 return True
         return False
 
-    success = polling2.poll(
-        _check_vm_instance_restarted,
-        step=5,
-        timeout=wait_timeout)
-    assert success, &#39;Failed to restart VM %s&#39; % (vm_name)
+    try:
+        polling2.poll(
+            _check_vm_instance_restarted,
+            step=5,
+            timeout=wait_timeout)
+    except polling2.TimeoutException:
+        raise AssertionError(f&#39;Failed to restart VM {vm_name}\n&#39;
+                             f&#34;previous uid: {previous_uid}, &#34;
+                             f&#34;current uid: {resp_json[&#39;metadata&#39;][&#39;uid&#39;]}\n&#34;
+                             f&#34;VM&#39;s Phase: {resp_json.get(&#39;status&#39;, {}).get(&#39;phase&#39;)}&#34;)
 
 
 def delete_image(request, admin_session, harvester_api_endpoints, image_json):
@@ -613,6 +618,8 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         machine_type=machine_type,
         include_usb=include_usb
     )
+
+    request_json[&#39;spec&#39;][&#39;runStrategy&#39;] = &#34;RerunOnFailure&#34; if running else &#34;Halted&#34;
 
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)
@@ -1722,24 +1729,29 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
                         previous_uid, vm_name, wait_timeout):
     # give it some time for the VM instance to restart
     time.sleep(180)
+    resp_json = dict()
 
     def _check_vm_instance_restarted():
         resp = admin_session.get(
             harvester_api_endpoints.get_vm_instance % (vm_name))
         if resp.status_code == 200:
+            nonlocal resp_json
             resp_json = resp.json()
-            if (&#39;status&#39; in resp_json and
-                    &#39;phase&#39; in resp_json[&#39;status&#39;] and
-                    resp_json[&#39;status&#39;][&#39;phase&#39;] == &#39;Running&#39; and
-                    resp_json[&#39;metadata&#39;][&#39;uid&#39;] != previous_uid):
+            if (resp_json.get(&#39;status&#39;, {}).get(&#39;phase&#39;) == &#34;Running&#34;
+                    and resp_json[&#39;metadata&#39;][&#39;uid&#39;] != previous_uid):
                 return True
         return False
 
-    success = polling2.poll(
-        _check_vm_instance_restarted,
-        step=5,
-        timeout=wait_timeout)
-    assert success, &#39;Failed to restart VM %s&#39; % (vm_name)</code></pre>
+    try:
+        polling2.poll(
+            _check_vm_instance_restarted,
+            step=5,
+            timeout=wait_timeout)
+    except polling2.TimeoutException:
+        raise AssertionError(f&#39;Failed to restart VM {vm_name}\n&#39;
+                             f&#34;previous uid: {previous_uid}, &#34;
+                             f&#34;current uid: {resp_json[&#39;metadata&#39;][&#39;uid&#39;]}\n&#34;
+                             f&#34;VM&#39;s Phase: {resp_json.get(&#39;status&#39;, {}).get(&#39;phase&#39;)}&#34;)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.utils.assert_vm_unschedulable"><code class="name flex">
@@ -2215,6 +2227,8 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
         machine_type=machine_type,
         include_usb=include_usb
     )
+
+    request_json[&#39;spec&#39;][&#39;runStrategy&#39;] = &#34;RerunOnFailure&#34; if running else &#34;Halted&#34;
 
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)

@@ -43,8 +43,11 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from harvester_e2e_tests import utils
 import pytest
+import polling2
+
+from harvester_e2e_tests import utils
+
 
 pytest_plugins = [
     &#39;harvester_e2e_tests.fixtures.vm&#39;
@@ -62,6 +65,15 @@ class TestHostDown:
         Covers:
             Negative virtual-machines-03-Start VM Negative
         &#34;&#34;&#34;
+        node_state = dict()
+
+        def _wait_for_node_unavailble():
+            resp = admin_session.get(harvester_api_endpoints.get_node % node_name)
+            if resp.status_code == 200:
+                nonlocal node_state
+                node_state = resp.json()[&#39;metadata&#39;][&#39;state&#39;]
+                return node_state[&#39;name&#39;] == &#34;unavailable&#34; and node_state[&#39;error&#39;]
+
         # make sure the VM instance is successfully created
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
@@ -69,27 +81,29 @@ class TestHostDown:
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         utils.power_off_node(request, admin_session, harvester_api_endpoints,
                              node_name)
-        # FIXME(gyee): we currently don&#39;t know what the expected behavoir is
-        # for an instance where the node is abruptly shutdown. I would&#39;ve
-        # expected the instance to go into error state. But that doesn&#39;t seem
-        # to be the case right now. It seem to get stuck on &#34;PodTerminating&#34;.
-        #
-        # See https://github.com/harvester/harvester/issues/913
+        try:
+            polling2.poll(_wait_for_node_unavailble, step=5,
+                          timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+        except polling2.TimeoutException:
+            raise AssertionError(f&#34;`{node_name}` node has been poweroff but&#34;
+                                 &#34; its status not changed.\n&#34;
+                                 f&#34;{node_state!r}&#34;)
+
+        # See https://github.com/harvester/harvester/issues/982
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
-        found = False
+
+        found = None
         for condition in vm_instance_json[&#39;status&#39;][&#39;conditions&#39;]:
             if condition[&#39;type&#39;] == &#39;Ready&#39;:
                 assert condition[&#39;status&#39;] == &#39;False&#39;, (
-                    &#39;Expecting &#34;False&#34; status, got %s instead&#39; % (
-                        condition[&#39;status&#39;]))
-                # FIXME(gyee): is &#39;reason&#39; always present?
-                # assert condition[&#39;reason&#39;] == &#39;PodTerminating&#39;, (
-                #    &#39;Expecting &#34;PodTerminating&#34; in reason, got %s instead&#39; % (
-                #        condition[&#39;reason&#39;]))
-                found = True
+                    &#34;Unexpected condition:&#34;
+                    f&#34;type={condition[&#39;type&#39;]!r}, status={condition[&#39;status&#39;]!r}&#34;
+                    f&#34;\n{condition!r}&#34;)
+                found = condition
                 break
-        assert found, (
+
+        assert found is not None, (
             &#39;Expecting &#34;PodTerminating&#34; in conditions, got %s instead&#39; % (
                 vm_instance_json[&#39;status&#39;][&#39;conditions&#39;]))
         # power-on the node
@@ -174,6 +188,15 @@ class TestHostDown:
         Covers:
             Negative virtual-machines-03-Start VM Negative
         &#34;&#34;&#34;
+        node_state = dict()
+
+        def _wait_for_node_unavailble():
+            resp = admin_session.get(harvester_api_endpoints.get_node % node_name)
+            if resp.status_code == 200:
+                nonlocal node_state
+                node_state = resp.json()[&#39;metadata&#39;][&#39;state&#39;]
+                return node_state[&#39;name&#39;] == &#34;unavailable&#34; and node_state[&#39;error&#39;]
+
         # make sure the VM instance is successfully created
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
@@ -181,27 +204,29 @@ class TestHostDown:
         node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
         utils.power_off_node(request, admin_session, harvester_api_endpoints,
                              node_name)
-        # FIXME(gyee): we currently don&#39;t know what the expected behavoir is
-        # for an instance where the node is abruptly shutdown. I would&#39;ve
-        # expected the instance to go into error state. But that doesn&#39;t seem
-        # to be the case right now. It seem to get stuck on &#34;PodTerminating&#34;.
-        #
-        # See https://github.com/harvester/harvester/issues/913
+        try:
+            polling2.poll(_wait_for_node_unavailble, step=5,
+                          timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+        except polling2.TimeoutException:
+            raise AssertionError(f&#34;`{node_name}` node has been poweroff but&#34;
+                                 &#34; its status not changed.\n&#34;
+                                 f&#34;{node_state!r}&#34;)
+
+        # See https://github.com/harvester/harvester/issues/982
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
-        found = False
+
+        found = None
         for condition in vm_instance_json[&#39;status&#39;][&#39;conditions&#39;]:
             if condition[&#39;type&#39;] == &#39;Ready&#39;:
                 assert condition[&#39;status&#39;] == &#39;False&#39;, (
-                    &#39;Expecting &#34;False&#34; status, got %s instead&#39; % (
-                        condition[&#39;status&#39;]))
-                # FIXME(gyee): is &#39;reason&#39; always present?
-                # assert condition[&#39;reason&#39;] == &#39;PodTerminating&#39;, (
-                #    &#39;Expecting &#34;PodTerminating&#34; in reason, got %s instead&#39; % (
-                #        condition[&#39;reason&#39;]))
-                found = True
+                    &#34;Unexpected condition:&#34;
+                    f&#34;type={condition[&#39;type&#39;]!r}, status={condition[&#39;status&#39;]!r}&#34;
+                    f&#34;\n{condition!r}&#34;)
+                found = condition
                 break
-        assert found, (
+
+        assert found is not None, (
             &#39;Expecting &#34;PodTerminating&#34; in conditions, got %s instead&#39; % (
                 vm_instance_json[&#39;status&#39;][&#39;conditions&#39;]))
         # power-on the node
@@ -319,6 +344,15 @@ def test_host_shutdown(self, request, admin_session,
     Covers:
         Negative virtual-machines-03-Start VM Negative
     &#34;&#34;&#34;
+    node_state = dict()
+
+    def _wait_for_node_unavailble():
+        resp = admin_session.get(harvester_api_endpoints.get_node % node_name)
+        if resp.status_code == 200:
+            nonlocal node_state
+            node_state = resp.json()[&#39;metadata&#39;][&#39;state&#39;]
+            return node_state[&#39;name&#39;] == &#34;unavailable&#34; and node_state[&#39;error&#39;]
+
     # make sure the VM instance is successfully created
     vm_instance_json = utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, basic_vm)
@@ -326,27 +360,29 @@ def test_host_shutdown(self, request, admin_session,
     node_name = vm_instance_json[&#39;status&#39;][&#39;nodeName&#39;]
     utils.power_off_node(request, admin_session, harvester_api_endpoints,
                          node_name)
-    # FIXME(gyee): we currently don&#39;t know what the expected behavoir is
-    # for an instance where the node is abruptly shutdown. I would&#39;ve
-    # expected the instance to go into error state. But that doesn&#39;t seem
-    # to be the case right now. It seem to get stuck on &#34;PodTerminating&#34;.
-    #
-    # See https://github.com/harvester/harvester/issues/913
+    try:
+        polling2.poll(_wait_for_node_unavailble, step=5,
+                      timeout=request.config.getoption(&#39;--wait-timeout&#39;))
+    except polling2.TimeoutException:
+        raise AssertionError(f&#34;`{node_name}` node has been poweroff but&#34;
+                             &#34; its status not changed.\n&#34;
+                             f&#34;{node_state!r}&#34;)
+
+    # See https://github.com/harvester/harvester/issues/982
     vm_instance_json = utils.lookup_vm_instance(
         admin_session, harvester_api_endpoints, basic_vm)
-    found = False
+
+    found = None
     for condition in vm_instance_json[&#39;status&#39;][&#39;conditions&#39;]:
         if condition[&#39;type&#39;] == &#39;Ready&#39;:
             assert condition[&#39;status&#39;] == &#39;False&#39;, (
-                &#39;Expecting &#34;False&#34; status, got %s instead&#39; % (
-                    condition[&#39;status&#39;]))
-            # FIXME(gyee): is &#39;reason&#39; always present?
-            # assert condition[&#39;reason&#39;] == &#39;PodTerminating&#39;, (
-            #    &#39;Expecting &#34;PodTerminating&#34; in reason, got %s instead&#39; % (
-            #        condition[&#39;reason&#39;]))
-            found = True
+                &#34;Unexpected condition:&#34;
+                f&#34;type={condition[&#39;type&#39;]!r}, status={condition[&#39;status&#39;]!r}&#34;
+                f&#34;\n{condition!r}&#34;)
+            found = condition
             break
-    assert found, (
+
+    assert found is not None, (
         &#39;Expecting &#34;PodTerminating&#34; in conditions, got %s instead&#39; % (
             vm_instance_json[&#39;status&#39;][&#39;conditions&#39;]))
     # power-on the node

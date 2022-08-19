@@ -51,10 +51,12 @@ pytest_plugins = [
   ]
 
 DEFAULT_TEMPLATES = 4
+DEFAULT_TEMPLATES_NAMESPACE = &#39;namespaces/harvester-public&#39;
 
 
 def test_verify_default_vm_templates(admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_vm_templates)
+    resp = admin_session.get(harvester_api_endpoints.list_vm_templates.replace(
+                             &#34;namespaces/default&#34;, DEFAULT_TEMPLATES_NAMESPACE))
     assert resp.status_code == 200, (
         &#39;Failed to list virtual machine templates: %s&#39; % (resp.content))
     vm_templates = resp.json()
@@ -63,7 +65,8 @@ def test_verify_default_vm_templates(admin_session, harvester_api_endpoints):
 
 def test_verify_default_vm_template_versions(admin_session,
                                              harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_vm_template_versions)
+    resp = admin_session.get(harvester_api_endpoints.list_vm_template_versions.replace(
+                             &#34;namespaces/default&#34;, DEFAULT_TEMPLATES_NAMESPACE))
     assert resp.status_code == 200, (
         &#39;Failed to list virtual machine template versions: %s&#39; % (
             resp.content))
@@ -110,7 +113,8 @@ def test_create_verify_vm_template(vm_template_version):
 </summary>
 <pre><code class="python">def test_verify_default_vm_template_versions(admin_session,
                                              harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_vm_template_versions)
+    resp = admin_session.get(harvester_api_endpoints.list_vm_template_versions.replace(
+                             &#34;namespaces/default&#34;, DEFAULT_TEMPLATES_NAMESPACE))
     assert resp.status_code == 200, (
         &#39;Failed to list virtual machine template versions: %s&#39; % (
             resp.content))
@@ -128,7 +132,8 @@ def test_create_verify_vm_template(vm_template_version):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_verify_default_vm_templates(admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_vm_templates)
+    resp = admin_session.get(harvester_api_endpoints.list_vm_templates.replace(
+                             &#34;namespaces/default&#34;, DEFAULT_TEMPLATES_NAMESPACE))
     assert resp.status_code == 200, (
         &#39;Failed to list virtual machine templates: %s&#39; % (resp.content))
     vm_templates = resp.json()
