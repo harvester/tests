@@ -21,7 +21,7 @@
         "namespace": "{{ vm_namespace | default('default') }}"
     },
     "spec": {
-        "running": true,
+        "runStrategy": "RerunOnFailure",
         "template": {
             "metadata": {
                 "labels": {
