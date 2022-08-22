@@ -196,6 +196,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/agent_node_connectivity/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2578-all-namespace-filtering/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/templates/allow-users-to-create-cloud-config-template-on-vm-creating-page/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/attach-unpartitioned-nvme-disks-to-host/</loc>
@@ -266,6 +268,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2528-check-logs-harvester/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/1667-check-longhorn-volume-mount/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/1667-check-longhorn-volume-mount/</loc>
@@ -275,6 +279,8 @@
     <loc>https://harvester.github.io/tests/manual/terraformer/harvester-cluster-communicate/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/1283-vm-creation-required-fields/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2562-clone-image/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-and-dont-select-start-after-creation/</loc>
   </url><url>
@@ -578,6 +584,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/deployment/http-proxy-setting-harvester/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2563-image-naming-inline-css/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/images/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/terraformer/import-edit-clusternetwork/</loc>
@@ -609,6 +617,8 @@
     <loc>https://harvester.github.io/tests/manual/deployment/install-bare-metal-pxe/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/deployment/install_on_nvme/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2230-2450-install-harvester-over-gnu-linux/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/deployment/hwaddr_configre_option/</loc>
   </url><url>
@@ -672,6 +682,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/1874-extra-disk-swap-path/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2560-change-backup-target-while-restoring/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-full-backup-target/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/negative-create-backup-target/</loc>
@@ -689,6 +701,8 @@
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-file/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-yaml/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2229-2377-negative-installer-same-nic-ip-and-vip/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-while-taking-backup/</loc>
   </url><url>
@@ -709,6 +723,8 @@
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring-replace/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2559-negative-restore-backup-restoring/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace/</loc>
   </url><url>
@@ -744,6 +760,10 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/resource_quota/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2626-local-cluster-0owner/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2587-2116-create-vm-with-restricted-admin/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/1669-reboot-cluster-check-vip/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/1669-reboot-cluster-check-vip/</loc>
@@ -759,6 +779,8 @@
     <loc>https://harvester.github.io/tests/manual/hosts/remove-management-node-then-reinstall/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/deployment/remove-node-cluster/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2642-remove-pod-scheduling/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/negative-remove-unavailable-node-with-vm/</loc>
   </url><url>
@@ -816,13 +838,19 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-home/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2577-template-with-efi/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/templates/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/negative-network-disruption/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2261-terraform-import-vlan/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/terraform-provider/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/terraformer/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2604-terraformer-import-kubeconfig/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/terraform-provider/deployment-all-resources/</loc>
   </url><url>
@@ -959,5 +987,7 @@
     <loc>https://harvester.github.io/tests/manual/volumes/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/webhooks/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1707-zero-downtime-upgrade/</loc>
   </url>
 </urlset>

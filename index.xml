@@ -952,6 +952,15 @@ Verify Items Agent Node should keep connection when any master Node is down Case
     </item>
     
     <item>
+      <title>All Namespace filtering in VM list</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2578-all-namespace-filtering/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2578-all-namespace-filtering/</guid>
+      <description> Related issues: #2578 [BUG] When first entering the harvester cluster from Virtualization Managements, some vm&amp;rsquo;s in namespace are not shown in the list Category: UI Verification Steps Create a harvester cluster Create a VM in the default namespace Creating a Namespace (eg: test-vm) Import the Harvester cluster in Rancher access to the harvester cluster from Virtualization Management click Virtual Machines tab Expected Results test-vm-1 should also be shown in the list </description>
+    </item>
+    
+    <item>
       <title>allow users to create cloud-config template on the VM creating page</title>
       <link>https://harvester.github.io/tests/manual/templates/allow-users-to-create-cloud-config-template-on-vm-creating-page/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -1258,6 +1267,15 @@ Create a VM. Pause the VM. Although the message The status of pod readliness gat
     </item>
     
     <item>
+      <title>Check logs on Harvester</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2528-check-logs-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2528-check-logs-harvester/</guid>
+      <description> Related issues: #2528 [BUG] Tons of AppArmor denied messages Category: Logging Environment Setup This should be run on a Harvester node that has been up for a while and has been in use Verification Steps SSH to harvester node Execute journalctl -b -f Look through logs and verify that there isn&amp;rsquo;t anything generating lots of erroneous messages Expected Results There shouldn&amp;rsquo;t be large volumes of erroneous messages </description>
+    </item>
+    
+    <item>
       <title>Check Longhorn volume mount point</title>
       <link>https://harvester.github.io/tests/manual/hosts/1667-check-longhorn-volume-mount/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -1301,6 +1319,15 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/1283-vm-creation-required-fields/</guid>
       <description> Related issues: #1283 Fix required fields on VM creation page Verification Steps Create VM without image name and size Create VM without size Create VM wihout image name Create VM without hostname Expected Results You should get an error trying to create VM without image name and size You should get an error trying to create VM without image name You should get an error trying to create VM without size You should not get an error trying to create a VM without hostname </description>
+    </item>
+    
+    <item>
+      <title>Clone image</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2562-clone-image/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2562-clone-image/</guid>
+      <description> Related issues: #2562 [[BUG] Image&amp;rsquo;s labels will not be copied when execute Clone Category: Images Verification Steps Install Harvester with any nodes Create a Image via URL Clone the Image and named image-b Check image-b labels in Labels tab Expected Results All labels should be cloned and shown in labels tab </description>
     </item>
     
     <item>
@@ -2645,6 +2672,15 @@ Clone ipxe example repository https://github.com/harvester/ipxe-examples Edit th
     </item>
     
     <item>
+      <title>Image naming with inline CSS</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2563-image-naming-inline-css/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2563-image-naming-inline-css/</guid>
+      <description> Related issues: #2563 [[BUG] harvesterhci.io.virtualmachineimage spec.displayName displays differently in single view of image Category: Images Verification Steps Go to images Click &amp;ldquo;Create&amp;rdquo; Upload an image or leverage an url - but name the image something like: &amp;lt;strong&amp;gt;&amp;lt;em&amp;gt;something_interesting&amp;lt;/em&amp;gt;&amp;lt;/strong&amp;gt; Wait for upload to complete. Observe the display name within the list of images Compare that to clicking into the single image and viewing it Expected Results The list view naming would be the same as the single view of the image </description>
+    </item>
+    
+    <item>
       <title>Import and make changes to clusternetwork resource</title>
       <link>https://harvester.github.io/tests/manual/terraformer/import-edit-clusternetwork/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -2783,6 +2819,15 @@ Expected Results On completion of the installation, Harvester should provide the
       <guid>https://harvester.github.io/tests/manual/deployment/install_on_nvme/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1627
 Verify Items Harvester can detect NVMe SSD when installing Harvester can be installed on NVMe SSD Case: Install Harvester on NVMe disk Create block image as NVMe disk Run dd if=/dev/zero of=/var/lib/libvirt/images/nvme145.img bs=1M count=148480 Then Change file owner chown qemu:qemu /var/lib/libvirt/images/nvme145.img Create VM via virt-manager Select Manual install, set Generic OS, Memory:9216, CPUs:8, Uncheck enable storage&amp;hellip; and check customize configuration before install Select Firmware to use UEFI x86_64 (use usr/share/qemu/ovmf-x86_64-code.</description>
+    </item>
+    
+    <item>
+      <title>Install Harvester over previous GNU/Linux install</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2230-2450-install-harvester-over-gnu-linux/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2230-2450-install-harvester-over-gnu-linux/</guid>
+      <description> Related issues: #2230 [BUG] harvester installer - always first attempt failed if before was linux installed Related issues: #2450 [backport v1.0][BUG] harvester installer - always first attempt failed if before was linux installed #2450 Category: Installtion Verification Steps Install GNU/LInux LVM configuration reboot Install Harvester via ISO over previous linux install Verifiy Harvester install by changing password and logging in. Expected Results Install should complete </description>
     </item>
     
     <item>
@@ -3047,6 +3092,15 @@ Verify Items VM can be migrate to any node with any times Case: Migrate a restor
     </item>
     
     <item>
+      <title>Negative change backup target while restoring backup</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2560-change-backup-target-while-restoring/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2560-change-backup-target-while-restoring/</guid>
+      <description>Related issues: #2560 [BUG] VM hanging on restoring state when backup-target disconnected suddenly Category: Category Verification Steps Install Harvester with any nodes Login to Dashboard then navigate to Advanced/Settings, setup backup-target with NFS or S3 Create Image for VM creation Create VM vm1 Take Backup vm1b from vm1 Restore the backup vm1b to New/Existing VM When the VM still in restoring state, update backup-target settings to Use the default value then setup it back.</description>
+    </item>
+    
+    <item>
       <title>Negative create backup on store that is full (NFS)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-full-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -3125,6 +3179,15 @@ Verify Items VM can be migrate to any node with any times Case: Migrate a restor
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-yaml/</guid>
       <description> Disconnect backup target Edit YAML for backup Show Diff Save Expected Results You should get an error on saving </description>
+    </item>
+    
+    <item>
+      <title>Negative Harvester installer input same NIC IP and VIP</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2229-2377-negative-installer-same-nic-ip-and-vip/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2229-2377-negative-installer-same-nic-ip-and-vip/</guid>
+      <description> Related issues: #2229 [BUG] input nic ip and vip with same ip address in Harvester-Installer Related issues: #2377 [Backport v1.0.3] input nic ip and vip with same ip address in Harvester-Installer Category: Installation Verification Steps Boot into ISO installer Specify same IP for NIC and VIP Expected Results Error message is displayed </description>
     </item>
     
     <item>
@@ -3215,6 +3278,15 @@ Verify Items VM can be migrate to any node with any times Case: Migrate a restor
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring/</guid>
       <description> Initiate a restore. While the restore is in progress and VM is starting on a node, shut down the node Expected Results The restore should fail </description>
+    </item>
+    
+    <item>
+      <title>Negative Restore a backup while VM is restoring</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2559-negative-restore-backup-restoring/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2559-negative-restore-backup-restoring/</guid>
+      <description>Related issues: #2559 [BUG] Backup unable to be restored and the VM can&amp;rsquo;t be deleted Category: Backup/Restore Verification Steps Install Harvester with any nodes Login to Dashboard then navigate to Advanced/Settings, setup backup-target with NFS or S3 Create Image for VM creation Create VM vm1 Take backup from vm1 as vm1b Take backup from vm1 as vm1b2 Click Edit YAML of vm1b, update field status.source.spec.spec.domain.cpu.cores, increase 1 Stop VM vm1 Restore backup vm1b2 with Replace Existing Restore backup vm1b with Replace Existing when the VM vm1 still in state restoring Expected Results You should get an error when trying to restore.</description>
     </item>
     
     <item>
@@ -3360,6 +3432,24 @@ Verify Items Project&amp;rsquo;s Resource quotas can be updated correctly Namesp
     </item>
     
     <item>
+      <title>RBAC Cluster Owner</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2626-local-cluster-0owner/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2626-local-cluster-0owner/</guid>
+      <description> Related issues: #2626 [BUG] Access Harvester project/namespace page hangs with no response timeout with local owner role from Rancher Category: Authentication Verification Steps Import Harvester from Rancher Create a standard user local in Rancher User &amp;amp; Authentication Open Cluster Management page Edit cluster config Expand Member Roles Add local user with Cluster Owner role Logout Admin Login with local user Access Harvester from virtualization management Click the Project/Namespace page Expected Results Local owner role user can access and display Harvester project/namespace place correctly without hanging to timeout </description>
+    </item>
+    
+    <item>
+      <title>RBAC Create VM with restricted admin user</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2587-2116-create-vm-with-restricted-admin/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2587-2116-create-vm-with-restricted-admin/</guid>
+      <description>Related issues: #2587 [BUG] namespace on create VM is wrong when going through Rancher #2116 [BUG] You can see cattle-monitoring-system volumes as restricted admin in Harvester Category: Authentication Verification Steps Verification Steps Import Harvester into Rancher Create a restricted admin Navigate to Volumes page Verify you only see associated Volumes Log out of admin and log in to restricted admin Navigate to Harvester UI via virtualization management Open virtual machines tab Click create Verified that namespace was default.</description>
+    </item>
+    
+    <item>
       <title>Reboot a cluster and check VIP</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/1669-reboot-cluster-check-vip/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -3429,6 +3519,16 @@ Verify Items Project&amp;rsquo;s Resource quotas can be updated correctly Namesp
       
       <guid>https://harvester.github.io/tests/manual/deployment/remove-node-cluster/</guid>
       <description>Remove node from the Harvester cluster using the Harvester UI Expected Results The components of Harvester should get cleaned up from the node.</description>
+    </item>
+    
+    <item>
+      <title>Remove Pod Scheduling from harvester rke2 and rke1</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2642-remove-pod-scheduling/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2642-remove-pod-scheduling/</guid>
+      <description>Related issues: #2642 [BUG] Remove Pod Scheduling from harvester rke2 and rke1 Category: Rancher Test Information Test Environment: 1 node harvester on local kvm machine Harvester version: v1.0-44fb5f1a-head (08/10) Rancher version: v2.6.7-rc7
+Environment Setup Prepare Harvester master node Prepare Rancher v2.6.7-rc7 Import Harvester to Rancher Set ui-offline-preferred: Remote Go to Harvester Support page Download Kubeconfig Copy the content of Kubeconfig Verification Steps RKE2 Verification Steps Open Harvester Host page then edit host config Add the following key value in the labels page: topology.</description>
     </item>
     
     <item>
@@ -3693,12 +3793,39 @@ Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrat
     </item>
     
     <item>
+      <title>template with EFI</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2577-template-with-efi/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2577-template-with-efi/</guid>
+      <description>Related issues: #2577 [BUG] Boot in EFI mode not selected when creating multiple VM instances using VM template with EFI mode selected. Category: Template Verification Steps Go to Template, create a VM template with Boot in EFI mode selected. Go to Virtual Machines, click Create, select Multiple instance, type in a random name prefix, and select the VM template we just created. Go to Advanced Options, for now this EFI checkbox should be checked without any issue.</description>
+    </item>
+    
+    <item>
       <title>Temporary network disruption</title>
       <link>https://harvester.github.io/tests/manual/hosts/negative-network-disruption/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/hosts/negative-network-disruption/</guid>
       <description> Create a vms on the cluster. Disable network of a node for sometime. e.g. 5 sec, 5 mins Expected Results VM should be accessible after the network is up. </description>
+    </item>
+    
+    <item>
+      <title>Terraform import VLAN</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2261-terraform-import-vlan/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2261-terraform-import-vlan/</guid>
+      <description>Related issues: #2261 [FEATURE] enhance terraform network to not pruge route_cidr and route_gateway Category: Terraform Verification Steps Install Harvester with any nodes Install terraform-harvester-provider (using master-head for testing) Execute terraform init Create the file network.tf as following snippets, then execute terraform import harvester_clusternetwork.vlan vlan to import default vlan settings resource &amp;#34;harvester_clusternetwork&amp;#34; &amp;#34;vlan&amp;#34; { name = &amp;#34;vlan&amp;#34; enable = true default_physical_nic = &amp;#34;harvester-mgmt&amp;#34; } resource &amp;#34;harvester_network&amp;#34; &amp;#34;vlan1&amp;#34; { name = &amp;#34;vlan1&amp;#34; namespace = &amp;#34;harvester-public&amp;#34; vlan_id = 1 route_mode = &amp;#34;auto&amp;#34; } execute terraform apply Login to dashboard then navigate to Advanced/Networks, make sure the Route Connectivity becomes Active Execute terraform apply again and many more times Expected Results Resources should not be changed or added or destroyed.</description>
+    </item>
+    
+    <item>
+      <title>Terraformer import KUBECONFIG</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2604-terraformer-import-kubeconfig/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2604-terraformer-import-kubeconfig/</guid>
+      <description>Related issues: #2604 [BUG] Terraformer imported VLAN always be 0 Category: Terraformer Verification Steps Install Harvester with any nodes Login to dashboard, navigate to: Advanced/Settings -&amp;gt; then enabledvlan` Navigate to Advanced/Networks and Create a Network which Vlan ID is not 0 Navigate to Support Page and Download KubeConfig file Initialize a terraform environment, download Harvester Terraformer Execute command terraformer import harvester -r network to generate terraform configuration from the cluster Generated file generated/harvester/network/network.</description>
     </item>
     
     <item>
@@ -4287,6 +4414,15 @@ Verify Items VM&amp;rsquo;s maximum CPU amount should not have limitation. Case:
       <guid>https://harvester.github.io/tests/manual/templates/derived_template_configure/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1711
 Verify Items Volume size can be changed when creating a derived template Case: Update volume size on new template derived from exist template Install Harvester with any Nodes Login to Dashboard Create Image for Template Creation Create Template T1 with Image Volume and additional Volume Modify Template T1 with update Volume size Volume size should be editable Click Save, then edit new version of T1 Volume size should be updated as expected </description>
+    </item>
+    
+    <item>
+      <title>Zero downtime upgrade</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1707-zero-downtime-upgrade/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1707-zero-downtime-upgrade/</guid>
+      <description> Related issues: #1707 [BUG] Zero downtime upgrade stuck in &amp;ldquo;Waiting for VM live-migration or shutdown&amp;hellip;&amp;rdquo; Category: Upgrade Verification Steps Create a ubuntu image from URL Enable Network with management-mgmt Create a virtual network vlan1 with id 1 Setup backup target Create a VM backup Follow the guide to do upgrade test Expected Results Can upgrade correctly with all VMs remain in running </description>
     </item>
     
   </channel>
