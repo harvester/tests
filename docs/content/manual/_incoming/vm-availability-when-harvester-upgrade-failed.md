@@ -9,7 +9,7 @@ title: Check the VM is available when Harvester upgrade failed
 1. Prepare the previous stable Harvester release cluster
 1. Create image
 1. Enable Network and create VM
-1. Create seveal virtual machine
+1. Create several virtual machine
 1. Follow the [official document steps](https://docs.harvesterhci.io/v1.0/upgrade/automatic/) to prepare the online or offline upgrade
 1. Do not shutdown virtual machine
 1. Start the upgrade
