@@ -9,6 +9,7 @@ title: Create multiple VM instances using VM template with EFI mode selected
 
 ## Verification Steps
 1. Create a VM template, check the `Booting in EFI mode`
+1. Create multiple VM instance and use the VM template have `Booting in EFI mode` checked
 1. Wait for all VM running
 1. Check the EFI mode is enabled in VM config
 1. ssh to each VM

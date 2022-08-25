@@ -19,25 +19,27 @@ title: Image filtering by labels
 1. Check the image list and search by name
 
 ## Expected Results
-#### Case 1:
-The image list page can be filtered by label in the following cases
-Same verification result as https://github.com/harvester/harvester/issues/2474#issuecomment-1182781700
+1. The image list page can be filtered by label in the following cases
 
 
-* All image list without filter, image list by created time
+1. Can fileter using `One key` without value 
+  ![image](https://user-images.githubusercontent.com/29251855/178652845-9f86f535-0443-4f33-b495-49dc95e35f82.png)
+1. Can filter using `One key` with value 
+  ![image](https://user-images.githubusercontent.com/29251855/178652890-c59b0788-6974-4542-a9c6-0c1ac2490a6c.png)
 
-#### Case 2:
-In the VM creation page, 
-* Image are lists according to the added time
-![image](https://user-images.githubusercontent.com/29251855/178991434-c67a263c-2df6-4e68-ab38-c721fb4aef88.png)
+1. Can filter using `Two keys` without value
+  ![image](https://user-images.githubusercontent.com/29251855/178653001-98959826-2ab1-4175-bb8b-a04c7c968c99.png)
+ 
+1. Can filter using using `Two keys` and `one key without value`
+![image](https://user-images.githubusercontent.com/29251855/178653077-a941fd77-d66b-43ce-8dc5-f7c7d5dbf055.png)
 
-* Can search specific image by name
+1. Can filter using `Two keys both have values`
+![image](https://user-images.githubusercontent.com/29251855/178653192-c22d858f-56a2-4fa4-a841-b47171d9dd88.png)
+
+ 
+1. Can search specific image by name in the Harvester VM creation page:
 ![image](https://user-images.githubusercontent.com/29251855/178991526-1e93e689-c0b7-498b-a9e3-6154c4a5f910.png)
 
-#### Case 3:
-In the provision RKE2 cluster page, 
-* Image are lists according to the added time
-  ![image](https://user-images.githubusercontent.com/29251855/179019031-8ce19b3e-b633-49e2-9b62-ab6ad1879a29.png)
-
-* Can search specific image by name
+ 
+1. Can search specific image by name in the provision RKE2 cluster page:
 ![image](https://user-images.githubusercontent.com/29251855/179019130-d6f5e698-fb32-4d81-a7f1-039f803fd180.png)

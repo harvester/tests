@@ -12,17 +12,11 @@ title: Topology aware scheduling of guest cluster workloads
 1. Environment preparation as above steps
 1. Access Harvester node config page 
 1. Add the following node labels with values
- - topology.kubernetes.io/zone
- - topology.kubernetes.io/region
+- topology.kubernetes.io/zone
+- topology.kubernetes.io/region
 1. Provision an RKE2 cluster 
 1. Wait for the provisioning complete
 1. Access RKE2 guest cluster 
-1. Open Workload deployments
-1. Edit the yaml of cloud provider 
-![image](https://user-images.githubusercontent.com/29251855/177773323-2152dd4e-9b8e-431a-ab5b-a72f1bc94f6a.png)
-1. Replace the image version to `rancher/harvester-cloud-provider:v0.1.4`
-![image](https://user-images.githubusercontent.com/29251855/177774896-4c2cef6c-148b-4366-a822-c859416b3f34.png)
-1. Delete the original v0.1.13 cloud provider deployment to let the latest one can be created correctly
 1. Access the RKE2 cluster in Cluster Management page 
 1. Click + to add another node 
 ![image](https://user-images.githubusercontent.com/29251855/177774100-63c1a229-19d4-45f7-bd4e-8d2453c9149f.png) 
