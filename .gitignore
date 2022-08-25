@@ -16,3 +16,4 @@ terraform_test_artifacts/bin
 *config
 .idea
 node_modules
+scripts/**/*.sh

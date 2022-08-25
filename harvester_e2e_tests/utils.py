@@ -37,6 +37,9 @@ import uuid
 import yaml
 import re
 
+UNITS = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+FRACTIONAL = ['', 'm', 'u', 'n', 'p', 'f', 'a', 'z', 'y']
+
 
 def retry_session():
     """Create a session that will retry on connection errors"""
@@ -66,6 +69,60 @@ def random_name():
 
 def remove_ansicode(string):
     return re.sub(r"\x1b|\[\d+m", "", string)
+
+
+def format_unit(value, *, increment=1000, start_exp=0, min_exp=0, max_exp=99,
+                max_precision=2):
+    # type: (int, int, int, int, int, int) -> str
+    # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L4
+
+    val, exp, divide = value, start_exp, max_exp >= 0
+
+    if divide:
+        while exp < min_exp or (val >= increment and exp + 1 < len(UNITS)
+                                and exp < max_exp):
+            val = val / increment
+            exp += 1
+    else:
+        while exp < (min_exp * -1) or (val < increment and exp + 1 < len(FRACTIONAL)
+                                       and exp < (max_exp * -1)):
+            val = val * increment
+            exp += 1
+
+    if val < 10 and max_precision >= 1:
+        rv = f"{round(val * (10 ** max_precision) / (10 ** max_precision))}"
+    else:
+        rv = f"{round(val)}"
+
+    return rv
+
+
+def parse_unit(value):
+    # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L83
+    try:
+        pattern = r"^([0-9.-]+)\s*([^0-9.-]?)([^0-9.-]?)"
+        val, unit, inc = re.match(pattern, value).groups()
+        val = float(val)
+        assert unit != ""
+    except AttributeError:
+        raise ValueError("Could not parse the value", value)
+    except (AssertionError, ValueError):
+        return val
+
+    # µ (mu) symbol -> u
+    unit = 'u' if ord(unit[0]) == 181 else unit
+
+    divide = unit in FRACTIONAL
+    multiply = unit.upper() in UNITS
+    inc_base = 1024 if inc == 'i' and (divide or multiply) else 1000
+
+    if divide:
+        exp = FRACTIONAL.index(unit)
+        return val / (inc_base ** exp)
+
+    if multiply:
+        exp = UNITS.index(unit.upper())
+        return val * (inc_base ** exp)
 
 
 def random_alphanumeric(length=5, upper_case=False):
@@ -188,23 +245,17 @@ def lookup_hosts_with_most_available_cpu(admin_session,
     most_available_cpu_nodes = None
     most_available_cpu = 0
     for node in nodes_json:
-        # look up CPU usage for the given node
-        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
-            node['metadata']['name']))
-        assert resp.status_code == 200, (
-            'Failed to lookup metrices for node %s: %s' % (
-                node['metadata']['name'], resp.content))
-        metrics_json = resp.json()
-        # NOTE: Kubernets CPU metrics are expressed in nanocores, or
-        # 1 billionth of a CPU. We need to convert it to a whole CPU core.
-        cpu_usage = math.ceil(
-            int(metrics_json['usage']['cpu'][:-1]) / 1000000000)
-        available_cpu = int(node['status']['allocatable']['cpu']) - cpu_usage
+        node_name = node['metadata']['name']
+        r = node['metadata']['annotations']["management.cattle.io/pod-requests"]
+        reserved = {k: parse_unit(v) for k, v in json.loads(r).items()
+                    if k in ('cpu', 'memory')}
+
+        available_cpu = int(node['status']['allocatable']['cpu']) - math.ceil(reserved['cpu'])
         if available_cpu > most_available_cpu:
             most_available_cpu = available_cpu
-            most_available_cpu_nodes = [node['metadata']['name']]
+            most_available_cpu_nodes = [node_name]
         elif available_cpu == most_available_cpu:
-            most_available_cpu_nodes.append(node['metadata']['name'])
+            most_available_cpu_nodes.append(node_name)
     return (most_available_cpu_nodes, most_available_cpu)
 
 
@@ -215,28 +266,24 @@ def lookup_hosts_with_most_available_memory(admin_session,
     nodes_json = resp.json()['data']
     most_available_memory_nodes = None
     most_available_memory = 0
+    exp = 3
     for node in nodes_json:
-        # look up CPU usage for the given node
-        resp = admin_session.get(harvester_api_endpoints.get_node_metrics % (
-            node['metadata']['name']))
-        assert resp.status_code == 200, (
-            'Failed to lookup metrices for node %s: %s' % (
-                node['metadata']['name'], resp.content))
-        metrics_json = resp.json()
-        # NOTE: Kubernets memory metrics are expressed Kibibyte so convert it
-        # back to Gigabytes
-        memory_usage = math.ceil(
-            int(metrics_json['usage']['memory'][:-2]) * 1.024e-06)
+        node_name = node['metadata']['name']
+        r = node['metadata']['annotations']["management.cattle.io/pod-requests"]
+        reserved = {k: parse_unit(v) for k, v in json.loads(r).items()
+                    if k in ('cpu', 'memory')}
+
         # NOTE: we want the floor here so we don't over commit
-        allocatable_memory = int(node['status']['allocatable']['memory'][:-2])
-        allocatable_memory = math.floor(
-            allocatable_memory * 1.024e-06)
-        available_memory = allocatable_memory - memory_usage
+        max_memory = parse_unit(node['status']['allocatable']['memory']) * 0.99
+        available_memory = math.floor(float(format_unit(max_memory - reserved['memory'],
+                                                        increment=1024, min_exp=exp)))
+
         if available_memory > most_available_memory:
             most_available_memory = available_memory
-            most_available_memory_nodes = [node['metadata']['name']]
+            most_available_memory_nodes = [node_name]
         elif available_memory == most_available_memory:
-            most_available_memory_nodes.append(node['metadata']['name'])
+            most_available_memory_nodes.append(node_name)
+
     return (most_available_memory_nodes, most_available_memory)
 
 
@@ -314,24 +361,29 @@ def assert_vm_restarted(admin_session, harvester_api_endpoints,
                         previous_uid, vm_name, wait_timeout):
     # give it some time for the VM instance to restart
     time.sleep(180)
+    resp_json = dict()
 
     def _check_vm_instance_restarted():
         resp = admin_session.get(
             harvester_api_endpoints.get_vm_instance % (vm_name))
         if resp.status_code == 200:
+            nonlocal resp_json
             resp_json = resp.json()
-            if ('status' in resp_json and
-                    'phase' in resp_json['status'] and
-                    resp_json['status']['phase'] == 'Running' and
-                    resp_json['metadata']['uid'] != previous_uid):
+            if (resp_json.get('status', {}).get('phase') == "Running"
+                    and resp_json['metadata']['uid'] != previous_uid):
                 return True
         return False
 
-    success = polling2.poll(
-        _check_vm_instance_restarted,
-        step=5,
-        timeout=wait_timeout)
-    assert success, 'Failed to restart VM %s' % (vm_name)
+    try:
+        polling2.poll(
+            _check_vm_instance_restarted,
+            step=5,
+            timeout=wait_timeout)
+    except polling2.TimeoutException:
+        raise AssertionError(f'Failed to restart VM {vm_name}\n'
+                             f"previous uid: {previous_uid}, "
+                             f"current uid: {resp_json['metadata']['uid']}\n"
+                             f"VM's Phase: {resp_json.get('status', {}).get('phase')}")
 
 
 def delete_image(request, admin_session, harvester_api_endpoints, image_json):
@@ -538,6 +590,8 @@ def create_vm(request, admin_session, image, harvester_api_endpoints,
         machine_type=machine_type,
         include_usb=include_usb
     )
+
+    request_json['spec']['runStrategy'] = "RerunOnFailure" if running else "Halted"
 
     resp = admin_session.post(harvester_api_endpoints.create_vm,
                               json=request_json)

@@ -15,8 +15,11 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from harvester_e2e_tests import utils
 import pytest
+import polling2
+
+from harvester_e2e_tests import utils
+
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.vm'
@@ -34,6 +37,15 @@ class TestHostDown:
         Covers:
             Negative virtual-machines-03-Start VM Negative
         """
+        node_state = dict()
+
+        def _wait_for_node_unavailble():
+            resp = admin_session.get(harvester_api_endpoints.get_node % node_name)
+            if resp.status_code == 200:
+                nonlocal node_state
+                node_state = resp.json()['metadata']['state']
+                return node_state['name'] == "unavailable" and node_state['error']
+
         # make sure the VM instance is successfully created
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
@@ -41,27 +53,29 @@ class TestHostDown:
         node_name = vm_instance_json['status']['nodeName']
         utils.power_off_node(request, admin_session, harvester_api_endpoints,
                              node_name)
-        # FIXME(gyee): we currently don't know what the expected behavoir is
-        # for an instance where the node is abruptly shutdown. I would've
-        # expected the instance to go into error state. But that doesn't seem
-        # to be the case right now. It seem to get stuck on "PodTerminating".
-        #
-        # See https://github.com/harvester/harvester/issues/913
+        try:
+            polling2.poll(_wait_for_node_unavailble, step=5,
+                          timeout=request.config.getoption('--wait-timeout'))
+        except polling2.TimeoutException:
+            raise AssertionError(f"`{node_name}` node has been poweroff but"
+                                 " its status not changed.\n"
+                                 f"{node_state!r}")
+
+        # See https://github.com/harvester/harvester/issues/982
         vm_instance_json = utils.lookup_vm_instance(
             admin_session, harvester_api_endpoints, basic_vm)
-        found = False
+
+        found = None
         for condition in vm_instance_json['status']['conditions']:
             if condition['type'] == 'Ready':
                 assert condition['status'] == 'False', (
-                    'Expecting "False" status, got %s instead' % (
-                        condition['status']))
-                # FIXME(gyee): is 'reason' always present?
-                # assert condition['reason'] == 'PodTerminating', (
-                #    'Expecting "PodTerminating" in reason, got %s instead' % (
-                #        condition['reason']))
-                found = True
+                    "Unexpected condition:"
+                    f"type={condition['type']!r}, status={condition['status']!r}"
+                    f"\n{condition!r}")
+                found = condition
                 break
-        assert found, (
+
+        assert found is not None, (
             'Expecting "PodTerminating" in conditions, got %s instead' % (
                 vm_instance_json['status']['conditions']))
         # power-on the node

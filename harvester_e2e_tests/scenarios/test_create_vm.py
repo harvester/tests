@@ -506,7 +506,7 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
     # find out the node that has the most available CPU
     (nodes, available_cpu) = utils.lookup_hosts_with_most_available_cpu(
         admin_session, harvester_api_endpoints)
-    assert available_cpu > 0, 'No nodes has enough CPU available to create VMs'
+    assert available_cpu > 1, 'No nodes has enough CPU available to create VMs'
     vm_json = None
     try:
         # first create a vanilla VM with minimal CPU and memory
@@ -520,6 +520,7 @@ def test_update_vm_on_available_cpu_node(request, admin_session, image,
         previous_uid = vm_instance_json['metadata']['uid']
         domain_data = vm_json['spec']['template']['spec']['domain']
         domain_data['cpu']['cores'] = available_cpu
+        domain_data['resources']['requests']['cpu'] = str(available_cpu)
         utils.poll_for_update_resource(
             request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
@@ -589,7 +590,7 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
     # find out the node that has the most available memory
     (nodes, available_memory) = utils.lookup_hosts_with_most_available_memory(
         admin_session, harvester_api_endpoints)
-    assert available_memory > 0, 'No nodes has enough memory to create VMs'
+    assert available_memory > 1, 'No nodes has enough memory to create VMs'
     vm_json = None
     try:
         # first create a vanilla VM with minimal CPU and memory
@@ -602,8 +603,7 @@ def test_update_vm_on_available_memory_node(request, admin_session, image,
         vm_name = vm_json['metadata']['name']
         previous_uid = vm_instance_json['metadata']['uid']
         domain_data = vm_json['spec']['template']['spec']['domain']
-        domain_data['resources']['requests']['memory'] = '%sGi' % (
-            available_memory)
+        domain_data['resources']['requests']['memory'] = f"{available_memory}Gi"
         utils.poll_for_update_resource(
             request, admin_session,
             harvester_api_endpoints.update_vm % (vm_name),
