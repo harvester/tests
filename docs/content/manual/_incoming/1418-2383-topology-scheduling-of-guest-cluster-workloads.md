@@ -12,8 +12,8 @@ title: Topology aware scheduling of guest cluster workloads
 1. Environment preparation as above steps
 1. Access Harvester node config page 
 1. Add the following node labels with values
-- topology.kubernetes.io/zone
-- topology.kubernetes.io/region
+   - topology.kubernetes.io/zone
+   - topology.kubernetes.io/region
 1. Provision an RKE2 cluster 
 1. Wait for the provisioning complete
 1. Access RKE2 guest cluster 

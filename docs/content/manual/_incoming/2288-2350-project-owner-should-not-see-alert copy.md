@@ -3,7 +3,7 @@ title: Project owner should not see additional alert
 ---
 
 * Related issues: [#2288](https://github.com/harvester/harvester/issues/2288) [BUG] The project-owner user will see an additional alert
-* * Related issues: [#2350](https://github.com/harvester/harvester/issues/2350) [Backport v1.0] The project-owner user will see an additional alert
+* Related issues: [#2350](https://github.com/harvester/harvester/issues/2350) [Backport v1.0] The project-owner user will see an additional alert
 
 ## Category: 
 * Rancher integration

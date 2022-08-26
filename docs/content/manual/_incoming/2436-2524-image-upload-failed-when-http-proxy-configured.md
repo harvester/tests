@@ -11,7 +11,7 @@ title: Image upload does not start when HTTP Proxy is configured
 ## Verification Steps
 1. Clone ipxe-example vagrant project https://github.com/harvester/ipxe-examples
 1. Edit settings.yml
-1. `Set harvester_network_config.offline=true`
+1. Set `harvester_network_config.offline=true`
 1. Create a one node air gapped Harvester with a HTTP proxy server 
 1. Access Harvester settings page 
 1. Add the following http proxy configuration

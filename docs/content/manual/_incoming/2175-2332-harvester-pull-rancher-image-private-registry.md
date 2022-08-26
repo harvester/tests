@@ -10,16 +10,21 @@ title: Harvester pull Rancher agent image from private registry
 
 ## Verification Steps
 1. Create a harvester cluster and a ubuntu server. Make sure they can reach each other.
-1. On the ubuntu server, install docker and run the following commands.
+2. On each harvester node, add ubuntu IP to `/etc/hosts`.
 ```
-mkdir -p certs
-openssl req \
+# vim /etc/hosts
+<host ip> myregistry.local
+```
+3. On the ubuntu server, install docker and run the following commands.
+```
+$ mkdir -p certs
+$ openssl req \
   -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key \
   -addext "subjectAltName = DNS:myregistry.local" \
   -x509 -days 365 -out certs/domain.crt
-sudo mkdir -p /etc/docker/certs.d/myregistry.local:5000
-sudo cp certs/domain.crt /etc/docker/certs.d/myregistry.local:5000/domain.crt
-docker run -d \
+$ sudo mkdir -p /etc/docker/certs.d/myregistry.local:5000
+$ sudo cp certs/domain.crt /etc/docker/certs.d/myregistry.local:5000/domain.crt
+$ sudo docker run -d \
   -p 5000:5000 \
   --restart=always \
   --name registry \
@@ -28,20 +33,16 @@ docker run -d \
   -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
   -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
   registry:2
-docker pull rancher/rancher-agent:v2.6.5
-docker tag rancher/rancher-agent:v2.6.5 myregistry.local:5000/rancher/rancher-agent:v2.6.5
-docker push myregistry.local:5000/rancher/rancher-agent:v2.6.5
+$ sudo docker pull rancher/rancher-agent:v2.6.5
+$ sudo docker tag rancher/rancher-agent:v2.6.5 myregistry.local:5000/rancher/rancher-agent:v2.6.5
+$ sudo docker push myregistry.local:5000/rancher/rancher-agent:v2.6.5
 ```
-1. On each harvester node, add ubuntu IP to `/etc/hosts`.
-```
-# vim /etc/hosts
-192.168.0.50 myregistry.local
-```
-1. Create a rancher v2.6.5 (it's can be a docker container or VM). After it starts, update `system-default-registry` setting to `myregistry.local:5000`
-1. Open harvester dashboard and update `additional-ca` setting with content in `~/certs/domain.crt` in ubuntu server.
+
+4. Create a rancher v2.6.5 (it's can be a docker container or VM). After it starts, update `system-default-registry` setting to `myregistry.local:5000`
+5. Open harvester dashboard and update `additional-ca` setting with content in `~/certs/domain.crt` in ubuntu server.
 
 ### Case 1: Import Harvester to Rancher
-1. Import harvester cluster to the rancher and doesn't have any error.
+Import harvester cluster to the rancher and doesn't have any error.
 * Check image in `cattle-system/cattle-cluster-agent` deployment is `myregistry.local:5000/rancher/rancher-agent:v2.6.5`.
 
 ### Case 2: Reboot Harvester

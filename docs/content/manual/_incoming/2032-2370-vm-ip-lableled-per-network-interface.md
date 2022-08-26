@@ -12,7 +12,7 @@ title: VM IP addresses should be labeled per network interface
 1. Enable network with magement-mgmt interface
 1. Create vlan network `vlan1` with id `1`
 1. Check the IP address on the VM page
-1. Create a VM with mangement-mgmt network
+1. Create a VM with `harvester-mgmt` network
 1. Import Harvester in Rancher 
 1. Provision a RKE2 cluster from Rancher 
 1. Check the IP address on the VM page
