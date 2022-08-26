@@ -9,7 +9,7 @@ title: Delete VM template default version
 * VM Template
 
 ## Verification Steps
-1. Go to advanced -> tempaltes
+1. Go to Advanced -> Templates
 1. Create a new template
 1. Modify the template to create a new version
 1. Click the config button of the `default version` template
