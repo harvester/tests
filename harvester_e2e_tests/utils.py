@@ -251,6 +251,7 @@ def lookup_hosts_with_most_available_cpu(admin_session,
                     if k in ('cpu', 'memory')}
 
         available_cpu = int(node['status']['allocatable']['cpu']) - math.ceil(reserved['cpu'])
+        available_cpu = available_cpu * 0.99  # reduce 1% to avoid hit the floor.
         if available_cpu > most_available_cpu:
             most_available_cpu = available_cpu
             most_available_cpu_nodes = [node_name]
