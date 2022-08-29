@@ -202,7 +202,7 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on t
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-iso-image/</guid>
-      <description>Create images using the external path for ISO image. In user data mention the below to access the vm. Create the 3 vms and wait for vm to start Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes. Like how many vm on each nodes are created.</description>
+      <description>Create images using the external path for ISO image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the 3 vms and wait for vm to start Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes.</description>
     </item>
     
     <item>
@@ -211,7 +211,7 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on t
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-raw-image/</guid>
-      <description>Create images using the external path for cloud image. In user data mention the below to access the vm. Create the 3 vms and wait for vm to start. Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes. Like how many vm on each nodes are created.</description>
+      <description>Create images using the external path for cloud image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the 3 vms and wait for vm to start. Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes.</description>
     </item>
     
     <item>
@@ -220,7 +220,7 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on t
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-windows-image/</guid>
-      <description>Create images using the external path for ISO image. In user data mention the below to access the vm. Create the 3 vms and wait for vm to start. Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes. Like how many vm on each nodes are created.</description>
+      <description>Create images using the external path for ISO image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the 3 vms and wait for vm to start. Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes.</description>
     </item>
     
     <item>
