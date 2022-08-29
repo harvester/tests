@@ -753,7 +753,7 @@ def power_off_node(request, admin_session, harvester_api_endpoints, node_name,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         'Failed to power-off node %s: rc: %s, stdout: %s, stderr: %s' % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to disappear
     time.sleep(120)
@@ -783,7 +783,7 @@ def power_on_node(request, admin_session, harvester_api_endpoints, node_name,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         'Failed to power-on node %s: rc: %s, stdout: %s, stderr: %s' % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to power-on
     time.sleep(180)
@@ -829,7 +829,7 @@ def reboot_node(request, admin_session, harvester_api_endpoints, node_name,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         'Failed to reboot node %s: rc: %s, stdout: %s, stderr: %s' % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to power-on
     time.sleep(180)
@@ -1001,7 +1001,7 @@ def create_image_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
     # wait for the image to get ready
     time.sleep(50)
 
@@ -1052,7 +1052,7 @@ def destroy_resource(request, admin_session, destroy_type=None):
 
         assert result.returncode == 0, (
             'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
-                result.returncode, result.stderr, result.stdout))
+                result.returncode, result.stdout, result.stderr))
 
     if os.path.isdir(os.path.join(terraform_path, '.kube')):
         shutil.rmtree(os.path.join(terraform_path, '.kube'))
@@ -1087,7 +1087,7 @@ def create_volume_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     resp = admin_session.get(harvester_api_endpoints.get_volume % (
         name))
@@ -1123,7 +1123,7 @@ def create_keypair_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     resp = admin_session.get(harvester_api_endpoints.get_keypair % (
         name))
@@ -1168,7 +1168,7 @@ def create_network_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     poll_for_resource_ready(request, admin_session,
                             harvester_api_endpoints.get_network % (name))
@@ -1207,7 +1207,7 @@ def create_clusternetworks_terraform(request, admin_session,
 
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     poll_for_resource_ready(request, admin_session,
                             harvester_api_endpoints.get_vlan)
@@ -1254,7 +1254,7 @@ def create_vm_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         'Failed to run terraform : rc: %s, stdout: %s, stderr: %s' % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     assert_vm_ready(request, admin_session, harvester_api_endpoints,
                     name, running=True)
@@ -1467,7 +1467,7 @@ def get_total_objects_nfs_share(request):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         'Failed to run mountnfs : rc: %s, stdout: %s, stderr: %s' % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
     total_objects = int(result.stdout.decode("utf-8"))
     return total_objects
 
