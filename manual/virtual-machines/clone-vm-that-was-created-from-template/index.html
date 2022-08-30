@@ -1295,6 +1295,9 @@
   <li><a href="https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/">Clone VM that is turned on</a></li>
   
 
+  <li><a href="https://harvester.github.io/tests/manual/virtual-machines/clone-vm-existing-volume/">Clone VM that was created from existing volume</a></li>
+  
+
   <li><a href="https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-created-from-image/">Clone VM that was created from image</a></li>
   
 
@@ -1511,6 +1514,9 @@
   <li><a href="https://harvester.github.io/tests/manual/virtual-machines/memory_overcommit/">Memory overcommit on VM</a></li>
   
 
+  <li><a href="https://harvester.github.io/tests/manual/virtual-machines/negative-vm-clone/">Negative vm clone tests</a></li>
+  
+
   <li><a href="https://harvester.github.io/tests/manual/virtual-machines/run-multiple-instances-console/">Run multiple instances of the console</a></li>
   
 
@@ -1654,10 +1660,11 @@
   <h1 id="title">Clone VM that was created from template</h1>
   <div>
     <article id="content">
-       <ol>
-<li>Clone VM from Virtual Machine list</li>
+       <h2 id="case-1">Case 1</h2>
+<ol>
+<li>Clone VM from Virtual Machine list that was created from template</li>
 </ol>
-<h2 id="expected-results">Expected Results</h2>
+<h3 id="expected-results">Expected Results</h3>
 <ol>
 <li>Machine should start if start VM after creation was checked</li>
 <li>Machine should match the origin machine
@@ -1667,6 +1674,23 @@
 </ul>
 </li>
 <li>You should be able to connect to new VM via console</li>
+</ol>
+<h2 id="case-2">Case 2</h2>
+<ol>
+<li>Clone VM with volume from Virtual Machine list that was created from template</li>
+</ol>
+<h3 id="expected-results-1">Expected Results</h3>
+<ol>
+<li>Before cloning machine create file run command <code>echo &quot;123&quot; &gt; test.txt &amp;&amp; sync</code></li>
+<li>Machine should start if start VM after creation was checked</li>
+<li>Machine should match the origin machine
+<ul>
+<li>in Config</li>
+<li>In YAML</li>
+</ul>
+</li>
+<li>You should be able to connect to new VM via console</li>
+<li>file <code>test.txt</code> should exist</li>
 </ol>
 
     </article>

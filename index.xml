@@ -1364,7 +1364,7 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-and-dont-select-start-after-creation/</guid>
-      <description> Clone VM from Virtual Machine list Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console </description>
+      <description>Case 1 Clone VM from Virtual Machine list and don&amp;rsquo;t select start after creation Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list and don&amp;rsquo;t select start after creation Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
     </item>
     
     <item>
@@ -1373,7 +1373,7 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-off/</guid>
-      <description> Clone VM from Virtual Machine list that is turned off Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console </description>
+      <description>Case 1 Clone VM from Virtual Machine list that is turned off Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that is turned off Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
     </item>
     
     <item>
@@ -1382,7 +1382,16 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/</guid>
-      <description> Clone VM from Virtual Machine list that is turned on Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console </description>
+      <description>Case 1 Clone VM from Virtual Machine list that is turned on Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that is turned on Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
+    </item>
+    
+    <item>
+      <title>Clone VM that was created from existing volume</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-existing-volume/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-existing-volume/</guid>
+      <description>Case 1 Clone VM from Virtual Machine list that was created from existing volume Expected Results When completing the clone you should get an error that the volume is already in use Case 2 Clone VM with volume from Virtual Machine list that was created from existing volume Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console file test.</description>
     </item>
     
     <item>
@@ -1391,7 +1400,7 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-created-from-image/</guid>
-      <description> Clone VM from Virtual Machine list Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console </description>
+      <description>Case 1 Clone VM from Virtual Machine list that was created from image Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that was created from image Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
     </item>
     
     <item>
@@ -1400,7 +1409,7 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-created-from-template/</guid>
-      <description> Clone VM from Virtual Machine list Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console </description>
+      <description>Case 1 Clone VM from Virtual Machine list that was created from template Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that was created from template Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
     </item>
     
     <item>
@@ -1409,7 +1418,7 @@ terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-not-created-from-image/</guid>
-      <description> Clone VM from Virtual Machine list Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console </description>
+      <description>Case 1 Clone VM from Virtual Machine list that was not created from image Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that was not created from image Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
     </item>
     
     <item>
@@ -3414,6 +3423,15 @@ Verify Items VM can be migrate to any node with any times Case: Migrate a restor
       
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-turned-on/</guid>
       <description> Make sure VM is turned on Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Expected Results You get an error that you have to stop VM before restoring backup </description>
+    </item>
+    
+    <item>
+      <title>Negative vm clone tests</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/negative-vm-clone/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/negative-vm-clone/</guid>
+      <description>Case 1 Create a harvester cluster. Create a VM source-vm with 3 volumes: Image Volume Volume Container Volume After VM starts, run command echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync. Click clone button on the source-vm and input new VM name target-vm. Delete source-vm while still cloning Expected Results target-vm should finish cloning After cloning run command cat ~/test.txt in the target-vm. The result should be 123. Case 2 Create a harvester cluster.</description>
     </item>
     
     <item>
