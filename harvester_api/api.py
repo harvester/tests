@@ -18,7 +18,6 @@ class HarvesterAPI:
     upload_image = "v1/harvester/harvesterhci.io.virtualmachineimages/{namespaces}/{uid}"
     user = "v1/harvesterhci.io.users"
 
-
     @classmethod
     def login(cls, endpoint, user, passwd, session=None, ssl_verify=True):
         api = cls(endpoint, session=session)
@@ -52,6 +51,9 @@ class HarvesterAPI:
         url = self.get_url(path)
         return self.session.delete(url, **kwargs)
 
+    def get_url(self, path):
+        return urljoin(self.endpoint, path).format(API_VERSION=self.API_VERSION)
+
     def authenticate(self, user, passwd, **kwargs):
         path = "v3-public/localProviders/local?action=login"
         r = self._post(path, json=dict(username=user, password=passwd), **kwargs)
@@ -72,9 +74,6 @@ class HarvesterAPI:
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
-
-    def get_url(self, path):
-        return urljoin(self.endpoint, path).format(API_VERSION=self.API_VERSION)
 
     def generate_kubeconfig(self):
         path = "v1/management.cattle.io.clusters/local?action=generateKubeconfig"

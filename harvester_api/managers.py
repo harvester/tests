@@ -1,6 +1,8 @@
 import json
 from weakref import ref
 
+DEFAULT_NAMESPACE = "default"
+
 
 class BaseManager:
     def __init__(self, api):
@@ -12,26 +14,36 @@ class BaseManager:
             raise ReferenceError("API object no longer exists")
         return self._api()
 
-    def _get(self, call, *, raw=False, **kwargs):
-        resp = self.api._get(call, **kwargs)
+    def _delegate(self, meth, path, *, raw=False, **kwargs):
+        func = getattr(self.api, meth)
+        resp = func(path, **kwargs)
+
         if raw:
             return resp
         try:
-            return resp.json()
+            return resp.status_code, resp.json()
         except json.decoder.JSONDecodeError as e:
-            return dict(error=e)
+            return resp.status_code, dict(error=e, response=resp)
 
-    def _create(self, call, **kwargs):
-        return self.api._post(call, **kwargs)
+    def _get(self, path, *, raw=False, **kwargs):
+        return self._delegate("_get", path, raw=raw, **kwargs)
 
-    def _update(self, call, **kwargs):
-        return self.api._put(call, **kwargs)
+    def _create(self, path, *, raw=False, **kwargs):
+        return self._delegate("_post", path, raw=raw, **kwargs)
 
-    def _delete(self, call, **kwargs):
-        return self.api._delete(call, **kwargs)
+    def _update(self, path, data, *, raw=False, as_json=True, **kwargs):
+        if as_json:
+            kwargs.update(json=data)
+        else:
+            kwargs.update(data=data)
+
+        return self._delegate("_put", path, raw=raw, **kwargs)
+
+    def _delete(self, path, *, raw=False, **kwargs):
+        return self._delegate("_delete", path, raw=raw, **kwargs)
 
     def _inject_data(self, data):
-        s = json.dumps(data).format(API_VERSION=self.api.API_VERSION)
+        s = json.dumps(data).replace("{API_VERSION}", self.api.API_VERSION)
         return json.loads(s)
 
 
@@ -42,31 +54,34 @@ class KubevirtAPI:
     # get, create, update, delete
     vm = "apis/{API_VERSION}/namespaces/{namespaces}/virtualmachines/{uid}"
     # operators: start, restart, stop, migrate
-    vm_operator = "apis/{RESOURCE_VERSION}/namespaces/{namespaces}/virtualmachines/{uid}/{operator}"
+    vm_operator = ("apis/{RESOURCE_VERSION}/namespaces/{namespaces}/"
+                   "virtualmachines/{uid}/{operator}")
     # get
     vminstance = "apis/{API_VERSION}/namespaces/{namespaces}/virtualmachineinstances/{uid}"
     # operators: pause, unpause
-    vminstance_operator = "apis/{RESOURCE_VERSION}/namespaces/{namespaces}/virtualmachineinstances/{uid}/{operator}"
+    vminstance_operator = ("apis/{RESOURCE_VERSION}/namespaces/{namespaces}/"
+                           "virtualmachineinstances/{uid}/{operator}")
 
 
 class HostManager(BaseManager):
     PATH_fmt = "v1/nodes/{uid}"
     METRIC_fmt = "v1/metrics.k8s.io.nodes/{uid}"
 
-    def get(self, name="", raw=False):
-        return super()._get(self.PATH_fmt.format(uid=name))
+    def get(self, name="", *, raw=False):
+        return super()._get(self.PATH_fmt.format(uid=name), raw=raw)
 
     def create(self, *args, **kwargs):
-        raise NotImplementedError("Create is not allowed.")
+        raise NotImplementedError("Create new host is not allowed.")
 
-    def update(self, name, data):
-        raise NotImplementedError()
+    def update(self, name, data, *, raw=False, as_json=True, **kwargs):
+        path = self.PATH_fmt.format(uid=name)
+        return super()._update(path, data, raw=raw, as_json=as_json, **kwargs)
 
-    def delete(self, name):
-        return super()._delete(self.PATH_fmt.format(uid=name))
+    def delete(self, name, *, raw=False):
+        return super()._delete(self.PATH_fmt.format(uid=name), raw=raw)
 
-    def get_metrics(self, name=""):
-        return super()._get(self.METRIC_fmt.format(uid=name))
+    def get_metrics(self, name="", *, raw=False):
+        return super()._get(self.METRIC_fmt.format(uid=name), raw=raw)
 
 
 class ImageManager(BaseManager):
@@ -74,7 +89,7 @@ class ImageManager(BaseManager):
     PATH_fmt = "apis/{{API_VERSION}}/namespaces/{ns}/virtualmachineimages/{uid}"
     _KIND = "VirtualMachineImage"
 
-    def create_data(name, url, desc, stype, namespace, display_name=None):
+    def create_data(self, name, url, desc, stype, namespace, display_name=None):
         data = {
             "apiVersion": "{API_VERSION}",
             "kind": self._KIND,
@@ -93,12 +108,21 @@ class ImageManager(BaseManager):
         }
         return super()._inject_data(data)
 
-    def get(self, name="", namespace="default"):
+    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
         return super()._get(self.PATH_fmt.format(uid=name, ns=namespace))
 
-    def create(self, name, url, description="", source_type="download", namespace="default"):
-        data = self.create_data(name, url, description, source_type, namespace)
-        return self._create(PATH_fmt.format(uid="", ns=namespace), json=data)
+    def create(self, name, url, namespace=DEFAULT_NAMESPACE, source_type="download",
+               description="", display_name=None):
+        data = self.create_data(name, url, description, source_type, namespace, display_name)
+        return self._create(self.PATH_fmt.format(uid="", ns=namespace), json=data)
+
+    def update(self, name, data, *, raw=False, as_json=True, **kwargs):
+        ns = data.get("metadata", {}).get("namespace", DEFAULT_NAMESPACE)
+        path = self.PATH_fmt.format(uid=name, ns=ns)
+        return super()._update(path, data, raw=raw, as_json=as_json, **kwargs)
+
+    def delete(self, name, namespace, *, raw=False):
+        return super()._delete(self.PATH_fmt.format(uid=name, ns=namespace))
 
 
 class VolumeManager:
@@ -113,7 +137,8 @@ class VirtualMachineManager:
 class TemplateManager:
     # get, create, delete
     vm_template = "apis/{API_VERSION}/namespaces/{namespaces}/virtualmachinetemplates/{uid}"
-    vm_template_version = "apis/{API_VERSION}/namespaces/{namespaces}/virtualmachinetemplateversions/{uid}"
+    vm_template_version = ("apis/{API_VERSION}/namespaces/{namespaces}/"
+                           "virtualmachinetemplateversions/{uid}")
 
 
 class backupManager:
@@ -136,4 +161,3 @@ class SettingManager:
     vlan = "apis/network.{API_VERSION}/clusternetworks/vlan"
     # api-ui-version, backup-target, cluster-registration-url
     settings = "v1/harvesterhci.io.settings/{option}"
-
