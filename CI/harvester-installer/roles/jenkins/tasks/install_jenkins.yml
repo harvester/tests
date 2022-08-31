@@ -60,6 +60,7 @@
     - pipeline-github-lib
     - pipeline-stage-view
     - ssh-slaves
+    - support-core
     - timestamper
     - workflow-aggregator
     - workflow-cps
