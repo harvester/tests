@@ -28,3 +28,19 @@ GITHUB_CI_PASSWORD: ghp_g9sDDSsehUePKAQBSzqpMZkVGDYkg0Rx6aJX
 # a commercial CA.
 JENKINS_USE_PROXY: True
 JENKINS_PROXY_ENABLE_SSL: True
+
+# GitHub App for Harvester-CI:
+# We need to have a GitHub App created in order to post results surrounding
+# test results, different real time feedback on current provisioning steps,
+# plus a lot of other things.
+# GitHub credentials DO NOT allow you to communicate with the GitHub Checks API
+# and because of this creating a GitHub App is not only a best practice
+# but it also has a much higher rate-limit of communication out to GitHub than
+# the GitHub Credenitals allow
+# Private key for authenticating to GitHub with, it must be in PKCS#8 format, GitHub will give it to you in PKCS#1.
+# You can convert it with openssl pkcs8 -topk8 -inform PEM -outform PEM -in current-key.pem -out new-key.pem -nocrypt 
+GITHUB_APP_ID: 000001
+# GITHUB_APP_PRIVATE_KEY_CONVERTED: |-
+#   -----BEGIN PRIVATE KEY-----
+#   -----END PRIVATE KEY-----
+GITHUB_APP_OWNER: harvester

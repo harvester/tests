@@ -12,14 +12,10 @@ jenkins:
   authorizationStrategy:
     globalMatrix:
       permissions:
-        - "Job/Build:{{ JENKINS_DEV_USERNAME }}"
-        - "Job/Cancel:{{ JENKINS_DEV_USERNAME }}"
         - "Job/Read:{{ JENKINS_DEV_USERNAME }}"
-        - "Job/Workspace:{{ JENKINS_DEV_USERNAME }}"
         - "Overall/Administer:{{ JENKINS_ADMIN_USERNAME }}"
         - "Overall/Read:authenticated"
         - "Run/Replay:{{ JENKINS_DEV_USERNAME }}"
-        - "Run/Update:{{ JENKINS_DEV_USERNAME }}"
   remotingSecurity:
     enabled: true
 
@@ -34,6 +30,17 @@ credentials:
               username: "{{ GITHUB_CI_USERNAME }}"
               password: "{{ GITHUB_CI_PASSWORD }}"
               id: "for-harvester-ci"
+              description: "github credential for harvester-installer ci"
+          {# - gitHubApp:
+              scope: "GLOBAL"
+              # TODO: update "id" to not be current testing based ID
+              id: "jenkins-irishgordo-team-harvester"
+              description: "the GitHub App credentials needed to speak with the GitHub Checks API to bubble out information about Jenkins stages, elements of provisioning, test results and more - eliminating the need for those to go directly to Jenkins to view results and providing a more realtime sense of feedback"
+              appID: "{{ GITHUB_APP_ID }}"
+              # TODO: IMPL Of Private Key is funky, with the way it is doing the yaml ...tbd on best approach
+              {# privateKey: |
+                {{ GITHUB_APP_PRIVATE_KEY_CONVERTED | indent(20) }} #}
+              owner: "{{ GITHUB_APP_OWNER }}" #}
 
 security:
   queueItemAuthenticator:

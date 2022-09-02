@@ -1,7 +1,7 @@
 ---
 - name: jenkins | install_jenkins_on_Suse | Install essential packages
   community.general.zypper:
-    name: [python3, python3-pip, figlet]
+    name: [python3, python3-pip, figlet, firewalld]
     state: latest
 
 - name: jenkins | install_jenkins_on_Suse | Install Ansible
@@ -52,6 +52,15 @@
     owner: jenkins
     group: jenkins
     mode: 0755
+
+- name: jenkins | install_jenkins_on_Suse | generate firewalld service
+  shell: >
+    systemctl enable firewalld
+
+- name: jenkins | install_jenkins_on_Suse | Start firewalld service
+  systemd:
+    name: firewalld
+    state: restarted
 
 # NOTE(gyee): since jenkins process is running in the jenkins user context,
 # it can't use the default HTTP port 80

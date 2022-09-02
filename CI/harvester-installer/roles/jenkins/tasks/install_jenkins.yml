@@ -28,7 +28,7 @@
 - name: jenkins | install_jenkins | Create jenkins CLI to install plugins
   template:
     src: jenkins.j2
-    dest: /usr/bin/jenkins
+    dest: /usr/bin/jenkins-cli
     mode: 0755
     force: yes
   vars:
@@ -37,13 +37,14 @@
 
 - name: jenkins | install_jenkins | Install Jenkins plugins
   shell: >
-    /usr/bin/jenkins install-plugin {{ item }}
+    /usr/bin/jenkins-cli install-plugin {{ item }}
   with_items:
     - ansible
     - authorize-project
     - build-timeout
     - blueocean
     - bootstrap5-api
+    - checks-api
     - configuration-as-code
     - credentials-binding
     - email-ext
@@ -51,15 +52,22 @@
     - git
     - github-branch-source
     - github-oauth
+    - github-pr-comment-build
     - htmlpublisher
+    - jobConfigHistory
     - job-dsl
+    - junit
     - ldap
     - mailer
     - matrix-auth
     - pam-auth
+    - pipeline-github
     - pipeline-github-lib
     - pipeline-stage-view
+    - pipeline-utility-steps
+    - rebuild
     - ssh-slaves
+    - support-core
     - timestamper
     - workflow-aggregator
     - workflow-cps
@@ -107,14 +115,21 @@
     - harvester_vagrant_installation_test.groovy
 
 - name: jenkins | install_jenkins | Restart jenkins
-  service:
+  ansible.builtin.systemd:
     name: jenkins
     state: restarted
+    force: yes
+    enabled: yes
+    masked: no
+  register: result
+  retries: 30
+  delay: 3
+  until: result is success
 
 - name: jenkins | install_jenkins | Create jenkins CLI
   template:
     src: jenkins.j2
-    dest: /usr/bin/jenkins
+    dest: /usr/bin/jenkins-cli
     mode: 0755
     force: yes
   vars:

@@ -45,3 +45,8 @@ ansible-playbook -i inventory.harvester-ci --private-key <ansible user private k
 [Ansible]: https://www.ansible.com/
 [Jenkins]: https://www.jenkins.io/
 [Python PIP]: https://pip.pypa.io/en/stable/
+
+
+## Troubleshooting:
+- if there are issues, with Jenkins configuration, with the most recent versions of Jenkins (since the shift to systemd based configs for Jenkins), you'll need to be on the node and audit Jenkins with:
+`journalctl -u jenkins.service` 

@@ -3,7 +3,7 @@
         Install prerequisite packages for Jenkins
   apt:
     name: [ca-certificates, openjdk-11-jdk, curl, apt-transport-https, gnupg,
-           python3, python3-pip, figlet]
+           python3, python3-pip, figlet, sshpass]
     state: latest
     update_cache: yes
 
@@ -56,6 +56,19 @@
     backrefs: yes
     mode: 0644
   when: JENKINS_USE_PROXY
+
+- name: jenkins | build drop in system-d config dir
+  ansible.builtin.shell: >
+    mkdir -p /etc/systemd/system/jenkins.service.d
+
+- name: jenkins | load in the override.conf
+  template:
+    src: override.conf.j2
+    dest: /etc/systemd/system/jenkins.service.d/override.conf
+    mode: 0600
+    force: yes
+  vars:
+    JENKINS_USING_PROXY: "{{ JENKINS_USE_PROXY }}"
 
 - name: jenkins | install_jenkins_on_Debian |
         Create init.groovy.d to bootstrap Jenkins

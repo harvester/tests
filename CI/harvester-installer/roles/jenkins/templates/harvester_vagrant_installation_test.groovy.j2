@@ -1,67 +1,48 @@
-pipelineJob('harvester-vagrant-installation-test') {
-    description('Test installation of Harvester cluster in a virtual (Vagrant) environment')
+pipelineJob('harvester-installer-seeder') {
+    description('Seeds Harvester Installer Jenkinsfile')
     logRotator {
       numToKeep(-1)
       daysToKeep(10)
     }
-    parameters {
-        booleanParam('keep_environment', false, 'Keep the Vagrant environment around after the test had finish.')
-        booleanParam('slack_notify', true, 'Send notifications to Slack')
-    }
-    properties {
-        githubProjectUrl('https://github.com/{{ GITHUB_PROJECT }}')
-        triggers {
-            githubPullRequest {
-                admin('gyee')
-                admins(['guangyee'])
-                userWhitelist('gyee@suse.com')
-                orgWhitelist('harvester')
-                orgWhitelist(['rancher', 'rancherlabs', 'SUSE'])
-                cron('')
-                triggerPhrase('OK to test')
-                useGitHubHooks(true)
-                permitAll(true)
-                displayBuildErrorsOnDownstreamBuilds(true)
-                allowMembersOfWhitelistedOrgsAsAdmin(true)
-                extensions {
-                    commitStatus {
-                        context('Vagrant installation testing')
-                        triggeredStatus('Started Vagrant installation testing...')
-                        completedStatus('SUCCESS', 'All good!')
-                        completedStatus('FAILURE', 'Failed!')
-                        completedStatus('PENDING', 'Still working on it...')
-                        completedStatus('ERROR', 'Something went wrong. Need investigation.')
-                    }
+    triggers {
+        githubPullRequest {
+            admin('irishgordo')
+            admins(['irishgordo'])
+            orgWhitelist('harvester')
+            cron('')
+            triggerPhrase('.*(re)?run-seed-job.*')
+            useGitHubHooks(true)
+            permitAll(true)
+            displayBuildErrorsOnDownstreamBuilds(true)
+            allowMembersOfWhitelistedOrgsAsAdmin(true)
+            extensions {
+                commitStatus {
+                    context('Seed Job Harvester CI Starting')
+                    triggeredStatus('Started Seed Job For Harvester Installer CI Reseeding/Seeding...')
+                    completedStatus('SUCCESS', 'All good!')
+                    completedStatus('FAILURE', 'Failed!')
+                    completedStatus('PENDING', 'Still working on it...')
+                    completedStatus('ERROR', 'Something went wrong. Need investigation.')
                 }
             }
         }
     }
     definition {
-        cps {
-            sandbox()
-            script('''
-pipeline {
-    agent any
-    stages {
-        stage('Checkout harvester-install pull request') {
-            steps {
-                dir('harvester-installer') {
-                    checkout([$class: 'GitSCM', branches: [[name: "FETCH_HEAD"]],
-                             extensions: [[$class: 'LocalBranch']],
-                             userRemoteConfigs: [[refspec: "+refs/pull/${ghprbPullId}/head:refs/remotes/origin/PR-${ghprbPullId}", url: "https://github.com/{{ GITHUB_PROJECT }}"]]])
+        cpsScm {
+            scm {
+                {# TESTING ONLY!! #}
+                git {
+                    remote {
+                        url('https://github.com/irishgordo/harvester-installer.git')
+                        refspec('+refs/pull/*:refs/remotes/origin/pr/*')
+                    }
+                    branch('feat/2096-temporary-edits-testing')
+                    extensions{
+                        wipeOutWorkspace()
+                    }
                 }
             }
-        }
-        stage('Test harvester-installer pull request') {
-            steps {
-                script {
-                    ansiblePlaybook extras: "-e WORKSPACE=${env.WORKSPACE} -e PR_ID=${ghprbPullId} -e harvester_installer_repo_name={{ GITHUB_PROJECT }}", playbook: "${env.WORKSPACE}/harvester-installer/ci/run_vagrant_install_test.yml"
-                }
-            }
-        }
-    }
-}
-            ''')
+            scriptPath('Jenkinsfile')
         }
     }
 }
