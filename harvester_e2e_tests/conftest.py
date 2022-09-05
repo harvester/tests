@@ -47,13 +47,6 @@ def pytest_addoption(parser):
         help='Do not cleanup the test artifacts'
     )
     parser.addoption(
-        '--harvester_cluster_nodes',
-        action='store',
-        type=int,
-        default=config_data['harvester_cluster_nodes'],
-        help='Set count of test framework harvester cluster nodes.'
-    )
-    parser.addoption(
         '--vlan-id',
         action='store',
         type=int,
@@ -294,10 +287,7 @@ def pytest_configure(config):
                     'the P2 test for Backup and Recovery')
     )
     config.addinivalue_line(
-        "markers", ('hosts_p1: mark test to run only P1 test for Hosts')
-    )
-    config.addinivalue_line(
-        "markers", ('hosts_p2: mark test to run only P1 test for Hosts')
+        "markers", ('hosts: mark test as host related')
     )
     config.addinivalue_line(
         "markers", ('terraform_provider_p1: mark test to run only P1 test '
@@ -357,3 +347,8 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if 'rancher_integration_with_external_rancher' in item.keywords:
                 item.add_marker(skip_rancher_integration_external)
+
+    if not config.getoption("--delete-host", False):
+        for item in items:
+            if "delete_host" in item.keywords:
+                item.add_marker(pytest.mark.skip(reason="Not configured to test host deletion."))

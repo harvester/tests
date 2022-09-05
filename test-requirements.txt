@@ -3,6 +3,7 @@ pytest-drop-dup-tests
 pytest-ordering
 pytest-html
 pytest-json-report
+pytest-dependency
 jinja2
 bcrypt
 requests
@@ -20,3 +21,4 @@ lxml
 pyyaml
 pdoc3
 tox
+-e ./apiclient
