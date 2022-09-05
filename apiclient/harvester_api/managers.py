@@ -1,7 +1,17 @@
 import json
 from weakref import ref
+from collections.abc import Mapping
 
 DEFAULT_NAMESPACE = "default"
+
+
+def merge_dict(src, dest):
+    for k, v in src.items():
+        if isinstance(dest.get(k), dict) and isinstance(v, dict):
+            merge_dict(v, dest[k])
+        else:
+            dest[k] = v
+    return dest
 
 
 class BaseManager:
@@ -64,7 +74,7 @@ class KubevirtAPI:
 
 
 class HostManager(BaseManager):
-    PATH_fmt = "v1/nodes/{uid}"
+    PATH_fmt = "v1/harvester/nodes/{uid}"
     METRIC_fmt = "v1/metrics.k8s.io.nodes/{uid}"
 
     def get(self, name="", *, raw=False):
@@ -75,6 +85,9 @@ class HostManager(BaseManager):
 
     def update(self, name, data, *, raw=False, as_json=True, **kwargs):
         path = self.PATH_fmt.format(uid=name)
+        if isinstance(data, Mapping) and as_json:
+            _, node = self.get(name)
+            data = merge_dict(data, node)
         return super()._update(path, data, raw=raw, as_json=as_json, **kwargs)
 
     def delete(self, name, *, raw=False):
@@ -82,6 +95,12 @@ class HostManager(BaseManager):
 
     def get_metrics(self, name="", *, raw=False):
         return super()._get(self.METRIC_fmt.format(uid=name), raw=raw)
+
+    def maintenance_mode(self, name, enable=True):
+        action = "enable" if enable else "disable"
+        params = dict(action=f"{action}MaintenanceMode")
+        super()._create(self.PATH_fmt.format(uid=name), params=params)
+        return self.get(name)
 
 
 class ImageManager(BaseManager):
@@ -125,38 +144,38 @@ class ImageManager(BaseManager):
         return super()._delete(self.PATH_fmt.format(uid=name, ns=namespace))
 
 
-class VolumeManager:
+class VolumeManager(BaseManager):
     # get, create, update, delete
     volume = "api/v1/namespaces/{ns}/persistentvolumeclaims/{uid}"
 
 
-class VirtualMachineManager:
+class VirtualMachineManager(BaseManager):
     pass
 
 
-class TemplateManager:
+class TemplateManager(BaseManager):
     # get, create, delete
     vm_template = "apis/{API_VERSION}/namespaces/{namespaces}/virtualmachinetemplates/{uid}"
     vm_template_version = ("apis/{API_VERSION}/namespaces/{namespaces}/"
                            "virtualmachinetemplateversions/{uid}")
 
 
-class backupManager:
+class backupManager(BaseManager):
     # get, create, update, delete
     backup = "apis/{API_VERSION}/namespaces/{namespaces}/virtualmachinebackups/{uid}"
 
 
-class KeypairManager:
+class KeypairManager(BaseManager):
     # get, create, delete
     keypair = "apis/{API_VERSION}/namespaces/{namespaces}/keypairs/{uid}"
 
 
-class NetworkManager:
+class NetworkManager(BaseManager):
     # get, create, update, delete
     network = "v1/k8s.cni.cncf.io.network-attachment-definitions/{uid}"
 
 
-class SettingManager:
+class SettingManager(BaseManager):
     # get, update
     vlan = "apis/network.{API_VERSION}/clusternetworks/vlan"
     # api-ui-version, backup-target, cluster-registration-url

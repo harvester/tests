@@ -35,6 +35,9 @@ class HarvesterAPI:
         self.endpoint = endpoint
         self.hosts = HostManager(self)
 
+    def __repr__(self):
+        return f"HarvesterAPI({self.endpoint}, {self.session.header['Authorization']})"
+
     def _get(self, path, **kwargs):
         url = self.get_url(path)
         return self.session.get(url, **kwargs)
