@@ -2,19 +2,25 @@ from unittest import TestCase, mock
 from json.decoder import JSONDecodeError
 
 from harvester_api.api import HarvesterAPI
-from harvester_api.managers import (DEFAULT_NAMESPACE, BaseManager,
-                                    HostManager, ImageManager)
+from harvester_api.managers import (DEFAULT_NAMESPACE, merge_dict,
+                                    BaseManager, HostManager, ImageManager, KeypairManager)
 
 
-class TestBaseManager(TestCase):
+class BaseTestCase(TestCase):
+    manager_cls = None
+
     def setUp(self):
         self.api = mock.MagicMock(sepc=HarvesterAPI)
-        self.mgr = BaseManager(self.api)
+        self.mgr = self.manager_cls(self.api)
         self.API_VERSION = "TEST_API_VERSION"
         self.api.API_VERSION = self.API_VERSION
 
     def tearDown(self):
         self.api.reset_mock()
+
+
+class TestBaseManager(BaseTestCase):
+    manager_cls = BaseManager
 
     def test_weakref(self):
         class FakeAPI:
@@ -86,13 +92,8 @@ class TestBaseManager(TestCase):
         self.assertDictEqual(dict(json=data), self.api._put.call_args[1])
 
 
-class TestHostManager(TestCase):
-    def setUp(self):
-        self.api = mock.MagicMock(sepc=HarvesterAPI)
-        self.mgr = HostManager(self.api)
-
-    def tearDown(self):
-        self.api.reset_mock()
+class TestHostManager(BaseTestCase):
+    manager_cls = HostManager
 
     def test_create(self):
         with self.assertRaises(NotImplementedError):
@@ -116,13 +117,21 @@ class TestHostManager(TestCase):
         self.assertIn(node_name, self.api._delete.call_args[0][0])
 
     def test_update(self):
-        node_name = "called"
-        data = dict(test="data")
+        node_name, data = "called", dict(metadata=dict(nothing=True))
+        stub = dict(metadata=dict(something=False))
+        self.api._get().json.return_value = stub
 
-        self.mgr.update(node_name, data)
+        # Case 1: passing as raw data
+        self.mgr.update(node_name, data, as_json=False)
 
         self.assertIn(node_name, self.api._put.call_args[0][0])
-        self.assertDictEqual(dict(json=data), self.api._put.call_args[1])
+        self.assertDictEqual(dict(data=data), self.api._put.call_args[1])
+
+        # Case 2: passing as JSON with data (from get) merged
+        self.mgr.update(node_name, data, as_json=True)
+
+        self.assertIn(node_name, self.api._put.call_args[0][0])
+        self.assertDictEqual(dict(json=merge_dict(data, stub)), self.api._put.call_args[1])
 
     def test_get_metrics(self):
         # Case 1: specific node
@@ -136,16 +145,24 @@ class TestHostManager(TestCase):
 
         self.assertTrue(self.api._get.call_args[0][0].endswith("/"))
 
+    def test_maintenance_mode(self):
+        # Case 1: Enable
+        node_name, enable = "dummy", "enableMaintenanceMode"
+        self.mgr.maintenance_mode(node_name)
 
-class TestImageManager(TestCase):
-    def setUp(self):
-        self.api = mock.MagicMock(sepc=HarvesterAPI)
-        self.mgr = ImageManager(self.api)
-        self.API_VERSION = "TEST_API_VERSION"
-        self.api.API_VERSION = self.API_VERSION
+        self.assertIn(node_name, self.api._post.call_args[0][0])
+        self.assertDictEqual(dict(params=dict(action=enable)), self.api._post.call_args[1])
 
-    def tearDown(self):
-        self.api.reset_mock()
+        # Case 2: Disable
+        disable = "disableMaintenanceMode"
+        self.mgr.maintenance_mode(node_name, False)
+
+        self.assertIn(node_name, self.api._post.call_args[0][0])
+        self.assertDictEqual(dict(params=dict(action=disable)), self.api._post.call_args[1])
+
+
+class TestImageManager(BaseTestCase):
+    manager_cls = ImageManager
 
     def test_get(self):
         name, namespace = "image", "the-namespace"
@@ -220,3 +237,7 @@ class TestImageManager(TestCase):
 
         self.assertIn(name, self.api._delete.call_args[0][0])
         self.assertIn(namespace, self.api._delete.call_args[0][0])
+
+
+class TestKeypairManager(BaseTestCase):
+    manager_cls = KeypairManager

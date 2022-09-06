@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 import requests
 from requests.packages.urllib3.util.retry import Retry
 
-from .managers import HostManager
+from .managers import HostManager, KeypairManager
 
 
 class HarvesterAPI:
@@ -34,9 +34,10 @@ class HarvesterAPI:
 
         self.endpoint = endpoint
         self.hosts = HostManager(self)
+        self.keypairs = KeypairManager(self)
 
     def __repr__(self):
-        return f"HarvesterAPI({self.endpoint}, {self.session.header['Authorization']})"
+        return f"HarvesterAPI({self.endpoint!r}, {self.session.headers['Authorization']!r})"
 
     def _get(self, path, **kwargs):
         url = self.get_url(path)

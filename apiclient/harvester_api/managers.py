@@ -78,7 +78,7 @@ class HostManager(BaseManager):
     METRIC_fmt = "v1/metrics.k8s.io.nodes/{uid}"
 
     def get(self, name="", *, raw=False):
-        return super()._get(self.PATH_fmt.format(uid=name), raw=raw)
+        return self._get(self.PATH_fmt.format(uid=name), raw=raw)
 
     def create(self, *args, **kwargs):
         raise NotImplementedError("Create new host is not allowed.")
@@ -88,18 +88,18 @@ class HostManager(BaseManager):
         if isinstance(data, Mapping) and as_json:
             _, node = self.get(name)
             data = merge_dict(data, node)
-        return super()._update(path, data, raw=raw, as_json=as_json, **kwargs)
+        return self._update(path, data, raw=raw, as_json=as_json, **kwargs)
 
     def delete(self, name, *, raw=False):
-        return super()._delete(self.PATH_fmt.format(uid=name), raw=raw)
+        return self._delete(self.PATH_fmt.format(uid=name), raw=raw)
 
     def get_metrics(self, name="", *, raw=False):
-        return super()._get(self.METRIC_fmt.format(uid=name), raw=raw)
+        return self._get(self.METRIC_fmt.format(uid=name), raw=raw)
 
     def maintenance_mode(self, name, enable=True):
         action = "enable" if enable else "disable"
         params = dict(action=f"{action}MaintenanceMode")
-        super()._create(self.PATH_fmt.format(uid=name), params=params)
+        self._create(self.PATH_fmt.format(uid=name), params=params)
         return self.get(name)
 
 
@@ -125,10 +125,10 @@ class ImageManager(BaseManager):
                 "url": url
             }
         }
-        return super()._inject_data(data)
+        return self._inject_data(data)
 
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
-        return super()._get(self.PATH_fmt.format(uid=name, ns=namespace))
+        return self._get(self.PATH_fmt.format(uid=name, ns=namespace))
 
     def create(self, name, url, namespace=DEFAULT_NAMESPACE, source_type="download",
                description="", display_name=None):
@@ -138,10 +138,10 @@ class ImageManager(BaseManager):
     def update(self, name, data, *, raw=False, as_json=True, **kwargs):
         ns = data.get("metadata", {}).get("namespace", DEFAULT_NAMESPACE)
         path = self.PATH_fmt.format(uid=name, ns=ns)
-        return super()._update(path, data, raw=raw, as_json=as_json, **kwargs)
+        return self._update(path, data, raw=raw, as_json=as_json, **kwargs)
 
     def delete(self, name, namespace, *, raw=False):
-        return super()._delete(self.PATH_fmt.format(uid=name, ns=namespace))
+        return self._delete(self.PATH_fmt.format(uid=name, ns=namespace))
 
 
 class VolumeManager(BaseManager):
@@ -166,8 +166,36 @@ class backupManager(BaseManager):
 
 
 class KeypairManager(BaseManager):
-    # get, create, delete
-    keypair = "apis/{API_VERSION}/namespaces/{namespaces}/keypairs/{uid}"
+    PATH_fmt = "apis/{{API_VERSION}}/namespaces/{ns}/keypairs/{uid}"
+
+    def create_data(self, name, namespace, public_key):
+        data = {
+            "apiVersion": "{API_VERSION}",
+            "kind": "KeyPair",
+            "metadata": {
+                "name": name,
+                "namespace": namespace
+            },
+            "spec": {
+                "publicKey": public_key
+            }
+        }
+
+        return self._inject_data(data)
+
+    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
+        return super()._get(self.PATH_fmt.format(uid=name, ns=namespace), raw=raw)
+
+    def create(self, name, public_key, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        data = self.create_data(name, namespace, public_key)
+        return self._create(self.PATH_fmt.format(uid=name, ns=namespace), json=data, raw=raw)
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Update Keypairs is not allowed")
+
+    def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace)
+        return super()._delete(path, raw=raw)
 
 
 class NetworkManager(BaseManager):
@@ -180,3 +208,4 @@ class SettingManager(BaseManager):
     vlan = "apis/network.{API_VERSION}/clusternetworks/vlan"
     # api-ui-version, backup-target, cluster-registration-url
     settings = "v1/harvesterhci.io.settings/{option}"
+    # "apis/{{API_VERSION}}/settings/{option}"
