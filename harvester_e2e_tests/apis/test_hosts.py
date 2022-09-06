@@ -116,7 +116,7 @@ def test_update_node(api_client):
 
 @pytest.mark.dependency(depends=["get_host"])
 @pytest.mark.hosts
-@pytest.mark.p1
+@pytest.mark.p2
 def test_update_using_yaml(api_client):
     """
     Test the hosts are the nodes which make the cluster
