@@ -109,9 +109,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-
-
-    it('Rancher import Harvester', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Rancher import Harvester', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         
@@ -223,8 +221,6 @@ describe('Rancher Integration Test', function() {
         
     });
 
-    
-
     it('Verify RKE2 Cloud Provider', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
@@ -287,7 +283,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it.only('Delete Active RKE2 Cluster', { baseUrl: constants.rancherUrl}, () => {
+    it('Delete Active RKE2 Cluster', { baseUrl: constants.rancherUrl}, () => {
 
         cy.visit('/');
         rancher.rancherLogin();
@@ -313,7 +309,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it.only('Delete Cloud Credential', { baseUrl: constants.rancherUrl}, () => {
+    it('Delete Cloud Credential', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
 
@@ -327,7 +323,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it.only('Delete imported Harveter cluster', { baseUrl: constants.rancherUrl}, () => {
+    it('Delete imported Harveter cluster', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
 

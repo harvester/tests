@@ -25,7 +25,7 @@
     "adm-zip": "^0.5.9",
     "cookie": "^0.4.2",
     "cookie-parser": "^1.4.6",
-    "cypress": "10.2",
+    "cypress": "10.3",
     "js-yaml": "^4.1.0",
     "js-yaml-js-types": "^1.0.0",
     "yaml": "^2.1.3"
