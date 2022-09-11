@@ -235,7 +235,8 @@ def pytest_configure(config):
         ('rancher_integration_with_external_rancher', (
             'mark Rancher integration tests with an external Rancher')),
         ('rancher', ('mark rancher integration  tests ')),
-        ('keypairs', ("marker to run ssh keypair tests"))
+        ('keypairs', ("marker to run ssh keypair tests")),
+        ('images', ("marker to run image tests"))
     ]
 
     for m, msg in markers:
