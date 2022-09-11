@@ -1,3 +1,4 @@
+from tempfile import NamedTemporaryFile
 from unittest import TestCase, mock
 from json.decoder import JSONDecodeError
 
@@ -200,23 +201,38 @@ class TestImageManager(BaseTestCase):
 
         self.assertEqual(display_name, data['spec']['displayName'])
 
-    def test_create(self):
+    def test_create_by_url(self):
         name, url, namespace = "ImageName", "testURL", "TestNamespace"
 
         # Case 1: default namespace
-        self.mgr.create(name, url)
+        self.mgr.create_by_url(name, url)
 
         self.assertNotIn(name, self.api._post.call_args[0][0])
         self.assertIn(DEFAULT_NAMESPACE, self.api._post.call_args[0][0])
 
         # Case 2: specific namespace
-        self.mgr.create(name, url, namespace=namespace)
+        self.mgr.create_by_url(name, url, namespace=namespace)
 
         self.assertIn(namespace, self.api._post.call_args[0][0])
+
+    def test_create_by_file(self):
+        name, namespace = "ImageName", "TestNamespace"
+
+        with NamedTemporaryFile() as file:
+            # Case 1: default namespace
+            self.mgr.create_by_file(name, file.name)
+            self.assertIn(name, self.api._post.call_args[0][0])
+            self.assertIn(DEFAULT_NAMESPACE, self.api._post.call_args[0][0])
+
+            # Case 2: specific namespace
+            self.mgr.create_by_file(name, file.name, namespace)
+            self.assertIn(name, self.api._post.call_args[0][0])
+            self.assertIn(namespace, self.api._post.call_args[0][0])
 
     def test_update(self):
         name, namespace = "TestImageName", "TestNamespace"
         data = dict(metadata=dict(namespace=namespace))
+        self.api._get().json.return_value = dict()
 
         # Case 1: namespace miss
         self.mgr.update(name, dict())
@@ -241,3 +257,50 @@ class TestImageManager(BaseTestCase):
 
 class TestKeypairManager(BaseTestCase):
     manager_cls = KeypairManager
+
+    def test_get(self):
+        name, namespace = "SSHKEYNAME", "keypair-namespace"
+
+        # Case 1: default
+        self.mgr.get(name)
+
+        self.assertIn(name, self.api._get.call_args[0][0])
+        self.assertIn(DEFAULT_NAMESPACE, self.api._get.call_args[0][0])
+
+        # Case 2: specific namespace
+        self.mgr.get(name, namespace)
+
+        self.assertIn(name, self.api._get.call_args[0][0])
+        self.assertIn(namespace, self.api._get.call_args[0][0])
+
+    def test_create_data(self):
+        name, namespace, public_key = "SSHKEYNAME", "keypair-namespace", "publicKey"
+
+        data = self.mgr.create_data(name, namespace, public_key)
+
+        self.assertEqual(name, data['metadata']['name'])
+        self.assertEqual(namespace, data['metadata']['namespace'])
+        self.assertEqual(public_key, data['spec']['publicKey'])
+        self.assertEqual(self.API_VERSION, data['apiVersion'])
+
+    def test_create(self):
+        name, public_key, namespace = "SSHKEYNAME", "publicKey", "keypair-namespace"
+
+        # Case 1: default namespace
+        self.mgr.create(name, public_key)
+
+        self.assertNotIn(name, self.api._post.call_args[0][0])
+        self.assertIn(DEFAULT_NAMESPACE, self.api._post.call_args[0][0])
+
+        # Case 2: specific namespace
+        self.mgr.create(name, public_key, namespace=namespace)
+
+        self.assertIn(namespace, self.api._post.call_args[0][0])
+
+    def test_delete(self):
+        name, namespace = "SSHKEYNAME", "keypair-namespace"
+
+        self.mgr.delete(name, namespace)
+
+        self.assertIn(name, self.api._delete.call_args[0][0])
+        self.assertIn(namespace, self.api._delete.call_args[0][0])

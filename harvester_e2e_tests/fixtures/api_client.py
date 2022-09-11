@@ -1,3 +1,4 @@
+from tempfile import NamedTemporaryFile
 from pathlib import Path
 from datetime import datetime
 from subprocess import run, PIPE
@@ -54,7 +55,7 @@ def host_state(request):
 
 @pytest.fixture(scope='class')
 def unique_name():
-    return datetime.now().strftime("%m-%d-%Hh%Mm")
+    return datetime.now().strftime("%m-%d-%Hh%Mm%Ss%f")
 
 
 @pytest.fixture(scope="class")
@@ -77,3 +78,11 @@ def ssh_keypair():
     )
 
     return public_key_ssh.decode('utf-8'), private_key_pem.decode('utf-8')
+
+
+@pytest.fixture(scope="session")
+def fake_image_file():
+    with NamedTemporaryFile("wb") as f:
+        f.seek(10 * 1024 ** 2 - 1)  # 10MB
+        f.write(b"\0")
+        yield Path(f.name)
