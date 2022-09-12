@@ -32,3 +32,22 @@ def test_create_images_using_terraform(admin_session, image_using_terraform):
     """
     # NOTE: the image fixture will be creating the image and check the result
     pass
+
+
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
+@pytest.mark.terraform
+@pytest.mark.public_network
+def test_create_network_using_terraform(request, admin_session,
+                                        harvester_api_endpoints,
+                                        network_using_terraform):
+    """
+    Test creates Terraform Harvester
+    Covers:
+        terraform-provider-06-Harvester network as a pre-req it covers
+        terraform-provider-08-Harvester cluster network during enable vlan
+        terraform-provider-01-install, terraform-provider-02-kube config,
+        terraform-provider-03-define
+        kube config
+    """
+    pass

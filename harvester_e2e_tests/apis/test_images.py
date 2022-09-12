@@ -112,14 +112,14 @@ class TestImages:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
         while endtime > datetime.now():
-            code, data = api_client.images.delete(unique_name)
+            code, data = api_client.images.get(unique_name)
             if code == 404:
                 break
             sleep(5)
         else:
             raise AssertionError(
                 f"Failed to delete image {unique_name} with {wait_timeout} timed out\n"
-                f"still got {code} with {data}"
+                f"Still got {code} with {data}"
             )
 
     @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])

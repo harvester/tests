@@ -3,8 +3,10 @@ from unittest import TestCase, mock
 from json.decoder import JSONDecodeError
 
 from harvester_api.api import HarvesterAPI
-from harvester_api.managers import (DEFAULT_NAMESPACE, merge_dict,
-                                    BaseManager, HostManager, ImageManager, KeypairManager)
+from harvester_api.managers import (
+    DEFAULT_NAMESPACE, merge_dict, BaseManager, HostManager, ImageManager,
+    KeypairManager, NetworkManager
+)
 
 
 class BaseTestCase(TestCase):
@@ -299,6 +301,58 @@ class TestKeypairManager(BaseTestCase):
 
     def test_delete(self):
         name, namespace = "SSHKEYNAME", "keypair-namespace"
+
+        self.mgr.delete(name, namespace)
+
+        self.assertIn(name, self.api._delete.call_args[0][0])
+        self.assertIn(namespace, self.api._delete.call_args[0][0])
+
+
+class TestNetworkManager(BaseTestCase):
+    manager_cls = NetworkManager
+
+    def test_get(self):
+        name, namespace = "VLAN_NAME", "VLAN_NS"
+
+        # Case 1: default
+        self.mgr.get(name)
+
+        self.assertIn(name, self.api._get.call_args[0][0])
+        self.assertIn(DEFAULT_NAMESPACE, self.api._get.call_args[0][0])
+
+        # Case 2: specific namespace
+        self.mgr.get(name, namespace)
+
+        self.assertIn(name, self.api._get.call_args[0][0])
+        self.assertIn(namespace, self.api._get.call_args[0][0])
+
+    def test_create_data(self):
+        name, namespace, vlan_id = "VLAN_NAME", "VLAN_NS", 42
+
+        data = self.mgr.create_data(name, namespace, vlan_id)
+
+        self.assertEqual(name, data['metadata']['name'])
+        self.assertEqual(namespace, data['metadata']['namespace'])
+        self.assertIn(str(vlan_id), data['spec']['config'])
+        self.assertEqual(self.mgr.API_VERSION, data['apiVersion'])
+
+    def test_create(self):
+        name, namespace, vlan_id = "VLAN_NAME", "VLAN_NS", 42
+
+        # Case 1: default namespace
+        # Case 1: default namespace
+        self.mgr.create(name, vlan_id)
+
+        self.assertNotIn(name, self.api._post.call_args[0][0])
+        self.assertIn(DEFAULT_NAMESPACE, self.api._post.call_args[0][0])
+
+        # Case 2: specific namespace
+        self.mgr.create(name, vlan_id, namespace=namespace)
+
+        self.assertIn(namespace, self.api._post.call_args[0][0])
+
+    def test_delete(self):
+        name, namespace = "VLAN_NAME", "VLAN_NS"
 
         self.mgr.delete(name, namespace)
 

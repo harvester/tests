@@ -189,11 +189,12 @@ class backupManager(BaseManager):
 
 class KeypairManager(BaseManager):
     PATH_fmt = "apis/{{API_VERSION}}/namespaces/{ns}/keypairs/{uid}"
+    _KIND = "KeyPair"
 
     def create_data(self, name, namespace, public_key):
         data = {
             "apiVersion": "{API_VERSION}",
-            "kind": "KeyPair",
+            "kind": self._KIND,
             "metadata": {
                 "name": name,
                 "namespace": namespace
@@ -206,7 +207,7 @@ class KeypairManager(BaseManager):
         return self._inject_data(data)
 
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
-        return super()._get(self.PATH_fmt.format(uid=name, ns=namespace), raw=raw)
+        return self._get(self.PATH_fmt.format(uid=name, ns=namespace), raw=raw)
 
     def create(self, name, public_key, namespace=DEFAULT_NAMESPACE, *, raw=False):
         data = self.create_data(name, namespace, public_key)
@@ -217,12 +218,55 @@ class KeypairManager(BaseManager):
 
     def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
         path = self.PATH_fmt.format(uid=name, ns=namespace)
-        return super()._delete(path, raw=raw)
+        return self._delete(path, raw=raw)
 
 
 class NetworkManager(BaseManager):
     # get, create, update, delete
-    network = "v1/k8s.cni.cncf.io.network-attachment-definitions/{uid}"
+    PATH_fmt = "apis/{NETWORK_API}/namespaces/{ns}/network-attachment-definitions/{uid}"
+    API_VERSION = "k8s.cni.cncf.io/v1"
+    _KIND = "NetworkAttachmentDefinition"
+
+    def create_data(self, name, namespace, vlan_id):
+        data = {
+            "apiVersion": self.API_VERSION,
+            "kind": self._KIND,
+            "metadata": {
+                "labels": {
+                    "networks.harvesterhci.io/type": "L2VlanNetwork"
+                },
+                "name": name,
+                "namespace": namespace
+            },
+            "spec": {
+                "config": json.dumps({
+                    "cniVersion": "0.3.1",
+                    "name": name,
+                    "type": "bridge",
+                    "bridge": "harvester-br0",
+                    "promiscMode": True,
+                    "vlan": vlan_id,
+                    "ipam": {}
+                })
+            }
+        }
+        return self._inject_data(data)
+
+    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace, NETWORK_API=self.API_VERSION)
+        return self._get(path, raw=raw)
+
+    def create(self, name, vlan_id, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        data = self.create_data(name, namespace, vlan_id)
+        path = self.PATH_fmt.format(uid="", ns=namespace, NETWORK_API=self.API_VERSION)
+        return self._create(path, json=data, raw=raw)
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Update Network is not allowed")
+
+    def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace, NETWORK_API=self.API_VERSION)
+        return self._delete(path, raw=raw)
 
 
 class SettingManager(BaseManager):
