@@ -15,111 +15,83 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from harvester_e2e_tests import utils
-import json
+from time import sleep
+from datetime import datetime, timedelta
+
 import pytest
 
-
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.network',
-   'harvester_e2e_tests.fixtures.session',
+   "harvester_e2e_tests.fixtures.api_client"
   ]
 
-
-def test_create_with_vid_0(admin_session, harvester_api_endpoints):
-    request_json = utils.get_json_object_from_template(
-        'basic_network',
-        vlan=0
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, ('Expected HTTP 422 when trying to create '
-                                     'network with vlan ID 0')
-    response_data = resp.json()
-    assert 'must >=1' in response_data['message']
+VLAN_ID = 4000
 
 
-@pytest.mark.network_p1
 @pytest.mark.p1
-def test_create_with_vid_4095(admin_session, harvester_api_endpoints):
-    """
-    Covers:
-        network-14-create network
-    """
-    request_json = utils.get_json_object_from_template(
-        'basic_network',
-        vlan=4095
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, (
-        'Expected HTTP 422 when trying to create network with vlan ID 4095')
-    response_data = resp.json()
-    assert 'and <=4094' in response_data['message']
+@pytest.mark.negative
+@pytest.mark.network
+class TestNetworkNegative:
+
+    def test_get_not_exist(self, api_client, unique_name):
+        code, data = api_client.networks.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert "NotFound" == data.get('reason'), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        code, data = api_client.networks.delete(unique_name)
+
+        assert 404 == code, (code, data)
+        assert "NotFound" == data.get("reason"), (code, data)
+
+    @pytest.mark.parametrize("vlan_id", [0, 4095])
+    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+        code, data = api_client.networks.create(unique_name, vlan_id)
+
+        assert 422 == code, (vlan_id, code, data)
+        assert "Invalid" == data.get("reason"), (vlan_id, code, data)
+
+    def test_create_without_name(self, api_client):
+        code, data = api_client.networks.create("", VLAN_ID)
+
+        assert 422 == code, (code, data)
+        assert "Invalid" == data.get("reason"), (code, data)
 
 
-@pytest.mark.network_p2
-@pytest.mark.p2
-def test_create_network_with_no_name(admin_session, harvester_api_endpoints):
-    """
-    Negative test to create network with no name
-    Covers:
-        network-03-Test create network with no name
-    """
-    request_json = utils.get_json_object_from_template(
-        'basic_network',
-        vlan=4000,
-        name=''
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, (
-        'Expected HTTP 422 when trying to create network with no name')
-    response_data = resp.json()
-    assert 'name or generateName is required' in response_data['message']
-
-
-@pytest.mark.public_network
-def test_create_edit_network(request, admin_session, harvester_api_endpoints,
-                             network_for_update_test):
-    request_json = utils.get_json_object_from_template(
-        'basic_network'
-    )
-    conf_data = json.loads(network_for_update_test['spec']['config'])
-    # network_for_update_test fixture creates vlan with vlan_id +1.
-    # Here update with -1.
-    updated_vlan = conf_data['vlan'] - 1
-    conf_data['vlan'] = updated_vlan
-    request_json['spec']['config'] = json.dumps(conf_data)
-    request_json['metadata']['name'] = \
-        network_for_update_test['metadata']['name']
-    request_json['metadata']['namespace'] = \
-        network_for_update_test['metadata']['namespace']
-    resp = utils.poll_for_update_resource(
-        request, admin_session,
-        network_for_update_test['links']['update'],
-        request_json,
-        network_for_update_test['links']['view'])
-    updated_network_data = resp.json()
-    updated_config = json.loads(updated_network_data['spec']['config'])
-    assert updated_config['vlan'] == updated_vlan, 'Failed to update vlan'
-
-
-@pytest.mark.terraform_provider_p1
 @pytest.mark.p1
-@pytest.mark.terraform
-@pytest.mark.public_network
-def test_create_network_using_terraform(request, admin_session,
-                                        harvester_api_endpoints,
-                                        network_using_terraform):
-    """
-    Test creates Terraform Harvester
-    Covers:
-        terraform-provider-06-Harvester network as a pre-req it covers
-        terraform-provider-08-Harvester cluster network during enable vlan
-        terraform-provider-01-install, terraform-provider-02-kube config,
-        terraform-provider-03-define
-        kube config
-    """
-    pass
+@pytest.mark.network
+class TestNetwork:
+    def test_create(self, api_client, unique_name):
+        code, data = api_client.networks.create(unique_name, VLAN_ID)
+
+        assert 201 == code, (code, data)
+
+    def test_get(self, api_client, unique_name):
+        # Case 1: get all vlan networks
+        code, data = api_client.networks.get()
+
+        assert 200 == code, (code, data)
+        assert len(data['items']) > 0, (code, data)
+
+        # Case 2: get specific vlan by name
+        code, data = api_client.networks.get(unique_name)
+
+        assert 200 == code, (code, data)
+        assert unique_name == data['metadata']['name'], (code, data)
+
+    def test_delete(self, api_client, unique_name, wait_timeout):
+        code, data = api_client.networks.delete(unique_name)
+
+        assert 200 == code, (f"Failed to delete vlan with error: {code}, {data}")
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.networks.get(unique_name)
+            if code == 404:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Failed to delete vlan {unique_name} with {wait_timeout} timed out\n"
+                f"Still got {code} with {data}"
+            )
