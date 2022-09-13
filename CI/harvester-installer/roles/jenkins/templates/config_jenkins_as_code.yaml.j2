@@ -12,14 +12,10 @@ jenkins:
   authorizationStrategy:
     globalMatrix:
       permissions:
-        - "Job/Build:{{ JENKINS_DEV_USERNAME }}"
-        - "Job/Cancel:{{ JENKINS_DEV_USERNAME }}"
         - "Job/Read:{{ JENKINS_DEV_USERNAME }}"
-        - "Job/Workspace:{{ JENKINS_DEV_USERNAME }}"
         - "Overall/Administer:{{ JENKINS_ADMIN_USERNAME }}"
         - "Overall/Read:authenticated"
         - "Run/Replay:{{ JENKINS_DEV_USERNAME }}"
-        - "Run/Update:{{ JENKINS_DEV_USERNAME }}"
   remotingSecurity:
     enabled: true
 
