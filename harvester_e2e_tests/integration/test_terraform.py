@@ -51,3 +51,31 @@ def test_create_network_using_terraform(request, admin_session,
         kube config
     """
     pass
+
+
+@pytest.mark.terraform_provider_p1
+@pytest.mark.p1
+@pytest.mark.terraform
+def test_create_volume_using_terraform(admin_session, volume_using_terraform):
+    """
+    Test creates Terraform Harvester
+    Covers:
+        terraform-provider-07-Harvester volume
+        terraform-provider-10-All resource terraform plan,apply,
+        terraform destroy
+        terraform-provider-01-install, terraform-provider-02-kube config,
+        terraform-provider-03-define
+        kube config
+    """
+    # NOTE: the volume_using_terraform fixture will be creating the
+    # volume and check the result
+    pass
+
+
+@pytest.mark.skip(reason='Timing Issue')
+@pytest.mark.terraform
+def test_create_vol_with_image_terraform(admin_session,
+                                         volume_with_image_using_terraform):
+    # NOTE: the volume_using_terraform fixture will be creating the
+    # volume and check the result
+    pass
