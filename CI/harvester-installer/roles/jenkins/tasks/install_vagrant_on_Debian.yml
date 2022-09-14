@@ -1,10 +1,17 @@
 ---
-- name: jenkins | install_vagrant_on_Debian | Install vagrant package
+- name: jenkins | install_vagrant_on_Debian | Install vagrant package (2.3.0 fix)
   apt:
     # TODO: fix this, so that we don't have an obscure un-natural "-1" at the end of the deb package location...
     # this seems to be just a trend for v2.3.0 we can implement some logic for the task but it may not be the best, to only apply the "-1" for the v2.3.0
     # which without a ton of further analysis on older versions we'd probably be making a safe bet
     deb: https://releases.hashicorp.com/vagrant/{{ LATEST_VAGRANT_VERSION }}/vagrant_{{ LATEST_VAGRANT_VERSION }}-1_amd64.deb
+  when: LATEST_VAGRANT_VERSION == "2.3.0"
+
+- name: jenkins | install_vagrant_on_Debian | Install vagrant package (2.3.0 and above fix)
+  apt:
+    # TODO: fix this, hoping that it will be working for future versions...their release formating on deb packages isn't solidified yet :/
+    deb: https://releases.hashicorp.com/vagrant/{{ LATEST_VAGRANT_VERSION }}/vagrant_{{ LATEST_VAGRANT_VERSION }}_amd64.deb
+  when: LATEST_VAGRANT_VERSION != "2.3.0"
 
 - name: jenkins | install_vagrant_on_Debian | Install build essentials
   apt:
