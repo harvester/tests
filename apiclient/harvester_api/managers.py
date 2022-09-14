@@ -130,7 +130,7 @@ class ImageManager(BaseManager):
         return self._inject_data(data)
 
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
-        return self._get(self.PATH_fmt.format(uid=name, ns=namespace))
+        return self._get(self.PATH_fmt.format(uid=name, ns=namespace), raw=raw)
 
     def create(self, name, namespace=DEFAULT_NAMESPACE, **kwargs):
         return self._create(self.PATH_fmt.format(uid=name, ns=namespace), **kwargs)
@@ -167,8 +167,57 @@ class ImageManager(BaseManager):
 
 
 class VolumeManager(BaseManager):
+    API_VERSION = "v1"
     # get, create, update, delete
-    volume = "api/v1/namespaces/{ns}/persistentvolumeclaims/{uid}"
+    PATH_fmt = "api/{VOLUME_API}/namespaces/{ns}/persistentvolumeclaims/{uid}"
+    _KIND = "PersistentVolumeClaim"
+
+    def create_data(self, name, size, namespace=DEFAULT_NAMESPACE,
+                    storage_cls=None, annotations=None):
+        data = {
+            "apiVersion": self.API_VERSION,
+            "kind": self._KIND,
+            "metadata": {
+                "name": name,
+                "namespace": namespace,
+                "annotations": annotations or {}
+            },
+            "spec": {
+                "resources": {
+                    "requests": {
+                        "storage": f"{size}Gi"
+                    }
+                },
+                "volumeMode": "Block",
+                "accessModes": [
+                    "ReadWriteMany"
+                ],
+                "storageClassName": storage_cls or "longhorn"
+            }
+        }
+        return self._inject_data(data)
+
+    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace, VOLUME_API=self.API_VERSION)
+        return self._get(path, raw=raw)
+
+    def create(self, name, size, namespace=DEFAULT_NAMESPACE,
+               storage_cls=None, annotations=None, raw=False):
+        data = self.create_data(name, size, namespace, storage_cls, annotations)
+        path = self.PATH_fmt.format(uid="", ns=namespace, VOLUME_API=self.API_VERSION)
+        return self._create(path, json=data, raw=raw)
+
+    def update(self, name, data, namespace=DEFAULT_NAMESPACE, *,
+               raw=False, as_json=True, **kwargs):
+        path = self.PATH_fmt.format(uid=name, ns=namespace, VOLUME_API=self.API_VERSION)
+        if isinstance(data, Mapping) and as_json:
+            _, node = self.get(name)
+            data = merge_dict(data, node)
+        return self._update(path, data, raw=raw, as_json=as_json, **kwargs)
+
+    def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace, VOLUME_API=self.API_VERSION)
+        return self._delete(path, raw=raw)
 
 
 class VirtualMachineManager(BaseManager):

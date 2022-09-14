@@ -29,8 +29,8 @@ VLAN_ID = 4000
 
 @pytest.mark.p1
 @pytest.mark.negative
-@pytest.mark.network
-class TestNetworkNegative:
+@pytest.mark.networks
+class TestNetworksNegative:
 
     def test_get_not_exist(self, api_client, unique_name):
         code, data = api_client.networks.get(unique_name)
@@ -59,8 +59,8 @@ class TestNetworkNegative:
 
 
 @pytest.mark.p1
-@pytest.mark.network
-class TestNetwork:
+@pytest.mark.networks
+class TestNetworks:
     def test_create(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
 
