@@ -7,7 +7,6 @@
     deb: https://releases.hashicorp.com/vagrant/{{ LATEST_VAGRANT_VERSION }}/vagrant_{{ LATEST_VAGRANT_VERSION }}-1_amd64.deb
   when: LATEST_VAGRANT_VERSION == "2.3.0"
 
-
 - name: jenkins | install_vagrant_on_Debian | Install vagrant package (2.3.0 and above fix)
   apt:
     # TODO: fix this, hoping that it will be working for future versions...their release formating on deb packages isn't solidified yet :/

@@ -21,6 +21,22 @@ jenkins:
 
   numExecutors: 1
 
+  nodes:
+    - permanent:
+        labelString: "slave"
+        mode: NORMAL
+        name: "slave-1"
+        remoteFS: "/var/lib/jenkins"
+        launcher:
+          ssh:
+            host: {{ secondarynodeip }}
+            credentialsId: ssh-private-key-cred-for-second-ci-jenkins-node
+            launchTimeoutSeconds: 60
+            maxNumRetries: 3
+            retryWaitTime: 30
+            sshHostKeyVerificationStrategy:
+              knownHostsFileKeyVerificationStrategy
+
 credentials:
   system:
     domainCredentials:
@@ -31,16 +47,20 @@ credentials:
               password: "{{ GITHUB_CI_PASSWORD }}"
               id: "for-harvester-ci"
               description: "github credential for harvester-installer ci"
-          {# - gitHubApp:
+          - gitHubApp:
               scope: "GLOBAL"
               # TODO: update "id" to not be current testing based ID
               id: "jenkins-irishgordo-team-harvester"
               description: "the GitHub App credentials needed to speak with the GitHub Checks API to bubble out information about Jenkins stages, elements of provisioning, test results and more - eliminating the need for those to go directly to Jenkins to view results and providing a more realtime sense of feedback"
               appID: "{{ GITHUB_APP_ID }}"
               # TODO: IMPL Of Private Key is funky, with the way it is doing the yaml ...tbd on best approach
-              {# privateKey: |
-                {{ GITHUB_APP_PRIVATE_KEY_CONVERTED | indent(20) }} #}
-              owner: "{{ GITHUB_APP_OWNER }}" #}
+              owner: "{{ GITHUB_APP_OWNER }}"
+          - basicSSHUserPrivateKey:
+              scope: "GLOBAL"
+              id: ssh-private-key-cred-for-second-ci-jenkins-node
+              username: jenkins
+              description: "SSH Creds for second jenkins node that talks to the main jenkins node"
+              
 
 security:
   queueItemAuthenticator:

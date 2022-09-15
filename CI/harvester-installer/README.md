@@ -3,6 +3,9 @@
 This [Ansible] playbook automatically sets up harvester-installer CI [Jenkins].
 Currently it only supports either openSUSE or Ubuntu.
 
+# Prerequisites
+- `ansible-galaxy collection install community.crypto`
+
 # Setup New Jenkins
 
 To setup [Jenkins] on a target host.

@@ -1,0 +1,61 @@
+---
+- block:
+    - name: Make sure the .ssh directory is there for the secondary node jenkins
+      ansible.builtin.file:
+        path: /var/lib/jenkins/.ssh
+        state: directory
+
+    - name: Create private and public key for jenkins secondary node 
+      community.crypto.openssh_keypair:
+        type: ed25519
+        path: /var/lib/jenkins/.ssh/id_ed25519
+    
+    - name: Allow pub key to be authorized for secondary node 
+      ansible.builtin.shell: |
+        cat /var/lib/jenkins/.ssh/id_ed25519.pub >> /var/lib/jenkins/.ssh/authorized_keys
+    
+    - name: set newly built private key as variable for loading into main node
+      ansible.builtin.shell: |
+        cat /var/lib/jenkins/.ssh/id_ed25519
+      register: new_private_key_built_for_secondary_node_jenkins
+    
+    - debug:
+        var: new_private_key_built_for_secondary_node_jenkins.stdout
+  become: yes
+  become_user: jenkins
+
+# TODO: figure out how to best shovel over the new private key out to the casc_config and reload main node jenkins
+# - name: Pull down main node config_jenkins_as_code yaml for patching 
+#   ansible.builtin.shell: |
+#     scp -v root@{{ mainnodeip }}:/var/lib/jenkins/casc_configs/config_jenkins_as_code.yaml /tmp/config_jenkins_as_code.yaml
+
+# - block:
+#     - name: Open yaml file
+#       slurp:
+#         path: /tmp/config_jenkins_as_code.yaml
+#       register: casc_config_file
+
+#     - name: Read yaml to dictionary
+#       set_fact:
+#         yamldata: "{{ casc_config_file['content'] | b64decode | from_yaml }}"
+
+#     - name: Patch yaml dictionary
+#       set_fact:
+#         yamldata: "{{ yamldata | combine(newdata, recursive=True) }}"
+#       vars: 
+#         newdata:
+#           credentials:
+#             system:
+#               domainCredentials:
+#                 - credentials:
+#                   - basicSSHUserPrivateKey:
+#                       privateKeySource:
+#                         directEntry:
+#                           privateKey: "{{ new_private_key_built_for_secondary_node_jenkins }}"
+
+#     - name: Write yaml file
+#       copy:
+#         content: '{{ yamldata | to_nice_yaml }}'
+#         dest: /tmp/config_jenkins_as_code_patched.yaml
+#   become: yes
+#   become_user: jenkins

@@ -21,6 +21,9 @@
       Match User jenkins
           PasswordAuthentication yes
 
+- name: jenkins | secondary-node | setup ssh key private and public
+  include_tasks: setup_key_validation_for_jenkins.yml
+
 - name: jenkins | main | Reboot
   reboot:
     msg: "Reboot for the permission changes to take effect"
