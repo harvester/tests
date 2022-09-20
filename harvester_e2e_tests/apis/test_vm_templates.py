@@ -15,38 +15,103 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+from time import sleep
+from datetime import datetime, timedelta
+
+import pytest
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.vm_template',
-   'harvester_e2e_tests.fixtures.session',
+   "harvester_e2e_tests.fixtures.api_client"
   ]
 
 DEFAULT_TEMPLATES = 4
-DEFAULT_TEMPLATES_NAMESPACE = 'namespaces/harvester-public'
+DEFAULT_TEMPLATES_NAMESPACE = 'harvester-public'
 
 
-def test_verify_default_vm_templates(admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_vm_templates.replace(
-                             "namespaces/default", DEFAULT_TEMPLATES_NAMESPACE))
-    assert resp.status_code == 200, (
-        'Failed to list virtual machine templates: %s' % (resp.content))
-    vm_templates = resp.json()
-    assert len(vm_templates['items']) == DEFAULT_TEMPLATES
+@pytest.mark.p1
+@pytest.mark.templates
+@pytest.mark.negative
+class TestVMTemplateNegative:
+    def test_get_not_exist(self, api_client, unique_name):
+        code, data = api_client.templates.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert "NotFound" == data.get('reason'), (code, data)
+
+    def test_get_version_not_exist(self, api_client, unique_name):
+        code, data = api_client.templates.get_version(unique_name)
+
+        assert 404 == code, (code, data)
+        assert "NotFound" == data.get('reason'), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        code, data = api_client.templates.delete(unique_name)
+
+        assert 404 == code, (code, data)
+        assert "NotFound" == data.get("reason"), (code, data)
 
 
-def test_verify_default_vm_template_versions(admin_session,
-                                             harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_vm_template_versions.replace(
-                             "namespaces/default", DEFAULT_TEMPLATES_NAMESPACE))
-    assert resp.status_code == 200, (
-        'Failed to list virtual machine template versions: %s' % (
-            resp.content))
-    vm_template_versions = resp.json()
-    assert len(vm_template_versions['items']) == DEFAULT_TEMPLATES
+@pytest.mark.p1
+@pytest.mark.templates
+class TestVMTemplate:
+    def test_create(self, api_client, unique_name):
+        code, data = api_client.templates.create(unique_name)
 
+        assert 201 == code, (code, data)
+        assert unique_name == data['metadata']['name']
 
-def test_create_verify_vm_template(vm_template_version):
-    # NOTE: if the vm_template_version fixture is successfully create that
-    # means the test is successful.
-    pass
+    @pytest.mark.dependency(name="get_template")
+    def test_get(self, api_client, unique_name):
+        # Case 1: get all templates
+        code, data = api_client.templates.get()
+
+        assert 200 == code, (code, data)
+        assert len(data['items']) > 0, (code, data)
+
+        # Case 2: get specific template by name
+        code, data = api_client.templates.get(unique_name)
+
+        assert 200 == code, (code, data)
+        assert unique_name == data['metadata']['name']
+
+    def test_update(self, api_client, unique_name):
+        config = {
+            "cpu": 1,
+            "memory": "2Gi",
+        }
+        code, data = api_client.templates.update(unique_name, **config)
+
+        assert 201 == code, (code, data)
+        assert data['metadata']['name'].startswith(unique_name), (code, data)
+
+    def test_delete(self, api_client, unique_name, wait_timeout):
+        code, data = api_client.templates.delete(unique_name)
+
+        assert 200 == code, (f"Failed to delete template with error: {code}, {data}")
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+
+        while endtime > datetime.now():
+            code, data = api_client.templates.get(unique_name)
+            if code == 404:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Failed to delete template {unique_name} with {wait_timeout} timed out\n"
+                f"Still got {code} with {data}"
+            )
+
+    @pytest.mark.dependency(depends=["get_template"])
+    def test_get_system_default(self, api_client):
+        code, data = api_client.templates.get(namespace=DEFAULT_TEMPLATES_NAMESPACE)
+
+        assert 200 == code, (code, data)
+        assert DEFAULT_TEMPLATES == len(data['items']), (code, data)
+
+    @pytest.mark.dependency(depends=["get_template"])
+    def test_get_system_default_versions(self, api_client):
+        code, data = api_client.templates.get_version(namespace=DEFAULT_TEMPLATES_NAMESPACE)
+
+        assert 200 == code, (code, data)
+        assert DEFAULT_TEMPLATES == len(data['items']), (code, data)
