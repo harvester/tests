@@ -3,7 +3,8 @@ from urllib.parse import urljoin
 import requests
 from requests.packages.urllib3.util.retry import Retry
 
-from .managers import HostManager, KeypairManager, ImageManager, NetworkManager, VolumeManager
+from .managers import (HostManager, KeypairManager, ImageManager,
+                       NetworkManager, VolumeManager, TemplateManager)
 
 
 class HarvesterAPI:
@@ -38,6 +39,7 @@ class HarvesterAPI:
         self.images = ImageManager(self)
         self.networks = NetworkManager(self)
         self.volumes = VolumeManager(self)
+        self.templates = TemplateManager(self)
 
     def __repr__(self):
         return f"HarvesterAPI({self.endpoint!r}, {self.session.headers['Authorization']!r})"

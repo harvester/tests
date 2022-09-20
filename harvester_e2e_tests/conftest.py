@@ -237,7 +237,9 @@ def pytest_configure(config):
         ('rancher', ('mark rancher integration  tests ')),
         ('keypairs', ("marker to run ssh keypair tests")),
         ('images', ("marker to run image tests")),
-        ("networks", ("marker to run vlan network tests"))
+        ("networks", ("marker to run vlan network tests")),
+        ("volumes", ("marker to run volume tests")),
+        ("templates", ("marker to run VM template tests"))
     ]
 
     for m, msg in markers:
