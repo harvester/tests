@@ -313,16 +313,16 @@ export class rancherPage {
         this.visit_clusterManagement();
         
         cy.get(this.clusterManagement_page_create).click();
-        // cy.get('[href="/dashboard/c/local/manager/provisioning.cattle.io.cluster/create"]').click()
 
-        // // Set RKE2 checkbox back to default 
-        // cy.contains('RKE2/K3s').then((el) => {
-        //     cy.get(this.clusterManagement_rke_selector).click();
-        // });
-
-        if (cy.get('span[class="label no-select hand active"]').contains('RKE2/K3s')) {
-            cy.get(this.clusterManagement_rke_selector).click();
-        }
+        // Set RKE2 checkbox back to default
+        cy.get('span[class="label no-select hand active"]').then((el) => {
+            let active = el.text();
+            console.log('Current activate in: ', active)
+            cy.log(active);
+            if (active == 'RKE2/K3s'){
+                cy.get(this.clusterManagement_rke_selector).click();
+            }
+        })
         
         // toggle slide
         cy.wait(1000).get(this.clusterManagement_rke_selector).click().then((el) => {

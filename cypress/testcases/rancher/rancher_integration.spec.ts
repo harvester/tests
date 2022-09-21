@@ -73,8 +73,10 @@ let rData = {
 describe('Rancher Integration Test', function() {
 
     const imageEnv = Cypress.env('image');
-    const IMAGE_NAME = imageEnv.name;
-    const IMAGE_URL = imageEnv.url;
+    // const IMAGE_NAME = imageEnv.name;
+    // const IMAGE_URL = imageEnv.url;
+    const IMAGE_NAME = 'focal-server-cloudimg-amd64.img';
+    const IMAGE_URL = 'https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img';
     
     const value = {
         name: IMAGE_NAME,
@@ -109,7 +111,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it.only('Rancher import Harvester', { baseUrl: constants.rancherUrl}, () => {
+    it('Rancher import Harvester', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         
@@ -134,6 +136,7 @@ describe('Rancher Integration Test', function() {
     it('Check Harvester Cluster Status', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
 
         rancher.rancherLogin();
         
@@ -146,6 +149,7 @@ describe('Rancher Integration Test', function() {
     it('Create Cloud Credential', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
 
         rancher.rancherLogin();
 
@@ -156,6 +160,7 @@ describe('Rancher Integration Test', function() {
     it('Provisiong RKE2 Cluster', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
 
         rancher.rancherLogin();
     
@@ -166,6 +171,8 @@ describe('Rancher Integration Test', function() {
     it('Check RKE2 Cluster Status', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
+
         rancher.rancherLogin();
 
         cy.wait(1000).visit(constants.rancher_clusterManagmentPage);
@@ -177,6 +184,7 @@ describe('Rancher Integration Test', function() {
     it('Provisiong K3s Cluster', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
 
         rancher.rancherLogin();
         
@@ -187,6 +195,8 @@ describe('Rancher Integration Test', function() {
     it('Check K3s Cluster Status', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
+
         rancher.rancherLogin();
 
         cy.wait(1000).visit(constants.rancher_clusterManagmentPage);
@@ -198,6 +208,7 @@ describe('Rancher Integration Test', function() {
     it('Verify RKE2 CSI driver', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
 
         rancher.rancherLogin();
     
@@ -224,6 +235,7 @@ describe('Rancher Integration Test', function() {
     it('Verify RKE2 Cloud Provider', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
 
         rancher.rancherLogin();
     
@@ -243,6 +255,7 @@ describe('Rancher Integration Test', function() {
     it('Verify RKE2 DHDP Load Balancer', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        cy.wait(5000);
 
         rancher.rancherLogin();
     
@@ -268,7 +281,8 @@ describe('Rancher Integration Test', function() {
     it('Create RKE2 Pool Load Balancer', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
-
+        // Prevent too heavy login request block by Rancher
+        cy.wait(5000); 
         rancher.rancherLogin();
     
         cy.wait(1000).visit(constants.rancher_clusterManagmentPage);
@@ -286,6 +300,9 @@ describe('Rancher Integration Test', function() {
     it('Delete Active RKE2 Cluster', { baseUrl: constants.rancherUrl}, () => {
 
         cy.visit('/');
+        // Prevent too heavy login request block by Rancher
+        cy.wait(5000);
+
         rancher.rancherLogin();
 
         cy.wait(1000).visit(constants.rancher_clusterManagmentPage);
@@ -299,6 +316,9 @@ describe('Rancher Integration Test', function() {
     it('Delete Active K3s Cluster', { baseUrl: constants.rancherUrl}, () => {
 
         cy.visit('/');
+        // Prevent too heavy login request block by Rancher
+        cy.wait(5000);
+
         rancher.rancherLogin();
 
         cy.wait(1000).visit(constants.rancher_clusterManagmentPage);
@@ -312,6 +332,8 @@ describe('Rancher Integration Test', function() {
     it('Delete Cloud Credential', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        // Prevent too heavy login request block by Rancher
+        cy.wait(5000); 
 
         rancher.rancherLogin();
 
@@ -326,6 +348,8 @@ describe('Rancher Integration Test', function() {
     it('Delete imported Harveter cluster', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
+        // Prevent too heavy login request block by Rancher
+        cy.wait(5000);
 
         rancher.rancherLogin();
 
