@@ -19,7 +19,7 @@ Test Environment:
 
 1. Prepare Harvester master node
 2. Prepare vsphere setup (or use existing setup)
-3. Prepare a devstack cluster (Openstack 16.2)
+3. Prepare a devstack cluster (Openstack 16.2) (stable/train)
 
 
 ## Verification Steps
@@ -244,3 +244,81 @@ export KUBECONFIG="kubeconfig-for-harvester-cluster"
 
 ## Current limitations
 - In rc1 the vm-import-controller is using ephemeral storage, which is allocated from /var/lib/kubelet. This may limit the size of VM's that can be imported.
+
+
+## Proposed Base tests
+### Note: Once VM Import is completed, the VM that was imported is no different than a regular Harvester VM.  Testing the integration between the Importable sources and Harvester should be the focus
+### Test Multiple VM Import From OpenStack 
+1. build multiple instances in OpenStack:
+    - create an image either in the GUI or with the CLI something like: `openstack image create --disk-format iso --public --container-format bare --file ./your_iso_location.iso`
+    - build a volume from that image in GUI or with CLI something like: `openstack volume create --image your_id_of_image_that_came_back_with_openstack_image_list --size 20 your_image_name`
+    - build the instance using the bootable image you built in the GUI or with something on the CLI like: `openstack server create --flavor 2 --volume your_volume_id_that_you_got_from_openstack_volume_list --network the_network_id_maybe_public_or_shared_you_got_from_openstack_network_list  --user-data cloud-config-user-data-file.yaml --wait your-new-instance-name`
+1. build a YAML containing multiple `kind: VirtualMachineImport` resources:
+    - build some VM(s) with `spec.VirtualMachineName` being UUID
+    - build some VM(s) with `spec.VirtualMachineName` being the name of the VM
+1. bring up `k9s` to navigate to the service `harvester-harvester-vm-import-controller` in the `harvester-system` namespace, follow the logs (pending you've set up from earlier steps hooking in the OpenStack instance)
+1. then apply the YAML you created for the multiple instances to the Harvester cluster
+1. validate that:
+   - volumes get built, representing the volumes tied to the openstack instances (same size)
+   - that the VMs in openstack get shutdown if they were powered on 
+   - that the networking mapping is appropriate 
+   - that images get built representing the volumes from the openstack vms 
+   - that the vms in Harvester built from the vms in openstack get spun up and running (both in GUI and through K9s service logs & `kubectl get virtualmachineimport.migration`)
+   - validate that the vm can be accessed and the drives exist as they did in OpenStack
+1. validate that running the oposite command of `kubectl delete` the multiple resources YAML doesn't remove the VMs, Volumes, and Images associated with the OpenStack import 
+1. validate that you can delete the VMs built and their Volumes clean up as well
+
+### (Negative) Test We Do Not Import VMs with no disks associated to them (OpenStack Only)
+1. Using OpenStack as the integration point:
+    - upload an image to OpenStack, something that has a live-cd / live aspect to it
+1. Utilize that image for launching an insstance either with the GUI in OpenStack or something like the CLI in: `openstack server create --image 2f7bca11-ab3f-452e-ac89-441efb715b6f --network cf9f7398-0c69-43b3-89fa-ad5ad8e2ccd9 --flavor 2 testK3osNoDiskGiven` 
+1. Validate that the console comes up on OpenStack, that you can visibily see the VM in openstack running it's live-installer / live, no disk attached other than the image 
+1. Build a resource YAML for that vm `kind: VirtualMachineImport` 
+1. Try to create the YAML / apply it to the Harvester cluster
+    - it should fail 
+
+### Test Deleting VM but Not Image(s) And Recreate Works Openstack
+1. Remove the `VirtualMachineImport` YAML from the cluster `kubectl delete -f your_yaml.yaml`
+1. Remove the VM(s) & their disks/volumes 
+1. Then create it again, `kubectl create -f your_yaml.yaml`
+1. Validate that the new image comes down (displayName will be the same), but should rebuild volume and start VM 
+
+### Test VM Import From OpenStack With Large Disk On OpenStack
+1. Follow same OpenStack Testing, just build an instance with a large volume 120GB
+1. Write data to the disk something like: `for i in {1..100}; do head -c 1G /dev/urandom > "sample_1GB_file_$i.txt"; done`
+1. Build a `VirtualMachineImport` item for the VM and import it, validating all the other OpenStack validations 
+
+### Test VM Import Respects Default Storage Class From OpenStack
+#### Note: pre-req, you will need an additional storageclass set up, something that targets the node & disk by tag(s)
+1. Follow same OpenStack testing
+1. Deselect / reset default storage class 
+1. Select a new storage class, set as default 
+1. Import a VM, validate that all things brought accross (Volume(s), Image(s)) are on the default storage class you selected  
+
+_____
+### !!WARNING!!
+### We only have a single instance of VMWare/vSphere that other teams use for "production" services/applications typically used for demos, though "not necessarily" mission-critical but still largely important.
+### Always "search" in vSphere to make sure there is only ever "one"/1 of the VM that you are trying to use for the import resource creation, as we need to be very careful for "what" VM(s) it is we are selecting, since it is a vSphere cluster for multi-team use.
+____
+
+### Test Multiple VM Import From VMWare 
+1. have multiple instances in vSphere
+1. create a .yaml that will encompass all of them 
+1. validate that:
+   - volumes get built, representing the volumes tied to the openstack instances (same size)
+   - that the VMs in vSphere get shutdown if they were powered on 
+   - that the networking mapping is appropriate 
+   - that images get built representing the volumes from the vSphere vms 
+   - that the vms in Harvester built from the vms in vSphere get spun up and running (both in GUI and through K9s service logs & `kubectl get virtualmachineimport.migration`)
+   - validate that the vm can be accessed and the drives exist as they did in vSphere  
+
+### Test VM Import From VMWare w/ Powered Off VM Causes No VMWare Side-Effects in Tasks
+1. Validate same as regular VM Import from VMWare
+1. Additionally validate that within "Tasks" there are no tasks associated with the VM that are of "warning" / "operation failed" type 
+
+### Test VM Import Respects Default Storage Class From vSphere/VMWare 
+#### Note: pre-req, you will need an additional storageclass set up, something that targets the node & disk by tag(s)
+1. Follow same VMWare/vSphere testing
+1. Deselect / reset default storage class 
+1. select a new storage class, set as default 
+1. import a VM, validate that all things brought accross (Volume(s), Image(s)) are on the default storage class you selected  
