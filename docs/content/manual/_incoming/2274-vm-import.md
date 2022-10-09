@@ -241,6 +241,7 @@ export KUBECONFIG="kubeconfig-for-harvester-cluster"
 ## Expected Results
 - VirtualMachines should be imported from Vmware / Openstack to Harvester cluster.
 - Source VirtualMachines should be powered off
+- VM Config and Data should be the same once imported
 
 ## Current limitations
 - In rc1 the vm-import-controller is using ephemeral storage, which is allocated from /var/lib/kubelet. This may limit the size of VM's that can be imported.
@@ -248,6 +249,12 @@ export KUBECONFIG="kubeconfig-for-harvester-cluster"
 
 ## Proposed Base tests
 ### Note: Once VM Import is completed, the VM that was imported is no different than a regular Harvester VM.  Testing the integration between the Importable sources and Harvester should be the focus
+#### Note About Multi VM Selections:
+- it's good to try to import 3 different VMs as "multi" import with some mixed settings in each as:
+    - have at least 1 VM with more than 1 disks 
+    - have at least 1 VM with more than 1 nics 
+    - (OpenStack Only) have at least 1 VM with UUID & 1 VM with it's "Name" 
+
 ### Test Multiple VM Import From OpenStack 
 1. build multiple instances in OpenStack:
     - create an image either in the GUI or with the CLI something like: `openstack image create --disk-format iso --public --container-format bare --file ./your_iso_location.iso`
@@ -283,10 +290,18 @@ export KUBECONFIG="kubeconfig-for-harvester-cluster"
 1. Then create it again, `kubectl create -f your_yaml.yaml`
 1. Validate that the new image comes down (displayName will be the same), but should rebuild volume and start VM 
 
-### Test VM Import From OpenStack With Large Disk On OpenStack
-1. Follow same OpenStack Testing, just build an instance with a large volume 120GB
-1. Write data to the disk something like: `for i in {1..100}; do head -c 1G /dev/urandom > "sample_1GB_file_$i.txt"; done`
-1. Build a `VirtualMachineImport` item for the VM and import it, validating all the other OpenStack validations 
+#### TODO: The test env setup for the below test is difficult to do depending on how OpenStack was provisioned, we don't currently have enough disk space alloted to the volume_group out in the test environment with DevStack
+~~### Test VM Import From OpenStack With Large Disk On OpenStack~~
+1. ~~Follow same OpenStack Testing, just build an instance with a large volume 120GB~~
+1. ~~Write data to the disk something like: `for((i=1;i<=100;i+=1)); do echo "on $i iteration building big files for disk filling test." && head -c 1G /dev/urandom > "$i_1GB_test_file_big_disk_fill_check_for_import.txt"; done`~~
+1. ~~Build a `VirtualMachineImport` item for the VM and import it, validating all the other OpenStack validations~~
+
+### Test VM Import Quick Cancel (Prior to Image Download Finishing) in OpenStack
+1. Build a VM via VirtualMachineImport spec 
+1. Create that CRD resource to the Harvester cluster 
+1. Wait until the Download starts in the UI ( and you can also observe the: `kubectl get virtualmachineimage --all-namespaces -o wide` )
+1. As soon as the download starts (percentage beings to increase), remove the created YAML from the cluster with `kubectl delete -f vm_import_from_openstack.yaml` 
+1. Validate that Image(s) is removed & no volumes, disks or vms were created
 
 ### Test VM Import Respects Default Storage Class From OpenStack
 #### Note: pre-req, you will need an additional storageclass set up, something that targets the node & disk by tag(s)
@@ -295,6 +310,26 @@ export KUBECONFIG="kubeconfig-for-harvester-cluster"
 1. Select a new storage class, set as default 
 1. Import a VM, validate that all things brought accross (Volume(s), Image(s)) are on the default storage class you selected  
 
+
+### Test Import VM from OpenStack into 3 node cluster
+1. Follow same OpenStack Testing 
+1. Import VM to Multi-node cluster 
+1. Validate VM 
+
+### Test Import of VM With Bogus SourceNetwork On OpenStack
+1. Create a `VirtualMachineImport`, but in `spec.networkMapping[0].sourceNetwork` provide a name of a source network that does not exist 
+1. Import the VM to the cluster 
+1. Validate the VM builds a network interface with:
+    - name: `pod-network`
+    - model: `virtio`
+    - network: `management Network`
+    - type: `masquerade` 
+1. Validate that the VM clears all the other typical checks
+
+### (Negative) Test VM With CamelCased Name Show Info & Error Message in deployments/vm-import-controller corresponding logs
+1. VM with `VirtualMachineImport` that has `spec.virtualMachineName` that is camel-cased, does not import
+1. Error in the log (deployments/vm-import-controller) of something like: `level=error msg="vm migration target testFocalCamelCase in VM focal-bad-name in namespace default is not RFC 1123 compliant"`
+1. Info msg in the log (deployments/vm-import-controller) of something like: `spec.virtualMachineName that is camel-cased, within the logs, we see: level=info msg="vm focal-bad-name in namespace default has an invalid spec"`
 _____
 ### !!WARNING!!
 ### We only have a single instance of VMWare/vSphere that other teams use for "production" services/applications typically used for demos, though "not necessarily" mission-critical but still largely important.
@@ -322,3 +357,30 @@ ____
 1. Deselect / reset default storage class 
 1. select a new storage class, set as default 
 1. import a VM, validate that all things brought accross (Volume(s), Image(s)) are on the default storage class you selected  
+
+### Test Import VM from VMWare into 3 node cluster
+1. Follow same VMWare Testing 
+1. Import VM to Multi-node cluster 
+1. Validate VM 
+
+### Test Import of VM With Bogus SourceNetwork On VMWare
+1. Create a `VirtualMachineImport`, but in `spec.networkMapping[0].sourceNetwork` provide a name of a source network that does not exist 
+1. Import the VM to the cluster 
+1. Validate the VM builds a network interface with:
+    - name: `pod-network`
+    - model: `virtio`
+    - network: `management Network`
+    - type: `masquerade` 
+1. Validate that the VM clears all the other typical checks
+
+### Test VM Import Quick Cancel (Prior to Image Download Finishing) in vSphere
+1. Build a VM via VirtualMachineImport spec 
+1. Create that CRD resource to the Harvester cluster 
+1. Wait until the Download starts in the UI ( and you can also observe the: `kubectl get virtualmachineimage --all-namespaces -o wide` )
+1. As soon as the download starts (the percentage is increasing), remove the created YAML from the cluster with `kubectl delete -f vm_import_from_vsphere.yaml` 
+1. Validate that Image(s) is removed & no volumes, disks or vms were created
+
+### Test VM Import Respects Default StorageClass For Harvester 
+1. have a custom storageclass created and set as default 
+1. create vm import 
+1. validate volume(s) and image(s) created are using the default storage class
