@@ -27,3 +27,4 @@ export const HCI = {
 };
 
 export const NETWORK_ATTACHMENT = 'k8s.cni.cncf.io.networkattachmentdefinition';
+export const PVC = 'persistentvolumeclaim';

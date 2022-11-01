@@ -5,13 +5,13 @@ export class Constants {
     public password = Cypress.env("password");
     public setupUrl = '/auth/setup/';
     public loginUrl = '/auth/login/';
-    public dashboardUrl = '/c/local/harvester/harvesterhci.io.dashboard';
-    public settingsUrl = '/c/local/harvester/harvesterhci.io.setting';
-    public uiSourceUrl = '/c/local/harvester/harvesterhci.io.setting/ui-source?mode=edit';
-    public hostsPage = '/c/local/harvester/harvesterhci.io.host';
-    public supportPage = '/c/local/harvester/support';
-    public vmPage = '/c/local/harvester/kubevirt.io.virtualmachine';
-    public settingBaseUrl = '/c/local/harvester/harvesterhci.io.setting';
-    public volumePage = '/c/local/harvester/harvesterhci.io.volume';
-    public imagePage = '/c/local/harvester/harvesterhci.io.virtualmachineimage';
+    public dashboardUrl = '/harvester/c/local/harvesterhci.io.dashboard';
+    public settingsUrl = '/harvester/c/local/harvesterhci.io.setting';
+    public uiSourceUrl = '/harvester/c/local/harvesterhci.io.setting/ui-source?mode=edit';
+    public hostsPage = '/harvester/c/local/harvesterhci.io.host';
+    public supportPage = '/harvester/c/local/support';
+    public vmPage = '/harvester/c/local/kubevirt.io.virtualmachine';
+    public settingBaseUrl = '/harvester/c/local/harvesterhci.io.setting';
+    public volumePage = '/harvester/c/local/harvesterhci.io.volume';
+    public imagePage = '/harvester/c/local/harvesterhci.io.virtualmachineimage';
 }
