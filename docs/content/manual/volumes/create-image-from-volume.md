@@ -1,5 +1,5 @@
 ---
-title: Create image from Volume
+title: Create image from Volume(e2e_fe)
 ---
 1. Create new VM
 1. Add SSH key

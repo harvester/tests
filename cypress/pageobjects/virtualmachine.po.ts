@@ -38,14 +38,6 @@ export class VmsPage extends CruResourcePo {
     });
   }
 
-  public goToList() {
-    cy.visit(constants.vmPage);
-
-    cy.get(this.sideBar).find('li').contains('Virtual Machines').click();
-    cy.get(this.pageHead).then($el => {
-      cy.url().should('exist', constants.vmPage);
-    })
-  }
 
   public goToCreate() {
     this.goToList()
@@ -89,6 +81,10 @@ export class VmsPage extends CruResourcePo {
 
   network() {
     return new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Network")`)
+  }
+
+  rootDisk() {
+    return new CheckboxPo('.checkbox-container', `:contains("disk-0")`)
   }
 
   networks(networks: Array<Network> = []) {
@@ -135,17 +131,12 @@ export class VmsPage extends CruResourcePo {
   }
 
   public init() {
+    cy.intercept('GET', `v1/harvester/${HCI.IMAGE}s`).as('imageList');
     image.goToList();
-    cy.request({
-      url: `v1/harvester/${HCI.IMAGE}s`,
-      headers: {
-        accept: 'application/json'
-      }
-    }).as('imageList')
 
-    cy.get('@imageList').should((res: any) => {
-      expect(res?.status, 'Check Image list').to.equal(200);
-      const images = res?.body?.data || []
+    cy.wait('@imageList').should((res: any) => {
+      expect(res.response?.statusCode, 'Check Image list').to.equal(200);
+      const images = res?.response?.body?.data || []
 
       const imageEnv = Cypress.env('image');
 
@@ -162,6 +153,7 @@ export class VmsPage extends CruResourcePo {
           url,
         })
         image.save()
+        image.checkState({ name, size: '16 MB' });
       }
     })
   }
@@ -185,6 +177,22 @@ export class VmsPage extends CruResourcePo {
     this.goToEdit(name);
     this.setValue(value);
     cy.get('.cru-resource-footer').contains('Save').click()
+  }
+
+  public delete(namespace:string, name: string, { removeRootDisk }: { removeRootDisk?: boolean } = { removeRootDisk: true }) {
+    cy.visit(`/harvester/c/local/${this.type}`)
+
+    this.clickAction(name, 'Delete').then((_) => {
+      if (!removeRootDisk) {
+        this.rootDisk().check(false);
+      }
+    })
+
+    cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}*`).as('delete');
+    cy.get(this.confirmRemove).contains('Delete').click();
+    cy.wait('@delete').then(res => {
+      expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+    })
   }
 
   usbTablet() {

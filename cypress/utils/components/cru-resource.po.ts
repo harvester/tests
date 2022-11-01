@@ -14,12 +14,11 @@ export default class CruResourcePo extends PagePo {
   public type = '';
   public realType = '';
   public storeType: string|undefined = undefined;
-  
-  private footerButtons = '.cru-resource-footer'
-  private confirmRemove = '.card-container.prompt-remove'
-  private searchInput = '.search'
-  private actionMenu = '.list-unstyled.menu'
-  private actionMenuIcon = '.icon-actions'
+  public footerButtons = '.cru-resource-footer'
+  public confirmRemove = '.card-container.prompt-remove'
+  public searchInput = '.search'
+  public actionMenu = '.list-unstyled.menu'
+  public actionMenuIcon = '.icon-actions'
 
   namespace() {
     return new LabeledSelectPo('.labeled-select', `:contains("Namespace")`)
@@ -34,7 +33,7 @@ export default class CruResourcePo extends PagePo {
   }
 
   public create(value: any, urlWithNamespace?: boolean) {
-    cy.visit(`/c/local/harvester/${this.type}/create`)
+    cy.visit(`/harvester/c/local/${this.type}/create`)
 
     this.setValue(value)
     
@@ -46,7 +45,7 @@ export default class CruResourcePo extends PagePo {
   }
 
   public clone(id:string, value:any) {
-    cy.visit(`/c/local/harvester/${this.type}/${id}?mode=clone`)
+    cy.visit(`/harvester/c/local/${this.type}/${id}?mode=clone`)
 
     this.setValue(value)
 
@@ -68,7 +67,7 @@ export default class CruResourcePo extends PagePo {
   }
 
   public delete(namespace:string, name:string) {
-    cy.visit(`/c/local/harvester/${this.type}`)
+    cy.visit(`/harvester/c/local/${this.type}`)
 
     this.clickAction(name, 'Delete')
 
@@ -117,7 +116,7 @@ export default class CruResourcePo extends PagePo {
     const record = cy.contains(name)
     expect(record.should('be.visible'))
     record.parentsUntil('tbody', 'tr').find(this.actionMenuIcon).click()
-    cy.get(this.actionMenu).contains(action).click()
+    return cy.get(this.actionMenu).contains(action).click()
   }
 
   public checkEdit(name:string, namespace?:string, value?:any, action:string = 'Edit Config') {
@@ -142,7 +141,7 @@ export default class CruResourcePo extends PagePo {
 
   public goToList() {
     cy.intercept('GET', `/v1/harvester/${this.realType}s`).as('goToList');
-    cy.visit(`/c/local/harvester/${this.type}`)
+    cy.visit(`/harvester/c/local/${this.type}`)
     cy.wait('@goToList')
   }
 }

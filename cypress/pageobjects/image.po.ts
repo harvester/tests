@@ -1,4 +1,6 @@
 import { Constants } from "@/constants/constants";
+import { HCI } from '@/constants/types'
+import CruResourcePo from '@/utils/components/cru-resource.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import { VolumePage } from "@/pageobjects/volume.po";
 
@@ -15,31 +17,19 @@ interface ValueInterface {
   labels?: any,
 }
 
-export class ImagePage {
-  private actionMenu: string = '.list-unstyled.menu';
+export class ImagePage extends CruResourcePo {
   private downloadOrUploadRadios: string = '.radio-group';
   private fileButton: string = '#file';
-  private search: string = '.search';
   private deleteButton: string = '.card-container.prompt-remove';
-  private pageHead = 'main .outlet header h1';
 
-  name() {
-    return new LabeledInputPo('.span-3 > .labeled-input', `:contains("Name")`)
+  constructor() {
+    super({
+      type: HCI.IMAGE
+    });
   }
 
   url() {
     return new LabeledInputPo('.labeled-input', `:contains("URL")`);
-  }
-
-  description() {
-    return new LabeledInputPo('.labeled-input', `:contains("Description")`)
-  }
-
-  public goToList() {
-    cy.visit(constants.imagePage);
-    cy.get(this.pageHead).then($el => {
-      cy.url().should('exist', constants.imagePage);
-    })
   }
 
   public goToCreate() {
@@ -49,7 +39,7 @@ export class ImagePage {
 
   public goToEdit(name: string) {
     this.goToList();
-    cy.get(this.search).type(name);
+    cy.get(this.searchInput).type(name);
     const image = cy.contains(name);
 
     image.should('be.visible')
@@ -106,7 +96,7 @@ export class ImagePage {
 
   public exportImage(vmName: string, imageName: string) {
     volumes.goToList();
-    cy.get(this.search).type(vmName);
+    cy.get(this.searchInput).type(vmName);
 
     const volume = cy.contains(vmName);
 
@@ -119,41 +109,13 @@ export class ImagePage {
   }
 
   public checkState(value: ValueInterface, valid: boolean = true) {
-    cy.get(this.search).type(value.name);
+    cy.get(this.searchInput).type(value.name);
 
     // state indicator for image upload progress percentage bar
     cy.contains(value.name).parentsUntil('tbody', 'tr').find('td.col-image-percentage-bar').contains(valid ? 'Completed' : '0%', { timeout: constants.timeout.uploadTimeout }).should('be.visible');
     // state indicator for status of image upload status e.g. active or uploading
     cy.contains(value.name).parentsUntil('tbody', 'tr').find('td.col-badge-state-formatter').contains(valid ? 'Active' : 'Failed', { timeout: constants.timeout.uploadTimeout }).should('be.visible');
   }
-
-  // public checkImageInLH(imageName: string) {
-  //   let imageId: any = null;
-
-  //   cy.intercept('GET', '/v1/harvester/harvesterhci.io.virtualmachineimages').as('getImageList');
-  //   this.goToList();
-
-  //   cy.wait('@getImageList').then(res => {
-  //     expect(res.response?.statusCode).to.equal(200);
-
-  //     const images = res.response?.body?.data || [];
-
-  //     imageId = images.find((image: any) => image.spec.displayName === imageName)?.id;
-  //     expect(!!imageId).to.be.true;
-  //   });
-
-  //   cy.request({ method: 'GET', url: 'v1/longhorn.io.backingimages', headers: {
-  //     'Content-Type': 'application/json; charset=utf-8',
-  //     'accept': 'json'
-  //   }}).as('getBackingImageList');
-
-  //   cy.get('@getBackingImageList').should((response) => {
-  //     const found = response.body.data.find((image: any) => imageId.replace('/', '-') === image.metadata.name);
-
-  //     expect(found?.metadata?.state?.error).to.be.false;
-  //     expect(found?.metadata?.state?.name).to.equal('active');
-  //   });
-  // }
 
   public save( { upload, edit, depth }: { upload?: boolean; edit?: boolean; depth?: number; } = {} ) {
     cy.intercept(edit? 'PUT' : 'POST', `/v1/harvester/harvesterhci.io.virtualmachineimages${ upload ? '/*' : edit ? '/*/*' : '' }`).as('createImage');
@@ -175,17 +137,12 @@ export class ImagePage {
 
   public delete(name: string) {
     this.goToList();
-    cy.get(this.search).type(name);
-    const image = cy.contains(name);
-
-    image.should('be.visible')
-    image.parentsUntil('tbody', 'tr').click();
-    cy.contains('Delete').click();
+    this.clickAction(name, 'Delete')
 
     cy.intercept('DELETE', '/v1/harvester/harvesterhci.io.virtualmachineimages/*/*').as('delete');
-    cy.get(this.deleteButton).contains('Delete').click();
+    cy.get(this.confirmRemove).contains('Delete').click();
     cy.wait('@delete').then(res => {
-      expect(res.response?.statusCode).to.equal(200);
-    });
+      expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+    })
   }
 }
