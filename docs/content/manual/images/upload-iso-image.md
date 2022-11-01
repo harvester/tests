@@ -1,5 +1,5 @@
 ---
-title: Upload ISO Image	
+title: Upload ISO Image(e2e_fe)
 ---
 1. Upload image to images page
 1. Create new vm with image using appropriate template

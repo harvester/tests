@@ -62,8 +62,8 @@ describe('Create an image with valid image URL', () => {
         name: IMAGE_NAME,
         url: IMAGE_URL,
         labels: {
-            y1: 'z1',
-            y2: 'z2'
+            thefirstlabel: 'thefirstlabel',
+            thesecondlabel: 'thesecondlabel'
         }
     }
 
@@ -344,7 +344,6 @@ describe('Create a ISO image via upload', () => {
         vms.delete(namespace, VM_NAME)
 
         // delete IMAGE
-        // TODO: Delete image should check volume is deleted
-        // image.delete(IMAGE_NAME)
+        image.delete(IMAGE_NAME)
     });
 });

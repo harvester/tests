@@ -1,5 +1,8 @@
 import { Constants } from "@/constants/constants";
+import { HCI, PVC } from "@/constants/types";
 import LabeledInputPo from '@/utils/components/labeled-input.po';
+import LabeledSelectPo from '@/utils/components/labeled-select.po';
+import CruResourcePo from "@/utils/components/cru-resource.po";
 
 const constants = new Constants();
 
@@ -12,64 +15,111 @@ interface ValueInterface {
   size?: string,
 }
 
-export class VolumePage {
-  private search: string = '.search';
-  private actionMenu: string = '.list-unstyled.menu';
-  private exportImageActions: string = '.card-actions';
+export class VolumePage extends CruResourcePo {
+  private exportImageActions: string = ".card-actions";
 
-  name() {
-    return new LabeledInputPo('.namespace-select > .labeled-input', `:contains("Name")`)
+  constructor() {
+    super({
+      type: HCI.VOLUME,
+      realType: PVC,
+    });
   }
 
-  description() {
-    return new LabeledInputPo('.labeled-input', `:contains("Description")`)
-  }
 
   exportImageName() {
-    return new LabeledInputPo('.card-container .labeled-input', `:contains("Name")`)
+    return new LabeledInputPo(
+      ".card-container .labeled-input",
+      `:contains("Name")`
+    );
   }
 
-  public goToList() {
-    // cy.get('.nav').contains('Volumes').click();
-    cy.visit(constants.volumePage)
-    cy.intercept('GET', '/v1/harvester/persistentvolumeclaims').as('goToVolumeList');
-    cy.wait('@goToVolumeList');
-    cy.url().should('eq', `${this.basePath()}${constants.volumePage}`)
+  source() {
+    return new LabeledSelectPo(".labeled-select", `:contains("Source")`);
   }
 
-  public goToCreate() {
-    this.goToList();
-    cy.contains('Create').click();
+  size() {
+    return new LabeledInputPo(".labeled-input", `:contains("Size")`);
   }
 
-  public goToEdit(name: string) {
-    this.goToList();
-    cy.get(this.search).type(name);
-    const volume = cy.contains(name);
-
-    volume.should('be.visible')
-    volume.parentsUntil('tbody', 'tr').find('.icon-actions').click();
-    cy.get(this.actionMenu).contains('Edit Config').click();
-  }
-
-  goToDetail(name: string) {
-    const volume = cy.contains(name)
-
-    volume.should('be.visible')
-    volume.click()
+  image() {
+    return new LabeledSelectPo(".labeled-select", `:contains("Image"):last`);
   }
 
   public exportImage(volumeName: string, imageName: string) {
-    cy.contains(volumeName).parentsUntil('tbody', 'tr').find('.icon-actions').click();
-    cy.get(this.actionMenu).contains('Export Image').click();
+    cy.contains(volumeName)
+      .parentsUntil("tbody", "tr")
+      .find(".icon-actions")
+      .click();
+    cy.get(this.actionMenu).contains("Export Image").click();
     this.exportImageName().input(imageName);
 
-    cy.intercept('POST', `v1/harvester/persistentvolumeclaims/*/${ volumeName }?action=export`).as('exportImage');
-    cy.get(this.exportImageActions).contains('Create').click();
-    cy.wait('@exportImage').then(res => {
-      expect(res.response?.statusCode, `Check Export Image`).to.be.oneOf([200, 204]);
-      expect(cy.contains('Succeed'));
+    cy.intercept(
+      "POST",
+      `v1/harvester/persistentvolumeclaims/*/${volumeName}?action=export`
+    ).as("exportImage");
+    cy.get(this.exportImageActions).contains("Create").click();
+    cy.wait("@exportImage").then((res) => {
+      expect(res.response?.statusCode).to.be.oneOf([200, 204]);
+      expect(cy.contains("Succeed"));
     });
+  }
+
+  public checkState(value: ValueInterface) {
+    // state indicator for status of volume status e.g. Ready
+    cy.contains(value.name || "")
+      .parentsUntil("tbody", "tr")
+      .find("td.col-badge-state-formatter .bg-success")
+      .contains("Ready")
+      .should("be.visible");
+  }
+
+  public setValue(value: ValueInterface) {
+    this.namespace().select(value?.namespace)
+    this.size().input(value?.size);
+    this.name().input(value?.name);
+
+    if (!!value.image) {
+      this.source().select("VM Image");
+      this.image().select(value?.image);
+    }
+  }
+
+  public checkStateByVM(vmName: string) {
+    this.goToList();
+    cy.get(this.searchInput).type(vmName);
+
+    const volume = cy.contains(vmName);
+
+    volume.should("be.visible");
+
+    // Get volume name from attahched VM in name field of Volume page
+    volume
+      .parentsUntil("tbody", "tr")
+      .find("td")
+      .eq(2)
+      .invoke("text")
+      .then((volumeName) => {
+        this.checkState({ name: volumeName.trim() });
+      });
+  }
+
+  public deleteVolumeByVM(vmName: string) {
+    this.goToList();
+    cy.get(this.searchInput).type(vmName);
+
+    const volume = cy.contains(vmName);
+
+    volume.should("be.visible");
+
+    // Get volume name from attahched VM in name field of Volume page
+    volume
+      .parentsUntil("tbody", "tr")
+      .find("td")
+      .eq(2)
+      .invoke("text")
+      .then((volumeName) => {
+        this.delete("default", volumeName.trim());
+      });
   }
 
   basePath() {
