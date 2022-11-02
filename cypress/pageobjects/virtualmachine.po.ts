@@ -1,3 +1,5 @@
+import cookie from 'cookie';
+
 import { Constants } from "@/constants/constants";
 import { HCI } from '@/constants/types';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
@@ -204,14 +206,17 @@ export class VmsPage extends CruResourcePo {
   }
 
   deleteProgramlly(id:string) {
-    cy.window().then((win:any) => {
-      const vm = win.byId(HCI.VM, id, 'harvester')
+    const { CSRF } = cookie.parse(document.cookie);
 
-      cy.intercept('DELETE', `/v1/harvester/${ HCI.VM }s/${ id }`).as('delete');
-      vm.remove()
-      cy.wait('@delete').then(res => {
-        expect(res.response?.statusCode).to.equal(200);
-      })
+    cy.request({
+      url: `/v1/harvester/${HCI.VM}s/${ id }`,
+      headers: {
+        accept: 'application/json',
+        'x-api-csrf': CSRF,
+      },
+      method: 'DELETE',
+    }).then(res => {
+      expect(res.status).to.equal(200);
     })
   }
 }

@@ -1,3 +1,5 @@
+import cookie from 'cookie';
+
 import PagePo from '@/utils/components/page.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
@@ -79,20 +81,19 @@ export default class CruResourcePo extends PagePo {
   }
 
   public deleteProgramlly(id:string, retries:number = 3) {
-    cy.window().then((win:any) => {
-      const storeType = this.storeType || this.realType
-      const resource = win.byId(storeType, id, 'harvester')
+    const { CSRF } = cookie.parse(document.cookie);
 
-      cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${ id }`).as('delete');
+    const storeType = this.storeType || this.realType
 
-      if (!resource) {
-        cy.log(`Resource ${id} not found, please delete manually`)
-      } else {
-        resource.remove()
-        cy.wait('@delete').then(res => {
-          expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
-        })
-      }
+    cy.request({
+      url: `/v1/harvester/${this.realType}s/${ id }`,
+      headers: {
+        accept: 'application/json',
+        'x-api-csrf': CSRF,
+      },
+      method: 'DELETE',
+    }).then(res => {
+      expect(res.status, `Delete ${this.type}`).to.be.oneOf([200, 204]);
     })
   }
 

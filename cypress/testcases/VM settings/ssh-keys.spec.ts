@@ -37,6 +37,6 @@ describe('Create a ssh key', () => {
     })
     
     ssh.delete(namespace, name)
-    ssh.deleteProgramlly(`${namespace}/${cloneName}`)
+    ssh.delete(namespace, cloneName)
   });
 });

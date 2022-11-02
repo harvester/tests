@@ -22,7 +22,7 @@ export default class SettingsPagePo extends CruResource {
      * Go to the setting edit page. Then it checks the URL
      */
     clickMenu(name: string, actionText: string, urlSuffix: string, type?: string) {
-        const editPageUrl = type ? `/c/local/${type}` : constants.settingsUrl;
+        const editPageUrl = type ? `/harvester/c/local/${type}` : constants.settingsUrl;
 
         cy.get(`.advanced-setting #${name} button`).click()
   
