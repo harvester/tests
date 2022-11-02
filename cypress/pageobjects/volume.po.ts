@@ -74,13 +74,13 @@ export class VolumePage extends CruResourcePo {
   }
 
   public setValue(value: ValueInterface) {
-    this.namespace().select(value?.namespace)
+    this.namespace().select({option: value?.namespace})
     this.size().input(value?.size);
     this.name().input(value?.name);
 
     if (!!value.image) {
-      this.source().select("VM Image");
-      this.image().select(value?.image);
+      this.source().select({option: "VM Image"});
+      this.image().select({option: value?.image});
     }
   }
 

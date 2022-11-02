@@ -35,10 +35,10 @@ export default class extends CruResourcePo {
   }
 
   public setValue(value: ValueInterface) {
-    this.namespace().select(value?.namespace)
+    this.namespace().select({option: value?.namespace})
     this.name().input(value?.name)
     this.description().input(value?.description)
-    this.templateType().select(value?.templateType)
+    this.templateType().select({option: value?.templateType})
     this.data().input(value.data)
   }
 }

@@ -5,7 +5,7 @@ export default defineConfig({
   fixturesFolder: './fixtures',
   viewportWidth: 1920,
   viewportHeight: 1080,
-  numTestsKeptInMemory: 0,
+  numTestsKeptInMemory: 1,
   defaultCommandTimeout: 60000,
   requestTimeout: 30000,
   responseTimeout: 30000,

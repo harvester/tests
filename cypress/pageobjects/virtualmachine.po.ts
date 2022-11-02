@@ -47,13 +47,13 @@ export class VmsPage extends CruResourcePo {
   }
 
   public setValue(value: ValueInterface) {
-    this.namespace().select(value?.namespace)
+    this.namespace().select({option: value?.namespace})
     this.name().input(value?.name)
     this.description().input(value?.description)
     this.cpu().input(value?.cpu)
     this.memory().input(value?.memory)
     cy.get('.tab#Volume').click()
-    this.image().select(value?.image)
+    this.image().select({option: value?.image})
     this.networks(value?.networks)
     this.createRunning().check(value?.createRunning)
     cy.get('.tab#advanced').click()
@@ -103,7 +103,7 @@ export class VmsPage extends CruResourcePo {
         }
 
         networks.map((n, idx) => {
-          this.network().select(n?.network, idx)
+          this.network().select({option: n?.network, index: idx})
         })
       })
     }
