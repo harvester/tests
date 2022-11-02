@@ -30,7 +30,6 @@ export class EditYamlPage {
     public insertCustomName(customName:string) {
         // this.parseYaml();
         cy.get(this.codeTextArea).invoke('text').then((tempText) => {
-            console.log(tempText);
             let temp = JSON.parse(tempText);
             console.log(temp);
             // debugger;
@@ -38,8 +37,6 @@ export class EditYamlPage {
             debugger;
             let jsonTemp = yaml.load(tempText);
             debugger;
-            console.log('jsonTemp');
-            console.log(jsonTemp);
             cy.log(jsonTemp)
             // jsonTemp.metadata.annotations["harvesterhci.io/host-custom-name"] = customName;
             // this.yamlText = yaml.dump(jsonTemp);
