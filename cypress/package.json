@@ -3,6 +3,7 @@
     "@cypress/skip-test": "^2.6.1",
     "@cypress/vue": "^2.2.3",
     "@types/adm-zip": "^0.4.34",
+    "@types/cookie": "^0.5.1",
     "@types/js-yaml": "^4.0.5",
     "cy-verify-downloads": "^0.1.8",
     "cypress-dotenv": "^2.0.0",
