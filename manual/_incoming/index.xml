@@ -379,6 +379,15 @@ Clone longhorn/upgrade-responder and checkout to v0.1.4. Edit response.json cont
     </item>
     
     <item>
+      <title>Testing Harvester Storage Tiering</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2147-testing-storage-tiering/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2147-testing-storage-tiering/</guid>
+      <description>Related issues: #2147 [[FEATURE] Storage Tiering Category: Images Volumes VirtualMachines Test Setup Steps Have a Harvester Node with 3 Disks in total (one main disk, two additional disks), ideally the two additional disks should be roughly 20/30Gi for testing Add the additional disks to the harvester node (you may first need to be on the node itself and do a sudo gdisk /dev/sda and then w and y to write the disk identifier so that Harvester can recogonize the disk, note you shouldn&amp;rsquo;t need to build partitions) Add the disks to the Harvester node via: Hosts -&amp;gt; Edit Config -&amp;gt; Storage -&amp;gt; &amp;ldquo;Add Disk&amp;rdquo; (call-to-action), they should auto populate with available disks that you can add Save Navigate back to Hosts -&amp;gt; Host -&amp;gt; Edit Config -&amp;gt; Storage, then add a Host Tag, and a unique disk tag for every disk (including the main disk/default-disk) Verification Steps with Checks Navigate to Advanced -&amp;gt; Storage Classes -&amp;gt; Create (Call-To-Action), create a storageClass &amp;ldquo;sc-a&amp;rdquo;, specify nodeSelector (choose host), diskSelector (choose one of the unique disk tags), number of replicas (1-12) Also create a storageClass &amp;ldquo;sc-b&amp;rdquo;, specify nodeSelector (choose host), diskSelector (choose one of the unique disk tags), number of replicas (1-12) Create a new image img-a, specify storageClassName to sc-a Create a new vm vm1 use the image img-a Check the replicas number and location of rootdisk volume in longhorn UI Create a new volume volume-a by choose source=image img-a Add the volume volume-a to vm vm1 Check the replicas number and location of volume volume-a in longhorn UI: volume-a, should also be seen in kubectl get pv --all-namespaces (where &amp;ldquo;Claim&amp;rdquo; is volume-a) with the appropriate storage class also with something like kubectl describe pv/pvc-your-uuid-from-get-pv-call-with-volume-a --all-namespaces: can audit volume attributes like: VolumeAttributes: diskSelector=second migratable=true nodeSelector=node-2 numberOfReplicas=1 share=true staleReplicaTimeout=30 storage.</description>
+    </item>
+    
+    <item>
       <title>Topology aware scheduling of guest cluster workloads</title>
       <link>https://harvester.github.io/tests/manual/_incoming/1418-2383-topology-scheduling-of-guest-cluster-workloads/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

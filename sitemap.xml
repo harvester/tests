@@ -914,6 +914,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/live-migration/zero-downtime-ping-test/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2147-testing-storage-tiering/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/support_bundle_timeout/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/toggle-harvester-node-driver-with-harvester-global-flag/</loc>
