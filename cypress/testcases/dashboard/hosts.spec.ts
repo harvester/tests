@@ -27,7 +27,7 @@ describe('Check edit host', () => {
     
     const host = Cypress.env('host');
     
-    cy.visit(`/c/local/harvester/${HCI.HOST}/${host.name}?mode=edit`)
+    cy.visit(`/harvester/c/local/${HCI.HOST}/${host.name}?mode=edit`)
 
     const customName = 'test-custom-name'
     const consoleUrl = 'test-console-url'
@@ -57,7 +57,7 @@ describe('Check Add disk', () => {
     const host = Cypress.env('host');
     const disk = host.disks[0]
     
-    cy.visit(`/c/local/harvester/${HCI.HOST}/${host.name}?mode=edit`)
+    cy.visit(`/harvester/c/local/${HCI.HOST}/${host.name}?mode=edit`)
 
     const diskTab = '#disk > a'
     const addDiskButton = '.button-dropdown'
@@ -78,7 +78,7 @@ describe('Check Add disk', () => {
       expect(spec?.fileSystem?.provisioned, 'Check provisioned').to.equal(true);
     })
 
-    cy.visit(`/c/local/harvester/${HCI.HOST}/${host.name}?mode=edit`)
+    cy.visit(`/harvester/c/local/${HCI.HOST}/${host.name}?mode=edit`)
 
     cy.get(diskTab).click()
     cy.get(removeIcon).click()
