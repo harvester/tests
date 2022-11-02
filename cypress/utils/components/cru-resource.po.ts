@@ -98,7 +98,7 @@ export default class CruResourcePo extends PagePo {
   }
 
   public setValue(value: any) {
-    this.namespace().select(value?.namespace)
+    this.namespace().select({option: value?.namespace})
     this.name().input(value?.name)
     this.description().input(value?.description)
   }

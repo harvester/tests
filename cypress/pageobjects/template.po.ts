@@ -24,7 +24,7 @@ export default class TemplatePage extends CruResourcePo {
   }
 
   public setValue(value: ValueInterface) {
-    this.namespace().select(value?.namespace)
+    this.namespace().select({option: value?.namespace})
     this.name().input(value?.name)
     this.description().input(value?.description)
     this.cpu().input(value?.cpu)

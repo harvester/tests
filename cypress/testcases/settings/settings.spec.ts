@@ -59,8 +59,6 @@ describe('Setting Page', () => {
 
     /**
      * backup target
-     * TODO: test failed,
-     * by: wujun
      */
     it('Configure backup target (NFS)', () => {
         settings.checkIsCurrentPage();

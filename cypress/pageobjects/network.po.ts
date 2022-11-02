@@ -32,7 +32,7 @@ export default class NetworkPage extends CruResourcePo {
   }
 
   public setValue(value: ValueInterface) {
-    this.namespace().select(value?.namespace)
+    this.namespace().select({option: value?.namespace})
     this.name().input(value?.name)
     this.description().input(value?.description)
     this.vlan().input(value?.vlan)

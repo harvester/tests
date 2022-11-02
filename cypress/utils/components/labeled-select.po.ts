@@ -1,17 +1,24 @@
 import ComponentPo from './component.po';
 
+interface SelectArg {
+  option: string | undefined,
+  index?: number,
+  selector?: string,
+}
 export default class LabeledSelectPo extends ComponentPo {
-  select(option: string | undefined):any;
-  select(option: string | undefined, index: number):any;
-  select(...args: Array<any>) {
-    if (args[0]) {
-      if (args[1] !== undefined) {
-        this.self().eq(args[1]).click()
+  select(args: SelectArg):any {
+    if (args.option) {
+      if (args.index !== undefined) {
+        this.self().eq(args.index).click()
       } else {
         this.self().click()
       }
-     
-      cy.contains(args[0]).click()
+      
+      if (args.selector) {
+        cy.get(args.selector).contains(args.option).click()
+      } else {
+        cy.contains(args.option).click()
+      }
     }
 
     return

@@ -1,4 +1,10 @@
 {
+  "name": "harvester",
+  "description": "Harvester e2e test",
+  "repository": "https://github.com/harvester/tests",
+  "license": "Apache-2.0",
+  "author": "SUSE",
+  "private": true,
   "devDependencies": {
     "@cypress/skip-test": "^2.6.1",
     "@cypress/vue": "^2.2.3",
@@ -12,8 +18,7 @@
     "mochawesome-merge": "^4.2.1",
     "mochawesome-report-generator": "^6.2.0",
     "typedoc": "^0.22.11",
-    "typescript": "^4.5.4",
-    "yaml": "^2.1.3"
+    "typescript": "^4.5.4"
   },
   "dependencies": {
     "@types/cypress": "^1.1.3",
@@ -22,7 +27,8 @@
     "cookie-parser": "^1.4.6",
     "cypress": "10.2",
     "js-yaml": "^4.1.0",
-    "js-yaml-js-types": "^1.0.0"
+    "js-yaml-js-types": "^1.0.0",
+    "yaml": "^2.1.3"
   },
   "engines": {
     "node": "^12.22 || ^14.13 || >=16"
@@ -30,6 +36,7 @@
   "scripts": {
     "delete:reports": "rm cypress/results/* || true",
     "prereport": "npm run delete:reports",
-    "report": "node scripts/run.js"
+    "report": "node scripts/run.js",
+    "open": "npx cypress open"
   }
 }

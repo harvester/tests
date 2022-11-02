@@ -34,7 +34,7 @@ export default class SettingsPagePo extends CruResource {
     }
 
     changeLogLevel(id: string, value: string) {
-        new LabeledSelectPo('.labeled-select', `:contains("Value")`).select(value)
+        new LabeledSelectPo('.labeled-select', `:contains("Value")`).select({option: value})
 
         this.update(id);
     }
@@ -49,7 +49,7 @@ export default class SettingsPagePo extends CruResource {
     }
 
     checkUiSource(type: string, address: string) {
-        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Value")`).select(type)
+        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Value")`).select({option: type})
         this.update('ui-source');
         this.checkIsCurrentPage();
         cy.reload();
@@ -67,8 +67,8 @@ export default class SettingsPagePo extends CruResource {
     }
 
     setNFSBackupTarget(type: string, endpoint: string) {
-        const select = new LabeledSelectPo(".labeled-select", `:contains("Type")`);
-        select.select(type);
+        const select = new LabeledSelectPo("section .labeled-select.hoverable", `:contains("Type")`);
+        select.select({option: type, selector: '.vs__dropdown-menu'});
         new LabeledInputPo('.labeled-input', `:contains("Endpoint")`).input(endpoint);
     }
 }
