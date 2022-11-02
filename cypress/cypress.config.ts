@@ -9,6 +9,7 @@ export default defineConfig({
   defaultCommandTimeout: 60000,
   requestTimeout: 30000,
   responseTimeout: 30000,
+  chromeWebSecurity: false,
   env: {
     NODE_ENV: 'production',
     username: 'admin',

@@ -22,7 +22,7 @@ export default class SettingsPagePo extends CruResource {
      * Go to the setting edit page. Then it checks the URL
      */
     clickMenu(name: string, actionText: string, urlSuffix: string, type?: string) {
-        const editPageUrl = type ? `/c/local/harvester/${type}` : constants.settingsUrl;
+        const editPageUrl = type ? `/c/local/${type}` : constants.settingsUrl;
 
         cy.get(`.advanced-setting #${name} button`).click()
   
@@ -60,12 +60,6 @@ export default class SettingsPagePo extends CruResource {
         });
     }
 
-    openVlan(value: string) {
-        const radio = new RadioButtonPo('.radio-group .radio-container', `:contains("Enabled")`);
-        radio.input('Enabled');
-        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Default Network Interface ")`).select(value)
-    }
-
     setOvercommit(value: OvercommitInterface) {
       const cpu = new LabeledInputPo('.labeled-input', `:contains("CPU")`)
 
@@ -73,7 +67,8 @@ export default class SettingsPagePo extends CruResource {
     }
 
     setNFSBackupTarget(type: string, endpoint: string) {
-        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Type")`).select(type);
+        const select = new LabeledSelectPo(".labeled-select", `:contains("Type")`);
+        select.select(type);
         new LabeledInputPo('.labeled-input', `:contains("Endpoint")`).input(endpoint);
     }
 }
