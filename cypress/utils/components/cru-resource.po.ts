@@ -4,7 +4,7 @@ import LabeledSelectPo from '@/utils/components/labeled-select.po';
 
 export default class CruResourcePo extends PagePo {
   constructor({ type, realType, storeType}:  {type: string, realType?: string, storeType?: string}) {
-    super(`/c/local/harvester/${type}`);
+    super(`/harvester/c/local/${type}`);
 
     this.type = type
     this.realType = realType || type

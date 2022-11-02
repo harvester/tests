@@ -1,6 +1,5 @@
 import SettingsPagePo from "@/pageobjects/settings.po";
 import SidebarPage from "@/pageobjects/sidebar.po";
-import { HCI } from '@/constants/types'
 
 const settings = new SettingsPagePo();
 const sidebar = new SidebarPage();
@@ -59,22 +58,15 @@ describe('Setting Page', () => {
     })
 
     /**
-     * check vlan
-     */
-    it('Configure global vlan', () => {
-        settings.checkIsCurrentPage();
-        settings.clickMenu('vlan', 'Edit Setting', 'vlan', HCI.CLUSTER_NETWORK);
-        settings.openVlan('harvester-mgmt');
-        settings.update('vlan', HCI.CLUSTER_NETWORK);
-    })
-
-    /**
      * backup target
+     * TODO: test failed,
+     * by: wujun
      */
     it('Configure backup target (NFS)', () => {
         settings.checkIsCurrentPage();
         settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
         settings.setNFSBackupTarget('NFS', Cypress.env('nfsEndPoint'));
+        settings.checkSettingValue('Type', 'NFS');
         settings.update('backup-target');
     })
 })
