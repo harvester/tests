@@ -24,7 +24,7 @@ Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cy
           'x-api-csrf': CSRF
         }
       }).then(() => {
-        cy.visit('/'); // Login successfully to the dashboard page
+        cy.visit(constants.dashboardUrl); // Login successfully to the dashboard page
         cy.get('.initial-load-spinner', { timeout: constants.timeout.maxTimeout })
         cy.get("main h1 span").contains("Harvester")
       });
