@@ -55,7 +55,7 @@ export default class CruResourcePo extends PagePo {
   }
   
 
-  public save(namespace?:string) {
+  public save(namespace?:string | any) {
     if (namespace) {
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}`).as('create');
     } else {
