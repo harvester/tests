@@ -202,7 +202,7 @@ export class VmsPage extends CruResourcePo {
   }
 
   efiEnabled() {
-    return new CheckboxPo('.checkbox-container', `:contains("Booting in EFI mode ")`)
+    return new CheckboxPo('.checkbox-container', `:contains("Booting in EFI mode")`)
   }
 
   deleteProgramlly(id:string) {
