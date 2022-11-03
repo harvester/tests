@@ -81,19 +81,20 @@ export default class CruResourcePo extends PagePo {
   }
 
   public deleteProgramlly(id:string, retries:number = 3) {
-    const { CSRF } = cookie.parse(document.cookie);
+    cy.wrap(document.cookie).then(() => {
+      const { CSRF } = cookie.parse(document.cookie);
+      const storeType = this.storeType || this.realType
 
-    const storeType = this.storeType || this.realType
-
-    cy.request({
-      url: `/v1/harvester/${this.realType}s/${ id }`,
-      headers: {
-        accept: 'application/json',
-        'x-api-csrf': CSRF,
-      },
-      method: 'DELETE',
-    }).then(res => {
-      expect(res.status, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+      cy.request({
+        url: `/v1/harvester/${this.realType}s/${ id }`,
+        headers: {
+          accept: 'application/json',
+          'x-api-csrf': CSRF,
+        },
+        method: 'DELETE',
+      }).then(res => {
+        expect(res.status, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+      })
     })
   }
 

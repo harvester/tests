@@ -23,6 +23,7 @@ describe('Check create/delete network', () => {
       name,
       namespace: 'default',
       vlan: '233',
+      clusterNetwork: 'mgmt'
     })
 
     network.delete('default', name)
@@ -52,6 +53,7 @@ describe('Check network with DHCP', () => {
       name,
       namespace,
       vlan: '234',
+      clusterNetwork: 'mgmt',
       mode: 'Auto(DHCP)',
       dhcp,
     })
@@ -59,6 +61,7 @@ describe('Check network with DHCP', () => {
     cy.wait('@create').then(res => {
       expect(res.response?.statusCode).to.equal(201);
       const route = res.response?.body?.metadata?.annotations['network.harvesterhci.io/route']
+
       if (route) {
         const json = JSON.parse(route)
         expect(json.serverIPAddr, 'Check Server IP Address').to.equal(dhcp);
@@ -95,6 +98,7 @@ describe('Check network with Manual Mode', () => {
       namespace,
       vlan: '235',
       mode: 'Manual',
+      clusterNetwork: 'mgmt',
       cidr,
       gateway,
     })
@@ -127,10 +131,11 @@ describe('Create Vlan1', () => {
       name,
       namespace,
       vlan: '1',
+      clusterNetwork: 'mgmt',
     })
 
     table.clickFlatListBtn();
 
-    table.find(name, 1, namespace, 2).find('td').eq(5).should('contain', 'Active')
+    table.find(name, 1, namespace, 2).find('td').eq(6).should('contain', 'Active')
   });
 });

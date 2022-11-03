@@ -10,14 +10,15 @@ import CruResourcePo from '@/utils/components/cru-resource.po';
 const constants = new Constants();
 
 interface ValueInterface {
-  namespace?: string,
-  name?: string,
-  description?: string,
+  namespace: string,
+  name: string,
+  description: string,
   vlan?: string,
   dhcp?: string,
   gateway?: string,
   cidr?: string,
   mode?: string,
+  clusterNetwork?: string
 }
 
 export default class NetworkPage extends CruResourcePo {
@@ -36,6 +37,7 @@ export default class NetworkPage extends CruResourcePo {
     this.name().input(value?.name)
     this.description().input(value?.description)
     this.vlan().input(value?.vlan)
+    this.clusterNetwork().select({option: value?.clusterNetwork})
     cy.get(this.networkTab).click()
     this.mode().input(value.mode)
     this.dhcp().input(value.dhcp)
@@ -45,6 +47,10 @@ export default class NetworkPage extends CruResourcePo {
 
   vlan() {
     return new LabeledInputPo('.labeled-input', `:contains("Vlan ID")`)
+  }
+
+  clusterNetwork() {
+    return new LabeledSelectPo('.labeled-select', `:contains("Cluster Network")`)
   }
 
   dhcp() {
