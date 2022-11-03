@@ -176,6 +176,8 @@ describe('Delete VM with exported image', () => {
 
         // delete VM
         vms.delete(namespace, VM_NAME);
+
+        image.delete(IMAGE_NAME);
     });
 });
 

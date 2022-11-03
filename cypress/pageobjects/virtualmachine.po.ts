@@ -86,7 +86,7 @@ export class VmsPage extends CruResourcePo {
   }
 
   rootDisk() {
-    return new CheckboxPo('.checkbox-container', `:contains("disk-0")`)
+    return cy.get(this.confirmRemove).find('.checkbox-container span[role="checkbox"].checkbox-custom');
   }
 
   networks(networks: Array<Network> = []) {
@@ -186,7 +186,7 @@ export class VmsPage extends CruResourcePo {
 
     this.clickAction(name, 'Delete').then((_) => {
       if (!removeRootDisk) {
-        this.rootDisk().check(false);
+        this.rootDisk().click();
       }
     })
 

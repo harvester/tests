@@ -47,3 +47,8 @@ Cypress.Commands.overwrite('visit', (originalFn, url = '', options) => {
 
   return originalFn(url, options)
 })
+
+
+Cypress.on('uncaught:exception', (err, runable) => {
+  return false;
+})
