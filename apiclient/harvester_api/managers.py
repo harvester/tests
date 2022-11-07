@@ -455,8 +455,11 @@ class SettingManager(BaseManager):
     # get, update
     vlan = "apis/network.{API_VERSION}/clusternetworks/vlan"
     # api-ui-version, backup-target, cluster-registration-url
-    settings = "v1/harvesterhci.io.settings/{option}"
-    # "apis/{{API_VERSION}}/settings/{option}"
+    PATH_fmt = "apis/{{API_VERSION}}/settings/{name}"
+    # "v1/harvesterhci.io.settings/{name}"
+
+    def get(self, name="", *, raw=False):
+        return self._get(self.PATH_fmt.format(name=name))
 
 
 class SupportBundlemanager(BaseManager):

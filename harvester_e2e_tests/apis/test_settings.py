@@ -15,41 +15,22 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from harvester_e2e_tests import utils
-
+import pytest
 
 pytest_plugins = [
-   'harvester_e2e_tests.fixtures.api_endpoints',
-   'harvester_e2e_tests.fixtures.session',
+   "harvester_e2e_tests.fixtures.api_client"
   ]
 
 
-def test_list_settingss(admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_harvester_settings)
-    assert resp.status_code == 200, 'Failed to list Harvester settings: %s' % (
-        resp.content)
+@pytest.mark.p1
+@pytest.mark.settings
+def test_get_all_settings(api_client, expected_settings):
+    code, data = api_client.settings.get()
 
+    available_settings = {m['metadata']['name'] for m in data['items']}
 
-def test_update_api_ui_version(request, admin_session,
-                               harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.get_api_ui_version)
-    assert resp.status_code == 200, (
-        'Failed to get Harvester API UI version: %s' % (resp.content))
-    api_ui_version_data = resp.json()
-    request_json = utils.get_json_object_from_template(
-        'api_ui_version_setting')
-    resp = utils.poll_for_update_resource(
-        request, admin_session,
-        api_ui_version_data['links']['update'],
-        request_json,
-        harvester_api_endpoints.get_api_ui_version)
-    updated_settings_data = resp.json()
-    assert updated_settings_data['value'] == request_json['value'], (
-        'Failed to update API UI version')
-    # now change it back
-    request_json['value'] = api_ui_version_data['value']
-    utils.poll_for_update_resource(
-        request, admin_session,
-        updated_settings_data['links']['update'],
-        request_json,
-        harvester_api_endpoints.get_api_ui_version)
+    assert 200 == code, (code, data)
+    assert expected_settings <= available_settings, (
+        "Some setting missing:\n"
+        f"{expected_settings - available_settings}"
+    )
