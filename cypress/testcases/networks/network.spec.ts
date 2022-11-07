@@ -5,6 +5,13 @@ import { generateName } from '@/utils/utils';
 const network = new NetworkPage();
 const table = new TablePo();
 
+interface Vlan {
+  name: string,
+  namespace: string,
+  vlan: number,
+  clusterNetwork: string,
+}
+
 /**
  * 1. Login
  * 2. Navigate to the network create page
@@ -119,23 +126,49 @@ describe('Check network with Manual Mode', () => {
 
 
 export function CreateVlan1() {}
-describe('Create Vlan1', () => {
-  it('Create Vlan1', () => {
-    cy.login();
-
+describe('Preset Vlans', () => {
+  function createVlan(vlan: Vlan) {
     cy.intercept('POST', `/v1/harvester/k8s.cni.cncf.io.network-attachment-definitions`).as('create');
 
-    const name = 'vlan1';
-    const namespace = 'default';
+    const name = vlan.name;
+    const namespace = vlan.namespace;
     network.create({
       name,
       namespace,
-      vlan: '1',
-      clusterNetwork: 'mgmt',
+      vlan: vlan.vlan,
+      clusterNetwork: vlan.clusterNetwork,
     })
 
     table.clickFlatListBtn();
 
-    table.find(name, 1, namespace, 2).find('td').eq(6).should('contain', 'Active')
+    table.find(name, 1, namespace, 2).find('td').eq(5).should('contain', 'Active')
+  }
+
+  it('Create Vlan1', () => {
+    const vlanIDs = Cypress.env('vlanIDs') || [];
+    const vlan = vlanIDs[0]
+
+    cy.login();
+    
+    createVlan({
+      name: `vlan${vlan}`,
+      namespace: 'default',
+      vlan,
+      clusterNetwork: 'mgmt',
+    })
+  });
+
+  it('Create Vlan2', () => {
+    const vlanIDs = Cypress.env('vlanIDs') || [];
+    const vlan = vlanIDs[1]
+
+    cy.login();
+    
+    createVlan({
+      name: `vlan${vlan}`,
+      namespace: 'default',
+      vlan,
+      clusterNetwork: 'mgmt',
+    })
   });
 });
