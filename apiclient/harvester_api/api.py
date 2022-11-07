@@ -4,14 +4,11 @@ import requests
 from requests.packages.urllib3.util.retry import Retry
 
 from .managers import (HostManager, KeypairManager, ImageManager,
-                       NetworkManager, VolumeManager, TemplateManager)
+                       NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager)
 
 
 class HarvesterAPI:
     API_VERSION = "harvesterhci.io/v1beta1"
-
-    _supportbundle = ("apis/{{API_VERSION}}/namespaces/harvester-system"
-                      "/supportbundles/{uid}{download}")
 
     # not used
     first_login = "v1/management.cattle.io.setting/first-login"
@@ -40,6 +37,7 @@ class HarvesterAPI:
         self.networks = NetworkManager(self)
         self.volumes = VolumeManager(self)
         self.templates = TemplateManager(self)
+        self.supportbundle = SupportBundlemanager(self)
 
     def __repr__(self):
         return f"HarvesterAPI({self.endpoint!r}, {self.session.headers['Authorization']!r})"
@@ -88,12 +86,3 @@ class HarvesterAPI:
         path = "v1/management.cattle.io.clusters/local?action=generateKubeconfig"
         r = self._post(path)
         return r.json()['config']
-
-    def get_support_bundle(self, uid="", download=False):
-        pass
-
-    def create_support_bundle(self):
-        pass
-
-    def delete_support_bundle(self, uid):
-        pass
