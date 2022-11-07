@@ -9,9 +9,8 @@ const login = new LoginPage();
 
 describe('Add a network to an existing VM with only 1 network', () => {
   const VM_NAME = generateName('test-network');
-  const vlanEnv = Cypress.env('vlans');
-  const NETWORK_1 = vlanEnv[0]
-  const NETWORK_2 = vlanEnv[1]
+  const NETWORK_1 = 'vlan1'
+  const NETWORK_2 = 'vlan2'
   const NAMESPACE = 'default'
 
   beforeEach(() => {
