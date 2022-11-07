@@ -98,3 +98,32 @@ def support_bundle_state():
 
     with NamedTemporaryFile() as f:
         yield SupportBundle(f)
+
+
+@pytest.fixture(scope="session")
+def expected_settings():
+    return {
+        'additional-ca',
+        'auto-disk-provision-paths',
+        'backup-target',
+        'cluster-registration-url',
+        'containerd-registry',
+        'http-proxy',
+        'log-level',
+        'overcommit-config',
+        'release-download-url',
+        'server-version',
+        'ssl-certificates',
+        'ssl-parameters',
+        'storage-network',
+        'support-bundle-image',
+        'support-bundle-namespaces',
+        'support-bundle-timeout',
+        'ui-index',
+        'ui-plugin-index',
+        'ui-source',
+        'upgrade-checker-enabled',
+        'upgrade-checker-url',
+        'vip-pools',
+        'vm-force-reset-policy',
+    }
