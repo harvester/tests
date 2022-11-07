@@ -239,7 +239,8 @@ def pytest_configure(config):
         ('images', ("marker to run image tests")),
         ("networks", ("marker to run vlan network tests")),
         ("volumes", ("marker to run volume tests")),
-        ("templates", ("marker to run VM template tests"))
+        ("templates", ("marker to run VM template tests")),
+        ("support_bundle", ("marker to run Support Bundle tests"))
     ]
 
     for m, msg in markers:

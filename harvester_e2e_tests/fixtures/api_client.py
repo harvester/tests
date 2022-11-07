@@ -86,3 +86,15 @@ def fake_image_file():
         f.seek(10 * 1024 ** 2 - 1)  # 10MB
         f.write(b"\0")
         yield Path(f.name)
+
+
+@pytest.fixture(scope="session")
+def support_bundle_state():
+    class SupportBundle:
+        def __init__(self, fio):
+            self.uid = ""
+            self.files = list()  # for checking file name
+            self.fio = fio  # for checking file content
+
+    with NamedTemporaryFile() as f:
+        yield SupportBundle(f)
