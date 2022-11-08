@@ -141,7 +141,7 @@ describe('Preset Vlans', () => {
 
     table.clickFlatListBtn();
 
-    table.find(name, 1, namespace, 2).find('td').eq(5).should('contain', 'Active')
+    table.find(name, 1, namespace, 2).find('td').eq(6).should('contain', 'Active')
   }
 
   it('Create Vlan1', () => {
