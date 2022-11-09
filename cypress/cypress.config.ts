@@ -48,8 +48,13 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       return require('./plugins/index.js')(on, config)
     },
-    specPattern:
+    specPattern: [
+      './testcases/dashboard/*.spec.ts',
+      './testcases/settings/*.spec.ts',
+      './testcases/image/*.spec.ts',
+      './testcases/networks/*.spec.ts',
       './testcases/**/*.spec.ts',
+    ],
     supportFile: './support/index.js',
     baseUrl: 'https://192.168.0.131',
     experimentalSessionAndOrigin: true,
