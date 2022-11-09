@@ -26,7 +26,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.keypairs
 class TestKeypairsNegative:
@@ -62,7 +62,7 @@ class TestKeypairsNegative:
         assert "Invalid" in data.get("reason")
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.keypairs
 class TestKeypairs:
     @pytest.mark.dependency(depends=["delete_keypair_negative", "create_keypair_negative"],

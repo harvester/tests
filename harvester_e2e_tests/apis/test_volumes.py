@@ -30,7 +30,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.volumes
 class TestVolumesNegative:
@@ -59,7 +59,7 @@ class TestVolumesNegative:
         assert "Invalid" == data.get("reason"), (code, data)
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.volumes
 class TestVolumes:
     def test_create(self, api_client, unique_name):

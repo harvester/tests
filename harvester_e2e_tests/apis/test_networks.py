@@ -27,7 +27,7 @@ pytest_plugins = [
 VLAN_ID = 4000
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.networks
 class TestNetworksNegative:
@@ -58,7 +58,7 @@ class TestNetworksNegative:
         assert "Invalid" == data.get("reason"), (code, data)
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.networks
 class TestNetworks:
     def test_create(self, api_client, unique_name):

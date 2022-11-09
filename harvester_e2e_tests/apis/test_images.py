@@ -25,7 +25,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.images
 class TestImagesNegative:
@@ -56,7 +56,7 @@ class TestImagesNegative:
         assert "Invalid" == data.get("reason"), (code, data)
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.images
 class TestImages:
     @pytest.mark.dependency(name="create_image")
@@ -139,7 +139,7 @@ class TestImages:
 
 
 @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.images
 def test_create_with_invalid_url(api_client, unique_name):

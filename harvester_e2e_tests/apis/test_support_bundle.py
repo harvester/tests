@@ -28,7 +28,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.support_bundle
 class TestSupportBundleNegative:
@@ -45,8 +45,7 @@ class TestSupportBundleNegative:
         assert "NotFound" == data.get('reason'), (code, data)
 
 
-@pytest.mark.p1
-@pytest.mark.negative
+@pytest.mark.p0
 @pytest.mark.support_bundle
 class TestSupportBundle:
     @pytest.mark.dependency(name="create support bundle")

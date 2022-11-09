@@ -28,7 +28,7 @@ DEFAULT_TEMPLATES = 4
 DEFAULT_TEMPLATES_NAMESPACE = 'harvester-public'
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.templates
 @pytest.mark.negative
 class TestVMTemplateNegative:
@@ -51,7 +51,7 @@ class TestVMTemplateNegative:
         assert "NotFound" == data.get("reason"), (code, data)
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.templates
 class TestVMTemplate:
     def test_create(self, api_client, unique_name):

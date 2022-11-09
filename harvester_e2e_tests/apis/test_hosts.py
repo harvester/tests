@@ -28,7 +28,7 @@ pytest_plugins = [
 
 @pytest.mark.dependency(name="get_host")
 @pytest.mark.hosts
-@pytest.mark.p1
+@pytest.mark.p0
 def test_get_host(api_client):
     # Case 1: Get all nodes
     status_code, nodes_info = api_client.hosts.get()
@@ -77,7 +77,7 @@ def test_maintenance_mode(api_client):
 
 @pytest.mark.dependency(depends=["get_host"])
 @pytest.mark.hosts
-@pytest.mark.p1
+@pytest.mark.p0
 def test_update_node(api_client):
     """
     Test the hosts are the nodes which make the cluster
@@ -158,7 +158,7 @@ def test_update_using_yaml(api_client):
 
 
 @pytest.mark.dependency(depends=["get_host"], name="delete_host")
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.hosts
 @pytest.mark.delete_host
 def test_delete_host(api_client, wait_timeout):
