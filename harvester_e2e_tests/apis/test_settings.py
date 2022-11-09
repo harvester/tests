@@ -22,7 +22,7 @@ pytest_plugins = [
   ]
 
 
-@pytest.mark.p1
+@pytest.mark.p0
 @pytest.mark.settings
 def test_get_all_settings(api_client, expected_settings):
     code, data = api_client.settings.get()

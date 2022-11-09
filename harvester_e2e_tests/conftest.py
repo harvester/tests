@@ -183,6 +183,7 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
+        ('p0', ('mark test to run only p1 tests ')),
         ('p1', ('mark test to run only p1 tests ')),
         ('p2', ('mark test to run only p2 tests ')),
         ("negative", ("marker negative testing")),
