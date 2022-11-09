@@ -1,7 +1,7 @@
 ---
 title: Add backup-taget connection status
 category: UI
-tags: dashboard, settings, p1, acceptance
+tag: dashboard, settings, p1, acceptance
 ---
 Ref: https://github.com/harvester/harvester/issues/2631
 

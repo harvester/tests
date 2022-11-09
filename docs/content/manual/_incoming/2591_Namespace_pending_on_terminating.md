@@ -1,7 +1,7 @@
 ---
 title: Namespace pending on terminating
 category: UI
-tags: namespaces, p1, acceptance
+tag: namespaces, p1, acceptance
 ---
 Ref: https://github.com/harvester/harvester/issues/2591
 

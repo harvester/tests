@@ -1,7 +1,7 @@
 ---
 title: Add websocket disconnect notification
 category: UI
-tags: dashboard, p2, functional
+tag: dashboard, p2, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2186
 

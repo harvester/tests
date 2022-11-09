@@ -1,7 +1,7 @@
 ---
 title: VolumeSnapshot Management
 category: UI
-tags: VM, p1, functional
+tag: VM, p1, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2296
 

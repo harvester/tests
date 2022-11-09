@@ -1,7 +1,7 @@
 ---
 title: VM Snapshot support
 category: UI
-tags: VM, volume, p1, integration
+tag: VM, volume, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/553
 

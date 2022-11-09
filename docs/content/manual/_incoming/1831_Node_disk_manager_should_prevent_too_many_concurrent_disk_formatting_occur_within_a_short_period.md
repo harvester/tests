@@ -1,7 +1,7 @@
 ---
 title: Node disk manager should prevent too many concurrent disk formatting occur within a short period
 category: console
-tags: dashboard, p2, functional
+tag: dashboard, p2, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/1831
 

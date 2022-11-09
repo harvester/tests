@@ -1,7 +1,7 @@
 ---
 title: Config logging in Harvester Dashboard
 category: UI
-tags: dashboard, p1, functional
+tag: dashboard, p1, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2646
 

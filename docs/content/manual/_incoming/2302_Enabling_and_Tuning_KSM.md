@@ -1,7 +1,7 @@
 ---
 title: Enabling and Tuning KSM
 category: UI
-tags: dashboard, p1, integration
+tag: dashboard, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/2302
 

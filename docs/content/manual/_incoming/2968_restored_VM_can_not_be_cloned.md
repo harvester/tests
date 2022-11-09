@@ -1,7 +1,7 @@
 ---
 title: restored VM can not be cloned
 category: UI
-tags: VM, volume, backup, p1, integration
+tag: VM, volume, backup, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/2968
 

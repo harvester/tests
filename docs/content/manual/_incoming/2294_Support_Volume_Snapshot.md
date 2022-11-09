@@ -1,7 +1,7 @@
 ---
 title: Support Volume Snapshot
 category: UI
-tags: volume, p1, functional
+tag: volume, p1, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2294
 

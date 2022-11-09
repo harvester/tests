@@ -1,7 +1,7 @@
 ---
 title: Wrong mgmt bond MTU size during initial ISO installation
 category: console
-tags: installer, p2, functional
+tag: installer, p2, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2437
 

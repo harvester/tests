@@ -1,7 +1,7 @@
 ---
 title: Create a harvester-specific StorageClass for Longhorn
 category: UI
-tags: VM, p1, integration
+tag: VM, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/2692
 

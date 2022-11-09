@@ -1,7 +1,7 @@
 ---
 title: Support configuring a VLAN at the management interface in installer config
 category: console
-tags: installer, p1, functional
+tag: installer, p1, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/1390, https://github.com/harvester/harvester/issues/1647
 

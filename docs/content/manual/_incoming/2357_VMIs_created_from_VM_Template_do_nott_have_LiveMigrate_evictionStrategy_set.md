@@ -1,7 +1,7 @@
 ---
 title: VMIs created from VM Template don't have LiveMigrate evictionStrategy set
 category: UI
-tags: VM, p1, functional
+tag: VM, p1, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2357
 

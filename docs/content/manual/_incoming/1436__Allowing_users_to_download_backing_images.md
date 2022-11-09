@@ -1,7 +1,7 @@
 ---
 title: Download backing images
 category: UI
-tags: image, p1, functional
+tag: image, p1, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/1436
 
