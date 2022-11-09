@@ -438,9 +438,9 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-blank-form-label/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form-label/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-windows-vm/</loc>
   </url><url>
@@ -488,9 +488,9 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2376-2379-delete-vm-template-default-version/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/images/1602-delete-vm-with-exported-image/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/1602-delete-vm-with-exported-image/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/images/1602-delete-vm-with-exported-image/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/delete-volume-that-is-not-attached-to-vm/</loc>
   </url><url>
@@ -930,9 +930,9 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/authentication/ui_password_show_btn/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/images/1602-update-labels-on-image-after-vm-delete/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/1602-update-labels-on-image-after-vm-delete/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/images/1602-update-labels-on-image-after-vm-delete/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2546-upgrade-guest-k8s-version-upgrade-cloud-provider/</loc>
   </url><url>

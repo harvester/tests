@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/images/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Add Labels (e2e_be)</title>
+      <title>Add Labels (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/add-labels/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -16,7 +16,7 @@
     </item>
     
     <item>
-      <title>Create Images with valid image URL (e2e_be)</title>
+      <title>Create Images with valid image URL (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/create-images-with-valid-image-url/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -25,7 +25,7 @@
     </item>
     
     <item>
-      <title>Create with invalid image (e2e_be)</title>
+      <title>Create with invalid image (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/negative-create-with-invalid-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -34,7 +34,7 @@
     </item>
     
     <item>
-      <title>Delete the image	(e2e_be)</title>
+      <title>Delete the image	(e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/delete-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -43,7 +43,7 @@
     </item>
     
     <item>
-      <title>Delete VM with exported image</title>
+      <title>Delete VM with exported image(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/1602-delete-vm-with-exported-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -52,7 +52,7 @@
     </item>
     
     <item>
-      <title>Edit images (e2e_be)</title>
+      <title>Edit images (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/edit-images/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -61,7 +61,7 @@
     </item>
     
     <item>
-      <title>Update image labels after deleting source VM</title>
+      <title>Update image labels after deleting source VM(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/1602-update-labels-on-image-after-vm-delete/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -88,7 +88,7 @@
     </item>
     
     <item>
-      <title>Upload ISO Image</title>
+      <title>Upload ISO Image(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/upload-iso-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

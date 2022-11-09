@@ -35,7 +35,7 @@ Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrat
     </item>
     
     <item>
-      <title>Create image from Volume</title>
+      <title>Create image from Volume(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-image-from-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -53,15 +53,6 @@ Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrat
     </item>
     
     <item>
-      <title>Create volume root disk VM Image Form</title>
-      <link>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</guid>
-      <description> Navigate to volumes page Click Create Select an image Input a size Click Create Expected Results VM should create VM should pass health checks </description>
-    </item>
-    
-    <item>
       <title>Create volume root disk VM Image Form with label (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -71,7 +62,16 @@ Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrat
     </item>
     
     <item>
-      <title>Delete volume that is not attached to a VM (e2e_be)</title>
+      <title>Create volume root disk VM Image Form(e2e_fe)</title>
+      <link>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</guid>
+      <description> Navigate to volumes page Click Create Select an image Input a size Click Create Expected Results VM should create VM should pass health checks </description>
+    </item>
+    
+    <item>
+      <title>Delete volume that is not attached to a VM (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/delete-volume-that-is-not-attached-to-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -80,7 +80,7 @@ Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrat
     </item>
     
     <item>
-      <title>Delete volume that was attached to VM but now is not (e2e_be)</title>
+      <title>Delete volume that was attached to VM but now is not (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/delete-volume-that-was-attached-to-vm-but-is-not-now/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
