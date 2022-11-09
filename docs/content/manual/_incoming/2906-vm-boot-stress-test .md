@@ -24,7 +24,7 @@ title: VM boot stress test
 
 
 ## Expected Results
-1. Pass more than 300 rounds of the I/O write test, should encounter data corruption issue and VM is alive
+1. Pass more than 300 rounds of the I/O write test, **Should Not** encounter data corruption issue and VM is alive
     ```
     opensuse:~ # xfs_info /dev/vda3
     meta-data=/dev/vda3              isize=512    agcount=13, agsize=653887 blks

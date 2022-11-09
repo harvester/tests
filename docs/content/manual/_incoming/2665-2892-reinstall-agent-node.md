@@ -55,8 +55,6 @@ title: Reinstall agent node
 1. After we have 3 management nodes, provision a new node and check if it can join the cluster. (node 4)
 
 ## Expected Results
-
-### Test Result 1
 1. Can successfully re-join the management node after upgrade 
   ![image](https://user-images.githubusercontent.com/29251855/196159969-9c8acb11-b9fe-4501-94d5-74545579ef4d.png)
 
@@ -64,8 +62,7 @@ title: Reinstall agent node
   ![image](https://user-images.githubusercontent.com/29251855/196164183-20c4498a-c4c6-4033-a527-d3c8ff84f8aa.png)
 
 
-### Test Result 2
-Verified after upgrading from v1.0.3 to `v1.1.0-rc3`,we **can rejoin** the management node and agent node back correctly. 
+1. Verified after upgrading from v1.0.3 to `v1.1.0-rc3`,we **can rejoin** the management node and agent node back correctly. 
 
 1. Successfully re-join the management node after upgrade 
    ![image](https://user-images.githubusercontent.com/29251855/196353489-ea323d20-4028-411a-ba32-5fbb7ae4ae2f.png)

@@ -167,19 +167,16 @@ title: Support private registry for Rancher agent image in Air-gap
     ![image](https://user-images.githubusercontent.com/29251855/193791385-5107385d-66c5-44a3-a298-82c44af929c7.png)
 
 ## Expected Results
-### Test Result 1
 1. Update the Harvester containerd-registry setting with private registry, confirm **can** pull image and **deploy** nginx service correctly from private registry
 
     ![image](https://user-images.githubusercontent.com/29251855/193785720-970d9f18-76c6-4818-ae6a-e6239baf8ebe.png)
     ![image](https://user-images.githubusercontent.com/29251855/193787642-397ccf3a-144f-4785-9601-12a9017be325.png)
     ![image](https://user-images.githubusercontent.com/29251855/193787780-fc46a061-bbca-4051-839c-c4c092e67414.png)
 
-### Test Result 2
 1. Change the Harvester `containerd-registry` to default value, the nginx 1.22 cannot be deployed since no private registry assigned. 
 
     ![image](https://user-images.githubusercontent.com/29251855/193790572-d5f5c92e-cbb9-4528-9c01-748d37940bc1.png)
 
-### Test Result 3
 1. **Add back** the the Harvester containerd-registry setting to private registry, confirm **can** pull image and **deploy** nginx service correctly from private registry
 
     ![image](https://user-images.githubusercontent.com/29251855/193791385-5107385d-66c5-44a3-a298-82c44af929c7.png)
