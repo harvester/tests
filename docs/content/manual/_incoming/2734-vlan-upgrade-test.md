@@ -74,26 +74,12 @@ title: VLAN Upgrade Test
 
 
 ## Expected Results
-
-### Test 1 Result 
 1. Can successfully upgrade to v1.1.0
 1. Check the network bridge `mgmt-br` exists `ip a`
-1. Check there is `vlan 1` created on default cluster network
-1. Check the yaml content of vlan1
-1. Check new network feature and UI work on v1.1.0 
-
-
-### Test 2 Result
-1. Can successfully upgrade to v1.1.0
-1. Check the network bridge mgmt-br exists `ip a`
-1. Check there is vlan with id created on related cluster network
-1. Check the yaml content of available vlan `91`
-1. Check new network feature and UI, `vlan1` on `mgmt`, `vlan91` on `vlan`
-
-### Test 3 Result 
-1. Check the network bridge exists
-1. Check the cluster networks contains `mgmt` and `vlan`
-1. Check there is vlan with id created on related cluster network
-1. Check the yaml content of available vlan
-1. Check the harvester network config vlan content
-1. Check new network feature and UI
+1. Check there is `vlan 1` created on default cluster network (For Test plan1)
+1. Check there is vlan with id created on related cluster network (For Test plan2)
+1. Check the cluster networks contains `mgmt` and `vlan` (For Test plan3)
+1. Check the yaml content of vlan1 (For Test plan1)
+1. Check the yaml content of available vlan `91` (For Test plan2)
+1. Check new network feature and UI work on v1.1.0
+1. Check new network feature and UI, `vlan1` on `mgmt`, `vlan91` on `vlan` (For Test plan2)

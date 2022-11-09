@@ -16,107 +16,7 @@ title: Upgrade support of audit and event log
 
 ## Expected Results
 
-### Test Result 1: Singe node upgrade check
-
-### Singe node upgrade check 
-1. Check the following files and pods have no error 
-1. logging related pods 
-    ```
-    n1-103:~ # kubectl get pods -n cattle-logging-system 
-    NAME                                                      READY   STATUS      RESTARTS      AGE
-    harvester-default-event-tailer-0                          1/1     Running     3 (39m ago)   69m
-    rancher-logging-574448c578-lhvbd                          1/1     Running     3 (39m ago)   70m
-    rancher-logging-kube-audit-fluentbit-7kq99                1/1     Running     3 (39m ago)   69m
-    rancher-logging-kube-audit-fluentd-0                      2/2     Running     6 (39m ago)   70m
-    rancher-logging-kube-audit-fluentd-configcheck-ac2d4553   0/1     Completed   0             70m
-    rancher-logging-rke2-journald-aggregator-4f9jl            1/1     Running     3 (39m ago)   70m
-    rancher-logging-root-fluentbit-tcd7z                      1/1     Running     3 (39m ago)   69m
-    rancher-logging-root-fluentd-0                            2/2     Running     6 (39m ago)   69m
-    rancher-logging-root-fluentd-configcheck-ac2d4553         0/1     Completed   0             70m
-    ```
-
-1. config file exists 
-    ```
-    n1-103:~ # cat /etc/rancher/rke2/config.yaml.d/90-harvester-server.yaml
-    cni: multus,canal
-    cluster-cidr: 10.52.0.0/16
-    service-cidr: 10.53.0.0/16
-    cluster-dns: 10.53.0.10
-    tls-san:
-        - 192.168.122.141
-    audit-policy-file: /etc/rancher/rke2/config.yaml.d/92-harvester-kube-audit-policy.yaml
-    ```
-    ```
-    n1-103:~ # cat /etc/rancher/rke2/config.yaml.d/92-harvester-kube-audit-policy.yaml
-    apiVersion: audit.k8s.io/v1
-    kind: Policy
-    omitStages:
-        - "ResponseStarted"
-        - "ResponseComplete"
-    rules:
-        # Any include/exclude rules are added here
-        # A catch-all rule to log all other (create/delete/patch) requests at the Metadata level
-        - level: Metadata
-        verbs: ["create", "delete", "patch"]
-        omitStages:
-            - "ResponseStarted"
-            - "ResponseComplete"
-    ```
-
-1. /oem/99_custom.yaml is patched 
-    ```
-    n1-103:~ # grep "92-harvester" /oem/99_custom.yaml -5
-                cluster-cidr: 10.52.0.0/16
-                service-cidr: 10.53.0.0/16
-                cluster-dns: 10.53.0.10
-                tls-san:
-                    - 192.168.122.141
-                audit-policy-file: /etc/rancher/rke2/config.yaml.d/92-harvester-kube-audit-policy.yaml
-                encoding: ""
-                ownerstring: ""
-            - path: /etc/rancher/rke2/config.yaml.d/90-harvester-agent.yaml
-                permissions: 384
-                owner: 0
-    --
-                    valuesContent: |-
-                    flannel:
-                        iface: harvester-mgmt
-                encoding: ""
-                ownerstring: ""
-            - path: /etc/rancher/rke2/config.yaml.d/92-harvester-kube-audit-policy.yaml
-                permissions: 384
-                owner: 0
-                group: 0
-                content: |
-                apiVersion: audit.k8s.io/v1
-    ```
-    ```
-    vim /oem/99_custom.yaml
-    
-    - path: /etc/rancher/rke2/config.yaml.d/92-harvester-kube-audit-policy.yaml
-                permissions: 384
-                owner: 0
-                group: 0
-                content: |
-                apiVersion: audit.k8s.io/v1
-                kind: Policy
-                omitStages:
-                    - "ResponseStarted"
-                    - "ResponseComplete"
-                rules:
-                    # Any include/exclude rules are added here
-                    # A catch-all rule to log all other (create/delete/patch) requests at the Metadata level
-                    - level: Metadata
-                    verbs: ["create", "delete", "patch"]
-                    omitStages:
-                        - "ResponseStarted"
-                        - "ResponseComplete"
-                encoding: ""
-                ownerstring: ""
-    ```
-
-### Test Result 2: Multi nodes upgrade check 
-### Multi nodes upgrade check 
+Check both Single and Multi nodes upgrade of the following:
 1. Check the following files and pods have no error 
 1. logging related pods 
     ```
@@ -228,9 +128,7 @@ title: Upgrade support of audit and event log
                 ownerstring: ""
     ```
 
-
-### Test Result 3: 
-Check the UI of `Monitoring & Logging` work as in fresh installed cluster after upgrade to `v1.1.0-rc2`
+1. Check the UI of `Monitoring & Logging` work as in fresh installed cluster after upgrade to `v1.1.0-rc2`
 
 1. Cluster Outputs
     ![image](https://user-images.githubusercontent.com/29251855/195548105-8c303a21-77b6-4d27-b127-314579f3dd0c.png)

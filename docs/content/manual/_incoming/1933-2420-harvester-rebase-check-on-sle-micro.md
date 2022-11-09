@@ -4,7 +4,7 @@ title: Harvester rebase check on SLE Micro
 
 * Related issues: [#1933](https://github.com/harvester/harvester/issues/1933) [FEATURE] Rebase Harvester on SLE Micro for Rancher
 
-Related issues: [#2420](https://github.com/harvester/harvester/issues/2420) [FEATURE] support bundle: support SLE Micro OS
+* Related issues: [#2420](https://github.com/harvester/harvester/issues/2420) [FEATURE] support bundle: support SLE Micro OS
   
 ## Category: 
 * System
