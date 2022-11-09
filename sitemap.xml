@@ -1020,6 +1020,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/vm_backup_metadata/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/2274-vm-import/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2032-2370-vm-ip-lableled-per-network-interface/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/vm_on_error_state/</loc>

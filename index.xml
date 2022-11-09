@@ -4579,6 +4579,16 @@ Verify Items Metadata should be removed along with VM deleted Metadata should be
     </item>
     
     <item>
+      <title>VM Import/Migration</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/2274-vm-import/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/2274-vm-import/</guid>
+      <description>Related issues: #2274 [Feature] VM Import/Migration Category: Virtual Machine Test Information Test Environment:
+1 node harvester on local kvm machine Harvester version: v1.1.0-rc1 Vsphere: 7.0 Openstack: Simulated using running devstack Download kubeconfig for harvester cluster Environment Setup Prepare Harvester master node Prepare vsphere setup (or use existing setup) Prepare a devstack cluster (Openstack 16.2) (stable/train) Verification Steps Verify VmwareSource Define a secret for your vmware cluster apiVersion: v1 kind: Secret metadata: name: vsphere-credentials namespace: default stringData: &amp;#34;username&amp;#34;: &amp;#34;user&amp;#34; &amp;#34;password&amp;#34;: &amp;#34;password&amp;#34; Define a VmwareSource Object apiVersion: migration.</description>
+    </item>
+    
+    <item>
       <title>VM IP addresses should be labeled per network interface</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2032-2370-vm-ip-lableled-per-network-interface/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
