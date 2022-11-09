@@ -1,7 +1,7 @@
 ---
 title: enhance double check of VM's resource modification
 category: UI
-tags: VM, p1, acceptance
+tag: VM, p1, acceptance
 ---
 Ref: https://github.com/harvester/harvester/issues/2869
 

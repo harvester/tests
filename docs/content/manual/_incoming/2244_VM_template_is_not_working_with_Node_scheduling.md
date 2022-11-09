@@ -1,7 +1,7 @@
 ---
 title: VM template is not working with Node scheduling
 category: UI
-tags: VM, p1, functional
+tag: VM, p1, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2244
 

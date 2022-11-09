@@ -1,7 +1,7 @@
 ---
 title: Node join fails with self-signed certificate
 category: console
-tags: settings, p1, integration
+tag: settings, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/2736
 

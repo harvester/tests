@@ -1,7 +1,7 @@
 ---
 title: Dedicated storage network
 category: UI
-tags: network, settings, volume, p1, integration
+tag: network, settings, volume, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/1055
 

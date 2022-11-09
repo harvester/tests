@@ -1,7 +1,7 @@
 ---
 title: enhance node scheduling when vm selects network
 category: UI
-tags: network, VM settings, p1, integration
+tag: network, VM settings, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/2982
 

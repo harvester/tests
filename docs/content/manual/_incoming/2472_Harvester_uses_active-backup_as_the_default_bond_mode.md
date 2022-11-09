@@ -1,7 +1,7 @@
 ---
 title: Harvester uses active-backup as the default bond mode
 category: console
-tags: installer, p1, functional
+tag: installer, p1, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2472
 

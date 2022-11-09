@@ -1,7 +1,7 @@
 ---
 title: collect Fleet logs and YAMLs in support bundles
 category: UI
-tags: dashboard, p2, functional
+tag: dashboard, p2, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2297
 

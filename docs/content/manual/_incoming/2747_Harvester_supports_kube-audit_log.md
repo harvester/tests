@@ -1,7 +1,7 @@
 ---
 title: Harvester supports kube-audit log
 category: console
-tags: dashboard, p1, integration
+tag: dashboard, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/2747
 

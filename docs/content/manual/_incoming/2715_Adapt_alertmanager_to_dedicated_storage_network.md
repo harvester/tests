@@ -1,7 +1,7 @@
 ---
 title: Adapt alertmanager to dedicated storage network
 category: UI
-tags: dashboard, network, settings, volume, p1, integration
+tag: dashboard, network, settings, volume, p1, integration
 ---
 Ref: https://github.com/harvester/harvester/issues/2715
 

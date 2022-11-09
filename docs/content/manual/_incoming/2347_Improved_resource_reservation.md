@@ -1,7 +1,7 @@
 ---
 title: Improved resource reservation
 category: UI
-tags: dashboard, p2, functional
+tag: dashboard, p2, functional
 ---
 Ref: https://github.com/harvester/harvester/issues/2347, https://github.com/harvester/harvester/issues/1700
 

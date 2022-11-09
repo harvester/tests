@@ -1,7 +1,7 @@
 ---
 title: VMs can't start if a node contains more than ~60 VMs
 category: console
-tags: VM, p1, acceptance
+tag: VM, p1, acceptance
 ---
 Ref: https://github.com/harvester/harvester/issues/2722
 

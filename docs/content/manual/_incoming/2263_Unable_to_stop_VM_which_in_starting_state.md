@@ -1,7 +1,7 @@
 ---
 title: Unable to stop VM which in starting state
 category: UI
-tags: VM, p2, acceptance
+tag: VM, p2, acceptance
 ---
 Ref: https://github.com/harvester/harvester/issues/2263
 
