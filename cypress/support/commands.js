@@ -4,7 +4,12 @@ import { Constants } from '../constants/constants'
 const constants = new Constants();
 
 require('cy-verify-downloads').addCustomCommand();
-Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cypress.env('password')) => {
+
+Cypress.Commands.add('login', (params = {}) => {
+    const url = params.url || constants.dashboardUrl;
+    const username = params.username ||   Cypress.env('username');
+    const password = params.password || Cypress.env('password');
+
     const isDev = Cypress.env('NODE_ENV') === 'dev';
     const baseUrl = isDev ? Cypress.config('baseUrl') : `${Cypress.config('baseUrl')}/dashboard`;
     cy.visit(`/auth/login`);
@@ -24,9 +29,9 @@ Cypress.Commands.add('login', (username = Cypress.env('username'), password = Cy
           'x-api-csrf': CSRF
         }
       }).then(() => {
-        cy.visit(constants.dashboardUrl); // Login successfully to the dashboard page
+        cy.visit(url); // After successful login, you can switch to the specified page, which is the home page by default
         cy.get('.initial-load-spinner', { timeout: constants.timeout.maxTimeout })
-        cy.get("main h1 span").contains("Harvester")
+        cy.get(".dashboard-content .product-name").contains("Harvester")
       });
     })
 });

@@ -6,7 +6,6 @@ import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
 import { ImagePage } from "@/pageobjects/image.po";
-import { find } from "cypress/types/lodash";
 import CruResourcePo from '@/utils/components/cru-resource.po';
 
 const constants = new Constants();
@@ -193,7 +192,11 @@ export class VmsPage extends CruResourcePo {
     cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}*`).as('delete');
     cy.get(this.confirmRemove).contains('Delete').click();
     cy.wait('@delete').then(res => {
-      expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+      cy.window().then((win) => {
+        const id = `${namespace}/${name}`;
+        super.checkDelete(this.type, id)
+        expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+      })
     })
   }
 

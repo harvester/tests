@@ -1,6 +1,5 @@
-const isDev = Cypress.env('NODE_ENV') === 'dev';
 export class Constants {
-    public timeout = { timeout: 10000, maxTimeout: 60000, uploadTimeout: 300000, downloadTimeout: 120000  };
+    public timeout = { timeout: 10000, maxTimeout: 60000, uploadTimeout: 300000, downloadTimeout: 120000,   };
     public username = Cypress.env("username");
     public password = Cypress.env("password");
     public setupUrl = '/auth/setup/';
@@ -11,7 +10,11 @@ export class Constants {
     public hostsPage = '/harvester/c/local/harvesterhci.io.host';
     public supportPage = '/harvester/c/local/support';
     public vmPage = '/harvester/c/local/kubevirt.io.virtualmachine';
-    public settingBaseUrl = '/harvester/c/local/harvesterhci.io.setting';
+    public settingUrl = '/harvester/c/local/harvesterhci.io.setting';
     public volumePage = '/harvester/c/local/harvesterhci.io.volume';
     public imagePage = '/harvester/c/local/harvesterhci.io.virtualmachineimage';
+}
+
+export const PageUrl = {
+    setting: '/harvester/c/local/harvesterhci.io.setting'
 }
