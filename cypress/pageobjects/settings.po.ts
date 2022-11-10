@@ -62,7 +62,7 @@ export default class SettingsPagePo extends CruResource {
     openVlan(value: string) {
         const radio = new RadioButtonPo('.radio-group .radio-container', `:contains("Enabled")`);
         radio.input('Enabled');
-        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Default Network Interface ")`).select(value)
+        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Default Network Interface ")`).select({option: value})
     }
 
     setOvercommit(value: OvercommitInterface) {
