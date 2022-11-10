@@ -76,14 +76,39 @@ export default class CruResourcePo extends PagePo {
     cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}*`).as('delete');
     cy.get(this.confirmRemove).contains('Delete').click();
     cy.wait('@delete').then(res => {
-      expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+      cy.window().then((win) => {
+        this.checkDelete(this.storeType as string, `${namespace}/name`);
+        expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+      })
+    })
+  }
+
+  public checkDelete(type: string, id: string) {
+    cy.window().then(async (win) => {
+      let times = 0;
+      await new Cypress.Promise((resolve, reject) => {
+        const timer = setInterval(() => {
+          times = times + 1;
+          if (times > 40) {
+            cy.log(`${this.type} can't removed from the backend`)
+            reject()
+          }
+
+          const resource = (win as any).$nuxt.$store.getters['harvester/byId'](this.type, id);
+
+          if (resource === undefined) {
+            cy.log(`${this.type} has been removed from the backend`)
+            clearInterval(timer);
+            resolve()
+          }
+        }, 2000)
+      })
     })
   }
 
   public deleteProgramlly(id:string, retries:number = 3) {
     cy.wrap(document.cookie).then(() => {
       const { CSRF } = cookie.parse(document.cookie);
-      const storeType = this.storeType || this.realType
 
       cy.request({
         url: `/v1/harvester/${this.realType}s/${ id }`,
