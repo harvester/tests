@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.apis.test_backup_target API documentation</title>
+<title>harvester_e2e_tests.integration.test_backup_target API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.apis.test_backup_target</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integration.test_backup_target</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -152,7 +152,7 @@ def test_invalid_backup_target_s3(request, admin_session,
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.apis.test_backup_target.test_invalid_backup_target_nfs"><code class="name flex">
+<dt id="harvester_e2e_tests.integration.test_backup_target.test_invalid_backup_target_nfs"><code class="name flex">
 <span>def <span class="ident">test_invalid_backup_target_nfs</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
 </code></dt>
 <dd>
@@ -206,7 +206,7 @@ def test_invalid_backup_target_nfs(request, admin_session,
         backup_target_data[&#39;metadata&#39;][&#39;state&#39;][&#39;message&#39;])</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.apis.test_backup_target.test_invalid_backup_target_s3"><code class="name flex">
+<dt id="harvester_e2e_tests.integration.test_backup_target.test_invalid_backup_target_s3"><code class="name flex">
 <span>def <span class="ident">test_invalid_backup_target_s3</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
 </code></dt>
 <dd>
@@ -251,7 +251,7 @@ def test_invalid_backup_target_s3(request, admin_session,
         backup_target_data[&#39;metadata&#39;][&#39;state&#39;][&#39;message&#39;])</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.apis.test_backup_target.test_setup_backup_target_nfs"><code class="name flex">
+<dt id="harvester_e2e_tests.integration.test_backup_target.test_setup_backup_target_nfs"><code class="name flex">
 <span>def <span class="ident">test_setup_backup_target_nfs</span></span>(<span>backuptarget_nfs)</span>
 </code></dt>
 <dd>
@@ -267,7 +267,7 @@ def test_setup_backup_target_nfs(backuptarget_nfs):
     pass</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.apis.test_backup_target.test_setup_backup_target_s3"><code class="name flex">
+<dt id="harvester_e2e_tests.integration.test_backup_target.test_setup_backup_target_s3"><code class="name flex">
 <span>def <span class="ident">test_setup_backup_target_s3</span></span>(<span>backuptarget_s3)</span>
 </code></dt>
 <dd>
@@ -296,15 +296,15 @@ def test_setup_backup_target_s3(backuptarget_s3):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.apis" href="index.html">harvester_e2e_tests.apis</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.apis.test_backup_target.test_invalid_backup_target_nfs" href="#harvester_e2e_tests.apis.test_backup_target.test_invalid_backup_target_nfs">test_invalid_backup_target_nfs</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_backup_target.test_invalid_backup_target_s3" href="#harvester_e2e_tests.apis.test_backup_target.test_invalid_backup_target_s3">test_invalid_backup_target_s3</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_backup_target.test_setup_backup_target_nfs" href="#harvester_e2e_tests.apis.test_backup_target.test_setup_backup_target_nfs">test_setup_backup_target_nfs</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_backup_target.test_setup_backup_target_s3" href="#harvester_e2e_tests.apis.test_backup_target.test_setup_backup_target_s3">test_setup_backup_target_s3</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_target.test_invalid_backup_target_nfs" href="#harvester_e2e_tests.integration.test_backup_target.test_invalid_backup_target_nfs">test_invalid_backup_target_nfs</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_target.test_invalid_backup_target_s3" href="#harvester_e2e_tests.integration.test_backup_target.test_invalid_backup_target_s3">test_invalid_backup_target_s3</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_target.test_setup_backup_target_nfs" href="#harvester_e2e_tests.integration.test_backup_target.test_setup_backup_target_nfs">test_setup_backup_target_nfs</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_target.test_setup_backup_target_s3" href="#harvester_e2e_tests.integration.test_backup_target.test_setup_backup_target_s3">test_setup_backup_target_s3</a></code></li>
 </ul>
 </li>
 </ul>

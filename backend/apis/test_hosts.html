@@ -43,284 +43,175 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import copy
-from harvester_e2e_tests import utils
+from time import sleep
+from datetime import datetime, timedelta
+
+import yaml
 import pytest
 
-
 pytest_plugins = [
-    &#39;harvester_e2e_tests.fixtures.api_endpoints&#39;,
-    &#39;harvester_e2e_tests.fixtures.session&#39;,
+    &#34;harvester_e2e_tests.fixtures.api_client&#34;
 ]
 
 
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-def test_get_host(admin_session, harvester_cluster_nodes,
-                  harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-02-Test to get host
-    &#34;&#34;&#34;
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    assert len(host_data[&#39;data&#39;]) == harvester_cluster_nodes
+@pytest.mark.dependency(name=&#34;get_host&#34;)
+@pytest.mark.hosts
+@pytest.mark.p0
+def test_get_host(api_client):
+    # Case 1: Get all nodes
+    status_code, nodes_info = api_client.hosts.get()
+
+    assert status_code == 200, f&#34;Failed to list nodes with error: {nodes_info}&#34;
+    assert len(nodes_info[&#39;data&#39;]) &gt;= 1, &#34;Incorrect hosts amount&#34;
+
+    # Case 2: Get specific node
+    node_id = nodes_info[&#39;data&#39;][-1][&#39;id&#39;]
+
+    status_code, node = api_client.hosts.get(node_id)
+
+    assert status_code == 200, f&#34;Failed ot get node {node_id} with error: {node}&#34;
+    assert node_id == node[&#39;id&#39;], f&#34;Responsed unexpected Node {node[&#39;id&#39;]}&#34;
 
 
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-@pytest.mark.hosts_p2
+@pytest.mark.dependency(depends=[&#34;get_host&#34;], name=&#34;enable_maintenance_mode&#34;)
+@pytest.mark.hosts
 @pytest.mark.p2
-def test_verify_host_maintenance_mode(request, admin_session,
-                                      harvester_api_endpoints):
+def test_maintenance_mode(api_client):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-03-Verify Enabling maintenance mode
         hosts-12-Host with no VMs on it
     &#34;&#34;&#34;
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    # NOTE: always test on the first node for now
-    node_json = host_data[&#39;data&#39;][0]
-    node_name = node_json[&#39;metadata&#39;][&#39;name&#39;]
-    utils.enable_maintenance_mode(request, admin_session,
-                                  harvester_api_endpoints, node_json)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host %s: %s&#39; % (
-        node_name, resp.content)
-    node_json = resp.json()
-    assert node_json[&#34;spec&#34;][&#34;unschedulable&#34;]
-    s = node_json[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]
-    assert s in [&#34;running&#34;, &#34;completed&#34;]
-    utils.disable_maintenance_mode(request, admin_session,
-                                   harvester_api_endpoints, node_json)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host %s: %s&#39; % (
-        node_name, resp.content)
-    node_json = resp.json()
-    assert &#34;unschedulable&#34; not in node_json[&#34;spec&#34;]
-    assert (&#34;harvesterhci.io/maintain-status&#34; not in
-            node_json[&#34;metadata&#34;][&#34;annotations&#34;])
+
+    _, nodes_info = api_client.hosts.get()
+
+    # Test on the last node to avoid affect VIP
+    node = nodes_info[&#39;data&#39;][-1]
+
+    # Case 1: enable
+    status_code, node_stats = api_client.hosts.maintenance_mode(node[&#39;id&#39;], enable=True)
+    maintain_status = node_stats[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]
+
+    assert node_stats[&#34;spec&#34;][&#34;unschedulable&#34;]
+    assert maintain_status in (&#34;running&#34;, &#34;completed&#34;)
+
+    # Case 2: disable
+    status_code, node_stats = api_client.hosts.maintenance_mode(node[&#39;id&#39;], enable=False)
+
+    assert &#34;unschedulable&#34; not in node_stats[&#34;spec&#34;]
+    assert &#34;harvesterhci.io/maintain-status&#34; not in node_stats[&#34;metadata&#34;][&#34;annotations&#34;]
 
 
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-def test_update_first_node(request, admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
+@pytest.mark.dependency(depends=[&#34;get_host&#34;])
+@pytest.mark.hosts
+@pytest.mark.p0
+def test_update_node(api_client):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-04-Edit Config Add description and other details
     &#34;&#34;&#34;
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    first_node = host_data[&#39;data&#39;][0]
-    original_annotations = copy.deepcopy(first_node[&#39;metadata&#39;][&#39;annotations&#39;])
-    first_node[&#39;metadata&#39;][&#39;annotations&#39;] = {
-        &#39;field.cattle.io/description&#39;: &#39;for-test-update&#39;,
-        &#39;harvesterhci.io/host-custom-name&#39;: &#39;for-test-update&#39;
-    }
-    try:
-        resp = utils.poll_for_update_resource(
-            request, admin_session,
-            host_data[&#39;data&#39;][0][&#39;links&#39;][&#39;update&#39;],
-            first_node,
-            harvester_api_endpoints.get_node % (host_data[&#39;data&#39;][0][&#39;id&#39;]))
-        updated_host_data = resp.json()
-        assert updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;].get(
-            &#39;field.cattle.io/description&#39;) == &#39;for-test-update&#39;
-        assert updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;].get(
-            &#39;harvesterhci.io/host-custom-name&#39;) == &#39;for-test-update&#39;
-    finally:
-        # change it back to original
-        if updated_host_data:
-            updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;] = original_annotations
-            utils.poll_for_update_resource(
-                request, admin_session,
-                updated_host_data[&#39;links&#39;][&#39;update&#39;],
-                updated_host_data,
-                harvester_api_endpoints.get_node % (updated_host_data[&#39;id&#39;]))
+
+    fields = (&#39;field.cattle.io/description&#39;, &#39;harvesterhci.io/host-custom-name&#39;)
+
+    _, nodes_info = api_client.hosts.get()
+
+    # There is no different to update any nodes, so we use the last.
+    node = nodes_info[&#39;data&#39;][-1]
+    original_annotations = {k: node[&#39;metadata&#39;][&#39;annotations&#39;].get(k, &#34;&#34;)
+                            for k in fields}
+
+    test_annotations = {k: f&#34;Test_update_{k}_{datetime.now()}&#34; for k in fields}
+    test_data = dict(metadata=dict(annotations=test_annotations))
+
+    status_code, node_stats = api_client.hosts.update(node[&#39;id&#39;], test_data)
+
+    not_updated_fields = list()
+    for k, v in test_annotations.items():
+        if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
+            not_updated_fields.append((k, v, node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k)))
+
+    assert len(not_updated_fields) == 0, (
+        f&#34;Fields not fully updated, API return `{status_code}`\n&#34;
+        &#34;\n&#34;.join(f&#34;field:{k}, expected: {v}, got {o}&#34; for k, v, o in not_updated_fields)
+    )
+
+    # For teardown
+    _ = api_client.hosts.update(node[&#39;id&#39;],
+                                dict(metadata=dict(annotations=original_annotations)))
 
 
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-def test_update_using_yaml(request, admin_session, harvester_api_endpoints):
+@pytest.mark.dependency(depends=[&#34;get_host&#34;])
+@pytest.mark.hosts
+@pytest.mark.p2
+def test_update_using_yaml(api_client):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-05-Edit through Yaml
     &#34;&#34;&#34;
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    first_node = host_data[&#39;data&#39;][0]
-    original_annotations = copy.deepcopy(first_node[&#39;metadata&#39;][&#39;annotations&#39;])
-    first_node[&#39;metadata&#39;][&#39;annotations&#39;] = {
-        &#39;field.cattle.io/description&#39;: &#39;for-yaml-update&#39;,
-        &#39;harvesterhci.io/host-custom-name&#39;: &#39;for-yaml-update&#39;
-    }
-    try:
-        resp = utils.poll_for_update_resource(
-            request, admin_session,
-            host_data[&#39;data&#39;][0][&#39;links&#39;][&#39;update&#39;],
-            first_node,
-            harvester_api_endpoints.get_node % (host_data[&#39;data&#39;][0][&#39;id&#39;]),
-            use_yaml=True)
-        updated_host_data = resp.json()
-        assert updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;].get(
-            &#39;field.cattle.io/description&#39;) == &#39;for-yaml-update&#39;
-        assert updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;].get(
-            &#39;harvesterhci.io/host-custom-name&#39;) == &#39;for-yaml-update&#39;
-    finally:
-        # change it back to original
-        if updated_host_data:
-            updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;] = original_annotations
-            utils.poll_for_update_resource(
-                request, admin_session,
-                updated_host_data[&#39;links&#39;][&#39;update&#39;],
-                updated_host_data,
-                harvester_api_endpoints.get_node % (updated_host_data[&#39;id&#39;]))
+
+    fields = (&#39;field.cattle.io/description&#39;, &#39;harvesterhci.io/host-custom-name&#39;)
+
+    _, nodes_info = api_client.hosts.get()
+
+    # There is no different to update any nodes, so we use the last.
+    node = nodes_info[&#39;data&#39;][-1]
+    original_annotations = {k: node[&#39;metadata&#39;][&#39;annotations&#39;].get(k, &#34;&#34;)
+                            for k in fields}
+
+    test_annotations = {k: f&#34;Test_update_{k}_{datetime.now()}&#34; for k in fields}
+    for k, v in test_annotations.items():
+        node[&#39;metadata&#39;][&#39;annotations&#39;][k] = v
+
+    api_client.hosts.update(node[&#39;id&#39;], yaml.dump(node, sort_keys=False), as_json=False,
+                            headers={&#34;Content-Type&#34;: &#34;application/yaml&#34;})
+
+    status_code, node_stats = api_client.hosts.get(node[&#39;id&#39;])
+
+    not_updated_fields = list()
+    for k, v in test_annotations.items():
+        if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
+            not_updated_fields.append((k, v, node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k)))
+
+    assert len(not_updated_fields) == 0, (
+        f&#34;Fields not fully updated, API return `{status_code}`\n&#34;
+        &#34;\n&#34;.join(f&#34;field:{k}, expected: {v}, got {o}&#34; for k, v, o in not_updated_fields)
+    )
+
+    # For teardown
+    _ = api_client.hosts.update(node[&#39;id&#39;],
+                                dict(metadata=dict(annotations=original_annotations)))
 
 
-@pytest.mark.trylast
+@pytest.mark.dependency(depends=[&#34;get_host&#34;], name=&#34;delete_host&#34;)
+@pytest.mark.p0
+@pytest.mark.hosts
 @pytest.mark.delete_host
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-def test_delete_host(request, admin_session, harvester_api_endpoints):
+def test_delete_host(api_client, wait_timeout):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-07-Delete the host
     &#34;&#34;&#34;
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
+    _, nodes_info = api_client.hosts.get()
 
-    if len(host_data[&#34;data&#34;]) == 1:
-        pytest.skip(&#34;It will break the cluster as it is single node.&#34;)
+    node = nodes_info[&#39;data&#39;][-1]
 
-    # FIXME(gyee): for now only delete the last node in the cluster due to
-    # https://github.com/harvester/harvester/issues/1398
-    # This is assuming that the orders are correct. We&#39;ll need to test
-    # deleting the first node after the issue&#39;s been resolved.
-    host_data_to_delete = host_data[&#39;data&#39;][-1]
-    # delete the host
-    utils.delete_host(request, admin_session, harvester_api_endpoints,
-                      host_data_to_delete)
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    assert host_data_to_delete not in host_data[&#39;data&#39;]
-    # TODO(gyee): do we need to make sure the VIP still works?
+    delete_resp = api_client.hosts.delete(node[&#39;id&#39;])
 
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-@pytest.mark.host_management
-def test_host_mgmt_maintenance_mode(request, admin_session,
-                                    harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-13-Maintenance Mode-turn off host that is in maintenance mode
-        hosts-14-Maintenance Mode-Start host that is in maintenance mode
-        hosts-16-Maintenance Mode-Take host out of maintenance mode that
-        has not been rebooted
-    &#34;&#34;&#34;
-    # Power Off Node
-    host_info = utils.poweroff_host_maintenance_mode(request, admin_session,
-                                                     harvester_api_endpoints)
-    node_name = host_info[&#39;id&#39;]
-    # power On Node
-    utils.power_on_node(request, admin_session, harvester_api_endpoints,
-                        node_name)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-    ret_data = resp.json()
-    assert &#34;Ready,SchedulingDisabled&#34; in ret_data[&#34;metadata&#34;][&#34;fields&#34;]
-    # Disable Maintenance Mode
-    utils.disable_maintenance_mode(request, admin_session,
-                                   harvester_api_endpoints, ret_data)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-    ret_data = resp.json()
-    assert &#34;unschedulable&#34; not in ret_data[&#34;spec&#34;]
-    assert (&#34;harvesterhci.io/maintain-status&#34; not in
-            ret_data[&#34;metadata&#34;][&#34;annotations&#34;])
-
-
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-@pytest.mark.host_management
-def test_host_reboot_maintenance_mode(request, admin_session,
-                                      harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-17-Maintenance Mode-Take host out of maintenance
-        mode that has been rebooted
-        hosts-15-Maintenance Mode-reboot host that is in
-        maintenance mode
-        hosts-02-Negative test-Verify the state for Powered down node
-    &#34;&#34;&#34;
-    # Power Off Node
-    host_info = utils.poweroff_host_maintenance_mode(request, admin_session,
-                                                     harvester_api_endpoints)
-    node_name = host_info[&#39;id&#39;]
-    # Reboot Node
-    utils.reboot_node(request, admin_session, harvester_api_endpoints,
-                      node_name)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-    ret_data = resp.json()
-    assert &#34;Ready,SchedulingDisabled&#34; in ret_data[&#34;metadata&#34;][&#34;fields&#34;]
-    # Disable Maintenance Mode
-    utils.disable_maintenance_mode(request, admin_session,
-                                   harvester_api_endpoints, ret_data)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-    ret_data = resp.json()
-    assert &#34;unschedulable&#34; not in ret_data[&#34;spec&#34;]
-    assert (&#34;harvesterhci.io/maintain-status&#34; not in
-            ret_data[&#34;metadata&#34;][&#34;annotations&#34;])
-
-
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-@pytest.mark.host_management
-def test_host_poweroff_state(request, admin_session,
-                             harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-01-Negative test-Verify the state for Powered down node
-    &#34;&#34;&#34;
-    host_of = utils.lookup_host_not_harvester_endpoint(request, admin_session,
-                                                       harvester_api_endpoints)
-    try:
-        # Power off Node
-        node_name = host_of[&#39;id&#39;]
-        utils.power_off_node(request, admin_session, harvester_api_endpoints,
-                             node_name)
-        resp = admin_session.get(
-            harvester_api_endpoints.get_node % (node_name))
-        resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-        ret_data = resp.json()
-        assert ret_data[&#34;metadata&#34;][&#34;state&#34;][&#34;name&#34;] in [
-            &#34;in-progress&#34;, &#34;unavailable&#34;]
-    finally:
-        # power On Node
-        utils.power_on_node(request, admin_session, harvester_api_endpoints,
-                            node_name)
-        resp = admin_session.get(
-            harvester_api_endpoints.get_node % (node_name))
-        resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-        ret_data = resp.json()
-        assert ret_data[&#34;metadata&#34;][&#34;state&#34;][&#34;name&#34;] == &#34;active&#34;</code></pre>
+    while endtime &gt; datetime.now():
+        status_code, node_stats = api_client.hosts.get(node[&#39;id&#39;])
+        if status_code == 404:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(f&#34;Failed to delete host {node[&#39;id&#39;]}\n&#34;,
+                             f&#34;Delete response: {delete_resp}\n&#34;
+                             f&#34;timeout {wait_timeout} and still got: {status_code}, {node_stats}&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -331,7 +222,7 @@ def test_host_poweroff_state(request, admin_session,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.apis.test_hosts.test_delete_host"><code class="name flex">
-<span>def <span class="ident">test_delete_host</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
+<span>def <span class="ident">test_delete_host</span></span>(<span>api_client, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
@@ -341,211 +232,37 @@ def test_host_poweroff_state(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.trylast
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;get_host&#34;], name=&#34;delete_host&#34;)
+@pytest.mark.p0
+@pytest.mark.hosts
 @pytest.mark.delete_host
-@pytest.mark.hosts_p1
-@pytest.mark.p1
-def test_delete_host(request, admin_session, harvester_api_endpoints):
+def test_delete_host(api_client, wait_timeout):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-07-Delete the host
     &#34;&#34;&#34;
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
+    _, nodes_info = api_client.hosts.get()
 
-    if len(host_data[&#34;data&#34;]) == 1:
-        pytest.skip(&#34;It will break the cluster as it is single node.&#34;)
+    node = nodes_info[&#39;data&#39;][-1]
 
-    # FIXME(gyee): for now only delete the last node in the cluster due to
-    # https://github.com/harvester/harvester/issues/1398
-    # This is assuming that the orders are correct. We&#39;ll need to test
-    # deleting the first node after the issue&#39;s been resolved.
-    host_data_to_delete = host_data[&#39;data&#39;][-1]
-    # delete the host
-    utils.delete_host(request, admin_session, harvester_api_endpoints,
-                      host_data_to_delete)
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    assert host_data_to_delete not in host_data[&#39;data&#39;]
-    # TODO(gyee): do we need to make sure the VIP still works?</code></pre>
+    delete_resp = api_client.hosts.delete(node[&#39;id&#39;])
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+
+    while endtime &gt; datetime.now():
+        status_code, node_stats = api_client.hosts.get(node[&#39;id&#39;])
+        if status_code == 404:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(f&#34;Failed to delete host {node[&#39;id&#39;]}\n&#34;,
+                             f&#34;Delete response: {delete_resp}\n&#34;
+                             f&#34;timeout {wait_timeout} and still got: {status_code}, {node_stats}&#34;)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_hosts.test_get_host"><code class="name flex">
-<span>def <span class="ident">test_get_host</span></span>(<span>admin_session, harvester_cluster_nodes, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
-<h2 id="covers">Covers</h2>
-<p>hosts-02-Test to get host</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.hosts_p1
-@pytest.mark.p1
-def test_get_host(admin_session, harvester_cluster_nodes,
-                  harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-02-Test to get host
-    &#34;&#34;&#34;
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    assert len(host_data[&#39;data&#39;]) == harvester_cluster_nodes</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_hosts.test_host_mgmt_maintenance_mode"><code class="name flex">
-<span>def <span class="ident">test_host_mgmt_maintenance_mode</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
-<h2 id="covers">Covers</h2>
-<p>hosts-13-Maintenance Mode-turn off host that is in maintenance mode
-hosts-14-Maintenance Mode-Start host that is in maintenance mode
-hosts-16-Maintenance Mode-Take host out of maintenance mode that
-has not been rebooted</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.hosts_p1
-@pytest.mark.p1
-@pytest.mark.host_management
-def test_host_mgmt_maintenance_mode(request, admin_session,
-                                    harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-13-Maintenance Mode-turn off host that is in maintenance mode
-        hosts-14-Maintenance Mode-Start host that is in maintenance mode
-        hosts-16-Maintenance Mode-Take host out of maintenance mode that
-        has not been rebooted
-    &#34;&#34;&#34;
-    # Power Off Node
-    host_info = utils.poweroff_host_maintenance_mode(request, admin_session,
-                                                     harvester_api_endpoints)
-    node_name = host_info[&#39;id&#39;]
-    # power On Node
-    utils.power_on_node(request, admin_session, harvester_api_endpoints,
-                        node_name)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-    ret_data = resp.json()
-    assert &#34;Ready,SchedulingDisabled&#34; in ret_data[&#34;metadata&#34;][&#34;fields&#34;]
-    # Disable Maintenance Mode
-    utils.disable_maintenance_mode(request, admin_session,
-                                   harvester_api_endpoints, ret_data)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-    ret_data = resp.json()
-    assert &#34;unschedulable&#34; not in ret_data[&#34;spec&#34;]
-    assert (&#34;harvesterhci.io/maintain-status&#34; not in
-            ret_data[&#34;metadata&#34;][&#34;annotations&#34;])</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_hosts.test_host_poweroff_state"><code class="name flex">
-<span>def <span class="ident">test_host_poweroff_state</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
-<h2 id="covers">Covers</h2>
-<p>hosts-01-Negative test-Verify the state for Powered down node</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.hosts_p1
-@pytest.mark.p1
-@pytest.mark.host_management
-def test_host_poweroff_state(request, admin_session,
-                             harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-01-Negative test-Verify the state for Powered down node
-    &#34;&#34;&#34;
-    host_of = utils.lookup_host_not_harvester_endpoint(request, admin_session,
-                                                       harvester_api_endpoints)
-    try:
-        # Power off Node
-        node_name = host_of[&#39;id&#39;]
-        utils.power_off_node(request, admin_session, harvester_api_endpoints,
-                             node_name)
-        resp = admin_session.get(
-            harvester_api_endpoints.get_node % (node_name))
-        resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-        ret_data = resp.json()
-        assert ret_data[&#34;metadata&#34;][&#34;state&#34;][&#34;name&#34;] in [
-            &#34;in-progress&#34;, &#34;unavailable&#34;]
-    finally:
-        # power On Node
-        utils.power_on_node(request, admin_session, harvester_api_endpoints,
-                            node_name)
-        resp = admin_session.get(
-            harvester_api_endpoints.get_node % (node_name))
-        resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-        ret_data = resp.json()
-        assert ret_data[&#34;metadata&#34;][&#34;state&#34;][&#34;name&#34;] == &#34;active&#34;</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_hosts.test_host_reboot_maintenance_mode"><code class="name flex">
-<span>def <span class="ident">test_host_reboot_maintenance_mode</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
-<h2 id="covers">Covers</h2>
-<p>hosts-17-Maintenance Mode-Take host out of maintenance
-mode that has been rebooted
-hosts-15-Maintenance Mode-reboot host that is in
-maintenance mode
-hosts-02-Negative test-Verify the state for Powered down node</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.hosts_p1
-@pytest.mark.p1
-@pytest.mark.host_management
-def test_host_reboot_maintenance_mode(request, admin_session,
-                                      harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-17-Maintenance Mode-Take host out of maintenance
-        mode that has been rebooted
-        hosts-15-Maintenance Mode-reboot host that is in
-        maintenance mode
-        hosts-02-Negative test-Verify the state for Powered down node
-    &#34;&#34;&#34;
-    # Power Off Node
-    host_info = utils.poweroff_host_maintenance_mode(request, admin_session,
-                                                     harvester_api_endpoints)
-    node_name = host_info[&#39;id&#39;]
-    # Reboot Node
-    utils.reboot_node(request, admin_session, harvester_api_endpoints,
-                      node_name)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-    ret_data = resp.json()
-    assert &#34;Ready,SchedulingDisabled&#34; in ret_data[&#34;metadata&#34;][&#34;fields&#34;]
-    # Disable Maintenance Mode
-    utils.disable_maintenance_mode(request, admin_session,
-                                   harvester_api_endpoints, ret_data)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host: %s&#39; % (resp.content)
-    ret_data = resp.json()
-    assert &#34;unschedulable&#34; not in ret_data[&#34;spec&#34;]
-    assert (&#34;harvesterhci.io/maintain-status&#34; not in
-            ret_data[&#34;metadata&#34;][&#34;annotations&#34;])</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_hosts.test_update_first_node"><code class="name flex">
-<span>def <span class="ident">test_update_first_node</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
+<span>def <span class="ident">test_get_host</span></span>(<span>api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -553,98 +270,27 @@ def test_host_reboot_maintenance_mode(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.hosts_p1
-@pytest.mark.p1
-def test_update_first_node(request, admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-04-Edit Config Add description and other details
-    &#34;&#34;&#34;
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    first_node = host_data[&#39;data&#39;][0]
-    original_annotations = copy.deepcopy(first_node[&#39;metadata&#39;][&#39;annotations&#39;])
-    first_node[&#39;metadata&#39;][&#39;annotations&#39;] = {
-        &#39;field.cattle.io/description&#39;: &#39;for-test-update&#39;,
-        &#39;harvesterhci.io/host-custom-name&#39;: &#39;for-test-update&#39;
-    }
-    try:
-        resp = utils.poll_for_update_resource(
-            request, admin_session,
-            host_data[&#39;data&#39;][0][&#39;links&#39;][&#39;update&#39;],
-            first_node,
-            harvester_api_endpoints.get_node % (host_data[&#39;data&#39;][0][&#39;id&#39;]))
-        updated_host_data = resp.json()
-        assert updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;].get(
-            &#39;field.cattle.io/description&#39;) == &#39;for-test-update&#39;
-        assert updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;].get(
-            &#39;harvesterhci.io/host-custom-name&#39;) == &#39;for-test-update&#39;
-    finally:
-        # change it back to original
-        if updated_host_data:
-            updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;] = original_annotations
-            utils.poll_for_update_resource(
-                request, admin_session,
-                updated_host_data[&#39;links&#39;][&#39;update&#39;],
-                updated_host_data,
-                harvester_api_endpoints.get_node % (updated_host_data[&#39;id&#39;]))</code></pre>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;get_host&#34;)
+@pytest.mark.hosts
+@pytest.mark.p0
+def test_get_host(api_client):
+    # Case 1: Get all nodes
+    status_code, nodes_info = api_client.hosts.get()
+
+    assert status_code == 200, f&#34;Failed to list nodes with error: {nodes_info}&#34;
+    assert len(nodes_info[&#39;data&#39;]) &gt;= 1, &#34;Incorrect hosts amount&#34;
+
+    # Case 2: Get specific node
+    node_id = nodes_info[&#39;data&#39;][-1][&#39;id&#39;]
+
+    status_code, node = api_client.hosts.get(node_id)
+
+    assert status_code == 200, f&#34;Failed ot get node {node_id} with error: {node}&#34;
+    assert node_id == node[&#39;id&#39;], f&#34;Responsed unexpected Node {node[&#39;id&#39;]}&#34;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.apis.test_hosts.test_update_using_yaml"><code class="name flex">
-<span>def <span class="ident">test_update_using_yaml</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
-<h2 id="covers">Covers</h2>
-<p>hosts-05-Edit through Yaml</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.hosts_p1
-@pytest.mark.p1
-def test_update_using_yaml(request, admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-05-Edit through Yaml
-    &#34;&#34;&#34;
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    first_node = host_data[&#39;data&#39;][0]
-    original_annotations = copy.deepcopy(first_node[&#39;metadata&#39;][&#39;annotations&#39;])
-    first_node[&#39;metadata&#39;][&#39;annotations&#39;] = {
-        &#39;field.cattle.io/description&#39;: &#39;for-yaml-update&#39;,
-        &#39;harvesterhci.io/host-custom-name&#39;: &#39;for-yaml-update&#39;
-    }
-    try:
-        resp = utils.poll_for_update_resource(
-            request, admin_session,
-            host_data[&#39;data&#39;][0][&#39;links&#39;][&#39;update&#39;],
-            first_node,
-            harvester_api_endpoints.get_node % (host_data[&#39;data&#39;][0][&#39;id&#39;]),
-            use_yaml=True)
-        updated_host_data = resp.json()
-        assert updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;].get(
-            &#39;field.cattle.io/description&#39;) == &#39;for-yaml-update&#39;
-        assert updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;].get(
-            &#39;harvesterhci.io/host-custom-name&#39;) == &#39;for-yaml-update&#39;
-    finally:
-        # change it back to original
-        if updated_host_data:
-            updated_host_data[&#39;metadata&#39;][&#39;annotations&#39;] = original_annotations
-            utils.poll_for_update_resource(
-                request, admin_session,
-                updated_host_data[&#39;links&#39;][&#39;update&#39;],
-                updated_host_data,
-                harvester_api_endpoints.get_node % (updated_host_data[&#39;id&#39;]))</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_hosts.test_verify_host_maintenance_mode"><code class="name flex">
-<span>def <span class="ident">test_verify_host_maintenance_mode</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
+<dt id="harvester_e2e_tests.apis.test_hosts.test_maintenance_mode"><code class="name flex">
+<span>def <span class="ident">test_maintenance_mode</span></span>(<span>api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
@@ -655,42 +301,138 @@ hosts-12-Host with no VMs on it</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.hosts_p1
-@pytest.mark.p1
-@pytest.mark.hosts_p2
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;get_host&#34;], name=&#34;enable_maintenance_mode&#34;)
+@pytest.mark.hosts
 @pytest.mark.p2
-def test_verify_host_maintenance_mode(request, admin_session,
-                                      harvester_api_endpoints):
+def test_maintenance_mode(api_client):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-03-Verify Enabling maintenance mode
         hosts-12-Host with no VMs on it
     &#34;&#34;&#34;
-    resp = admin_session.get(harvester_api_endpoints.list_nodes)
-    assert resp.status_code == 200, &#39;Failed to list nodes: %s&#39; % (resp.content)
-    host_data = resp.json()
-    # NOTE: always test on the first node for now
-    node_json = host_data[&#39;data&#39;][0]
-    node_name = node_json[&#39;metadata&#39;][&#39;name&#39;]
-    utils.enable_maintenance_mode(request, admin_session,
-                                  harvester_api_endpoints, node_json)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host %s: %s&#39; % (
-        node_name, resp.content)
-    node_json = resp.json()
-    assert node_json[&#34;spec&#34;][&#34;unschedulable&#34;]
-    s = node_json[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]
-    assert s in [&#34;running&#34;, &#34;completed&#34;]
-    utils.disable_maintenance_mode(request, admin_session,
-                                   harvester_api_endpoints, node_json)
-    resp = admin_session.get(harvester_api_endpoints.get_node % (node_name))
-    resp.status_code == 200, &#39;Failed to get host %s: %s&#39; % (
-        node_name, resp.content)
-    node_json = resp.json()
-    assert &#34;unschedulable&#34; not in node_json[&#34;spec&#34;]
-    assert (&#34;harvesterhci.io/maintain-status&#34; not in
-            node_json[&#34;metadata&#34;][&#34;annotations&#34;])</code></pre>
+
+    _, nodes_info = api_client.hosts.get()
+
+    # Test on the last node to avoid affect VIP
+    node = nodes_info[&#39;data&#39;][-1]
+
+    # Case 1: enable
+    status_code, node_stats = api_client.hosts.maintenance_mode(node[&#39;id&#39;], enable=True)
+    maintain_status = node_stats[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]
+
+    assert node_stats[&#34;spec&#34;][&#34;unschedulable&#34;]
+    assert maintain_status in (&#34;running&#34;, &#34;completed&#34;)
+
+    # Case 2: disable
+    status_code, node_stats = api_client.hosts.maintenance_mode(node[&#39;id&#39;], enable=False)
+
+    assert &#34;unschedulable&#34; not in node_stats[&#34;spec&#34;]
+    assert &#34;harvesterhci.io/maintain-status&#34; not in node_stats[&#34;metadata&#34;][&#34;annotations&#34;]</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_hosts.test_update_node"><code class="name flex">
+<span>def <span class="ident">test_update_node</span></span>(<span>api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
+<h2 id="covers">Covers</h2>
+<p>hosts-04-Edit Config Add description and other details</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;get_host&#34;])
+@pytest.mark.hosts
+@pytest.mark.p0
+def test_update_node(api_client):
+    &#34;&#34;&#34;
+    Test the hosts are the nodes which make the cluster
+    Covers:
+        hosts-04-Edit Config Add description and other details
+    &#34;&#34;&#34;
+
+    fields = (&#39;field.cattle.io/description&#39;, &#39;harvesterhci.io/host-custom-name&#39;)
+
+    _, nodes_info = api_client.hosts.get()
+
+    # There is no different to update any nodes, so we use the last.
+    node = nodes_info[&#39;data&#39;][-1]
+    original_annotations = {k: node[&#39;metadata&#39;][&#39;annotations&#39;].get(k, &#34;&#34;)
+                            for k in fields}
+
+    test_annotations = {k: f&#34;Test_update_{k}_{datetime.now()}&#34; for k in fields}
+    test_data = dict(metadata=dict(annotations=test_annotations))
+
+    status_code, node_stats = api_client.hosts.update(node[&#39;id&#39;], test_data)
+
+    not_updated_fields = list()
+    for k, v in test_annotations.items():
+        if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
+            not_updated_fields.append((k, v, node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k)))
+
+    assert len(not_updated_fields) == 0, (
+        f&#34;Fields not fully updated, API return `{status_code}`\n&#34;
+        &#34;\n&#34;.join(f&#34;field:{k}, expected: {v}, got {o}&#34; for k, v, o in not_updated_fields)
+    )
+
+    # For teardown
+    _ = api_client.hosts.update(node[&#39;id&#39;],
+                                dict(metadata=dict(annotations=original_annotations)))</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_hosts.test_update_using_yaml"><code class="name flex">
+<span>def <span class="ident">test_update_using_yaml</span></span>(<span>api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
+<h2 id="covers">Covers</h2>
+<p>hosts-05-Edit through Yaml</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;get_host&#34;])
+@pytest.mark.hosts
+@pytest.mark.p2
+def test_update_using_yaml(api_client):
+    &#34;&#34;&#34;
+    Test the hosts are the nodes which make the cluster
+    Covers:
+        hosts-05-Edit through Yaml
+    &#34;&#34;&#34;
+
+    fields = (&#39;field.cattle.io/description&#39;, &#39;harvesterhci.io/host-custom-name&#39;)
+
+    _, nodes_info = api_client.hosts.get()
+
+    # There is no different to update any nodes, so we use the last.
+    node = nodes_info[&#39;data&#39;][-1]
+    original_annotations = {k: node[&#39;metadata&#39;][&#39;annotations&#39;].get(k, &#34;&#34;)
+                            for k in fields}
+
+    test_annotations = {k: f&#34;Test_update_{k}_{datetime.now()}&#34; for k in fields}
+    for k, v in test_annotations.items():
+        node[&#39;metadata&#39;][&#39;annotations&#39;][k] = v
+
+    api_client.hosts.update(node[&#39;id&#39;], yaml.dump(node, sort_keys=False), as_json=False,
+                            headers={&#34;Content-Type&#34;: &#34;application/yaml&#34;})
+
+    status_code, node_stats = api_client.hosts.get(node[&#39;id&#39;])
+
+    not_updated_fields = list()
+    for k, v in test_annotations.items():
+        if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
+            not_updated_fields.append((k, v, node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k)))
+
+    assert len(not_updated_fields) == 0, (
+        f&#34;Fields not fully updated, API return `{status_code}`\n&#34;
+        &#34;\n&#34;.join(f&#34;field:{k}, expected: {v}, got {o}&#34; for k, v, o in not_updated_fields)
+    )
+
+    # For teardown
+    _ = api_client.hosts.update(node[&#39;id&#39;],
+                                dict(metadata=dict(annotations=original_annotations)))</code></pre>
 </details>
 </dd>
 </dl>
@@ -713,12 +455,9 @@ def test_verify_host_maintenance_mode(request, admin_session,
 <ul class="">
 <li><code><a title="harvester_e2e_tests.apis.test_hosts.test_delete_host" href="#harvester_e2e_tests.apis.test_hosts.test_delete_host">test_delete_host</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_hosts.test_get_host" href="#harvester_e2e_tests.apis.test_hosts.test_get_host">test_get_host</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_hosts.test_host_mgmt_maintenance_mode" href="#harvester_e2e_tests.apis.test_hosts.test_host_mgmt_maintenance_mode">test_host_mgmt_maintenance_mode</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_hosts.test_host_poweroff_state" href="#harvester_e2e_tests.apis.test_hosts.test_host_poweroff_state">test_host_poweroff_state</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_hosts.test_host_reboot_maintenance_mode" href="#harvester_e2e_tests.apis.test_hosts.test_host_reboot_maintenance_mode">test_host_reboot_maintenance_mode</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_hosts.test_update_first_node" href="#harvester_e2e_tests.apis.test_hosts.test_update_first_node">test_update_first_node</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_hosts.test_maintenance_mode" href="#harvester_e2e_tests.apis.test_hosts.test_maintenance_mode">test_maintenance_mode</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_hosts.test_update_node" href="#harvester_e2e_tests.apis.test_hosts.test_update_node">test_update_node</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_hosts.test_update_using_yaml" href="#harvester_e2e_tests.apis.test_hosts.test_update_using_yaml">test_update_using_yaml</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_hosts.test_verify_host_maintenance_mode" href="#harvester_e2e_tests.apis.test_hosts.test_verify_host_maintenance_mode">test_verify_host_maintenance_mode</a></code></li>
 </ul>
 </li>
 </ul>

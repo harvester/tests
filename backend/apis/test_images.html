@@ -43,216 +43,152 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from harvester_e2e_tests import utils
-import os
-import polling2
+from time import sleep
+from datetime import datetime, timedelta
+
 import pytest
 
 pytest_plugins = [
-    &#39;harvester_e2e_tests.fixtures.image&#39;,
-    &#39;harvester_e2e_tests.fixtures.keypair&#39;,
-    &#39;harvester_e2e_tests.fixtures.volume&#39;,
+    &#34;harvester_e2e_tests.fixtures.api_client&#34;
 ]
 
 
-def test_list_images(admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_images)
-    assert resp.status_code == 200, (
-        &#39;Failed to list images: %s&#39; % (resp.content))
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.images
+class TestImagesNegative:
+    def test_get_not_exist(self, api_client, unique_name):
+        code, data = api_client.images.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        code, data = api_client.images.delete(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
+
+    def test_create_with_empty_data(self, api_client, unique_name):
+        # name, url, description, sourcetype, namespace
+        image_json = api_client.images.create_data(unique_name, &#34;&#34;, &#34;&#34;, &#34;&#34;, &#34;&#34;)
+        code, data = api_client.images.create(unique_name, json=image_json)
+
+        assert 422 == code, (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
+
+    def test_create_with_empty_url(self, api_client, unique_name):
+        code, data = api_client.images.create_by_url(unique_name, &#34;&#34;)
+
+        assert 422 == code, (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
 
 
-@pytest.mark.images_p2
-@pytest.mark.p2
-def test_create_image_no_data(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test creating image with no data
+@pytest.mark.p0
+@pytest.mark.images
+class TestImages:
+    @pytest.mark.dependency(name=&#34;create_image&#34;)
+    def test_create(self, api_client, unique_name, fake_image_file):
+        resp = api_client.images.create_by_file(unique_name, fake_image_file)
 
-    Covers:
-        Negative test images-3-Create Image no data
-    &#34;&#34;&#34;
-    no_image_data = {
-        &#39;apiVersion&#39;: &#39;harvesterhci.io/v1beta1&#39;,
-        &#39;kind&#39;: &#39;VirtualMachineImage&#39;
-    }
-    resp = admin_session.post(harvester_api_endpoints.create_image,
-                              json=no_image_data)
-    assert resp.status_code == 422, (
-        &#39;Expecting 422 when creating image with invalid image request&#39;)
-    response_data = resp.json()
-    assert &#39;name or generateName is required&#39; in response_data[&#39;message&#39;]
+        assert 200 == resp.status_code, (
+            f&#34;Failed to upload fake image with error:{resp.status_code}, {resp.content}&#34;
+        )
 
+    @pytest.mark.dependency(name=&#34;get_image&#34;)
+    def test_get(self, api_client, unique_name):
+        # Case 1: get all images
+        code, data = api_client.images.get()
 
-@pytest.mark.images_p2
-@pytest.mark.p2
-def test_create_image_no_url(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test creating image with no url
+        assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
 
-    Covers:
-        Negative test images-3-Create Image no data
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_image&#39;,
-        description=&#39;Leap 15.2 cloud image&#39;,
-        url=&#39;&#39;
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_image,
-                              json=request_json)
-    assert resp.status_code == 422, (
-        &#39;Expecting HTTP 422 for attempting to create an image with an empty &#39;
-        &#39;URL %s:%s &#39; % (resp.status_code, resp.content))
+        # Case 2: get created image
+        code, data = api_client.images.get(unique_name)
+        assert 200 == code, (code, data)
+        assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;]
 
+    def test_update(self, api_client, unique_name):
+        updates = {
+            &#34;labels&#34;: {
+                &#34;test-label&#34;: &#34;42&#34;
+            },
+            &#34;annotations&#34;: {
+                &#34;test-annotation&#34;: &#34;dummy&#34;
+            }
+        }
 
-@pytest.mark.images_p1
-@pytest.mark.p1
-def test_create_image_with_reuse_display_name(request, admin_session,
-                                              harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test Delete image
+        code, data = api_client.images.update(unique_name, dict(metadata=updates))
+        assert 200 == code, (f&#34;Failed to update image with error: {code}, {data}&#34;)
 
-    Covers:
-        images-6-Delete Image
-    &#34;&#34;&#34;
-    name = utils.random_name()
-    base_url = request.config.getoption(
-        &#39;--image-cache-url&#39;,
-        (&#39;http://download.opensuse.org/repositories/Cloud:/Images:/&#39;
-         &#39;Leap_15.2/images&#39;))
-    url = os.path.join(base_url, &#39;openSUSE-Leap-15.2.x86_64-NoCloud.qcow2&#39;)
-    # create the image
-    image_json = utils.create_image(request, admin_session,
-                                    harvester_api_endpoints, url,
-                                    name=name,
-                                    description=&#39;Leap 15.2 cloud image&#39;)
-    old_image_name = image_json[&#39;metadata&#39;][&#39;name&#39;]
-    # delete the image
-    utils.delete_image(request, admin_session, harvester_api_endpoints,
-                       image_json)
-    # create a different image with the same display name and it should be
-    # allowed
-    image_json = utils.create_image(request, admin_session,
-                                    harvester_api_endpoints, url,
-                                    name=name,
-                                    description=&#39;Leap 15.2 cloud image&#39;)
-    # delete the image
-    utils.delete_image(request, admin_session, harvester_api_endpoints,
-                       image_json)
-    # the names should be the same
-    assert image_json[&#39;metadata&#39;][&#39;name&#39;] == old_image_name, (
-        &#39;Expecting new image to have the same name&#39;)
-    assert image_json[&#39;spec&#39;][&#39;displayName&#39;] == name, (
-        &#39;Expecting new image to have the same display name&#39;)
+        unexpected = list()
+        for field, pairs in updates.items():
+            for k, val in pairs.items():
+                if data[&#39;metadata&#39;][field].get(k) != val:
+                    unexpected.append((field, k, val, data[&#39;metadata&#39;][field].get(k)))
 
+        assert not unexpected, (
+            &#34;\n&#34;.join(f&#34;Update {f} failed, set key {k} as {v} but got {n}&#34;
+                      for f, k, v, n in unexpected)
+        )
 
-@pytest.mark.images_p2
-@pytest.mark.p2
-@pytest.mark.parametrize(&#39;image&#39;, [&#39;https://test_bogus.img&#39;], indirect=True)
-def test_create_image_with_invalid_url(request, admin_session,
-                                       harvester_api_endpoints, image):
-    &#34;&#34;&#34;
-    Test Invalid image
+    @pytest.mark.dependency(name=&#34;delete_image&#34;)
+    def test_delete(self, api_client, unique_name, wait_timeout):
+        code, data = api_client.images.delete(unique_name)
 
-    Covers:
-        images-2-Invalid Image
-    &#34;&#34;&#34;
-    image_json = None
+        assert 200 == code, (f&#34;Failed to delete image with error: {code}, {data}&#34;)
 
-    def _check_image_status():
-        nonlocal image_json
-        resp = admin_session.get(harvester_api_endpoints.get_image % (
-            image[&#39;metadata&#39;][&#39;name&#39;]))
-        assert resp.status_code == 200, &#39;Failed to lookup image %s: %s&#39; % (
-            image[&#39;metadata&#39;][&#39;name&#39;], resp.content)
-        image_json = resp.json()
-        if (&#39;status&#39; in image_json and &#39;conditions&#39; in image_json[&#39;status&#39;] and
-                len(image_json[&#39;status&#39;][&#39;conditions&#39;]) == 1 and
-                &#39;status&#39; in image_json[&#39;status&#39;][&#39;conditions&#39;][0]):
-            return True
-        return False
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
-    success = polling2.poll(
-        _check_image_status,
-        step=5,
-        timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    assert success, &#39;Timed out while waiting for image status&#39;
-    image_status = image_json[&#39;status&#39;][&#39;conditions&#39;][0][&#39;status&#39;].lower()
-    assert image_status == &#39;false&#39;, (
-        &#39;Expecting image creation to fail on bogus URL&#39;)
+        while endtime &gt; datetime.now():
+            code, data = api_client.images.get(unique_name)
+            if code == 404:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Failed to delete image {unique_name} with {wait_timeout} timed out\n&#34;
+                f&#34;Still got {code} with {data}&#34;
+            )
+
+    @pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
+    def test_create_with_reuse_display_name(self, api_client, unique_name, fake_image_file):
+        code, data = api_client.images.get(unique_name)
+
+        assert 404 == code, f&#34;Image {unique_name} not be deleted by previous test.&#34;
+
+        resp = api_client.images.create_by_file(unique_name, fake_image_file)
+
+        assert 200 == resp.status_code, (
+            f&#34;failed to upload fake image with reused name {unique_name}, &#34;
+            f&#34;got error: {resp.status_code}, {resp.content}&#34;
+        )
+
+        _ = api_client.images.delete(unique_name)
 
 
-@pytest.mark.images_p1
-@pytest.mark.p1
-def test_create_images(admin_session, image):
-    &#34;&#34;&#34;
-    Test Create image
+@pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.images
+def test_create_with_invalid_url(api_client, unique_name):
+    code, data = api_client.images.create_by_url(unique_name, f&#34;https://{unique_name}.img&#34;)
 
-    Covers:
-        images-1-Create Image
-    &#34;&#34;&#34;
-    # NOTE: the image fixture will be creating the image and check the result
-    pass
+    assert 201 == code, (code, data)
 
+    endtime = datetime.now() + timedelta(minutes=3)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_name)
+        image_conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+        if len(image_conds) &gt; 0:
+            break
+        sleep(3)
 
-@pytest.mark.images_p1
-@pytest.mark.p1
-@pytest.mark.imageupload
-def test_image_upload(request, admin_session, image_upload_fs, keypair,
-                      harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test create upload image
+    assert len(image_conds) == 1, f&#34;Got unexpected image conditions!\n{data}&#34;
+    assert &#34;Initialized&#34; == image_conds[0].get(&#34;type&#34;)
+    assert &#34;False&#34; == image_conds[0].get(&#34;status&#34;)
+    assert &#34;no such host&#34; in image_conds[0].get(&#34;message&#34;)
 
-    Covers:
-        images-7-Upload Image, only check Image is active (does not create vm)
-    &#34;&#34;&#34;
-    # NOTE: the image fixture will be uploading the image and check the result
-    pass
-
-
-@pytest.mark.images_p1
-@pytest.mark.p1
-def test_update_images(admin_session, harvester_api_endpoints, image):
-    &#34;&#34;&#34;
-    Test Edit Image and Add Labels
-
-    Covers:
-        images-3-Edit Image and images-4-Add Labels
-    &#34;&#34;&#34;
-    image[&#39;metadata&#39;][&#39;labels&#39;] = {
-        &#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;
-    }
-    image[&#39;metadata&#39;][&#39;annotations&#39;] = {
-        &#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;
-    }
-    resp = admin_session.put(harvester_api_endpoints.update_image % (
-        image[&#39;metadata&#39;][&#39;name&#39;]), json=image)
-    assert resp.status_code == 200, &#39;Failed to update image: %s&#39; % (
-        resp.content)
-    update_image_data = resp.json()
-    assert update_image_data[&#39;metadata&#39;][&#39;labels&#39;] == {
-        &#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;
-    }
-    assert update_image_data[&#39;metadata&#39;][&#39;annotations&#39;] == {
-        &#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;
-    }
-
-
-@pytest.mark.terraform_provider_p1
-@pytest.mark.p1
-# This test covers terraform-5-Harvester image as a pre-req it covers
-# terraform-1-install, terraform-2-kube config, terraform-3-define kube config
-@pytest.mark.terraform
-def test_create_images_using_terraform(admin_session, image_using_terraform):
-    &#34;&#34;&#34;
-    Test creates Harvester Image
-
-    Covers:
-        terraform-provider-05-Harvester image as a pre-req it covers
-        terraform-provider-01-install, terraform-provider-02-kube config,
-        terraform-provider-03-define
-        kube config
-    &#34;&#34;&#34;
-    # NOTE: the image fixture will be creating the image and check the result
-    pass</code></pre>
+    api_client.images.delete(unique_name)</code></pre>
 </details>
 </section>
 <section>
@@ -262,254 +198,8 @@ def test_create_images_using_terraform(admin_session, image_using_terraform):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.apis.test_images.test_create_image_no_data"><code class="name flex">
-<span>def <span class="ident">test_create_image_no_data</span></span>(<span>admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test creating image with no data</p>
-<h2 id="covers">Covers</h2>
-<p>Negative test images-3-Create Image no data</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.images_p2
-@pytest.mark.p2
-def test_create_image_no_data(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test creating image with no data
-
-    Covers:
-        Negative test images-3-Create Image no data
-    &#34;&#34;&#34;
-    no_image_data = {
-        &#39;apiVersion&#39;: &#39;harvesterhci.io/v1beta1&#39;,
-        &#39;kind&#39;: &#39;VirtualMachineImage&#39;
-    }
-    resp = admin_session.post(harvester_api_endpoints.create_image,
-                              json=no_image_data)
-    assert resp.status_code == 422, (
-        &#39;Expecting 422 when creating image with invalid image request&#39;)
-    response_data = resp.json()
-    assert &#39;name or generateName is required&#39; in response_data[&#39;message&#39;]</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_images.test_create_image_no_url"><code class="name flex">
-<span>def <span class="ident">test_create_image_no_url</span></span>(<span>admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test creating image with no url</p>
-<h2 id="covers">Covers</h2>
-<p>Negative test images-3-Create Image no data</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.images_p2
-@pytest.mark.p2
-def test_create_image_no_url(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test creating image with no url
-
-    Covers:
-        Negative test images-3-Create Image no data
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_image&#39;,
-        description=&#39;Leap 15.2 cloud image&#39;,
-        url=&#39;&#39;
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_image,
-                              json=request_json)
-    assert resp.status_code == 422, (
-        &#39;Expecting HTTP 422 for attempting to create an image with an empty &#39;
-        &#39;URL %s:%s &#39; % (resp.status_code, resp.content))</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_images.test_create_image_with_invalid_url"><code class="name flex">
-<span>def <span class="ident">test_create_image_with_invalid_url</span></span>(<span>request, admin_session, harvester_api_endpoints, image)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test Invalid image</p>
-<h2 id="covers">Covers</h2>
-<p>images-2-Invalid Image</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.images_p2
-@pytest.mark.p2
-@pytest.mark.parametrize(&#39;image&#39;, [&#39;https://test_bogus.img&#39;], indirect=True)
-def test_create_image_with_invalid_url(request, admin_session,
-                                       harvester_api_endpoints, image):
-    &#34;&#34;&#34;
-    Test Invalid image
-
-    Covers:
-        images-2-Invalid Image
-    &#34;&#34;&#34;
-    image_json = None
-
-    def _check_image_status():
-        nonlocal image_json
-        resp = admin_session.get(harvester_api_endpoints.get_image % (
-            image[&#39;metadata&#39;][&#39;name&#39;]))
-        assert resp.status_code == 200, &#39;Failed to lookup image %s: %s&#39; % (
-            image[&#39;metadata&#39;][&#39;name&#39;], resp.content)
-        image_json = resp.json()
-        if (&#39;status&#39; in image_json and &#39;conditions&#39; in image_json[&#39;status&#39;] and
-                len(image_json[&#39;status&#39;][&#39;conditions&#39;]) == 1 and
-                &#39;status&#39; in image_json[&#39;status&#39;][&#39;conditions&#39;][0]):
-            return True
-        return False
-
-    success = polling2.poll(
-        _check_image_status,
-        step=5,
-        timeout=request.config.getoption(&#39;--wait-timeout&#39;))
-    assert success, &#39;Timed out while waiting for image status&#39;
-    image_status = image_json[&#39;status&#39;][&#39;conditions&#39;][0][&#39;status&#39;].lower()
-    assert image_status == &#39;false&#39;, (
-        &#39;Expecting image creation to fail on bogus URL&#39;)</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_images.test_create_image_with_reuse_display_name"><code class="name flex">
-<span>def <span class="ident">test_create_image_with_reuse_display_name</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test Delete image</p>
-<h2 id="covers">Covers</h2>
-<p>images-6-Delete Image</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.images_p1
-@pytest.mark.p1
-def test_create_image_with_reuse_display_name(request, admin_session,
-                                              harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test Delete image
-
-    Covers:
-        images-6-Delete Image
-    &#34;&#34;&#34;
-    name = utils.random_name()
-    base_url = request.config.getoption(
-        &#39;--image-cache-url&#39;,
-        (&#39;http://download.opensuse.org/repositories/Cloud:/Images:/&#39;
-         &#39;Leap_15.2/images&#39;))
-    url = os.path.join(base_url, &#39;openSUSE-Leap-15.2.x86_64-NoCloud.qcow2&#39;)
-    # create the image
-    image_json = utils.create_image(request, admin_session,
-                                    harvester_api_endpoints, url,
-                                    name=name,
-                                    description=&#39;Leap 15.2 cloud image&#39;)
-    old_image_name = image_json[&#39;metadata&#39;][&#39;name&#39;]
-    # delete the image
-    utils.delete_image(request, admin_session, harvester_api_endpoints,
-                       image_json)
-    # create a different image with the same display name and it should be
-    # allowed
-    image_json = utils.create_image(request, admin_session,
-                                    harvester_api_endpoints, url,
-                                    name=name,
-                                    description=&#39;Leap 15.2 cloud image&#39;)
-    # delete the image
-    utils.delete_image(request, admin_session, harvester_api_endpoints,
-                       image_json)
-    # the names should be the same
-    assert image_json[&#39;metadata&#39;][&#39;name&#39;] == old_image_name, (
-        &#39;Expecting new image to have the same name&#39;)
-    assert image_json[&#39;spec&#39;][&#39;displayName&#39;] == name, (
-        &#39;Expecting new image to have the same display name&#39;)</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_images.test_create_images"><code class="name flex">
-<span>def <span class="ident">test_create_images</span></span>(<span>admin_session, image)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test Create image</p>
-<h2 id="covers">Covers</h2>
-<p>images-1-Create Image</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.images_p1
-@pytest.mark.p1
-def test_create_images(admin_session, image):
-    &#34;&#34;&#34;
-    Test Create image
-
-    Covers:
-        images-1-Create Image
-    &#34;&#34;&#34;
-    # NOTE: the image fixture will be creating the image and check the result
-    pass</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_images.test_create_images_using_terraform"><code class="name flex">
-<span>def <span class="ident">test_create_images_using_terraform</span></span>(<span>admin_session, image_using_terraform)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test creates Harvester Image</p>
-<h2 id="covers">Covers</h2>
-<p>terraform-provider-05-Harvester image as a pre-req it covers
-terraform-provider-01-install, terraform-provider-02-kube config,
-terraform-provider-03-define
-kube config</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.terraform_provider_p1
-@pytest.mark.p1
-# This test covers terraform-5-Harvester image as a pre-req it covers
-# terraform-1-install, terraform-2-kube config, terraform-3-define kube config
-@pytest.mark.terraform
-def test_create_images_using_terraform(admin_session, image_using_terraform):
-    &#34;&#34;&#34;
-    Test creates Harvester Image
-
-    Covers:
-        terraform-provider-05-Harvester image as a pre-req it covers
-        terraform-provider-01-install, terraform-provider-02-kube config,
-        terraform-provider-03-define
-        kube config
-    &#34;&#34;&#34;
-    # NOTE: the image fixture will be creating the image and check the result
-    pass</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_images.test_image_upload"><code class="name flex">
-<span>def <span class="ident">test_image_upload</span></span>(<span>request, admin_session, image_upload_fs, keypair, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test create upload image</p>
-<h2 id="covers">Covers</h2>
-<p>images-7-Upload Image, only check Image is active (does not create vm)</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.images_p1
-@pytest.mark.p1
-@pytest.mark.imageupload
-def test_image_upload(request, admin_session, image_upload_fs, keypair,
-                      harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Test create upload image
-
-    Covers:
-        images-7-Upload Image, only check Image is active (does not create vm)
-    &#34;&#34;&#34;
-    # NOTE: the image fixture will be uploading the image and check the result
-    pass</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_images.test_list_images"><code class="name flex">
-<span>def <span class="ident">test_list_images</span></span>(<span>admin_session, harvester_api_endpoints)</span>
+<dt id="harvester_e2e_tests.apis.test_images.test_create_with_invalid_url"><code class="name flex">
+<span>def <span class="ident">test_create_with_invalid_url</span></span>(<span>api_client, unique_name)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -517,54 +207,377 @@ def test_image_upload(request, admin_session, image_upload_fs, keypair,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_list_images(admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_images)
-    assert resp.status_code == 200, (
-        &#39;Failed to list images: %s&#39; % (resp.content))</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_images.test_update_images"><code class="name flex">
-<span>def <span class="ident">test_update_images</span></span>(<span>admin_session, harvester_api_endpoints, image)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Test Edit Image and Add Labels</p>
-<h2 id="covers">Covers</h2>
-<p>images-3-Edit Image and images-4-Add Labels</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.images_p1
-@pytest.mark.p1
-def test_update_images(admin_session, harvester_api_endpoints, image):
-    &#34;&#34;&#34;
-    Test Edit Image and Add Labels
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.images
+def test_create_with_invalid_url(api_client, unique_name):
+    code, data = api_client.images.create_by_url(unique_name, f&#34;https://{unique_name}.img&#34;)
 
-    Covers:
-        images-3-Edit Image and images-4-Add Labels
-    &#34;&#34;&#34;
-    image[&#39;metadata&#39;][&#39;labels&#39;] = {
-        &#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;
-    }
-    image[&#39;metadata&#39;][&#39;annotations&#39;] = {
-        &#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;
-    }
-    resp = admin_session.put(harvester_api_endpoints.update_image % (
-        image[&#39;metadata&#39;][&#39;name&#39;]), json=image)
-    assert resp.status_code == 200, &#39;Failed to update image: %s&#39; % (
-        resp.content)
-    update_image_data = resp.json()
-    assert update_image_data[&#39;metadata&#39;][&#39;labels&#39;] == {
-        &#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;
-    }
-    assert update_image_data[&#39;metadata&#39;][&#39;annotations&#39;] == {
-        &#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;
-    }</code></pre>
+    assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(minutes=3)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_name)
+        image_conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+        if len(image_conds) &gt; 0:
+            break
+        sleep(3)
+
+    assert len(image_conds) == 1, f&#34;Got unexpected image conditions!\n{data}&#34;
+    assert &#34;Initialized&#34; == image_conds[0].get(&#34;type&#34;)
+    assert &#34;False&#34; == image_conds[0].get(&#34;status&#34;)
+    assert &#34;no such host&#34; in image_conds[0].get(&#34;message&#34;)
+
+    api_client.images.delete(unique_name)</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_images.TestImages"><code class="flex name class">
+<span>class <span class="ident">TestImages</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestImages:
+    @pytest.mark.dependency(name=&#34;create_image&#34;)
+    def test_create(self, api_client, unique_name, fake_image_file):
+        resp = api_client.images.create_by_file(unique_name, fake_image_file)
+
+        assert 200 == resp.status_code, (
+            f&#34;Failed to upload fake image with error:{resp.status_code}, {resp.content}&#34;
+        )
+
+    @pytest.mark.dependency(name=&#34;get_image&#34;)
+    def test_get(self, api_client, unique_name):
+        # Case 1: get all images
+        code, data = api_client.images.get()
+
+        assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
+
+        # Case 2: get created image
+        code, data = api_client.images.get(unique_name)
+        assert 200 == code, (code, data)
+        assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;]
+
+    def test_update(self, api_client, unique_name):
+        updates = {
+            &#34;labels&#34;: {
+                &#34;test-label&#34;: &#34;42&#34;
+            },
+            &#34;annotations&#34;: {
+                &#34;test-annotation&#34;: &#34;dummy&#34;
+            }
+        }
+
+        code, data = api_client.images.update(unique_name, dict(metadata=updates))
+        assert 200 == code, (f&#34;Failed to update image with error: {code}, {data}&#34;)
+
+        unexpected = list()
+        for field, pairs in updates.items():
+            for k, val in pairs.items():
+                if data[&#39;metadata&#39;][field].get(k) != val:
+                    unexpected.append((field, k, val, data[&#39;metadata&#39;][field].get(k)))
+
+        assert not unexpected, (
+            &#34;\n&#34;.join(f&#34;Update {f} failed, set key {k} as {v} but got {n}&#34;
+                      for f, k, v, n in unexpected)
+        )
+
+    @pytest.mark.dependency(name=&#34;delete_image&#34;)
+    def test_delete(self, api_client, unique_name, wait_timeout):
+        code, data = api_client.images.delete(unique_name)
+
+        assert 200 == code, (f&#34;Failed to delete image with error: {code}, {data}&#34;)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+
+        while endtime &gt; datetime.now():
+            code, data = api_client.images.get(unique_name)
+            if code == 404:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Failed to delete image {unique_name} with {wait_timeout} timed out\n&#34;
+                f&#34;Still got {code} with {data}&#34;
+            )
+
+    @pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
+    def test_create_with_reuse_display_name(self, api_client, unique_name, fake_image_file):
+        code, data = api_client.images.get(unique_name)
+
+        assert 404 == code, f&#34;Image {unique_name} not be deleted by previous test.&#34;
+
+        resp = api_client.images.create_by_file(unique_name, fake_image_file)
+
+        assert 200 == resp.status_code, (
+            f&#34;failed to upload fake image with reused name {unique_name}, &#34;
+            f&#34;got error: {resp.status_code}, {resp.content}&#34;
+        )
+
+        _ = api_client.images.delete(unique_name)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_images.TestImages.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_images.TestImages.test_create"><code class="name flex">
+<span>def <span class="ident">test_create</span></span>(<span>self, api_client, unique_name, fake_image_file)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;create_image&#34;)
+def test_create(self, api_client, unique_name, fake_image_file):
+    resp = api_client.images.create_by_file(unique_name, fake_image_file)
+
+    assert 200 == resp.status_code, (
+        f&#34;Failed to upload fake image with error:{resp.status_code}, {resp.content}&#34;
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_images.TestImages.test_create_with_reuse_display_name"><code class="name flex">
+<span>def <span class="ident">test_create_with_reuse_display_name</span></span>(<span>self, api_client, unique_name, fake_image_file)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
+def test_create_with_reuse_display_name(self, api_client, unique_name, fake_image_file):
+    code, data = api_client.images.get(unique_name)
+
+    assert 404 == code, f&#34;Image {unique_name} not be deleted by previous test.&#34;
+
+    resp = api_client.images.create_by_file(unique_name, fake_image_file)
+
+    assert 200 == resp.status_code, (
+        f&#34;failed to upload fake image with reused name {unique_name}, &#34;
+        f&#34;got error: {resp.status_code}, {resp.content}&#34;
+    )
+
+    _ = api_client.images.delete(unique_name)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_images.TestImages.test_delete"><code class="name flex">
+<span>def <span class="ident">test_delete</span></span>(<span>self, api_client, unique_name, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;delete_image&#34;)
+def test_delete(self, api_client, unique_name, wait_timeout):
+    code, data = api_client.images.delete(unique_name)
+
+    assert 200 == code, (f&#34;Failed to delete image with error: {code}, {data}&#34;)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_name)
+        if code == 404:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Failed to delete image {unique_name} with {wait_timeout} timed out\n&#34;
+            f&#34;Still got {code} with {data}&#34;
+        )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_images.TestImages.test_get"><code class="name flex">
+<span>def <span class="ident">test_get</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;get_image&#34;)
+def test_get(self, api_client, unique_name):
+    # Case 1: get all images
+    code, data = api_client.images.get()
+
+    assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
+
+    # Case 2: get created image
+    code, data = api_client.images.get(unique_name)
+    assert 200 == code, (code, data)
+    assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;]</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_images.TestImages.test_update"><code class="name flex">
+<span>def <span class="ident">test_update</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_update(self, api_client, unique_name):
+    updates = {
+        &#34;labels&#34;: {
+            &#34;test-label&#34;: &#34;42&#34;
+        },
+        &#34;annotations&#34;: {
+            &#34;test-annotation&#34;: &#34;dummy&#34;
+        }
+    }
+
+    code, data = api_client.images.update(unique_name, dict(metadata=updates))
+    assert 200 == code, (f&#34;Failed to update image with error: {code}, {data}&#34;)
+
+    unexpected = list()
+    for field, pairs in updates.items():
+        for k, val in pairs.items():
+            if data[&#39;metadata&#39;][field].get(k) != val:
+                unexpected.append((field, k, val, data[&#39;metadata&#39;][field].get(k)))
+
+    assert not unexpected, (
+        &#34;\n&#34;.join(f&#34;Update {f} failed, set key {k} as {v} but got {n}&#34;
+                  for f, k, v, n in unexpected)
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_images.TestImagesNegative"><code class="flex name class">
+<span>class <span class="ident">TestImagesNegative</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestImagesNegative:
+    def test_get_not_exist(self, api_client, unique_name):
+        code, data = api_client.images.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        code, data = api_client.images.delete(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
+
+    def test_create_with_empty_data(self, api_client, unique_name):
+        # name, url, description, sourcetype, namespace
+        image_json = api_client.images.create_data(unique_name, &#34;&#34;, &#34;&#34;, &#34;&#34;, &#34;&#34;)
+        code, data = api_client.images.create(unique_name, json=image_json)
+
+        assert 422 == code, (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
+
+    def test_create_with_empty_url(self, api_client, unique_name):
+        code, data = api_client.images.create_by_url(unique_name, &#34;&#34;)
+
+        assert 422 == code, (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_images.TestImagesNegative.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_images.TestImagesNegative.test_create_with_empty_data"><code class="name flex">
+<span>def <span class="ident">test_create_with_empty_data</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_create_with_empty_data(self, api_client, unique_name):
+    # name, url, description, sourcetype, namespace
+    image_json = api_client.images.create_data(unique_name, &#34;&#34;, &#34;&#34;, &#34;&#34;, &#34;&#34;)
+    code, data = api_client.images.create(unique_name, json=image_json)
+
+    assert 422 == code, (code, data)
+    assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_images.TestImagesNegative.test_create_with_empty_url"><code class="name flex">
+<span>def <span class="ident">test_create_with_empty_url</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_create_with_empty_url(self, api_client, unique_name):
+    code, data = api_client.images.create_by_url(unique_name, &#34;&#34;)
+
+    assert 422 == code, (code, data)
+    assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_images.TestImagesNegative.test_delete_not_exist"><code class="name flex">
+<span>def <span class="ident">test_delete_not_exist</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_delete_not_exist(self, api_client, unique_name):
+    code, data = api_client.images.delete(unique_name)
+
+    assert 404 == code, (code, data)
+    assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_images.TestImagesNegative.test_get_not_exist"><code class="name flex">
+<span>def <span class="ident">test_get_not_exist</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_get_not_exist(self, api_client, unique_name):
+    code, data = api_client.images.get(unique_name)
+
+    assert 404 == code, (code, data)
+    assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -580,15 +593,32 @@ def test_update_images(admin_session, harvester_api_endpoints, image):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_create_image_no_data" href="#harvester_e2e_tests.apis.test_images.test_create_image_no_data">test_create_image_no_data</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_create_image_no_url" href="#harvester_e2e_tests.apis.test_images.test_create_image_no_url">test_create_image_no_url</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_create_image_with_invalid_url" href="#harvester_e2e_tests.apis.test_images.test_create_image_with_invalid_url">test_create_image_with_invalid_url</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_create_image_with_reuse_display_name" href="#harvester_e2e_tests.apis.test_images.test_create_image_with_reuse_display_name">test_create_image_with_reuse_display_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_create_images" href="#harvester_e2e_tests.apis.test_images.test_create_images">test_create_images</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_create_images_using_terraform" href="#harvester_e2e_tests.apis.test_images.test_create_images_using_terraform">test_create_images_using_terraform</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_image_upload" href="#harvester_e2e_tests.apis.test_images.test_image_upload">test_image_upload</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_list_images" href="#harvester_e2e_tests.apis.test_images.test_list_images">test_list_images</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images.test_update_images" href="#harvester_e2e_tests.apis.test_images.test_update_images">test_update_images</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.test_create_with_invalid_url" href="#harvester_e2e_tests.apis.test_images.test_create_with_invalid_url">test_create_with_invalid_url</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_images.TestImages" href="#harvester_e2e_tests.apis.test_images.TestImages">TestImages</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImages.pytestmark" href="#harvester_e2e_tests.apis.test_images.TestImages.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImages.test_create" href="#harvester_e2e_tests.apis.test_images.TestImages.test_create">test_create</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImages.test_create_with_reuse_display_name" href="#harvester_e2e_tests.apis.test_images.TestImages.test_create_with_reuse_display_name">test_create_with_reuse_display_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImages.test_delete" href="#harvester_e2e_tests.apis.test_images.TestImages.test_delete">test_delete</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImages.test_get" href="#harvester_e2e_tests.apis.test_images.TestImages.test_get">test_get</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImages.test_update" href="#harvester_e2e_tests.apis.test_images.TestImages.test_update">test_update</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_images.TestImagesNegative" href="#harvester_e2e_tests.apis.test_images.TestImagesNegative">TestImagesNegative</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImagesNegative.pytestmark" href="#harvester_e2e_tests.apis.test_images.TestImagesNegative.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImagesNegative.test_create_with_empty_data" href="#harvester_e2e_tests.apis.test_images.TestImagesNegative.test_create_with_empty_data">test_create_with_empty_data</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImagesNegative.test_create_with_empty_url" href="#harvester_e2e_tests.apis.test_images.TestImagesNegative.test_create_with_empty_url">test_create_with_empty_url</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImagesNegative.test_delete_not_exist" href="#harvester_e2e_tests.apis.test_images.TestImagesNegative.test_delete_not_exist">test_delete_not_exist</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_images.TestImagesNegative.test_get_not_exist" href="#harvester_e2e_tests.apis.test_images.TestImagesNegative.test_get_not_exist">test_get_not_exist</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

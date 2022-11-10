@@ -43,114 +43,86 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from harvester_e2e_tests import utils
-import json
+from time import sleep
+from datetime import datetime, timedelta
+
 import pytest
 
-
 pytest_plugins = [
-   &#39;harvester_e2e_tests.fixtures.api_endpoints&#39;,
-   &#39;harvester_e2e_tests.fixtures.network&#39;,
-   &#39;harvester_e2e_tests.fixtures.session&#39;,
+   &#34;harvester_e2e_tests.fixtures.api_client&#34;
   ]
 
-
-def test_create_with_vid_0(admin_session, harvester_api_endpoints):
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_network&#39;,
-        vlan=0
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, (&#39;Expected HTTP 422 when trying to create &#39;
-                                     &#39;network with vlan ID 0&#39;)
-    response_data = resp.json()
-    assert &#39;must &gt;=1&#39; in response_data[&#39;message&#39;]
+VLAN_ID = 4000
 
 
-@pytest.mark.network_p1
-@pytest.mark.p1
-def test_create_with_vid_4095(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Covers:
-        network-14-create network
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_network&#39;,
-        vlan=4095
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, (
-        &#39;Expected HTTP 422 when trying to create network with vlan ID 4095&#39;)
-    response_data = resp.json()
-    assert &#39;and &lt;=4094&#39; in response_data[&#39;message&#39;]
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.networks
+class TestNetworksNegative:
+
+    def test_get_not_exist(self, api_client, unique_name):
+        code, data = api_client.networks.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        code, data = api_client.networks.delete(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
+
+    @pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
+    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+        code, data = api_client.networks.create(unique_name, vlan_id)
+
+        assert 422 == code, (vlan_id, code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (vlan_id, code, data)
+
+    def test_create_without_name(self, api_client):
+        code, data = api_client.networks.create(&#34;&#34;, VLAN_ID)
+
+        assert 422 == code, (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
 
 
-@pytest.mark.network_p2
-@pytest.mark.p2
-def test_create_network_with_no_name(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Negative test to create network with no name
-    Covers:
-        network-03-Test create network with no name
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_network&#39;,
-        vlan=4000,
-        name=&#39;&#39;
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, (
-        &#39;Expected HTTP 422 when trying to create network with no name&#39;)
-    response_data = resp.json()
-    assert &#39;name or generateName is required&#39; in response_data[&#39;message&#39;]
+@pytest.mark.p0
+@pytest.mark.networks
+class TestNetworks:
+    def test_create(self, api_client, unique_name):
+        code, data = api_client.networks.create(unique_name, VLAN_ID)
 
+        assert 201 == code, (code, data)
 
-@pytest.mark.public_network
-def test_create_edit_network(request, admin_session, harvester_api_endpoints,
-                             network_for_update_test):
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_network&#39;
-    )
-    conf_data = json.loads(network_for_update_test[&#39;spec&#39;][&#39;config&#39;])
-    # network_for_update_test fixture creates vlan with vlan_id +1.
-    # Here update with -1.
-    updated_vlan = conf_data[&#39;vlan&#39;] - 1
-    conf_data[&#39;vlan&#39;] = updated_vlan
-    request_json[&#39;spec&#39;][&#39;config&#39;] = json.dumps(conf_data)
-    request_json[&#39;metadata&#39;][&#39;name&#39;] = \
-        network_for_update_test[&#39;metadata&#39;][&#39;name&#39;]
-    request_json[&#39;metadata&#39;][&#39;namespace&#39;] = \
-        network_for_update_test[&#39;metadata&#39;][&#39;namespace&#39;]
-    resp = utils.poll_for_update_resource(
-        request, admin_session,
-        network_for_update_test[&#39;links&#39;][&#39;update&#39;],
-        request_json,
-        network_for_update_test[&#39;links&#39;][&#39;view&#39;])
-    updated_network_data = resp.json()
-    updated_config = json.loads(updated_network_data[&#39;spec&#39;][&#39;config&#39;])
-    assert updated_config[&#39;vlan&#39;] == updated_vlan, &#39;Failed to update vlan&#39;
+    def test_get(self, api_client, unique_name):
+        # Case 1: get all vlan networks
+        code, data = api_client.networks.get()
 
+        assert 200 == code, (code, data)
+        assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
 
-@pytest.mark.terraform_provider_p1
-@pytest.mark.p1
-@pytest.mark.terraform
-@pytest.mark.public_network
-def test_create_network_using_terraform(request, admin_session,
-                                        harvester_api_endpoints,
-                                        network_using_terraform):
-    &#34;&#34;&#34;
-    Test creates Terraform Harvester
-    Covers:
-        terraform-provider-06-Harvester network as a pre-req it covers
-        terraform-provider-08-Harvester cluster network during enable vlan
-        terraform-provider-01-install, terraform-provider-02-kube config,
-        terraform-provider-03-define
-        kube config
-    &#34;&#34;&#34;
-    pass</code></pre>
+        # Case 2: get specific vlan by name
+        code, data = api_client.networks.get(unique_name)
+
+        assert 200 == code, (code, data)
+        assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
+
+    def test_delete(self, api_client, unique_name, wait_timeout):
+        code, data = api_client.networks.delete(unique_name)
+
+        assert 200 == code, (f&#34;Failed to delete vlan with error: {code}, {data}&#34;)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.networks.get(unique_name)
+            if code == 404:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Failed to delete vlan {unique_name} with {wait_timeout} timed out\n&#34;
+                f&#34;Still got {code} with {data}&#34;
+            )</code></pre>
 </details>
 </section>
 <section>
@@ -158,10 +130,12 @@ def test_create_network_using_terraform(request, admin_session,
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.apis.test_networks.test_create_edit_network"><code class="name flex">
-<span>def <span class="ident">test_create_edit_network</span></span>(<span>request, admin_session, harvester_api_endpoints, network_for_update_test)</span>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworks"><code class="flex name class">
+<span>class <span class="ident">TestNetworks</span></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -169,100 +143,53 @@ def test_create_network_using_terraform(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.public_network
-def test_create_edit_network(request, admin_session, harvester_api_endpoints,
-                             network_for_update_test):
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_network&#39;
-    )
-    conf_data = json.loads(network_for_update_test[&#39;spec&#39;][&#39;config&#39;])
-    # network_for_update_test fixture creates vlan with vlan_id +1.
-    # Here update with -1.
-    updated_vlan = conf_data[&#39;vlan&#39;] - 1
-    conf_data[&#39;vlan&#39;] = updated_vlan
-    request_json[&#39;spec&#39;][&#39;config&#39;] = json.dumps(conf_data)
-    request_json[&#39;metadata&#39;][&#39;name&#39;] = \
-        network_for_update_test[&#39;metadata&#39;][&#39;name&#39;]
-    request_json[&#39;metadata&#39;][&#39;namespace&#39;] = \
-        network_for_update_test[&#39;metadata&#39;][&#39;namespace&#39;]
-    resp = utils.poll_for_update_resource(
-        request, admin_session,
-        network_for_update_test[&#39;links&#39;][&#39;update&#39;],
-        request_json,
-        network_for_update_test[&#39;links&#39;][&#39;view&#39;])
-    updated_network_data = resp.json()
-    updated_config = json.loads(updated_network_data[&#39;spec&#39;][&#39;config&#39;])
-    assert updated_config[&#39;vlan&#39;] == updated_vlan, &#39;Failed to update vlan&#39;</code></pre>
+<pre><code class="python">class TestNetworks:
+    def test_create(self, api_client, unique_name):
+        code, data = api_client.networks.create(unique_name, VLAN_ID)
+
+        assert 201 == code, (code, data)
+
+    def test_get(self, api_client, unique_name):
+        # Case 1: get all vlan networks
+        code, data = api_client.networks.get()
+
+        assert 200 == code, (code, data)
+        assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
+
+        # Case 2: get specific vlan by name
+        code, data = api_client.networks.get(unique_name)
+
+        assert 200 == code, (code, data)
+        assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
+
+    def test_delete(self, api_client, unique_name, wait_timeout):
+        code, data = api_client.networks.delete(unique_name)
+
+        assert 200 == code, (f&#34;Failed to delete vlan with error: {code}, {data}&#34;)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.networks.get(unique_name)
+            if code == 404:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Failed to delete vlan {unique_name} with {wait_timeout} timed out\n&#34;
+                f&#34;Still got {code} with {data}&#34;
+            )</code></pre>
 </details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_networks.test_create_network_using_terraform"><code class="name flex">
-<span>def <span class="ident">test_create_network_using_terraform</span></span>(<span>request, admin_session, harvester_api_endpoints, network_using_terraform)</span>
-</code></dt>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworks.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
-<div class="desc"><p>Test creates Terraform Harvester</p>
-<h2 id="covers">Covers</h2>
-<p>terraform-provider-06-Harvester network as a pre-req it covers
-terraform-provider-08-Harvester cluster network during enable vlan
-terraform-provider-01-install, terraform-provider-02-kube config,
-terraform-provider-03-define
-kube config</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.terraform_provider_p1
-@pytest.mark.p1
-@pytest.mark.terraform
-@pytest.mark.public_network
-def test_create_network_using_terraform(request, admin_session,
-                                        harvester_api_endpoints,
-                                        network_using_terraform):
-    &#34;&#34;&#34;
-    Test creates Terraform Harvester
-    Covers:
-        terraform-provider-06-Harvester network as a pre-req it covers
-        terraform-provider-08-Harvester cluster network during enable vlan
-        terraform-provider-01-install, terraform-provider-02-kube config,
-        terraform-provider-03-define
-        kube config
-    &#34;&#34;&#34;
-    pass</code></pre>
-</details>
+<div class="desc"></div>
 </dd>
-<dt id="harvester_e2e_tests.apis.test_networks.test_create_network_with_no_name"><code class="name flex">
-<span>def <span class="ident">test_create_network_with_no_name</span></span>(<span>admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Negative test to create network with no name</p>
-<h2 id="covers">Covers</h2>
-<p>network-03-Test create network with no name</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.network_p2
-@pytest.mark.p2
-def test_create_network_with_no_name(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Negative test to create network with no name
-    Covers:
-        network-03-Test create network with no name
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_network&#39;,
-        vlan=4000,
-        name=&#39;&#39;
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, (
-        &#39;Expected HTTP 422 when trying to create network with no name&#39;)
-    response_data = resp.json()
-    assert &#39;name or generateName is required&#39; in response_data[&#39;message&#39;]</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_networks.test_create_with_vid_0"><code class="name flex">
-<span>def <span class="ident">test_create_with_vid_0</span></span>(<span>admin_session, harvester_api_endpoints)</span>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworks.test_create"><code class="name flex">
+<span>def <span class="ident">test_create</span></span>(<span>self, api_client, unique_name)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -270,51 +197,177 @@ def test_create_network_with_no_name(admin_session, harvester_api_endpoints):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_create_with_vid_0(admin_session, harvester_api_endpoints):
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_network&#39;,
-        vlan=0
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, (&#39;Expected HTTP 422 when trying to create &#39;
-                                     &#39;network with vlan ID 0&#39;)
-    response_data = resp.json()
-    assert &#39;must &gt;=1&#39; in response_data[&#39;message&#39;]</code></pre>
+<pre><code class="python">def test_create(self, api_client, unique_name):
+    code, data = api_client.networks.create(unique_name, VLAN_ID)
+
+    assert 201 == code, (code, data)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.apis.test_networks.test_create_with_vid_4095"><code class="name flex">
-<span>def <span class="ident">test_create_with_vid_4095</span></span>(<span>admin_session, harvester_api_endpoints)</span>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworks.test_delete"><code class="name flex">
+<span>def <span class="ident">test_delete</span></span>(<span>self, api_client, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="covers">Covers</h2>
-<p>network-14-create network</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.network_p1
-@pytest.mark.p1
-def test_create_with_vid_4095(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;
-    Covers:
-        network-14-create network
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(
-        &#39;basic_network&#39;,
-        vlan=4095
-    )
-    resp = admin_session.post(harvester_api_endpoints.create_network,
-                              json=request_json)
-    assert resp.status_code == 422, (
-        &#39;Expected HTTP 422 when trying to create network with vlan ID 4095&#39;)
-    response_data = resp.json()
-    assert &#39;and &lt;=4094&#39; in response_data[&#39;message&#39;]</code></pre>
+<pre><code class="python">def test_delete(self, api_client, unique_name, wait_timeout):
+    code, data = api_client.networks.delete(unique_name)
+
+    assert 200 == code, (f&#34;Failed to delete vlan with error: {code}, {data}&#34;)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.networks.get(unique_name)
+        if code == 404:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Failed to delete vlan {unique_name} with {wait_timeout} timed out\n&#34;
+            f&#34;Still got {code} with {data}&#34;
+        )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworks.test_get"><code class="name flex">
+<span>def <span class="ident">test_get</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_get(self, api_client, unique_name):
+    # Case 1: get all vlan networks
+    code, data = api_client.networks.get()
+
+    assert 200 == code, (code, data)
+    assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
+
+    # Case 2: get specific vlan by name
+    code, data = api_client.networks.get(unique_name)
+
+    assert 200 == code, (code, data)
+    assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)</code></pre>
 </details>
 </dd>
 </dl>
-</section>
-<section>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworksNegative"><code class="flex name class">
+<span>class <span class="ident">TestNetworksNegative</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestNetworksNegative:
+
+    def test_get_not_exist(self, api_client, unique_name):
+        code, data = api_client.networks.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        code, data = api_client.networks.delete(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
+
+    @pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
+    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+        code, data = api_client.networks.create(unique_name, vlan_id)
+
+        assert 422 == code, (vlan_id, code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (vlan_id, code, data)
+
+    def test_create_without_name(self, api_client):
+        code, data = api_client.networks.create(&#34;&#34;, VLAN_ID)
+
+        assert 422 == code, (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_with_invalid_id"><code class="name flex">
+<span>def <span class="ident">test_create_with_invalid_id</span></span>(<span>self, api_client, unique_name, vlan_id)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
+def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+    code, data = api_client.networks.create(unique_name, vlan_id)
+
+    assert 422 == code, (vlan_id, code, data)
+    assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (vlan_id, code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_without_name"><code class="name flex">
+<span>def <span class="ident">test_create_without_name</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_create_without_name(self, api_client):
+    code, data = api_client.networks.create(&#34;&#34;, VLAN_ID)
+
+    assert 422 == code, (code, data)
+    assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_delete_not_exist"><code class="name flex">
+<span>def <span class="ident">test_delete_not_exist</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_delete_not_exist(self, api_client, unique_name):
+    code, data = api_client.networks.delete(unique_name)
+
+    assert 404 == code, (code, data)
+    assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_get_not_exist"><code class="name flex">
+<span>def <span class="ident">test_get_not_exist</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_get_not_exist(self, api_client, unique_name):
+    code, data = api_client.networks.get(unique_name)
+
+    assert 404 == code, (code, data)
+    assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -328,13 +381,27 @@ def test_create_with_vid_4095(admin_session, harvester_api_endpoints):
 <li><code><a title="harvester_e2e_tests.apis" href="index.html">harvester_e2e_tests.apis</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks" href="#harvester_e2e_tests.apis.test_networks.TestNetworks">TestNetworks</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.apis.test_networks.test_create_edit_network" href="#harvester_e2e_tests.apis.test_networks.test_create_edit_network">test_create_edit_network</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_networks.test_create_network_using_terraform" href="#harvester_e2e_tests.apis.test_networks.test_create_network_using_terraform">test_create_network_using_terraform</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_networks.test_create_network_with_no_name" href="#harvester_e2e_tests.apis.test_networks.test_create_network_with_no_name">test_create_network_with_no_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_networks.test_create_with_vid_0" href="#harvester_e2e_tests.apis.test_networks.test_create_with_vid_0">test_create_with_vid_0</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_networks.test_create_with_vid_4095" href="#harvester_e2e_tests.apis.test_networks.test_create_with_vid_4095">test_create_with_vid_4095</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.pytestmark" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.test_create" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.test_create">test_create</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.test_delete" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.test_delete">test_delete</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.test_get" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.test_get">test_get</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative">TestNetworksNegative</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.pytestmark" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_with_invalid_id" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_with_invalid_id">test_create_with_invalid_id</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_without_name" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_without_name">test_create_without_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_delete_not_exist" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_delete_not_exist">test_delete_not_exist</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_get_not_exist" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_get_not_exist">test_get_not_exist</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

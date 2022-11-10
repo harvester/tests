@@ -279,6 +279,7 @@ def lookup_hosts_with_most_available_cpu(admin_session,
                     if k in (&#39;cpu&#39;, &#39;memory&#39;)}
 
         available_cpu = int(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;cpu&#39;]) - math.ceil(reserved[&#39;cpu&#39;])
+        available_cpu = available_cpu * 0.99  # reduce 1% to avoid hit the floor.
         if available_cpu &gt; most_available_cpu:
             most_available_cpu = available_cpu
             most_available_cpu_nodes = [node_name]
@@ -781,7 +782,7 @@ def power_off_node(request, admin_session, harvester_api_endpoints, node_name,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         &#39;Failed to power-off node %s: rc: %s, stdout: %s, stderr: %s&#39; % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to disappear
     time.sleep(120)
@@ -811,7 +812,7 @@ def power_on_node(request, admin_session, harvester_api_endpoints, node_name,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         &#39;Failed to power-on node %s: rc: %s, stdout: %s, stderr: %s&#39; % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to power-on
     time.sleep(180)
@@ -857,7 +858,7 @@ def reboot_node(request, admin_session, harvester_api_endpoints, node_name,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         &#39;Failed to reboot node %s: rc: %s, stdout: %s, stderr: %s&#39; % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to power-on
     time.sleep(180)
@@ -1029,7 +1030,7 @@ def create_image_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
     # wait for the image to get ready
     time.sleep(50)
 
@@ -1080,7 +1081,7 @@ def destroy_resource(request, admin_session, destroy_type=None):
 
         assert result.returncode == 0, (
             &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-                result.returncode, result.stderr, result.stdout))
+                result.returncode, result.stdout, result.stderr))
 
     if os.path.isdir(os.path.join(terraform_path, &#39;.kube&#39;)):
         shutil.rmtree(os.path.join(terraform_path, &#39;.kube&#39;))
@@ -1115,7 +1116,7 @@ def create_volume_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     resp = admin_session.get(harvester_api_endpoints.get_volume % (
         name))
@@ -1151,7 +1152,7 @@ def create_keypair_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     resp = admin_session.get(harvester_api_endpoints.get_keypair % (
         name))
@@ -1196,7 +1197,7 @@ def create_network_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     poll_for_resource_ready(request, admin_session,
                             harvester_api_endpoints.get_network % (name))
@@ -1235,7 +1236,7 @@ def create_clusternetworks_terraform(request, admin_session,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     poll_for_resource_ready(request, admin_session,
                             harvester_api_endpoints.get_vlan)
@@ -1282,7 +1283,7 @@ def create_vm_terraform(request, admin_session, harvester_api_endpoints,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     assert_vm_ready(request, admin_session, harvester_api_endpoints,
                     name, running=True)
@@ -1495,7 +1496,7 @@ def get_total_objects_nfs_share(request):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         &#39;Failed to run mountnfs : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
     total_objects = int(result.stdout.decode(&#34;utf-8&#34;))
     return total_objects
 
@@ -1825,7 +1826,7 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     poll_for_resource_ready(request, admin_session,
                             harvester_api_endpoints.get_vlan)
@@ -1919,7 +1920,7 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
     # wait for the image to get ready
     time.sleep(50)
 
@@ -2059,7 +2060,7 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     resp = admin_session.get(harvester_api_endpoints.get_keypair % (
         name))
@@ -2147,7 +2148,7 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     poll_for_resource_ready(request, admin_session,
                             harvester_api_endpoints.get_network % (name))
@@ -2355,7 +2356,7 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     assert_vm_ready(request, admin_session, harvester_api_endpoints,
                     name, running=True)
@@ -2403,7 +2404,7 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 
     assert result.returncode == 0, (
         &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
 
     resp = admin_session.get(harvester_api_endpoints.get_volume % (
         name))
@@ -2689,7 +2690,7 @@ def execute_script_on_vm(ip, timeout, script, keypair=None,
 
         assert result.returncode == 0, (
             &#39;Failed to run terraform : rc: %s, stdout: %s, stderr: %s&#39; % (
-                result.returncode, result.stderr, result.stdout))
+                result.returncode, result.stdout, result.stderr))
 
     if os.path.isdir(os.path.join(terraform_path, &#39;.kube&#39;)):
         shutil.rmtree(os.path.join(terraform_path, &#39;.kube&#39;))
@@ -2923,7 +2924,7 @@ Jinja2 template</p></div>
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         &#39;Failed to run mountnfs : rc: %s, stdout: %s, stderr: %s&#39; % (
-            result.returncode, result.stderr, result.stdout))
+            result.returncode, result.stdout, result.stderr))
     total_objects = int(result.stdout.decode(&#34;utf-8&#34;))
     return total_objects</code></pre>
 </details>
@@ -3092,6 +3093,7 @@ Jinja2 template</p></div>
                     if k in (&#39;cpu&#39;, &#39;memory&#39;)}
 
         available_cpu = int(node[&#39;status&#39;][&#39;allocatable&#39;][&#39;cpu&#39;]) - math.ceil(reserved[&#39;cpu&#39;])
+        available_cpu = available_cpu * 0.99  # reduce 1% to avoid hit the floor.
         if available_cpu &gt; most_available_cpu:
             most_available_cpu = available_cpu
             most_available_cpu_nodes = [node_name]
@@ -3284,7 +3286,7 @@ Jinja2 template</p></div>
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         &#39;Failed to power-off node %s: rc: %s, stdout: %s, stderr: %s&#39; % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to disappear
     time.sleep(120)
@@ -3323,7 +3325,7 @@ Jinja2 template</p></div>
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         &#39;Failed to power-on node %s: rc: %s, stdout: %s, stderr: %s&#39; % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to power-on
     time.sleep(180)
@@ -3441,7 +3443,7 @@ Jinja2 template</p></div>
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, (
         &#39;Failed to reboot node %s: rc: %s, stdout: %s, stderr: %s&#39; % (
-            node_name, result.returncode, result.stderr, result.stdout))
+            node_name, result.returncode, result.stdout, result.stderr))
 
     # wait for the node to power-on
     time.sleep(180)

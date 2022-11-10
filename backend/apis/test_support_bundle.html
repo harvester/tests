@@ -43,286 +43,375 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import json
-import os
 import re
-import tempfile
-import zipfile
+from io import BytesIO
+from time import sleep
+from zipfile import ZipFile
+from datetime import datetime, timedelta
 
-import polling2
 import pytest
-from harvester_e2e_tests import utils
 
 pytest_plugins = [
-    &#39;harvester_e2e_tests.fixtures.api_endpoints&#39;,
-    &#39;harvester_e2e_tests.fixtures.user&#39;,
-    &#39;harvester_e2e_tests.fixtures.session&#39;,
-    &#39;harvester_e2e_tests.fixtures.support_bundle&#39;
+    &#34;harvester_e2e_tests.fixtures.api_client&#34;
 ]
 
 
-def _create_bundle(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;Helper function to create &#39;happy path&#39; support bundle
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.support_bundle
+class TestSupportBundleNegative:
+    def test_get_not_exist(self, api_client, unique_name):
+        code, data = api_client.supportbundle.get(unique_name)
 
-    Args:
-        admin_session (dict): fixture that gets exteneded from requests
-        harvester_api_endpoints (dict): constants harvester api endpoints
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(&#39;support_bundle&#39;)
-    resp = admin_session.post(
-        harvester_api_endpoints.create_support_bundle, json=request_json)
-    assert resp.status_code == 201
-    resp_json = json.loads(resp.text)
-    name = resp_json.get(&#39;metadata&#39;).get(&#39;name&#39;)
-    return name, resp_json
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
 
+    def test_delete_not_exist(self, api_client, unique_name):
+        code, data = api_client.supportbundle.delete(unique_name)
 
-def test_create_missing_description(
-        admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;Tests that description is enforced on support bundle creation
-
-    Args:
-        admin_session (dict): fixture that gets exteneded from requests
-        harvester_api_endpoints (dict): constants harvester api endpoints
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(&#39;support_bundle&#39;)
-    del request_json[&#39;spec&#39;][&#39;description&#39;]
-    resp = admin_session.post(
-        harvester_api_endpoints.create_support_bundle, json=request_json)
-    assert resp.status_code == 422
-    assert &#39;is invalid: spec.description: Required value&#39; in resp.text
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
 
 
-def test_delete(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;Tests creating a support bundle then it&#39;s deletion
+@pytest.mark.p0
+@pytest.mark.support_bundle
+class TestSupportBundle:
+    @pytest.mark.dependency(name=&#34;create support bundle&#34;)
+    def test_create(self, api_client, unique_name, support_bundle_state):
+        code, data = api_client.supportbundle.create(unique_name)
 
-    Args:
-        admin_session (dict): fixture that gets exteneded from requests
-        harvester_api_endpoints (dict): constants harvester api endpoints
-    &#34;&#34;&#34;
-    name, _resp_json = _create_bundle(admin_session, harvester_api_endpoints)
-    delete_resp = admin_session.delete(
-        harvester_api_endpoints.delete_support_bundle + name
-    )
-    assert delete_resp.status_code == 200
+        assert 201 == code, (code, data)
 
+        support_bundle_state.uid = data[&#39;metadata&#39;][&#39;name&#39;]
 
-@pytest.mark.p1
-@pytest.mark.slow
-def test_creates_successful_bundle_and_downloads(
-        admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;Creates a support bundle, validates it progresses to 100%,
-    downloads in memory as a zip file, audits the zip file to
-    ensure all needed files are present
+    @pytest.mark.dependency(name=&#34;get support bundle&#34;, depends=[&#34;create support bundle&#34;])
+    def test_get(self, api_client, support_bundle_state):
+        code, data = api_client.supportbundle.get(support_bundle_state.uid)
 
-    Args:
-        admin_session (dict): fixture that gets exteneded from requests
-        harvester_api_endpoints (dict): constants harvester api endpoints
-    &#34;&#34;&#34;
-    name, _resp_json = _create_bundle(admin_session, harvester_api_endpoints)
-    progress = 0
+        assert 200 == code, (code, data)
 
-    def _wait_for_progress_to_be_ready():
-        nonlocal progress
-        resp_progress_check = admin_session.get(
-            harvester_api_endpoints.view_support_bundle +
-            name)
-        json_progress_result = json.loads(resp_progress_check.text)
-        progress = json_progress_result.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0)
-        if progress != 100:
-            return False
-        return True
+    @pytest.mark.dependency(name=&#34;donwnload support bundle&#34;, depends=[&#34;get support bundle&#34;])
+    def test_download(self, api_client, support_bundle_state, wait_timeout):
 
-    try:
-        polling2.poll(
-            _wait_for_progress_to_be_ready,
-            step=5,
-            timeout=300
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.supportbundle.get(support_bundle_state.uid)
+            if 100 == data.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Failed to wait supportbundle ready with {wait_timeout} timed out\n&#34;
+                f&#34;Still got {code} in {data}&#34;
+            )
+
+        code, ctx = api_client.supportbundle.download(support_bundle_state.uid)
+
+        assert 200 == code, (code, ctx)
+
+        with ZipFile(BytesIO(ctx), &#39;r&#39;) as zf:
+            files = zf.namelist()
+
+        assert 0 != len(files)
+
+        support_bundle_state.files = files
+        support_bundle_state.fio.write(ctx)
+        support_bundle_state.fio.seek(0)
+
+    @pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+    def test_logfile_exists(self, support_bundle_state):
+        patterns = [r&#34;^.*/logs/cattle-fleet-local-system/fleet-agent-.*/fleet-agent.log&#34;,
+                    r&#34;^.*/logs/cattle-fleet-system/fleet-controller-.*/fleet-controller.log&#34;,
+                    r&#34;^.*/logs/cattle-fleet-system/gitjob-.*/gitjob.log&#34;]
+        matches = []
+        for f in support_bundle_state.files:
+            for pattern in patterns:
+                matches.extend([f] if re.match(pattern, f) else [])
+
+        assert len(matches) == len(patterns), (
+            f&#34;Some file(s) not found, files: {matches}\npatterns: {patterns}&#34;
         )
-    except Exception as ex:
-        raise f&#39;Timed out waiting for support bundle: {ex}&#39;
 
-    temp_dir = tempfile.mkdtemp()
-    zip_file_location = os.path.join(temp_dir, &#39;support_bundle.zip&#39;)
-    resp_download = admin_session.get(
-        harvester_api_endpoints.download_support_bundle +
-        name +
-        &#39;/download&#39;)
-    with open(zip_file_location, &#39;wb&#39;) as zip_file:
-        zip_file.write(resp_download.content)
-    files = None
-    with zipfile.ZipFile(zip_file_location, &#39;r&#39;) as zip_file:
-        files = zip_file.namelist()
+    @pytest.mark.dependency(depends=[&#34;get support bundle&#34;])
+    def test_delete(self, api_client, support_bundle_state):
+        code, data = api_client.supportbundle.delete(support_bundle_state.uid)
 
+        # ???: Downloaded support bundle will be deleted automatically
+        assert 404 == code, (code, data)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle"><code class="flex name class">
+<span>class <span class="ident">TestSupportBundle</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestSupportBundle:
+    @pytest.mark.dependency(name=&#34;create support bundle&#34;)
+    def test_create(self, api_client, unique_name, support_bundle_state):
+        code, data = api_client.supportbundle.create(unique_name)
+
+        assert 201 == code, (code, data)
+
+        support_bundle_state.uid = data[&#39;metadata&#39;][&#39;name&#39;]
+
+    @pytest.mark.dependency(name=&#34;get support bundle&#34;, depends=[&#34;create support bundle&#34;])
+    def test_get(self, api_client, support_bundle_state):
+        code, data = api_client.supportbundle.get(support_bundle_state.uid)
+
+        assert 200 == code, (code, data)
+
+    @pytest.mark.dependency(name=&#34;donwnload support bundle&#34;, depends=[&#34;get support bundle&#34;])
+    def test_download(self, api_client, support_bundle_state, wait_timeout):
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.supportbundle.get(support_bundle_state.uid)
+            if 100 == data.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Failed to wait supportbundle ready with {wait_timeout} timed out\n&#34;
+                f&#34;Still got {code} in {data}&#34;
+            )
+
+        code, ctx = api_client.supportbundle.download(support_bundle_state.uid)
+
+        assert 200 == code, (code, ctx)
+
+        with ZipFile(BytesIO(ctx), &#39;r&#39;) as zf:
+            files = zf.namelist()
+
+        assert 0 != len(files)
+
+        support_bundle_state.files = files
+        support_bundle_state.fio.write(ctx)
+        support_bundle_state.fio.seek(0)
+
+    @pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+    def test_logfile_exists(self, support_bundle_state):
+        patterns = [r&#34;^.*/logs/cattle-fleet-local-system/fleet-agent-.*/fleet-agent.log&#34;,
+                    r&#34;^.*/logs/cattle-fleet-system/fleet-controller-.*/fleet-controller.log&#34;,
+                    r&#34;^.*/logs/cattle-fleet-system/gitjob-.*/gitjob.log&#34;]
+        matches = []
+        for f in support_bundle_state.files:
+            for pattern in patterns:
+                matches.extend([f] if re.match(pattern, f) else [])
+
+        assert len(matches) == len(patterns), (
+            f&#34;Some file(s) not found, files: {matches}\npatterns: {patterns}&#34;
+        )
+
+    @pytest.mark.dependency(depends=[&#34;get support bundle&#34;])
+    def test_delete(self, api_client, support_bundle_state):
+        code, data = api_client.supportbundle.delete(support_bundle_state.uid)
+
+        # ???: Downloaded support bundle will be deleted automatically
+        assert 404 == code, (code, data)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_create"><code class="name flex">
+<span>def <span class="ident">test_create</span></span>(<span>self, api_client, unique_name, support_bundle_state)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;create support bundle&#34;)
+def test_create(self, api_client, unique_name, support_bundle_state):
+    code, data = api_client.supportbundle.create(unique_name)
+
+    assert 201 == code, (code, data)
+
+    support_bundle_state.uid = data[&#39;metadata&#39;][&#39;name&#39;]</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_delete"><code class="name flex">
+<span>def <span class="ident">test_delete</span></span>(<span>self, api_client, support_bundle_state)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;get support bundle&#34;])
+def test_delete(self, api_client, support_bundle_state):
+    code, data = api_client.supportbundle.delete(support_bundle_state.uid)
+
+    # ???: Downloaded support bundle will be deleted automatically
+    assert 404 == code, (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_download"><code class="name flex">
+<span>def <span class="ident">test_download</span></span>(<span>self, api_client, support_bundle_state, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;donwnload support bundle&#34;, depends=[&#34;get support bundle&#34;])
+def test_download(self, api_client, support_bundle_state, wait_timeout):
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.supportbundle.get(support_bundle_state.uid)
+        if 100 == data.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Failed to wait supportbundle ready with {wait_timeout} timed out\n&#34;
+            f&#34;Still got {code} in {data}&#34;
+        )
+
+    code, ctx = api_client.supportbundle.download(support_bundle_state.uid)
+
+    assert 200 == code, (code, ctx)
+
+    with ZipFile(BytesIO(ctx), &#39;r&#39;) as zf:
+        files = zf.namelist()
+
+    assert 0 != len(files)
+
+    support_bundle_state.files = files
+    support_bundle_state.fio.write(ctx)
+    support_bundle_state.fio.seek(0)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_get"><code class="name flex">
+<span>def <span class="ident">test_get</span></span>(<span>self, api_client, support_bundle_state)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;get support bundle&#34;, depends=[&#34;create support bundle&#34;])
+def test_get(self, api_client, support_bundle_state):
+    code, data = api_client.supportbundle.get(support_bundle_state.uid)
+
+    assert 200 == code, (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists"><code class="name flex">
+<span>def <span class="ident">test_logfile_exists</span></span>(<span>self, support_bundle_state)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+def test_logfile_exists(self, support_bundle_state):
     patterns = [r&#34;^.*/logs/cattle-fleet-local-system/fleet-agent-.*/fleet-agent.log&#34;,
                 r&#34;^.*/logs/cattle-fleet-system/fleet-controller-.*/fleet-controller.log&#34;,
                 r&#34;^.*/logs/cattle-fleet-system/gitjob-.*/gitjob.log&#34;]
     matches = []
-    for f in files:
+    for f in support_bundle_state.files:
         for pattern in patterns:
             matches.extend([f] if re.match(pattern, f) else [])
-            print(f)
-            print(pattern)
 
-    err_msg = (&#34;Some file(s) not found,&#34;
-               f&#34;files: {matches}\n&#34;
-               f&#34;patterns: {patterns}&#34;)
-    assert len(matches) == len(patterns), err_msg</code></pre>
-</details>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="harvester_e2e_tests.apis.test_support_bundle.test_create_missing_description"><code class="name flex">
-<span>def <span class="ident">test_create_missing_description</span></span>(<span>admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Tests that description is enforced on support bundle creation</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>admin_session</code></strong> :&ensp;<code>dict</code></dt>
-<dd>fixture that gets exteneded from requests</dd>
-<dt><strong><code>harvester_api_endpoints</code></strong> :&ensp;<code>dict</code></dt>
-<dd>constants harvester api endpoints</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def test_create_missing_description(
-        admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;Tests that description is enforced on support bundle creation
-
-    Args:
-        admin_session (dict): fixture that gets exteneded from requests
-        harvester_api_endpoints (dict): constants harvester api endpoints
-    &#34;&#34;&#34;
-    request_json = utils.get_json_object_from_template(&#39;support_bundle&#39;)
-    del request_json[&#39;spec&#39;][&#39;description&#39;]
-    resp = admin_session.post(
-        harvester_api_endpoints.create_support_bundle, json=request_json)
-    assert resp.status_code == 422
-    assert &#39;is invalid: spec.description: Required value&#39; in resp.text</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_support_bundle.test_creates_successful_bundle_and_downloads"><code class="name flex">
-<span>def <span class="ident">test_creates_successful_bundle_and_downloads</span></span>(<span>admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Creates a support bundle, validates it progresses to 100%,
-downloads in memory as a zip file, audits the zip file to
-ensure all needed files are present</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>admin_session</code></strong> :&ensp;<code>dict</code></dt>
-<dd>fixture that gets exteneded from requests</dd>
-<dt><strong><code>harvester_api_endpoints</code></strong> :&ensp;<code>dict</code></dt>
-<dd>constants harvester api endpoints</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.p1
-@pytest.mark.slow
-def test_creates_successful_bundle_and_downloads(
-        admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;Creates a support bundle, validates it progresses to 100%,
-    downloads in memory as a zip file, audits the zip file to
-    ensure all needed files are present
-
-    Args:
-        admin_session (dict): fixture that gets exteneded from requests
-        harvester_api_endpoints (dict): constants harvester api endpoints
-    &#34;&#34;&#34;
-    name, _resp_json = _create_bundle(admin_session, harvester_api_endpoints)
-    progress = 0
-
-    def _wait_for_progress_to_be_ready():
-        nonlocal progress
-        resp_progress_check = admin_session.get(
-            harvester_api_endpoints.view_support_bundle +
-            name)
-        json_progress_result = json.loads(resp_progress_check.text)
-        progress = json_progress_result.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0)
-        if progress != 100:
-            return False
-        return True
-
-    try:
-        polling2.poll(
-            _wait_for_progress_to_be_ready,
-            step=5,
-            timeout=300
-        )
-    except Exception as ex:
-        raise f&#39;Timed out waiting for support bundle: {ex}&#39;
-
-    temp_dir = tempfile.mkdtemp()
-    zip_file_location = os.path.join(temp_dir, &#39;support_bundle.zip&#39;)
-    resp_download = admin_session.get(
-        harvester_api_endpoints.download_support_bundle +
-        name +
-        &#39;/download&#39;)
-    with open(zip_file_location, &#39;wb&#39;) as zip_file:
-        zip_file.write(resp_download.content)
-    files = None
-    with zipfile.ZipFile(zip_file_location, &#39;r&#39;) as zip_file:
-        files = zip_file.namelist()
-
-    patterns = [r&#34;^.*/logs/cattle-fleet-local-system/fleet-agent-.*/fleet-agent.log&#34;,
-                r&#34;^.*/logs/cattle-fleet-system/fleet-controller-.*/fleet-controller.log&#34;,
-                r&#34;^.*/logs/cattle-fleet-system/gitjob-.*/gitjob.log&#34;]
-    matches = []
-    for f in files:
-        for pattern in patterns:
-            matches.extend([f] if re.match(pattern, f) else [])
-            print(f)
-            print(pattern)
-
-    err_msg = (&#34;Some file(s) not found,&#34;
-               f&#34;files: {matches}\n&#34;
-               f&#34;patterns: {patterns}&#34;)
-    assert len(matches) == len(patterns), err_msg</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.apis.test_support_bundle.test_delete"><code class="name flex">
-<span>def <span class="ident">test_delete</span></span>(<span>admin_session, harvester_api_endpoints)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Tests creating a support bundle then it's deletion</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>admin_session</code></strong> :&ensp;<code>dict</code></dt>
-<dd>fixture that gets exteneded from requests</dd>
-<dt><strong><code>harvester_api_endpoints</code></strong> :&ensp;<code>dict</code></dt>
-<dd>constants harvester api endpoints</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def test_delete(admin_session, harvester_api_endpoints):
-    &#34;&#34;&#34;Tests creating a support bundle then it&#39;s deletion
-
-    Args:
-        admin_session (dict): fixture that gets exteneded from requests
-        harvester_api_endpoints (dict): constants harvester api endpoints
-    &#34;&#34;&#34;
-    name, _resp_json = _create_bundle(admin_session, harvester_api_endpoints)
-    delete_resp = admin_session.delete(
-        harvester_api_endpoints.delete_support_bundle + name
-    )
-    assert delete_resp.status_code == 200</code></pre>
+    assert len(matches) == len(patterns), (
+        f&#34;Some file(s) not found, files: {matches}\npatterns: {patterns}&#34;
+    )</code></pre>
 </details>
 </dd>
 </dl>
-</section>
-<section>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative"><code class="flex name class">
+<span>class <span class="ident">TestSupportBundleNegative</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestSupportBundleNegative:
+    def test_get_not_exist(self, api_client, unique_name):
+        code, data = api_client.supportbundle.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        code, data = api_client.supportbundle.delete(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.test_delete_not_exist"><code class="name flex">
+<span>def <span class="ident">test_delete_not_exist</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_delete_not_exist(self, api_client, unique_name):
+    code, data = api_client.supportbundle.delete(unique_name)
+
+    assert 404 == code, (code, data)
+    assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.test_get_not_exist"><code class="name flex">
+<span>def <span class="ident">test_get_not_exist</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_get_not_exist(self, api_client, unique_name):
+    code, data = api_client.supportbundle.get(unique_name)
+
+    assert 404 == code, (code, data)
+    assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -336,11 +425,27 @@ def test_creates_successful_bundle_and_downloads(
 <li><code><a title="harvester_e2e_tests.apis" href="index.html">harvester_e2e_tests.apis</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle">TestSupportBundle</a></code></h4>
+<ul class="two-column">
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.pytestmark" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_create" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_create">test_create</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_delete" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_delete">test_delete</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_download" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_download">test_download</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_get" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_get">test_get</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists">test_logfile_exists</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative">TestSupportBundleNegative</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.test_create_missing_description" href="#harvester_e2e_tests.apis.test_support_bundle.test_create_missing_description">test_create_missing_description</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.test_creates_successful_bundle_and_downloads" href="#harvester_e2e_tests.apis.test_support_bundle.test_creates_successful_bundle_and_downloads">test_creates_successful_bundle_and_downloads</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.test_delete" href="#harvester_e2e_tests.apis.test_support_bundle.test_delete">test_delete</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.pytestmark" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.test_delete_not_exist" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.test_delete_not_exist">test_delete_not_exist</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.test_get_not_exist" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative.test_get_not_exist">test_get_not_exist</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -42,45 +42,52 @@
 #
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
+import warnings
 
-from harvester_e2e_tests import utils
-
+import pytest
 
 pytest_plugins = [
-   &#39;harvester_e2e_tests.fixtures.api_endpoints&#39;,
-   &#39;harvester_e2e_tests.fixtures.session&#39;,
+   &#34;harvester_e2e_tests.fixtures.api_client&#34;
   ]
 
 
-def test_list_settingss(admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_harvester_settings)
-    assert resp.status_code == 200, &#39;Failed to list Harvester settings: %s&#39; % (
-        resp.content)
+@pytest.mark.p0
+@pytest.mark.settings
+def test_get_all_settings(api_client, expected_settings):
+    expected_settings = expected_settings[&#39;default&#39;]
+    code, data = api_client.settings.get()
+
+    available_settings = {m[&#39;metadata&#39;][&#39;name&#39;] for m in data[&#39;items&#39;]}
+
+    assert 200 == code, (code, data)
+    assert expected_settings &lt;= available_settings, (
+        &#34;Some setting missing:\n&#34;
+        f&#34;{expected_settings - available_settings}&#34;
+    )
 
 
-def test_update_api_ui_version(request, admin_session,
-                               harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.get_api_ui_version)
-    assert resp.status_code == 200, (
-        &#39;Failed to get Harvester API UI version: %s&#39; % (resp.content))
-    api_ui_version_data = resp.json()
-    request_json = utils.get_json_object_from_template(
-        &#39;api_ui_version_setting&#39;)
-    resp = utils.poll_for_update_resource(
-        request, admin_session,
-        api_ui_version_data[&#39;links&#39;][&#39;update&#39;],
-        request_json,
-        harvester_api_endpoints.get_api_ui_version)
-    updated_settings_data = resp.json()
-    assert updated_settings_data[&#39;value&#39;] == request_json[&#39;value&#39;], (
-        &#39;Failed to update API UI version&#39;)
-    # now change it back
-    request_json[&#39;value&#39;] = api_ui_version_data[&#39;value&#39;]
-    utils.poll_for_update_resource(
-        request, admin_session,
-        updated_settings_data[&#39;links&#39;][&#39;update&#39;],
-        request_json,
-        harvester_api_endpoints.get_api_ui_version)</code></pre>
+@pytest.mark.p0
+@pytest.mark.settings
+@pytest.mark.skip_version_before(&#39;v1.1.0&#39;)
+def test_get_all_settings_v110(api_client, expected_settings):
+    expected_settings = expected_settings[&#39;default&#39;] | expected_settings[&#39;1.1.0&#39;]
+    code, data = api_client.settings.get()
+
+    available_settings = {m[&#39;metadata&#39;][&#39;name&#39;] for m in data[&#39;items&#39;]}
+
+    assert 200 == code, (code, data)
+    assert expected_settings &lt;= available_settings, (
+        &#34;Some setting missing:\n&#34;
+        f&#34;{expected_settings - available_settings}&#34;
+    )
+
+    removed = expected_settings - available_settings
+    added = available_settings - expected_settings
+
+    if removed:
+        warnings.warn(UserWarning(f&#34;Few setting(s) been removed: {removed}.&#34;))
+    if added:
+        warnings.warn(UserWarning(f&#34;New setting(s) added: {added}&#34;))</code></pre>
 </details>
 </section>
 <section>
@@ -90,8 +97,8 @@ def test_update_api_ui_version(request, admin_session,
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.apis.test_settings.test_list_settingss"><code class="name flex">
-<span>def <span class="ident">test_list_settingss</span></span>(<span>admin_session, harvester_api_endpoints)</span>
+<dt id="harvester_e2e_tests.apis.test_settings.test_get_all_settings"><code class="name flex">
+<span>def <span class="ident">test_get_all_settings</span></span>(<span>api_client, expected_settings)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -99,14 +106,23 @@ def test_update_api_ui_version(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_list_settingss(admin_session, harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.list_harvester_settings)
-    assert resp.status_code == 200, &#39;Failed to list Harvester settings: %s&#39; % (
-        resp.content)</code></pre>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.settings
+def test_get_all_settings(api_client, expected_settings):
+    expected_settings = expected_settings[&#39;default&#39;]
+    code, data = api_client.settings.get()
+
+    available_settings = {m[&#39;metadata&#39;][&#39;name&#39;] for m in data[&#39;items&#39;]}
+
+    assert 200 == code, (code, data)
+    assert expected_settings &lt;= available_settings, (
+        &#34;Some setting missing:\n&#34;
+        f&#34;{expected_settings - available_settings}&#34;
+    )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.apis.test_settings.test_update_api_ui_version"><code class="name flex">
-<span>def <span class="ident">test_update_api_ui_version</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
+<dt id="harvester_e2e_tests.apis.test_settings.test_get_all_settings_v110"><code class="name flex">
+<span>def <span class="ident">test_get_all_settings_v110</span></span>(<span>api_client, expected_settings)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -114,29 +130,28 @@ def test_update_api_ui_version(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_update_api_ui_version(request, admin_session,
-                               harvester_api_endpoints):
-    resp = admin_session.get(harvester_api_endpoints.get_api_ui_version)
-    assert resp.status_code == 200, (
-        &#39;Failed to get Harvester API UI version: %s&#39; % (resp.content))
-    api_ui_version_data = resp.json()
-    request_json = utils.get_json_object_from_template(
-        &#39;api_ui_version_setting&#39;)
-    resp = utils.poll_for_update_resource(
-        request, admin_session,
-        api_ui_version_data[&#39;links&#39;][&#39;update&#39;],
-        request_json,
-        harvester_api_endpoints.get_api_ui_version)
-    updated_settings_data = resp.json()
-    assert updated_settings_data[&#39;value&#39;] == request_json[&#39;value&#39;], (
-        &#39;Failed to update API UI version&#39;)
-    # now change it back
-    request_json[&#39;value&#39;] = api_ui_version_data[&#39;value&#39;]
-    utils.poll_for_update_resource(
-        request, admin_session,
-        updated_settings_data[&#39;links&#39;][&#39;update&#39;],
-        request_json,
-        harvester_api_endpoints.get_api_ui_version)</code></pre>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.settings
+@pytest.mark.skip_version_before(&#39;v1.1.0&#39;)
+def test_get_all_settings_v110(api_client, expected_settings):
+    expected_settings = expected_settings[&#39;default&#39;] | expected_settings[&#39;1.1.0&#39;]
+    code, data = api_client.settings.get()
+
+    available_settings = {m[&#39;metadata&#39;][&#39;name&#39;] for m in data[&#39;items&#39;]}
+
+    assert 200 == code, (code, data)
+    assert expected_settings &lt;= available_settings, (
+        &#34;Some setting missing:\n&#34;
+        f&#34;{expected_settings - available_settings}&#34;
+    )
+
+    removed = expected_settings - available_settings
+    added = available_settings - expected_settings
+
+    if removed:
+        warnings.warn(UserWarning(f&#34;Few setting(s) been removed: {removed}.&#34;))
+    if added:
+        warnings.warn(UserWarning(f&#34;New setting(s) added: {added}&#34;))</code></pre>
 </details>
 </dd>
 </dl>
@@ -157,8 +172,8 @@ def test_update_api_ui_version(request, admin_session,
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.apis.test_settings.test_list_settingss" href="#harvester_e2e_tests.apis.test_settings.test_list_settingss">test_list_settingss</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_settings.test_update_api_ui_version" href="#harvester_e2e_tests.apis.test_settings.test_update_api_ui_version">test_update_api_ui_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.test_get_all_settings" href="#harvester_e2e_tests.apis.test_settings.test_get_all_settings">test_get_all_settings</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.test_get_all_settings_v110" href="#harvester_e2e_tests.apis.test_settings.test_get_all_settings_v110">test_get_all_settings_v110</a></code></li>
 </ul>
 </li>
 </ul>

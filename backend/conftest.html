@@ -75,13 +75,6 @@ def pytest_addoption(parser):
         help=&#39;Do not cleanup the test artifacts&#39;
     )
     parser.addoption(
-        &#39;--harvester_cluster_nodes&#39;,
-        action=&#39;store&#39;,
-        type=int,
-        default=config_data[&#39;harvester_cluster_nodes&#39;],
-        help=&#39;Set count of test framework harvester cluster nodes.&#39;
-    )
-    parser.addoption(
         &#39;--vlan-id&#39;,
         action=&#39;store&#39;,
         type=int,
@@ -216,129 +209,76 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;p1: mark test to run only p1 tests &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;p2: mark test to run only p2 tests &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;public_network: mark test to run only if public &#39;
-                    &#39;networking is available&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;multi_node_scheduling: mark test to run only if we have &#39;
-                    &#39;a multi-node cluster where some hosts have more &#39;
-                    &#39;resources then others in order to test VM scheduling &#39;
-                    &#39;behavior&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;host_management: mark test to run only if we have &#39;
-                    &#39;host management (power_on.sh, power_off.sh, reboot.sh) &#39;
-                    &#39;scripts provided. These tests are designed to test &#39;
-                    &#39;scheduling resiliency and disaster recovery scenarios. &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;delete_host: mark test to run in the end when other &#39;
-                    &#39;tests finished running&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;terraform: mark test to run only if we have terraform.sh &#39;
-                    &#39;and terraform provider scripts provided&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;backupnfs: mark test to run only the backup and restore&#39;
-                    &#39;tests for NFS backup target&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;backups3: mark test to run only the backup and restore&#39;
-                    &#39;tests for S3 backup target&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;imageupload: marker to run imageupload test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;singlevmtest: marker to run create single vm test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;multivmtest: marker to run create multiple vms test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;windows_vm: marker to run only create vm test &#39;
-                    &#39;using windows images&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;usbvmtest: marker to run only create vm test with usb&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;nouserdata: marker to run only create vm test &#39;
-                    &#39;with nouserdata&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;images_p1: mark test to run only to execute the P1 test &#39;
-                    &#39;for images&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;images_p2: mark test to run only to execute the P2 test &#39;
-                    &#39;for images&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;terraform_provider_p1: mark test to run only to execute &#39;
-                    &#39;the P1 test for terraform provider&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;imageupload: mark test to run upload image&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;virtual_machines_p1: marker to run only P1 &#39;
-                    &#39; Virtual Machine test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;virtual_machines_p2: marker to run only P2  &#39;
-                    &#39; Virtual Machine test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;network_p1: marker to run only P1 Network test &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;network_p2: marker to run only P2 Network test &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;volumes_p1: mark test to run only P1 test for Volume&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;volumes_p2: mark test to run only P2 test for Volume&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;authentication_p1: mark test to run only P1 &#39;
-                    &#39;test for authentication&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;backup_and_restore_p1: mark test to run only to execute &#39;
-                    &#39;the P1 test for Backup and Recovery&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;backup_and_restore_p2: mark test to run only to execute &#39;
-                    &#39;the P2 test for Backup and Recovery&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;hosts_p1: mark test to run only P1 test for Hosts&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;hosts_p2: mark test to run only P1 test for Hosts&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;terraform_provider_p1: mark test to run only P1 test &#39;
-                    &#39;for terraform provider&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;rancher: mark rancher integration  tests &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (
-            &#39;rancher_integration_with_external_rancher: mark Rancher &#39;
-            &#39;integration tests with an external Rancher&#39;)
-    )
+    # Register marker as the format (marker, (description))
+    markers = [
+        (&#34;skip_version_before&#34;, (
+            &#34;Mark test skipped when cluster version &lt; provided vesrion&#34;)),
+        (&#34;skip_version_after&#34;, (
+            &#34;Mark test skipped when cluster version &gt;= provided version&#34;)),
+        (&#39;p0&#39;, (&#39;mark test to run only p1 tests &#39;)),
+        (&#39;p1&#39;, (&#39;mark test to run only p1 tests &#39;)),
+        (&#39;p2&#39;, (&#39;mark test to run only p2 tests &#39;)),
+        (&#34;negative&#34;, (&#34;marker negative testing&#34;)),
+        (&#39;public_network&#39;, (&#39;mark test to run only if public networking is available&#39;)),
+        (&#39;multi_node_scheduling&#39;, (
+            &#39;mark test to run only if we have a multi-node cluster&#39;
+            &#39; where some hosts have more resources then others in order to test VM&#39;
+            &#39; scheduling behavior&#39;)),
+        (&#39;host_management&#39;, (
+            &#39;mark test to run only if we have &#39;
+            &#39;host management (power_on.sh, power_off.sh, reboot.sh) &#39;
+            &#39;scripts provided. These tests are designed to test &#39;
+            &#39;scheduling resiliency and disaster recovery scenarios. &#39;)),
+        (&#39;delete_host&#39;, (&#39;mark test to run in the end when other tests finished running&#39;)),
+        (&#39;terraform&#39;, (
+            &#39;mark test to run only if we have terraform.sh &#39;
+            &#39;and terraform provider scripts provided&#39;)),
+        (&#39;backupnfs&#39;, (
+            &#39;mark test to run only the backup and restore&#39;
+            &#39;tests for NFS backup target&#39;)),
+        (&#39;backups3&#39;, (
+            &#39;mark test to run only the backup and restore&#39;
+            &#39;tests for S3 backup target&#39;)),
+        (&#39;imageupload&#39;, (&#39;marker to run imageupload test&#39;)),
+        (&#39;singlevmtest&#39;, (&#39;marker to run create single vm test&#39;)),
+        (&#39;multivmtest&#39;, (&#39;marker to run create multiple vms test&#39;)),
+        (&#39;windows_vm&#39;, (
+            &#39;marker to run only create vm test &#39;
+            &#39;using windows images&#39;)),
+        (&#39;usbvmtest&#39;, (&#39;marker to run only create vm test with usb&#39;)),
+        (&#39;nouserdata&#39;, (&#39;marker to run only create vm test with nouserdata&#39;)),
+        (&#39;images_p1&#39;, (&#39;mark test to run only to execute the P1 test for images&#39;)),
+        (&#39;images_p2&#39;, (&#39;mark test to run only to execute the P2 test for images&#39;)),
+        (&#39;terraform_provider_p1&#39;, (
+            &#39;mark test to run only to execute the P1 test for terraform provider&#39;)),
+        (&#39;imageupload&#39;, (&#39;mark test to run upload image&#39;)),
+        (&#39;virtual_machines_p1&#39;, (&#39;marker to run only P1 Virtual Machine test&#39;)),
+        (&#39;virtual_machines_p2&#39;, (&#39;marker to run only P2 Virtual Machine test&#39;)),
+        (&#39;network_p1&#39;, (&#39;marker to run only P1 Network test &#39;)),
+        (&#39;network_p2&#39;, (&#39;marker to run only P2 Network test &#39;)),
+        (&#39;volumes_p1&#39;, (&#39;mark test to run only P1 test for Volume&#39;)),
+        (&#39;volumes_p2&#39;, (&#39;mark test to run only P2 test for Volume&#39;)),
+        (&#39;hosts&#39;, (&#39;mark test as host related&#39;)),
+        (&#39;authentication_p1&#39;, (&#39;mark test to run only P1 test for authentication&#39;)),
+        (&#39;backup_and_restore_p1&#39;, (
+            &#39;mark test to run only to execute the P1 test for Backup and Recovery&#39;)),
+        (&#39;backup_and_restore_p2&#39;, (
+            &#39;mark test to run only to execute the P2 test for Backup and Recovery&#39;)),
+        (&#39;terraform_provider_p1&#39;, (&#39;mark test to run only P1 test for terraform provider&#39;)),
+        (&#39;rancher_integration_with_external_rancher&#39;, (
+            &#39;mark Rancher integration tests with an external Rancher&#39;)),
+        (&#39;rancher&#39;, (&#39;mark rancher integration  tests &#39;)),
+        (&#39;keypairs&#39;, (&#34;marker to run ssh keypair tests&#34;)),
+        (&#39;images&#39;, (&#34;marker to run image tests&#34;)),
+        (&#34;networks&#34;, (&#34;marker to run vlan network tests&#34;)),
+        (&#34;volumes&#34;, (&#34;marker to run volume tests&#34;)),
+        (&#34;templates&#34;, (&#34;marker to run VM template tests&#34;)),
+        (&#34;support_bundle&#34;, (&#34;marker to run Support Bundle tests&#34;)),
+        (&#34;settings&#34;, (&#34;marker to run settings tests&#34;))
+    ]
+
+    for m, msg in markers:
+        config.addinivalue_line(&#34;markers&#34;, f&#34;{m}:{msg}&#34;)
 
 
 def pytest_collection_modifyitems(config, items):
@@ -384,7 +324,12 @@ def pytest_collection_modifyitems(config, items):
             &#39;Rancher endpoint and admin password are not specified&#39;))
         for item in items:
             if &#39;rancher_integration_with_external_rancher&#39; in item.keywords:
-                item.add_marker(skip_rancher_integration_external)</code></pre>
+                item.add_marker(skip_rancher_integration_external)
+
+    if not config.getoption(&#34;--delete-host&#34;, False):
+        for item in items:
+            if &#34;delete_host&#34; in item.keywords:
+                item.add_marker(pytest.mark.skip(reason=&#34;Not configured to test host deletion.&#34;))</code></pre>
 </details>
 </section>
 <section>
@@ -429,13 +374,6 @@ def pytest_collection_modifyitems(config, items):
         action=&#39;store_true&#39;,
         default=config_data[&#39;do-not-cleanup&#39;],
         help=&#39;Do not cleanup the test artifacts&#39;
-    )
-    parser.addoption(
-        &#39;--harvester_cluster_nodes&#39;,
-        action=&#39;store&#39;,
-        type=int,
-        default=config_data[&#39;harvester_cluster_nodes&#39;],
-        help=&#39;Set count of test framework harvester cluster nodes.&#39;
     )
     parser.addoption(
         &#39;--vlan-id&#39;,
@@ -623,7 +561,12 @@ def pytest_collection_modifyitems(config, items):
             &#39;Rancher endpoint and admin password are not specified&#39;))
         for item in items:
             if &#39;rancher_integration_with_external_rancher&#39; in item.keywords:
-                item.add_marker(skip_rancher_integration_external)</code></pre>
+                item.add_marker(skip_rancher_integration_external)
+
+    if not config.getoption(&#34;--delete-host&#34;, False):
+        for item in items:
+            if &#34;delete_host&#34; in item.keywords:
+                item.add_marker(pytest.mark.skip(reason=&#34;Not configured to test host deletion.&#34;))</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.conftest.pytest_configure"><code class="name flex">
@@ -636,129 +579,76 @@ def pytest_collection_modifyitems(config, items):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def pytest_configure(config):
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;p1: mark test to run only p1 tests &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;p2: mark test to run only p2 tests &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;public_network: mark test to run only if public &#39;
-                    &#39;networking is available&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;multi_node_scheduling: mark test to run only if we have &#39;
-                    &#39;a multi-node cluster where some hosts have more &#39;
-                    &#39;resources then others in order to test VM scheduling &#39;
-                    &#39;behavior&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;host_management: mark test to run only if we have &#39;
-                    &#39;host management (power_on.sh, power_off.sh, reboot.sh) &#39;
-                    &#39;scripts provided. These tests are designed to test &#39;
-                    &#39;scheduling resiliency and disaster recovery scenarios. &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;delete_host: mark test to run in the end when other &#39;
-                    &#39;tests finished running&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;terraform: mark test to run only if we have terraform.sh &#39;
-                    &#39;and terraform provider scripts provided&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;backupnfs: mark test to run only the backup and restore&#39;
-                    &#39;tests for NFS backup target&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;backups3: mark test to run only the backup and restore&#39;
-                    &#39;tests for S3 backup target&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;imageupload: marker to run imageupload test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;singlevmtest: marker to run create single vm test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;multivmtest: marker to run create multiple vms test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;windows_vm: marker to run only create vm test &#39;
-                    &#39;using windows images&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;usbvmtest: marker to run only create vm test with usb&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;nouserdata: marker to run only create vm test &#39;
-                    &#39;with nouserdata&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;images_p1: mark test to run only to execute the P1 test &#39;
-                    &#39;for images&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;images_p2: mark test to run only to execute the P2 test &#39;
-                    &#39;for images&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;terraform_provider_p1: mark test to run only to execute &#39;
-                    &#39;the P1 test for terraform provider&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;imageupload: mark test to run upload image&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;virtual_machines_p1: marker to run only P1 &#39;
-                    &#39; Virtual Machine test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;virtual_machines_p2: marker to run only P2  &#39;
-                    &#39; Virtual Machine test&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;network_p1: marker to run only P1 Network test &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;network_p2: marker to run only P2 Network test &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;volumes_p1: mark test to run only P1 test for Volume&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;volumes_p2: mark test to run only P2 test for Volume&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;authentication_p1: mark test to run only P1 &#39;
-                    &#39;test for authentication&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;backup_and_restore_p1: mark test to run only to execute &#39;
-                    &#39;the P1 test for Backup and Recovery&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;backup_and_restore_p2: mark test to run only to execute &#39;
-                    &#39;the P2 test for Backup and Recovery&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;hosts_p1: mark test to run only P1 test for Hosts&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;hosts_p2: mark test to run only P1 test for Hosts&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;terraform_provider_p1: mark test to run only P1 test &#39;
-                    &#39;for terraform provider&#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (&#39;rancher: mark rancher integration  tests &#39;)
-    )
-    config.addinivalue_line(
-        &#34;markers&#34;, (
-            &#39;rancher_integration_with_external_rancher: mark Rancher &#39;
-            &#39;integration tests with an external Rancher&#39;)
-    )</code></pre>
+    # Register marker as the format (marker, (description))
+    markers = [
+        (&#34;skip_version_before&#34;, (
+            &#34;Mark test skipped when cluster version &lt; provided vesrion&#34;)),
+        (&#34;skip_version_after&#34;, (
+            &#34;Mark test skipped when cluster version &gt;= provided version&#34;)),
+        (&#39;p0&#39;, (&#39;mark test to run only p1 tests &#39;)),
+        (&#39;p1&#39;, (&#39;mark test to run only p1 tests &#39;)),
+        (&#39;p2&#39;, (&#39;mark test to run only p2 tests &#39;)),
+        (&#34;negative&#34;, (&#34;marker negative testing&#34;)),
+        (&#39;public_network&#39;, (&#39;mark test to run only if public networking is available&#39;)),
+        (&#39;multi_node_scheduling&#39;, (
+            &#39;mark test to run only if we have a multi-node cluster&#39;
+            &#39; where some hosts have more resources then others in order to test VM&#39;
+            &#39; scheduling behavior&#39;)),
+        (&#39;host_management&#39;, (
+            &#39;mark test to run only if we have &#39;
+            &#39;host management (power_on.sh, power_off.sh, reboot.sh) &#39;
+            &#39;scripts provided. These tests are designed to test &#39;
+            &#39;scheduling resiliency and disaster recovery scenarios. &#39;)),
+        (&#39;delete_host&#39;, (&#39;mark test to run in the end when other tests finished running&#39;)),
+        (&#39;terraform&#39;, (
+            &#39;mark test to run only if we have terraform.sh &#39;
+            &#39;and terraform provider scripts provided&#39;)),
+        (&#39;backupnfs&#39;, (
+            &#39;mark test to run only the backup and restore&#39;
+            &#39;tests for NFS backup target&#39;)),
+        (&#39;backups3&#39;, (
+            &#39;mark test to run only the backup and restore&#39;
+            &#39;tests for S3 backup target&#39;)),
+        (&#39;imageupload&#39;, (&#39;marker to run imageupload test&#39;)),
+        (&#39;singlevmtest&#39;, (&#39;marker to run create single vm test&#39;)),
+        (&#39;multivmtest&#39;, (&#39;marker to run create multiple vms test&#39;)),
+        (&#39;windows_vm&#39;, (
+            &#39;marker to run only create vm test &#39;
+            &#39;using windows images&#39;)),
+        (&#39;usbvmtest&#39;, (&#39;marker to run only create vm test with usb&#39;)),
+        (&#39;nouserdata&#39;, (&#39;marker to run only create vm test with nouserdata&#39;)),
+        (&#39;images_p1&#39;, (&#39;mark test to run only to execute the P1 test for images&#39;)),
+        (&#39;images_p2&#39;, (&#39;mark test to run only to execute the P2 test for images&#39;)),
+        (&#39;terraform_provider_p1&#39;, (
+            &#39;mark test to run only to execute the P1 test for terraform provider&#39;)),
+        (&#39;imageupload&#39;, (&#39;mark test to run upload image&#39;)),
+        (&#39;virtual_machines_p1&#39;, (&#39;marker to run only P1 Virtual Machine test&#39;)),
+        (&#39;virtual_machines_p2&#39;, (&#39;marker to run only P2 Virtual Machine test&#39;)),
+        (&#39;network_p1&#39;, (&#39;marker to run only P1 Network test &#39;)),
+        (&#39;network_p2&#39;, (&#39;marker to run only P2 Network test &#39;)),
+        (&#39;volumes_p1&#39;, (&#39;mark test to run only P1 test for Volume&#39;)),
+        (&#39;volumes_p2&#39;, (&#39;mark test to run only P2 test for Volume&#39;)),
+        (&#39;hosts&#39;, (&#39;mark test as host related&#39;)),
+        (&#39;authentication_p1&#39;, (&#39;mark test to run only P1 test for authentication&#39;)),
+        (&#39;backup_and_restore_p1&#39;, (
+            &#39;mark test to run only to execute the P1 test for Backup and Recovery&#39;)),
+        (&#39;backup_and_restore_p2&#39;, (
+            &#39;mark test to run only to execute the P2 test for Backup and Recovery&#39;)),
+        (&#39;terraform_provider_p1&#39;, (&#39;mark test to run only P1 test for terraform provider&#39;)),
+        (&#39;rancher_integration_with_external_rancher&#39;, (
+            &#39;mark Rancher integration tests with an external Rancher&#39;)),
+        (&#39;rancher&#39;, (&#39;mark rancher integration  tests &#39;)),
+        (&#39;keypairs&#39;, (&#34;marker to run ssh keypair tests&#34;)),
+        (&#39;images&#39;, (&#34;marker to run image tests&#34;)),
+        (&#34;networks&#34;, (&#34;marker to run vlan network tests&#34;)),
+        (&#34;volumes&#34;, (&#34;marker to run volume tests&#34;)),
+        (&#34;templates&#34;, (&#34;marker to run VM template tests&#34;)),
+        (&#34;support_bundle&#34;, (&#34;marker to run Support Bundle tests&#34;)),
+        (&#34;settings&#34;, (&#34;marker to run settings tests&#34;))
+    ]
+
+    for m, msg in markers:
+        config.addinivalue_line(&#34;markers&#34;, f&#34;{m}:{msg}&#34;)</code></pre>
 </details>
 </dd>
 </dl>
