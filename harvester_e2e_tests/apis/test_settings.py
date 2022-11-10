@@ -14,6 +14,7 @@
 #
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
+import warnings
 
 import pytest
 
@@ -25,6 +26,7 @@ pytest_plugins = [
 @pytest.mark.p0
 @pytest.mark.settings
 def test_get_all_settings(api_client, expected_settings):
+    expected_settings = expected_settings['default']
     code, data = api_client.settings.get()
 
     available_settings = {m['metadata']['name'] for m in data['items']}
@@ -34,3 +36,27 @@ def test_get_all_settings(api_client, expected_settings):
         "Some setting missing:\n"
         f"{expected_settings - available_settings}"
     )
+
+
+@pytest.mark.p0
+@pytest.mark.settings
+@pytest.mark.skip_version_before('v1.1.0')
+def test_get_all_settings_v110(api_client, expected_settings):
+    expected_settings = expected_settings['default'] | expected_settings['1.1.0']
+    code, data = api_client.settings.get()
+
+    available_settings = {m['metadata']['name'] for m in data['items']}
+
+    assert 200 == code, (code, data)
+    assert expected_settings <= available_settings, (
+        "Some setting missing:\n"
+        f"{expected_settings - available_settings}"
+    )
+
+    removed = expected_settings - available_settings
+    added = available_settings - expected_settings
+
+    if removed:
+        warnings.warn(UserWarning(f"Few setting(s) been removed: {removed}."))
+    if added:
+        warnings.warn(UserWarning(f"New setting(s) added: {added}"))

@@ -68,7 +68,7 @@ class TestSupportBundle:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.supportbundle.get(support_bundle_state.uid)
-            if 100 == data['status'].get('progress', 0):
+            if 100 == data.get('status', {}).get('progress', 0):
                 break
             sleep(5)
         else:

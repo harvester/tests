@@ -183,6 +183,10 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
+        ("skip_version_before", (
+            "Mark test skipped when cluster version < provided vesrion")),
+        ("skip_version_after", (
+            "Mark test skipped when cluster version >= provided version")),
         ('p0', ('mark test to run only p1 tests ')),
         ('p1', ('mark test to run only p1 tests ')),
         ('p2', ('mark test to run only p2 tests ')),
