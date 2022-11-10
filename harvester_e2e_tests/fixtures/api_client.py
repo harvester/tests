@@ -4,6 +4,7 @@ from datetime import datetime
 from subprocess import run, PIPE
 
 import pytest
+from pkg_resources import parse_version
 from cryptography.hazmat import backends
 from cryptography.hazmat.primitives import asymmetric, serialization
 
@@ -103,27 +104,47 @@ def support_bundle_state():
 @pytest.fixture(scope="session")
 def expected_settings():
     return {
-        'additional-ca',
-        'auto-disk-provision-paths',
-        'backup-target',
-        'cluster-registration-url',
-        'containerd-registry',
-        'http-proxy',
-        'log-level',
-        'overcommit-config',
-        'release-download-url',
-        'server-version',
-        'ssl-certificates',
-        'ssl-parameters',
-        'storage-network',
-        'support-bundle-image',
-        'support-bundle-namespaces',
-        'support-bundle-timeout',
-        'ui-index',
-        'ui-plugin-index',
-        'ui-source',
-        'upgrade-checker-enabled',
-        'upgrade-checker-url',
-        'vip-pools',
-        'vm-force-reset-policy',
+        "1.1.0": {'storage-network', 'containerd-registry', 'ui-plugin-index'},
+        "default": {
+            'additional-ca',
+            'auto-disk-provision-paths',
+            'backup-target',
+            'cluster-registration-url',
+            'http-proxy',
+            'log-level',
+            'overcommit-config',
+            'release-download-url',
+            'server-version',
+            'ssl-certificates',
+            'ssl-parameters',
+            'support-bundle-image',
+            'support-bundle-namespaces',
+            'support-bundle-timeout',
+            'ui-index',
+            'ui-source',
+            'upgrade-checker-enabled',
+            'upgrade-checker-url',
+            'vip-pools',
+            'vm-force-reset-policy',
+        }
     }
+
+
+@pytest.fixture(autouse=True)
+def skip_version_before(request, api_client):
+    mark = request.node.get_closest_marker("skip_version_before")
+    if mark and parse_version(mark.args[0]) > api_client.cluster_version:
+        pytest.skip(
+            f"Cluster Version `{api_client.cluster_version}` is not included"
+            f" in the supported version (most >= `{mark.args[0]}`)"
+        )
+
+
+@pytest.fixture(autouse=True)
+def skip_version_after(request, api_client):
+    mark = request.node.get_closest_marker("skip_version_after")
+    if mark and parse_version(mark.args[0]) <= api_client.cluster_version:
+        pytest.skip(
+            f"Cluster Version `{api_client.cluster_version}` is not included"
+            f" in the supported version (most < `{mark.args[0]}`)"
+        )

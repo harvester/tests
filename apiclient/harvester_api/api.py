@@ -1,6 +1,7 @@
 from urllib.parse import urljoin
 
 import requests
+from pkg_resources import parse_version
 from requests.packages.urllib3.util.retry import Retry
 
 from .managers import (HostManager, KeypairManager, ImageManager, SettingManager,
@@ -30,6 +31,8 @@ class HarvesterAPI:
         if session is None:
             self.set_retries()
 
+        self._version = None
+
         self.endpoint = endpoint
         self.hosts = HostManager(self)
         self.keypairs = KeypairManager(self)
@@ -39,6 +42,15 @@ class HarvesterAPI:
         self.templates = TemplateManager(self)
         self.supportbundle = SupportBundlemanager(self)
         self.settings = SettingManager(self)
+
+    @property
+    def cluster_version(self):
+        if not self._version:
+            code, data = self.settings.get('server-version')
+            ver = data['value']
+            # XXX: fix master-xxx-head to 8.8.8, need the API fix the problem
+            self._version = parse_version('8.8.8' if 'master' in ver else ver)
+        return self._version
 
     def __repr__(self):
         return f"HarvesterAPI({self.endpoint!r}, {self.session.headers['Authorization']!r})"
@@ -72,6 +84,7 @@ class HarvesterAPI:
         else:
             token = "Bearer %s" % r.json()['token']
             self.session.headers.update(Authorization=token)
+            self._version = None
         return r.json()
 
     def set_retries(self, times=5, status_forcelist=(500, 502, 504), **kwargs):
