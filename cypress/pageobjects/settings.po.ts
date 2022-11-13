@@ -80,9 +80,9 @@ export default class SettingsPagePo extends CruResource {
     enableVLAN(nic: string) {
         this.goTo();
         this.checkIsCurrentPage();
-        this.clickMenu('vlan', 'Edit Setting', 'vlan', HCI.CLUSTER_NETWORK);
-        this.openVlan(nic);
-        this.update('vlan', HCI.CLUSTER_NETWORK);
+        // this.clickMenu('vlan', 'Edit Setting', 'vlan', HCI.CLUSTER_NETWORK);
+        // this.openVlan(nic);
+        // this.update('vlan', HCI.CLUSTER_NETWORK);
     }
 
     createVIPpools(namespace: string, cidr: string) {
@@ -97,7 +97,7 @@ export default class SettingsPagePo extends CruResource {
         cy.get('.vs__selected-options').click();
         cy.get('#vs2__option-1 > div').contains(namespace).click();
         cy.log('Select default namespace');
-        cy.get('.no-label').type(cidr);
+        cy.get('.no-resize').type(cidr);
         cy.log('Input CIDR value');
         cy.get('.btn.role-primary').contains('Save').click();
         cy.log('Save to create');

@@ -78,8 +78,8 @@ export class rancherPage {
     private rke2Creation_page_k8s_rke2Latest = '#vs1__option-1';
     private rke2Creation_page_k8s_rke2Stable = '#vs1__option-2';
 
-    private rke2Creation_page_k8s_k3sLatest = '#vs1__option-5';
-    private rke2Creation_page_k8s_k3sStable = '#vs1__option-6';
+    private rke2Creation_page_k8s_k3sLatest = '#vs1__option-4';
+    private rke2Creation_page_k8s_k3sStable = '#vs1__option-5';
 
     private rke2Creation_page_createButton = '.cru-resource-footer > div > .role-primary';
 
@@ -414,7 +414,13 @@ export class rancherPage {
         })
 
         // Confirm to create cluster
-        cy.get(this.rke2Creation_page_createButton).click()
+        // cy.get(this.rke2Creation_page_createButton).click()
+
+        cy.get(this.rke2Creation_page_createButton).click().then((el) => {
+            cy.wait(3000).visit(constants.rancher_clusterManagmentPage);
+        });
+
+        cy.wait(3000).visit(constants.rancher_clusterManagmentPage);
     
     }
 

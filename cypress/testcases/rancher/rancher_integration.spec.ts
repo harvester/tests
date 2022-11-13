@@ -90,7 +90,7 @@ describe('Rancher Integration Test', function() {
         });
     })
 
-    it('Prepare Harvester Image', () => {
+    it.only('Prepare Harvester Image', () => {
         cy.login();
 
         // create IMAGE according to the value set
@@ -100,18 +100,14 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it('Prepare Harvester VLAN network', () => {
+    it.only('Prepare Harvester VLAN network', () => {
         cy.login();
 
-        // Enable network
-        settings.enableVLAN('harvester-mgmt')
-
-        // Create vlan1, id:1 virtual network
-        network.createVLAN('vlan1', 'default', '1')
+        network.createVLAN('vlan1', 'default', '1', 'mgmt')
 
     });
 
-    it('Rancher import Harvester', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Rancher import Harvester', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         
@@ -127,13 +123,13 @@ describe('Rancher Integration Test', function() {
     });
 
 
-    it('Harvester import Rancher', () => {
+    it.only('Harvester import Rancher', () => {
         cy.login();
         rancher.registerRancher();
     });
 
     
-    it('Check Harvester Cluster Status', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Check Harvester Cluster Status', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         cy.wait(5000);
@@ -146,7 +142,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it('Create Cloud Credential', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Create Cloud Credential', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         cy.wait(5000);
@@ -157,7 +153,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it('Provisiong RKE2 Cluster', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Provisiong RKE2 Cluster', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         cy.wait(5000);
@@ -168,7 +164,7 @@ describe('Rancher Integration Test', function() {
         
     });
 
-    it('Check RKE2 Cluster Status', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Check RKE2 Cluster Status', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         cy.wait(5000);
@@ -205,7 +201,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it('Verify RKE2 CSI driver', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Verify RKE2 CSI driver', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         cy.wait(5000);
@@ -232,7 +228,7 @@ describe('Rancher Integration Test', function() {
         
     });
 
-    it('Verify RKE2 Cloud Provider', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Verify RKE2 Cloud Provider', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         cy.wait(5000);
@@ -252,7 +248,7 @@ describe('Rancher Integration Test', function() {
     });
 
 
-    it('Verify RKE2 DHDP Load Balancer', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Verify RKE2 DHDP Load Balancer', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         cy.wait(5000);
@@ -271,14 +267,14 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it('Create Harvester VIP Pool', () => {
+    it.only('Create Harvester VIP Pool', () => {
         cy.login();
 
         settings.createVIPpools(rData.vip_pool_namespace, rData.vip_pool_cidr);
         
     });
 
-    it('Create RKE2 Pool Load Balancer', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Create RKE2 Pool Load Balancer', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         // Prevent too heavy login request block by Rancher
@@ -297,7 +293,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it('Delete Active RKE2 Cluster', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Delete Active RKE2 Cluster', { baseUrl: constants.rancherUrl}, () => {
 
         cy.visit('/');
         // Prevent too heavy login request block by Rancher
@@ -329,7 +325,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it('Delete Cloud Credential', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Delete Cloud Credential', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         // Prevent too heavy login request block by Rancher
@@ -345,7 +341,7 @@ describe('Rancher Integration Test', function() {
 
     });
 
-    it('Delete imported Harveter cluster', { baseUrl: constants.rancherUrl}, () => {
+    it.only('Delete imported Harveter cluster', { baseUrl: constants.rancherUrl}, () => {
         // cy.login();
         cy.visit('/');
         // Prevent too heavy login request block by Rancher

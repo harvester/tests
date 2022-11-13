@@ -44,16 +44,16 @@ export class rke_guest_clusterPage {
     private add_label_button = '.mb-20 > .key-value > .footer > .btn'
     private label_key = 'input[placeholder="e.g. foo"]';
     private label_value = 'textarea[placeholder="e.g. bar"]';
-    private deploy_storage = '#storage > a';
-    private deploy_storage_dropdown = '.dropdown-button-two';
-    private deploy_create_pvc = '#vs13__option-4';
+    private deploy_storage = '#pod > .side-tabs > .tabs > #storage > a > span'; 
+    private deploy_storage_dropdown = '#vs14__combobox';
+    private deploy_create_pvc = '#vs14__option-4';
     private input_pvc_name = '.bordered-section > :nth-child(1) > :nth-child(1) > .col > .labeled-input > input';
-    private deploy_sc_dropdown = '#vs17__combobox';
-    private deploy_select_harvester_sc = '#vs17__option-0 > div';
+    private deploy_sc_dropdown = '#vs18__combobox';
+    private deploy_select_harvester_sc = '#vs18__option-0 > div';
     private deploy_storage_capacity = '.bordered-section > :nth-child(1) > :nth-child(3) > :nth-child(2) > .labeled-input > input';
     private deploy_mount_path = '#mount-path-0';
     private singleNode_read_write = 'span[aria-label="Single-Node Read/Write"]';
-    private deploy_container_tab = '#containers > a';
+    private deploy_container_tab = '#container-0 > a ';
     private container_image_name = 'input[placeholder="e.g. nginx:latest"]';
     private create_nginx_deployment = '.role-primary';
     
@@ -209,13 +209,13 @@ export class rke_guest_clusterPage {
         cy.get(this.deploy_storage_capacity).type('5');
         cy.log('Input Storage Capacity');
 
-        cy.get(this.deploy_mount_path).type("/test");
-        cy.log('Input mount path');
+        // cy.get(this.deploy_mount_path).type("/test");
+        // cy.log('Input mount path');
 
         cy.get(this.singleNode_read_write).click();
         cy.log('Select Single-Node Read/Write');
 
-        cy.get(this.deploy_container_tab).contains('Containers').click();
+        cy.get(this.deploy_container_tab).contains('container-0').click();
         cy.log('Click Containers Tab');
         
         cy.get(this.container_image_name).type('nginx:latest');

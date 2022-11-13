@@ -20,10 +20,10 @@
     "image": "focal-server",
     "network_name": "default/vlan1",
     "ssh_user": "ubuntu",
-    "rke2_latest": "1.24.4",
-    "rke2_stable": "1.23.10",
-    "k3s_latest": "1.24.4",
-    "k3s_stable": "1.23.10",
+    "rke2_latest": "1.24.7",
+    "rke2_stable": "1.23.13",
+    "k3s_latest": "1.24.7",
+    "k3s_stable": "1.23.13",
     "user_data_template": "password: 123456\nchpasswd: { expire: False }\nssh_pwauth: True"
   },
   "rke1_cluster_attributes": {
@@ -34,8 +34,8 @@
     "image": "focal-server",
     "network_name": "default/vlan1",
     "ssh_user": "ubuntu",
-    "rke1_latest": "1.24.4",
-    "rke1_stable": "1.23.10",
+    "rke1_latest": "1.24.7",
+    "rke1_stable": "1.23.13",
     "user_data_template": "password: 123456\nchpasswd: { expire: False }\nssh_pwauth: True"
   }
 }
