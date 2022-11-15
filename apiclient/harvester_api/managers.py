@@ -3,6 +3,8 @@ from weakref import ref
 from pathlib import Path
 from collections.abc import Mapping
 
+from pkg_resources import parse_version
+
 DEFAULT_NAMESPACE = "default"
 
 
@@ -409,13 +411,19 @@ class NetworkManager(BaseManager):
     API_VERSION = "k8s.cni.cncf.io/v1"
     _KIND = "NetworkAttachmentDefinition"
 
-    def create_data(self, name, namespace, vlan_id):
+    def _default_cluster_network(self):
+        if self.api.cluster_version >= parse_version("v1.1.0"):
+            return "mgmt-br"
+        else:
+            return "harvester-br0"
+
+    def create_data(self, name, namespace, vlan_id, bridge_name):
         data = {
             "apiVersion": self.API_VERSION,
             "kind": self._KIND,
             "metadata": {
                 "labels": {
-                    "networks.harvesterhci.io/type": "L2VlanNetwork"
+                    "network.harvesterhci.io/type": "L2VlanNetwork"
                 },
                 "name": name,
                 "namespace": namespace
@@ -425,7 +433,7 @@ class NetworkManager(BaseManager):
                     "cniVersion": "0.3.1",
                     "name": name,
                     "type": "bridge",
-                    "bridge": "harvester-br0",
+                    "bridge": bridge_name,
                     "promiscMode": True,
                     "vlan": vlan_id,
                     "ipam": {}
@@ -438,8 +446,10 @@ class NetworkManager(BaseManager):
         path = self.PATH_fmt.format(uid=name, ns=namespace, NETWORK_API=self.API_VERSION)
         return self._get(path, raw=raw)
 
-    def create(self, name, vlan_id, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        data = self.create_data(name, namespace, vlan_id)
+    def create(self, name, vlan_id, namespace=DEFAULT_NAMESPACE, *,
+               cluster_network=None, raw=False):
+        cluster_network = cluster_network or self._default_cluster_network()
+        data = self.create_data(name, namespace, vlan_id, cluster_network)
         path = self.PATH_fmt.format(uid="", ns=namespace, NETWORK_API=self.API_VERSION)
         return self._create(path, json=data, raw=raw)
 

@@ -45,6 +45,7 @@ class TestNetworksNegative:
         assert "NotFound" == data.get("reason"), (code, data)
 
     @pytest.mark.parametrize("vlan_id", [0, 4095])
+    @pytest.mark.skip_version_after("v1.0.3")  # ref to harvester/issues/3151
     def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
@@ -61,11 +62,13 @@ class TestNetworksNegative:
 @pytest.mark.p0
 @pytest.mark.networks
 class TestNetworks:
+
+    @pytest.mark.dependency(name="create_network")
     def test_create(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
-
         assert 201 == code, (code, data)
 
+    @pytest.mark.dependency(depends=["create_network"])
     def test_get(self, api_client, unique_name):
         # Case 1: get all vlan networks
         code, data = api_client.networks.get()
@@ -79,6 +82,7 @@ class TestNetworks:
         assert 200 == code, (code, data)
         assert unique_name == data['metadata']['name'], (code, data)
 
+    @pytest.mark.dependency(depends=["create_network"])
     def test_delete(self, api_client, unique_name, wait_timeout):
         code, data = api_client.networks.delete(unique_name)
 
