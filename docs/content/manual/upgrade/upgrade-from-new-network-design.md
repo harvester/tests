@@ -9,7 +9,6 @@ title: Upgrade Harvester from new cluster network design (after v1.1.0)
 ## Environment requirement
 1. Network environment have available VLAN id setup on DHCP server can be assigned to Harvester
 1. Network have at least two NICs
-1. Suggest each Harvester node have at lease 6 core CPU, 16GB memory and 200GB disk
 1. Suggest not to use SMR type HDD disk
 
 We can select VM or Bare machine network setup according to available resource
@@ -69,5 +68,6 @@ We can select VM or Bare machine network setup according to available resource
 1. Can restore VM from backup 
 1. Can import Harvester in Rancher
 1. Can add additional nodes to existing Harvester cluster
+1. Can create new vms
 
 
