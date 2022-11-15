@@ -73,6 +73,7 @@ class TestNetworksNegative:
         assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
 
     @pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
+    @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)  # ref to harvester/issues/3151
     def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
@@ -89,11 +90,13 @@ class TestNetworksNegative:
 @pytest.mark.p0
 @pytest.mark.networks
 class TestNetworks:
+
+    @pytest.mark.dependency(name=&#34;create_network&#34;)
     def test_create(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
-
         assert 201 == code, (code, data)
 
+    @pytest.mark.dependency(depends=[&#34;create_network&#34;])
     def test_get(self, api_client, unique_name):
         # Case 1: get all vlan networks
         code, data = api_client.networks.get()
@@ -107,6 +110,7 @@ class TestNetworks:
         assert 200 == code, (code, data)
         assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
 
+    @pytest.mark.dependency(depends=[&#34;create_network&#34;])
     def test_delete(self, api_client, unique_name, wait_timeout):
         code, data = api_client.networks.delete(unique_name)
 
@@ -144,11 +148,13 @@ class TestNetworks:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TestNetworks:
+
+    @pytest.mark.dependency(name=&#34;create_network&#34;)
     def test_create(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
-
         assert 201 == code, (code, data)
 
+    @pytest.mark.dependency(depends=[&#34;create_network&#34;])
     def test_get(self, api_client, unique_name):
         # Case 1: get all vlan networks
         code, data = api_client.networks.get()
@@ -162,6 +168,7 @@ class TestNetworks:
         assert 200 == code, (code, data)
         assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
 
+    @pytest.mark.dependency(depends=[&#34;create_network&#34;])
     def test_delete(self, api_client, unique_name, wait_timeout):
         code, data = api_client.networks.delete(unique_name)
 
@@ -197,9 +204,9 @@ class TestNetworks:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_create(self, api_client, unique_name):
+<pre><code class="python">@pytest.mark.dependency(name=&#34;create_network&#34;)
+def test_create(self, api_client, unique_name):
     code, data = api_client.networks.create(unique_name, VLAN_ID)
-
     assert 201 == code, (code, data)</code></pre>
 </details>
 </dd>
@@ -212,7 +219,8 @@ class TestNetworks:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_delete(self, api_client, unique_name, wait_timeout):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_network&#34;])
+def test_delete(self, api_client, unique_name, wait_timeout):
     code, data = api_client.networks.delete(unique_name)
 
     assert 200 == code, (f&#34;Failed to delete vlan with error: {code}, {data}&#34;)
@@ -239,7 +247,8 @@ class TestNetworks:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_get(self, api_client, unique_name):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_network&#34;])
+def test_get(self, api_client, unique_name):
     # Case 1: get all vlan networks
     code, data = api_client.networks.get()
 
@@ -279,6 +288,7 @@ class TestNetworks:
         assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
 
     @pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
+    @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)  # ref to harvester/issues/3151
     def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
@@ -310,6 +320,7 @@ class TestNetworks:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
+@pytest.mark.skip_version_after(&#34;v1.0.3&#34;)  # ref to harvester/issues/3151
 def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
     code, data = api_client.networks.create(unique_name, vlan_id)
 
