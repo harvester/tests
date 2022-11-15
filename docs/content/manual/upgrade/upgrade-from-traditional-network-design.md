@@ -9,7 +9,6 @@ title: Upgrade Harvester from traditonal cluster network design (before v1.1.0)
 ## Environment requirement
 1. Network environment have available VLAN id setup on DHCP server can be assigned to Harvester
 1. Network have at least two NICs
-1. Suggest each Harvester node have at lease 6 core CPU, 16GB memory and 200GB disk
 1. Suggest not to use SMR type HDD disk
 
 We can select VM or Bare machine network setup according to available resource
@@ -43,9 +42,9 @@ We can select VM or Bare machine network setup according to available resource
 1. Create several virtual machines, set network to `management-network` or available `vlan` 
 1. Create virtual machine on different target node
 1. Setup NFS or S3 backup target in settings
-1. Back each virtual machines
-1. Shutdow all virtual machines
-1. Offline upgrade to traget version, refer to https://docs.harvesterhci.io/v1.1/upgrade/automatic
+1. Backup each virtual machines
+1. Shutdown all virtual machines
+1. Offline upgrade to target version, refer to https://docs.harvesterhci.io/v1.1/upgrade/automatic
 1. Import Harvester into the Rancher cluster
 1. Adding node after the upgrade
 
@@ -54,8 +53,8 @@ We can select VM or Bare machine network setup according to available resource
 1. Can completely upgrade Harvester to specific version
 1. All pods is running correctly
 1. Check can display Monitoring Chart 
-- Prometheus dashboard
-- VM metrics
+   - Prometheus dashboard
+   - VM metrics
 1. Can access dashboard by VIP
 1. Can use original password to login
 1. Can start VM in running status
@@ -68,5 +67,6 @@ We can select VM or Bare machine network setup according to available resource
 1. Can restore VM from backup 
 1. Can import Harvester in Rancher
 1. Can add additional nodes to existing Harvester cluster
+1. Can create new vms
 
 

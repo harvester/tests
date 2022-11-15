@@ -39,6 +39,7 @@ title: Upgrade Harvester with IPv6 DHCP
     ```
     
 1. Change the bridge name to a new one 
+
     ![image](https://user-images.githubusercontent.com/29251855/201565649-ba54d6f7-3540-4a4b-ad66-ee4a77cfbff1.png)
 
 
@@ -75,5 +76,19 @@ title: Upgrade Harvester with IPv6 DHCP
   
   ```
 1. Check the network connectivity of vlan and management network
-
+1. Can completely upgrade Harvester to specific version
+1. All pods are running correctly
+1. Check can display Monitoring Chart 
+   - Prometheus dashboard
+   - VM metrics
+1. Can access dashboard by VIP
+1. Can use original password to login
+1. Can start VM in running status
+1. Image exists without corrupted
+1. Volume exists
+1. Virtual network exists
+1. Backup exists
+1. Setting value exists
+1. Can restore VM from backup
+1. Can create new VMs
 

@@ -9,7 +9,6 @@ title: Upgrade Harvester in Fully Airgapped Environment
 1. Airgapped Network without internet connectivity
 1. Network environment have available VLAN id setup on DHCP server can be assigned to Harvester
 1. Network have at least two NICs
-1. Suggest each Harvester node have at lease 6 core CPU, 16GB memory and 200GB disk
 1. Suggest not to use SMR type HDD disk
 
 #### We can select VM or Bare machine network setup according to your available resource
@@ -45,14 +44,14 @@ title: Upgrade Harvester in Fully Airgapped Environment
 1. Create several virtual machines, set network to `management-network` or available `vlan` 
 1. Create virtual machine on different target node
 1. Setup NFS or S3 backup target in settings
-1. Back each virtual machines
-1. Shutdow all virtual machines
-1. Offline upgrade to traget version, refer to https://docs.harvesterhci.io/v1.1/upgrade/automatic
+1. Backup each virtual machines
+1. Shutdown all virtual machines
+1. Offline upgrade to target version, refer to https://docs.harvesterhci.io/v1.1/upgrade/automatic
 
 
 ## Expected Results
 1. Can completely upgrade Harvester to specific version
-1. All pods is running correctly
+1. All pods are running correctly
 1. Check can display Monitoring Chart 
    - Prometheus dashboard
    - VM metrics
@@ -65,6 +64,7 @@ title: Upgrade Harvester in Fully Airgapped Environment
 1. Backup exists
 1. Setting value exists
 1. Can restore VM from backup
+1. Can create new VMs
 
 
 

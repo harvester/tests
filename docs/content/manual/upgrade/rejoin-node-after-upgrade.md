@@ -13,7 +13,6 @@ title: Rejoin node machine after Harveter upgrade
 ## Environment requirement
 1. Network environment have available VLAN id setup on DHCP server can be assigned to Harvester
 1. Network have at least two NICs
-1. Suggest each Harvester node have at lease 6 core CPU, 16GB memory and 200GB disk
 1. Suggest not to use SMR type HDD disk
 
 
@@ -21,14 +20,14 @@ title: Rejoin node machine after Harveter upgrade
 1. Create a 3 nodes v1.0.3 Harvester cluster.
 1. Upgrade the master branch:
 1. Remove the agent node and 1 management node.
-   - Remove agent node (node 4)
-  ![image](https://user-images.githubusercontent.com/29251855/196138324-83b64d50-0236-4110-86c2-551ae046a406.png)
-  ![image](https://user-images.githubusercontent.com/29251855/196138906-e77de8f0-d61d-4a91-82b2-e36cbbb6462a.png)
-  
-  - Remove management node (node 3)
-  ![image](https://user-images.githubusercontent.com/29251855/196139707-ce8cc444-21fb-4bba-a040-9b09e0ae7fa9.png)
-  ![image](https://user-images.githubusercontent.com/29251855/196139906-ff92320f-f5f7-4fb5-af20-5cf0f3fe36b9.png)
-  ![image](https://user-images.githubusercontent.com/29251855/196147230-7c0b1835-c219-41b2-b0b8-32bae9962f27.png)
+      - Remove agent node (node 4)
+     ![image](https://user-images.githubusercontent.com/29251855/196138324-83b64d50-0236-4110-86c2-551ae046a406.png)
+     ![image](https://user-images.githubusercontent.com/29251855/196138906-e77de8f0-d61d-4a91-82b2-e36cbbb6462a.png)
+     
+     - Remove management node (node 3)
+     ![image](https://user-images.githubusercontent.com/29251855/196139707-ce8cc444-21fb-4bba-a040-9b09e0ae7fa9.png)
+     ![image](https://user-images.githubusercontent.com/29251855/196139906-ff92320f-f5f7-4fb5-af20-5cf0f3fe36b9.png)
+     ![image](https://user-images.githubusercontent.com/29251855/196147230-7c0b1835-c219-41b2-b0b8-32bae9962f27.png)
 
 1. After the node is removed, provision a new node.
 1. Check the node can join the cluster and can be promoted as a management node.
@@ -40,7 +39,8 @@ title: Rejoin node machine after Harveter upgrade
 1. Can re-join the management node after upgrade 
   ![image](https://user-images.githubusercontent.com/29251855/196159969-9c8acb11-b9fe-4501-94d5-74545579ef4d.png)
 
-1. re-join the agent node after upgrade 
+1. Can re-join the agent node after upgrade 
   ![image](https://user-images.githubusercontent.com/29251855/196164183-20c4498a-c4c6-4033-a527-d3c8ff84f8aa.png)
-
+1. Can create new vms on the newly joined node.
+1. Can restore vms/migrate on the newly joined node.
 
