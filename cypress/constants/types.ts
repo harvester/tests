@@ -24,7 +24,9 @@ export const HCI = {
   HOST:               'harvesterhci.io.host',
   VERSION:            'harvesterhci.io.version',
   MANAGED_CHART:      'harvesterhci.io.managedchart',
+  STORAGE_CLASS:      'harvesterhci.io.storage',
 };
 
 export const NETWORK_ATTACHMENT = 'k8s.cni.cncf.io.networkattachmentdefinition';
 export const PVC = 'persistentvolumeclaim';
+export const STORAGE_CLASS = 'storage.k8s.io.storageclasse';

@@ -68,7 +68,7 @@ export default class CruResourcePo extends PagePo {
     })
   }
 
-  public delete(namespace:string, name:string) {
+  public delete(namespace:any, name:string) {
     cy.visit(`/harvester/c/local/${this.type}`)
 
     this.clickAction(name, 'Delete')
