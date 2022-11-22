@@ -184,7 +184,7 @@ def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
         ("skip_version_before", (
-            "Mark test skipped when cluster version < provided vesrion")),
+            "Mark test skipped when cluster version < provided version")),
         ("skip_version_after", (
             "Mark test skipped when cluster version >= provided version")),
         ('p0', ('mark test to run only p1 tests ')),
@@ -246,7 +246,8 @@ def pytest_configure(config):
         ("volumes", ("marker to run volume tests")),
         ("templates", ("marker to run VM template tests")),
         ("support_bundle", ("marker to run Support Bundle tests")),
-        ("settings", ("marker to run settings tests"))
+        ("settings", ("marker to run settings tests")),
+        ("upgrade", ("marker to run the upgrade tests"))
     ]
 
     for m, msg in markers:
