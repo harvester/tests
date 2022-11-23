@@ -132,6 +132,7 @@ describe('Preset Vlans', () => {
 
     const name = vlan.name;
     const namespace = vlan.namespace;
+    network.deleteFromStore(`${namespace}/${name}`, network.storeType);
     network.create({
       name,
       namespace,
@@ -141,7 +142,14 @@ describe('Preset Vlans', () => {
 
     table.clickFlatListBtn();
 
-    table.find(name, 1, namespace, 2).find('td').eq(6).should('contain', 'Active')
+    cy.wait(2000)
+    cy.wrap('async').then(() => {
+      table.find(name, 2, namespace, 3).then((index) => {
+        if (typeof index === 'number') {
+          cy.get(`[data-testid="sortable-table-${index}-row"]`).find('td').eq(6).should('contain', 'Active')
+        }
+      })
+    })
   }
 
   it('Create Vlan1', () => {

@@ -1,28 +1,27 @@
-import YAML from 'js-yaml'
-
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
-import { LoginPage } from "@/pageobjects/login.po";
+import { VolumePage } from "@/pageobjects/volume.po";
+import { PageUrl } from "@/constants/constants";
 import { generateName } from '@/utils/utils';
+import { HCI } from '@/constants/types';
 
 const vms = new VmsPage();
-const login = new LoginPage();
+const volumes = new VolumePage();
 
-/**
- * 1. Login
- * 2. Navigate to the VM create page
- * 3. Input required values
- * 4. Validate the create request
- * 5. Validate the config and yaml should show
-*/
-describe('Create a vm with all the default values', () => {
-  const VM_NAME = generateName('test-vm-create');
-  const namespace = 'default'
-
+describe('VM Form Validation', () => {
   beforeEach(() => {
-    cy.login();
+    cy.login({url: PageUrl.virtualMachine});
   });
 
+  /**
+   * 1. Login
+   * 2. Navigate to the VM create page
+   * 3. Input required values
+   * 4. Validate the create request
+   * 5. Validate the config and yaml should show
+  */
   it('Create a vm with all the default values', () => {
+    const VM_NAME = generateName('test-vm-create');
+    const namespace = 'default'
     const imageEnv = Cypress.env('image');
 
     const value = {
@@ -41,21 +40,29 @@ describe('Create a vm with all the default values', () => {
 
     vms.delete(namespace, VM_NAME)
   });
-});
 
-/**
- * 1. Create some image and volume
- * 2. Create virtual machine
- * 3. Fill out all mandatory field but leave memory blank.
- * 4. Click create
-*/
-export function CheckMemoryRequired() {}
-describe('Create VM without memory provided', () => {
+
+  /**
+   * https://harvester.github.io/tests/manual/virtual-machines/1283-vm-creation-required-fields/
+   */
+   it('Check VM creation without required-fields', () => {
+    vms.goToCreatePage();
+    vms.clickFooterBtn();
+    cy.get('#cru-errors').contains('"Name" is required').should('exist');
+    cy.get('#cru-errors').contains('"Cpu" is required').should('exist');
+    cy.get('#cru-errors').contains('"Memory" is required').should('exist');
+    cy.get('#cru-errors').contains('"Image" is required').should('exist');
+  })
+
+  /**
+   * 1. Create some image and volume
+   * 2. Create virtual machine
+   * 3. Fill out all mandatory field but leave memory blank.
+   * 4. Click create
+  */
   it('Create VM without memory provided', () => {
-    const VM_NAME = generateName('test-memory-required');
+    const VM_NAME = 'test-memory-required';
     const namespace = 'default'
-  
-    cy.login();
   
     const imageEnv = Cypress.env('image');
   
@@ -69,11 +76,11 @@ describe('Create VM without memory provided', () => {
     vms.goToCreate();
     vms.setValue(value);
   
-    cy.get('.cru-resource-footer').contains('Create').click()
+    vms.clickFooterBtn();
   
     cy.contains('"Memory" is required').should('exist')
   });
-})
+});
 
 /**
  * 1. Login
@@ -87,5 +94,104 @@ export function CheckMultiVMScheduler() {}
 describe("automatic assignment to different nodes when creating multiple vm's", () => {
   it("automatic assignment to different nodes when creating multiple vm's", () => {
 
+  });
+})
+
+describe('VM clone Validation', () => {
+  beforeEach(() => {
+    cy.login({url: PageUrl.virtualMachine});
+  });
+
+  /**
+   * https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/
+   */
+  it('Create VM with existing volume', () => {
+    const namespace = 'default'
+    const VM_NAME = 'use-existing-volume';
+
+    const volumeValue = {
+      name: 'existing-volume',
+      size: "10",
+      namespace
+    };
+
+    vms.deleteVMFromStore(`${namespace}/${VM_NAME}`);
+    volumes.deleteFromStore(`${namespace}/${volumeValue.name}`); // Delete the previously created volume
+
+    volumes.create(volumeValue); // create volume
+
+    // create VM use existing volume
+    vms.goToCreate();
+
+    const imageEnv = Cypress.env('image');
+    
+    const volume = [{
+      buttonText: 'Add Volume',
+      create: false,
+      image: `default/${Cypress._.toLower(imageEnv.name)}`,
+    }, {
+      buttonText: 'Add Volume',
+      size: 12,
+      create: true,
+    }, {
+      buttonText: 'Add Existing Volume',
+      create: true,
+      volume: 'existing-volume'
+    }];
+
+    vms.setNameNsDescription(VM_NAME, namespace);
+    vms.setBasics('2', '4');
+    vms.setVolumes(volume);
+    vms.save();
+
+    volumes.goToList();
+    volumes.checkVMAttached('default', 'existing-volume', 'use-existing-volume');
+  })
+
+  it('Clone VM from Virtual Machine list that was created from existing volume (Depends on the previous case)', () => {
+    const VM_NAME = 'use-existing-volume';
+
+    cy.login({url: PageUrl.virtualMachine});
+    vms.goToList();
+
+    vms.clickCloneAction(VM_NAME);
+
+    vms.setNameNsDescription(`repeat-${VM_NAME}`, 'default');
+    cy.get('.cru-resource-footer').contains('Create').click();
+    cy.get('#cru-errors').contains('the volume existing-volume is already used by VM');
+  });
+})
+
+describe('VM runStategy Validation (Halted)', () => {
+  beforeEach(() => {
+    cy.login({url: PageUrl.virtualMachine});
+  });
+
+  const namespace = 'default'
+
+  it('Craete VM use Halted (Run Strategy)', () => {
+    vms.goToCreate();
+
+    const imageEnv = Cypress.env('image');
+    
+    const VM_NAME = 'vm-halted';
+    const volume = [{
+      buttonText: 'Add Volume',
+      create: false,
+      image: `default/${Cypress._.toLower(imageEnv.name)}`,
+    }];
+
+    const advancedOption = {
+      runStrategy: 'Halted'
+    };
+
+    vms.deleteVMFromStore(`${namespace}/${VM_NAME}`)
+    vms.setNameNsDescription(VM_NAME, namespace);
+    vms.setBasics('2', '4');
+    vms.setVolumes(volume);
+    vms.setAdvancedOption(advancedOption);
+    vms.save();
+
+    // TODO Verify VM is Off, Wait for other pr
   });
 })

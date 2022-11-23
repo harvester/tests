@@ -4,6 +4,7 @@ import { Constants } from "@/constants/constants";
 import { HCI } from '@/constants/types';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
+import LabeledTextAreaPo from '@/utils/components/labeled-textarea.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
 import { ImagePage } from "@/pageobjects/image.po";
 import CruResourcePo from '@/utils/components/cru-resource.po';
@@ -28,10 +29,14 @@ interface ValueInterface {
   efiEnabled?: boolean,
 }
 
+interface Volume {
+  buttonText: string,
+  create?: boolean,
+  [index: string]: any
+}
+
 export class VmsPage extends CruResourcePo {
   private actionButton = '.outlet .actions-container';
-  private pageHead = 'main .outlet header h1';
-  private sideBar = 'nav.side-nav .list-unstyled';
 
   constructor() {
     super({
@@ -39,10 +44,77 @@ export class VmsPage extends CruResourcePo {
     });
   }
 
-
   public goToCreate() {
     this.goToList()
     cy.get(this.actionButton).find('a').contains(' Create ').click();
+  }
+
+  setBasics(cpu?: string, memery?: string, ssh?: {id?: string, createNew?: boolean, value?: string}) {
+    this.clickTab('basics');
+    this.cpu().input(cpu);
+    this.memory().input(memery);
+
+    if (ssh && ssh.id) {
+      new LabeledSelectPo('.labeled-select', `:contains("SSHKey")`).select({option: ssh.id});
+    } else if (ssh && ssh.createNew) {
+      new LabeledSelectPo('.labeled-select', `:contains("SSHKey")`).select({option: 'Create a New...'});
+      new LabeledTextAreaPo('.v--modal-box .card-container .labeled-input', `:contains("SSH-Key")`).input(ssh.value, {
+        delay: 0,
+      });
+
+      cy.get('.v--modal-box .card-container').contains('Create').click();
+    }
+  }
+
+  setVolumes(volumes: Array<Volume>) {
+    this.clickTab('Volume');
+    cy.wrap('async').then(() => {
+      volumes.map((volume) => {
+        if (volume.create) {
+          cy.get('.tab-container button').contains(volume.buttonText).click()
+        }
+      });
+
+      volumes.map((volume, index) => {
+        let imageEl: any;
+        let volumeEl: any;
+        cy.get('.info-box').eq(index).within(() => {
+            if (volume.image) {
+              imageEl = new LabeledSelectPo('.labeled-select', `:contains("Image")`);
+            }
+
+            if (volume.size) {
+              new LabeledInputPo('.labeled-input', `:contains("Size")`).input(volume.size);
+            }
+
+            if (volume.volume) {
+              volumeEl = new LabeledSelectPo('.labeled-select', `:contains("Volume")`);
+            }
+        }).then(() => {
+          if (imageEl) {
+            imageEl.select({option: volume.image});
+          }
+
+          if (volumeEl) {
+            volumeEl.select({option: volume.volume});
+          }
+        })
+      })
+    })
+  }
+
+  setAdvancedOption(option: {[index: string]: any}) {
+    this.clickTab('advanced');
+
+    if (option.runStrategy) {
+      new LabeledSelectPo('.labeled-select', `:contains("Run Strategy")`).select({option: option.runStrategy});
+    }
+  }
+
+  clickCloneAction(name: string) {
+    this.clickAction(name, 'Clone');
+    new CheckboxPo('.v--modal-box .checkbox-container', `:contains("clone volume data")`).check(false);
+    cy.get('.v--modal-box button').contains('Clone').click();
   }
 
   public setValue(value: ValueInterface) {
@@ -54,7 +126,6 @@ export class VmsPage extends CruResourcePo {
     cy.get('.tab#Volume').click()
     this.image().select({option: value?.image})
     this.networks(value?.networks)
-    this.createRunning().check(value?.createRunning)
     cy.get('.tab#advanced').click()
     this.usbTablet().check(value?.usbTablet)
     this.efiEnabled().check(value?.efiEnabled)
@@ -78,6 +149,11 @@ export class VmsPage extends CruResourcePo {
 
   image() {
     return new LabeledSelectPo('.labeled-select', `:contains("Image")`)
+  }
+
+  deleteVMFromStore(id: string) {
+    this.deleteFromStore(id); // Delete the previously created vm
+    this.deleteFromStore(id, HCI.VMI); // You need to wait for the vmi to be deleted as well, because it will not be deleted until the vm is deleted
   }
 
   network() {
@@ -106,10 +182,6 @@ export class VmsPage extends CruResourcePo {
         })
       })
     }
-  }
-
-  createRunning() {
-    return new CheckboxPo('.checkbox-container', `:contains("Start virtual machine on creation")`)
   }
 
   goToConfigDetail(name: string) {
