@@ -1,10 +1,10 @@
-import { Constants } from "@/constants/constants";
 import { HCI, PVC } from "@/constants/types";
+import TablePo from "@/utils/components/table.po";
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import CruResourcePo from "@/utils/components/cru-resource.po";
 
-const constants = new Constants();
+const table = new TablePo();
 
 interface ValueInterface {
   namespace?: string,
@@ -25,7 +25,6 @@ export class VolumePage extends CruResourcePo {
     });
   }
 
-
   exportImageName() {
     return new LabeledInputPo(
       ".card-container .labeled-input",
@@ -43,6 +42,20 @@ export class VolumePage extends CruResourcePo {
 
   image() {
     return new LabeledSelectPo(".labeled-select", `:contains("Image"):last`);
+  }
+
+  checkVMAttached(ns: string, name: string, vmName: string) {
+    cy.get(this.searchInput).type(name);
+    cy.wait(2000)
+    cy.wrap('async').then(() => {
+      table.find(name, 3, ns, 4).then((index) => {
+        if (typeof index === 'number') {
+          cy.get(`[data-testid="sortable-table-${index}-row"]`).find('td').eq(5).should(($el: any) => {
+            expect($el).to.contain(vmName)
+          })
+        }
+      })
+    })
   }
 
   public exportImage(volumeName: string, imageName: string) {

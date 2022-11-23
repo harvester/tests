@@ -5,6 +5,11 @@ import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 
 export default class CruResourcePo extends PagePo {
+  /**
+   * @param type: matches navigation url.
+   * @param realType: matches api.
+   * @param storeType: matches vuex.
+   */
   constructor({ type, realType, storeType}:  {type: string, realType?: string, storeType?: string}) {
     super(`/harvester/c/local/${type}`);
 
@@ -32,6 +37,19 @@ export default class CruResourcePo extends PagePo {
 
   description() {
     return new LabeledInputPo('.labeled-input', `:contains("Description")`)
+  }
+
+  clickTab(contains: string) {
+    const path = `.resource-container .side-tabs .tab#${contains}`
+    cy.get(path).click()
+  }
+
+  clickFooterBtn(butText: string = 'save') {
+    cy.get(this.footerButtons).find(`[data-testid="form-${butText}"]`).click()
+  }
+
+  goToCreatePage(buttonText: string = 'Create') {
+    cy.get('.outlet .actions-container .actions').contains(buttonText).click();
   }
 
   public create(value: any, urlWithNamespace?: boolean) {
@@ -83,21 +101,37 @@ export default class CruResourcePo extends PagePo {
     })
   }
 
-  public checkDelete(type: string, id: string) {
+  async deleteFromStore(id: string, realType: string=this.realType) {
+    cy.window().then(async (win: any) => {
+      try {
+        const resource = await (win as any).$nuxt.$store.dispatch('harvester/find', { type: realType, id: id });
+        await resource.remove();
+        this.checkDelete(realType, id)
+      } catch(e: any) {
+        if (e.status === 404) {
+          cy.log(`The resource ${realType} does not exist`)
+        } else {
+          cy.log(e.status)
+        }
+      }
+    })
+  }
+
+  public checkDelete(type: string = this.type, id: string) {
     cy.window().then(async (win) => {
       let times = 0;
       await new Cypress.Promise((resolve, reject) => {
         const timer = setInterval(() => {
           times = times + 1;
           if (times > 40) {
-            cy.log(`${this.type} can't removed from the backend`)
+            cy.log(`${type} can't removed from the backend`)
             reject()
           }
 
-          const resource = (win as any).$nuxt.$store.getters['harvester/byId'](this.type, id);
+          const resource = (win as any).$nuxt.$store.getters['harvester/byId'](type, id);
 
           if (resource === undefined) {
-            cy.log(`${this.type} has been removed from the backend`)
+            cy.log(`${type} has been removed from the backend`)
             clearInterval(timer);
             resolve()
           }
@@ -121,6 +155,12 @@ export default class CruResourcePo extends PagePo {
         expect(res.status, `Delete ${this.type}`).to.be.oneOf([200, 204]);
       })
     })
+  }
+
+  setNameNsDescription(name: string, ns: string, description?: string) {
+    this.namespace().select({ option: ns })
+    this.name().input(name)
+    this.description().input(description)
   }
 
   public setValue(value: any) {
@@ -169,6 +209,6 @@ export default class CruResourcePo extends PagePo {
   public goToList() {
     cy.intercept('GET', `/v1/harvester/${this.realType}s`).as('goToList');
     cy.visit(`/harvester/c/local/${this.type}`)
-    cy.wait('@goToList')
+    cy.wait('@goToList');
   }
 }
