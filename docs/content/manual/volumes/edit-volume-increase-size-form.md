@@ -1,5 +1,5 @@
 ---
-title: Edit volume increase size via form
+title: Edit volume increase size via form (e2e_fe)
 ---
 1. Stop the vm
 1. Navigate to volumes page

@@ -159,6 +159,119 @@ describe("Delete volume that was attached to VM but now is not", () => {
 });
 
 /**
+  * 1. Create a virtual machine
+  * 2. Create several volumes (without image)
+  * 3. Add volume, hot-plug volume to virtual machine
+  * 4. Open virtual machine, find hot-plugged volume
+  * 5. Click de-attach volume
+  * 6. Add volume again
+  * Expected Results
+  * 1. Can hot-plug volume without error
+  * 2. Can hot-unplug the pluggable volumes without restarting VM
+  * 3. The de-attached volume can also be hot-plug and mount back to VM
+  */
+describe("Support Volume Hot Unplug", () => {
+  const VM_NAME = generateName("vm-e2e-1");
+  const VOLUME_NAME_1 = generateName("hotplug-e2e-1");
+  const VOLUME_NAME_2 = generateName("hotplug-e2e-2");
+
+  it("Support Volume Hot Unplug", () => {
+    cy.login();
+
+    const imageEnv = Cypress.env("image");
+    const namespace = 'default';
+
+    // create VOLUME
+    const firstVolume = {
+      name: VOLUME_NAME_1,
+      size: "10",
+      namespace,
+    };
+
+    const secondVolume = {
+      name: VOLUME_NAME_2,
+      size: "10",
+      namespace,
+    };
+
+    volumes.create(firstVolume);
+    // check state
+    volumes.checkState(firstVolume);
+    
+    volumes.create(secondVolume);
+    // check state
+    volumes.checkState(secondVolume);
+
+    // create VM
+    const value = {
+      name: VM_NAME,
+      cpu: "2",
+      memory: "4",
+      image: imageEnv.name,
+      namespace,
+    };
+
+    vms.create(value);
+
+    // check VM state
+    vms.goToConfigDetail(VM_NAME);
+
+    vms.plugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
+    vms.unplugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
+    vms.plugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
+
+    // delete VM
+    vms.delete(namespace, VM_NAME);
+    // delete VOLUME
+    volumes.delete(namespace, VOLUME_NAME_1);
+    volumes.delete(namespace, VOLUME_NAME_2);
+  });
+});
+
+/**
+  * 1. Stop the vm
+  * 2. Navigate to volumes page
+  * 3. Edit Volume via form
+  * 4. Increase size
+  * 5. Click Save
+  * Expected Results
+  * 1. Disk should be resized
+  */
+ describe("Edit volume increase size via form", () => {
+  const VM_NAME = generateName("vm-e2e-1");
+
+  it("Edit volume increase size via form", () => {
+    cy.login();
+
+    const imageEnv = Cypress.env("image");
+    const namespace = 'default';
+
+    // create VM
+    const value = {
+      name: VM_NAME,
+      cpu: "2",
+      memory: "4",
+      image: imageEnv.name,
+      namespace,
+    };
+
+    vms.create(value);
+
+    // check VM state
+    vms.goToConfigDetail(VM_NAME);
+    vms.goToList();
+    vms.clickAction(VM_NAME, 'Stop');
+    expect(cy.contains(VM_NAME).parentsUntil("tbody", "tr").find("td").eq(1).contains('Off'));
+    volumes.goToEditByVMName(VM_NAME);
+
+    volumes.increaseSize('20', namespace);
+
+    // delete VM
+    vms.delete(namespace, VM_NAME);
+  });
+});
+
+/**
   * 1. Create a VM with a root volume
   * 2. Stop the vm
   * 3. Navigate to volumes page
