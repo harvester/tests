@@ -164,6 +164,14 @@ export class VmsPage extends CruResourcePo {
     return cy.get(this.confirmRemove).find('.checkbox-container span[role="checkbox"].checkbox-custom');
   }
 
+  plugVolumeCustomName() {
+    return new LabeledInputPo('.labeled-input', `:contains("Name")`);
+  }
+
+  plugVolumeName() {
+    return new LabeledSelectPo('.labeled-select', `:contains("Volume")`);
+  }
+
   networks(networks: Array<Network> = []) {
     if (networks.length === 0){
       return
@@ -268,6 +276,38 @@ export class VmsPage extends CruResourcePo {
         const id = `${namespace}/${name}`;
         super.checkDelete(this.type, id)
         expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
+      })
+    })
+  }
+
+  public plugVolume(vmName: string, volumeNames: Array<string>, namespace: string) {
+    this.goToList();
+
+    cy.wrap(volumeNames).each((V: string) => {
+      this.clickAction(vmName, 'Add Volume').then((_) => {
+        this.plugVolumeCustomName().input(V);
+        this.plugVolumeName().select({option: V});
+      })
+
+      cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}/${vmName}*`).as('plug');
+      cy.get('.card-container').contains('Apply').click();
+      cy.wait('@plug').then(res => {
+        expect(res.response?.statusCode, `${this.type} plug Volume`).to.be.oneOf([200, 204]);
+        cy.get('.search-box').clear();
+      })
+    })
+  }
+
+  public unplugVolume(vmName: string, volumeNames: any, namespace: string) {
+    this.goToConfigDetail(vmName);
+    cy.get('.tabs.vertical').contains('Volumes').click();
+
+    cy.wrap(volumeNames).each((V: string, index) => {
+      cy.contains('.info-box.box', V).contains('Detach Volume').click();
+      cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}/${vmName}*`).as('unplug');
+      cy.get('.card-container').contains('Detach').click();
+      cy.wait('@unplug').then(res => {
+        expect(res.response?.statusCode, `${this.type} unplug Volume`).to.be.oneOf([200, 204]);
       })
     })
   }

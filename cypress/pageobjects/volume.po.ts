@@ -81,7 +81,7 @@ export class VolumePage extends CruResourcePo {
     // state indicator for status of volume status e.g. Ready
     cy.contains(value.name || "")
       .parentsUntil("tbody", "tr")
-      .find("td.col-badge-state-formatter .bg-success")
+      .find("td.col-badge-state-formatter .badge-state")
       .contains("Ready")
       .should("be.visible");
   }
@@ -133,6 +133,25 @@ export class VolumePage extends CruResourcePo {
       .then((volumeName) => {
         this.delete("default", volumeName.trim());
       });
+  }
+
+  public goToEditByVMName(name: string) {
+    this.goToList();
+
+    cy.intercept('GET', `/v1/harvester/storage.k8s.io.storageclasses`).as('loadEdit');
+
+    this.clickAction(name, 'Edit Config');
+
+    cy.wait('@loadEdit').then(res => {
+      expect(res.response?.statusCode).to.equal(200);
+    })
+  }
+
+  public increaseSize(size: string, namespace: string) {
+    this.size().input(size);
+    cy.get('.masthead H1').find('span').eq(0).invoke('text').then((volumeName) => {
+      this.update(`${namespace}/${volumeName.trim()}`);
+    })
   }
 
   basePath() {

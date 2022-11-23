@@ -1,5 +1,5 @@
 ---
-title: Detach volume from virtual machine
+title: Detach volume from virtual machine (e2e_fe)
 ---
 
 * Related issues: [#1708](https://github.com/harvester/harvester/issues/1708) After click "Detach volume" button, nothing happend
