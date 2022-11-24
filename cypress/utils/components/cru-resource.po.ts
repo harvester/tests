@@ -1,8 +1,12 @@
 import cookie from 'cookie';
 
+import { Constants } from "@/constants/constants";
 import PagePo from '@/utils/components/page.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
+import TablePo from "@/utils/components/table.po";
+
+const constants = new Constants();
 
 export default class CruResourcePo extends PagePo {
   /**
@@ -21,11 +25,13 @@ export default class CruResourcePo extends PagePo {
   public type = '';
   public realType = '';
   public storeType: string|undefined = undefined;
+  public table = new TablePo();;
   public footerButtons = '.cru-resource-footer'
   public confirmRemove = '.card-container.prompt-remove'
   public searchInput = '.search'
   public actionMenu = '.list-unstyled.menu'
   public actionMenuIcon = '.icon-actions'
+  public actionButton = '.outlet .actions-container';
 
   namespace() {
     return new LabeledSelectPo('.labeled-select', `:contains("Namespace")`)
@@ -179,7 +185,7 @@ export default class CruResourcePo extends PagePo {
   }
 
   public clickAction(name:string, action: string) {
-    cy.get(this.searchInput).type(name)
+    this.search(name);
     const record = cy.contains(name)
     expect(record.should('be.visible'))
     record.parentsUntil('tbody', 'tr').find(this.actionMenuIcon).click()
@@ -206,9 +212,51 @@ export default class CruResourcePo extends PagePo {
     this.save()
   }
 
+  // make sure that current page is the list page.
+  public search(queryString: any) {
+    cy.get('.sortable-table-header .search-box').should('be.visible');
+    cy.get(this.searchInput).find('input').clear().type(queryString);
+  }
+
+  public searchClear() {
+    cy.get('.sortable-table-header .search-box').should('be.visible');
+    cy.get(this.searchInput).find('input').clear();
+  }
+
+
+  /**
+   *
+   * @param name: resource name
+   * @param value: expected value in the column of table
+   * @param pos:  the coordinate of the column
+   * @param options: additional options
+   * @returns null
+   */
+  public censorInColumn(name: string, nameIndex: number, ns: string, nsIndex: number, columnValue: any, columnIndex: number = 2, options: any = {}) {
+    this.search(name);
+    cy.wait(2000);
+    cy.wrap('async').then(() => {
+      this.table.find(name, nameIndex, ns, nsIndex, options?.nameSelector).then((rowIndex: any) => {
+        if (typeof rowIndex === 'number') {
+          cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).find('td').eq(columnIndex - 1, {timeout: options?.timeout || constants.timeout.timeout}).should('contain', columnValue);
+        }
+      })
+    });
+  }
+
   public goToList() {
     cy.intercept('GET', `/v1/harvester/${this.realType}s`).as('goToList');
     cy.visit(`/harvester/c/local/${this.type}`)
     cy.wait('@goToList');
+  }
+
+  public goToCreate() {
+    this.goToList();
+    cy.get(this.actionButton).find('a').contains(' Create ').click();
+  }
+
+  public goToEdit(name: string, namespace: string, options?: any) {
+    this.goToList()
+    this.clickAction(name, 'Edit Config');
   }
 }

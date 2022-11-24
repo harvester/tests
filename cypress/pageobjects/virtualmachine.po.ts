@@ -36,17 +36,10 @@ interface Volume {
 }
 
 export class VmsPage extends CruResourcePo {
-  private actionButton = '.outlet .actions-container';
-
   constructor() {
     super({
       type: HCI.VM
     });
-  }
-
-  public goToCreate() {
-    this.goToList()
-    cy.get(this.actionButton).find('a').contains(' Create ').click();
   }
 
   setBasics(cpu?: string, memery?: string, ssh?: {id?: string, createNew?: boolean, value?: string}) {
@@ -285,27 +278,29 @@ export class VmsPage extends CruResourcePo {
 
     cy.wrap(volumeNames).each((V: string) => {
       this.clickAction(vmName, 'Add Volume').then((_) => {
-        this.plugVolumeCustomName().input(V);
+        cy.get('.v--modal-box,.v--modal .card-container').within(() => {
+          this.plugVolumeCustomName().input(V);
+        })
         this.plugVolumeName().select({option: V});
       })
 
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}/${vmName}*`).as('plug');
-      cy.get('.card-container').contains('Apply').click();
+      cy.get('.v--modal-box,.v--modal .card-container').contains('Apply').click();
       cy.wait('@plug').then(res => {
         expect(res.response?.statusCode, `${this.type} plug Volume`).to.be.oneOf([200, 204]);
-        cy.get('.search-box').clear();
+        this.searchClear();
       })
     })
   }
 
-  public unplugVolume(vmName: string, volumeNames: any, namespace: string) {
+  public unplugVolume(vmName: string, volumeIndexArray: Array<number>, namespace: string) {
     this.goToConfigDetail(vmName);
-    cy.get('.tabs.vertical').contains('Volumes').click();
+    this.clickTab('Volume');
 
-    cy.wrap(volumeNames).each((V: string, index) => {
-      cy.contains('.info-box.box', V).contains('Detach Volume').click();
+    cy.wrap(volumeIndexArray).each((index: number) => {
+      cy.get('.info-box.box').eq(index).contains('Detach Volume').click();
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}/${vmName}*`).as('unplug');
-      cy.get('.card-container').contains('Detach').click();
+      cy.get('.v--modal-box,.v--modal .card-container').contains('Detach').click();
       cy.wait('@unplug').then(res => {
         expect(res.response?.statusCode, `${this.type} unplug Volume`).to.be.oneOf([200, 204]);
       })

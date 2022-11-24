@@ -1,10 +1,7 @@
 import { HCI, PVC } from "@/constants/types";
-import TablePo from "@/utils/components/table.po";
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import CruResourcePo from "@/utils/components/cru-resource.po";
-
-const table = new TablePo();
 
 interface ValueInterface {
   namespace?: string,
@@ -44,11 +41,25 @@ export class VolumePage extends CruResourcePo {
     return new LabeledSelectPo(".labeled-select", `:contains("Image"):last`);
   }
 
+  setBasics({source, image, size} : { source?: string, image?: string, size: string }) {
+    this.clickTab('basic');
+
+    if (source) {
+      this.source().select({option: source});
+    }
+
+    if (image) {
+      this.image().select({option: image});
+    }
+
+    this.size().input(size);
+  }
+
   checkVMAttached(ns: string, name: string, vmName: string) {
     cy.get(this.searchInput).type(name);
     cy.wait(2000)
     cy.wrap('async').then(() => {
-      table.find(name, 3, ns, 4).then((index) => {
+      this.table.find(name, 3, ns, 4).then((index: any) => {
         if (typeof index === 'number') {
           cy.get(`[data-testid="sortable-table-${index}-row"]`).find('td').eq(5).should(($el: any) => {
             expect($el).to.contain(vmName)
@@ -77,15 +88,6 @@ export class VolumePage extends CruResourcePo {
     });
   }
 
-  public checkState(value: ValueInterface) {
-    // state indicator for status of volume status e.g. Ready
-    cy.contains(value.name || "")
-      .parentsUntil("tbody", "tr")
-      .find("td.col-badge-state-formatter .badge-state")
-      .contains("Ready")
-      .should("be.visible");
-  }
-
   public setValue(value: ValueInterface) {
     this.namespace().select({option: value?.namespace})
     this.size().input(value?.size);
@@ -95,25 +97,6 @@ export class VolumePage extends CruResourcePo {
       this.source().select({option: "VM Image"});
       this.image().select({option: value?.image});
     }
-  }
-
-  public checkStateByVM(vmName: string) {
-    this.goToList();
-    cy.get(this.searchInput).type(vmName);
-
-    const volume = cy.contains(vmName);
-
-    volume.should("be.visible");
-
-    // Get volume name from attahched VM in name field of Volume page
-    volume
-      .parentsUntil("tbody", "tr")
-      .find("td")
-      .eq(2)
-      .invoke("text")
-      .then((volumeName) => {
-        this.checkState({ name: volumeName.trim() });
-      });
   }
 
   public deleteVolumeByVM(vmName: string) {
@@ -133,25 +116,6 @@ export class VolumePage extends CruResourcePo {
       .then((volumeName) => {
         this.delete("default", volumeName.trim());
       });
-  }
-
-  public goToEditByVMName(name: string) {
-    this.goToList();
-
-    cy.intercept('GET', `/v1/harvester/storage.k8s.io.storageclasses`).as('loadEdit');
-
-    this.clickAction(name, 'Edit Config');
-
-    cy.wait('@loadEdit').then(res => {
-      expect(res.response?.statusCode).to.equal(200);
-    })
-  }
-
-  public increaseSize(size: string, namespace: string) {
-    this.size().input(size);
-    cy.get('.masthead H1').find('span').eq(0).invoke('text').then((volumeName) => {
-      this.update(`${namespace}/${volumeName.trim()}`);
-    })
   }
 
   basePath() {
