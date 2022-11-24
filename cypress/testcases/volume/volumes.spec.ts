@@ -1,8 +1,11 @@
+import { Constants } from "@/constants/constants";
+import { HCI } from '@/constants/types';
 import { generateName } from '@/utils/utils';
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { ImagePage } from "@/pageobjects/image.po";
 import { VolumePage } from "@/pageobjects/volume.po";
 
+const constants = new Constants();
 const vms = new VmsPage();
 const image = new ImagePage();
 const volumes = new VolumePage();
@@ -23,47 +26,45 @@ describe("Create image from Volume", () => {
   it("Create image from Volume", () => {
     cy.login();
 
-    vms.init();
 
     // create VM
     const imageEnv = Cypress.env("image");
     const namespace = 'default';
-    const value = {
-      name: VM_NAME,
-      cpu: "2",
-      memory: "4",
-      image: imageEnv.name,
-      namespace
-    };
 
-    vms.create(value);
+    const volumes = [{
+      buttonText: 'Add Volume',
+      create: false,
+      image: `default/${imageEnv.name}`,
+    }];
 
-    // check VM state
-    vms.goToConfigDetail(VM_NAME);
+    vms.init();
+    vms.goToCreate();
+    vms.setNameNsDescription(VM_NAME, namespace);
+    vms.setBasics('2', '4');
+    vms.setVolumes(volumes);
+    vms.save();
 
-    // export IMAGE
+    // // check VM state
+    vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+
+    // // export IMAGE
     image.exportImage(VM_NAME, IMAGE_NAME);
 
     // check IMAGE state
     image.goToList();
-    image.checkState({
-      name: IMAGE_NAME,
-      size: "10 GB",
-    });
-
-    
+    image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout })
+    image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5);
+    image.censorInColumn(IMAGE_NAME, 3, namespace, 4, '10 GB', 6);
 
     // create VM
-    vms.create({
-      name: ANOTHER_VM_NAME,
-      cpu: "2",
-      memory: "4",
-      image: IMAGE_NAME,
-      namespace,
-    });
+    vms.goToCreate();
+    vms.setNameNsDescription(ANOTHER_VM_NAME, namespace);
+    vms.setBasics('2', '4');
+    vms.setVolumes(volumes);
+    vms.save();
 
     // check VM state
-    vms.goToConfigDetail(ANOTHER_VM_NAME);
+    vms.censorInColumn(ANOTHER_VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
 
     // delete VM
     vms.delete(namespace, ANOTHER_VM_NAME);
@@ -96,17 +97,14 @@ describe("Create volume root disk VM Image Form", () => {
     const namespace = 'default';
 
     // create VOLUME
-    const value = {
-      name: VOLUME_NAME,
-      size: "10",
-      image: imageEnv.name,
-      namespace,
-    };
-
-    volumes.create(value);
+    volumes.goToCreate();
+    volumes.setNameNsDescription(VOLUME_NAME, namespace);
+    volumes.setBasics({source: 'VM Image', image: imageEnv.name, size: '10'});
+    volumes.save();
 
     // check state
-    volumes.checkState(value);
+    volumes.censorInColumn(VOLUME_NAME, 3, namespace, 4, 'Ready');
+    volumes.censorInColumn(VOLUME_NAME, 3, namespace, 4, '10 Gi', 5);
 
     // delete VOLUME
     volumes.delete(namespace, VOLUME_NAME);
@@ -132,29 +130,39 @@ describe("Delete volume that was attached to VM but now is not", () => {
 
     const imageEnv = Cypress.env("image");
     const namespace = 'default';
+    const volumesInVM = [{
+      buttonText: 'Add Volume',
+      create: false,
+      image: `default/${imageEnv.name}`,
+    }];
 
     // create VM
-    const value = {
-      name: VM_NAME,
-      cpu: "2",
-      memory: "4",
-      image: imageEnv.name,
-      namespace,
-    };
+    cy.intercept('POST', `v1/harvester/${HCI.VM}s/default`).as('create');
+    vms.goToCreate();
+    vms.setNameNsDescription(VM_NAME, namespace);
+    vms.setBasics('2', '4');
+    vms.setVolumes(volumesInVM);
+    vms.save();
 
-    vms.create(value);
+    // get volume name
+    cy.wait('@create').should((res: any) => {
+      expect(res.response?.statusCode, 'Create VM').to.equal(201);
+      const vm = res?.response?.body || {}
+      const volumeName = vm.spec?.template?.spec?.volumes?.[0]?.persistentVolumeClaim?.claimName || '';
 
-    // check VM state
-    vms.goToConfigDetail(VM_NAME);
+      // check VM state
+      vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
 
-    // delete VM
-    vms.delete(namespace, VM_NAME, { removeRootDisk: false });
+      // delete VM
+      vms.delete(namespace, VM_NAME, { removeRootDisk: false });
 
-    // check VOLUME state
-    volumes.checkStateByVM(VM_NAME);
+      // check VOLUME state
+      volumes.goToList()
+      volumes.censorInColumn(volumeName, 3, namespace, 4, 'Ready', 2);
 
-    // delete VOLUME
-    volumes.deleteVolumeByVM(VM_NAME);
+      // delete VOLUME
+      volumes.delete(namespace, volumeName);
+    })
   });
 });
 
@@ -180,48 +188,43 @@ describe("Support Volume Hot Unplug", () => {
 
     const imageEnv = Cypress.env("image");
     const namespace = 'default';
+    const volumesInVM = [{
+      buttonText: 'Add Volume',
+      create: false,
+      image: `default/${imageEnv.name}`,
+    }];
 
     // create VOLUME
-    const firstVolume = {
-      name: VOLUME_NAME_1,
-      size: "10",
-      namespace,
-    };
+    volumes.goToCreate();
+    volumes.setNameNsDescription(VOLUME_NAME_1, namespace);
+    volumes.setBasics({size: '10'});
+    volumes.save();
+    volumes.censorInColumn(VOLUME_NAME_1, 3, namespace, 4, 'Ready');
 
-    const secondVolume = {
-      name: VOLUME_NAME_2,
-      size: "10",
-      namespace,
-    };
-
-    volumes.create(firstVolume);
-    // check state
-    volumes.checkState(firstVolume);
-    
-    volumes.create(secondVolume);
-    // check state
-    volumes.checkState(secondVolume);
+    volumes.goToCreate();
+    volumes.setNameNsDescription(VOLUME_NAME_2, namespace);
+    volumes.setBasics({size: '10'});
+    volumes.save();
+    volumes.censorInColumn(VOLUME_NAME_2, 3, namespace, 4, 'Ready');
 
     // create VM
-    const value = {
-      name: VM_NAME,
-      cpu: "2",
-      memory: "4",
-      image: imageEnv.name,
-      namespace,
-    };
 
-    vms.create(value);
+    vms.goToCreate();
+    vms.setNameNsDescription(VM_NAME, namespace);
+    vms.setBasics('2', '4');
+    vms.setVolumes(volumesInVM);
+    vms.save();
 
     // check VM state
-    vms.goToConfigDetail(VM_NAME);
+    vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
 
     vms.plugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
-    vms.unplugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
+    vms.unplugVolume(VM_NAME, [1,2], namespace);
     vms.plugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
 
     // delete VM
     vms.delete(namespace, VM_NAME);
+
     // delete VOLUME
     volumes.delete(namespace, VOLUME_NAME_1);
     volumes.delete(namespace, VOLUME_NAME_2);
@@ -245,29 +248,41 @@ describe("Support Volume Hot Unplug", () => {
 
     const imageEnv = Cypress.env("image");
     const namespace = 'default';
+    const volumesInVM = [{
+      buttonText: 'Add Volume',
+      create: false,
+      image: `default/${imageEnv.name}`,
+    }];
 
     // create VM
-    const value = {
-      name: VM_NAME,
-      cpu: "2",
-      memory: "4",
-      image: imageEnv.name,
-      namespace,
-    };
+    cy.intercept('POST', `v1/harvester/${HCI.VM}s/default`).as('create');
+    vms.goToCreate();
+    vms.setNameNsDescription(VM_NAME, namespace);
+    vms.setBasics('2', '4');
+    vms.setVolumes(volumesInVM);
+    vms.save();
 
-    vms.create(value);
+    // get volume name
+    cy.wait('@create').should((res: any) => {
+      expect(res.response?.statusCode, 'Create VM').to.equal(201);
+      const vm = res?.response?.body || {}
+      const volumeName = vm.spec?.template?.spec?.volumes?.[0]?.persistentVolumeClaim?.claimName || '';
 
-    // check VM state
-    vms.goToConfigDetail(VM_NAME);
-    vms.goToList();
-    vms.clickAction(VM_NAME, 'Stop');
-    expect(cy.contains(VM_NAME).parentsUntil("tbody", "tr").find("td").eq(1).contains('Off'));
-    volumes.goToEditByVMName(VM_NAME);
+      // check VM state
+      vms.clickAction(VM_NAME, 'Stop');
+      vms.searchClear();
+      vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Off', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
 
-    volumes.increaseSize('20', namespace);
+      volumes.goToEdit(volumeName, namespace);
+      volumes.setBasics({size: '20'});
+      volumes.update(`${namespace}/${volumeName}`);
+      
+      // check VOLUME state
+      volumes.censorInColumn(volumeName, 3, namespace, 4, 'In-use', 2);
 
-    // delete VM
-    vms.delete(namespace, VM_NAME);
+      // delete VM
+      vms.delete(namespace, VM_NAME);
+    })
   });
 });
 
