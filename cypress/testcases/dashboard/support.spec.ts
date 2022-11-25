@@ -13,7 +13,7 @@ describe("Support Page", () => {
   context("Links in Community Support Section", () => {
     it("Should Link to correct URLs", () => {
       page.docsBtn.invoke("attr", "href")
-          .should("eq", "https://docs.harvesterhci.io/latest/")
+          .should("eq", "https://docs.harvesterhci.io")
 
       page.forumsBtn.invoke("attr", "href")
           .should("eq", "https://forums.rancher.com/c/harvester/")

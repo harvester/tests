@@ -1,13 +1,13 @@
 import type { CypressChainable } from '@/utils/po.types'
 import ComponentPo from './component.po';
 
-class Navbar {
+export class Navbar {
   public static get DashboardBtn(): CypressChainable {
     return cy.get("nav a").contains("Dashboard")
   }
 
   public static get HostsBtn(): CypressChainable {
-    return cy.get("nav a").contains("Hosts")
+    return cy.get("nav a").contains(/^Hosts$/)
   }
 
   public static get VirtualMachinesBtn(): CypressChainable {
@@ -57,11 +57,72 @@ class Navbar {
   public static get SupportLink(): CypressChainable {
     return cy.get("nav> .footer a").contains("Support")
   }
+
   public static get versionText(): CypressChainable {
     return cy.get("nav> .footer .version")
   }
+
   public static get LangBtn(): CypressChainable {
     return cy.get("nav> .footer .trigger")
+  }
+
+  /**
+   * 
+   * @param navName Menu name
+   * @param matchUrl The url that is expected to match
+   * @param listPageHeaderText The title of the page
+   * @param parentNavs Menu Path
+   * @param exact Exact match of text
+   */
+  clickMenuNav(navName: string, matchUrl: string, listPageHeaderText: string, parentNavs: Array<string> = [], exact: boolean = true) {
+    function recursionClickNav(parentNav: string, idx: number) {
+      return cy.contains(new RegExp("^" + parentNav + "$")).click().parentsUntil('.has-children').next().within(($el) => {
+        if (parentNavs.length === idx + 1) {
+          cy.get('li a').contains(new RegExp("^" + navName + "$")).click();
+
+          cy.location().should(loc => {
+            const deleteHash = loc.href.replace(loc.hash, '');
+            expect(deleteHash).to.eq(`${new Navbar().basePath()}/${matchUrl}`)
+          })
+
+          cy.wait(2000); // need to wait here, because when you click on the secondary menu, it will automatically jump to the first position in the secondary menu
+          cy.get('a').parentsUntil('body').find('main .outlet header h1').should('be.visible').invoke('text').then((_text) => {
+            if (exact) {
+              expect(_text.trim()).eq(listPageHeaderText);
+            } else {
+              expect(_text.trim()).include(listPageHeaderText);
+            }
+            cy.log(`${navName} Nav go to the correct page and display it`);
+          });
+        } else {
+          cy.get('div h6').contains(new RegExp("^" + parentNavs[idx + 1] + "$")).click();
+        }
+      })
+    }
+
+    if (parentNavs.length === 0) {
+      cy.get("nav a").contains(new RegExp("^" + navName + "$")).click();
+      cy.location().should(loc => {
+        const deleteHash = loc.href.replace(loc.hash, '');
+        expect(deleteHash).to.eq(`${this.basePath()}/${matchUrl}`)
+      })
+
+      cy.wait(2000);
+      cy.get('a').parentsUntil('body').find('main .outlet header h1').should('be.visible').invoke('text').then((_text) => {
+        expect(_text.trim()).eq(listPageHeaderText)
+        cy.log(`${navName} Nav go to the correct page and display it`)
+      });
+    } else {
+      cy.get("nav .accordion.has-children").within(($el) => {
+        parentNavs.map((parentNav, idx) => {
+          recursionClickNav(parentNav, idx);
+        })
+      })
+    }
+  }
+
+  basePath() {
+    return Cypress.env('NODE_ENV') === 'dev' ? Cypress.env('baseUrl') : `${Cypress.env('baseUrl')}/dashboard`;
   }
 }
 

@@ -1,5 +1,5 @@
 ---
-title: Verify the Harvester UI URL
+title: Verify the Harvester UI URL (e2e_fe)
 ---
 1. Navigate to the Harvester UI and verify the URL.
 1. Verify the Harvester icon on the left top corner
