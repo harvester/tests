@@ -48,7 +48,7 @@ describe("Create image from Volume", () => {
     vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
 
     // // export IMAGE
-    image.exportImage(VM_NAME, IMAGE_NAME);
+    image.exportImage(VM_NAME, IMAGE_NAME, namespace);
 
     // check IMAGE state
     image.goToList();
@@ -73,7 +73,13 @@ describe("Create image from Volume", () => {
     vms.delete(namespace, VM_NAME);
 
     // delete IMAGE
-    image.delete(IMAGE_NAME);
+    cy.window().then(async (win) => {
+      const imageList = (win as any).$nuxt.$store.getters['harvester/all'](HCI.IMAGE);
+      const imageObj = imageList.find((I: any) => I.spec.displayName === IMAGE_NAME);
+      const imageId = imageObj?.id;
+
+      image.delete(namespace, IMAGE_NAME, { id: imageId });
+    })
   });
 });
 
@@ -273,7 +279,7 @@ describe("Support Volume Hot Unplug", () => {
       vms.searchClear();
       vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Off', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
 
-      volumes.goToEdit(volumeName, namespace);
+      volumes.goToEdit(volumeName);
       volumes.setBasics({size: '20'});
       volumes.update(`${namespace}/${volumeName}`);
       

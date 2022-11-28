@@ -1,8 +1,10 @@
+import { Constants } from "@/constants/constants";
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { ImagePage } from "@/pageobjects/image.po";
 import { generateName } from '@/utils/utils';
 import { HCI } from '@/constants/types';
 
+const constants = new Constants();
 const vms = new VmsPage();
 const image = new ImagePage();
 
@@ -27,15 +29,19 @@ describe('Auto setup image from cypress environment', () => {
     }).then(res => {
       expect(res?.status, 'Check Image list').to.equal(200);
       const images = res?.body?.data || []
-
       const imageFound = images.find((i:any) => i?.spec?.displayName === IMAGE_NAME)
 
       if (imageFound) {
         return
       } else {
+        const namespace = 'default';
+
         image.goToCreate();
-        image.create(value);
-        image.checkState(value);
+        image.setNameNsDescription(IMAGE_NAME, namespace);
+        image.setBasics({url: IMAGE_URL});
+        image.save();
+        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
+        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
       }
     })
   })
@@ -58,50 +64,66 @@ describe('Create an image with valid image URL', () => {
     const imageEnv = Cypress.env('image');
     const IMAGE_NAME = generateName('auto-image-valid-url-test');
     const IMAGE_URL = imageEnv.url;
-    const value = {
-        name: IMAGE_NAME,
-        url: IMAGE_URL,
-        labels: {
-            thefirstlabel: 'thefirstlabel',
-            thesecondlabel: 'thesecondlabel'
-        }
-    }
 
     it('Create an image with valid image URL', () => {
         cy.login();
 
         // create IMAGE
-        image.goToCreate();
-        image.create(value);
-        image.checkState(value);
-
-        // edit IMAGE
-        image.goToEdit(IMAGE_NAME);
-
         const namespace = 'default';
 
-        const editValue = {
-            name: IMAGE_NAME,
-            url: 'xx',
-            description: 'Edit image test',
-            labels: {
-                edit: 'edit'
-            },
-            namespace,
-        }
-        
-        image.edit(editValue);
-
-        // delete IMAGE
-        image.delete(IMAGE_NAME);
-
-        // create IMAGE with the same name
+        cy.intercept('POST', `v1/harvester/${HCI.IMAGE}s`).as('create');
         image.goToCreate();
-        image.create(value);
-        image.checkState(value);
+        image.setNameNsDescription(IMAGE_NAME, namespace);
+        image.setBasics({url: IMAGE_URL});
+        image.setLabels({
+            labels: {
+                thefirstlabel: 'thefirstlabel',
+                thesecondlabel: 'thesecondlabel'
+            }
+        });
+        image.save();
+        cy.wait('@create').should((res: any) => {
+            expect(res.response?.statusCode, 'Create VM').to.equal(201);
+            const imageObj = res?.response?.body || {}
+            const imageId = imageObj?.id || '';
 
-        // delete IMAGE
-        image.delete(IMAGE_NAME);
+            // check IMAGE state
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
+
+            // edit IMAGE
+            image.goToEdit(IMAGE_NAME);
+            image.name().self().find('input').should('be.disabled');
+            image.url().self().find('input').should('be.disabled');
+            image.setLabels({
+                labels: {
+                    edit: 'edit'
+                }
+            })
+            image.update(imageId);
+
+            // delete IMAGE
+            image.delete(namespace, IMAGE_NAME, { id: imageId });
+        })
+        
+
+        image.goToCreate();
+        image.setNameNsDescription(IMAGE_NAME, namespace);
+        image.setBasics({url: IMAGE_URL});
+        image.save();
+        // create IMAGE with the same name
+        cy.wait('@create').should((res: any) => {
+            expect(res.response?.statusCode, 'Create VM').to.equal(201);
+            const imageObj = res?.response?.body || {}
+            const imageId = imageObj?.id || '';
+
+            // check IMAGE state
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
+
+            // delete IMAGE
+            image.delete(namespace, IMAGE_NAME, { id: imageId });
+        })
     });
 });
 
@@ -117,19 +139,24 @@ describe('Create an image with valid image URL', () => {
         cy.login();
 
         // create invalid IMAGE
-        image.goToCreate();
         const namespace = 'default';
 
-        const value = {
-            name: IMAGE_NAME,
-            url: 'https://test.img'
-        }
+        cy.intercept('POST', `v1/harvester/${HCI.IMAGE}s`).as('create');
+        image.goToCreate();
+        image.setNameNsDescription(IMAGE_NAME, namespace);
+        image.setBasics({url: 'https://test.img'});
+        image.save();
+        cy.wait('@create').should((res: any) => {
+            expect(res.response?.statusCode, 'Create VM').to.equal(201);
+            const imageObj = res?.response?.body || {}
+            const imageId = imageObj?.id || '';
 
-        image.create(value);
-        image.checkState(value, false);
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Failed', 2, { timeout: constants.timeout.uploadTimeout });
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, '0%', 5, { timeout: constants.timeout.uploadTimeout });
 
-        // delete IMAGE
-        image.delete(IMAGE_NAME);
+            // delete IMAGE
+            image.delete(namespace, IMAGE_NAME, { id: imageId });
+        })
     });
 });
 
@@ -150,34 +177,35 @@ describe('Delete VM with exported image', () => {
 
         const imageEnv = Cypress.env('image');
         const namespace = 'default';
+        const volumes = [{
+            buttonText: 'Add Volume',
+            create: false,
+            image: `default/${imageEnv.name}`,
+        }];
 
         // create VM
-        const value = {
-            name: VM_NAME,
-            cpu: '2',
-            memory: '4',
-            image: Cypress._.toLower(imageEnv.name),
-            namespace,
-        }
-
-        vms.create(value);
-
-        // check VM state
-        vms.goToConfigDetail(VM_NAME);
-
+        vms.goToCreate();
+        vms.setNameNsDescription(VM_NAME, namespace);
+        vms.setBasics('2', '4');
+        vms.setVolumes(volumes);
+        vms.save();
+        
         // export IMAGE
-        image.exportImage(VM_NAME, IMAGE_NAME);
-
-        // check IMAGE state
+        image.exportImage(VM_NAME, IMAGE_NAME, namespace);
         image.goToList();
-        image.checkState({
-            name: IMAGE_NAME,
-        });
+        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
+        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
 
         // delete VM
         vms.delete(namespace, VM_NAME);
 
-        image.delete(IMAGE_NAME);
+        cy.window().then(async (win) => {
+            const imageList = (win as any).$nuxt.$store.getters['harvester/all'](HCI.IMAGE);
+            const imageObj = imageList.find((I: any) => I.spec.displayName === IMAGE_NAME);
+            const imageId = imageObj?.id;
+
+            image.delete(namespace, IMAGE_NAME, { id: imageId });
+        })
     });
 });
 
@@ -198,50 +226,47 @@ describe('Update image labels after deleting source VM', () => {
 
         const imageEnv = Cypress.env('image');
         const namespace = 'default';
-
-        const value = {
-            name: VM_NAME,
-            cpu: '2',
-            memory: '4',
-            image: Cypress._.toLower(imageEnv.name),
-            namespace,
-        }
+        const volumes = [{
+            buttonText: 'Add Volume',
+            create: false,
+            image: `default/${imageEnv.name}`,
+        }];
 
         // create VM
-        vms.create(value);
-
-        // check VM state
-        vms.goToConfigDetail(VM_NAME);
+        vms.goToCreate();
+        vms.setNameNsDescription(VM_NAME, namespace);
+        vms.setBasics('2', '4');
+        vms.setVolumes(volumes);
+        vms.save();
+        vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
 
         // export IMAGE
-        image.exportImage(VM_NAME, IMAGE_NAME);
+        image.exportImage(VM_NAME, IMAGE_NAME, namespace);
 
         // check IMAGE state
         image.goToList();
-        image.checkState({
-            name: IMAGE_NAME,
-            size: '10 GB'
-        });
+        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
+        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
 
         // delete VM
         vms.delete(namespace, VM_NAME);
 
         // edit IMAGE
         image.goToEdit(IMAGE_NAME);
+        cy.window().then(async (win) => {
+            const imageList = (win as any).$nuxt.$store.getters['harvester/all'](HCI.IMAGE);
+            const imageObj = imageList.find((I: any) => I.spec.displayName === IMAGE_NAME);
+            const imageId = imageObj?.id;
 
-        const editValue = {
-            name: IMAGE_NAME,
-            url: 'xx',
-            description: 'Edit image test',
-            labels: {
-                edit: 'edit'
-            }
-        }
-        
-        image.edit(editValue, true);
-
-        // delete IMAGE
-        image.delete(IMAGE_NAME);
+            image.setLabels({
+                labels: {
+                    thefirstlabel: 'thefirstlabel',
+                    thesecondlabel: 'thesecondlabel'
+                }
+            });
+            image.update(imageId);
+            image.delete(namespace, IMAGE_NAME, { id: imageId });
+        })
     });
 });
 
@@ -312,40 +337,41 @@ describe('Create a ISO image via upload', () => {
         cy.login();
 
         // create IMAGE
-        image.goToCreate();
         const namespace = 'default';
 
-        const value = {
-            name: IMAGE_NAME,
-            size: '16 MB',
-            path: 'cypress/fixtures/cirros-0.5.2-aarch64-disk.img',
-            labels: {
-                from: 'upload',
-                y2: 'z2'
-            }
-        }
+        cy.intercept('POST', `v1/harvester/${HCI.IMAGE}s/*`).as('create');
+        image.goToCreate();
+        image.setNameNsDescription(IMAGE_NAME, namespace);
+        image.setBasics({path: 'cypress/fixtures/cirros-0.5.2-aarch64-disk.img'});
+        image.save({upload: true});
+        cy.wait('@create').should((res: any) => {
+            expect(res.response?.statusCode, 'Create VM').to.equal(201);
+            const imageObj = res?.response?.body || {}
+            const imageId = imageObj?.id || '';
 
-        image.createFromUpload(value);
-        image.checkState(value);
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
+            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, '16 MB', 6, { timeout: constants.timeout.uploadTimeout });
 
-        // create VM
-        const vmValue = {
-            name: VM_NAME,
-            cpu: '2',
-            memory: '4',
-            image: IMAGE_NAME,
-            namespace,
-        }
+            // create VM
+            const volumes = [{
+                buttonText: 'Add Volume',
+                create: false,
+                image: `default/${IMAGE_NAME}`,
+            }];
 
-        vms.create(vmValue);
+            vms.goToCreate();
+            vms.setNameNsDescription(VM_NAME, namespace);
+            vms.setBasics('2', '4');
+            vms.setVolumes(volumes);
+            vms.save();
+            vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
 
-        // check VM state
-        vms.goToConfigDetail(VM_NAME);
-        
-        // delete VM
-        vms.delete(namespace, VM_NAME)
+            // delete VM
+            vms.delete(namespace, VM_NAME)
 
-        // delete IMAGE
-        image.delete(IMAGE_NAME)
+            // delete IMAGE
+            image.delete(namespace, IMAGE_NAME, { id: imageId });
+        })
     });
 });
