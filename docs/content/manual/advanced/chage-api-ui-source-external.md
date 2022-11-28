@@ -1,5 +1,5 @@
 ---
-title: Change api-ui-source external	
+title: Change api-ui-source external (e2e_fe)
 ---
 1. Log in as admin
 1. Navigate to advanced settings

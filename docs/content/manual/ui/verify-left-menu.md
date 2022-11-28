@@ -1,5 +1,5 @@
 ---
-title: Verify the left side menu
+title: Verify the left side menu (e2e_fe)
 ---
 1. Check all the menu at the left side of the screen.
 1. Verify the preference and logout option is available at the right top of the screen
