@@ -2401,7 +2401,7 @@ Tools-&amp;gt;Driver Management→Node Driver Deactivate/activate/delete Harvest
     </item>
     
     <item>
-      <title>Detach volume from virtual machine</title>
+      <title>Detach volume from virtual machine (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/detach-volume-from-virtual-machine/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2734,7 +2734,7 @@ Power on node 1 to console page until you see management url Power on node 2 to 
     </item>
     
     <item>
-      <title>Edit volume increase size via form</title>
+      <title>Edit volume increase size via form (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -4177,7 +4177,7 @@ Create an 3 nodes harvester cluster with large size disks Verification Steps Sce
     </item>
     
     <item>
-      <title>Support Volume Hot Unplug</title>
+      <title>Support Volume Hot Unplug (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
