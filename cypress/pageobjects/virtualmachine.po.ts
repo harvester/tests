@@ -221,13 +221,15 @@ export class VmsPage extends CruResourcePo {
       if (imageFound) {
         return
       } else {
+        const namespace = 'default';
+
         image.goToCreate();
-        image.setValue({
-          name,
-          url,
-        })
-        image.save()
-        image.checkState({ name, size: '16 MB' });
+        image.setNameNsDescription(name, namespace);
+        image.setBasics({url});
+        image.save();
+        image.censorInColumn(name, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
+        image.censorInColumn(name, 3, namespace, 4, 'Completed', 5);
+        image.censorInColumn(name, 3, namespace, 4, '16 MB', 6);
       }
     })
   }
@@ -253,7 +255,7 @@ export class VmsPage extends CruResourcePo {
     cy.get('.cru-resource-footer').contains('Save').click()
   }
 
-  public delete(namespace:string, name: string, { removeRootDisk }: { removeRootDisk?: boolean } = { removeRootDisk: true }) {
+  public delete(namespace:string, name: string, { removeRootDisk, id }: { removeRootDisk?: boolean, id?: string } = { removeRootDisk: true }) {
     cy.visit(`/harvester/c/local/${this.type}`)
 
     this.clickAction(name, 'Delete').then((_) => {

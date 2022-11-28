@@ -92,12 +92,17 @@ export default class CruResourcePo extends PagePo {
     })
   }
 
-  public delete(namespace:any, name:string) {
+  public delete(namespace:any, name:string, { id }: { id?: string } = {}) {
     cy.visit(`/harvester/c/local/${this.type}`)
 
     this.clickAction(name, 'Delete')
 
-    cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}*`).as('delete');
+    if (id) {
+      cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${id}*`).as('delete');
+    } else {
+      cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}*`).as('delete');
+    }
+
     cy.get(this.confirmRemove).contains('Delete').click();
     cy.wait('@delete').then(res => {
       cy.window().then((win) => {
@@ -255,7 +260,7 @@ export default class CruResourcePo extends PagePo {
     cy.get(this.actionButton).find('a').contains(' Create ').click();
   }
 
-  public goToEdit(name: string, namespace: string, options?: any) {
+  public goToEdit(name: string) {
     this.goToList()
     this.clickAction(name, 'Edit Config');
   }
