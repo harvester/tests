@@ -1,5 +1,5 @@
 ---
-title: Change log level Info	
+title: Change log level Info	(e2e_fe)
 ---
 1. Log in as admin
 1. Navigate to advanced settings

@@ -1,5 +1,5 @@
 ---
-title: Change log level Trace	
+title: Change log level Trace	(e2e_fe)
 ---
 1. Log in as admin
 1. Navigate to advanced settings

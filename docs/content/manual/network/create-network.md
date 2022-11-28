@@ -1,5 +1,5 @@
 ---
-title: Create new network (e2e_be)
+title: Create new network (e2e_be_fe)
 ---
 1. Navigate to the networks page in harvester
 1. Click Create

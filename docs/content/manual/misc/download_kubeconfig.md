@@ -1,5 +1,5 @@
 ---
-title: Button of `Download KubeConfig`
+title: Button of `Download KubeConfig` (e2e_fe)
 ---
 Ref: https://github.com/harvester/harvester/issues/1349
 

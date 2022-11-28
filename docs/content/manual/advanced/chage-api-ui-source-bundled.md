@@ -1,5 +1,5 @@
 ---
-title: Change api-ui-source bundled	
+title: Change api-ui-source bundled	(e2e_fe)
 ---
 1. Log in as admin
 1. Navigate to advanced settings
