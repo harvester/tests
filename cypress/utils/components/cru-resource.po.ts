@@ -172,6 +172,23 @@ export default class CruResourcePo extends PagePo {
     })
   }
 
+  public hasAction({name, nameIndex = 3, ns, nsIndex = 4, action, expect = true, nameSelector}: { name:string, nameIndex?:number, ns:string, nsIndex?:number, action: string, expect?:boolean, nameSelector?:string }) {
+    this.search(name);
+    cy.wait(2000);
+    cy.wrap('async').then(() => {
+      console.log(nameIndex);
+      console.log(nsIndex);
+      this.table.find(name, nameIndex, ns, nsIndex, nameSelector).then((rowIndex: any) => {
+        if (typeof rowIndex === 'number') {
+          cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).find(this.actionMenuIcon).click();
+          cy.get(this.actionMenu).should(`${expect ? '' : 'not.'}contain`, action);
+          // click outside to close action menu
+          cy.get('body').click(0,0);
+        }
+      })
+    });
+  }
+
   public clickAction(name:string, action: string) {
     this.search(name);
     const record = cy.contains(name)
