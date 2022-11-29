@@ -125,10 +125,24 @@ export class VmsPage extends CruResourcePo {
     }
   }
 
+  checkVMState(name:  string, state: string = 'Running', namespace: string = 'default') {
+    this.goToList();
+    this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+  }
+
   clickCloneAction(name: string) {
     this.clickAction(name, 'Clone');
     new CheckboxPo('.v--modal-box .checkbox-container', `:contains("clone volume data")`).check(false);
     cy.get('.v--modal-box button').contains('Clone').click();
+  }
+
+  clickVMSnapshotAction(name: string, snapshotName: string) {
+    this.clickAction(name, 'Take VM Snapshot');
+    cy.get('.v--modal-box .card-title').find('h4').contains('Take VM Snapshot');
+
+    new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name")`).input(snapshotName)
+    cy.get('.v--modal-box button').contains('Create').click();
+    cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
   }
 
   public setValue(value: ValueInterface) {

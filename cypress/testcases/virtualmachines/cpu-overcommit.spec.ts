@@ -1,14 +1,10 @@
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
-import { LoginPage } from "@/pageobjects/login.po";
-import SidebarPage from "@/pageobjects/sidebar.po";
 import SettingsPage from "@/pageobjects/settings.po";
 
 import { generateName } from '@/utils/utils';
 
 const vms = new VmsPage();
-const login = new LoginPage();
 const settings = new SettingsPage();
-const sidebar = new SidebarPage();
 
 /**
  * 1. Login

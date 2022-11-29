@@ -21,7 +21,8 @@ export const PageUrl = {
     setting:          '/harvester/c/local/harvesterhci.io.setting',
     virtualMachine:   '/harvester/c/local/kubevirt.io.virtualmachine',
     vmNetwork:        '/harvester/c/local/harvesterhci.io.networkattachmentdefinition',
-    namespace:        '/harvester/c/local/namespace'
+    namespace:        '/harvester/c/local/namespace',
+    volumeSnapshot:   '/harvester/c/local/harvesterhci.io.volumesnapshot'
 }
 
 export const MenuNav = {
