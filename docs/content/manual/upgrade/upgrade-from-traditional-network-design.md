@@ -7,8 +7,11 @@ title: Upgrade Harvester from traditonal cluster network design (before v1.1.0)
 * Upgrade Harvester
 
 ## Environment requirement
-1. Network environment have available VLAN id setup on DHCP server can be assigned to Harvester
-1. Network have at least two NICs
+1. Network environment has available VLAN id setup on DHCP server
+1. DHCP server has setup the IP range can allocate to above VLAN id
+1. Harvester node can route to DHCP server through VLAN id to retrieve IP address
+1. Network has at least two NICs
+1. Network has at least two NICs
 1. Suggest not to use SMR type HDD disk
 
 We can select VM or Bare machine network setup according to available resource
@@ -46,7 +49,7 @@ We can select VM or Bare machine network setup according to available resource
 1. Shutdown all virtual machines
 1. Offline upgrade to target version, refer to https://docs.harvesterhci.io/v1.1/upgrade/automatic
 1. Import Harvester into the Rancher cluster
-1. Adding node after the upgrade
+1. Add node after the upgrade
 
 
 ## Expected Results
