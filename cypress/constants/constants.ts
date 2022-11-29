@@ -20,7 +20,8 @@ export class Constants {
 export const PageUrl = {
     setting:          '/harvester/c/local/harvesterhci.io.setting',
     virtualMachine:   '/harvester/c/local/kubevirt.io.virtualmachine',
-    vmNetwork:        '/harvester/c/local/harvesterhci.io.networkattachmentdefinition'
+    vmNetwork:        '/harvester/c/local/harvesterhci.io.networkattachmentdefinition',
+    namespace:        '/harvester/c/local/namespace'
 }
 
 export const MenuNav = {
