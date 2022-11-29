@@ -41,6 +41,25 @@ export class VolumePage extends CruResourcePo {
     return new LabeledSelectPo(".labeled-select", `:contains("Image"):last`);
   }
 
+  checkState(name:  string, state: string = 'Ready', namespace: string = 'default') {
+    this.goToList();
+    this.censorInColumn(name, 3, namespace, 4, state, 2);
+  }
+
+  checkSnapshotCount(volumeName: string, count: number, namespace: string = 'default') {
+    this.goToList();
+    this.censorInColumn(volumeName, 3, namespace, 4, count, 7);
+  }
+
+  clickVolumeSnapshotAction(name: string, snapshotName: string) {
+    this.clickAction(name, 'Take Snapshot');
+    cy.get('.v--modal-box').find('.card-title').contains('Take Snapshot');
+
+    new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name")`).input(snapshotName)
+    cy.get('.v--modal-box button').contains('Create').click();
+    cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
+  }
+
   setBasics({source, image, size} : { source?: string, image?: string, size: string }) {
     this.clickTab('basic');
 

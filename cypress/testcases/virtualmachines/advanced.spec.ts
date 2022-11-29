@@ -1,12 +1,10 @@
 import YAML from 'js-yaml'
 
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
-import { LoginPage } from "@/pageobjects/login.po";
 import { generateName } from '@/utils/utils';
 
 
 const vms = new VmsPage();
-const login = new LoginPage();
 
 describe('Create a new VM and add Enable USB tablet option', () => { 
   beforeEach(() => {

@@ -25,8 +25,13 @@ export const HCI = {
   VERSION:            'harvesterhci.io.version',
   MANAGED_CHART:      'harvesterhci.io.managedchart',
   STORAGE_CLASS:      'harvesterhci.io.storage',
-  NAMESPACE:          'namespace'
+  NAMESPACE:          'namespace',
+  volumeSnapshot:     'snapshot.storage.k8s.io.volumesnapshot'
 };
+
+export const HCI_URL = {
+  volumeSnapshot: 'harvesterhci.io.volumesnapshot'
+}
 
 export const NETWORK_ATTACHMENT = 'k8s.cni.cncf.io.networkattachmentdefinition';
 export const PVC = 'persistentvolumeclaim';
