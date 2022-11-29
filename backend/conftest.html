@@ -212,7 +212,7 @@ def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
         (&#34;skip_version_before&#34;, (
-            &#34;Mark test skipped when cluster version &lt; provided vesrion&#34;)),
+            &#34;Mark test skipped when cluster version &lt; provided version&#34;)),
         (&#34;skip_version_after&#34;, (
             &#34;Mark test skipped when cluster version &gt;= provided version&#34;)),
         (&#39;p0&#39;, (&#39;mark test to run only p1 tests &#39;)),
@@ -274,7 +274,8 @@ def pytest_configure(config):
         (&#34;volumes&#34;, (&#34;marker to run volume tests&#34;)),
         (&#34;templates&#34;, (&#34;marker to run VM template tests&#34;)),
         (&#34;support_bundle&#34;, (&#34;marker to run Support Bundle tests&#34;)),
-        (&#34;settings&#34;, (&#34;marker to run settings tests&#34;))
+        (&#34;settings&#34;, (&#34;marker to run settings tests&#34;)),
+        (&#34;upgrade&#34;, (&#34;marker to run the upgrade tests&#34;))
     ]
 
     for m, msg in markers:
@@ -582,7 +583,7 @@ def pytest_collection_modifyitems(config, items):
     # Register marker as the format (marker, (description))
     markers = [
         (&#34;skip_version_before&#34;, (
-            &#34;Mark test skipped when cluster version &lt; provided vesrion&#34;)),
+            &#34;Mark test skipped when cluster version &lt; provided version&#34;)),
         (&#34;skip_version_after&#34;, (
             &#34;Mark test skipped when cluster version &gt;= provided version&#34;)),
         (&#39;p0&#39;, (&#39;mark test to run only p1 tests &#39;)),
@@ -644,7 +645,8 @@ def pytest_collection_modifyitems(config, items):
         (&#34;volumes&#34;, (&#34;marker to run volume tests&#34;)),
         (&#34;templates&#34;, (&#34;marker to run VM template tests&#34;)),
         (&#34;support_bundle&#34;, (&#34;marker to run Support Bundle tests&#34;)),
-        (&#34;settings&#34;, (&#34;marker to run settings tests&#34;))
+        (&#34;settings&#34;, (&#34;marker to run settings tests&#34;)),
+        (&#34;upgrade&#34;, (&#34;marker to run the upgrade tests&#34;))
     ]
 
     for m, msg in markers:
