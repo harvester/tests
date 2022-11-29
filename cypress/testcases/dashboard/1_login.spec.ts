@@ -35,4 +35,21 @@ describe('login page for harvester', () => {
         Dashboard.header.logout();
         page.Message({iserror:false}).should("be.visible")
     })
+
+    // https://harvester.github.io/tests/manual/authentication/logout-then-login/
+    it.only("Logout from the UI and login again", () => {
+        const page = new LoginPage();
+        page.visit();
+        page.inputUsername();
+        page.inputPassword();
+
+        page.submitBtn.click();
+        page.validateLogin();
+
+        Dashboard.header.logout();
+        page.inputUsername();
+        page.inputPassword();
+        page.submitBtn.click();
+        page.validateLogin();
+    })
 });
