@@ -23,12 +23,9 @@ export default class TemplatePage extends CruResourcePo {
     });
   }
 
-  public setValue(value: ValueInterface) {
-    this.namespace().select({option: value?.namespace})
-    this.name().input(value?.name)
-    this.description().input(value?.description)
-    this.cpu().input(value?.cpu)
-    this.memory().input(value?.memory)
+  public setBasics(cpu?: string, memory?: string) {
+    this.cpu().input(cpu)
+    this.memory().input(memory)
   }
 
   cpu() {
@@ -37,5 +34,13 @@ export default class TemplatePage extends CruResourcePo {
 
   memory() {
     return new LabeledInputPo('.labeled-input', `:contains("Memory")`)
+  }
+
+  save(namespace:string, createButton?: string = 'Create') {
+    cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}`).as('create');
+    cy.get(this.footerButtons).contains(createButton).click()
+    cy.wait('@create').then(res => {
+      expect(res.response?.statusCode, `Create ${this.type} success`).to.be.oneOf([200, 201]);
+    })
   }
 }
