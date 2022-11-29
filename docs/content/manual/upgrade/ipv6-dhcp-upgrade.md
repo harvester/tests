@@ -44,11 +44,11 @@ title: Upgrade Harvester with IPv6 DHCP
 
 
 ## Verification Steps
-1. Create a VM and use the ipv6 network. (workload)
-1. ISO install v1.0.3 in create mode
+1. Create a VM and use the customized ipv6 virtual network. (workload)
+1. Doing an Harvester v1.0.3 ISO install with `create` new mode
 1. Select DHCP node ip and DHCP vip during the installation 
-1. Create another VMs and use the ipv6 network. (workload)
-1. ISO install v1.0.3 in join mode
+1. Create another VMs use the customized ipv6 virtual network
+1. Doing an Harvester v1.0.3 ISO install with `join` mode
 1. Select DHCP node ip and DHCP vip during the installation
 1. Offline upgrade to master release, refer to https://docs.harvesterhci.io/v1.1/upgrade/automatic
 1. Check host IP on Host page 
@@ -61,20 +61,20 @@ title: Upgrade Harvester with IPv6 DHCP
   ![image](https://user-images.githubusercontent.com/29251855/201028253-5dee39dd-67d4-41c0-a38d-09ac397f3983.png)
   
 1. Access node machine, check the IP information
-  ```
-  harv103-master:~ # kubectl get nodes -o json | jq '.items[].status.addresses'
-  [
-    {
-      "address": "192.168.101.162",
-      "type": "InternalIP"
-    },
-    {
-      "address": "harv103-master",
-      "type": "Hostname"
-    }
-  ]
-  
-  ```
+    ```
+    harv103-master:~ # kubectl get nodes -o json | jq '.items[].status.addresses'
+    [
+      {
+        "address": "192.168.101.162",
+        "type": "InternalIP"
+      },
+      {
+        "address": "harv103-master",
+        "type": "Hostname"
+      }
+    ]
+    
+    ```
 1. Check the network connectivity of vlan and management network
 1. Can completely upgrade Harvester to specific version
 1. All pods are running correctly

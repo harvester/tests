@@ -7,8 +7,10 @@ title: Upgrade Harvester with HDD Disks
 * Upgrade Harvester
 
 ## Environment requirement
-1. Network environment have available VLAN id setup on DHCP server can be assigned to Harvester
-1. Network have at least two NICs
+1. Network environment has available VLAN id setup on DHCP server
+1. DHCP server has setup the IP range can allocate to above VLAN id
+1. Harvester node can route to DHCP server through VLAN id to retrieve IP address
+1. Network has at least two NICs
 1. Use HDD disk with SMR type or slow I/O speed
     ```
     n1-103:~ # smartctl -a /dev/sda

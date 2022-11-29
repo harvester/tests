@@ -7,8 +7,10 @@ title: Upgrade Harvester in Fully Airgapped Environment
 
 ## Environment requirement
 1. Airgapped Network without internet connectivity
-1. Network environment have available VLAN id setup on DHCP server can be assigned to Harvester
-1. Network have at least two NICs
+1. Network environment has available VLAN id setup on DHCP server
+1. DHCP server has setup the IP range can allocate to above VLAN id
+1. Harvester node can route to DHCP server through VLAN id to retrieve IP address
+1. Network has at least two NICs
 1. Suggest not to use SMR type HDD disk
 
 #### We can select VM or Bare machine network setup according to your available resource

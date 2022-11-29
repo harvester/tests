@@ -92,5 +92,4 @@ title: Upgrade Harvester with bonded NICs on network
 1. Backup exists
 1. Setting value exists
 1. Can restore VM from backup
-1. Can create new VMs
-
+1. Can create new VMs (test)

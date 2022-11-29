@@ -1,9 +1,8 @@
 ---
-title: Rejoin node machine after Harveter upgrade
+title: Rejoin node machine after Harvester upgrade
 ---
 
-* Related issues: [#2655](https://github.com/harvester/harvester/issues/2655) 
-[BUG] reinstall 1st node
+* Related issues: [#2655](https://github.com/harvester/harvester/issues/2655) [BUG] reinstall 1st node
 
 
 ## Category: 
@@ -11,8 +10,10 @@ title: Rejoin node machine after Harveter upgrade
 
 
 ## Environment requirement
-1. Network environment have available VLAN id setup on DHCP server can be assigned to Harvester
-1. Network have at least two NICs
+1. Network environment has available VLAN id setup on DHCP server
+1. DHCP server has setup the IP range can allocate to above VLAN id
+1. Harvester node can route to DHCP server through VLAN id to retrieve IP address
+1. Network has at least two NICs
 1. Suggest not to use SMR type HDD disk
 
 
