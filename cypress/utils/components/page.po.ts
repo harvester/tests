@@ -138,6 +138,12 @@ class Header {
   public static logout() {
     Header.userBtn.click().get(".user-menu-item").contains("Log Out").click()
   }
+
+  public static findNamespace(ns: string) {
+    cy.get('.top').find('.ns-filter').focus();
+    cy.get(`.ns-dropdown-menu .ns-options #ns_${ns} .ns-item div`).contains(ns);
+    cy.get('.top').find('.ns-filter .ns-values').click();
+  }
 }
 
 export default class PagePo extends ComponentPo {

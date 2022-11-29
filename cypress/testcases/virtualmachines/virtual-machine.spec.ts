@@ -1,11 +1,14 @@
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 import { VolumePage } from "@/pageobjects/volume.po";
+import NamespacePage from "@/pageobjects/namespace.po";
 import { PageUrl } from "@/constants/constants";
 import { generateName } from '@/utils/utils';
-import { HCI } from '@/constants/types';
+import { Constants } from "@/constants/constants";
 
 const vms = new VmsPage();
 const volumes = new VolumePage();
+const constants = new Constants();
+const namespaces = new NamespacePage();
 
 describe('VM Form Validation', () => {
   beforeEach(() => {
@@ -194,4 +197,43 @@ describe('VM runStategy Validation (Halted)', () => {
 
     // TODO Verify VM is Off, Wait for other pr
   });
+})
+
+describe('All Namespace filtering in VM list', () => {
+  beforeEach(() => {
+    cy.login({url: PageUrl.namespace});
+  });
+
+  // https://harvester.github.io/tests/manual/_incoming/2578-all-namespace-filtering/  
+  // TODO: rancher cluster
+  it.only('Test Namespace filter', () => {
+    const namespace = 'test'
+
+    // create a new namespace
+    namespaces.deleteFromStore(namespace);
+    namespaces.goToCreate();
+    namespaces.setNameDescription(namespace);
+    namespaces.save();
+
+    // create vm in test namespace
+    const imageEnv = Cypress.env('image');
+    
+    const VM_NAME = 'namespace-test';
+    const volume = [{
+      buttonText: 'Add Volume',
+      create: false,
+      image: `default/${Cypress._.toLower(imageEnv.name)}`,
+    }];
+
+    vms.goToCreate();
+    vms.deleteVMFromStore(`${namespace}/${VM_NAME}`);
+    vms.setNameNsDescription(VM_NAME, namespace);
+    vms.setBasics('1', '4');
+    vms.setVolumes(volume);
+    vms.save();
+
+    // Check whether the namespace is displayed
+    VmsPage.header.findNamespace(namespace);
+    vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+  })
 })

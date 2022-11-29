@@ -25,6 +25,7 @@ export const HCI = {
   VERSION:            'harvesterhci.io.version',
   MANAGED_CHART:      'harvesterhci.io.managedchart',
   STORAGE_CLASS:      'harvesterhci.io.storage',
+  NAMESPACE:          'namespace'
 };
 
 export const NETWORK_ATTACHMENT = 'k8s.cni.cncf.io.networkattachmentdefinition';
