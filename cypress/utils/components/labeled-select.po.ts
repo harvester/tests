@@ -27,4 +27,13 @@ export default class LabeledSelectPo extends ComponentPo {
   text() {
     return this.self().find('.vs__selected').invoke('text')
   }
+
+  search(string: string | undefined) {
+    if (string) {
+      this.self().find('.vs__search').clear({force: true})
+      this.self().find('.vs__search').type(string)
+    }
+
+    return
+  }
 }
