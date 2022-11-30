@@ -1142,7 +1142,7 @@ Verify Items Backup target should check input before Click Save Error message sh
     </item>
     
     <item>
-      <title>Button of `Download KubeConfig`</title>
+      <title>Button of `Download KubeConfig` (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/misc/download_kubeconfig/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1170,7 +1170,7 @@ Verify Items Download KubeConfig should not exist in general views Download Kube
     </item>
     
     <item>
-      <title>Change api-ui-source bundled</title>
+      <title>Change api-ui-source bundled	(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/advanced/chage-api-ui-source-bundled/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1179,7 +1179,7 @@ Verify Items Download KubeConfig should not exist in general views Download Kube
     </item>
     
     <item>
-      <title>Change api-ui-source external</title>
+      <title>Change api-ui-source external (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/advanced/chage-api-ui-source-external/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1207,7 +1207,7 @@ Verification Steps Because configuring the network of the installation environme
     </item>
     
     <item>
-      <title>Change log level Info</title>
+      <title>Change log level Info	(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/advanced/change-log-level-info/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1216,7 +1216,7 @@ Verification Steps Because configuring the network of the installation environme
     </item>
     
     <item>
-      <title>Change log level Trace</title>
+      <title>Change log level Trace	(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/advanced/change-log-level-trace/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1860,7 +1860,7 @@ Verify Steps: Install Harvester with 2+ nodes Login to Dashboard and create an i
     </item>
     
     <item>
-      <title>Create new network (e2e_be)</title>
+      <title>Create new network (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/network/create-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2912,7 +2912,7 @@ Criteria Scheduling rule added automatically when select specific network Verify
     </item>
     
     <item>
-      <title>First Time Login</title>
+      <title>First Time Login	 (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/authentication/first-time-login/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3336,7 +3336,7 @@ Verify Steps: Install Harvester with any nodes Login to Dashboard and Navigate t
     </item>
     
     <item>
-      <title>Login after password reset</title>
+      <title>Login after password reset	(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/authentication/login-after-password-reset/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -4277,7 +4277,7 @@ Test Information Environment: qemu/KVM 3 nodes Harvester Version: master-f96827b
     </item>
     
     <item>
-      <title>Set backup-target NFS</title>
+      <title>Set backup-target NFS	(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/advanced/set-nfs-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -5036,7 +5036,7 @@ Create a 3 node harvester cluster Verification Steps Navigate to advanced settin
     </item>
     
     <item>
-      <title>Verify the left side menu</title>
+      <title>Verify the left side menu (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/ui/verify-left-menu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

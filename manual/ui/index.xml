@@ -25,7 +25,7 @@
     </item>
     
     <item>
-      <title>Verify the left side menu</title>
+      <title>Verify the left side menu (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/ui/verify-left-menu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
