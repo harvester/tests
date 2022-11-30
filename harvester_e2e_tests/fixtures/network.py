@@ -16,6 +16,7 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+from pkg_resources import parse_version
 import json
 import polling2
 import pytest
@@ -24,12 +25,18 @@ import pytest
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.api_endpoints',
     'harvester_e2e_tests.fixtures.session',
+    "harvester_e2e_tests.fixtures.api_client"
 ]
 
 
 @pytest.fixture(scope='session')
-def enable_vlan(request, admin_session, harvester_api_endpoints):
+def enable_vlan(request, admin_session, harvester_api_endpoints, api_client):
     vlan_nic = request.config.getoption('--vlan-nic')
+
+    if api_client.cluster_version > parse_version("v1.0.3"):
+        yield cluster_network(api_client, vlan_nic)
+        return cluster_network(api_client, vlan_nic, delete=True)
+
     resp = admin_session.get(harvester_api_endpoints.get_vlan)
     assert resp.status_code == 200, 'Failed to get vlan: %s' % (resp.content)
     vlan_json = resp.json()
@@ -55,11 +62,13 @@ def enable_vlan(request, admin_session, harvester_api_endpoints):
 
 
 def _cleanup_network(admin_session, harvester_api_endpoints, network_id,
-                     wait_timeout):
+                     wait_timeout, api_client):
 
     def _delete_network():
-        resp = admin_session.delete(
-            harvester_api_endpoints.delete_network % (network_id))
+        if api_client.cluster_version > parse_version("v1.0.3"):
+            resp = api_client.networks.delete(network_id, raw=True)
+        else:
+            resp = admin_session.delete(harvester_api_endpoints.delete_network % (network_id))
         if resp.status_code in [200, 204]:
             return True
         elif resp.status_code == 400:
@@ -89,7 +98,7 @@ def _lookup_network(request, admin_session, harvester_api_endpoints, vlan_id):
     return None
 
 
-def _create_network(request, admin_session, harvester_api_endpoints, vlan_id):
+def _create_network(request, admin_session, harvester_api_endpoints, vlan_id, api_client):
     # NOTE(gyee): will name the network with the following convention as
     # VLAN ID must be unique. vlan_network_<VLAN ID>
     network_name = f'vlan-network-{vlan_id}'
@@ -99,6 +108,12 @@ def _create_network(request, admin_session, harvester_api_endpoints, vlan_id):
                                    harvester_api_endpoints, vlan_id)
     if network_data:
         return network_data
+
+    if api_client.cluster_version > parse_version("v1.0.3"):
+        vlan_nic = request.config.getoption('--vlan-nic')
+        _, data = api_client.networks.create(network_name, vlan_id, cluster_network=vlan_nic)
+        data['id'] = data['metadata']['name']
+        return data
 
     request_json = utils.get_json_object_from_template(
         'basic_network',
@@ -116,14 +131,14 @@ def _create_network(request, admin_session, harvester_api_endpoints, vlan_id):
 
 
 @pytest.fixture(scope='session')
-def network(request, admin_session, harvester_api_endpoints, enable_vlan):
+def network(request, admin_session, harvester_api_endpoints, enable_vlan, api_client):
     vlan_id = request.config.getoption('--vlan-id')
     # don't create network if VLAN is not correctly specified
     if vlan_id == -1:
         return
 
     network_data = _create_network(request, admin_session,
-                                   harvester_api_endpoints, vlan_id)
+                                   harvester_api_endpoints, vlan_id, api_client)
     yield network_data
 
     if not request.config.getoption('--do-not-cleanup'):
@@ -133,12 +148,12 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
                             vlan_id) is not None:
             _cleanup_network(admin_session, harvester_api_endpoints,
                              network_data['id'],
-                             request.config.getoption('--wait-timeout'))
+                             request.config.getoption('--wait-timeout'), api_client)
 
 
 @pytest.fixture(scope='class')
 def bogus_network(request, admin_session, harvester_api_endpoints,
-                  enable_vlan):
+                  enable_vlan, api_client):
     vlan_id = request.config.getoption('--vlan-id')
     # don't create network if VLAN is not correctly specified
     if vlan_id == -1:
@@ -147,13 +162,13 @@ def bogus_network(request, admin_session, harvester_api_endpoints,
     vlan_id += 1
 
     network_data = _create_network(request, admin_session,
-                                   harvester_api_endpoints, vlan_id)
+                                   harvester_api_endpoints, vlan_id, api_client)
     yield network_data
 
     if not request.config.getoption('--do-not-cleanup'):
         _cleanup_network(admin_session, harvester_api_endpoints,
                          network_data['id'],
-                         request.config.getoption('--wait-timeout'))
+                         request.config.getoption('--wait-timeout'), api_client)
 
 
 # This fixture is only called by test_create_edit_network
@@ -161,7 +176,7 @@ def bogus_network(request, admin_session, harvester_api_endpoints,
 # vlan_id is set to vlan_id + 1
 @pytest.fixture(scope='class')
 def network_for_update_test(request, admin_session,
-                            harvester_api_endpoints, enable_vlan):
+                            harvester_api_endpoints, enable_vlan, api_client):
     vlan_id = request.config.getoption('--vlan-id')
     # don't create network if VLAN is not correctly specified
     if vlan_id == -1:
@@ -183,7 +198,7 @@ def network_for_update_test(request, admin_session,
     if not request.config.getoption('--do-not-cleanup'):
         _cleanup_network(admin_session, harvester_api_endpoints,
                          network_data['id'],
-                         request.config.getoption('--wait-timeout'))
+                         request.config.getoption('--wait-timeout'), api_client)
 
 
 @pytest.fixture(scope='class')
@@ -215,3 +230,12 @@ def network_using_terraform(request, admin_session,
             request,
             admin_session,
             'harvester_network.' + network_json['metadata']['name'])
+
+
+def cluster_network(api_client, nic_name, delete=False):
+    if delete:
+        api_client.clusternetworks.delete_config(nic_name)
+        api_client.clusternetworks.delete(nic_name)
+    else:
+        api_client.clusternetworks.create(nic_name)
+        api_client.clusternetworks.create_config(nic_name, nic_name, nic_name)
