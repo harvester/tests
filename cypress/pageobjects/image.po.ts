@@ -2,7 +2,9 @@ import { Constants } from "@/constants/constants";
 import { HCI, PVC } from '@/constants/types'
 import CruResourcePo from '@/utils/components/cru-resource.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
+import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import { VolumePage } from "@/pageobjects/volume.po";
+import { generateName } from '@/utils/utils';
 
 const constants = new Constants();
 const volumes = new VolumePage();
@@ -58,6 +60,35 @@ export class ImagePage extends CruResourcePo {
     });
   }
 
+  filterByLabels(labels: any = {}) {
+    const keys = Object.keys(labels);
+
+    cy.get('body').click(0,0);
+    cy.get('.fixed-header-actions').contains('Filter Labels').click();
+    cy.get('.filter-popup').contains('Clear All').click();
+    keys.forEach((key, index) => {
+      cy.get('.filter-popup').contains('Add').click();
+      cy.get('.filter-popup .box').eq(index + 1).within(() => {
+        const keyInput = new LabeledSelectPo('.key .unlabeled-select');
+        
+        keyInput.select({option: key});
+        
+        const valueInput = new LabeledSelectPo('.value .unlabeled-select');
+        
+        if (labels[key]) {
+          valueInput.select({option: labels[key]});
+        }
+      })
+    });
+    
+  }
+
+  checkState({ name, namespace='default', state = 'Active', progress = 'Completed', size = '16 MB' }: {name:string, namespace?:string, state?:string, progress?:string,size?:string} = {}) {
+    this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.uploadTimeout });
+    this.censorInColumn(name, 3, namespace, 4, progress, 5, { timeout: constants.timeout.uploadTimeout });
+    this.censorInColumn(name, 3, namespace, 4, size, 6, { timeout: constants.timeout.uploadTimeout });
+  }
+
   public exportImage(vmName: string, imageName: string, namespace: string) {
     volumes.goToList();
     this.search(vmName);
@@ -73,15 +104,21 @@ export class ImagePage extends CruResourcePo {
     })
   }
 
-  public save( { upload, edit, depth }: { upload?: boolean; edit?: boolean; depth?: number; } = {} ) {
-    cy.intercept(edit? 'PUT' : 'POST', `/v1/harvester/harvesterhci.io.virtualmachineimages${ upload ? '/*' : edit ? '/*/*' : '' }`).as('createImage');
-    cy.get('.cru-resource-footer').contains(!edit ? 'Create' : 'Save').click();
-    cy.wait('@createImage').then(res => {
-      if (edit && res.response?.statusCode === 409 && depth === 0) {
-        this.save({ upload, edit, depth: depth + 1})
-      } else {
-        expect(res.response?.statusCode, `Check save success`).to.equal( edit ? 200 : 201 );
-      }
+  public save( { upload, edit, depth }: { upload?: boolean; edit?: boolean; depth?: number; } = {} ): Promise<boolean> {
+    return new Cypress.Promise((resolve, reject) => {
+      const interceptName = generateName('barrier');
+
+      cy.intercept(edit? 'PUT' : 'POST', `/v1/harvester/harvesterhci.io.virtualmachineimages${ upload ? '/*' : edit ? '/*/*' : '' }`).as(interceptName);
+      cy.get('.cru-resource-footer').contains(!edit ? 'Create' : 'Save').click();
+      cy.wait(`@${interceptName}`).then(async (res) => {
+        if (edit && res.response?.statusCode === 409 && depth === 0) {
+          await this.save({ upload, edit, depth: depth + 1})
+        } else {
+          expect(res.response?.statusCode, `Check save success`).to.equal( edit ? 200 : 201 );
+          resolve(res.response?.body?.id);
+        }
+      })
+      .end();
     });
   }
 }

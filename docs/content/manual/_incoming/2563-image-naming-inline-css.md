@@ -1,5 +1,5 @@
 ---
-title: Image naming with inline CSS
+title: Image naming with inline CSS (e2e_fe)
 ---
 
 * Related issues: [#2563](https://github.com/harvester/harvester/issues/2563) [[BUG] harvesterhci.io.virtualmachineimage spec.displayName displays differently in single view of image

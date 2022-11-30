@@ -1,4 +1,4 @@
-import { HCI, SECRET } from '@/constants/types';
+import { HCI } from '@/constants/types';
 import { generateName } from '@/utils/utils';
 import templatePage from "@/pageobjects/template.po";
 
@@ -20,21 +20,18 @@ describe('Create a vm template with all the required values', () => {
 
   it('Create a vm template with the required values', () => {
     templates.goToList();
+    templates.goToCreate();
     templates.setNameNsDescription(NAME, namespace);
     templates.setBasics('2', '4');
-    templates.save(namespace);
+    templates.save({namespace});
     templates.delete(namespace, NAME);
   });
 });
 
 /**
- * 1. Go to Advanced -> Templates
-   2. Create a new template
-   3. Modify the template to create a new version
-   4. Click the config button of the default version template
-   5. Click the config button of the non default version template
+ * https://harvester.github.io/tests/manual/_incoming/2376-2379-delete-vm-template-default-version/
 */
-describe.only('Delete VM template default version', () => {
+describe('Delete VM template default version', () => {
   const NAME = generateName('test-template');
   const namespace = 'default';
   let interceptionCount = 0;
@@ -50,7 +47,7 @@ describe.only('Delete VM template default version', () => {
     templates.goToCreate();
     templates.setNameNsDescription(NAME, namespace);
     templates.setBasics('2', '4');
-    templates.save(namespace);
+    templates.save({namespace});
 
     cy.wait('@create').should((res: any) => {
       expect(res.response?.statusCode, 'Create VM Template').to.equal(201);
@@ -71,7 +68,7 @@ describe.only('Delete VM template default version', () => {
     cy.intercept('POST', `v1/harvester/${HCI.VM_VERSION}s/default`).as('create');
     
     templates.setBasics('1', '2');
-    templates.save(namespace, 'Save');
+    templates.save({namespace});
 
     cy.wait('@create').should((res: any) => {
       expect(res.response?.statusCode, 'Create VM Template').to.equal(201);

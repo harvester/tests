@@ -1,5 +1,5 @@
 ---
-title: Clone image
+title: Clone image (e2e_fe)
 ---
 
 * Related issues: [#2562](https://github.com/harvester/harvester/issues/2562) [[BUG] Image's labels will not be copied when execute Clone

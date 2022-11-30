@@ -30,4 +30,3 @@ export const HCI = {
 export const NETWORK_ATTACHMENT = 'k8s.cni.cncf.io.networkattachmentdefinition';
 export const PVC = 'persistentvolumeclaim';
 export const STORAGE_CLASS = 'storage.k8s.io.storageclasse';
-export const SECRET = 'secret';
