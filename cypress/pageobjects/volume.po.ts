@@ -70,11 +70,7 @@ export class VolumePage extends CruResourcePo {
   }
 
   public exportImage(volumeName: string, imageName: string) {
-    cy.contains(volumeName)
-      .parentsUntil("tbody", "tr")
-      .find(".icon-actions")
-      .click();
-    cy.get(this.actionMenu).contains("Export Image").click();
+    this.clickAction(volumeName, 'Export Image')
     this.exportImageName().input(imageName);
 
     cy.intercept(

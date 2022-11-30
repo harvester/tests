@@ -130,15 +130,15 @@ export class VmsPage extends CruResourcePo {
     })
   }
 
-  cpu() {
+  public cpu() {
     return new LabeledInputPo('.labeled-input', `:contains("CPU")`)
   }
 
-  memory() {
+  public memory() {
     return new LabeledInputPo('.labeled-input', `:contains("Memory")`)
   }
 
-  image() {
+  public image() {
     return new LabeledSelectPo('.labeled-select', `:contains("Image")`)
   }
 
@@ -225,11 +225,13 @@ export class VmsPage extends CruResourcePo {
         image.setNameNsDescription(name, namespace);
         image.setBasics({url});
         image.save();
-        image.censorInColumn(name, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
-        image.censorInColumn(name, 3, namespace, 4, 'Completed', 5);
-        image.censorInColumn(name, 3, namespace, 4, '16 MB', 6);
+        image.checkState({name, namespace});
       }
     })
+  }
+
+  public checkState({name, namespace = 'default', state = 'Running'}: {name:string, namespace?:string, state?:string}) {
+    this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
   }
 
   public goToEdit(name: string) {

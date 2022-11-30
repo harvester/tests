@@ -1,5 +1,5 @@
 ---
-title: Delete VM template default version
+title: Delete VM template default version (e2e_fe)
 ---
 
 * Related issues: [#2376](https://github.com/harvester/harvester/issues/2376) [BUG] Cannot delete Template

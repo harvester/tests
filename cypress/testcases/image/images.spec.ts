@@ -40,8 +40,7 @@ describe('Auto setup image from cypress environment', () => {
         image.setNameNsDescription(IMAGE_NAME, namespace);
         image.setBasics({url: IMAGE_URL});
         image.save();
-        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
-        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
+        image.checkState({name: IMAGE_NAME});
       }
     })
   })
@@ -71,7 +70,6 @@ describe('Create an image with valid image URL', () => {
         // create IMAGE
         const namespace = 'default';
 
-        cy.intercept('POST', `v1/harvester/${HCI.IMAGE}s`).as('create');
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
         image.setBasics({url: IMAGE_URL});
@@ -81,15 +79,10 @@ describe('Create an image with valid image URL', () => {
                 thesecondlabel: 'thesecondlabel'
             }
         });
-        image.save();
-        cy.wait('@create').should((res: any) => {
-            expect(res.response?.statusCode, 'Create VM').to.equal(201);
-            const imageObj = res?.response?.body || {}
-            const imageId = imageObj?.id || '';
-
+        
+        cy.wrap(image.save()).then((imageId) => {
             // check IMAGE state
-            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
-            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
+            image.checkState({name: IMAGE_NAME});
 
             // edit IMAGE
             image.goToEdit(IMAGE_NAME);
@@ -105,21 +98,14 @@ describe('Create an image with valid image URL', () => {
             // delete IMAGE
             image.delete(namespace, IMAGE_NAME, { id: imageId });
         })
-        
 
+        // create IMAGE with the same name
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
         image.setBasics({url: IMAGE_URL});
-        image.save();
-        // create IMAGE with the same name
-        cy.wait('@create').should((res: any) => {
-            expect(res.response?.statusCode, 'Create VM').to.equal(201);
-            const imageObj = res?.response?.body || {}
-            const imageId = imageObj?.id || '';
-
+        cy.wrap(image.save()).then((imageId) => {
             // check IMAGE state
-            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
-            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
+            image.checkState({name: IMAGE_NAME});
 
             // delete IMAGE
             image.delete(namespace, IMAGE_NAME, { id: imageId });
@@ -141,16 +127,11 @@ describe('Create an image with valid image URL', () => {
         // create invalid IMAGE
         const namespace = 'default';
 
-        cy.intercept('POST', `v1/harvester/${HCI.IMAGE}s`).as('create');
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
         image.setBasics({url: 'https://test.img'});
-        image.save();
-        cy.wait('@create').should((res: any) => {
-            expect(res.response?.statusCode, 'Create VM').to.equal(201);
-            const imageObj = res?.response?.body || {}
-            const imageId = imageObj?.id || '';
 
+        cy.wrap(image.save()).then((imageId) => {
             image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Failed', 2, { timeout: constants.timeout.uploadTimeout });
             image.censorInColumn(IMAGE_NAME, 3, namespace, 4, '0%', 5, { timeout: constants.timeout.uploadTimeout });
 
@@ -169,8 +150,8 @@ describe('Create an image with valid image URL', () => {
  * 1. image “img-1” will be deleted
  */
 describe('Delete VM with exported image', () => {
-    const IMAGE_NAME = generateName('img-1');
-    const VM_NAME = generateName('vm-1');
+    const IMAGE_NAME = generateName('img-exported-image');
+    const VM_NAME = generateName('vm-exported-image');
 
     it('Delete VM with exported image', () => {
         cy.login();
@@ -193,8 +174,7 @@ describe('Delete VM with exported image', () => {
         // export IMAGE
         image.exportImage(VM_NAME, IMAGE_NAME, namespace);
         image.goToList();
-        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
-        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
+        image.checkState({name: IMAGE_NAME, size: '10 GB'});
 
         // delete VM
         vms.delete(namespace, VM_NAME);
@@ -218,8 +198,8 @@ describe('Delete VM with exported image', () => {
  * 1. image “img-1” will be updated
  */
 describe('Update image labels after deleting source VM', () => {
-    const IMAGE_NAME = generateName('img-1');
-    const VM_NAME = generateName('vm-1');
+    const IMAGE_NAME = generateName('img-delete-vm');
+    const VM_NAME = generateName('vm-delete-vm');
 
     it('Update image labels after deleting source VM', () => {
         cy.login();
@@ -238,15 +218,14 @@ describe('Update image labels after deleting source VM', () => {
         vms.setBasics('2', '4');
         vms.setVolumes(volumes);
         vms.save();
-        vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+        vms.checkState({name: VM_NAME, namespace});
 
         // export IMAGE
         image.exportImage(VM_NAME, IMAGE_NAME, namespace);
 
         // check IMAGE state
         image.goToList();
-        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
-        image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
+        image.checkState({name: IMAGE_NAME, size: '10 GB'});
 
         // delete VM
         vms.delete(namespace, VM_NAME);
@@ -339,19 +318,12 @@ describe('Create a ISO image via upload', () => {
         // create IMAGE
         const namespace = 'default';
 
-        cy.intercept('POST', `v1/harvester/${HCI.IMAGE}s/*`).as('create');
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
         image.setBasics({path: 'cypress/fixtures/cirros-0.5.2-aarch64-disk.img'});
-        image.save({upload: true});
-        cy.wait('@create').should((res: any) => {
-            expect(res.response?.statusCode, 'Create VM').to.equal(201);
-            const imageObj = res?.response?.body || {}
-            const imageId = imageObj?.id || '';
 
-            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
-            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Completed', 5, { timeout: constants.timeout.uploadTimeout });
-            image.censorInColumn(IMAGE_NAME, 3, namespace, 4, '16 MB', 6, { timeout: constants.timeout.uploadTimeout });
+        cy.wrap(image.save({upload: true})).then((imageId) => {
+            image.checkState({name: IMAGE_NAME});
 
             // create VM
             const volumes = [{
@@ -365,13 +337,211 @@ describe('Create a ISO image via upload', () => {
             vms.setBasics('2', '4');
             vms.setVolumes(volumes);
             vms.save();
-            vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+            vms.checkState({name: VM_NAME});
 
             // delete VM
-            vms.delete(namespace, VM_NAME)
+            vms.delete(namespace, VM_NAME);
 
             // delete IMAGE
             image.delete(namespace, IMAGE_NAME, { id: imageId });
+        })
+    });
+});
+
+
+/**
+ * https://harvester.github.io/tests/manual/_incoming/2562-clone-image/
+ */
+ describe('Clone image', () => {
+    const IMAGE_NAME = generateName('auto-image-test');
+    const CLONED_NAME = generateName('cloned-image');
+    const imageEnv = Cypress.env('image');
+    const IMAGE_URL = imageEnv.url;
+    let IMAGE_ID, CLONED_IMAGE_ID;
+
+    it('Create a ISO image via upload', () => {
+        cy.login();
+
+        // create IMAGE
+        const namespace = 'default';
+
+        cy.intercept('POST', `v1/harvester/${HCI.IMAGE}s`).as('create');
+        image.goToCreate();
+        image.setNameNsDescription(IMAGE_NAME, namespace);
+        image.setLabels({
+            labels: { thefirstlabel: 'thefirstlabel' }
+        });
+        image.setBasics({url: IMAGE_URL});
+
+        cy.wrap(image.save()).then((imageId) => {
+            IMAGE_ID = imageId
+        })
+
+        image.checkState({name: IMAGE_NAME});
+        image.clickAction(IMAGE_NAME, 'Clone');
+        image.setNameNsDescription(CLONED_NAME, namespace);
+
+        cy.wrap(image.save()).then((imageId) => {
+            CLONED_IMAGE_ID = imageId
+        })
+
+        image.checkState({name: CLONED_NAME});
+        image.goToEdit(CLONED_NAME);
+        image.clickTab('labels');
+        cy.get('.tab-container .kv-item.key input').eq(1).should('have.value', 'thefirstlabel');
+
+        cy.wrap(null).then(() => {
+            image.delete(namespace, IMAGE_NAME, { id: IMAGE_ID });
+            image.delete(namespace, CLONED_NAME, { id: CLONED_IMAGE_ID });
+        })
+    });
+});
+
+/**
+ * https://harvester.github.io/tests/manual/_incoming/2474-image-filtering-by-labels/
+ */
+ describe('Image filtering by labels', () => {
+    const imageEnv = Cypress.env('image');
+    // has only one label
+    const IMAGE_NAME_1 = generateName('auto-image-1');
+    // has only one label
+    const IMAGE_NAME_2 = generateName('auto-image-2');
+    // has two labels
+    const IMAGE_NAME_3 = generateName('auto-image-3');
+    const IMAGE_URL = imageEnv.url;
+    const namespace = 'default';
+    let IMAGE_ID_1, IMAGE_ID_2, IMAGE_ID_3;
+
+    it('Upload several images and add related label, add filter according to test plan 1', () => {
+        cy.login();
+
+        // create the first one
+        image.goToCreate();
+        image.setNameNsDescription(IMAGE_NAME_1, namespace);
+        image.setLabels({
+            labels: { suse_group: '1', harvester_e2e_test: 'harvester' }
+        });
+        image.setBasics({url: IMAGE_URL});
+        cy.wrap(image.save()).then((imageId) => {
+            IMAGE_ID_1 = imageId
+        })
+        image.checkState({name: IMAGE_NAME_1});
+
+        // create the second one
+        image.goToCreate();
+        image.setNameNsDescription(IMAGE_NAME_2, namespace);
+        image.setLabels({
+            labels: { ubuntu_group: '1', harvester_e2e_test: 'harvester' }
+        });
+        image.setBasics({url: IMAGE_URL});
+        cy.wrap(image.save()).then((imageId) => {
+            IMAGE_ID_2 = imageId
+        })
+        image.checkState({name: IMAGE_NAME_2});
+
+        image.goToCreate();
+        image.setNameNsDescription(IMAGE_NAME_3, namespace);
+        image.setLabels({
+            labels: { suse_group: '1', ubuntu_group: '1', harvester_e2e_test: 'harvester' }
+        });
+        image.setBasics({url: IMAGE_URL});
+        cy.wrap(image.save()).then((imageId) => {
+            IMAGE_ID_3 = imageId
+        })
+        image.checkState({name: IMAGE_NAME_3});
+
+        // Can search specific image by name in the Harvester VM creation page
+        vms.goToCreate();
+        vms.clickTab('Volume')
+        vms.image().search('auto-image-');
+        cy.get('.vs__dropdown-menu').should('contain', IMAGE_NAME_1);
+        cy.get('.vs__dropdown-menu').should('contain', IMAGE_NAME_2);
+        cy.get('.vs__dropdown-menu').should('contain', IMAGE_NAME_3);
+
+        // Can filter using One key without value
+        image.goToList();
+        image.filterByLabels({
+            suse_group: null,
+        })
+        cy.get('tbody').should('contain', IMAGE_NAME_1);
+        cy.get('tbody').should('contain', IMAGE_NAME_3);
+        
+        // Can filter using One key with value
+        image.filterByLabels({
+            suse_group: '1',
+        })
+        cy.get('tbody').should('contain', IMAGE_NAME_1);
+        cy.get('tbody').should('contain', IMAGE_NAME_3);
+        
+        // Can filter using Two keys without value
+        image.filterByLabels({
+            suse_group: null,
+            ubuntu_group: null
+        })
+        cy.get('tbody').should('contain', IMAGE_NAME_2);
+        cy.get('tbody').should('contain', IMAGE_NAME_3);
+        
+        // Can filter using using Two keys and one key without value
+        image.filterByLabels({
+            suse_group: '1',
+            ubuntu_group: null
+        })
+        cy.get('tbody').should('contain', IMAGE_NAME_2);
+        cy.get('tbody').should('contain', IMAGE_NAME_3);
+        
+        // Can filter using Two keys both have values
+        image.filterByLabels({
+            suse_group: '1',
+            ubuntu_group: '1'
+        })
+        cy.get('tbody').should('contain', IMAGE_NAME_2);
+        cy.get('tbody').should('contain', IMAGE_NAME_3);
+
+        // clear filtering labels
+        image.filterByLabels()
+
+        // delete images
+        cy.wrap(null).then(() => {
+            image.delete(namespace, IMAGE_NAME_1, { id: IMAGE_ID_1 });
+            image.delete(namespace, IMAGE_NAME_2, { id: IMAGE_ID_2 });
+            image.delete(namespace, IMAGE_NAME_3, { id: IMAGE_ID_3 });
+        })
+    });
+});
+
+/**
+ * https://harvester.github.io/tests/manual/_incoming/2563-image-naming-inline-css/
+ */
+ describe('Image naming with inline CSS', () => {
+    const imageEnv = Cypress.env('image');
+    const IMAGE_NAME = '<strong><em>something_interesting</em></strong>';
+    const IMAGE_URL = imageEnv.url;
+    let id;
+
+    it('Create an image with valid image URL', () => {
+        cy.login();
+
+        // create IMAGE
+        const namespace = 'default';
+
+        image.goToCreate();
+        image.setNameNsDescription(IMAGE_NAME, namespace);
+        image.setBasics({url: IMAGE_URL});
+        
+        cy.wrap(image.save()).then((imageId) => {
+            id = imageId
+        })
+
+        // check IMAGE state
+        image.checkState({name: IMAGE_NAME});
+
+        // edit IMAGE
+        image.goToDetail({name: IMAGE_NAME, ns: namespace});
+        cy.get('.primaryheader').should('contain', IMAGE_NAME)
+
+        // delete IMAGE
+        cy.wrap(null).then(() => {
+            image.delete(namespace, IMAGE_NAME, { id })
         })
     });
 });

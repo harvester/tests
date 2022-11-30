@@ -1,5 +1,5 @@
 ---
-title: Image filtering by labels
+title: Image filtering by labels (e2e_fe)
 ---
 
 * Related issues: [#2474](https://github.com/harvester/harvester/issues/2474) [backport v1.0] [FEATURE] Image filtering by labels

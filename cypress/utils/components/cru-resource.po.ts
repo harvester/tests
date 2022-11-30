@@ -64,7 +64,7 @@ export default class CruResourcePo extends PagePo {
     this.setValue(value)
     
     if (urlWithNamespace) {
-      this.save(value.namespace)
+      this.save({namespace: value.namespace})
     } else {
       this.save()
     }
@@ -79,14 +79,14 @@ export default class CruResourcePo extends PagePo {
   }
   
 
-  public save(namespace?:string | any) {
+  public save({namespace, buttonText = 'save'} : {namespace?:string, buttonText?:string} = {}) {
     if (namespace) {
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}`).as('create');
     } else {
       cy.intercept('POST', `/v1/harvester/${this.realType}s`).as('create');
     }
     
-    cy.get(this.footerButtons).contains('Create').click()
+    this.clickFooterBtn(buttonText)
     cy.wait('@create').then(res => {
       expect(res.response?.statusCode, `Create ${this.type} success`).to.equal(201);
     })
@@ -176,8 +176,6 @@ export default class CruResourcePo extends PagePo {
     this.search(name);
     cy.wait(2000);
     cy.wrap('async').then(() => {
-      console.log(nameIndex);
-      console.log(nsIndex);
       this.table.find(name, nameIndex, ns, nsIndex, nameSelector).then((rowIndex: any) => {
         if (typeof rowIndex === 'number') {
           cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).find(this.actionMenuIcon).click();
@@ -263,5 +261,18 @@ export default class CruResourcePo extends PagePo {
   public goToEdit(name: string) {
     this.goToList()
     this.clickAction(name, 'Edit Config');
+  }
+
+  public goToDetail({name, nameIndex = 3, ns, nsIndex = 4, nameSelector}: { name:string, nameIndex?:number, ns:string, nsIndex?:number, nameSelector?:string }) {
+    this.goToList();
+    this.search(name);
+    cy.wait(2000);
+    cy.wrap('async').then(() => {
+      this.table.find(name, nameIndex, ns, nsIndex, nameSelector).then((rowIndex: any) => {
+        if (typeof rowIndex === 'number') {
+          cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).contains(name).click();
+        }
+      })
+    })
   }
 }
