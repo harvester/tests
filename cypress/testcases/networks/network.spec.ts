@@ -75,7 +75,7 @@ describe('Check network with DHCP', () => {
       }
     })
 
-    network.deleteProgramlly(`${namespace}/${name}`)
+    network.deleteFromStore(`${namespace}/${name}`)
   });
 });
 
@@ -120,7 +120,7 @@ describe('Check network with Manual Mode', () => {
       }
     })
 
-    network.deleteProgramlly(`${namespace}/${name}`)
+    network.deleteFromStore(`${namespace}/${name}`)
   });
 });
 

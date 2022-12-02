@@ -1,7 +1,4 @@
-import YAML from 'js-yaml'
-
 import cloudConfigTemplatePage from "@/pageobjects/cloudConfigTemplate.po";
-import { LoginPage } from "@/pageobjects/login.po";
 import { Constants } from "@/constants/constants";
 import {generateName} from '@/utils/utils';
 
@@ -115,8 +112,8 @@ describe("Check Create network data && Edit && clone", () => {
           expect(type, 'Check template data').to.equal('network');
           expect(data?.cloudInit, 'Check clouded network data').to.equal(editedData);
       
-          cloudConfig.deleteProgramlly(`${namespace}/${name}`)
-          cloudConfig.deleteProgramlly(`${namespace}/${cloneName}`)
+          cloudConfig.deleteFromStore(`${namespace}/${name}`)
+          cloudConfig.deleteFromStore(`${namespace}/${cloneName}`)
         })
       })
     })

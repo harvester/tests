@@ -1,5 +1,3 @@
-import cookie from 'cookie';
-
 import { Constants } from "@/constants/constants";
 import { HCI } from '@/constants/types';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
@@ -315,20 +313,5 @@ export class VmsPage extends CruResourcePo {
 
   efiEnabled() {
     return new CheckboxPo('.checkbox-container', `:contains("Booting in EFI mode")`)
-  }
-
-  deleteProgramlly(id:string) {
-    const { CSRF } = cookie.parse(document.cookie);
-
-    cy.request({
-      url: `/v1/harvester/${HCI.VM}s/${ id }`,
-      headers: {
-        accept: 'application/json',
-        'x-api-csrf': CSRF,
-      },
-      method: 'DELETE',
-    }).then(res => {
-      expect(res.status).to.equal(200);
-    })
   }
 }
