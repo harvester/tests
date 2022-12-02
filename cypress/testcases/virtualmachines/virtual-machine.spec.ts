@@ -205,8 +205,8 @@ describe('All Namespace filtering in VM list', () => {
   });
 
   // https://harvester.github.io/tests/manual/_incoming/2578-all-namespace-filtering/  
-  // TODO: rancher cluster
-  it.only('Test Namespace filter', () => {
+  // TODO: go to rancher cluster
+  it('Test Namespace filter', () => {
     const namespace = 'test'
 
     // create a new namespace

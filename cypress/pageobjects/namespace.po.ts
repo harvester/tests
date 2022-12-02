@@ -1,8 +1,6 @@
 import { HCI } from '@/constants/types'
 import CruResourcePo from '@/utils/components/cru-resource.po';
 
-
-
 export default class NamespacePage extends CruResourcePo {
   constructor() {
     super({
