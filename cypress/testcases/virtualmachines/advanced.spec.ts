@@ -1,12 +1,8 @@
 import YAML from 'js-yaml'
-
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
-import { LoginPage } from "@/pageobjects/login.po";
 import { generateName } from '@/utils/utils';
 
-
 const vms = new VmsPage();
-const login = new LoginPage();
 
 describe('Create a new VM and add Enable USB tablet option', () => { 
   beforeEach(() => {
@@ -53,7 +49,7 @@ describe('Create a new VM and add Enable USB tablet option', () => {
       expect(foundTablet).to.equal(true);
     })
 
-    vms.deleteProgramlly(`${NAMESPACE}/${VM_NAME}`)
+    vms.deleteFromStore(`${NAMESPACE}/${VM_NAME}`)
   })
 })
 
@@ -87,7 +83,7 @@ describe("Create a new VM and add Install guest agent option", () => {
     cy.get('.tab#advanced').click()
     vms.usbTablet().expectChecked()
 
-    vms.deleteProgramlly(`${NAMESPACE}/${VM_NAME}`)
+    vms.deleteFromStore(`${NAMESPACE}/${VM_NAME}`)
   })
 })
 
@@ -126,6 +122,6 @@ describe("Verify Booting in EFI mode checkbox", () => {
     cy.get('.tab#advanced').click()
     vms.efiEnabled().expectChecked()
 
-    vms.deleteProgramlly(`${NAMESPACE}/${VM_NAME}`)
+    vms.deleteFromStore(`${NAMESPACE}/${VM_NAME}`)
   })
 }) 
