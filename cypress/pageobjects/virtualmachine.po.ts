@@ -127,7 +127,7 @@ export class VmsPage extends CruResourcePo {
 
   checkVMState(name:  string, state: string = 'Running', namespace: string = 'default') {
     this.goToList();
-    this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+    this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.uploadTimeout, nameSelector: '.name-console a' });
   }
 
   clickCloneAction(name: string) {
@@ -141,6 +141,16 @@ export class VmsPage extends CruResourcePo {
     cy.get('.v--modal-box .card-title').find('h4').contains('Take VM Snapshot');
 
     new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name")`).input(snapshotName)
+    cy.get('.v--modal-box button').contains('Create').click();
+    cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
+  }
+
+
+  clickVMBackupAction(name: string, backupName: string) {
+    this.clickAction(name, 'Take Backup');
+    cy.get('.v--modal-box .card-title').find('h4').contains('Add Backup');
+
+    new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name")`).input(backupName)
     cy.get('.v--modal-box button').contains('Create').click();
     cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
   }

@@ -40,7 +40,7 @@ describe('login page for harvester', () => {
     })
 
     // https://harvester.github.io/tests/manual/authentication/logout-then-login/
-    it.only("Logout from the UI and login again", () => {
+    it("Logout from the UI and login again", () => {
         const page = new LoginPage();
         page.visit();
         page.inputUsername();
