@@ -172,7 +172,7 @@ describe('VM runStategy Validation (Halted)', () => {
 
   const namespace = 'default'
 
-  it('Craete VM use Halted (Run Strategy)', () => {
+  it.only('Craete VM use Halted (Run Strategy)', () => {
     vms.goToCreate();
 
     const imageEnv = Cypress.env('image');
@@ -190,12 +190,11 @@ describe('VM runStategy Validation (Halted)', () => {
 
     vms.deleteVMFromStore(`${namespace}/${VM_NAME}`)
     vms.setNameNsDescription(VM_NAME, namespace);
-    vms.setBasics('2', '4');
+    vms.setBasics('1', '1');
     vms.setVolumes(volume);
     vms.setAdvancedOption(advancedOption);
     vms.save();
-
-    // TODO Verify VM is Off, Wait for other pr
+    vms.checkVMState(VM_NAME, 'Off')
   });
 })
 
@@ -205,8 +204,8 @@ describe('All Namespace filtering in VM list', () => {
   });
 
   // https://harvester.github.io/tests/manual/_incoming/2578-all-namespace-filtering/  
-  // TODO: rancher cluster
-  it.only('Test Namespace filter', () => {
+  // TODO: go to rancher cluster
+  it('Test Namespace filter', () => {
     const namespace = 'test'
 
     // create a new namespace
