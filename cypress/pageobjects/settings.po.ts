@@ -70,4 +70,30 @@ export default class SettingsPagePo extends CruResource {
         select.select({option: type, selector: '.vs__dropdown-menu'});
         new LabeledInputPo('.labeled-input', `:contains("Endpoint")`).input(endpoint);
     }
+
+    enableVLAN(nic: string) {
+        this.goTo();
+        this.checkIsCurrentPage();
+        this.clickMenu('vlan', 'Edit Setting', 'vlan', HCI.CLUSTER_NETWORK);
+        this.openVlan(nic);
+        this.update('vlan', HCI.CLUSTER_NETWORK);
+    }
+
+    createVIPpools(namespace: string, cidr: string) {
+        this.goTo();
+        this.checkIsCurrentPage();
+        this.clickMenu('vip-pools', 'Edit Setting', 'vip-pools', HCI.SETTING);
+
+        cy.get('.edit-change > .btn').click();
+        cy.log('Use the default value')
+        cy.get('[data-testid="add-item"]').click();
+        cy.log('Add IP Pools');
+        cy.get('.vs__selected-options').click();
+        cy.get('#vs2__option-1 > div').contains(namespace).click();
+        cy.log('Select default namespace');
+        cy.get('.no-label').type(cidr);
+        cy.log('Input CIDR value');
+        cy.get('.btn.role-primary').contains('Save').click();
+        cy.log('Save to create');
+    }
 }

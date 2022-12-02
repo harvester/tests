@@ -63,4 +63,14 @@ export default class NetworkPage extends CruResourcePo {
   gateway() {
     return new LabeledInputPo('.labeled-input', `:contains("Gateway")`)
   }
+
+  createVLAN(name: string, namespace: string, vlan_id: string){
+    const network = new NetworkPage();
+
+    network.create({
+      name,
+      namespace,
+      vlan: vlan_id,
+    });
+  }
 }

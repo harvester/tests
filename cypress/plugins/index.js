@@ -4,7 +4,7 @@ const fs = require("fs");
 const yaml = require('js-yaml');
 const { isFileExist, findFiles } = require('cy-verify-downloads');
 const AdmZip = require("adm-zip");
-
+let globalVar = {};
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
 //
@@ -71,7 +71,16 @@ module.exports = (on, config) => {
           resolve(e.message)
         }
       })
-    }
+    },
+
+    setGlobalVariable: (val) => {
+      return (globalVar = val);
+    },
+
+    getGlobalVariable: () => {
+      return globalVar;
+    },
+
   })
 
   return config;
