@@ -82,7 +82,7 @@ export class Navbar {
 
           cy.location().should(loc => {
             const deleteHash = loc.href.replace(loc.hash, '');
-            expect(deleteHash).to.eq(`${new Navbar().basePath()}/${matchUrl}`)
+            expect(deleteHash).to.eq(`${Cypress.env('urlPath')}/${matchUrl}`)
           })
 
           cy.wait(2000); // need to wait here, because when you click on the secondary menu, it will automatically jump to the first position in the secondary menu
@@ -104,7 +104,7 @@ export class Navbar {
       cy.get("nav a").contains(new RegExp("^" + navName + "$")).click();
       cy.location().should(loc => {
         const deleteHash = loc.href.replace(loc.hash, '');
-        expect(deleteHash).to.eq(`${this.basePath()}/${matchUrl}`)
+        expect(deleteHash).to.eq(`${Cypress.env('urlPath')}/${matchUrl}`)
       })
 
       cy.wait(2000);
@@ -119,10 +119,6 @@ export class Navbar {
         })
       })
     }
-  }
-
-  basePath() {
-    return Cypress.env('NODE_ENV') === 'dev' ? Cypress.env('baseUrl') : `${Cypress.env('baseUrl')}/dashboard`;
   }
 }
 
@@ -157,24 +153,10 @@ export default class PagePo extends ComponentPo {
   }
 
   isCurrentPage(): Cypress.Chainable<boolean> {
-    return cy.url().then(url => url === Cypress.env('baseUrl') + this.wrapPath(this.path));
+    return cy.url().then(url => url === Cypress.env('urlPath') + this.path);
   }
 
   checkIsCurrentPage() {
     return this.isCurrentPage().should('eq', true);
-  }
-
-  wrapPath(path: string) {
-    const isDev = Cypress.env('NODE_ENV') === 'dev';
-    let url = path;
-    if (!isDev) {
-      url = `/dashboard${path}`;
-    }
-
-    return url
-  }
-
-  basePath() {
-    return Cypress.env('NODE_ENV') === 'dev' ? Cypress.env('baseUrl') : `${Cypress.env('baseUrl')}/dashboard`;
   }
 }

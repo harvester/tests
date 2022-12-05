@@ -28,7 +28,7 @@ export default class SettingsPagePo extends CruResource {
         cy.get('span').contains(actionText).click();
         
         cy.get(this.detailPageHead).then(() => {
-            cy.url().should('eq', `${this.basePath()}${editPageUrl}/${urlSuffix}?mode=edit`)
+            cy.url().should('eq', `${Cypress.env('urlPath')}${editPageUrl}/${urlSuffix}?mode=edit`)
         })
     }
 

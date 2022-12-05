@@ -28,6 +28,9 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   config.baseUrl = config.env.baseUrl;
+
+  config.env.urlPath = config.env['NODE_ENV'] === 'dev' ? config.env.baseUrl : `${config.env.baseUrl}/dashboard`;
+  
   on("task", {
     isFileExist,
     findFiles,

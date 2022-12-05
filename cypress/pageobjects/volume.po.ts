@@ -117,8 +117,4 @@ export class VolumePage extends CruResourcePo {
         this.delete("default", volumeName.trim());
       });
   }
-
-  basePath() {
-    return Cypress.env('NODE_ENV') === 'dev' ? Cypress.env('baseUrl') : `${Cypress.env('baseUrl')}/dashboard`;
-  }
 }
