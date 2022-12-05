@@ -9,7 +9,10 @@ title: Upgrade Harvester on node that has bonded NICs for management interface
 
 ## Environment Setup
 
-- This is to be done on a Harvester cluster where the NICs were configured to be bonded on install for the management interface
+- This is to be done on a Harvester cluster where the NICs were configured to be bonded on install for the management interface. This can be done in one of two ways.
+    - Single node virtualized environment
+    - Bare metal environment with at least two NICs (this should really be done on 10gig NICs, but can be done on gigabit)
+- Both NICs should be on the same VLAN/network with the same subnet
 
 ## Verification Steps
 
@@ -20,4 +23,4 @@ title: Upgrade Harvester on node that has bonded NICs for management interface
 
 ## Expected Results
 
-- The upgrade should complete successfully and the Harvester cluster should pass sanity checks
+- The upgrade should complete successfully and the Harvester cluster should pass [health checks](https://harvester.github.io/tests/manual/virtual-machines/)
