@@ -13,7 +13,7 @@ title: Upgrade Harvester on node that has bonded NICs for management interface
     - Single node virtualized environment
     - Bare metal environment with at least two NICs (this should really be done on 10gig NICs, but can be done on gigabit)
 - Both NICs should be on the same VLAN/network with the same subnet
-- Before you do the upgrade you should do the following
+- Before you do the upgrade you should do the following:
     - Install a previously released version of Harvester with at least 2 bonded NICs on install in `balance-tlb`
 
     ![image](https://user-images.githubusercontent.com/83787952/198138366-472d4432-839a-4d9d-a942-d55fe8f6f6d8.png)
