@@ -163,7 +163,9 @@ class TestVMTemplate:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestVMTemplate:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.templates
+class TestVMTemplate:
     def test_create(self, api_client, unique_name):
         code, data = api_client.templates.create(unique_name)
 
@@ -368,7 +370,10 @@ def test_get_system_default_versions(self, api_client):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestVMTemplateNegative:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.templates
+@pytest.mark.negative
+class TestVMTemplateNegative:
     def test_get_not_exist(self, api_client, unique_name):
         code, data = api_client.templates.get(unique_name)
 

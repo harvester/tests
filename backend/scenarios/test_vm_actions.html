@@ -1082,7 +1082,9 @@ virtual-machines-50-VM Edit VM via YAML with CPU</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestVMActions:
+<pre><code class="python">@pytest.mark.virtual_machines_p1
+@pytest.mark.p1
+class TestVMActions:
     &#34;&#34;&#34;
     Test Virtual Machines opertions like restart,stop,start,pause,
     unpause
@@ -1452,7 +1454,11 @@ virtual-machines-50-VM Edit VM via YAML with CPU</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestVMVolumes:
+<pre><code class="python">@pytest.mark.volumes_p2
+@pytest.mark.volumes_p1
+@pytest.mark.p2
+@pytest.mark.p1
+class TestVMVolumes:
 
     def test_create_vm_with_external_volume(self, admin_session,
                                             harvester_api_endpoints,

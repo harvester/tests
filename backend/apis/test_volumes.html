@@ -171,7 +171,9 @@ class TestVolumes:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestVolumes:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.volumes
+class TestVolumes:
     def test_create(self, api_client, unique_name):
         code, data = api_client.volumes.create(unique_name, 1)
 
@@ -356,7 +358,10 @@ class TestVolumes:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestVolumesNegative:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.volumes
+class TestVolumesNegative:
     def test_get_not_exist(self, api_client, unique_name):
         code, data = api_client.volumes.get(unique_name)
 

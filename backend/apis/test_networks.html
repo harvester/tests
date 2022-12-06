@@ -147,7 +147,9 @@ class TestNetworks:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestNetworks:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
+class TestNetworks:
 
     @pytest.mark.dependency(name=&#34;create_network&#34;)
     def test_create(self, api_client, unique_name):
@@ -273,7 +275,10 @@ def test_get(self, api_client, unique_name):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestNetworksNegative:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.networks
+class TestNetworksNegative:
 
     def test_get_not_exist(self, api_client, unique_name):
         code, data = api_client.networks.get(unique_name)

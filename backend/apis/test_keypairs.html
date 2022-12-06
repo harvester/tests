@@ -162,7 +162,9 @@ class TestKeypairs:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestKeypairs:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.keypairs
+class TestKeypairs:
     @pytest.mark.dependency(depends=[&#34;delete_keypair_negative&#34;, &#34;create_keypair_negative&#34;],
                             name=&#34;create_keypairs&#34;)
     def test_create(self, api_client, ssh_keypair, unique_name):
@@ -313,7 +315,10 @@ def test_get(self, api_client, ssh_keypair, unique_name):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestKeypairsNegative:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.keypairs
+class TestKeypairsNegative:
     def test_get_not_exist(self, api_client, unique_name):
         code, data = api_client.keypairs.get(unique_name)
         assert code == 404

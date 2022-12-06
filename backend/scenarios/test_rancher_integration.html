@@ -879,7 +879,9 @@ def rke2_cluster(request, admin_session, harvester_api_endpoints,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestRancherIntegrationWithExternalRancher:
+<pre><code class="python">@pytest.mark.skip(reason=&#34;https://github.com/harvester/tests/issues/384&#34;)
+@pytest.mark.rancher_integration_with_external_rancher
+class TestRancherIntegrationWithExternalRancher:
 
     def test_import_harvester_into_rancher(
             self, external_rancher_with_imported_harvester):

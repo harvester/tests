@@ -2140,7 +2140,10 @@ def test_vm_network_with_bogus_vlan(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestVMNetworking:
+<pre><code class="python">@pytest.mark.network_p1
+@pytest.mark.p1
+@pytest.mark.public_network
+class TestVMNetworking:
 
     def test_ssh_to_vm(self, request, admin_session,
                        harvester_api_endpoints, keypair,

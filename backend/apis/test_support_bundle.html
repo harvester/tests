@@ -158,7 +158,9 @@ class TestSupportBundle:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestSupportBundle:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.support_bundle
+class TestSupportBundle:
     @pytest.mark.dependency(name=&#34;create support bundle&#34;)
     def test_create(self, api_client, unique_name, support_bundle_state):
         code, data = api_client.supportbundle.create(unique_name)
@@ -355,7 +357,10 @@ def test_logfile_exists(self, support_bundle_state):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestSupportBundleNegative:
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.support_bundle
+class TestSupportBundleNegative:
     def test_get_not_exist(self, api_client, unique_name):
         code, data = api_client.supportbundle.get(unique_name)
 
