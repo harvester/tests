@@ -393,7 +393,7 @@ export class rancherPage {
         cy.get(this.rke2Creation_page_clusterName).type(rke2_name);
         
         // Select Kubernetes version
-        new LabeledSelectPo('.labeled-select', `:contains("Kubernetes Version")`).select({option: 'v1.24.8+rke2r1', selector: '.vs__dropdown-menu'})
+        new LabeledSelectPo('.labeled-select', `:contains("Kubernetes Version")`).select({option: rke2_cluster_attributes.rke2_latest, selector: '.vs__dropdown-menu'})
 
         
         // Click the Create button to start provisioning RKE2 cluster 
@@ -413,12 +413,10 @@ export class rancherPage {
         cy.get(this.rke2Creation_page_clusterName).type(k3s_name);
 
         // Select Kubernetes version
-        cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
-            cy.get(this.rke2Creation_page_k8s_k3sLatest).should('contain', rke2_cluster_attributes.k3s_latest).click(); 
-        })
-
-        // Confirm to create cluster
-        // cy.get(this.rke2Creation_page_createButton).click()
+        new LabeledSelectPo('.labeled-select', `:contains("Kubernetes Version")`).select({option: rke2_cluster_attributes.k3s_latest, selector: '.vs__dropdown-menu'})
+        // cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
+        //     cy.get(this.rke2Creation_page_k8s_k3sLatest).should('contain', rke2_cluster_attributes.k3s_latest).click(); 
+        // })
 
         cy.get(this.rke2Creation_page_createButton).click().then((el) => {
             cy.wait(3000).visit(constants.rancher_clusterManagmentPage);

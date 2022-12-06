@@ -63,9 +63,7 @@ describe('Rancher Integration Test', function() {
     const imageEnv = Cypress.env('guest_cluster_image');
     const IMAGE_NAME = imageEnv.name;
     const IMAGE_URL = imageEnv.url;
-    // const IMAGE_NAME = 'focal-server-cloudimg-amd64.img';
-    // const IMAGE_URL = 'https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img';
-    
+   
     const value = {
         name: IMAGE_NAME,
         url: IMAGE_URL,
