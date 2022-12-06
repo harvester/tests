@@ -76,9 +76,9 @@ describe("Create image from Volume", () => {
     cy.window().then(async (win) => {
       const imageList = (win as any).$nuxt.$store.getters['harvester/all'](HCI.IMAGE);
       const imageObj = imageList.find((I: any) => I.spec.displayName === IMAGE_NAME);
-      const imageId = imageObj?.id;
+      const realName = imageObj?.metadata?.name;
 
-      image.delete(namespace, IMAGE_NAME, { id: imageId });
+      image.delete(namespace, realName, IMAGE_NAME);
     })
   });
 });
@@ -160,7 +160,7 @@ describe("Delete volume that was attached to VM but now is not", () => {
       vms.checkState({name: VM_NAME});
 
       // delete VM
-      vms.delete(namespace, VM_NAME, { removeRootDisk: false });
+      vms.delete(namespace, VM_NAME, VM_NAME, { removeRootDisk: false });
 
       // check VOLUME state
       volumes.goToList()

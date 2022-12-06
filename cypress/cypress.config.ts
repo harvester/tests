@@ -14,6 +14,7 @@ export default defineConfig({
     NODE_ENV: 'production',
     username: 'admin',
     password: 'password1234',
+    mockPassword: "mockPassword",
     baseUrl: 'https://online-server',
     host: {
       name: '',

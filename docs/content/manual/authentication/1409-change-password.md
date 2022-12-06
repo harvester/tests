@@ -1,5 +1,5 @@
 ---
-title: Change user passowrd
+title: Change user password (e2e_fe)
 ---
 
 * Related issues: [#1409](https://github.com/harvester/harvester/issues/1409) There's no way to change user password in single cluster UI

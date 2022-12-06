@@ -1,5 +1,6 @@
 import type { CypressChainable } from '@/utils/po.types'
-import { Constants } from '../constants/constants'
+import { Constants } from "@/constants/constants";
+import LabeledInputPo from '@/utils/components/labeled-input.po';
 const constants = new Constants();
 
 export class LoginPage {
@@ -15,6 +16,17 @@ export class LoginPage {
     public username: string;
     public password: string;
 
+    currentPassword() {
+        return new LabeledInputPo('.labeled-input', `:contains("Current Password")`);
+    }
+
+    newPassword() {
+        return new LabeledInputPo('.labeled-input', `:contains("New Password")`);
+    }
+
+    confirmPassword() {
+        return new LabeledInputPo('.labeled-input', `:contains("Confirm Password")`);
+    }
     /**
     * To check whether the Harvester is first time to login.
     * @returns the boolean value to identify is first time login or not.
@@ -51,10 +63,10 @@ export class LoginPage {
     /**
      * This visits the login page and logs in
      */
-    public login() {
+    public login(username:string = this.username, password:string = this.password) {
         cy.visit(constants.loginUrl);
-        cy.get(this.usernameInput).type(this.username);
-        cy.get(this.passwordInput).type(this.password)
+        cy.get(this.usernameInput).type(username);
+        cy.get(this.passwordInput).type(password)
         cy.get(this.submitButton).click()
         this.validateLogin()
     }
@@ -104,7 +116,7 @@ export class LoginPage {
     }
 
     public inputUsername(account:string = this.username) {
-        cy.get(this.usernameInput).type(this.username);
+        cy.get(this.usernameInput).type(account);
         return this
     }
 
@@ -161,5 +173,20 @@ export class LoginPage {
         if (eula == true) {
             expect(cy.get('#submit').should('be.enabled'));
         }
+    }
+
+    changePassword({currentPassword, newPassword}: { currentPassword:string, newPassword:string }) {
+        cy.visit(constants.accountUrl);
+        cy.get('.account').contains('Change Password').click();
+        cy.intercept('POST', '/v3/users?action=changepassword').as('changePassword');
+        cy.get('.prompt-password').within(() => {
+            this.currentPassword().input(currentPassword);
+            this.newPassword().input(newPassword);
+            this.confirmPassword().input(newPassword);
+            cy.get('button[type="submit"]').click();
+        })
+        cy.wait('@changePassword').then(res => {
+            expect(res.response?.statusCode, 'Change password').to.equal(200);
+        })
     }
 }
