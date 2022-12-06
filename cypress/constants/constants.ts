@@ -1,5 +1,5 @@
 export class Constants {
-    public timeout = { timeout: 10000, maxTimeout: 60000, uploadTimeout: 300000, downloadTimeout: 120000,   };
+    public timeout = { timeout: 10000, maxTimeout: 60000, uploadTimeout: 300000, downloadTimeout: 120000, provisionTimeout: 1500000};
     public username = Cypress.env("username");
     public password = Cypress.env("password");
     public rancherUrl = Cypress.env("rancherUrl");
@@ -19,6 +19,14 @@ export class Constants {
     public settingUrl = '/harvester/c/local/harvesterhci.io.setting';
     public volumePage = '/harvester/c/local/harvesterhci.io.volume';
     public imagePage = '/harvester/c/local/harvesterhci.io.virtualmachineimage';
+    public virtualManagePage = '/c/local/harvesterManager/harvesterhci.io.management.cluster';
+    public rancher_loginPage = '/dashboard/auth/login';
+    public rancher_dashboardPage = 'dashboard/home';
+    public rancher_settingPage = '/dashboard/c/local/settings/management.cattle.io.setting';
+    public rancher_virtualizationManagement = '/c/local/harvesterManager/harvesterhci.io.management.cluster';
+    public rancher_clusterManagmentPage = '/c/local/manager/provisioning.cattle.io.cluster';
+    public rancher_cloudCredentialPage = '/c/local/manager/cloudCredential';
+    public rancher_nodeTamplatePage = '/c/local/manager/pages/node-templates';
 }
 
 export const PageUrl = {

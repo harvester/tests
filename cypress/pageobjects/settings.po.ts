@@ -59,12 +59,6 @@ export default class SettingsPagePo extends CruResource {
         });
     }
 
-    openVlan(value: string) {
-        const radio = new RadioButtonPo('.radio-group .radio-container', `:contains("Enabled")`);
-        radio.input('Enabled');
-        new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Default Network Interface ")`).select({option: value})
-    }
-
     setOvercommit(value: OvercommitInterface) {
       const cpu = new LabeledInputPo('.labeled-input', `:contains("CPU")`)
 
@@ -75,14 +69,6 @@ export default class SettingsPagePo extends CruResource {
         const select = new LabeledSelectPo("section .labeled-select.hoverable", `:contains("Type")`);
         select.select({option: type, selector: '.vs__dropdown-menu'});
         new LabeledInputPo('.labeled-input', `:contains("Endpoint")`).input(endpoint);
-    }
-
-    enableVLAN(nic: string) {
-        this.goTo();
-        this.checkIsCurrentPage();
-        // this.clickMenu('vlan', 'Edit Setting', 'vlan', HCI.CLUSTER_NETWORK);
-        // this.openVlan(nic);
-        // this.update('vlan', HCI.CLUSTER_NETWORK);
     }
 
     createVIPpools(namespace: string, cidr: string) {

@@ -57,26 +57,14 @@ let rData = {
     }
 };
 
-/**
- * 1. Create image with cloud image available for openSUSE. http://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2
- * 2. Click save
- * 3. Try to edit the description
- * 4. Try to edit the URL
- * 5. Try to edit the Labels
- * Expected Results
- * 1. Image should show state as Active.
- * 2. Image should show progress as Completed.
- * 3. User should be able to edit the description and Labels
- * 4. User should not be able to edit the URL
- * 5. User should be able to create a new image with same name.
- */
+// test
 describe('Rancher Integration Test', function() {
 
-    const imageEnv = Cypress.env('image');
-    // const IMAGE_NAME = imageEnv.name;
-    // const IMAGE_URL = imageEnv.url;
-    const IMAGE_NAME = 'focal-server-cloudimg-amd64.img';
-    const IMAGE_URL = 'https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img';
+    const imageEnv = Cypress.env('guest_cluster_image');
+    const IMAGE_NAME = imageEnv.name;
+    const IMAGE_URL = imageEnv.url;
+    // const IMAGE_NAME = 'focal-server-cloudimg-amd64.img';
+    // const IMAGE_URL = 'https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img';
     
     const value = {
         name: IMAGE_NAME,
@@ -95,8 +83,12 @@ describe('Rancher Integration Test', function() {
 
         // create IMAGE according to the value set
         image.goToCreate();
-        image.create(value);
-        image.checkState(value);
+        image.setNameNsDescription(IMAGE_NAME, `default`);
+        image.setBasics({url: IMAGE_URL});
+        image.save();
+        // image.create(value);
+        rancher.checkImageState(IMAGE_NAME);
+        
 
     });
 
@@ -137,7 +129,7 @@ describe('Rancher Integration Test', function() {
         rancher.rancherLogin();
         
         rancher.visit_virtualizationManagement();
-
+        
         rancher.checkState(rData.harvester_cluster_name);
 
     });

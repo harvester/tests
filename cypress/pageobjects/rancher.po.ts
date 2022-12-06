@@ -1,15 +1,11 @@
 import type { CypressChainable } from '@/utils/po.types';
 import { Constants } from '../constants/constants';
 import SettingsPagePo from "@/pageobjects/settings.po";
-import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
-import RadioButtonPo from '@/utils/components/radio-button.po'
-import { List } from 'cypress/types/lodash';
 
 
 const constants = new Constants();
 const settings = new SettingsPagePo();
-var registrationURL;
 
 interface ValueInterface {
     namespace?: string,
@@ -46,7 +42,7 @@ export class rancherPage {
     private home_page_mainMenu = '.menu';
     private home_page_virtualManagement = ':nth-child(7) > .option > div';
 
-    private virtual_page_importButton = '.btn';
+    private virtual_page_importButton = '.btn.role-primary';
     private virtual_page_clusterName = ':nth-child(1) > .labeled-input > input';
     private virtual_page_createCluster = '.cru-resource-footer > div > .role-primary';
 
@@ -204,8 +200,9 @@ export class rancherPage {
         cy.get(this.virtual_page_createCluster).should('contain', 'Create').click();
         cy.visit(constants.virtualManagePage + '/create#memberRoles');
 
+        cy.url().should('contain', constants.virtualManagePage + '/create#memberRoles');
         cy.contains(constants.rancherUrl, { timeout: 5000 });
-
+        
         return cy.get('.copy');
      
     }
@@ -223,8 +220,20 @@ export class rancherPage {
             cy.get('input').clear().type(url);
            
         })
-
+        
         cy.get('.cru-resource-footer > div > .btn').should('contain', 'Save').click();
+
+        //handling prompt alert
+        cy.window().then(function(p){
+            //stubbing prompt window
+            cy.stub(p, "prompt").returns("Virtualization Management");
+            // click OK for JS Prompt button
+            cy.get('.buttons > .btn').click();
+            // verify application message on clicking on OK
+        });
+
+        cy.url().should('contain', constants.settingsUrl);
+       
     }
 
     // public checkState(value: ValueInterface, valid: boolean = true) {
@@ -267,6 +276,15 @@ export class rancherPage {
 
     }
 
+    public checkImageState(target: string, valid: boolean = true) {
+        cy.get(this.search).type(target);
+    
+        // state indicator for image upload progress percentage bar
+        cy.contains(target).parentsUntil('tbody', 'tr').find('td.col-image-percentage-bar').contains(valid ? 'Completed' : '0%', { timeout: constants.timeout.uploadTimeout }).should('be.visible');
+        // state indicator for status of image upload status e.g. active or uploading
+        cy.contains(target).parentsUntil('tbody', 'tr').find('td.col-badge-state-formatter').contains(valid ? 'Active' : 'Failed', { timeout: constants.timeout.uploadTimeout }).should('be.visible');
+    }
+
     public checkExists(target: string, valid: boolean = true) {
         cy.wait(1000).get(this.search).clear();
 
@@ -303,7 +321,7 @@ export class rancherPage {
             cy.contains(harvester_cluster_name).click();            
         })
         
-        cy.get(this.cloudCredential_page_confirmCreate).should('contain', 'Create').click();
+        cy.wait(1000).get(this.cloudCredential_page_confirmCreate).should('contain', 'Create').click();
 
         cy.contains(cloud_credential);
     }
@@ -339,19 +357,16 @@ export class rancherPage {
             cy.get(this.rke2Creation_page_disk).clear().type(rke2_cluster_attributes.disk);
 
             // Select Namespace
-            cy.get(this.rke2Creation_page_namespaceCombo).click().then(($list) => {
-                cy.get(this.rke2Creation_page_namespaceOption).should('contain', rke2_cluster_attributes.namespace).click(); 
-            })
+            const namespaceSelect = new LabeledSelectPo('.labeled-select', `:contains("Namespace")`);
+            namespaceSelect.select({option: rke2_cluster_attributes.namespace, selector: '.vs__dropdown-menu'});
 
             // Select Image
-            cy.get(this.rke2Creation_page_imageCombo).click().then(($list) => {
-                cy.get(this.rke2Creation_page_imageOption).should('contain', rke2_cluster_attributes.image).click();
-            })
-
+            const imageSelect = new LabeledSelectPo('.labeled-select', `:contains("Image")`);
+            imageSelect.select({option: rke2_cluster_attributes.image, selector: '.vs__dropdown-menu'});
+            
             // Select Network
-            cy.get(this.rke2Creation_page_networkNameCombo).click().then(($list) => {
-                cy.get(this.rke2Creation_page_networkNameOption).should('contain', rke2_cluster_attributes.network_name).click(); 
-            })
+            const networkSelect = new LabeledSelectPo('.labeled-select', `:contains("Network Name")`);
+            networkSelect.select({option: rke2_cluster_attributes.network_name, selector: '.vs__dropdown-menu'});
 
             // Input SSH user 
             cy.get(this.rke2Creation_page_ssh_user).type(rke2_cluster_attributes.ssh_user);
@@ -376,22 +391,11 @@ export class rancherPage {
 
         // Input RKE2 cluster name
         cy.get(this.rke2Creation_page_clusterName).type(rke2_name);
-
+        
         // Select Kubernetes version
-        cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
-            cy.get(this.rke2Creation_page_k8s_rke2Latest).should('contain', rke2_cluster_attributes.rke2_latest).click(); 
-        })
+        new LabeledSelectPo('.labeled-select', `:contains("Kubernetes Version")`).select({option: 'v1.24.8+rke2r1', selector: '.vs__dropdown-menu'})
 
-        cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
-            cy.get(this.rke2Creation_page_k8s_rke2Stable).should('contain', rke2_cluster_attributes.rke2_stable).click(); 
-        })
-
-        cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
-            cy.get(this.rke2Creation_page_k8s_rke2Latest).should('contain', rke2_cluster_attributes.rke2_latest).click(); 
-        })
-
-        // cy.get(this.rke2Creation_page_createButton).click()
-    
+        
         // Click the Create button to start provisioning RKE2 cluster 
         cy.get(this.rke2Creation_page_createButton).click().then((el) => {
             cy.wait(3000).visit(constants.rancher_clusterManagmentPage);
