@@ -6,7 +6,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 from .managers import (HostManager, KeypairManager, ImageManager, SettingManager,
                        NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
-                       ClusterNetworkManager)
+                       ClusterNetworkManager, VirtualMachineManager)
 
 
 class HarvesterAPI:
@@ -44,6 +44,7 @@ class HarvesterAPI:
         self.supportbundle = SupportBundlemanager(self)
         self.settings = SettingManager(self)
         self.clusternetworks = ClusterNetworkManager(self)
+        self.vms = VirtualMachineManager(self)
 
     @property
     def cluster_version(self):

@@ -5,6 +5,8 @@ from collections.abc import Mapping
 
 from pkg_resources import parse_version
 
+from .models import VMSpec
+
 DEFAULT_NAMESPACE = "default"
 
 
@@ -34,7 +36,11 @@ class BaseManager:
         if raw:
             return resp
         try:
-            return resp.status_code, resp.json()
+            if "json" in resp.headers.get('Content-Type', ""):
+                rval = resp.json()
+            else:
+                rval = resp.text
+            return resp.status_code, rval
         except json.decoder.JSONDecodeError as e:
             return resp.status_code, dict(error=e, response=resp)
 
@@ -220,10 +226,6 @@ class VolumeManager(BaseManager):
     def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
         path = self.PATH_fmt.format(uid=name, ns=namespace, VOLUME_API=self.API_VERSION)
         return self._delete(path, raw=raw)
-
-
-class VirtualMachineManager(BaseManager):
-    pass
 
 
 class TemplateManager(BaseManager):
@@ -620,3 +622,71 @@ class ClusterNetworkManager(BaseManager):
     def delete_config(self, name, *, raw=False):
         path = self.CONFIG_fmt.format(uid=name)
         return self._delete(path, raw=raw)
+
+
+class VirtualMachineManager(BaseManager):
+    API_VERSION = "kubevirt.io/v1"
+
+    # operators: start, restart, stop, migrate, pause, unpause, softreboot
+    OP_fmt = "v1/harvester/kubevirt.io.virtualmachines/{ns}/{uid}?action={op}"
+
+    PATH_fmt = "apis/{VM_API}/namespaces/{ns}/virtualmachines/{uid}"
+    # guestinfo, network
+    VMI_fmt = "apis/{VM_API}/namespaces/{ns}/virtualmachineinstances/{uid}"
+    # operators: guestosinfo, console(ws), vnc(ws)
+    VMIOP_fmt = "apis/subresources.{VM_API}/namespaces/{ns}/virtualmachineinstances/{uid}/{op}"
+
+    spec = VMSpec
+
+    def create_data(self):
+        pass
+
+    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace, VM_API=self.API_VERSION)
+        return self._get(path, raw=raw)
+
+    def create(self, name):
+        pass
+
+    def update(self, name):
+        pass
+
+    def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace, VM_API=self.API_VERSION)
+        return self._delete(path, raw=raw)
+
+    def clone(self, name, new_vm_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="clone", uid=name, ns=namespace)
+        return self._create(path, raw=raw, json=dict(targetVm=new_vm_name))
+
+    def start(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="start", uid=name, ns=namespace)
+        return self._create(path, raw=raw)
+
+    def restart(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="restart", uid=name, ns=namespace)
+        return self._create(path, raw=raw)
+
+    def stop(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="stop", uid=name, ns=namespace)
+        return self._create(path, raw=raw)
+
+    def migrate(self, name, target_node, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="migrate", uid=name, ns=namespace)
+        return self._create(path, raw=raw, json=dict(nodeName=target_node))
+
+    def abort_migrate(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="abortMigration", uid=name, ns=namespace)
+        return self._create(path, raw=raw)
+
+    def pause(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="pause", uid=name, ns=namespace)
+        return self._create(path, raw=raw)
+
+    def unpause(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="unpause", uid=name, ns=namespace)
+        return self._create(path, raw=raw)
+
+    def softreboot(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.OP_fmt.format(op="softreboot", uid=name, ns=namespace)
+        return self._create(path, raw=raw)
