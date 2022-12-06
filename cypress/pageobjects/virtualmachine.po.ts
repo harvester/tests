@@ -3,6 +3,7 @@ import { HCI } from '@/constants/types';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledTextAreaPo from '@/utils/components/labeled-textarea.po';
+import RadioButtonPo from '@/utils/components/radio-button.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
 import { ImagePage } from "@/pageobjects/image.po";
 import CruResourcePo from '@/utils/components/cru-resource.po';
@@ -94,6 +95,28 @@ export class VmsPage extends CruResourcePo {
     })
   }
 
+  selectSchedulingType({ type = 'any' }: { type:string } = {}) {
+    const map = {
+      'any': 'Run VM on specific node - (Live migration is not supported)',
+      'specific': 'Run VM on specific node - (Live migration is not supported)',
+      'rules': 'Run VM on node(s) matching scheduling rules'
+    }
+
+    this.clickTab('nodeScheduling');
+
+    cy.get('.tab-container section#nodeScheduling').within(() => {
+      const scheduling = new RadioButtonPo('.radio-group');
+
+      scheduling.input(map[type]);
+    })
+  }
+  
+  checkSpecificNodes({includeNodes = [], excludeNodes = []}: { includeNodes: Array<string>, excludeNodes: Array<string> } = {}) {
+    this.specificNode().self().click();
+    includeNodes.forEach((node) => cy.get('.vs__dropdown-menu').should('contain', node));
+    excludeNodes.forEach((node) => cy.get('.vs__dropdown-menu').should('not.contain', node));
+  }
+
   setAdvancedOption(option: {[index: string]: any}) {
     this.clickTab('advanced');
 
@@ -161,6 +184,10 @@ export class VmsPage extends CruResourcePo {
 
   plugVolumeName() {
     return new LabeledSelectPo('.labeled-select', `:contains("Volume")`);
+  }
+
+  specificNode() {
+    return new LabeledSelectPo('.labeled-select', `:contains("Node Name")`); 
   }
 
   networks(networks: Array<Network> = []) {
