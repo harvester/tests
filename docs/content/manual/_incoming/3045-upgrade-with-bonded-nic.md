@@ -23,6 +23,7 @@ title: Upgrade Harvester on node that has bonded NICs for management interface
     - Create 3 VMs
     - Verify all 3 VMs pass [health checks](https://harvester.github.io/tests/manual/virtual-machines/)
     - Turn off and on the VMs
+    - Turn off VMs
 
 ## Verification Steps
 
@@ -30,4 +31,4 @@ title: Upgrade Harvester on node that has bonded NICs for management interface
 
 ## Expected Results
 
-- The upgrade should complete successfully and the Harvester cluster should pass [health checks](https://harvester.github.io/tests/manual/virtual-machines/)
+- The upgrade should complete successfully and the Harvester cluster and all 3 VMs should pass [health checks](https://harvester.github.io/tests/manual/virtual-machines/)
