@@ -83,7 +83,7 @@ export class ImagePage extends CruResourcePo {
     
   }
 
-  checkState({ name, namespace='default', state = 'Active', progress = 'Completed', size = '16 MB' }: {name:string, namespace?:string, state?:string, progress?:string,size?:string} = {}) {
+  checkState({ name = '', namespace = 'default', state = 'Active', progress = 'Completed', size = '16 MB' }: {name?:string, namespace?:string, state?:string, progress?:string,size?:string} = {}) {
     this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.uploadTimeout });
     this.censorInColumn(name, 3, namespace, 4, progress, 5, { timeout: constants.timeout.uploadTimeout });
     this.censorInColumn(name, 3, namespace, 4, size, 6, { timeout: constants.timeout.uploadTimeout });
@@ -104,9 +104,9 @@ export class ImagePage extends CruResourcePo {
     })
   }
 
-  public save( { upload, edit, depth }: { upload?: boolean; edit?: boolean; depth?: number; } = {} ): Promise<boolean> {
-    return new Cypress.Promise((resolve, reject) => {
-      const interceptName = generateName('barrier');
+  public save( { upload, edit, depth }: { namespace?:string, buttonText?: string, upload?: boolean; edit?: boolean; depth?: number; } = {} ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const interceptName = generateName('create');
 
       cy.intercept(edit? 'PUT' : 'POST', `/v1/harvester/harvesterhci.io.virtualmachineimages${ upload ? '/*' : edit ? '/*/*' : '' }`).as(interceptName);
       cy.get('.cru-resource-footer').contains(!edit ? 'Create' : 'Save').click();
@@ -115,7 +115,7 @@ export class ImagePage extends CruResourcePo {
           await this.save({ upload, edit, depth: depth + 1})
         } else {
           expect(res.response?.statusCode, `Check save success`).to.equal( edit ? 200 : 201 );
-          resolve(res.response?.body?.id);
+          resolve(res.response?.body?.metadata?.name || '');
         }
       })
       .end();

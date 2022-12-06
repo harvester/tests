@@ -92,21 +92,24 @@ export default class CruResourcePo extends PagePo {
     })
   }
 
-  public delete(namespace:any, name:string, { id }: { id?: string } = {}) {
+  public delete(namespace:any, name:string, displayName?: string) {
     cy.visit(`/harvester/c/local/${this.type}`)
 
-    this.clickAction(name, 'Delete')
+    this.clickAction(displayName || name, 'Delete')
 
-    if (id) {
-      cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${id}*`).as('delete');
+    let id = '';
+    
+    if (!namespace) {
+      id = name;
     } else {
-      cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}*`).as('delete');
+      id = `${namespace}/${name}`;
     }
 
+    cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${id}*`).as('delete');
     cy.get(this.confirmRemove).contains('Delete').click();
     cy.wait('@delete').then(res => {
       cy.window().then((win) => {
-        this.checkDelete(this.storeType as string, `${namespace}/name`);
+        this.checkDelete(this.storeType as string, id);
         expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
       })
     })

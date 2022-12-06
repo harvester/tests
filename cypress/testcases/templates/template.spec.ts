@@ -34,7 +34,7 @@ describe('Create a vm template with all the required values', () => {
 describe('Delete VM template default version', () => {
   const NAME = generateName('test-template');
   const namespace = 'default';
-  let interceptionCount = 0;
+  let DEFAULT_VERSION_NAME = '', NEW_VERSION_NAME = '';
 
   beforeEach(() => {
     cy.login();
@@ -47,40 +47,30 @@ describe('Delete VM template default version', () => {
     templates.goToCreate();
     templates.setNameNsDescription(NAME, namespace);
     templates.setBasics('2', '4');
-    templates.save({namespace});
-
-    cy.wait('@create').should((res: any) => {
-      expect(res.response?.statusCode, 'Create VM Template').to.equal(201);
-      const version = res?.response?.body || {}
-      const versionName = version?.metadata?.name || '';
+    cy.wrap(templates.save({namespace})).then((versionName) => {
+      DEFAULT_VERSION_NAME = versionName as string;
 
       templates.hasAction({
-        name: versionName,
+        name: DEFAULT_VERSION_NAME,
         ns: namespace,
         action: 'Delete',
         expect: false,
       })
+  
+      templates.clickAction(DEFAULT_VERSION_NAME, 'Modify template (Create new version)');
+    })
 
-      templates.clickAction(versionName, 'Modify template (Create new version)');
-    });
-    
-    
-    cy.intercept('POST', `v1/harvester/${HCI.VM_VERSION}s/default`).as('create');
-    
     templates.setBasics('1', '2');
-    templates.save({namespace});
 
-    cy.wait('@create').should((res: any) => {
-      expect(res.response?.statusCode, 'Create VM Template').to.equal(201);
-      const version = res?.response?.body || {}
-      const versionName = version?.metadata?.name || '';
+    cy.wrap(templates.save({namespace})).then((versionName) => {
+      NEW_VERSION_NAME = versionName as string;
 
       templates.hasAction({
-        name: versionName,
+        name: NEW_VERSION_NAME,
         ns: namespace,
         action: 'Delete',
       })
-    });
+    })
 
     templates.delete(namespace, NAME);
   });

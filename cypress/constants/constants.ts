@@ -2,8 +2,10 @@ export class Constants {
     public timeout = { timeout: 10000, maxTimeout: 60000, uploadTimeout: 300000, downloadTimeout: 120000,   };
     public username = Cypress.env("username");
     public password = Cypress.env("password");
+    public mockPassword = Cypress.env("mockPassword");
     public setupUrl = '/auth/setup/';
     public loginUrl = '/auth/login/';
+    public accountUrl = '/account'
     public dashboardUrl = '/harvester/c/local/harvesterhci.io.dashboard';
     public settingsUrl = '/harvester/c/local/harvesterhci.io.setting';
     public uiSourceUrl = '/harvester/c/local/harvesterhci.io.setting/ui-source?mode=edit';

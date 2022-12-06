@@ -54,6 +54,16 @@ export class HostsPage extends CruResourcePo {
     this.consoleUrl().input(value.consoleUrl)
   }
 
+  enableMaintenance(name:string) {
+    cy.intercept('POST', `/v1/harvester/${this.realType}s/${name}?action=enableMaintenanceMode`).as('enable');
+    this.clickAction(name, 'Enable Maintenance Mode');
+    // Maintenance
+    cy.get('.card-container').contains('Apply').click();
+    cy.wait('@enable').then(res => {
+      expect(res.response?.statusCode, `Enable maintenance ${name}`).to.equal(204);
+    })
+  }
+
   public update(id:string) {
     const saveButtons = '.buttons > .right'
     

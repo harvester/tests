@@ -25,7 +25,7 @@ describe('Check edit host', () => {
   it('Check edit host', () => {
     cy.login();
     
-    const host = Cypress.env('host');
+    const host = Cypress.env('host')[0];
     
     cy.visit(`/harvester/c/local/${HCI.HOST}/${host.name}?mode=edit`)
 
@@ -54,7 +54,7 @@ describe('Check Add disk', () => {
   it('Check Add disk', () => {
     cy.login();
     
-    const host = Cypress.env('host');
+    const host = Cypress.env('host')[0];
     const disk = host.disks[0]
     
     cy.visit(`/harvester/c/local/${HCI.HOST}/${host.name}?mode=edit`)
