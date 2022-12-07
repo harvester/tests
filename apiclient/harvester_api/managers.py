@@ -411,7 +411,9 @@ class NetworkManager(BaseManager):
     API_VERSION = "k8s.cni.cncf.io/v1"
     _KIND = "NetworkAttachmentDefinition"
 
-    def _default_cluster_network(self):
+    def _bridge_name(self, cluster_network=None):
+        if cluster_network is not None:
+            return f"{cluster_network}-br"
         if self.api.cluster_version >= parse_version("v1.1.0"):
             return "mgmt-br"
         else:
@@ -453,8 +455,7 @@ class NetworkManager(BaseManager):
 
     def create(self, name, vlan_id, namespace=DEFAULT_NAMESPACE, *,
                cluster_network=None, raw=False):
-        cluster_network = f"{cluster_network}-br" if cluster_network else self._default_cluster_network()
-        data = self.create_data(name, namespace, vlan_id, cluster_network)
+        data = self.create_data(name, namespace, vlan_id, self._bridge_name(cluster_network))
         path = self.PATH_fmt.format(uid="", ns=namespace, NETWORK_API=self.API_VERSION)
         return self._create(path, json=data, raw=raw)
 
