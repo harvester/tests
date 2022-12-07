@@ -38,32 +38,35 @@ class TestVolumesNegative:
         code, data = api_client.volumes.get(unique_name)
 
         assert 404 == code, (code, data)
-        assert "NotFound" == data.get('reason'), (code, data)
+        assert "NotFound" == data.get('code'), (code, data)
 
     def test_delete_not_exist(self, api_client, unique_name):
         code, data = api_client.volumes.delete(unique_name)
 
         assert 404 == code, (code, data)
-        assert "NotFound" == data.get("reason"), (code, data)
+        assert "NotFound" == data.get("code"), (code, data)
 
     def test_create_without_size(self, api_client, unique_name):
-        code, data = api_client.volumes.create(unique_name, 0)
+        spec = api_client.volumes.Spec(0)
+        code, data = api_client.volumes.create(unique_name, spec)
 
         assert 422 == code, (code, data)
-        assert "Invalid" == data.get("reason"), (code, data)
+        assert "Invalid" == data.get("code"), (code, data)
 
     def test_create_without_name(self, api_client):
-        code, data = api_client.volumes.create("", 1)
+        spec = api_client.volumes.Spec(1)
+        code, data = api_client.volumes.create("", spec)
 
         assert 422 == code, (code, data)
-        assert "Invalid" == data.get("reason"), (code, data)
+        assert "Invalid" == data.get("code"), (code, data)
 
 
 @pytest.mark.p0
 @pytest.mark.volumes
 class TestVolumes:
     def test_create(self, api_client, unique_name):
-        code, data = api_client.volumes.create(unique_name, 1)
+        spec = api_client.volumes.Spec(1)
+        code, data = api_client.volumes.create(unique_name, spec)
 
         assert 201 == code, (code, data)
 
@@ -72,7 +75,7 @@ class TestVolumes:
         code, data = api_client.volumes.get()
 
         assert 200 == code, (code, data)
-        assert len(data['items']) > 0, (code, data)
+        assert len(data['data']) > 0, (code, data)
 
         # Case 2: get specific volume
         code, data = api_client.volumes.get(unique_name)
@@ -94,16 +97,9 @@ class TestVolumes:
                 f"Got error: {code}, {data}"
             )
 
-        updates = {
-            "spec": {
-                "resources": {
-                    "requests": {
-                        "storage": "10Gi"
-                    }
-                }
-            }
-        }
-        code, data = api_client.volumes.update(unique_name, updates)
+        spec = api_client.volumes.Spec.from_dict(data)
+        spec.size = "10Gi"
+        code, data = api_client.volumes.update(unique_name, spec)
 
         assert 200 == code, (f"Failed to update volume with error: {code}, {data}")
 

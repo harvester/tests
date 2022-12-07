@@ -5,7 +5,7 @@ from collections.abc import Mapping
 
 from pkg_resources import parse_version
 
-from .models import VMSpec
+from .models import VolumeSpec, VMSpec
 
 DEFAULT_NAMESPACE = "default"
 
@@ -175,56 +175,31 @@ class ImageManager(BaseManager):
 
 
 class VolumeManager(BaseManager):
-    API_VERSION = "v1"
-    # get, create, update, delete
-    PATH_fmt = "api/{VOLUME_API}/namespaces/{ns}/persistentvolumeclaims/{uid}"
-    _KIND = "PersistentVolumeClaim"
+    PATH_fmt = "v1/harvester/persistentvolumeclaims/{ns}{uid}"
 
-    def create_data(self, name, size, namespace=DEFAULT_NAMESPACE,
-                    storage_cls=None, annotations=None):
-        data = {
-            "apiVersion": self.API_VERSION,
-            "kind": self._KIND,
-            "metadata": {
-                "name": name,
-                "namespace": namespace,
-                "annotations": annotations or {}
-            },
-            "spec": {
-                "resources": {
-                    "requests": {
-                        "storage": f"{size}Gi"
-                    }
-                },
-                "volumeMode": "Block",
-                "accessModes": [
-                    "ReadWriteMany"
-                ],
-                "storageClassName": storage_cls or "longhorn"
-            }
-        }
-        return self._inject_data(data)
+    Spec = VolumeSpec
 
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.PATH_fmt.format(uid=name, ns=namespace, VOLUME_API=self.API_VERSION)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._get(path, raw=raw)
 
-    def create(self, name, size, namespace=DEFAULT_NAMESPACE,
-               storage_cls=None, annotations=None, raw=False):
-        data = self.create_data(name, size, namespace, storage_cls, annotations)
-        path = self.PATH_fmt.format(uid="", ns=namespace, VOLUME_API=self.API_VERSION)
-        return self._create(path, json=data, raw=raw)
+    def create(self, name, volume_spec, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        if isinstance(volume_spec, self.Spec):
+            volume_spec = volume_spec.to_dict(name, namespace)
 
-    def update(self, name, data, namespace=DEFAULT_NAMESPACE, *,
+        path = self.PATH_fmt.format(uid="", ns=namespace)
+        return self._create(path, json=volume_spec, raw=raw)
+
+    def update(self, name, volume_spec, namespace=DEFAULT_NAMESPACE, *,
                raw=False, as_json=True, **kwargs):
-        path = self.PATH_fmt.format(uid=name, ns=namespace, VOLUME_API=self.API_VERSION)
-        if isinstance(data, Mapping) and as_json:
-            _, node = self.get(name)
-            data = merge_dict(data, node)
-        return self._update(path, data, raw=raw, as_json=as_json, **kwargs)
+        if isinstance(volume_spec, self.Spec):
+            volume_spec = volume_spec.to_dict(name, namespace)
+
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        return self._update(path, volume_spec, raw=raw, as_json=as_json, **kwargs)
 
     def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.PATH_fmt.format(uid=name, ns=namespace, VOLUME_API=self.API_VERSION)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._delete(path, raw=raw)
 
 
@@ -636,7 +611,7 @@ class VirtualMachineManager(BaseManager):
     # operators: guestosinfo, console(ws), vnc(ws)
     VMIOP_fmt = "apis/subresources.{VM_API}/namespaces/{ns}/virtualmachineinstances/{uid}/{op}"
 
-    spec = VMSpec
+    Spec = VMSpec
 
     def create_data(self):
         pass
