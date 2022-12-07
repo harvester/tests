@@ -175,6 +175,7 @@ class ImageManager(BaseManager):
 
 
 class VolumeManager(BaseManager):
+    # XXX: https://github.com/harvester/harvester/issues/3250
     PATH_fmt = "v1/harvester/persistentvolumeclaims/{ns}{uid}"
 
     Spec = VolumeSpec
