@@ -1,34 +1,30 @@
+from copy import deepcopy
 from json import dumps
 
 import yaml
 
 MGMT_NETID = object()
+DEFAULT_STORAGE_CLS = "harvester-longhorn"
 
 
 class VMSpec:
     # ref: https://kubevirt.io/api-reference/master/definitions.html#_v1_virtualmachineinstancespec
     # defaults
     cpu_sockets = cpu_threads = 1
-    run_strategy = "RerunOnFailure",
+    run_strategy = "RerunOnFailure"
     eviction_strategy = "LiveMigrate"
-    hostname = None
-    machine_type = ""
+    hostname = machine_type = ""
     usbtablet = True
+    _data = None
 
     # TODOs:
     # node selector(affinity)
     # userdata/networkdata enhancement
+    # SSH Key
 
-    def __init__(self, cpu_cores, memory, mgmt_network=True):
-        self.cpu_cores = cpu_cores
-        self.memory = memory
-        self.volumes, self.networks = [], []
-        self._firmwares, self._features = dict(), dict()
-        if mgmt_network:
-            self.add_network("default", MGMT_NETID)
+    def __init__(self, cpu_cores, memory, description="", reserved_mem="", os_type="",
+                 mgmt_network=True, guest_agent=True):
 
-        # default
-        self.acpi = True
         self._cloudinit_vol = {
             "disk": {
                 "name": "cloudinitdisk",
@@ -43,13 +39,38 @@ class VMSpec:
             }
         }
 
+        # default
+        self.volumes, self.networks = [], []
+        self._firmwares, self._features = dict(), dict()
+        self.acpi = True
+        # initial data
+        self.cpu_cores = cpu_cores
+        self.memory = memory
+        self.mgmt_network = mgmt_network
+        self.guest_agent = guest_agent
+        self.description = description
+        self.reserved_mem = reserved_mem
+        self.os_type = os_type
+
+    @property
+    def mgmt_network(self):
+        return bool([n for n in self.networks if n['network'].get('pod', None) is not None])
+
+    @mgmt_network.setter
+    def mgmt_network(self, enable):
+        if enable:
+            if not self.mgmt_network:
+                self.add_network("default", MGMT_NETID)
+        else:
+            self.networks = [n for n in self.networks if n['network'].get('pod', None) is None]
+
     @property
     def acpi(self):
         return self._features['acpi'].get('enabled')
 
     @acpi.setter
     def acpi(self, enable):
-        self._features['acpi'] = enable
+        self._features['acpi'] = dict(enabled=enable)
 
     @property
     def efi_boot(self):
@@ -58,23 +79,25 @@ class VMSpec:
     @efi_boot.setter
     def efi_boot(self, enable):
         if enable:
-            self._features['smm'] = dict(enabled=True)
-            self._firmwares['bootloader'] = dict(efi=dict(secureBoot=True))
+            self._features['smm'] = dict(enabled=False)
+            self._firmwares['bootloader'] = dict(efi=dict(secureBoot=False))
         else:
             self._features.pop('smm', None)
             self._firmwares.pop('bootloader', None)
 
     @property
     def secure_boot(self):
-        return self.efi_boot and self._firmwares['bootloader']['efi']['secureBoot']
+        return self.efi_boot and self._firmwares['bootloader']['efi'].get('secureBoot', False)
 
     @secure_boot.setter
     def secure_boot(self, enable):
         if enable:
             self.efi_boot = True
             self._firmwares['bootloader']['efi']['secureBoot'] = True
+            self._features['smm']['enabled'] = True
         else:
             self.efi_boot = False
+            self.efi_boot = True
 
     @property
     def guest_agent(self):
@@ -100,7 +123,7 @@ class VMSpec:
 
     @property
     def user_data(self):
-        return self._cloudinit_vol['volume']['cloudInitNoCloud']['userData']
+        return self._cloudinit_vol['volume']['cloudInitNoCloud'].get('userData', "")
 
     @user_data.setter
     def user_data(self, val):
@@ -108,14 +131,15 @@ class VMSpec:
 
     @property
     def network_data(self):
-        return self._cloudinit_vol['volume']['cloudInitNoCloud']['networkData']
+        return self._cloudinit_vol['volume']['cloudInitNoCloud'].get('networkData', "")
 
     @network_data.setter
     def network_data(self, val):
         self._cloudinit_vol['volume']['cloudInitNoCloud']['networkData'] = val
 
     def add_cd_rom(self, name, image_id, size=10, bus="SATA"):
-        vol_spec = VolumeSpec(size, annotations={"harvesterhci.io/imageId": image_id})
+        vol_spec = VolumeSpec(size, storage_cls=f"longhorn-{image_id.split('/')[1]}",
+                              annotations={"harvesterhci.io/imageId": image_id})
 
         vol = {
             "claim": vol_spec,
@@ -134,7 +158,8 @@ class VMSpec:
         return vol
 
     def add_image(self, name, image_id, size=10, bus="virtio", type="disk"):
-        vol_spec = VolumeSpec(size, annotations={"harvesterhci.io/imageId": image_id})
+        vol_spec = VolumeSpec(size, storage_cls=f"longhorn-{image_id.split('/')[1]}",
+                              annotations={"harvesterhci.io/imageId": image_id})
 
         vol = {
             "claim": vol_spec,
@@ -167,7 +192,7 @@ class VMSpec:
         self.volumes.append(vol)
         return vol
 
-    def add_volume(self, name, size, type="disk", bus="virtio", storage_cls=None):
+    def add_volume(self, name, size, type="disk", bus="virtio", storage_cls=DEFAULT_STORAGE_CLS):
         vol_spec = VolumeSpec(size, storage_cls)
         vol = {
             "claim": vol_spec,
@@ -226,20 +251,22 @@ class VMSpec:
             disk['bootOrder'] = idx
 
     def _update_volume_spec(self, name, namespace):
-        for v in self.volumes:
+        volumes = []
+        for v in deepcopy(self.volumes):
             if 'claim' in v:
-                v['claim'] = v['claim'].to_dict(name, namespace)
                 disk_name = v['volume']['name']
-                v['volume']['persistentvolumeclaim']['claimName'] = f"{name}-{disk_name}"
+                v['claim'] = v['claim'].to_dict(f"{name}-{disk_name}", namespace)
+                v['volume']['persistentVolumeClaim']['claimName'] = f"{name}-{disk_name}"
+            volumes.append(v)
+        return volumes
 
-    def to_dict(self, name, namespace, hostname=None):
+    def to_dict(self, name, namespace, hostname=""):
         self._update_bootorder()
-        self._update_volume_spec(name, namespace)
-        volumes = self.volumes + [self._cloudinit_vol]
+        volumes = self._update_volume_spec(name, namespace) + [self._cloudinit_vol]
         mem = f"{self.memory}Gi" if isinstance(self.memory, int) else self.memory
 
         machine = dict(type=self.machine_type)
-        cpu = dict(sockets=self.cpu_sockets, thread=self.cpu_threads)
+        cpu = dict(cores=self.cpu_cores, sockets=self.cpu_sockets, thread=self.cpu_threads)
         resources = dict(cpu=self.cpu_cores, memory=mem)
 
         volume_claims = dumps([v['claim'] for v in volumes if 'claim' in v])
@@ -250,7 +277,12 @@ class VMSpec:
                 "namespace": namespace,
                 "name": name,
                 "annotations": {
-                    "harvesterhci.io/volumeClaimTemplates": volume_claims
+                    "harvesterhci.io/volumeClaimTemplates": volume_claims,
+                    "field.cattle.io/description": self.description
+                },
+                "labels": {
+                    "harvesterhci.io/creator": "harvester",
+                    "harvesterhci.io/os": self.os_type
                 }
             },
             "spec": {
@@ -273,7 +305,7 @@ class VMSpec:
                             "features": self._features,
                             "firmware": self._firmwares,
                             "devices": {
-                                "intrefaces": [n['iface'] for n in self.networks],
+                                "interfaces": [n['iface'] for n in self.networks],
                                 "disks": [v['disk'] for v in volumes if 'disk' in v]
                             },
                         }
@@ -286,7 +318,56 @@ class VMSpec:
             inputs = [dict(bus="usb", name="tablet", type="tablet")]
             data['spec']['template']['spec']['domain']['devices']['inputs'] = inputs
 
-        return data
+        if self.reserved_mem:
+            r_mem = self.reserved_mem
+            r_mem = f"{r_mem}Mi" if isinstance(r_mem, (int, float)) else r_mem
+            data['metadata']['annotations']["harvesterhci.io/reservedMemory"] = r_mem
+
+        if self._data:
+            self._data['metadata'].update(data['metadata'])
+            self._data['spec'].update(data['spec'])
+            return deepcopy(self._data)
+
+        return deepcopy(data)
+
+    @classmethod
+    def from_dict(cls, data):
+        data = deepcopy(data)
+        spec, metadata = data.get('spec', {}), data.get('metadata', {})
+        vm_spec = spec['template']['spec']
+
+        os_type = metadata['labels'].get("harvesterhci.io/os", "")
+        desc = metadata['annotations'].get("field.cattle.io/description", "")
+        reserved_mem = metadata['annotations'].get("harvesterhci.io/reservedMemory", "")
+        run_strategy = spec['runStrategy']
+        # ???: volume template claims not load
+
+        hostname = vm_spec['hostname']
+        eviction_strategy = vm_spec['evictionStrategy']
+        networks = vm_spec['networks']
+        volumes = vm_spec['volumes']
+        machine = vm_spec['domain']['machine']
+        cpu = vm_spec['domain']['cpu']
+        mem = vm_spec['domain']['resources']['limits']['memory']
+        features = vm_spec['domain']['features']
+        firmware = vm_spec['domain']['firmware']
+        devices = vm_spec['domain']['devices']
+
+        obj = cls(cpu['cores'], mem, desc, reserved_mem, os_type)
+        obj.cpu_sockets, obj.cpu_threads = cpu.get('sockets', 1), cpu.get('threads', 1)
+        obj.run_strategy = run_strategy
+        obj.eviction_strategy = eviction_strategy
+        obj.hostname = hostname
+        obj.machine_type = machine.get('type', "")
+        obj.usbtablet = devices.get('inputs') and bool(devices['inputs'][0])
+
+        obj._features = features
+        obj._firmwares = firmware
+        obj.networks = [dict(iface=i, network=n) for i, n in zip(devices['interfaces'], networks)]
+        obj.volumes = [dict(disk=d, volume=v) for d, v in zip(devices['disks'][:-1], volumes[:-1])]
+        obj._cloudinit_vol = dict(disk=devices['disks'][-1], volume=volumes[-1])
+        obj._data = data
+        return obj
 
 
 class VolumeSpec:
@@ -330,9 +411,9 @@ class VolumeSpec:
         if self._data:
             self._data['metadata'].update(data['metadata'])
             self._data['spec'].update(data['spec'])
-            return self._data
+            return deepcopy(self._data)
 
-        return data
+        return deepcopy(data)
 
     @classmethod
     def from_dict(cls, data):

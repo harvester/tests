@@ -604,9 +604,7 @@ class VirtualMachineManager(BaseManager):
     API_VERSION = "kubevirt.io/v1"
 
     # operators: start, restart, stop, migrate, pause, unpause, softreboot
-    OP_fmt = "v1/harvester/kubevirt.io.virtualmachines/{ns}/{uid}?action={op}"
-
-    PATH_fmt = "apis/{VM_API}/namespaces/{ns}/virtualmachines/{uid}"
+    PATH_fmt = "v1/harvester/kubevirt.io.virtualmachines/{ns}{uid}"
     # guestinfo, network
     VMI_fmt = "apis/{VM_API}/namespaces/{ns}/virtualmachineinstances/{uid}"
     # operators: guestosinfo, console(ws), vnc(ws)
@@ -614,55 +612,68 @@ class VirtualMachineManager(BaseManager):
 
     Spec = VMSpec
 
-    def create_data(self):
-        pass
+    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace, VM_API=self.API_VERSION)
+        return self._get(path, raw=raw, **kwargs)
 
-    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.PATH_fmt.format(uid=name, ns=namespace, VM_API=self.API_VERSION)
-        return self._get(path, raw=raw)
+    def create(self, name, vm_spec, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        if isinstance(vm_spec, self.Spec):
+            vm_spec = vm_spec.to_dict(name, namespace)
+        path = self.PATH_fmt.format(uid="", ns=namespace)
+        return self._create(path, json=vm_spec, raw=raw)
 
-    def create(self, name):
-        pass
-
-    def update(self, name):
-        pass
+    def update(self, name, vm_spec, namespace=DEFAULT_NAMESPACE, *,
+               raw=False, as_json=True, **kwargs):
+        if isinstance(vm_spec, self.Spec):
+            vm_spec = vm_spec.to_dict(name, namespace)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        return self._update(path, vm_spec, raw=raw, as_json=as_json, **kwargs)
 
     def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.PATH_fmt.format(uid=name, ns=namespace, VM_API=self.API_VERSION)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace, VM_API=self.API_VERSION)
         return self._delete(path, raw=raw)
 
     def clone(self, name, new_vm_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="clone", uid=name, ns=namespace)
-        return self._create(path, raw=raw, json=dict(targetVm=new_vm_name))
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="clone")
+        return self._create(path, raw=raw, params=params, json=dict(targetVm=new_vm_name))
 
     def start(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="start", uid=name, ns=namespace)
-        return self._create(path, raw=raw)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="start")
+        return self._create(path, raw=raw, params=params)
 
     def restart(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="restart", uid=name, ns=namespace)
-        return self._create(path, raw=raw)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="restart")
+        return self._create(path, raw=raw, params=params)
 
     def stop(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="stop", uid=name, ns=namespace)
-        return self._create(path, raw=raw)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="stop")
+        return self._create(path, raw=raw, params=params)
 
     def migrate(self, name, target_node, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="migrate", uid=name, ns=namespace)
-        return self._create(path, raw=raw, json=dict(nodeName=target_node))
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="migrate")
+        return self._create(path, raw=raw, params=params, json=dict(nodeName=target_node))
 
     def abort_migrate(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="abortMigration", uid=name, ns=namespace)
-        return self._create(path, raw=raw)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="abortMigration")
+        return self._create(path, raw=raw, params=params)
 
     def pause(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="pause", uid=name, ns=namespace)
-        return self._create(path, raw=raw)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="pause")
+        return self._create(path, raw=raw, params=params)
 
     def unpause(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="unpause", uid=name, ns=namespace)
-        return self._create(path, raw=raw)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="unpause")
+        return self._create(path, raw=raw, params=params)
 
     def softreboot(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.OP_fmt.format(op="softreboot", uid=name, ns=namespace)
-        return self._create(path, raw=raw)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="softreboot")
+        return self._create(path, raw=raw, params=params)
