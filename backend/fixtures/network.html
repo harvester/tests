@@ -44,6 +44,7 @@
 # you may find current contact information at www.suse.com
 
 from harvester_e2e_tests import utils
+from pkg_resources import parse_version
 import json
 import polling2
 import pytest
@@ -52,12 +53,18 @@ import pytest
 pytest_plugins = [
     &#39;harvester_e2e_tests.fixtures.api_endpoints&#39;,
     &#39;harvester_e2e_tests.fixtures.session&#39;,
+    &#34;harvester_e2e_tests.fixtures.api_client&#34;
 ]
 
 
 @pytest.fixture(scope=&#39;session&#39;)
-def enable_vlan(request, admin_session, harvester_api_endpoints):
+def enable_vlan(request, admin_session, harvester_api_endpoints, api_client):
     vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+
+    if api_client.cluster_version &gt; parse_version(&#34;v1.0.3&#34;):
+        yield cluster_network(api_client, vlan_nic)
+        return cluster_network(api_client, vlan_nic, delete=True)
+
     resp = admin_session.get(harvester_api_endpoints.get_vlan)
     assert resp.status_code == 200, &#39;Failed to get vlan: %s&#39; % (resp.content)
     vlan_json = resp.json()
@@ -83,11 +90,13 @@ def enable_vlan(request, admin_session, harvester_api_endpoints):
 
 
 def _cleanup_network(admin_session, harvester_api_endpoints, network_id,
-                     wait_timeout):
+                     wait_timeout, api_client):
 
     def _delete_network():
-        resp = admin_session.delete(
-            harvester_api_endpoints.delete_network % (network_id))
+        if api_client.cluster_version &gt; parse_version(&#34;v1.0.3&#34;):
+            resp = api_client.networks.delete(network_id, raw=True)
+        else:
+            resp = admin_session.delete(harvester_api_endpoints.delete_network % (network_id))
         if resp.status_code in [200, 204]:
             return True
         elif resp.status_code == 400:
@@ -117,7 +126,7 @@ def _lookup_network(request, admin_session, harvester_api_endpoints, vlan_id):
     return None
 
 
-def _create_network(request, admin_session, harvester_api_endpoints, vlan_id):
+def _create_network(request, admin_session, harvester_api_endpoints, vlan_id, api_client):
     # NOTE(gyee): will name the network with the following convention as
     # VLAN ID must be unique. vlan_network_&lt;VLAN ID&gt;
     network_name = f&#39;vlan-network-{vlan_id}&#39;
@@ -127,6 +136,12 @@ def _create_network(request, admin_session, harvester_api_endpoints, vlan_id):
                                    harvester_api_endpoints, vlan_id)
     if network_data:
         return network_data
+
+    if api_client.cluster_version &gt; parse_version(&#34;v1.0.3&#34;):
+        vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+        _, data = api_client.networks.create(network_name, vlan_id, cluster_network=vlan_nic)
+        data[&#39;id&#39;] = data[&#39;metadata&#39;][&#39;name&#39;]
+        return data
 
     request_json = utils.get_json_object_from_template(
         &#39;basic_network&#39;,
@@ -144,14 +159,14 @@ def _create_network(request, admin_session, harvester_api_endpoints, vlan_id):
 
 
 @pytest.fixture(scope=&#39;session&#39;)
-def network(request, admin_session, harvester_api_endpoints, enable_vlan):
+def network(request, admin_session, harvester_api_endpoints, enable_vlan, api_client):
     vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
     # don&#39;t create network if VLAN is not correctly specified
     if vlan_id == -1:
         return
 
     network_data = _create_network(request, admin_session,
-                                   harvester_api_endpoints, vlan_id)
+                                   harvester_api_endpoints, vlan_id, api_client)
     yield network_data
 
     if not request.config.getoption(&#39;--do-not-cleanup&#39;):
@@ -161,12 +176,12 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
                             vlan_id) is not None:
             _cleanup_network(admin_session, harvester_api_endpoints,
                              network_data[&#39;id&#39;],
-                             request.config.getoption(&#39;--wait-timeout&#39;))
+                             request.config.getoption(&#39;--wait-timeout&#39;), api_client)
 
 
 @pytest.fixture(scope=&#39;class&#39;)
 def bogus_network(request, admin_session, harvester_api_endpoints,
-                  enable_vlan):
+                  enable_vlan, api_client):
     vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
     # don&#39;t create network if VLAN is not correctly specified
     if vlan_id == -1:
@@ -175,13 +190,13 @@ def bogus_network(request, admin_session, harvester_api_endpoints,
     vlan_id += 1
 
     network_data = _create_network(request, admin_session,
-                                   harvester_api_endpoints, vlan_id)
+                                   harvester_api_endpoints, vlan_id, api_client)
     yield network_data
 
     if not request.config.getoption(&#39;--do-not-cleanup&#39;):
         _cleanup_network(admin_session, harvester_api_endpoints,
                          network_data[&#39;id&#39;],
-                         request.config.getoption(&#39;--wait-timeout&#39;))
+                         request.config.getoption(&#39;--wait-timeout&#39;), api_client)
 
 
 # This fixture is only called by test_create_edit_network
@@ -189,7 +204,7 @@ def bogus_network(request, admin_session, harvester_api_endpoints,
 # vlan_id is set to vlan_id + 1
 @pytest.fixture(scope=&#39;class&#39;)
 def network_for_update_test(request, admin_session,
-                            harvester_api_endpoints, enable_vlan):
+                            harvester_api_endpoints, enable_vlan, api_client):
     vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
     # don&#39;t create network if VLAN is not correctly specified
     if vlan_id == -1:
@@ -211,7 +226,7 @@ def network_for_update_test(request, admin_session,
     if not request.config.getoption(&#39;--do-not-cleanup&#39;):
         _cleanup_network(admin_session, harvester_api_endpoints,
                          network_data[&#39;id&#39;],
-                         request.config.getoption(&#39;--wait-timeout&#39;))
+                         request.config.getoption(&#39;--wait-timeout&#39;), api_client)
 
 
 @pytest.fixture(scope=&#39;class&#39;)
@@ -242,7 +257,16 @@ def network_using_terraform(request, admin_session,
         utils.destroy_resource(
             request,
             admin_session,
-            &#39;harvester_network.&#39; + network_json[&#39;metadata&#39;][&#39;name&#39;])</code></pre>
+            &#39;harvester_network.&#39; + network_json[&#39;metadata&#39;][&#39;name&#39;])
+
+
+def cluster_network(api_client, nic_name, delete=False):
+    if delete:
+        api_client.clusternetworks.delete_config(nic_name)
+        api_client.clusternetworks.delete(nic_name)
+    else:
+        api_client.clusternetworks.create(nic_name)
+        api_client.clusternetworks.create_config(nic_name, nic_name, nic_name)</code></pre>
 </details>
 </section>
 <section>
@@ -253,7 +277,7 @@ def network_using_terraform(request, admin_session,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.fixtures.network.bogus_network"><code class="name flex">
-<span>def <span class="ident">bogus_network</span></span>(<span>request, admin_session, harvester_api_endpoints, enable_vlan)</span>
+<span>def <span class="ident">bogus_network</span></span>(<span>request, admin_session, harvester_api_endpoints, enable_vlan, api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -263,7 +287,7 @@ def network_using_terraform(request, admin_session,
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
 def bogus_network(request, admin_session, harvester_api_endpoints,
-                  enable_vlan):
+                  enable_vlan, api_client):
     vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
     # don&#39;t create network if VLAN is not correctly specified
     if vlan_id == -1:
@@ -272,17 +296,35 @@ def bogus_network(request, admin_session, harvester_api_endpoints,
     vlan_id += 1
 
     network_data = _create_network(request, admin_session,
-                                   harvester_api_endpoints, vlan_id)
+                                   harvester_api_endpoints, vlan_id, api_client)
     yield network_data
 
     if not request.config.getoption(&#39;--do-not-cleanup&#39;):
         _cleanup_network(admin_session, harvester_api_endpoints,
                          network_data[&#39;id&#39;],
-                         request.config.getoption(&#39;--wait-timeout&#39;))</code></pre>
+                         request.config.getoption(&#39;--wait-timeout&#39;), api_client)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.network.cluster_network"><code class="name flex">
+<span>def <span class="ident">cluster_network</span></span>(<span>api_client, nic_name, delete=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cluster_network(api_client, nic_name, delete=False):
+    if delete:
+        api_client.clusternetworks.delete_config(nic_name)
+        api_client.clusternetworks.delete(nic_name)
+    else:
+        api_client.clusternetworks.create(nic_name)
+        api_client.clusternetworks.create_config(nic_name, nic_name, nic_name)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.network.enable_vlan"><code class="name flex">
-<span>def <span class="ident">enable_vlan</span></span>(<span>request, admin_session, harvester_api_endpoints)</span>
+<span>def <span class="ident">enable_vlan</span></span>(<span>request, admin_session, harvester_api_endpoints, api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -291,8 +333,13 @@ def bogus_network(request, admin_session, harvester_api_endpoints,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;session&#39;)
-def enable_vlan(request, admin_session, harvester_api_endpoints):
+def enable_vlan(request, admin_session, harvester_api_endpoints, api_client):
     vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+
+    if api_client.cluster_version &gt; parse_version(&#34;v1.0.3&#34;):
+        yield cluster_network(api_client, vlan_nic)
+        return cluster_network(api_client, vlan_nic, delete=True)
+
     resp = admin_session.get(harvester_api_endpoints.get_vlan)
     assert resp.status_code == 200, &#39;Failed to get vlan: %s&#39; % (resp.content)
     vlan_json = resp.json()
@@ -318,7 +365,7 @@ def enable_vlan(request, admin_session, harvester_api_endpoints):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.network.network"><code class="name flex">
-<span>def <span class="ident">network</span></span>(<span>request, admin_session, harvester_api_endpoints, enable_vlan)</span>
+<span>def <span class="ident">network</span></span>(<span>request, admin_session, harvester_api_endpoints, enable_vlan, api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -327,14 +374,14 @@ def enable_vlan(request, admin_session, harvester_api_endpoints):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;session&#39;)
-def network(request, admin_session, harvester_api_endpoints, enable_vlan):
+def network(request, admin_session, harvester_api_endpoints, enable_vlan, api_client):
     vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
     # don&#39;t create network if VLAN is not correctly specified
     if vlan_id == -1:
         return
 
     network_data = _create_network(request, admin_session,
-                                   harvester_api_endpoints, vlan_id)
+                                   harvester_api_endpoints, vlan_id, api_client)
     yield network_data
 
     if not request.config.getoption(&#39;--do-not-cleanup&#39;):
@@ -344,11 +391,11 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
                             vlan_id) is not None:
             _cleanup_network(admin_session, harvester_api_endpoints,
                              network_data[&#39;id&#39;],
-                             request.config.getoption(&#39;--wait-timeout&#39;))</code></pre>
+                             request.config.getoption(&#39;--wait-timeout&#39;), api_client)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.network.network_for_update_test"><code class="name flex">
-<span>def <span class="ident">network_for_update_test</span></span>(<span>request, admin_session, harvester_api_endpoints, enable_vlan)</span>
+<span>def <span class="ident">network_for_update_test</span></span>(<span>request, admin_session, harvester_api_endpoints, enable_vlan, api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -358,7 +405,7 @@ def network(request, admin_session, harvester_api_endpoints, enable_vlan):
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
 def network_for_update_test(request, admin_session,
-                            harvester_api_endpoints, enable_vlan):
+                            harvester_api_endpoints, enable_vlan, api_client):
     vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
     # don&#39;t create network if VLAN is not correctly specified
     if vlan_id == -1:
@@ -380,7 +427,7 @@ def network_for_update_test(request, admin_session,
     if not request.config.getoption(&#39;--do-not-cleanup&#39;):
         _cleanup_network(admin_session, harvester_api_endpoints,
                          network_data[&#39;id&#39;],
-                         request.config.getoption(&#39;--wait-timeout&#39;))</code></pre>
+                         request.config.getoption(&#39;--wait-timeout&#39;), api_client)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.network.network_using_terraform"><code class="name flex">
@@ -442,6 +489,7 @@ def network_using_terraform(request, admin_session,
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="harvester_e2e_tests.fixtures.network.bogus_network" href="#harvester_e2e_tests.fixtures.network.bogus_network">bogus_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.network.cluster_network" href="#harvester_e2e_tests.fixtures.network.cluster_network">cluster_network</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.network.enable_vlan" href="#harvester_e2e_tests.fixtures.network.enable_vlan">enable_vlan</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.network.network" href="#harvester_e2e_tests.fixtures.network.network">network</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.network.network_for_update_test" href="#harvester_e2e_tests.fixtures.network.network_for_update_test">network_for_update_test</a></code></li>
