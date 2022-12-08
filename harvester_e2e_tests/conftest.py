@@ -247,7 +247,7 @@ def pytest_configure(config):
         ("templates", ("marker to run VM template tests")),
         ("support_bundle", ("marker to run Support Bundle tests")),
         ("settings", ("marker to run settings tests")),
-        ("upgrade", ("marker to run the upgrade tests"))
+        ("upgrade", ("marker to run upgrade tests"))
     ]
 
     for m, msg in markers:
