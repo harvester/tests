@@ -29,38 +29,124 @@
 <pre><code class="python">import pytest
 
 
+@pytest.fixture(scope=&#34;module&#34;)
+def cluster_state(self):
+    class ClusterState:
+        pass
+
+    return ClusterState()
+
+
+@pytest.fixture(scope=&#34;module&#34;)
+def cluster_prereq(self, api_client, cluster_state):
+    # create cluster network
+    # create a routable vlan
+    cluster_state.clusternetwork = &#34;cluster network name&#34;
+    cluster_state.vm_network = (&#34;name&#34;, &#34;vlanid&#34;, &#34;cluster network name&#34;)
+    cluster_state.vlan = &#34;routable vlan id&#34;
+
+
+@pytest.fixture(scope=&#34;module&#34;)
+def vm_prereq(self, api_client, cluster_state):
+    cluster_state.old_target = &#34;existing backup target&#34; or &#34;&#34;
+    # setup backup target
+    # create new storage class, make it default
+    # create 3 VMs:
+    # - having the new storage class
+    # - the VM that have some data written, take backup
+    # - the VM restored from the backup
+    # check VMs should able to reach each others (in same networks)
+
+    cluster_state.storage_class = &#34;Created storage class name&#34;
+    cluster_state.backup_name = &#34;backup name from the VM&#34;
+    cluster_state.backup_target = &#34;backup_target&#34;
+    cluster_state.vms = {
+        &#34;backed up&#34;: &#34;backuped VM&#34;,
+        &#34;restored&#34;: &#34;restored VM&#34;,
+        &#34;storage class&#34;: &#34;VM having different storageclass&#34;
+    }
+
+
 @pytest.mark.upgrade
-@pytest.mark.skip(reason=&#39;TODO&#39;)
-def test_pre_upgrade():
-    &#34;&#34;&#34;
-    This test is to run on a setup before upgrade.
+@pytest.mark.any_nodes
+@pytest.mark.negative
+class TestInvalidUpgrade:
+    def test_invalid_manifest(self):
+        &#34;&#34;&#34;
+        Criteria: https://github.com/harvester/tests/issues/518
 
-    Steps:
-    1. Create a VM with OpenSuse image and Write some data into it.
-    1. Verify the image, volume and network.
-    1. Take a backup for the above created VM.
-    1. Restore the above backup into a new VM.
-    1. Stop the VMs
-    &#34;&#34;&#34;
-    pass
+        Steps:
+        1. Create an invalid manifest.
+        2. Try to upgrade with the invalid manifest.
+        3. Upgrade should not start and fail.
+        &#34;&#34;&#34;
+
+    def test_degraded_volume(self):
+        &#34;&#34;&#34;
+        Criteria: create upgrade should fails if there are any degraded volumes
+
+        Steps:
+        1. Create a VM using a volume with 3 replicas.
+        2. Delete one replica of the volume. Let the volume stay in
+           degraded state.
+        3. Immediately upgrade Harvester.
+        4. Upgrade should fail.
+        &#34;&#34;&#34;
 
 
 @pytest.mark.upgrade
-@pytest.mark.skip(reason=&#39;TODO&#39;)
-def test_post_upgrade():
-    &#34;&#34;&#34;
-    This test is to run on a setup after the upgrade. This test is dependent on
-    the test_pre_upgrade test and can&#39;t be run alone.
+@pytest.mark.single_node
+class TestSingleNodeUpgrade:
+    @pytest.mark.dependency(name=&#34;single_node_upgrade&#34;)
+    def test_perform_upgrade(self):
+        pass
 
-    Steps:
-    1. Do a check for the settings, CRDs etc that the setup is upgraded.
-    1. Verify the resources, 2 VMs, 2 Volumes, 1 image, 1 Backup, network exist.
-    1. Start 2 VMs which are in stop state.
-    1. Verify the data in the VMs.
-    1. Restore backup created in the Pre-upgrade test in a new VM.
-    1. Verify the restored VM, check the data
-    &#34;&#34;&#34;
-    pass</code></pre>
+
+@pytest.mark.upgrade
+@pytest.mark.three_nodes
+class TestThreeNodesUpgrade:
+    @pytest.mark.dependency(name=&#34;three_nodes_upgrade&#34;)
+    def test_perform_upgrade(self, cluster_prereq, vm_prereq):
+        &#34;&#34;&#34;
+        - perform upgrade
+        - check all nodes upgraded
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_logging(self):
+        &#34;&#34;&#34; Verify logging pods and logs
+        Criteria: https://github.com/harvester/tests/issues/535
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_network(self, api_client, cluster_state):
+        &#34;&#34;&#34; Verify cluster and VLAN networks
+        - cluster network `mgmt` should exists
+        - Created VLAN should exists
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_vms(self, api_client, cluster_state):
+        &#34;&#34;&#34; Verify VMs&#39; state and data
+        Criteria:
+        - VMs should keep in running state
+        - data in VMs should not lost
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_restore_vm(self, api_client, cluster_state):
+        &#34;&#34;&#34; Verify VM restored from the backup
+        Criteria:
+        - VM should able to start
+        - data in VM should not lost
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_storage_class(self, api_client, cluster_state):
+        &#34;&#34;&#34; Verify StorageClasses and defaults
+        - `harvester-longhorn` should be settle as default
+        - `longhorn` should exists
+        &#34;&#34;&#34;</code></pre>
 </details>
 </section>
 <section>
@@ -70,75 +156,399 @@ def test_post_upgrade():
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.test_post_upgrade"><code class="name flex">
-<span>def <span class="ident">test_post_upgrade</span></span>(<span>)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.cluster_prereq"><code class="name flex">
+<span>def <span class="ident">cluster_prereq</span></span>(<span>self, api_client, cluster_state)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>This test is to run on a setup after the upgrade. This test is dependent on
-the test_pre_upgrade test and can't be run alone.</p>
-<p>Steps:
-1. Do a check for the settings, CRDs etc that the setup is upgraded.
-1. Verify the resources, 2 VMs, 2 Volumes, 1 image, 1 Backup, network exist.
-1. Start 2 VMs which are in stop state.
-1. Verify the data in the VMs.
-1. Restore backup created in the Pre-upgrade test in a new VM.
-1. Verify the restored VM, check the data</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.upgrade
-@pytest.mark.skip(reason=&#39;TODO&#39;)
-def test_post_upgrade():
-    &#34;&#34;&#34;
-    This test is to run on a setup after the upgrade. This test is dependent on
-    the test_pre_upgrade test and can&#39;t be run alone.
-
-    Steps:
-    1. Do a check for the settings, CRDs etc that the setup is upgraded.
-    1. Verify the resources, 2 VMs, 2 Volumes, 1 image, 1 Backup, network exist.
-    1. Start 2 VMs which are in stop state.
-    1. Verify the data in the VMs.
-    1. Restore backup created in the Pre-upgrade test in a new VM.
-    1. Verify the restored VM, check the data
-    &#34;&#34;&#34;
-    pass</code></pre>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def cluster_prereq(self, api_client, cluster_state):
+    # create cluster network
+    # create a routable vlan
+    cluster_state.clusternetwork = &#34;cluster network name&#34;
+    cluster_state.vm_network = (&#34;name&#34;, &#34;vlanid&#34;, &#34;cluster network name&#34;)
+    cluster_state.vlan = &#34;routable vlan id&#34;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.test_pre_upgrade"><code class="name flex">
-<span>def <span class="ident">test_pre_upgrade</span></span>(<span>)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.cluster_state"><code class="name flex">
+<span>def <span class="ident">cluster_state</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>This test is to run on a setup before upgrade.</p>
-<p>Steps:
-1. Create a VM with OpenSuse image and Write some data into it.
-1. Verify the image, volume and network.
-1. Take a backup for the above created VM.
-1. Restore the above backup into a new VM.
-1. Stop the VMs</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.upgrade
-@pytest.mark.skip(reason=&#39;TODO&#39;)
-def test_pre_upgrade():
-    &#34;&#34;&#34;
-    This test is to run on a setup before upgrade.
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def cluster_state(self):
+    class ClusterState:
+        pass
 
-    Steps:
-    1. Create a VM with OpenSuse image and Write some data into it.
-    1. Verify the image, volume and network.
-    1. Take a backup for the above created VM.
-    1. Restore the above backup into a new VM.
-    1. Stop the VMs
-    &#34;&#34;&#34;
-    pass</code></pre>
+    return ClusterState()</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.vm_prereq"><code class="name flex">
+<span>def <span class="ident">vm_prereq</span></span>(<span>self, api_client, cluster_state)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def vm_prereq(self, api_client, cluster_state):
+    cluster_state.old_target = &#34;existing backup target&#34; or &#34;&#34;
+    # setup backup target
+    # create new storage class, make it default
+    # create 3 VMs:
+    # - having the new storage class
+    # - the VM that have some data written, take backup
+    # - the VM restored from the backup
+    # check VMs should able to reach each others (in same networks)
+
+    cluster_state.storage_class = &#34;Created storage class name&#34;
+    cluster_state.backup_name = &#34;backup name from the VM&#34;
+    cluster_state.backup_target = &#34;backup_target&#34;
+    cluster_state.vms = {
+        &#34;backed up&#34;: &#34;backuped VM&#34;,
+        &#34;restored&#34;: &#34;restored VM&#34;,
+        &#34;storage class&#34;: &#34;VM having different storageclass&#34;
+    }</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade"><code class="flex name class">
+<span>class <span class="ident">TestInvalidUpgrade</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.upgrade
+@pytest.mark.any_nodes
+@pytest.mark.negative
+class TestInvalidUpgrade:
+    def test_invalid_manifest(self):
+        &#34;&#34;&#34;
+        Criteria: https://github.com/harvester/tests/issues/518
+
+        Steps:
+        1. Create an invalid manifest.
+        2. Try to upgrade with the invalid manifest.
+        3. Upgrade should not start and fail.
+        &#34;&#34;&#34;
+
+    def test_degraded_volume(self):
+        &#34;&#34;&#34;
+        Criteria: create upgrade should fails if there are any degraded volumes
+
+        Steps:
+        1. Create a VM using a volume with 3 replicas.
+        2. Delete one replica of the volume. Let the volume stay in
+           degraded state.
+        3. Immediately upgrade Harvester.
+        4. Upgrade should fail.
+        &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume"><code class="name flex">
+<span>def <span class="ident">test_degraded_volume</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Criteria: create upgrade should fails if there are any degraded volumes</p>
+<p>Steps:
+1. Create a VM using a volume with 3 replicas.
+2. Delete one replica of the volume. Let the volume stay in
+degraded state.
+3. Immediately upgrade Harvester.
+4. Upgrade should fail.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_degraded_volume(self):
+    &#34;&#34;&#34;
+    Criteria: create upgrade should fails if there are any degraded volumes
+
+    Steps:
+    1. Create a VM using a volume with 3 replicas.
+    2. Delete one replica of the volume. Let the volume stay in
+       degraded state.
+    3. Immediately upgrade Harvester.
+    4. Upgrade should fail.
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest"><code class="name flex">
+<span>def <span class="ident">test_invalid_manifest</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Criteria: <a href="https://github.com/harvester/tests/issues/518">https://github.com/harvester/tests/issues/518</a></p>
+<p>Steps:
+1. Create an invalid manifest.
+2. Try to upgrade with the invalid manifest.
+3. Upgrade should not start and fail.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_invalid_manifest(self):
+    &#34;&#34;&#34;
+    Criteria: https://github.com/harvester/tests/issues/518
+
+    Steps:
+    1. Create an invalid manifest.
+    2. Try to upgrade with the invalid manifest.
+    3. Upgrade should not start and fail.
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade"><code class="flex name class">
+<span>class <span class="ident">TestSingleNodeUpgrade</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.upgrade
+@pytest.mark.single_node
+class TestSingleNodeUpgrade:
+    @pytest.mark.dependency(name=&#34;single_node_upgrade&#34;)
+    def test_perform_upgrade(self):
+        pass</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.test_perform_upgrade"><code class="name flex">
+<span>def <span class="ident">test_perform_upgrade</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;single_node_upgrade&#34;)
+def test_perform_upgrade(self):
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade"><code class="flex name class">
+<span>class <span class="ident">TestThreeNodesUpgrade</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.upgrade
+@pytest.mark.three_nodes
+class TestThreeNodesUpgrade:
+    @pytest.mark.dependency(name=&#34;three_nodes_upgrade&#34;)
+    def test_perform_upgrade(self, cluster_prereq, vm_prereq):
+        &#34;&#34;&#34;
+        - perform upgrade
+        - check all nodes upgraded
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_logging(self):
+        &#34;&#34;&#34; Verify logging pods and logs
+        Criteria: https://github.com/harvester/tests/issues/535
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_network(self, api_client, cluster_state):
+        &#34;&#34;&#34; Verify cluster and VLAN networks
+        - cluster network `mgmt` should exists
+        - Created VLAN should exists
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_vms(self, api_client, cluster_state):
+        &#34;&#34;&#34; Verify VMs&#39; state and data
+        Criteria:
+        - VMs should keep in running state
+        - data in VMs should not lost
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_restore_vm(self, api_client, cluster_state):
+        &#34;&#34;&#34; Verify VM restored from the backup
+        Criteria:
+        - VM should able to start
+        - data in VM should not lost
+        &#34;&#34;&#34;
+
+    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+    def test_verify_storage_class(self, api_client, cluster_state):
+        &#34;&#34;&#34; Verify StorageClasses and defaults
+        - `harvester-longhorn` should be settle as default
+        - `longhorn` should exists
+        &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_perform_upgrade"><code class="name flex">
+<span>def <span class="ident">test_perform_upgrade</span></span>(<span>self, cluster_prereq, vm_prereq)</span>
+</code></dt>
+<dd>
+<div class="desc"><ul>
+<li>perform upgrade</li>
+<li>check all nodes upgraded</li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;three_nodes_upgrade&#34;)
+def test_perform_upgrade(self, cluster_prereq, vm_prereq):
+    &#34;&#34;&#34;
+    - perform upgrade
+    - check all nodes upgraded
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_logging"><code class="name flex">
+<span>def <span class="ident">test_verify_logging</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Verify logging pods and logs
+Criteria: <a href="https://github.com/harvester/tests/issues/535">https://github.com/harvester/tests/issues/535</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+def test_verify_logging(self):
+    &#34;&#34;&#34; Verify logging pods and logs
+    Criteria: https://github.com/harvester/tests/issues/535
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_network"><code class="name flex">
+<span>def <span class="ident">test_verify_network</span></span>(<span>self, api_client, cluster_state)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Verify cluster and VLAN networks
+- cluster network <code>mgmt</code> should exists
+- Created VLAN should exists</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+def test_verify_network(self, api_client, cluster_state):
+    &#34;&#34;&#34; Verify cluster and VLAN networks
+    - cluster network `mgmt` should exists
+    - Created VLAN should exists
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_restore_vm"><code class="name flex">
+<span>def <span class="ident">test_verify_restore_vm</span></span>(<span>self, api_client, cluster_state)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Verify VM restored from the backup
+Criteria:
+- VM should able to start
+- data in VM should not lost</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+def test_verify_restore_vm(self, api_client, cluster_state):
+    &#34;&#34;&#34; Verify VM restored from the backup
+    Criteria:
+    - VM should able to start
+    - data in VM should not lost
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_storage_class"><code class="name flex">
+<span>def <span class="ident">test_verify_storage_class</span></span>(<span>self, api_client, cluster_state)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Verify StorageClasses and defaults
+- <code>harvester-longhorn</code> should be settle as default
+- <code>longhorn</code> should exists</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+def test_verify_storage_class(self, api_client, cluster_state):
+    &#34;&#34;&#34; Verify StorageClasses and defaults
+    - `harvester-longhorn` should be settle as default
+    - `longhorn` should exists
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_vms"><code class="name flex">
+<span>def <span class="ident">test_verify_vms</span></span>(<span>self, api_client, cluster_state)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Verify VMs' state and data
+Criteria:
+- VMs should keep in running state
+- data in VMs should not lost</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+def test_verify_vms(self, api_client, cluster_state):
+    &#34;&#34;&#34; Verify VMs&#39; state and data
+    Criteria:
+    - VMs should keep in running state
+    - data in VMs should not lost
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -154,8 +564,40 @@ def test_pre_upgrade():
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.test_post_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.test_post_upgrade">test_post_upgrade</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.test_pre_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.test_pre_upgrade">test_pre_upgrade</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.cluster_prereq" href="#harvester_e2e_tests.integration.test_upgrade.cluster_prereq">cluster_prereq</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.cluster_state" href="#harvester_e2e_tests.integration.test_upgrade.cluster_state">cluster_state</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.vm_prereq" href="#harvester_e2e_tests.integration.test_upgrade.vm_prereq">vm_prereq</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade">TestInvalidUpgrade</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume">test_degraded_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest">test_invalid_manifest</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade">TestSingleNodeUpgrade</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade">TestThreeNodesUpgrade</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_logging" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_logging">test_verify_logging</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_network" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_network">test_verify_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_restore_vm" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_restore_vm">test_verify_restore_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_storage_class" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_storage_class">test_verify_storage_class</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_vms" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_vms">test_verify_vms</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
