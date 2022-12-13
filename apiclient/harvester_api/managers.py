@@ -646,6 +646,16 @@ class VirtualMachineManager(BaseManager):
 
     Spec = VMSpec
 
+    def download_virtctl(self, *, raw=False, **kwargs):
+        code, info = self._get(f"apis/subresources.{self.VM_API}/v1/version")
+        version, platform = info['gitVersion'], info['platform']
+        resp = self.api.session.get("https://github.com/kubevirt/kubevirt/releases/download/"
+                                    f"{version}/virtctl-{version}-{platform}", **kwargs)
+        if raw:
+            return resp
+        else:
+            return resp.status_code, resp.content
+
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace, VM_API=self.API_VERSION)
         return self._get(path, raw=raw, **kwargs)
