@@ -210,6 +210,13 @@ class VolumeManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._delete(path, raw=raw)
 
+    def export(self, name, image_name, storage_class, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        export_spec = {"displayName": image_name, "namespace": namespace,
+                       "storageClassName": storage_class}
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="export")
+        return self._create(path, params=params, json=export_spec, raw=raw)
+
 
 class TemplateManager(BaseManager):
     # get, create, delete
