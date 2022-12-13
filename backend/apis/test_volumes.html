@@ -66,32 +66,35 @@ class TestVolumesNegative:
         code, data = api_client.volumes.get(unique_name)
 
         assert 404 == code, (code, data)
-        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;code&#39;), (code, data)
 
     def test_delete_not_exist(self, api_client, unique_name):
         code, data = api_client.volumes.delete(unique_name)
 
         assert 404 == code, (code, data)
-        assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
+        assert &#34;NotFound&#34; == data.get(&#34;code&#34;), (code, data)
 
     def test_create_without_size(self, api_client, unique_name):
-        code, data = api_client.volumes.create(unique_name, 0)
+        spec = api_client.volumes.Spec(0)
+        code, data = api_client.volumes.create(unique_name, spec)
 
         assert 422 == code, (code, data)
-        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)
 
     def test_create_without_name(self, api_client):
-        code, data = api_client.volumes.create(&#34;&#34;, 1)
+        spec = api_client.volumes.Spec(1)
+        code, data = api_client.volumes.create(&#34;&#34;, spec)
 
         assert 422 == code, (code, data)
-        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)
 
 
 @pytest.mark.p0
 @pytest.mark.volumes
 class TestVolumes:
     def test_create(self, api_client, unique_name):
-        code, data = api_client.volumes.create(unique_name, 1)
+        spec = api_client.volumes.Spec(1)
+        code, data = api_client.volumes.create(unique_name, spec)
 
         assert 201 == code, (code, data)
 
@@ -100,7 +103,7 @@ class TestVolumes:
         code, data = api_client.volumes.get()
 
         assert 200 == code, (code, data)
-        assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
+        assert len(data[&#39;data&#39;]) &gt; 0, (code, data)
 
         # Case 2: get specific volume
         code, data = api_client.volumes.get(unique_name)
@@ -122,16 +125,9 @@ class TestVolumes:
                 f&#34;Got error: {code}, {data}&#34;
             )
 
-        updates = {
-            &#34;spec&#34;: {
-                &#34;resources&#34;: {
-                    &#34;requests&#34;: {
-                        &#34;storage&#34;: &#34;10Gi&#34;
-                    }
-                }
-            }
-        }
-        code, data = api_client.volumes.update(unique_name, updates)
+        spec = api_client.volumes.Spec.from_dict(data)
+        spec.size = &#34;10Gi&#34;
+        code, data = api_client.volumes.update(unique_name, spec)
 
         assert 200 == code, (f&#34;Failed to update volume with error: {code}, {data}&#34;)
 
@@ -175,7 +171,8 @@ class TestVolumes:
 @pytest.mark.volumes
 class TestVolumes:
     def test_create(self, api_client, unique_name):
-        code, data = api_client.volumes.create(unique_name, 1)
+        spec = api_client.volumes.Spec(1)
+        code, data = api_client.volumes.create(unique_name, spec)
 
         assert 201 == code, (code, data)
 
@@ -184,7 +181,7 @@ class TestVolumes:
         code, data = api_client.volumes.get()
 
         assert 200 == code, (code, data)
-        assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
+        assert len(data[&#39;data&#39;]) &gt; 0, (code, data)
 
         # Case 2: get specific volume
         code, data = api_client.volumes.get(unique_name)
@@ -206,16 +203,9 @@ class TestVolumes:
                 f&#34;Got error: {code}, {data}&#34;
             )
 
-        updates = {
-            &#34;spec&#34;: {
-                &#34;resources&#34;: {
-                    &#34;requests&#34;: {
-                        &#34;storage&#34;: &#34;10Gi&#34;
-                    }
-                }
-            }
-        }
-        code, data = api_client.volumes.update(unique_name, updates)
+        spec = api_client.volumes.Spec.from_dict(data)
+        spec.size = &#34;10Gi&#34;
+        code, data = api_client.volumes.update(unique_name, spec)
 
         assert 200 == code, (f&#34;Failed to update volume with error: {code}, {data}&#34;)
 
@@ -255,7 +245,8 @@ class TestVolumes:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_create(self, api_client, unique_name):
-    code, data = api_client.volumes.create(unique_name, 1)
+    spec = api_client.volumes.Spec(1)
+    code, data = api_client.volumes.create(unique_name, spec)
 
     assert 201 == code, (code, data)</code></pre>
 </details>
@@ -301,7 +292,7 @@ class TestVolumes:
     code, data = api_client.volumes.get()
 
     assert 200 == code, (code, data)
-    assert len(data[&#39;items&#39;]) &gt; 0, (code, data)
+    assert len(data[&#39;data&#39;]) &gt; 0, (code, data)
 
     # Case 2: get specific volume
     code, data = api_client.volumes.get(unique_name)
@@ -333,16 +324,9 @@ class TestVolumes:
             f&#34;Got error: {code}, {data}&#34;
         )
 
-    updates = {
-        &#34;spec&#34;: {
-            &#34;resources&#34;: {
-                &#34;requests&#34;: {
-                    &#34;storage&#34;: &#34;10Gi&#34;
-                }
-            }
-        }
-    }
-    code, data = api_client.volumes.update(unique_name, updates)
+    spec = api_client.volumes.Spec.from_dict(data)
+    spec.size = &#34;10Gi&#34;
+    code, data = api_client.volumes.update(unique_name, spec)
 
     assert 200 == code, (f&#34;Failed to update volume with error: {code}, {data}&#34;)</code></pre>
 </details>
@@ -366,25 +350,27 @@ class TestVolumesNegative:
         code, data = api_client.volumes.get(unique_name)
 
         assert 404 == code, (code, data)
-        assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;code&#39;), (code, data)
 
     def test_delete_not_exist(self, api_client, unique_name):
         code, data = api_client.volumes.delete(unique_name)
 
         assert 404 == code, (code, data)
-        assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
+        assert &#34;NotFound&#34; == data.get(&#34;code&#34;), (code, data)
 
     def test_create_without_size(self, api_client, unique_name):
-        code, data = api_client.volumes.create(unique_name, 0)
+        spec = api_client.volumes.Spec(0)
+        code, data = api_client.volumes.create(unique_name, spec)
 
         assert 422 == code, (code, data)
-        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
+        assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)
 
     def test_create_without_name(self, api_client):
-        code, data = api_client.volumes.create(&#34;&#34;, 1)
+        spec = api_client.volumes.Spec(1)
+        code, data = api_client.volumes.create(&#34;&#34;, spec)
 
         assert 422 == code, (code, data)
-        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+        assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -405,10 +391,11 @@ class TestVolumesNegative:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_create_without_name(self, api_client):
-    code, data = api_client.volumes.create(&#34;&#34;, 1)
+    spec = api_client.volumes.Spec(1)
+    code, data = api_client.volumes.create(&#34;&#34;, spec)
 
     assert 422 == code, (code, data)
-    assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+    assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_volumes.TestVolumesNegative.test_create_without_size"><code class="name flex">
@@ -421,10 +408,11 @@ class TestVolumesNegative:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_create_without_size(self, api_client, unique_name):
-    code, data = api_client.volumes.create(unique_name, 0)
+    spec = api_client.volumes.Spec(0)
+    code, data = api_client.volumes.create(unique_name, spec)
 
     assert 422 == code, (code, data)
-    assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+    assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_volumes.TestVolumesNegative.test_delete_not_exist"><code class="name flex">
@@ -440,7 +428,7 @@ class TestVolumesNegative:
     code, data = api_client.volumes.delete(unique_name)
 
     assert 404 == code, (code, data)
-    assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+    assert &#34;NotFound&#34; == data.get(&#34;code&#34;), (code, data)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_volumes.TestVolumesNegative.test_get_not_exist"><code class="name flex">
@@ -456,7 +444,7 @@ class TestVolumesNegative:
     code, data = api_client.volumes.get(unique_name)
 
     assert 404 == code, (code, data)
-    assert &#34;NotFound&#34; == data.get(&#39;reason&#39;), (code, data)</code></pre>
+    assert &#34;NotFound&#34; == data.get(&#39;code&#39;), (code, data)</code></pre>
 </details>
 </dd>
 </dl>
