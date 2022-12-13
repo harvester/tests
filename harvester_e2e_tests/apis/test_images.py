@@ -15,10 +15,12 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+
 from time import sleep
 from datetime import datetime, timedelta
 
 import pytest
+
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
@@ -87,11 +89,14 @@ class TestImages:
                 "test-label": "42"
             },
             "annotations": {
-                "test-annotation": "dummy"
-            }
+                "test-annotation": "dummy",
+                "field.cattle.io/description": 'test description'
+            },
+
         }
 
         code, data = api_client.images.update(unique_name, dict(metadata=updates))
+
         assert 200 == code, (f"Failed to update image with error: {code}, {data}")
 
         unexpected = list()
