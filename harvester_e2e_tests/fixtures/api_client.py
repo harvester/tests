@@ -86,6 +86,7 @@ def fake_image_file():
     with NamedTemporaryFile("wb") as f:
         f.seek(10 * 1024 ** 2 - 1)  # 10MB
         f.write(b"\0")
+        f.seek(0)
         yield Path(f.name)
 
 
