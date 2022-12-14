@@ -7,6 +7,11 @@
 - name: jenkins | install_jenkins | Install Jenkins
   include_tasks: install_jenkins_on_{{ ansible_os_family }}.yml
 
+- name: jenkins | install_jenkins | Check for jenkins-cli
+  ansible.builtin.stat:
+    path: /usr/bin/jenkins-cli
+  register: jenkins_cli_bin
+
 - name: jenkins | install_jenkins | Wait for Jenkins to be ready
   uri:
     url: "http://localhost:8080/cli/"
@@ -15,6 +20,7 @@
   until: get_jenkins_cli_result.status == 200
   retries: 10
   delay: 20
+  when: jenkins_cli_bin.stat.isreg is not defined and jenkins_cli_bin.stat.executable is not defined
 
 - name: jenkins | install_jenkins | Install Jenkins CLI
   get_url:
@@ -24,20 +30,24 @@
   until: "'OK' in jarfile_get.msg or '304' in jarfile_get.msg or 'file already exists' in jarfile_get.msg"
   retries: 5
   delay: 10
+  when: jenkins_cli_bin.stat.isreg is not defined and jenkins_cli_bin.stat.executable is not defined
 
 - name: jenkins | install_jenkins | Create jenkins CLI to install plugins
   template:
     src: jenkins.j2
-    dest: /usr/bin/jenkins
+    dest: /usr/bin/jenkins-cli
     mode: 0755
     force: yes
   vars:
     JENKINS_AUTH_USERNAME: "{{ JENKINS_BOOTSTRAP_USERNAME }}"
     JENKINS_AUTH_PASSWORD: "{{ JENKINS_BOOTSTRAP_PASSWORD }}"
+  when: jenkins_cli_bin.stat.isreg is not defined and jenkins_cli_bin.stat.executable is not defined
 
+# TODO: fix to allow for new plugins to be added to ansible and script to pretty much just be re-run
+# to install new plugins as desired or possibly update pre-existing ones  
 - name: jenkins | install_jenkins | Install Jenkins plugins
   shell: >
-    /usr/bin/jenkins install-plugin {{ item }}
+    /usr/bin/jenkins-cli install-plugin {{ item }}
   with_items:
     - ansible
     - authorize-project
@@ -65,6 +75,11 @@
     - workflow-cps
     - workflow-job
     - ws-cleanup
+  register: result
+  retries: 5
+  delay: 30
+  until: result is success
+  when: jenkins_cli_bin.stat.isreg is not defined and jenkins_cli_bin.stat.executable is not defined
 
 - name: jenkins | install_jenkins | Remove Jenkins security bootstrap scripts
   file:
@@ -106,17 +121,20 @@
   with_items:
     - harvester_vagrant_installation_test.groovy
 
+- name: Just force systemd to reread configs
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Brief pause after systemd rereading configs
+  ansible.builtin.pause:
+    prompt: "pausing briefly after systemd rereading configs"
+    seconds: 30
+
 - name: jenkins | install_jenkins | Restart jenkins
-  service:
+  ansible.builtin.systemd:
     name: jenkins
     state: restarted
-
-- name: jenkins | install_jenkins | Create jenkins CLI
-  template:
-    src: jenkins.j2
-    dest: /usr/bin/jenkins
-    mode: 0755
-    force: yes
-  vars:
-    JENKINS_AUTH_USERNAME: "{{ JENKINS_ADMIN_USERNAME }}"
-    JENKINS_AUTH_PASSWORD: "{{ JENKINS_ADMIN_PASSWORD }}"
+  register: result
+  retries: 5
+  delay: 30
+  until: result is success

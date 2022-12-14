@@ -57,6 +57,19 @@
     mode: 0644
   when: JENKINS_USE_PROXY
 
+- name: jenkins | build drop in system-d config dir
+  ansible.builtin.shell: >
+    mkdir -p /etc/systemd/system/jenkins.service.d
+
+- name: jenkins | load in the override.conf
+  template:
+    src: override.conf.j2
+    dest: /etc/systemd/system/jenkins.service.d/override.conf
+    mode: 0600
+    force: yes
+  vars:
+    JENKINS_USING_PROXY: "{{ JENKINS_USE_PROXY }}"
+
 - name: jenkins | install_jenkins_on_Debian |
         Create init.groovy.d to bootstrap Jenkins
   file:
@@ -75,10 +88,18 @@
     group: jenkins
     mode: 0755
 
-- name: jenkins | install_jenkins_on_Debian | Restart Jenkins
-  systemd:
+- name: jenkins | install_jenkins | Restart jenkins
+  ansible.builtin.systemd:
     name: jenkins
     state: restarted
+    daemon_reload: yes
+    force: yes
+    enabled: yes
+    masked: no
+  register: result
+  retries: 5
+  delay: 30
+  until: result is success
 
 - name: jenkins | install_jenkins_on_Debian | Enable Jenkins port 8080
   shell: ufw allow 8080

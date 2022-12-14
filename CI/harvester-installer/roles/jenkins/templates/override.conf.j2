@@ -1,0 +1,8 @@
+# https://www.jenkins.io/doc/book/system-administration/systemd-services/
+[Service]
+Environment="JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/var/lib/jenkins/casc_configs -Djava.awt.headless=true"
+Environment="CASC_JENKINS_CONFIG=/var/lib/jenkins/casc_configs/"
+{% if JENKINS_USING_PROXY %}
+Environment="JENKINS_OPTS=--httpListenAddress=127.0.0.1"
+{% endif %}
+
