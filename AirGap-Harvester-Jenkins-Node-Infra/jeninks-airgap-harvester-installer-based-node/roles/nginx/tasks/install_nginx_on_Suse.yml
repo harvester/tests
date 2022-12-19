@@ -1,0 +1,6 @@
+---
+- name: nginx | install_nginx_on_Suse | Install nginx package
+  community.general.zypper:
+    name: ['nginx']
+    state: latest
+    update_cache: yes

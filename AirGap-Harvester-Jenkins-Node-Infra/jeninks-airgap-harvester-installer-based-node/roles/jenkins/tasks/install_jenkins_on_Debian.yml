@@ -1,0 +1,85 @@
+---
+- name: jenkins | install_jenkins_on_Debian |
+        Install prerequisite packages for Jenkins
+  apt:
+    name: [ca-certificates, openjdk-11-jdk, curl, apt-transport-https, gnupg,
+           python3, python3-pip, figlet, sshpass]
+    state: latest
+    update_cache: yes
+
+- name: jenkins | install_jenkins_on_Debian | Install Ansible
+  pip:
+    name: [pip, ansible]
+    state: latest
+
+- name: jenkins | install_jenkins_on_Debian | Add Jenkins apt repo key
+  apt_key:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+    state: present
+
+- name: jenkins | install_jenkins_on_Debian | Add Jenkins apt repo
+  apt_repository:
+    repo: 'deb http://pkg.jenkins.io/debian-stable binary/'
+    state: present
+    update_cache: true
+
+- name: jenkins | install_jenkins_on_Debian | Install Jenkins package
+  apt:
+    name: jenkins
+    state: latest
+
+- name: jenkins | install_jenkins_on_Debian | Stop jenkins service
+  service:
+    name: jenkins
+    state: stopped
+
+# NOTE(gyee): running this tasks repeatedly will add the same Java args
+# multiple time. But that should be fine so as long as the values are
+# consistent. However, if we are using this task to reconfigure any of the
+# args with a different value then the result may not be correct.
+# If we ever need to reconfigure Jenkins, it may be best to just do re-install.
+- name: jenkins | install_jenkins_on_Debian | Add Java options
+  lineinfile:
+    path: /etc/default/jenkins
+    regexp: '^(JAVA_ARGS=\")(.*)$'
+    line: '\1-Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/var/lib/jenkins/casc_configs \2'
+    state: present
+    backrefs: yes
+    mode: 0644
+
+- name: jenkins | install_jenkins_on_Debian | Bind to localhost
+  lineinfile:
+    path: /etc/default/jenkins
+    regexp: '^(JENKINS_ARGS=\")(.*)$'
+    line: '\1--httpListenAddress=127.0.0.1 \2'
+    state: present
+    backrefs: yes
+    mode: 0644
+  when: JENKINS_USE_PROXY
+
+- name: jenkins | install_jenkins_on_Debian |
+        Create init.groovy.d to bootstrap Jenkins
+  file:
+    path: /var/lib/jenkins/init.groovy.d
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: 0775
+
+- name: jenkins | install_jenkins_on_Debian |
+        Configure Jenkins bootstrap credential
+  template:
+    src: basic-security.groovy.j2
+    dest: /var/lib/jenkins/init.groovy.d/basic-security.groovy
+    owner: jenkins
+    group: jenkins
+    mode: 0755
+
+- name: jenkins | install_jenkins_on_Debian | Restart Jenkins
+  systemd:
+    name: jenkins
+    state: restarted
+
+- name: jenkins | install_jenkins_on_Debian | Enable Jenkins port 8080
+  shell: ufw allow 8080
+

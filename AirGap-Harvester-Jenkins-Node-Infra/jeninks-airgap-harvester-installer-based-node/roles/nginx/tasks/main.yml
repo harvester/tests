@@ -1,0 +1,44 @@
+---
+- name: nginx | main | Include OS family vars
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_os_family }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+    - "default.yml"
+
+- name: nginx | main | Include OS distribution vars
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | replace(' ', '_') }}.yml"
+    - "{{ ansible_distribution | lower | replace(' ', '_') }}.yml"
+    - "{{ ansible_distribution | replace(' ', '_') }}.yml"
+    - "default.yml"
+
+- name: nginx | main | Install nginx package
+  include_tasks: install_nginx_on_{{ ansible_os_family }}.yml
+
+- name: nginx | main | Setup SSL certificates
+  include_tasks: setup_ssl.yml
+  when: nginx_use_ssl
+
+- name: nginx | main | Create nginx.conf file
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+
+- name: nginx | main | Create vhosts.d
+  file:
+    path: /etc/nginx/vhosts.d
+    state: directory
+    recurse: yes
+
+- name: nginx | main | Create jenkins vhost file
+  template:
+    src: jenkins.conf.j2
+    dest: /etc/nginx/vhosts.d/jenkins.conf
+
+- name: nginx | main | Start nginx service
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes

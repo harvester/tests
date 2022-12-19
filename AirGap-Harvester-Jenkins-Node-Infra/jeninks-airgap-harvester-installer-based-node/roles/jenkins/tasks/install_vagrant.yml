@@ -1,0 +1,37 @@
+---
+- name: jenkins | install_vagrant |
+        Get the latest vagrant release from github tags
+  shell: >
+    curl -s https://api.github.com/repos/hashicorp/vagrant/tags |
+    grep '"name":' |
+    sed 's/.*"v//g' |
+    sed 's/",//g' |
+    sort -t. -k 1,1nr -k 2,2nr -k 3,3nr |
+    head -n 1
+  register: vagrant_latest_version_lookup_result
+  until: vagrant_latest_version_lookup_result.stdout
+  retries: 5
+  delay: 30
+
+- name: jenkins | install_vagrant | Check latest vagrant version
+  fail:
+    msg: "Failed to lookup latest vagrant version: {{ vagrant_latest_version_lookup_result.stdout }}"
+  when: not vagrant_latest_version_lookup_result.stdout | trim
+
+- name: jenkins | install_vagrant | Set latest vagrant version
+  set_fact:
+    LATEST_VAGRANT_VERSION: "{{ vagrant_latest_version_lookup_result.stdout }}"
+
+- name: jenkins | install_vagrant | Display latest vagrant version
+  debug:
+    msg: "Latest vagrant release is {{ LATEST_VAGRANT_VERSION }}"
+
+- name: jenkins | install_vagrant | Install Vagrant
+  include_tasks: install_vagrant_on_{{ ansible_os_family }}.yml
+
+- name: jenkins | install_vagrant |
+        Install vagrant-libvirt plugin for jenkins user
+  become: true
+  become_user: jenkins
+  shell: >
+    vagrant plugin install vagrant-libvirt

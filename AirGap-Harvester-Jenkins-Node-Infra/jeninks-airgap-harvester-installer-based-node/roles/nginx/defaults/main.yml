@@ -1,0 +1,11 @@
+---
+nginx_use_ssl: "{{ JENKINS_PROXY_ENABLE_SSL | default(True) }}"
+ip: "{{ server_ip | default(ansible_host) }}"
+
+server_ssl_key_type: rsa
+server_ssl_key_size: 2048
+server_ssl_private_key_file: /etc/nginx/server_ssl_private_key.pem
+server_ssl_cert_file: /etc/nginx/server_ssl_cert.pem
+server_ssl_ca_file: /etc/nginx/ca.pem
+server_ssl_dhparams_file: /etc/nginx/dhparams.pem
+ssl_server_san: IP:{{ ip }},DNS:ci.harvesterhci.io

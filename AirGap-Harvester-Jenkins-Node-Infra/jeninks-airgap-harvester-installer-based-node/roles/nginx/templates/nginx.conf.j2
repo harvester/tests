@@ -1,0 +1,49 @@
+#user  nginx;
+worker_processes  1;
+
+# load_module lib64/nginx/modules/ngx_http_fancyindex_module.so;
+# load_module lib64/nginx/modules/ngx_http_geoip_module.so;
+# load_module lib64/nginx/modules/ngx_http_headers_more_filter_module.so;
+# load_module lib64/nginx/modules/ngx_http_image_filter_module.so;
+# load_module lib64/nginx/modules/ngx_http_perl_module.so;
+# load_module lib64/nginx/modules/ngx_http_xslt_filter_module.so;
+# load_module lib64/nginx/modules/ngx_mail_module.so;
+# load_module lib64/nginx/modules/ngx_rtmp_module.so;
+# load_module lib64/nginx/modules/ngx_stream_geoip_module.so;
+# load_module lib64/nginx/modules/ngx_stream_module.so;
+
+#error_log  /var/log/nginx/error.log;
+#error_log  /var/log/nginx/error.log  notice;
+#error_log  /var/log/nginx/error.log  info;
+
+#pid        /run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+    use epoll;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    #access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    include conf.d/*.conf;
+
+    include vhosts.d/*.conf;
+
+}

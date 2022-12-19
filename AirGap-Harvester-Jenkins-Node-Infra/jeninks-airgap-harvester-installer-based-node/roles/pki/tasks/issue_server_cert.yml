@@ -1,0 +1,33 @@
+---
+
+- set_fact:
+    csr_file: "{{ intermediate_ca_csr_dir }}/{{ ssl_server_host_name }}_{{ timestamp }}.csr"
+
+- name: pki | issue_server_certificate | Create {{ etc_dir }}
+  file:
+    path: "{{ etc_dir }}"
+    state: directory
+    recurse: yes
+
+- name: pki | issue_server_certificate | Create {{ intermediate_ca_conf_file }}
+  template:
+    src: intermediate-ca.conf.j2
+    dest: "{{ intermediate_ca_conf_file }}"
+
+- name: pki | issue_server_certificate | Issue certificate for {{ csr_file }}
+  command: |
+    openssl ca
+      -config "{{ intermediate_ca_conf_file }}"
+      -extensions server_cert
+      -days 3650
+      -notext
+      -md sha256
+      -in "{{ csr_file }}"
+      -batch
+  register: server_cert_pem
+
+- name: pki | issue_server_certificate | Create {{ server_cert_file }}
+  copy:
+    content: "{{ server_cert_pem.stdout }}"
+    dest: "{{ server_cert_file }}"
+    force: no

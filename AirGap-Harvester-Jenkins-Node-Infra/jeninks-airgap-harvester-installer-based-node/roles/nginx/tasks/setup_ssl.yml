@@ -1,0 +1,54 @@
+---
+- name: nginx | setup_ssl | Generate SSL private key
+  include_role:
+    name: pki
+    tasks_from: generate_private_key
+  vars:
+    key_type: "{{ server_ssl_key_type }}"
+    file_owner: root
+    file_group: root
+    file_mode: 0600
+    key_size: "{{ server_ssl_key_size }}"
+    key_file: "{{ server_ssl_private_key_file }}"
+
+- name: nginx | setup_ssl | Generate cert request (CSR)
+  include_role:
+    name: pki
+    tasks_from: generate_server_cert_req
+  vars:
+    key_file: "{{ server_ssl_private_key_file }}"
+
+- name: nginx | setup_ssl | Generate server SSL certificate
+  include_role:
+    name: pki
+    tasks_from: issue_server_cert
+  vars:
+    server_cert_file: "{{ server_ssl_cert_file }}"
+
+- name: nginx | setup_ssl | Copy trusted CA certificates
+  include_role:
+    name: pki
+    tasks_from: copy_ca_certs_chain
+  vars:
+    file_owner: root
+    file_group: root
+    file_mode: 0644
+    ca_certs_file: "{{ server_ssl_ca_file }}"
+
+- name: nginx | setup_ssl | Install trusted CA certificates
+  include_role:
+    name: pki
+    tasks_from: install_ca_certs_chain
+
+- name: nginx | setup_ssl | Generate dhparams
+  become: yes
+  shell: >
+    openssl dhparam -dsaparam -out {{ server_ssl_dhparams_file }} 4096
+
+- name: nginx | setup_ssl | Create SSL server certificate chain
+  shell: >
+    for f in "{{ server_ssl_cert_file }}" "{{ server_ssl_ca_file }}";
+    do (cat "${f}"; echo) >> cert_chain.pem; done;
+    mv cert_chain.pem {{ server_ssl_cert_file }}
+  args:
+    chdir: /etc/nginx/

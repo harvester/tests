@@ -1,0 +1,26 @@
+---
+
+- name: pki | main | Check for {{ intermediate_ca_cert_file }}
+  stat:
+    path: "{{ intermediate_ca_cert_file }}"
+  register: intermediate_ca_cert
+
+- name: pki | main | Check for {{ intermediate_ca_key_file }}
+  stat:
+    path: "{{ intermediate_ca_key_file }}"
+  register: intermediate_ca_key
+
+- name: pki | main | Check for {{ intermediate_ca_conf_file }}
+  stat:
+    path: "{{ intermediate_ca_conf_file }}"
+  register: intermediate_ca_conf
+
+- name: pki | main | Check for {{ ca_cert_chain_file }}
+  stat:
+    path: "{{ ca_cert_chain_file }}"
+  register: ca_cert_chain
+
+- include: _setup_pki.yml
+  when: not intermediate_ca_cert.stat.exists and
+        not intermediate_ca_key.stat.exists and
+        not ca_cert_chain.stat.exists

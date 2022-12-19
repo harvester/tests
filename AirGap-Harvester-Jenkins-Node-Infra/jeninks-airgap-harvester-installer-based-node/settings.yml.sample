@@ -1,0 +1,35 @@
+---
+# Jenkins admin user configuration. This user have unrestricted access to
+# Jenkins.
+JENKINS_ADMIN_USERNAME: admin
+JENKINS_ADMIN_PASSWORD:
+JENKINS_ADMIN_EMAIL:
+
+# Password for the "jenkins" user. This is for setting up a Jenkins slave only.
+JENKINS_USER_PASSWORD: jenkins
+
+# Jenkins dev user configuration. This user only have read access to the jobs.
+JENKINS_DEV_USERNAME: harvester
+JENKINS_DEV_PASSWORD: harvester
+
+# Jenkins public endpoint. If Jenkins is running behind a reversed proxy and
+# the proxy IP is different than the Jenkins host, make sure to configure it
+# correctly here.
+JENKINS_PUBLIC_ENDPOINT: https://ci.harvesterhci.io/
+
+# Github token used by Jenkins to post the result to the pull requests.
+GITHUB_CI_USERNAME: harvester-ci
+GITHUB_CI_PASSWORD: ghp_g9sDDSsehUePKAQBSzqpMZkVGDYkg0Rx6aJX
+
+# Decide whether to use a reversed proxy and whether to enable SSL for the
+# reversed proxy.
+# FIXME(gyee): we are using self-signed CA for the SSL certificates right now.
+# To avoid browser warnings, we should be using certificates that are issued by
+# a commercial CA.
+JENKINS_USE_PROXY: True
+JENKINS_PROXY_ENABLE_SSL: True
+
+
+# Additional
+SLACK_WEBHOOK_TOKEN: change-me
+JENKINS_ENDPOINT_IP: "111.222.333.444"

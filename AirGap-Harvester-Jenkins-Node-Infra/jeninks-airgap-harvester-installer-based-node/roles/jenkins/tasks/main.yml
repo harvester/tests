@@ -1,0 +1,13 @@
+---
+- name: jenkins | main | Install Jenkins
+  include_tasks: install_jenkins.yml
+
+- name: jenkins | main | Install Docker
+  include_tasks: install_docker.yml
+
+- name: jenkins | main | Install Vagrant and vagrant-libvirt plugin
+  include_tasks: install_vagrant.yml
+
+- name: jenkins | main | Reboot
+  reboot:
+    msg: "Reboot for the permission changes to take effect"

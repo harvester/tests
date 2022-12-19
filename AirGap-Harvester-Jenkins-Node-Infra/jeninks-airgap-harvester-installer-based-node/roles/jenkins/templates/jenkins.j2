@@ -1,0 +1,3 @@
+#!/bin/bash
+
+java -jar /opt/jenkins-cli.jar -auth {{ JENKINS_AUTH_USERNAME }}:{{ JENKINS_AUTH_PASSWORD }} -s http://127.0.0.1:8080 $@

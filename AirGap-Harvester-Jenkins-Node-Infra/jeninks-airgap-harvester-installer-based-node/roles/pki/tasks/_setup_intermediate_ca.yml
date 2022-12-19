@@ -1,0 +1,40 @@
+---
+
+- name: pki | _setup_intermediate_ca | Create intermediate-ca.conf
+  template:
+    src: intermediate-ca.conf.j2
+    dest: "{{ intermediate_ca_conf_file }}"
+
+- include: _setup_ca.yml
+  vars:
+    ca_type: intermediate
+    ca_dir: "{{ intermediate_ca_dir }}"
+
+- name: pki | _setup_intermediate_ca | Create intermediate CA cert req (CSR)
+  command: |
+    openssl req
+      -config "{{ intermediate_ca_conf_file }}"
+      -new
+      -sha256
+      -key "{{ intermediate_ca_key_file }}"
+      -out "{{ intermediate_ca_csr_file }}"
+      -nodes
+  args:
+    creates: "{{ intermediate_ca_csr_file }}"
+
+- include: _issue_certificate.yml
+  vars:
+    ca_conf_file: "{{ root_ca_conf_file }}"
+    ca_extensions: v3_intermediate_ca
+    csr_file: "{{ intermediate_ca_csr_file }}"
+    cert_file: "{{ intermediate_ca_cert_file }}"
+    ca_cert_file: "{{ root_ca_cert_file }}"
+
+- name: pki | _setup_intermediate_ca | Copy intermediatet CA certificate to {{ certs_dir }}
+  copy:
+    remote_src: true
+    src: "{{ intermediate_ca_cert_file }}"
+    dest: "{{ certs_dir }}"
+    owner: root
+    group: root
+    mode: 0744

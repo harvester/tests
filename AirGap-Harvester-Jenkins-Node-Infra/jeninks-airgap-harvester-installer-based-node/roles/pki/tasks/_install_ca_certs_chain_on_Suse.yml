@@ -1,0 +1,9 @@
+---
+- name: pki | _install_ca_certs_chain_on_Suse | Copy CA certs to trust anchors
+  copy:
+    content: "{{ ca_certs_chain_content }}"
+    dest: "/usr/share/pki/trust/anchors/simple_ca_certs.pem"
+
+- name: pki | _install_ca_certs_chain_on_Suse | Update CA certificates
+  shell: update-ca-certificates
+

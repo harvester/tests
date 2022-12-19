@@ -1,0 +1,9 @@
+---
+- name: pki | _install_ca_certs_chain_on_Debian | Copy CA certs to trust anchors
+  copy:
+    content: "{{ ca_certs_chain_content }}"
+    dest: "/usr/local/share/ca-certificates/simple_ca_certs.pem"
+
+- name: pki | _install_ca_certs_chain_on_Debian | Update CA certificates
+  shell: update-ca-certificates
+
