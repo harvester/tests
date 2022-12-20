@@ -150,7 +150,7 @@ class ImageManager(BaseManager):
 
     def create_by_file(self, name, filepath, namespace=DEFAULT_NAMESPACE,
                        description="", display_name=None):
-        file = Path(filepath)
+        file = Path(filepath).expanduser()
 
         data = self.create_data(name, "", description, "upload", namespace, display_name)
         self.create("", namespace, json=data)
@@ -658,6 +658,10 @@ class VirtualMachineManager(BaseManager):
 
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace, VM_API=self.API_VERSION)
+        return self._get(path, raw=raw, **kwargs)
+
+    def get_status(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
+        path = self.VMI_fmt.format(uid=name, ns=namespace, VM_API=self.API_VERSION)
         return self._get(path, raw=raw, **kwargs)
 
     def create(self, name, vm_spec, namespace=DEFAULT_NAMESPACE, *, raw=False):
