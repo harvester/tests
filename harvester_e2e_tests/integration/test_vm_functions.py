@@ -53,7 +53,7 @@ def image_id(api_client, opensuse_image, unique_name, wait_timeout):
 
     yield f"{data['metadata']['namespace']}/{unique_image_id}"
 
-    api_client.images.delete(unique_image_id)
+    code, data = api_client.images.delete(unique_image_id)
 
 
 @pytest.fixture(scope="module")
@@ -62,7 +62,7 @@ def unique_vm_name(unique_name):
 
 
 @pytest.mark.p0
-@pytest.mark.virtual_machine
+@pytest.mark.virtualmachines
 @pytest.mark.dependency(name="minimal_vm")
 def test_minimal_vm(api_client, image_id, unique_vm_name, wait_timeout):
     cpu, mem = 1, 2
@@ -89,7 +89,7 @@ def test_minimal_vm(api_client, image_id, unique_vm_name, wait_timeout):
 
 
 @pytest.mark.p0
-@pytest.mark.virtual_machine
+@pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["minimal_vm"])
 class TestVMOperations:
     @pytest.mark.dependency(name="pause_vm", depends=["minimal_vm"])
@@ -338,16 +338,28 @@ class TestVMOperations:
                 f"Status({code}): {data}"
             )
 
-        fails = []
+        fails, check = [], dict()
         for vol in spec.volumes:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
-            code, data = api_client.volumes.get(vol_name)
-            if 200 == code:
-                code, data = api_client.volumes.delete(vol_name)
+            check[vol_name] = api_client.volumes.delete(vol_name)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            l_check = dict()
+            for vol_name, (code, data) in check.items():
                 if 200 != code:
-                    fails.append((vol_name, "Failed to delete"))
-            else:
-                fails.append((vol_name, "Failed to get"))
+                    fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
+                else:
+                    code, data = api_client.volumes.get(vol_name)
+                    if 404 != code:
+                        l_check[vol_name] = (code, data)
+            check = l_check
+            if not check:
+                break
+            sleep(5)
+        else:
+            for vol_name, (code, data) in check.items():
+                fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
 
         assert not fails, (
             f"Failed to delete VM({unique_vm_name})'s volumes with errors:\n"
