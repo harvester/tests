@@ -54,7 +54,7 @@ def host_state(request):
     return HostState(request.config.getoption("--node-scripts-location"))
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope='module')
 def unique_name():
     return datetime.now().strftime("%m-%d-%Hh%Mm%Ss%f")
 
