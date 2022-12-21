@@ -170,6 +170,12 @@ def pytest_addoption(parser):
         help=('Region of the bucket')
     )
     parser.addoption(
+        '--s3-endpoint',
+        action='store',
+        default=config_data['s3-endpoint'],
+        help=('S3 endpoint')
+    )
+    parser.addoption(
         '--nfs-endpoint',
         action='store',
         default=config_data['nfs-endpoint'],
