@@ -76,7 +76,7 @@ def test_minimal_vm(api_client, image_id, unique_vm_name, wait_timeout):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         code, data = api_client.vms.get_status(unique_vm_name)
-        if "Running" == data.get('status', {}).get('phase'):
+        if 200 == code and "Running" == data.get('status', {}).get('phase'):
             break
         sleep(3)
     else:
@@ -239,6 +239,13 @@ class TestVMOperations:
         assert "AgentConnected" == old_agent['type'], (code, data)
 
         api_client.vms.softreboot(unique_vm_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(unique_vm_name)
+            if "AgentConnected" not in data['status']['conditions'][-1]['type']:
+                break
+            sleep(5)
+
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
