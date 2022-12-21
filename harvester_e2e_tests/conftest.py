@@ -81,6 +81,12 @@ def pytest_addoption(parser):
         help=('Windows image URL ')
     )
     parser.addoption(
+        '--opensuse-image-url',
+        action='store',
+        default=config_data.get('opensuse-image-url'),
+        help=('OpenSUSE image URL')
+    )
+    parser.addoption(
         '--terraform-scripts-location',
         action='store',
         default=config_data['terraform-scripts-location'],

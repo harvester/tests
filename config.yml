@@ -26,7 +26,7 @@ node-scripts-location: 'scripts/vagrant'
 
 # URL to download the Windows image
 win-image-url: ''
-
+opensuse-image-url: https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2
 # URL to download all images
 image-cache-url: ''
 

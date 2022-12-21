@@ -6,11 +6,15 @@ pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client"
 ]
 
+# TODO: remove it after update CI's config.yml
+DEFAULT_OPENSUSE_IMAGE_URL = ("https://download.opensuse.org/repositories/Cloud:/Images:"
+                              "/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2")
+
 
 @pytest.fixture(scope="session")
 def opensuse_image(request, api_client):
     image_server = request.config.getoption('--image-cache-url')
-    url = urlparse(request.config.getoption('--opensuse-image-url'))
+    url = urlparse(request.config.getoption('--opensuse-image-url', DEFAULT_OPENSUSE_IMAGE_URL))
 
     if image_server:
         *_, image_name = url.path.rsplit('/', 1)
