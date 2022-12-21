@@ -251,6 +251,7 @@ def pytest_configure(config):
         ("networks", ("marker to run vlan network tests")),
         ("volumes", ("marker to run volume tests")),
         ("templates", ("marker to run VM template tests")),
+        ("virtualmachines", ("marker to run VM tests")),
         ("support_bundle", ("marker to run Support Bundle tests")),
         ("settings", ("marker to run settings tests")),
         ("upgrade", ("marker to run upgrade tests"))
