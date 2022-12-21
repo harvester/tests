@@ -1,4 +1,4 @@
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 import pytest
 
@@ -14,7 +14,7 @@ def opensuse_image(request, api_client):
 
     if image_server:
         *_, image_name = url.path.rsplit('/', 1)
-        url = urlparse(image_server)._replace(path=image_name)
+        url = urlparse(urljoin(image_server, image_name))
 
     return ImageInfo(url)
 
