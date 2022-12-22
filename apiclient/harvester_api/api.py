@@ -4,9 +4,11 @@ import requests
 from pkg_resources import parse_version
 from requests.packages.urllib3.util.retry import Retry
 
-from .managers import (HostManager, KeypairManager, ImageManager, SettingManager,
-                       NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
-                       ClusterNetworkManager, VirtualMachineManager)
+from .managers import (
+    HostManager, KeypairManager, ImageManager, SettingManager,
+    NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
+    ClusterNetworkManager, VirtualMachineManager, BackupManager
+)
 
 
 class HarvesterAPI:
@@ -45,6 +47,7 @@ class HarvesterAPI:
         self.settings = SettingManager(self)
         self.clusternetworks = ClusterNetworkManager(self)
         self.vms = VirtualMachineManager(self)
+        self.backups = BackupManager(self)
 
     @property
     def cluster_version(self):

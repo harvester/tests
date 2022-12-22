@@ -1,10 +1,57 @@
 from copy import deepcopy
-from json import dumps
+from json import dumps, loads
 
 import yaml
 
 MGMT_NETID = object()
 DEFAULT_STORAGE_CLS = "harvester-longhorn"
+
+
+class RestoreSpec:
+    def __init__(self, new_vm, vm_name=None, namespace=None, delete_volumes=None):
+        self.new_vm = new_vm
+        self.vm_name = vm_name
+        self.namespace = namespace
+        self.delete_volumes = delete_volumes
+
+    def __repr__(self):
+        return (f"{__class__.__name__}({self.new_vm},"
+                f" {self.vm_name}, {self.namespace}, {self.delete_volumes})")
+
+    def to_dict(self, name, namespace, existing_vm):
+        data = {
+            "type": "harvesterhci.io.virtualmachinerestore",
+            "metadata": {
+                "generateName": f"restore-{name}-",
+                "name": "",
+                "namespace": self.namespace or namespace
+            },
+            "spec": {
+                "target": {
+                    "apiGroup": "kubevirt.io",
+                    "kind": "VirtualMachine",
+                    "name": self.vm_name
+                },
+                "virtualMachineBackupName": name,
+                "virtualMachineBackupNamespace": namespace
+            }
+        }
+        spec = data['spec']
+        if self.new_vm:
+            spec['newVM'] = self.new_vm
+        else:
+            spec['deletionPolicy'] = "delete" if self.delete_volumes else "retain"
+            spec['target']['name'] = existing_vm
+
+        return deepcopy(data)
+
+    @classmethod
+    def for_new(cls, vm_name, namespace=None):
+        return cls(True, vm_name, namespace)
+
+    @classmethod
+    def for_existing(cls, delete_volumes=True):
+        return cls(False, delete_volumes=delete_volumes)
 
 
 class VMSpec:
@@ -427,3 +474,64 @@ class VolumeSpec:
         obj._data = data
 
         return obj
+
+
+class BaseSettingSpec:
+    """ Base class for instance check and create"""
+    _name = ""  # to point out the name of setting
+
+    def __init__(self, data):
+        self.data = data
+
+    def to_dict(self):
+        return self.data
+
+    @classmethod
+    def from_dict(cls, data):
+        for c in cls.__subclasses__():
+            if c._name == data.get('metadata', {}).get('name'):
+                return c.from_dict(data)
+        return cls(data)
+
+
+class BackupTargetSpec(BaseSettingSpec):
+    _name = "backup-target"
+
+    def __init__(self, value=None):
+        self.value = value or dict()
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.value})"
+
+    @property
+    def type(self):
+        return self.value.get('type')
+
+    def clear(self):
+        self.value = dict()
+
+    def to_dict(self):
+        return dict(value=dumps(self.value))
+
+    @classmethod
+    def from_dict(cls, data):
+        value = loads(data['value'])
+        return cls(value)
+
+    @classmethod
+    def S3(cls, bucket, region, access_id, access_secret, endpoint="", virtual_hosted=None):
+        data = {
+            "type": "s3",
+            "endpoint": endpoint,
+            "bucketName": bucket,
+            "bucketRegion": region,
+            "accessKeyId": access_id,
+            "secretAccessKey": access_secret
+        }
+        if virtual_hosted is not None:
+            data['virtualHostedStyle'] = virtual_hosted
+        return cls(data)
+
+    @classmethod
+    def NFS(cls, endpoint):
+        return cls(dict(type="nfs", endpoint=endpoint))
