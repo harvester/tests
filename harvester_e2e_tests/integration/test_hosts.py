@@ -67,3 +67,22 @@ def test_host_poweron_state(api_client, host_state, wait_timeout):
 
     _, node = api_client.hosts.get(node['id'])
     assert "active" == node["metadata"]["state"]["name"]
+
+
+@pytest.mark.hosts
+@pytest.mark.p1
+@pytest.mark.host_management
+def test_host_info(api_client, host_state, wait_timeout):
+    _, nodes_info = api_client.hosts.get()
+
+    node = nodes_info['data'][-1]
+    node_ip = next(val["address"] for val in node['status']['addresses']
+                   if val["type"] == "InternalIP")
+
+    rc, out, err = host_state.get_processors(node['id'], node_ip)
+    assert rc == 0, (f"Failed to PowerOn node {node['id']} with error({rc}):\n"
+                     f"stdout: {out}\n\nstderr: {err}")
+
+    processor_cnt = out.decode('UTF-8').strip().split()[-1]
+
+    assert node.get('status', {}).get('capacity', {}).get('cpu', "0") == processor_cnt

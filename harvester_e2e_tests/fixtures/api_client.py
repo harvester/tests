@@ -51,6 +51,11 @@ def host_state(request):
         def reboot(self, name, ip):
             return self.power(name, ip, -1)
 
+        def get_processors(self, name, ip):
+            proc = run([self.path / "get_processors.sh", name, ip],
+                       stdout=PIPE, stderr=PIPE)
+            return proc.returncode, proc.stdout, proc.stderr
+
     return HostState(request.config.getoption("--node-scripts-location"))
 
 
