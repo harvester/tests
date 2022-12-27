@@ -1,4 +1,6 @@
+from datetime import timedelta
 from tempfile import NamedTemporaryFile
+from time import sleep
 from pathlib import Path
 from datetime import datetime
 from subprocess import run, PIPE
@@ -148,3 +150,35 @@ def skip_version_after(request, api_client):
             f"Cluster Version `{api_client.cluster_version}` is not included"
             f" in the supported version (most < `{mark.args[0]}`)"
         )
+
+
+@pytest.fixture(scope="session")
+def focal_image_url():
+    return "http://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img"  # noqa
+
+
+@pytest.fixture(scope="class")
+def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
+    code, data = api_client.images.create_by_url(unique_name, focal_image_url)
+    assert 201 == code, (
+        f"Failed to upload focal image with error: {code}, {data}"
+    )
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.images.get(unique_name)
+        if 'status' in data and 'progress' in data['status'] and \
+                data['status']['progress'] == 100:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Image {unique_name} can't be ready with {wait_timeout} timed out\n"
+            f"Got error: {code}, {data}"
+        )
+
+    namespace = data['metadata']['namespace']
+    name = data['metadata']['name']
+    yield f"{namespace}/{name}"
+
+    api_client.images.delete(name, namespace)

@@ -716,3 +716,11 @@ class VirtualMachineManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         params = dict(action="softreboot")
         return self._create(path, raw=raw, params=params)
+
+
+class VirtualMachineInstanceManager(BaseManager):
+    PATH_fmt = "v1/harvester/kubevirt.io.virtualmachineinstances/{ns}{uid}"
+
+    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        return self._get(path, raw=raw, **kwargs)
