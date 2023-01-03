@@ -40,7 +40,7 @@ class VMConsole:
                                f"self.{out}")
 
         out = self.execute_command(self.user)
-        breakpoint()
+
         return self.execute_command(self.passwd)
 
     def logout(self):
