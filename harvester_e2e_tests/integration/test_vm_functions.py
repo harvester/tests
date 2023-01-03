@@ -65,6 +65,10 @@ def unique_vm_name(unique_name):
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(name="minimal_vm")
 def test_minimal_vm(api_client, image_id, unique_vm_name, wait_timeout):
+    """
+    To cover test:
+    - https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/ # noqa
+    """
     cpu, mem = 1, 2
     vm = api_client.vms.Spec(cpu, mem)
     vm.add_image("disk-0", image_id)
@@ -92,6 +96,11 @@ def test_minimal_vm(api_client, image_id, unique_vm_name, wait_timeout):
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["minimal_vm"])
 class TestVMOperations:
+    """
+    To cover tests:
+    - https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/ # noqa
+    """
+
     @pytest.mark.dependency(name="pause_vm", depends=["minimal_vm"])
     def test_pause(self, api_client, unique_vm_name, wait_timeout):
         code, data = api_client.vms.pause(unique_vm_name)
@@ -269,6 +278,10 @@ class TestVMOperations:
         )
 
     def test_migrate(self, api_client, unique_vm_name, wait_timeout):
+        """
+        To cover test:
+        - https://harvester.github.io/tests/manual/live-migration/migrate-turned-on-vm-to-another-host/ # noqa
+        """
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
         code, data = api_client.vms.get_status(unique_vm_name)
@@ -293,6 +306,10 @@ class TestVMOperations:
             )
 
     def test_abort_migrate(self, api_client, unique_vm_name, wait_timeout):
+        """
+        To cover test:
+        - https://harvester.github.io/tests/manual/live-migration/abort-live-migration/
+        """
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
         code, data = api_client.vms.get_status(unique_vm_name)
