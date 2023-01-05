@@ -640,7 +640,7 @@ class VirtualMachineManager(BaseManager):
     # operators: start, restart, stop, migrate, pause, unpause, softreboot
     PATH_fmt = "v1/harvester/kubevirt.io.virtualmachines/{ns}{uid}"
     # guestinfo, network
-    VMI_fmt = "apis/{VM_API}/namespaces/{ns}/virtualmachineinstances/{uid}"
+    VMI_fmt = "v1/harvester/kubevirt.io.virtualmachineinstances/{ns}/{uid}"
     # operators: guestosinfo, console(ws), vnc(ws)
     VMIOP_fmt = "apis/subresources.{VM_API}/namespaces/{ns}/virtualmachineinstances/{uid}/{op}"
 
@@ -657,11 +657,11 @@ class VirtualMachineManager(BaseManager):
             return resp.status_code, resp.content
 
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
-        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace, VM_API=self.API_VERSION)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._get(path, raw=raw, **kwargs)
 
     def get_status(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
-        path = self.VMI_fmt.format(uid=name, ns=namespace, VM_API=self.API_VERSION)
+        path = self.VMI_fmt.format(uid=name, ns=namespace)
         return self._get(path, raw=raw, **kwargs)
 
     def create(self, name, vm_spec, namespace=DEFAULT_NAMESPACE, *, raw=False):
@@ -678,7 +678,7 @@ class VirtualMachineManager(BaseManager):
         return self._update(path, vm_spec, raw=raw, as_json=as_json, **kwargs)
 
     def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace, VM_API=self.API_VERSION)
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._delete(path, raw=raw)
 
     def clone(self, name, new_vm_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
