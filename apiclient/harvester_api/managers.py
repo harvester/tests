@@ -5,7 +5,7 @@ from collections.abc import Mapping
 
 from pkg_resources import parse_version
 
-from .models import VolumeSpec, VMSpec, BaseSettingSpec, BackupTargetSpec, RestoreSpec
+from .models import VolumeSpec, VMSpec
 
 DEFAULT_NAMESPACE = "default"
 
@@ -150,7 +150,7 @@ class ImageManager(BaseManager):
 
     def create_by_file(self, name, filepath, namespace=DEFAULT_NAMESPACE,
                        description="", display_name=None):
-        file = Path(filepath)
+        file = Path(filepath).expanduser()
 
         data = self.create_data(name, "", description, "upload", namespace, display_name)
         self.create("", namespace, json=data)
@@ -345,27 +345,8 @@ class TemplateManager(BaseManager):
 
 
 class BackupManager(BaseManager):
-    BACKUP_fmt = "v1/harvester/harvesterhci.io.virtualmachinebackups/{ns}/{uid}"
-    RESTORE_fmt = "v1/harvester/harvesterhci.io.virtualmachinerestores/{ns}"
-
-    RestoreSpec = RestoreSpec
-
-    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
-        path = self.BACKUP_fmt.format(uid=name, ns=namespace)
-        return self._get(path, raw=raw, **kwargs)
-
-    def create(self, name, restore_spec, namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
-        _, data = self.get(name, namespace)
-        old_vm = data['spec']['source']
-        spec = restore_spec.to_dict(name, namespace, old_vm)
-        path = self.RESTORE_fmt.format(ns=restore_spec.namespace or namespace)
-        return self._create(path, json=spec, raw=raw, **kwargs)
-
-    def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
-        path = self.BACKUP_fmt.format(uid=name, ns=namespace)
-        return self._delete(path, raw=raw, **kwargs)
-
-    restore = create  # alias
+    # get, create, update, delete
+    backup = "apis/{API_VERSION}/namespaces/{namespaces}/virtualmachinebackups/{uid}"
 
 
 class KeypairManager(BaseManager):
@@ -470,24 +451,9 @@ class SettingManager(BaseManager):
     # api-ui-version, backup-target, cluster-registration-url
     PATH_fmt = "apis/{{API_VERSION}}/settings/{name}"
     # "v1/harvesterhci.io.settings/{name}"
-    Spec = BaseSettingSpec
-    BackupTargetSpec = BackupTargetSpec
 
     def get(self, name="", *, raw=False):
         return self._get(self.PATH_fmt.format(name=name))
-
-    def update(self, name, spec, *, raw=False, as_json=True, **kwargs):
-        path = self.PATH_fmt.format(name=name)
-        if isinstance(spec, BaseSettingSpec):
-            spec = spec.to_dict()
-        if isinstance(spec, Mapping) and as_json:
-            _, node = self.get(name)
-            spec = merge_dict(spec, node)
-        return self._update(path, spec, raw=raw, as_json=as_json, **kwargs)
-
-    def backup_target_test_connection(self, *, raw=False):
-        path = "/v1/harvester/backuptarget/healthz"
-        return self._get(path, raw=raw)
 
 
 class SupportBundlemanager(BaseManager):
@@ -646,8 +612,22 @@ class VirtualMachineManager(BaseManager):
 
     Spec = VMSpec
 
+    def download_virtctl(self, *, raw=False, **kwargs):
+        code, info = self._get(f"apis/subresources.{self.VM_API}/v1/version")
+        version, platform = info['gitVersion'], info['platform']
+        resp = self.api.session.get("https://github.com/kubevirt/kubevirt/releases/download/"
+                                    f"{version}/virtctl-{version}-{platform}", **kwargs)
+        if raw:
+            return resp
+        else:
+            return resp.status_code, resp.content
+
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace, VM_API=self.API_VERSION)
+        return self._get(path, raw=raw, **kwargs)
+
+    def get_status(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
+        path = self.VMI_fmt.format(uid=name, ns=namespace, VM_API=self.API_VERSION)
         return self._get(path, raw=raw, **kwargs)
 
     def create(self, name, vm_spec, namespace=DEFAULT_NAMESPACE, *, raw=False):
@@ -671,11 +651,6 @@ class VirtualMachineManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         params = dict(action="clone")
         return self._create(path, raw=raw, params=params, json=dict(targetVm=new_vm_name))
-
-    def backup(self, name, backup_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
-        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
-        params = dict(action="backup")
-        return self._create(path, raw=raw, params=params, json=dict(name=backup_name))
 
     def start(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)

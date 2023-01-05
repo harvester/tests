@@ -70,7 +70,7 @@ class VMSpec:
     # SSH Key
 
     def __init__(self, cpu_cores, memory, description="", reserved_mem="", os_type="",
-                 mgmt_network=True, guest_agent=True):
+                 mgmt_network=True, guest_agent=True, machine_type=None):
 
         self._cloudinit_vol = {
             "disk": {
@@ -98,6 +98,8 @@ class VMSpec:
         self.description = description
         self.reserved_mem = reserved_mem
         self.os_type = os_type
+        if machine_type is not None:
+            self.machine_type = machine_type
 
     @property
     def mgmt_network(self):
