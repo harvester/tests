@@ -1,9 +1,12 @@
+import re
+from io import StringIO
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from datetime import datetime
 from subprocess import run, PIPE
 
 import pytest
+from paramiko import SSHClient, RSAKey, MissingHostKeyPolicy
 from pkg_resources import parse_version
 from cryptography.hazmat import backends
 from cryptography.hazmat.primitives import asymmetric, serialization
@@ -149,3 +152,69 @@ def skip_version_after(request, api_client):
             f"Cluster Version `{api_client.cluster_version}` is not included"
             f" in the supported version (most < `{mark.args[0]}`)"
         )
+
+
+@pytest.fixture(scope="session")
+def host_shell(request):
+    password = request.config.getoption("--host-password") or None
+    pkey = request.config.getoption('--host-private-key') or None
+    if pkey:
+        pkey = RSAKey.from_private_key(StringIO(pkey))
+
+    class HostShell:
+        _client = _jump = None
+
+        def __init__(self, username, password=None, pkey=None):
+            self.username = username
+            self.password = password
+            self.pkey = pkey
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, exc_tb):
+            self.logout()
+
+        @property
+        def client(self):
+            return self._client
+
+        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
+            if not self.client:
+                self._client = cli = SSHClient()
+                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+                kws = dict(username=self.username, password=self.password, pkey=self.pkey)
+                kws.update(kwargs)
+                cli.connect(ipaddr, port, **kws)
+
+                if jumphost:
+                    self.jumphost_policy()
+                    self._jump = True
+
+            return self
+
+        def logout(self):
+            if self.client and self.client.get_transport():
+                if self._jump:
+                    self.jumphost_policy(False)
+                    self._jump = None
+                self.client.close()
+                self._client = None
+
+        def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None):
+            _, out, err = self.client.exec_command(command, bufsize, timeout, get_pty, env)
+            return out.read().decode(), err.read().decode()
+
+        def jumphost_policy(self, allow=True):
+            ctx, err = self.exec_command("sudo cat /etc/ssh/sshd_config")
+            if allow:
+                renew = re.sub(r'\n(Allow(?:Tcp|Agent)Forwarding no)',
+                               lambda m: f"\n#{m.group(1)}", ctx, re.I | re.M)
+            else:
+                renew = re.sub(r'#(Allow(?:Tcp|Agent)Forwarding no)',
+                               lambda m: m.group(1), ctx, re.I | re.M)
+            self.exec_command(f'sudo cat<<"EOF">_config\n{renew}EOF')
+            self.exec_command('sudo mv _config /etc/ssh/sshd_config'
+                              ' && sudo systemctl restart sshd')
+
+    return HostShell('rancher', password, pkey)
