@@ -7,6 +7,10 @@ username: 'admin'
 #Harvester password
 password: 'password1234'
 
+# To access Harvester node, fill in one of following is enough.
+host-password: ''
+host-private-key: ''
+
 #Do not cleanup the test artifacts
 do-not-cleanup: False
 
