@@ -41,6 +41,18 @@ def pytest_addoption(parser):
         help='Harvester password'
     )
     parser.addoption(
+        '--host-password',
+        action='store',
+        default=config_data['host-password'],
+        help='Password to access Harvesrer node'
+    )
+    parser.addoption(
+        '--host-private-key',
+        action='store',
+        default=config_data['host-private-key'],
+        help='private key to access Harvester node'
+    )
+    parser.addoption(
         '--do-not-cleanup',
         action='store_true',
         default=config_data['do-not-cleanup'],
