@@ -201,14 +201,6 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
-        ("skip_version_before", (
-            "Mark test skipped when cluster version < provided version")),
-        ("skip_version_after", (
-            "Mark test skipped when cluster version >= provided version")),
-        ('p0', ('mark test to run only p1 tests ')),
-        ('p1', ('mark test to run only p1 tests ')),
-        ('p2', ('mark test to run only p2 tests ')),
-        ("negative", ("marker negative testing")),
         ('public_network', ('mark test to run only if public networking is available')),
         ('multi_node_scheduling', (
             'mark test to run only if we have a multi-node cluster'
@@ -219,10 +211,6 @@ def pytest_configure(config):
             'host management (power_on.sh, power_off.sh, reboot.sh) '
             'scripts provided. These tests are designed to test '
             'scheduling resiliency and disaster recovery scenarios. ')),
-        ('delete_host', ('mark test to run in the end when other tests finished running')),
-        ('terraform', (
-            'mark test to run only if we have terraform.sh '
-            'and terraform provider scripts provided')),
         ('backupnfs', (
             'mark test to run only the backup and restore'
             'tests for NFS backup target')),
@@ -248,7 +236,6 @@ def pytest_configure(config):
         ('network_p2', ('marker to run only P2 Network test ')),
         ('volumes_p1', ('mark test to run only P1 test for Volume')),
         ('volumes_p2', ('mark test to run only P2 test for Volume')),
-        ('hosts', ('mark test as host related')),
         ('authentication_p1', ('mark test to run only P1 test for authentication')),
         ('backup_and_restore_p1', (
             'mark test to run only to execute the P1 test for Backup and Recovery')),
@@ -257,20 +244,36 @@ def pytest_configure(config):
         ('terraform_provider_p1', ('mark test to run only P1 test for terraform provider')),
         ('rancher_integration_with_external_rancher', (
             'mark Rancher integration tests with an external Rancher')),
-        ('rancher', ('mark rancher integration  tests ')),
-        ('keypairs', ("marker to run ssh keypair tests")),
-        ('images', ("marker to run image tests")),
-        ("networks", ("marker to run vlan network tests")),
-        ("volumes", ("marker to run volume tests")),
-        ("templates", ("marker to run VM template tests")),
-        ("virtualmachines", ("marker to run VM tests")),
-        ("support_bundle", ("marker to run Support Bundle tests")),
-        ("settings", ("marker to run settings tests")),
-        ("upgrade", ("marker to run upgrade tests"))
+
+        # deprecated markers above would be removed.
+        ("skip_version_before", (
+            "mark test skipped when cluster version < provided version")),
+        ("skip_version_after", (
+            "mark test skipped when cluster version >= provided version")),
+        ('p0', ("mark the test's priority is p0")),
+        ('p1', ("mark the test's priority is p1")),
+        ('p2', ("mark the test's priority is p2")),
+        ('hosts', ('{_r} host tests')),
+        ('delete_host', ('{_r} host and will delete one of hosts')),
+        ("negative", ("{_r} a negative tests")),
+        ('keypairs', ("{_r} SSH keypairs tests")),
+        ('images', ("{_r} image tests")),
+        ("networks", ("{_r} vlan network tests")),
+        ("volumes", ("{_r} volume tests")),
+        ("templates", ("{_r} VM template tests")),
+        ("support_bundle", ("{_r} Support Bundle tests")),
+        ("settings", ("{_r} settings tests")),
+        ("upgrade", ("{_r} upgrade tests")),
+        ("any_nodes", ("{_r} tests which could be ran on clushter with any nodes")),
+        ("single_node", ("{_r} tests which could only be ran on cluster with single node")),
+        ("three_nodes", ("{_r} tests which could only be ran on cluster with three nodes")),
+        ('rancher', ("{_r} reancher integration tests")),
+        ('terraform', ("{_r} terraform tests"))
     ]
 
     for m, msg in markers:
-        config.addinivalue_line("markers", f"{m}:{msg}")
+        related = 'mark the test is related to'
+        config.addinivalue_line("markers", f"{m}:{msg.format(_r=related)}")
 
 
 def pytest_collection_modifyitems(config, items):
