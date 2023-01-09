@@ -26,12 +26,15 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from tempfile import NamedTemporaryFile
+<pre><code class="python">import re
+from io import StringIO
+from tempfile import NamedTemporaryFile
 from pathlib import Path
 from datetime import datetime
 from subprocess import run, PIPE
 
 import pytest
+from paramiko import SSHClient, RSAKey, MissingHostKeyPolicy
 from pkg_resources import parse_version
 from cryptography.hazmat import backends
 from cryptography.hazmat.primitives import asymmetric, serialization
@@ -176,7 +179,73 @@ def skip_version_after(request, api_client):
         pytest.skip(
             f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
             f&#34; in the supported version (most &lt; `{mark.args[0]}`)&#34;
-        )</code></pre>
+        )
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def host_shell(request):
+    password = request.config.getoption(&#34;--host-password&#34;) or None
+    pkey = request.config.getoption(&#39;--host-private-key&#39;) or None
+    if pkey:
+        pkey = RSAKey.from_private_key(StringIO(pkey))
+
+    class HostShell:
+        _client = _jump = None
+
+        def __init__(self, username, password=None, pkey=None):
+            self.username = username
+            self.password = password
+            self.pkey = pkey
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, exc_tb):
+            self.logout()
+
+        @property
+        def client(self):
+            return self._client
+
+        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
+            if not self.client:
+                self._client = cli = SSHClient()
+                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+                kws = dict(username=self.username, password=self.password, pkey=self.pkey)
+                kws.update(kwargs)
+                cli.connect(ipaddr, port, **kws)
+
+                if jumphost:
+                    self.jumphost_policy()
+                    self._jump = True
+
+            return self
+
+        def logout(self):
+            if self.client and self.client.get_transport():
+                if self._jump:
+                    self.jumphost_policy(False)
+                    self._jump = None
+                self.client.close()
+                self._client = None
+
+        def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None):
+            _, out, err = self.client.exec_command(command, bufsize, timeout, get_pty, env)
+            return out.read().decode(), err.read().decode()
+
+        def jumphost_policy(self, allow=True):
+            ctx, err = self.exec_command(&#34;sudo cat /etc/ssh/sshd_config&#34;)
+            if allow:
+                renew = re.sub(r&#39;\n(Allow(?:Tcp|Agent)Forwarding no)&#39;,
+                               lambda m: f&#34;\n#{m.group(1)}&#34;, ctx, re.I | re.M)
+            else:
+                renew = re.sub(r&#39;#(Allow(?:Tcp|Agent)Forwarding no)&#39;,
+                               lambda m: m.group(1), ctx, re.I | re.M)
+            self.exec_command(f&#39;sudo cat&lt;&lt;&#34;EOF&#34;&gt;_config\n{renew}EOF&#39;)
+            self.exec_command(&#39;sudo mv _config /etc/ssh/sshd_config&#39;
+                              &#39; &amp;&amp; sudo systemctl restart sshd&#39;)
+
+    return HostShell(&#39;rancher&#39;, password, pkey)</code></pre>
 </details>
 </section>
 <section>
@@ -264,6 +333,81 @@ def fake_image_file():
         f.write(b&#34;\0&#34;)
         f.seek(0)
         yield Path(f.name)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.host_shell"><code class="name flex">
+<span>def <span class="ident">host_shell</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def host_shell(request):
+    password = request.config.getoption(&#34;--host-password&#34;) or None
+    pkey = request.config.getoption(&#39;--host-private-key&#39;) or None
+    if pkey:
+        pkey = RSAKey.from_private_key(StringIO(pkey))
+
+    class HostShell:
+        _client = _jump = None
+
+        def __init__(self, username, password=None, pkey=None):
+            self.username = username
+            self.password = password
+            self.pkey = pkey
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, exc_tb):
+            self.logout()
+
+        @property
+        def client(self):
+            return self._client
+
+        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
+            if not self.client:
+                self._client = cli = SSHClient()
+                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+                kws = dict(username=self.username, password=self.password, pkey=self.pkey)
+                kws.update(kwargs)
+                cli.connect(ipaddr, port, **kws)
+
+                if jumphost:
+                    self.jumphost_policy()
+                    self._jump = True
+
+            return self
+
+        def logout(self):
+            if self.client and self.client.get_transport():
+                if self._jump:
+                    self.jumphost_policy(False)
+                    self._jump = None
+                self.client.close()
+                self._client = None
+
+        def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None):
+            _, out, err = self.client.exec_command(command, bufsize, timeout, get_pty, env)
+            return out.read().decode(), err.read().decode()
+
+        def jumphost_policy(self, allow=True):
+            ctx, err = self.exec_command(&#34;sudo cat /etc/ssh/sshd_config&#34;)
+            if allow:
+                renew = re.sub(r&#39;\n(Allow(?:Tcp|Agent)Forwarding no)&#39;,
+                               lambda m: f&#34;\n#{m.group(1)}&#34;, ctx, re.I | re.M)
+            else:
+                renew = re.sub(r&#39;#(Allow(?:Tcp|Agent)Forwarding no)&#39;,
+                               lambda m: m.group(1), ctx, re.I | re.M)
+            self.exec_command(f&#39;sudo cat&lt;&lt;&#34;EOF&#34;&gt;_config\n{renew}EOF&#39;)
+            self.exec_command(&#39;sudo mv _config /etc/ssh/sshd_config&#39;
+                              &#39; &amp;&amp; sudo systemctl restart sshd&#39;)
+
+    return HostShell(&#39;rancher&#39;, password, pkey)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.host_state"><code class="name flex">
@@ -437,6 +581,7 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.api_client" href="#harvester_e2e_tests.fixtures.api_client.api_client">api_client</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.expected_settings" href="#harvester_e2e_tests.fixtures.api_client.expected_settings">expected_settings</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.fake_image_file" href="#harvester_e2e_tests.fixtures.api_client.fake_image_file">fake_image_file</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.host_shell" href="#harvester_e2e_tests.fixtures.api_client.host_shell">host_shell</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_state" href="#harvester_e2e_tests.fixtures.api_client.host_state">host_state</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_after" href="#harvester_e2e_tests.fixtures.api_client.skip_version_after">skip_version_after</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_before" href="#harvester_e2e_tests.fixtures.api_client.skip_version_before">skip_version_before</a></code></li>

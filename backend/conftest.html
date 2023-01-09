@@ -69,6 +69,18 @@ def pytest_addoption(parser):
         help=&#39;Harvester password&#39;
     )
     parser.addoption(
+        &#39;--host-password&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;host-password&#39;],
+        help=&#39;Password to access Harvesrer node&#39;
+    )
+    parser.addoption(
+        &#39;--host-private-key&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;host-private-key&#39;],
+        help=&#39;private key to access Harvester node&#39;
+    )
+    parser.addoption(
         &#39;--do-not-cleanup&#39;,
         action=&#39;store_true&#39;,
         default=config_data[&#39;do-not-cleanup&#39;],
@@ -376,6 +388,18 @@ def pytest_collection_modifyitems(config, items):
         action=&#39;store&#39;,
         default=config_data[&#39;password&#39;],
         help=&#39;Harvester password&#39;
+    )
+    parser.addoption(
+        &#39;--host-password&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;host-password&#39;],
+        help=&#39;Password to access Harvesrer node&#39;
+    )
+    parser.addoption(
+        &#39;--host-private-key&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;host-private-key&#39;],
+        help=&#39;private key to access Harvester node&#39;
     )
     parser.addoption(
         &#39;--do-not-cleanup&#39;,
