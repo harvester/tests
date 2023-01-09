@@ -68,6 +68,13 @@ def test_minimal_vm(api_client, image_id, unique_vm_name, wait_timeout):
     """
     To cover test:
     - https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/ # noqa
+
+    Steps:
+        1. Create a VM with 1 CPU 2 Memory and other default values
+        2. Save
+    Exepected Result:
+        - VM should created
+        - VM should Started
     """
     cpu, mem = 1, 2
     vm = api_client.vms.Spec(cpu, mem)
@@ -103,6 +110,12 @@ class TestVMOperations:
 
     @pytest.mark.dependency(name="pause_vm", depends=["minimal_vm"])
     def test_pause(self, api_client, unique_vm_name, wait_timeout):
+        '''
+        Steps:
+            1. Pause the VM was created
+        Exepected Result:
+            - VM should change status into `Paused`
+        '''
         code, data = api_client.vms.pause(unique_vm_name)
         assert 204 == code, "`Pause` return unexpected status code"
 
@@ -125,6 +138,12 @@ class TestVMOperations:
 
     @pytest.mark.dependency(depends=["pause_vm"])
     def test_unpause(self, api_client, unique_vm_name, wait_timeout):
+        '''
+        Steps:
+            1. Unpause the VM was paused
+        Exepected Result:
+            - VM's status should not be `Paused`
+        '''
         code, data = api_client.vms.unpause(unique_vm_name)
         assert 204 == code, "`Unpause` return unexpected status code"
 
@@ -144,6 +163,13 @@ class TestVMOperations:
 
     @pytest.mark.dependency(name="stop_vm", depends=["minimal_vm"])
     def test_stop(self, api_client, unique_vm_name, wait_timeout):
+        '''
+        Steps:
+            1. Stop the VM was created and not stopped
+        Exepected Result:
+            - VM's status should be changed to `Stopped`
+            - VM's `RunStrategy` should be changed to `Halted`
+        '''
         code, data = api_client.vms.stop(unique_vm_name)
         assert 204 == code, "`Stop` return unexpected status code"
 
@@ -165,6 +191,12 @@ class TestVMOperations:
 
     @pytest.mark.dependency(depends=["stop_vm"])
     def test_start(self, api_client, unique_vm_name, wait_timeout):
+        '''
+        Steps:
+            1. Start the VM was created and stopped
+        Exepected Result:
+            - VM should change status into `Running`
+        '''
         code, data = api_client.vms.start(unique_vm_name)
         assert 204 == code, "`Start return unexpected status code"
 
@@ -199,6 +231,14 @@ class TestVMOperations:
             )
 
     def test_restart(self, api_client, unique_vm_name, wait_timeout):
+        '''
+        Steps:
+            1. Restart the VM was created
+        Exepected Result:
+            - VM's ActivePods should be updated (which means the VM restarted)
+            - VM's status should update to `Running`
+            - VM's qemu-agent should be connected
+        '''
         code, data = api_client.vms.get_status(unique_vm_name)
         assert 200 == code, (
             f"unable to get VM({unique_vm_name})'s instance infos with errors:\n"
@@ -239,6 +279,14 @@ class TestVMOperations:
             )
 
     def test_softreboot(self, api_client, unique_vm_name, wait_timeout):
+        '''
+        Steps:
+            1. Softreboot the VM was created
+        Exepected Result:
+            - VM's qemu-agent should disconnected (which means the VM rebooting)
+            - VM's qemu-agent should re-connected (which means the VM boot into OS)
+            - VM's status should be changed to `Running`
+        '''
         code, data = api_client.vms.get_status(unique_vm_name)
         assert 200 == code, (
             f"unable to get VM({unique_vm_name})'s instance infos with errors:\n"
@@ -281,6 +329,11 @@ class TestVMOperations:
         """
         To cover test:
         - https://harvester.github.io/tests/manual/live-migration/migrate-turned-on-vm-to-another-host/ # noqa
+
+        Steps:
+            1. migrate the VM was created
+        Exepected Result:
+            - VM's host Node should be changed to another one
         """
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
@@ -309,6 +362,12 @@ class TestVMOperations:
         """
         To cover test:
         - https://harvester.github.io/tests/manual/live-migration/abort-live-migration/
+
+        Steps:
+            1. Abort the VM was created and migrating
+        Exepected Result:
+            - VM should able to perform migrate
+            - VM should stay in current host when migrating be aborted.
         """
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
@@ -345,6 +404,15 @@ class TestVMOperations:
         )
 
     def test_delete(self, api_client, unique_vm_name, wait_timeout):
+        '''
+        Steps:
+            1. Delete the VM was created
+            2. Delete Volumes was belonged to the VM
+        Exepected Result:
+            - VM should able to be deleted and success
+            - Volumes should able to be deleted and success
+        '''
+
         code, data = api_client.vms.delete(unique_vm_name)
         assert 200 == code, (code, data)
 
