@@ -82,7 +82,7 @@ def host_state(request):
     return HostState(request.config.getoption(&#34;--node-scripts-location&#34;))
 
 
-@pytest.fixture(scope=&#39;class&#39;)
+@pytest.fixture(scope=&#39;module&#39;)
 def unique_name():
     return datetime.now().strftime(&#34;%m-%d-%Hh%Mm%Ss%f&#34;)
 
@@ -114,6 +114,7 @@ def fake_image_file():
     with NamedTemporaryFile(&#34;wb&#34;) as f:
         f.seek(10 * 1024 ** 2 - 1)  # 10MB
         f.write(b&#34;\0&#34;)
+        f.seek(0)
         yield Path(f.name)
 
 
@@ -261,6 +262,7 @@ def fake_image_file():
     with NamedTemporaryFile(&#34;wb&#34;) as f:
         f.seek(10 * 1024 ** 2 - 1)  # 10MB
         f.write(b&#34;\0&#34;)
+        f.seek(0)
         yield Path(f.name)</code></pre>
 </details>
 </dd>
@@ -395,7 +397,7 @@ def support_bundle_state():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
 def unique_name():
     return datetime.now().strftime(&#34;%m-%d-%Hh%Mm%Ss%f&#34;)</code></pre>
 </details>
