@@ -293,6 +293,13 @@ def pytest_collection_modifyitems(config, items):
             if 'windows_vm' in item.keywords:
                 item.add_marker(skip_windows_vm)
 
+    if config.getoption('--opensuse-image-url') == '':
+        skip_create_image_url = pytest.mark.skip(reason=(
+            'openSUSE image not specified'))
+        for item in items:
+            if 'windows_vm' in item.keywords:
+                item.add_marker(skip_create_image_url)
+
     if (config.getoption('--nfs-endpoint') == '' and
             config.getoption('--accessKeyId') == ''):
         skip_backup = pytest.mark.skip(reason=(
