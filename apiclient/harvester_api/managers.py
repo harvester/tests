@@ -184,7 +184,7 @@ class VolumeManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._get(path, raw=raw)
 
-    def create(self, name, volume_spec, namespace=DEFAULT_NAMESPACE, *, raw=False, image_id=None):
+    def create(self, name, volume_spec, namespace=DEFAULT_NAMESPACE, image_id=None, *, raw=False):
         if isinstance(volume_spec, self.Spec):
             volume_spec = volume_spec.to_dict(name, namespace, image_id)
 
