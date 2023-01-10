@@ -25,7 +25,8 @@ pytest_plugins = [
     'harvester_e2e_tests.fixtures.volume',
     'harvester_e2e_tests.fixtures.session',
     'harvester_e2e_tests.fixtures.image',
-    'harvester_e2e_tests.fixtures.api_client'
+    'harvester_e2e_tests.fixtures.api_client',
+    'harvester_e2e_tests.fixtures.images',
 ]
 
 
@@ -154,17 +155,16 @@ class TestVolumes:
                 f"Still got {code} with {data}"
             )
 
-    def test_create_volume_backing_image(self, request, api_client, unique_name):
+    def test_create_volume_backing_image(self, api_client, unique_name, opensuse_image):
         """
         1. Create a new image from URL
         2. Check that it is created succesffully.
         3. Create a new volume with the image_id of the previous image
         4. Check that the new image is created
-        5. Delete image and volume if required
+        5. Delete image and volume
         """
 
-        url = request.config.getoption('--opensuse-image-url')
-        code, image_data = api_client.images.create_by_url(unique_name, url)
+        code, image_data = api_client.images.create_by_url(unique_name, opensuse_image.url)
         if code != 201:
             raise AssertionError(
                 f"Failed to create image {unique_name} from URL got\n"
@@ -195,6 +195,5 @@ class TestVolumes:
         assert unique_name == volume_data['metadata']['name'], (code, volume_data)
         assert image_id_temp == volume_data['id']
 
-        if not request.config.getoption('--do-not-cleanup'):
-            api_client.images.delete(unique_name)
-            api_client.volumes.delete(unique_name)
+        api_client.images.delete(unique_name)
+        api_client.volumes.delete(unique_name)

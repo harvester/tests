@@ -22,6 +22,8 @@ import pytest
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
+    "harvester_e2e_tests.fixtures.images",
+
 ]
 
 
@@ -151,7 +153,7 @@ class TestImages:
             )
 
     @pytest.mark.dependency(name="create_image_url")
-    def test_create_with_url(self, request, api_client, unique_name):
+    def test_create_with_url(self, api_client, opensuse_image, unique_name):
         """
         Test if you can create an image from a URL.
 
@@ -163,9 +165,9 @@ class TestImages:
         2. Check for 201 response.
         3. loop until the image has conditions.
         4. Check if the image is intialzied and the status is true
+        5. Remove image
         """
-        url = request.config.getoption('--opensuse-image-url')
-        code, data = api_client.images.create_by_url(unique_name, url)
+        code, data = api_client.images.create_by_url(unique_name, opensuse_image.url)
         if code != 201:
             raise AssertionError(
                 f"Failed to create image {unique_name} from URL got\n"
@@ -185,8 +187,7 @@ class TestImages:
         # assert len(image_conds) == 1, f"Got unexpected image conditions!\n{data}"
         assert "Initialized" == image_conds[len(image_conds)-1].get("type")
         assert "True" == image_conds[len(image_conds)-1].get("status")
-        if not request.config.getoption('--do-not-cleanup'):
-            api_client.images.delete(unique_name)
+        api_client.images.delete(unique_name)
 
 
 @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])
