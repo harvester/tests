@@ -296,18 +296,19 @@ class TestVMOperations:
         assert "AgentConnected" == old_agent['type'], (code, data)
 
         api_client.vms.softreboot(unique_vm_name)
+        # Wait until agent disconnected (leaving OS)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
             if "AgentConnected" not in data['status']['conditions'][-1]['type']:
                 break
             sleep(5)
-
+        # then wait agent connected again (Entering OS)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
-            phase, conds = data['status']['phase'], data['status']['conditions']
-            if "Running" == phase and "AgentConnected" == conds[-1]['type']:
+            phase, conds = data['status']['phase'], data['status'].get('conditions', [{}])
+            if "Running" == phase and "AgentConnected" == conds[-1].get('type'):
                 break
             sleep(3)
         else:
@@ -338,7 +339,11 @@ class TestVMOperations:
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
         code, data = api_client.vms.get_status(unique_vm_name)
-        cur_host = data['status']['nodeName']
+        cur_host = data['status'].get('nodeName')
+        assert cur_host, (
+            f"VMI exists but `nodeName` is empty.\n"
+            f"{data}"
+        )
 
         new_host = next(h['id'] for h in host_data['data'] if cur_host != h['id'])
 
@@ -372,7 +377,11 @@ class TestVMOperations:
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
         code, data = api_client.vms.get_status(unique_vm_name)
-        cur_host = data['status']['nodeName']
+        cur_host = data['status'].get('nodeName')
+        assert cur_host, (
+            f"VMI exists but `nodeName` is empty.\n"
+            f"{data}"
+        )
 
         new_host = next(h['id'] for h in host_data['data'] if cur_host != h['id'])
 
