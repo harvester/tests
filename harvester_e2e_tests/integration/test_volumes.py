@@ -76,7 +76,10 @@ def validate_blank_volumes(request, admin_session, get_api_link):
     return pvc_json
 
 
-def test_create_volume_backing_image(api_client, unique_name, opensuse_image):
+@pytest.mark.volumes_p1
+@pytest.mark.p1
+@pytest.mark.dependency(depends=["create_with_url"])
+def test_create_volume_backing_image(api_client, unique_name, opensuse_image, wait_timeout):
     """
     1. Create a new image from URL
     2. Check that it is created succesffully.
@@ -94,7 +97,7 @@ def test_create_volume_backing_image(api_client, unique_name, opensuse_image):
 
     assert 201 == code, (code, image_data)
 
-    endtime = datetime.now() + timedelta(minutes=3)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         code, data = api_client.images.get(unique_name)
         image_conds = data.get('status', {}).get('conditions', [])
@@ -102,8 +105,8 @@ def test_create_volume_backing_image(api_client, unique_name, opensuse_image):
             break
         sleep(3)
 
-    assert "Initialized" == image_conds[len(image_conds)-1].get("type")
-    assert "True" == image_conds[len(image_conds)-1].get("status")
+    assert "Initialized" == image_conds[-1].get("type")
+    assert "True" == image_conds[-1].get("status")
     spec = api_client.volumes.Spec(1)
     spec.size = "10Gi"
     # spec.storage_cls = "longhorn-" + image_data["spec"]["displayName"]
