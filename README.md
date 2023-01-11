@@ -83,12 +83,10 @@ The makefile allows you to do the following
 
 
 # Backend Tests <a name="backend"/>
-The end-to-end backend test implemented using Python [pytest][pytest] framework, relying on Harvester's API calls.
-All test cases placed under `harvester_e2e_tests`, with following convention:
-    - `apis/` fundamental test cases which only relying on Harvester cluster and its API.
-    - `integrations/` general test cases relying on external resource accessibility.  Most test cases are placed in here and need several configuration options inputted by `config.yml`
-    - `scenarios/` test cases to fit specific scenarios.
-
+The end-to-end backend test implemented using Python [pytest][pytest] framework, relying on Harvester's API calls. All test cases placed under `harvester_e2e_tests` with the following convention:
+   1. `apis/` - Fundamental test cases which only relying on Harvester cluster and its API.
+   1. `integrations/` - General test cases relying on external resource accessibility.  Most test cases are placed in here and need several configuration options inputted by `config.yml`
+   1. `scenarios/` - Test cases to fit specific scenarios.
 
 ## Prerequisites <a name="prerequisites" />
 - Existing Harvester cluster
