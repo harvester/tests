@@ -34,13 +34,13 @@ clean-docs:
 	rm -rf /tmp/hugo;
 
 run-all-tests:
-	tox -e py38 -- harvester_e2e_tests --html=test_result.html
+	tox -e testenv -- harvester_e2e_tests --html=test_result.html
 	
 run-api-tests:
-	tox -e py38 -- harvester_e2e_tests/apis --html=test_result.html
+	tox -e testenv -- harvester_e2e_tests/apis --html=test_result.html
 
 run-scenario-tests:
-	tox -r -e py38 -- harvester_e2e_tests/scenarios --html=test_result.html
+	tox -r -e testenv -- harvester_e2e_tests/scenarios --html=test_result.html
 
 run-integration-tests:
-	tox -r -e py38 -- harvester_e2e_tests/integration --html=test_result.html
+	tox -r -e testenv -- harvester_e2e_tests/integration --html=test_result.html
