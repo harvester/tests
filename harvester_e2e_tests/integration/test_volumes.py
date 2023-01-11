@@ -1,7 +1,8 @@
 import yaml
 import pytest
 import polling2
-
+from time import sleep
+from datetime import datetime, timedelta
 from harvester_e2e_tests import utils
 
 pytest_plugins = [
@@ -9,6 +10,7 @@ pytest_plugins = [
     'harvester_e2e_tests.fixtures.volume',
     'harvester_e2e_tests.fixtures.session',
     'harvester_e2e_tests.fixtures.image',
+    'harvester_e2e_tests.fixtures.images',
 ]
 
 
@@ -72,3 +74,47 @@ def validate_blank_volumes(request, admin_session, get_api_link):
         timeout=request.config.getoption('--wait-timeout'))
     assert success, 'Timed out while waiting for volume to be ready.'
     return pvc_json
+
+
+def test_create_volume_backing_image(api_client, unique_name, opensuse_image):
+    """
+    1. Create a new image from URL
+    2. Check that it is created succesffully.
+    3. Create a new volume with the image_id of the previous image
+    4. Check that the new image is created
+    5. Delete image and volume
+    """
+
+    code, image_data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+    if code != 201:
+        raise AssertionError(
+            f"Failed to create image {unique_name} from URL got\n"
+            f"Creation got {code} with {image_data}"
+        )
+
+    assert 201 == code, (code, image_data)
+
+    endtime = datetime.now() + timedelta(minutes=3)
+    while endtime > datetime.now():
+        code, data = api_client.images.get(unique_name)
+        image_conds = data.get('status', {}).get('conditions', [])
+        if len(image_conds) > 0:
+            break
+        sleep(3)
+
+    assert "Initialized" == image_conds[len(image_conds)-1].get("type")
+    assert "True" == image_conds[len(image_conds)-1].get("status")
+    spec = api_client.volumes.Spec(1)
+    spec.size = "10Gi"
+    # spec.storage_cls = "longhorn-" + image_data["spec"]["displayName"]
+    image_id_temp = image_data["metadata"]["namespace"] + '/' + image_data["metadata"]["name"]
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id_temp)
+
+    # This is for checking that the volume was created
+    code, volume_data = api_client.volumes.get(unique_name)
+    assert 200 == code, (code, volume_data)
+    assert unique_name == volume_data['metadata']['name'], (code, volume_data)
+    assert image_id_temp == volume_data['id']
+
+    api_client.images.delete(unique_name)
+    api_client.volumes.delete(unique_name)

@@ -11,7 +11,7 @@ DEFAULT_OPENSUSE_IMAGE_URL = ("https://download.opensuse.org/repositories/Cloud:
                               "/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2")
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="session")
 def opensuse_image(request, api_client):
     image_server = request.config.getoption('--image-cache-url')
     url = urlparse(request.config.getoption('--opensuse-image-url') or DEFAULT_OPENSUSE_IMAGE_URL)
