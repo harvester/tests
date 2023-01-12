@@ -12,9 +12,10 @@ pytest_plugins = [
 ]
 
 
-@pytest.mark.images_p1
+@pytest.mark.images
+@pytest.mark.p0
 @pytest.mark.dependency(name="create_image_url")
-def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout):
+def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout, sleep_timeout):
     """
     Test if you can create an image from a URL.
 
@@ -39,7 +40,7 @@ def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout):
         image_conds = data.get('status', {}).get('conditions', [])
         if len(image_conds) > 0:
             break
-        sleep(3)
+        sleep(sleep_timeout)
 
     assert "Initialized" == image_conds[-1].get("type")
     assert "True" == image_conds[-1].get("status")

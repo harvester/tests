@@ -31,7 +31,12 @@ def api_client(request):
 
 @pytest.fixture(scope="session")
 def wait_timeout(request):
-    return request.config.getoption('--wait-timeout', 300)
+    return request.config.getoption("--wait-timeout", 300)
+
+
+@pytest.fixture(scope="session")
+def sleep_timeout(request):
+    return request.config.getoption("--sleep-timeout", 4)
 
 
 @pytest.fixture(scope="session")
