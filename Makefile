@@ -44,3 +44,11 @@ run-scenario-tests:
 
 run-integration-tests:
 	tox -r -e py38 -- harvester_e2e_tests/integration --html=test_result.html
+
+build-docker-backend-tests-image:
+	docker build -f Dockerfile . -t harvester-tests-backend:latest;
+
+destroy-docker-backend-tests-image:
+	docker image rm harvester-tests-backend:latest --force
+
+
