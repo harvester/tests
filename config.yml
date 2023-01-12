@@ -53,13 +53,13 @@ backup-scripts-location: 'backup_restore_test_artifacts'
 rancher-version: 'v2.6-head'
 
 # External Rancher endpoint
-#rancher-endpoint: 'https://127.0.0.1
+#rancher-endpoint: 'https://127.0.0.1'
 
 # External Rancher admin user password
 #rancher-admin-password: 'rancher_password'
 
 # Kubernetes version to use for Rancher integration tests
-kubernetes-version: 'v1.21.10+rke2r2'
+kubernetes-version: 'v1.24.8+rke2r1'
 
 # Wait time for polling Rancher cluster status.
-rancher-cluster-wait-timeout: 1200
+rancher-cluster-wait-timeout: 7200

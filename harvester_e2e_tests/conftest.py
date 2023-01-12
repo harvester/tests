@@ -244,6 +244,8 @@ def pytest_configure(config):
         ('terraform_provider_p1', ('mark test to run only P1 test for terraform provider')),
         ('rancher_integration_with_external_rancher', (
             'mark Rancher integration tests with an external Rancher')),
+        ('rke1', ('marker to run rke1 integration tests ')),
+        ('rke2', ('marker to run rke2 integration tests ')),
 
         # deprecated markers above would be removed.
         ("skip_version_before", (
