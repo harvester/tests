@@ -324,18 +324,19 @@ class TestVMOperations:
         assert &#34;AgentConnected&#34; == old_agent[&#39;type&#39;], (code, data)
 
         api_client.vms.softreboot(unique_vm_name)
+        # Wait until agent disconnected (leaving OS)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
             if &#34;AgentConnected&#34; not in data[&#39;status&#39;][&#39;conditions&#39;][-1][&#39;type&#39;]:
                 break
             sleep(5)
-
+        # then wait agent connected again (Entering OS)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
-            phase, conds = data[&#39;status&#39;][&#39;phase&#39;], data[&#39;status&#39;][&#39;conditions&#39;]
-            if &#34;Running&#34; == phase and &#34;AgentConnected&#34; == conds[-1][&#39;type&#39;]:
+            phase, conds = data[&#39;status&#39;][&#39;phase&#39;], data[&#39;status&#39;].get(&#39;conditions&#39;, [{}])
+            if &#34;Running&#34; == phase and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;):
                 break
             sleep(3)
         else:
@@ -366,7 +367,11 @@ class TestVMOperations:
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
         code, data = api_client.vms.get_status(unique_vm_name)
-        cur_host = data[&#39;status&#39;][&#39;nodeName&#39;]
+        cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+        assert cur_host, (
+            f&#34;VMI exists but `nodeName` is empty.\n&#34;
+            f&#34;{data}&#34;
+        )
 
         new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;] if cur_host != h[&#39;id&#39;])
 
@@ -400,7 +405,11 @@ class TestVMOperations:
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
         code, data = api_client.vms.get_status(unique_vm_name)
-        cur_host = data[&#39;status&#39;][&#39;nodeName&#39;]
+        cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+        assert cur_host, (
+            f&#34;VMI exists but `nodeName` is empty.\n&#34;
+            f&#34;{data}&#34;
+        )
 
         new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;] if cur_host != h[&#39;id&#39;])
 
@@ -850,18 +859,19 @@ class TestVMOperations:
         assert &#34;AgentConnected&#34; == old_agent[&#39;type&#39;], (code, data)
 
         api_client.vms.softreboot(unique_vm_name)
+        # Wait until agent disconnected (leaving OS)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
             if &#34;AgentConnected&#34; not in data[&#39;status&#39;][&#39;conditions&#39;][-1][&#39;type&#39;]:
                 break
             sleep(5)
-
+        # then wait agent connected again (Entering OS)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
-            phase, conds = data[&#39;status&#39;][&#39;phase&#39;], data[&#39;status&#39;][&#39;conditions&#39;]
-            if &#34;Running&#34; == phase and &#34;AgentConnected&#34; == conds[-1][&#39;type&#39;]:
+            phase, conds = data[&#39;status&#39;][&#39;phase&#39;], data[&#39;status&#39;].get(&#39;conditions&#39;, [{}])
+            if &#34;Running&#34; == phase and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;):
                 break
             sleep(3)
         else:
@@ -892,7 +902,11 @@ class TestVMOperations:
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
         code, data = api_client.vms.get_status(unique_vm_name)
-        cur_host = data[&#39;status&#39;][&#39;nodeName&#39;]
+        cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+        assert cur_host, (
+            f&#34;VMI exists but `nodeName` is empty.\n&#34;
+            f&#34;{data}&#34;
+        )
 
         new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;] if cur_host != h[&#39;id&#39;])
 
@@ -926,7 +940,11 @@ class TestVMOperations:
         code, host_data = api_client.hosts.get()
         assert 200 == code, (code, host_data)
         code, data = api_client.vms.get_status(unique_vm_name)
-        cur_host = data[&#39;status&#39;][&#39;nodeName&#39;]
+        cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+        assert cur_host, (
+            f&#34;VMI exists but `nodeName` is empty.\n&#34;
+            f&#34;{data}&#34;
+        )
 
         new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;] if cur_host != h[&#39;id&#39;])
 
@@ -1054,7 +1072,11 @@ Exepected Result:<ul>
     code, host_data = api_client.hosts.get()
     assert 200 == code, (code, host_data)
     code, data = api_client.vms.get_status(unique_vm_name)
-    cur_host = data[&#39;status&#39;][&#39;nodeName&#39;]
+    cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+    assert cur_host, (
+        f&#34;VMI exists but `nodeName` is empty.\n&#34;
+        f&#34;{data}&#34;
+    )
 
     new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;] if cur_host != h[&#39;id&#39;])
 
@@ -1191,7 +1213,11 @@ Exepected Result:<ul>
     code, host_data = api_client.hosts.get()
     assert 200 == code, (code, host_data)
     code, data = api_client.vms.get_status(unique_vm_name)
-    cur_host = data[&#39;status&#39;][&#39;nodeName&#39;]
+    cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+    assert cur_host, (
+        f&#34;VMI exists but `nodeName` is empty.\n&#34;
+        f&#34;{data}&#34;
+    )
 
     new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;] if cur_host != h[&#39;id&#39;])
 
@@ -1360,18 +1386,19 @@ Exepected Result:<ul>
     assert &#34;AgentConnected&#34; == old_agent[&#39;type&#39;], (code, data)
 
     api_client.vms.softreboot(unique_vm_name)
+    # Wait until agent disconnected (leaving OS)
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         code, data = api_client.vms.get_status(unique_vm_name)
         if &#34;AgentConnected&#34; not in data[&#39;status&#39;][&#39;conditions&#39;][-1][&#39;type&#39;]:
             break
         sleep(5)
-
+    # then wait agent connected again (Entering OS)
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         code, data = api_client.vms.get_status(unique_vm_name)
-        phase, conds = data[&#39;status&#39;][&#39;phase&#39;], data[&#39;status&#39;][&#39;conditions&#39;]
-        if &#34;Running&#34; == phase and &#34;AgentConnected&#34; == conds[-1][&#39;type&#39;]:
+        phase, conds = data[&#39;status&#39;][&#39;phase&#39;], data[&#39;status&#39;].get(&#39;conditions&#39;, [{}])
+        if &#34;Running&#34; == phase and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;):
             break
         sleep(3)
     else:
