@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.api_endpoints',
+    'harvester_e2e_tests.fixtures.api_client',
     'harvester_e2e_tests.fixtures.volume',
     'harvester_e2e_tests.fixtures.session',
     'harvester_e2e_tests.fixtures.image',
@@ -13,7 +14,7 @@ pytest_plugins = [
 
 @pytest.mark.images_p1
 @pytest.mark.dependency(name="create_image_url")
-def test_create_with_url(api_client, opensuse_image, unique_name):
+def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout):
     """
     Test if you can create an image from a URL.
 
@@ -28,15 +29,11 @@ def test_create_with_url(api_client, opensuse_image, unique_name):
     5. Remove image
     """
     code, data = api_client.images.create_by_url(unique_name, opensuse_image.url)
-    if code != 201:
-        raise AssertionError(
-            f"Failed to create image {unique_name} from URL got\n"
-            f"Creation got {code} with {data}"
-            )
-
-    assert 201 == code, (code, data)
-
-    endtime = datetime.now() + timedelta(minutes=3)
+    assert 201 == code, (
+                f"Failed to create image {unique_name} from URL got\n"
+                f"Creation got {code} with {data}"
+    )
+    endtime = datetime.now() + timedelta(wait_timeout)
     while endtime > datetime.now():
         code, data = api_client.images.get(unique_name)
         image_conds = data.get('status', {}).get('conditions', [])

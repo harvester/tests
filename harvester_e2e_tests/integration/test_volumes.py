@@ -14,7 +14,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.mark.volumes_p1
+@pytest.mark.volumes
 @pytest.mark.p1
 def test_create_volume_image_form(volume_image_form):
     # NOTE: if the volume is successfully create that means the test is good
@@ -26,7 +26,7 @@ def test_create_volume_image_form(volume_image_form):
     pass
 
 
-@pytest.mark.volumes_p1
+@pytest.mark.volumes
 @pytest.mark.p1
 def test_create_volume_using_image_by_yaml(request, admin_session,
                                            harvester_api_endpoints, image):
@@ -76,7 +76,7 @@ def validate_blank_volumes(request, admin_session, get_api_link):
     return pvc_json
 
 
-@pytest.mark.volumes_p1
+@pytest.mark.volumes
 @pytest.mark.p1
 @pytest.mark.dependency(depends=["create_with_url"])
 def test_create_volume_backing_image(api_client, unique_name, opensuse_image, wait_timeout):
@@ -109,15 +109,25 @@ def test_create_volume_backing_image(api_client, unique_name, opensuse_image, wa
     assert "True" == image_conds[-1].get("status")
     spec = api_client.volumes.Spec(1)
     spec.size = "10Gi"
+    spec.storage_cls = "harvester-longhorn"
     # spec.storage_cls = "longhorn-" + image_data["spec"]["displayName"]
     image_id_temp = image_data["metadata"]["namespace"] + '/' + image_data["metadata"]["name"]
     code, data = api_client.volumes.create(unique_name, spec, image_id=image_id_temp)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.images.get(unique_name)
+        code, volume_data = api_client.volumes.get(unique_name)
+        if volume_data['status']['phase'] == "Bound":
+            break
+        sleep(3)
 
     # This is for checking that the volume was created
     code, volume_data = api_client.volumes.get(unique_name)
+    code, image_data = api_client.images.get(unique_name)
     assert 200 == code, (code, volume_data)
     assert unique_name == volume_data['metadata']['name'], (code, volume_data)
-    assert image_id_temp == volume_data['id']
+    assert volume_data['status']['phase'] == "Bound", (volume_data)
+    assert image_id_temp == volume_data['id'], (volume_data)
 
-    api_client.images.delete(unique_name)
-    api_client.volumes.delete(unique_name)
+    # api_client.volumes.delete(unique_name)
+    # api_client.images.delete(unique_name)
