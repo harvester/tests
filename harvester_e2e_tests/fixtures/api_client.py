@@ -62,7 +62,7 @@ def unique_name():
     return datetime.now().strftime("%m-%d-%Hh%Mm%Ss%f")
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def ssh_keypair():
     private_key = asymmetric.rsa.generate_private_key(
         public_exponent=65537,
@@ -184,17 +184,28 @@ def host_shell(request):
         def client(self):
             return self._client
 
-        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
-            if not self.client:
+        def reconnect(self, ipaddr, port=22, **kwargs):
+            if self.client:
+                self.client.close()
                 self._client = cli = SSHClient()
                 cli.set_missing_host_key_policy(MissingHostKeyPolicy())
                 kws = dict(username=self.username, password=self.password, pkey=self.pkey)
                 kws.update(kwargs)
                 cli.connect(ipaddr, port, **kws)
 
+        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
+            if not self.client:
+                cli = SSHClient()
+                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+                kws = dict(username=self.username, password=self.password, pkey=self.pkey)
+                kws.update(kwargs)
+                cli.connect(ipaddr, port, **kws)
+                self._client = cli
+
                 if jumphost:
                     self.jumphost_policy()
                     self._jump = True
+                    self.reconnect(ipaddr, port, **kws)
 
             return self
 
