@@ -19,8 +19,8 @@ import warnings
 import pytest
 
 pytest_plugins = [
-   "harvester_e2e_tests.fixtures.api_client"
-  ]
+    "harvester_e2e_tests.fixtures.api_client"
+]
 
 
 @pytest.mark.p0
@@ -60,3 +60,20 @@ def test_get_all_settings_v110(api_client, expected_settings):
         warnings.warn(UserWarning(f"Few setting(s) been removed: {removed}."))
     if added:
         warnings.warn(UserWarning(f"New setting(s) added: {added}"))
+
+
+@pytest.mark.p0
+@pytest.mark.settings
+def test_update_log_level(api_client):
+    code, data = api_client.settings.get("log-level")
+    assert 200 == code, (f"Failed to get log-level setting with error: {code}, {data}")
+
+    original_value = data.get("value", data['default'])
+    updates = {"value": "Debug"}
+    code, data = api_client.settings.update("log-level", updates)
+
+    assert 200 == code, (f"Failed to update log-level setting with error: {code}, {data}")
+
+    # For teardown
+    updates = {"value": original_value}
+    api_client.settings.update("log-level", updates)

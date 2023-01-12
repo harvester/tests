@@ -1,8 +1,8 @@
 import re
+from datetime import datetime
 from io import StringIO
 from tempfile import NamedTemporaryFile
 from pathlib import Path
-from datetime import datetime
 from subprocess import run, PIPE
 
 import pytest
@@ -132,6 +132,11 @@ def expected_settings():
             'vm-force-reset-policy',
         }
     }
+
+
+@pytest.fixture(scope="session")
+def k8s_version(request):
+    return request.config.getoption("--kubernetes-version")
 
 
 @pytest.fixture(autouse=True)

@@ -35,7 +35,9 @@ def enable_vlan(request, admin_session, harvester_api_endpoints, api_client):
 
     if api_client.cluster_version > parse_version("v1.0.3"):
         yield cluster_network(api_client, vlan_nic)
-        return cluster_network(api_client, vlan_nic, delete=True)
+        if not request.config.getoption('--do-not-cleanup'):
+            cluster_network(api_client, vlan_nic, delete=True)
+        return
 
     resp = admin_session.get(harvester_api_endpoints.get_vlan)
     assert resp.status_code == 200, 'Failed to get vlan: %s' % (resp.content)
