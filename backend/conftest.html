@@ -272,6 +272,8 @@ def pytest_configure(config):
         (&#39;terraform_provider_p1&#39;, (&#39;mark test to run only P1 test for terraform provider&#39;)),
         (&#39;rancher_integration_with_external_rancher&#39;, (
             &#39;mark Rancher integration tests with an external Rancher&#39;)),
+        (&#39;rke1&#39;, (&#39;marker to run rke1 integration tests &#39;)),
+        (&#39;rke2&#39;, (&#39;marker to run rke2 integration tests &#39;)),
 
         # deprecated markers above would be removed.
         (&#34;skip_version_before&#34;, (
@@ -665,6 +667,8 @@ def pytest_collection_modifyitems(config, items):
         (&#39;terraform_provider_p1&#39;, (&#39;mark test to run only P1 test for terraform provider&#39;)),
         (&#39;rancher_integration_with_external_rancher&#39;, (
             &#39;mark Rancher integration tests with an external Rancher&#39;)),
+        (&#39;rke1&#39;, (&#39;marker to run rke1 integration tests &#39;)),
+        (&#39;rke2&#39;, (&#39;marker to run rke2 integration tests &#39;)),
 
         # deprecated markers above would be removed.
         (&#34;skip_version_before&#34;, (

@@ -27,10 +27,10 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import re
+from datetime import datetime
 from io import StringIO
 from tempfile import NamedTemporaryFile
 from pathlib import Path
-from datetime import datetime
 from subprocess import run, PIPE
 
 import pytest
@@ -160,6 +160,11 @@ def expected_settings():
             &#39;vm-force-reset-policy&#39;,
         }
     }
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def k8s_version(request):
+    return request.config.getoption(&#34;--kubernetes-version&#34;)
 
 
 @pytest.fixture(autouse=True)
@@ -442,6 +447,20 @@ def host_state(request):
     return HostState(request.config.getoption(&#34;--node-scripts-location&#34;))</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.k8s_version"><code class="name flex">
+<span>def <span class="ident">k8s_version</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def k8s_version(request):
+    return request.config.getoption(&#34;--kubernetes-version&#34;)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.skip_version_after"><code class="name flex">
 <span>def <span class="ident">skip_version_after</span></span>(<span>request, api_client)</span>
 </code></dt>
@@ -583,6 +602,7 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.fake_image_file" href="#harvester_e2e_tests.fixtures.api_client.fake_image_file">fake_image_file</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_shell" href="#harvester_e2e_tests.fixtures.api_client.host_shell">host_shell</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_state" href="#harvester_e2e_tests.fixtures.api_client.host_state">host_state</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.k8s_version" href="#harvester_e2e_tests.fixtures.api_client.k8s_version">k8s_version</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_after" href="#harvester_e2e_tests.fixtures.api_client.skip_version_after">skip_version_after</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_before" href="#harvester_e2e_tests.fixtures.api_client.skip_version_before">skip_version_before</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.ssh_keypair" href="#harvester_e2e_tests.fixtures.api_client.ssh_keypair">ssh_keypair</a></code></li>
