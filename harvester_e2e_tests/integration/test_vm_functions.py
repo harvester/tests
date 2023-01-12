@@ -3,11 +3,14 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from datetime import datetime, timedelta
 
+import yaml
 import pytest
+from paramiko.ssh_exception import ChannelException
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
-    "harvester_e2e_tests.fixtures.images"
+    "harvester_e2e_tests.fixtures.images",
+    "harvester_e2e_tests.fixtures.virtualmachines"
 ]
 
 
@@ -31,7 +34,7 @@ def kubeconfig_file(api_client):
 
 
 @pytest.fixture(scope="module")
-def image_id(api_client, opensuse_image, unique_name, wait_timeout):
+def image(api_client, opensuse_image, unique_name, wait_timeout):
     unique_image_id = f'image-{unique_name}'
     code, data = api_client.images.create_by_url(
         unique_image_id, opensuse_image.url, display_name=f"{unique_name}-{opensuse_image.name}"
@@ -51,7 +54,8 @@ def image_id(api_client, opensuse_image, unique_name, wait_timeout):
             f"Status({code}): {data}"
         )
 
-    yield f"{data['metadata']['namespace']}/{unique_image_id}"
+    yield dict(id=f"{data['metadata']['namespace']}/{unique_image_id}",
+               user=opensuse_image.ssh_user)
 
     code, data = api_client.images.delete(unique_image_id)
 
@@ -61,10 +65,40 @@ def unique_vm_name(unique_name):
     return f"vm-{unique_name}"
 
 
+@pytest.fixture(scope="class")
+def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
+    unique_vm_name = f"stopped-{unique_vm_name}"
+    cpu, mem = 1, 2
+    pub_key, pri_key = ssh_keypair
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image("disk-0", image['id'])
+    vm_spec.run_strategy = "Halted"
+
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata['ssh_authorized_keys'] = [pub_key]
+    vm_spec.user_data = yaml.dump(userdata)
+
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+
+    yield unique_vm_name
+
+    api_client.vms.delete(unique_vm_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(3)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+        api_client.volumes.delete(vol_name)
+
+
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(name="minimal_vm")
-def test_minimal_vm(api_client, image_id, unique_vm_name, wait_timeout):
+def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
     """
     To cover test:
     - https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/ # noqa
@@ -78,7 +112,7 @@ def test_minimal_vm(api_client, image_id, unique_vm_name, wait_timeout):
     """
     cpu, mem = 1, 2
     vm = api_client.vms.Spec(cpu, mem)
-    vm.add_image("disk-0", image_id)
+    vm.add_image("disk-0", image['id'])
 
     code, data = api_client.vms.create(unique_vm_name, vm)
 
@@ -189,7 +223,7 @@ class TestVMOperations:
         assert "Halted" == data['spec']['runStrategy']
         assert "Stopped" == data['status']['printableStatus']
 
-    @pytest.mark.dependency(depends=["stop_vm"])
+    @pytest.mark.dependency(name="start_vm", depends=["stop_vm"])
     def test_start(self, api_client, unique_vm_name, wait_timeout):
         '''
         Steps:
@@ -218,8 +252,8 @@ class TestVMOperations:
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
             phase = data.get('status', {}).get('phase')
-            conds = data.get('status', {}).get('conditions', [])
-            if "Running" == phase and conds and "AgentConnected" == conds[-1]['type']:
+            conds = data.get('status', {}).get('conditions', [{}])
+            if "Running" == phase and conds and "AgentConnected" == conds[-1].get('type'):
                 break
             sleep(3)
         else:
@@ -266,8 +300,8 @@ class TestVMOperations:
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
             phase = data.get('status', {}).get('phase')
-            conds = data.get('status', {}).get('conditions', [])
-            if "Running" == phase and conds and "AgentConnected" == conds[-1]['type']:
+            conds = data.get('status', {}).get('conditions', [{}])
+            if "Running" == phase and conds and "AgentConnected" == conds[-1].get('type'):
                 break
             sleep(3)
         else:
@@ -466,3 +500,317 @@ class TestVMOperations:
             f"Failed to delete VM({unique_vm_name})'s volumes with errors:\n"
             "\n".join(f"Volume({n}): {r}" for n, r in fails)
         )
+
+
+@pytest.mark.p0
+@pytest.mark.virtualmachines
+def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(stopped_vm)
+        if ('Stopped' == data['status']['printableStatus']
+                and 'Halted' == data['spec']['runStrategy']):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f"Create a Stopped VM({stopped_vm}) with errors:\n"
+            f"Status({code}): {data}"
+        )
+
+    code, data = api_client.vms.get_status(stopped_vm)
+    assert 404 == code, (code, data)
+
+
+@pytest.mark.p0
+@pytest.mark.virtualmachines
+class TestVMClone:
+    def test_clone_running_vm(self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell,
+                              image, stopped_vm):
+        unique_vm_name = stopped_vm
+        pub_key, pri_key = ssh_keypair
+        code, data = api_client.vms.start(unique_vm_name)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(unique_vm_name)
+            phase = data.get('status', {}).get('phase')
+            conds = data.get('status', {}).get('conditions', [{}])
+            if all((200 == code, "Running" == phase, "AgentConnected" == conds[-1].get('type'))):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Failed to Start VM({unique_vm_name}) with errors:\n"
+                f"Phase: {data.get('status', {}).get('phase')}\t"
+                f"Status: {data.get('status')}\n"
+                f"API Status({code}): {data}"
+            )
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+
+        # Log into VM to make some data
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(image['user'], pkey=pri_key)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    login_ex = e
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
+
+            with vm_sh as sh:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    out, err = sh.exec_command('cloud-init status')
+                    if 'done' in out:
+                        break
+                    sleep(3)
+                else:
+                    raise AssertionError(
+                        f"VM {unique_vm_name} Started {wait_timeout} seconds"
+                        f", but cloud-init still in {out}"
+                    )
+                out, err = sh.exec_command(f'echo {unique_vm_name!r} > ~/vmname')
+                assert not err, (out, err)
+                sh.exec_command('sync')
+
+        # Clone VM into new VM
+        cloned_name = f"cloned-{unique_vm_name}"
+        code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
+        assert 204 == code, f"Failed to clone VM {unique_vm_name} into new VM {cloned_name}"
+
+        # Check VM started
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(cloned_name)
+            phase = data.get('status', {}).get('phase')
+            conds = data.get('status', {}).get('conditions', [{}])
+            if all((200 == code, "Running" == phase,
+                    conds, "AgentConnected" == conds[-1].get('type'))):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Failed to Start VM({cloned_name}) with errors:\n"
+                f"Phase: {data.get('status', {}).get('phase')}\t"
+                f"Status: {data.get('status')}\n"
+                f"API Status({code}): {data}"
+            )
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+
+        # Log into new VM to check VM is cloned as old one
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(image['user'], pkey=pri_key)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    login_ex = e
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {cloned_name}") from login_ex
+
+            with vm_sh as sh:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    out, err = sh.exec_command('cloud-init status')
+                    if 'done' in out:
+                        break
+                    sleep(3)
+                else:
+                    raise AssertionError(
+                        f"VM {unique_vm_name} Started {wait_timeout} seconds"
+                        f", but cloud-init still in {out}"
+                    )
+
+                out, err = sh.exec_command('cat ~/vmname')
+            assert unique_vm_name in out, (
+                f"cloud-init writefile failed\n"
+                f"Executed stdout: {out}\n"
+                f"Executed stderr: {err}"
+            )
+
+        # Remove cloned VM and volumes
+        code, data = api_client.vms.get(cloned_name)
+        cloned_spec = api_client.vms.Spec.from_dict(data)
+        api_client.vms.delete(cloned_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get(cloned_name)
+            if 404 == code:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Failed to Delete VM({cloned_name}) with errors:\n"
+                f"Status({code}): {data}"
+            )
+        for vol in cloned_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
+
+    def test_clone_stopped_vm(self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell,
+                              image, stopped_vm):
+        unique_vm_name = stopped_vm
+        pub_key, pri_key = ssh_keypair
+        code, data = api_client.vms.start(unique_vm_name)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(unique_vm_name)
+            phase = data.get('status', {}).get('phase')
+            conds = data.get('status', {}).get('conditions', [{}])
+            if all((200 == code, "Running" == phase, "AgentConnected" == conds[-1].get('type'))):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Failed to Start VM({unique_vm_name}) with errors:\n"
+                f"Phase: {data.get('status', {}).get('phase')}\t"
+                f"Status: {data.get('status')}\n"
+                f"API Status({code}): {data}"
+            )
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+
+        # Log into VM to make some data
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(image['user'], pkey=pri_key)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    login_ex = e
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
+
+            with vm_sh as sh:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    out, err = sh.exec_command('cloud-init status')
+                    if 'done' in out:
+                        break
+                    sleep(3)
+                else:
+                    raise AssertionError(
+                        f"VM {unique_vm_name} Started {wait_timeout} seconds"
+                        f", but cloud-init still in {out}"
+                    )
+                out, err = sh.exec_command(f'echo "stopped-{unique_vm_name}" > ~/vmname')
+                assert not err, (out, err)
+                sh.exec_command('sync')
+
+        # Clone VM into new VM
+        cloned_name = f"cloned-{unique_vm_name}"
+        code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
+        assert 204 == code, f"Failed to clone VM {unique_vm_name} into new VM {cloned_name}"
+
+        # Check VM started
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(cloned_name)
+            phase = data.get('status', {}).get('phase')
+            conds = data.get('status', {}).get('conditions', [{}])
+            if all((200 == code, "Running" == phase,
+                    conds, "AgentConnected" == conds[-1].get('type'))):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Failed to Start VM({cloned_name}) with errors:\n"
+                f"Phase: {data.get('status', {}).get('phase')}\t"
+                f"Status: {data.get('status')}\n"
+                f"API Status({code}): {data}"
+            )
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+
+        # Log into new VM to check VM is cloned as old one
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(image['user'], pkey=pri_key)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    login_ex = e
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {cloned_name}") from login_ex
+
+            with vm_sh as sh:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    out, err = sh.exec_command('cloud-init status')
+                    if 'done' in out:
+                        break
+                    sleep(3)
+                else:
+                    raise AssertionError(
+                        f"VM {unique_vm_name} Started {wait_timeout} seconds"
+                        f", but cloud-init still in {out}"
+                    )
+
+                out, err = sh.exec_command('cat ~/vmname')
+            assert f"stopped-{unique_vm_name}" in out, (
+                f"cloud-init writefile failed\n"
+                f"Executed stdout: {out}\n"
+                f"Executed stderr: {err}"
+            )
+
+        # Remove cloned VM and volumes
+        code, data = api_client.vms.get(cloned_name)
+        cloned_spec = api_client.vms.Spec.from_dict(data)
+        api_client.vms.delete(cloned_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get(cloned_name)
+            if 404 == code:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Failed to Delete VM({cloned_name}) with errors:\n"
+                f"Status({code}): {data}"
+            )
+        for vol in cloned_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
+
+
+@pytest.mark.p0
+@pytest.mark.virtualmachines
+class TestVMWithVolumes:
+    def test_with_two_volumes(self, api_client, image, unique_vm_name, wait_timeout):
+        pass
+
+    def test_with_existing_volume(self, api_client, image, unique_vm_name, wait_timeout):
+        pass

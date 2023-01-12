@@ -269,6 +269,7 @@ def pytest_configure(config):
         ('images', ("{_r} image tests")),
         ("networks", ("{_r} vlan network tests")),
         ("volumes", ("{_r} volume tests")),
+        ("virtualmachines", ("{_r} VM tests")),
         ("templates", ("{_r} VM template tests")),
         ("support_bundle", ("{_r} Support Bundle tests")),
         ("settings", ("{_r} settings tests")),

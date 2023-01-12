@@ -174,6 +174,9 @@ class VMSpec:
 
     @user_data.setter
     def user_data(self, val):
+        if isinstance(val, str):
+            if val.split('\n', 1)[0] != "#cloud-config":
+                val = f"#cloud-config\n{val}"
         self._cloudinit_vol['volume']['cloudInitNoCloud']['userData'] = val
 
     @property
