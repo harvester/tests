@@ -80,6 +80,13 @@ def pytest_addoption(parser):
         help='Wait time for polling operations'
     )
     parser.addoption(
+        '--sleep-timeout',
+        action='store',
+        type=int,
+        default=config_data['sleep-timeout'],
+        help='Wait time for polling operations'
+    )
+    parser.addoption(
         '--node-scripts-location',
         action='store',
         default=config_data['node-scripts-location'],

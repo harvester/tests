@@ -93,7 +93,7 @@ class TestVolumes:
     def test_get(self, api_client, unique_name):
         """
         1. Runs a get command on the volume created in the previous test
-        note: this will fail if you run it by itslef
+        note: this will fail if you run it by itself
         2. It will fail if it doesn't return a 200
         """
         # Case 1: get all volumes
@@ -111,7 +111,7 @@ class TestVolumes:
     def test_update_size(self, api_client, unique_name, wait_timeout):
         """
         1. Updates the volume created in the previous test to 10GB
-        note: this will fail if you run it by itslef
+        note: this will fail if you run it by itself
         2. It will loop while waiting for it to update and error out if it doesn't
         """
         # Pre-condition: Volume is Ready
@@ -136,7 +136,7 @@ class TestVolumes:
     def test_delete(self, api_client, unique_name, wait_timeout):
         """
         1. Deletes the volume created in the previous test
-        note: this will fail if you run it by itslef
+        note: this will fail if you run it by itself
         2. It will loop while waiting for it to delete and error out if it doesn't
         """
         code, data = api_client.volumes.delete(unique_name)
