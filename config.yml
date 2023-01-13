@@ -66,3 +66,13 @@ kubernetes-version: 'v1.24.8+rke2r1'
 
 # Wait time for polling Rancher cluster status.
 rancher-cluster-wait-timeout: 7200
+
+# Upgrade parameters
+upgrade-prepare-dependence: False
+upgrade-sc-replicas: 3
+# If the value is empty, then skip the os version validation.
+upgrade-target-version: ""
+upgrade-iso-url: ""
+upgrade-iso-checksum: ""
+# Based on the number of nodes, i.e., upgrade-wait-timeout * 3 nodes
+upgrade-wait-timeout: 7200

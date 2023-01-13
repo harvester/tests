@@ -17,3 +17,4 @@ terraform_test_artifacts/bin
 .idea
 node_modules
 scripts/**/*.sh
+.vscode/

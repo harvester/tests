@@ -4,11 +4,13 @@ import requests
 from pkg_resources import parse_version
 from requests.packages.urllib3.util.retry import Retry
 
-from .managers import (
-    HostManager, KeypairManager, ImageManager, SettingManager,
-    NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
-    ClusterNetworkManager, VirtualMachineManager, BackupManager
-)
+from .managers import (HostManager, KeypairManager, ImageManager, SettingManager,
+                       NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
+                       ClusterNetworkManager, VirtualMachineManager, StorageClassManager,
+                       BackupManager, VersionManager, UpgradeManager, LonghornReplicaManager,
+                       LonghornVolumeManager)
+
+from .managers import DEFAULT_NAMESPACE
 
 
 class HarvesterAPI:
@@ -30,7 +32,6 @@ class HarvesterAPI:
     def __init__(self, endpoint, token=None, session=None):
         self.session = session or requests.Session()
         self.session.headers.update(Authorization=token or "")
-
         if session is None:
             self.set_retries()
 
@@ -48,6 +49,12 @@ class HarvesterAPI:
         self.clusternetworks = ClusterNetworkManager(self)
         self.vms = VirtualMachineManager(self)
         self.backups = BackupManager(self)
+        self.scs = StorageClassManager(self)
+        self.backups = BackupManager(self)
+        self.versions = VersionManager(self)
+        self.upgrades = UpgradeManager(self)
+        self.lhreplicas = LonghornReplicaManager(self)
+        self.lhvolumes = LonghornVolumeManager(self)
 
     @property
     def cluster_version(self):
@@ -76,6 +83,12 @@ class HarvesterAPI:
     def _delete(self, path, **kwargs):
         url = self.get_url(path)
         return self.session.delete(url, **kwargs)
+
+    def _patch(self, path, **kwargs):
+        url = self.get_url(path)
+        headers = {"Content-type": "application/merge-patch+json"}
+        headers.update(kwargs.pop('headers', {}))
+        return self.session.patch(url, headers=headers, **kwargs)
 
     def get_url(self, path):
         return urljoin(self.endpoint, path).format(API_VERSION=self.API_VERSION)
@@ -106,3 +119,18 @@ class HarvesterAPI:
         path = "v1/management.cattle.io.clusters/local?action=generateKubeconfig"
         r = self._post(path)
         return r.json()['config']
+
+    def get_pods(self, name="", namespace=DEFAULT_NAMESPACE):
+        path = f"v1/pods/{namespace}/{name}"
+        resp = self._get(path)
+        return resp.status_code, resp.json()
+
+    def get_apps_catalog(self, name="", namespace=DEFAULT_NAMESPACE):
+        path = f"v1/catalog.cattle.io.apps/{namespace}/{name}"
+        resp = self._get(path)
+        return resp.status_code, resp.json()
+
+    def get_crds(self, name=""):
+        path = f"v1/apiextensions.k8s.io.customresourcedefinitions/{name}"
+        resp = self._get(path)
+        return resp.status_code, resp.json()

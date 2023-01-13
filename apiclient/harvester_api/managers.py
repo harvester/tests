@@ -8,6 +8,10 @@ from pkg_resources import parse_version
 from .models import VolumeSpec, VMSpec, BaseSettingSpec, BackupTargetSpec, RestoreSpec
 
 DEFAULT_NAMESPACE = "default"
+DEFAULT_HARVESTER_NAMESPACE = "harvester-system"
+DEFAULT_LONGHORN_NAMESPACE = "longhorn-system"
+
+DEFAULT_STORAGE_CLASS_ANNOTATION = "storageclass.kubernetes.io/is-default-class"
 
 
 def merge_dict(src, dest):
@@ -60,6 +64,9 @@ class BaseManager:
 
     def _delete(self, path, *, raw=False, **kwargs):
         return self._delegate("_delete", path, raw=raw, **kwargs)
+
+    def _patch(self, path, *, raw=False, **kwargs):
+        return self._delegate("_patch", path, raw=raw, **kwargs)
 
     def _inject_data(self, data):
         s = json.dumps(data).replace("{API_VERSION}", self.api.API_VERSION)
@@ -731,3 +738,169 @@ class VirtualMachineManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         params = dict(action="softreboot")
         return self._create(path, raw=raw, params=params)
+
+
+class StorageClassManager(BaseManager):
+    API_VERSION = "storage.k8s.io"
+
+    CREATE_PATH_fmt = "v1/harvester/{SC_API}.storageclasses"
+
+    PATH_fmt = "/apis/{SC_API}/v1/storageclasses/{name}"
+
+    def get(self, name="", *, raw=False, **kwargs):
+        path = self.PATH_fmt.format(SC_API=self.API_VERSION, name=name)
+        return self._get(path, raw=raw, **kwargs)
+
+    def create_data(self, name, replicas):
+        data = {
+            "type": f"{self.API_VERSION}",
+            "metadata": {
+                "name": name
+            },
+            "parameters": {
+                "numberOfReplicas": f"{replicas}",
+                "staleReplicaTimeout": "30",
+                "migratable": "true"
+            },
+            "provisioner": "driver.longhorn.io",
+            "allowVolumeExpansion": True,
+            "reclaimPolicy": "Delete",
+            "volumeBindingMode": "Immediate"
+        }
+
+        return data
+
+    def create(self, name, replicas=3, *, raw=False):
+        path = self.CREATE_PATH_fmt.format(SC_API=self.API_VERSION)
+        data = self.create_data(name, replicas)
+        return self._create(path, json=data, raw=raw)
+
+    def set_default(self, name, *, raw=False):
+        code, resp = self.get()
+
+        if code == 200 and len(resp['items']):
+            for sc in resp['items']:
+                if sc['metadata'].get('annotations', {}).get(
+                   DEFAULT_STORAGE_CLASS_ANNOTATION) == 'true':
+
+                    if sc['metadata']['name'] == name:
+                        return (200, sc)
+
+                    # reset old default storage class
+                    path = self.PATH_fmt.format(name=sc['metadata']['name'],
+                                                SC_API=self.API_VERSION)
+                    resp = self._patch(path, json={
+                        "metadata": {
+                            "annotations": {
+                                "storageclass.kubernetes.io/is-default-class": "false",
+                                "storageclass.beta.kubernetes.io/is-default-class": "false"
+                            }
+                        }
+                    }, raw=raw)
+
+                    break
+
+        path = self.PATH_fmt.format(name=name, SC_API=self.API_VERSION)
+        return self._patch(path, json={
+            "metadata": {
+                "annotations": {
+                    "storageclass.kubernetes.io/is-default-class": "true",
+                    "storageclass.beta.kubernetes.io/is-default-class": "true"
+                }
+            }
+        }, raw=raw)
+
+    def delete(self, name, *, raw=False):
+        path = self.PATH_fmt.format(name=name, SC_API=self.API_VERSION)
+        return self._delete(path, raw=raw)
+
+
+class VersionManager(BaseManager):
+    PATH_fmt = "apis/harvesterhci.io/v1beta1/namespaces/{namespace}/versions/{name}"
+
+    API_PATH_fmt = "v1/harvester/harvesterhci.io.versions/{namespace}{name}"
+
+    def get(self, name="", namespace=DEFAULT_HARVESTER_NAMESPACE, *, raw=False, **kwargs):
+        path = self.PATH_fmt.format(name=name, namespace=namespace)
+        return self._get(path, raw=raw, **kwargs)
+
+    def create_data(self, name, url, checksum):
+        data = {
+            "metadata": {
+                "name": name,
+                "namespace": "harvester-system"
+            },
+            "spec": {
+                "isoChecksum": checksum,
+                "isoURL": url
+            }
+        }
+        return data
+
+    def create(self, name, url, checksum, namespace=DEFAULT_HARVESTER_NAMESPACE, *, raw=False):
+        data = self.create_data(name, url, checksum)
+        path = self.API_PATH_fmt.format(name="", namespace=namespace)
+        return self._create(path, json=data, raw=raw)
+
+    def delete(self, name, namespace=DEFAULT_HARVESTER_NAMESPACE, *, raw=False):
+        path = self.API_PATH_fmt.format(name=f"/{name}", namespace=namespace)
+        return self._delete(path, raw=raw)
+
+
+class UpgradeManager(BaseManager):
+    PATH_fmt = "apis/harvesterhci.io/v1beta1/namespaces/{namespace}/upgrades/{name}"
+
+    CREATE_PATH = "v1/harvester/harvesterhci.io.upgrades"
+    API_PATH_fmt = "v1/harvester/harvesterhci.io.upgrades/{namespace}{name}"
+
+    def create_data(self, version_name, namespace=DEFAULT_HARVESTER_NAMESPACE):
+        data = {
+            "type": "harvesterhci.io.upgrade",
+            "metadata": {
+                "generateName": "hvst-upgrade-",
+                "namespace": namespace
+            },
+            "spec": {
+                "version": version_name
+            }
+        }
+        return data
+
+    def create(self, version_name, namespace=DEFAULT_HARVESTER_NAMESPACE, *, raw=False):
+        data = self.create_data(version_name)
+        path = self.API_PATH_fmt.format(name="", namespace=namespace)
+        return self._create(path, json=data, raw=raw)
+
+    def get(self, name="", namespace=DEFAULT_HARVESTER_NAMESPACE, *, raw=False, **kwargs):
+        path = self.PATH_fmt.format(name=name, namespace=namespace)
+        return self._get(path, raw=raw, **kwargs)
+
+    def delete(self, name, namespace=DEFAULT_HARVESTER_NAMESPACE, *, raw=False):
+        path = self.API_PATH_fmt.format(name=f"/{name}", namespace=f"{namespace}")
+        return self._delete(path, raw=raw)
+
+
+class LonghornReplicaManager(BaseManager):
+    API_VERSION = "longhorn.io/v1beta2"
+    PATH_fmt = "apis/{API_VERSION}/namespaces/{namespace}/replicas/{name}"
+
+    API_PATH_fmt = "v1/harvester/longhorn.io.replicas/{namespace}{name}"
+
+    def get(self, name="", namespace=DEFAULT_LONGHORN_NAMESPACE, *, raw=False, **kwargs):
+        path = self.PATH_fmt.format(API_VERSION=self.API_VERSION, name=name, namespace=namespace)
+        return self._get(path, raw=raw, **kwargs)
+
+    def delete(self, name="", namespace=DEFAULT_LONGHORN_NAMESPACE, *, raw=False):
+        path = self.API_PATH_fmt.format(name=f"/{name}", namespace=namespace)
+        return self._delete(path, raw=raw)
+
+
+class LonghornVolumeManager(BaseManager):
+    API_VERSION = "longhorn.io/v1beta2"
+    PATH_fmt = "apis/{API_VERSION}/namespaces/{namespace}/volumes/{name}"
+
+    API_PATH_fmt = "v1/harvester/longhorn.io.volumes/{namespace}{name}"
+
+    def get(self, name="", namespace=DEFAULT_LONGHORN_NAMESPACE, *, raw=False, **kwargs):
+        path = self.PATH_fmt.format(API_VERSION=self.API_VERSION, name=name, namespace=namespace)
+        return self._get(path, raw=raw, **kwargs)
