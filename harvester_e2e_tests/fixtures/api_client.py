@@ -226,9 +226,13 @@ def host_shell(request):
                 self.client.close()
                 self._client = None
 
-        def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None):
+        def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None,
+                         splitlines=False):
             _, out, err = self.client.exec_command(command, bufsize, timeout, get_pty, env)
-            return out.read().decode(), err.read().decode()
+            out, err = out.read().decode(), err.read().decode()
+            if splitlines:
+                out = out.splitlines()
+            return out, err
 
         def jumphost_policy(self, allow=True):
             ctx, err = self.exec_command("sudo cat /etc/ssh/sshd_config")

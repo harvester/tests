@@ -38,8 +38,7 @@ def vm_shell():
                 else:
                     ch = None
 
-                if self.pkey:
-                    pkey = RSAKey.from_private_key(StringIO(self.pkey))
+                pkey = RSAKey.from_private_key(StringIO(self.pkey)) if self.pkey else None
 
                 cli = SSHClient()
                 cli.set_missing_host_key_policy(MissingHostKeyPolicy())
