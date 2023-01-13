@@ -974,6 +974,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/network/switch-the-vlan-interface-of-harvester-node/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/1418-sync-topology-labels-to-rke2-guest-cluster-node/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2630-sync-image-display-name-to-image-labels/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</loc>

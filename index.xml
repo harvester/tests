@@ -4461,6 +4461,17 @@ Verify Steps: Install Harvester with any nodes Create an Image for VM creation C
     </item>
     
     <item>
+      <title>Sync harvester node&#39;s topology labels to rke2 guest-cluster&#39;s node</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/1418-sync-topology-labels-to-rke2-guest-cluster-node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/1418-sync-topology-labels-to-rke2-guest-cluster-node/</guid>
+      <description>Related issues: #1418 Support topology aware scheduling of guest cluster workloads Verification Steps Add topology labels(topology.kubernetes.io/region, topology.kubernetes.io/zone) to the Harvester node:
+In Harvester UI, select Hosts page. Click hosts&amp;rsquo; Edit Config. Select Labels page, click Add Labels. Fill in, eg, Key: topology.kubernetes.io/zone, Value: zone1. Create harvester guest-cluster from rancher-UI.
+Wait for the guest-cluster to be created successfully and check if the guest-cluster node labels are consistent with the harvester nodes.</description>
+    </item>
+    
+    <item>
       <title>Sync image display name to image labels</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2630-sync-image-display-name-to-image-labels/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
