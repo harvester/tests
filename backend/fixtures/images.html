@@ -48,13 +48,14 @@ def opensuse_image(request, api_client):
         *_, image_name = url.path.rsplit(&#39;/&#39;, 1)
         url = urlparse(urljoin(f&#34;{image_server}/&#34;, image_name))
 
-    return ImageInfo(url)
+    return ImageInfo(url, ssh_user=&#39;opensuse&#39;)
 
 
 class ImageInfo:
-    def __init__(self, url_result):
+    def __init__(self, url_result, ssh_user=None):
         self.url_result = url_result
         self.name = self.url.rsplit(&#39;/&#39;, 1)[-1]
+        self.ssh_user = ssh_user
 
     def __repr__(self):
         return f&#34;{__class__.__name__}({self.url_result})&#34;
@@ -95,7 +96,7 @@ def opensuse_image(request, api_client):
         *_, image_name = url.path.rsplit(&#39;/&#39;, 1)
         url = urlparse(urljoin(f&#34;{image_server}/&#34;, image_name))
 
-    return ImageInfo(url)</code></pre>
+    return ImageInfo(url, ssh_user=&#39;opensuse&#39;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -105,7 +106,7 @@ def opensuse_image(request, api_client):
 <dl>
 <dt id="harvester_e2e_tests.fixtures.images.ImageInfo"><code class="flex name class">
 <span>class <span class="ident">ImageInfo</span></span>
-<span>(</span><span>url_result)</span>
+<span>(</span><span>url_result, ssh_user=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -114,9 +115,10 @@ def opensuse_image(request, api_client):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ImageInfo:
-    def __init__(self, url_result):
+    def __init__(self, url_result, ssh_user=None):
         self.url_result = url_result
         self.name = self.url.rsplit(&#39;/&#39;, 1)[-1]
+        self.ssh_user = ssh_user
 
     def __repr__(self):
         return f&#34;{__class__.__name__}({self.url_result})&#34;
