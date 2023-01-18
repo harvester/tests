@@ -48,13 +48,13 @@ from datetime import datetime, timedelta
 
 import pytest
 
-
 pytest_plugins = [
     &#39;harvester_e2e_tests.fixtures.api_endpoints&#39;,
     &#39;harvester_e2e_tests.fixtures.volume&#39;,
     &#39;harvester_e2e_tests.fixtures.session&#39;,
     &#39;harvester_e2e_tests.fixtures.image&#39;,
-    &#39;harvester_e2e_tests.fixtures.api_client&#39;
+    &#39;harvester_e2e_tests.fixtures.api_client&#39;,
+    &#39;harvester_e2e_tests.fixtures.images&#39;,
 ]
 
 
@@ -63,18 +63,30 @@ pytest_plugins = [
 @pytest.mark.volumes
 class TestVolumesNegative:
     def test_get_not_exist(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Tries to get a volume that doesn&#39;t exist
+        2. Checks that the get command gets a 404
+        &#34;&#34;&#34;
         code, data = api_client.volumes.get(unique_name)
 
         assert 404 == code, (code, data)
         assert &#34;NotFound&#34; == data.get(&#39;code&#39;), (code, data)
 
     def test_delete_not_exist(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Tries to delete a volume that doesn&#39;t exist
+        2. Checks that it gets a 404
+        &#34;&#34;&#34;
         code, data = api_client.volumes.delete(unique_name)
 
         assert 404 == code, (code, data)
         assert &#34;NotFound&#34; == data.get(&#34;code&#34;), (code, data)
 
     def test_create_without_size(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Tries to create a volume without a size
+        2. Checks that it gets a 422
+        &#34;&#34;&#34;
         spec = api_client.volumes.Spec(0)
         code, data = api_client.volumes.create(unique_name, spec)
 
@@ -82,6 +94,10 @@ class TestVolumesNegative:
         assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)
 
     def test_create_without_name(self, api_client):
+        &#34;&#34;&#34;
+        1. Tries to create a volume without a name
+        2. Checks that it gets a  422
+        &#34;&#34;&#34;
         spec = api_client.volumes.Spec(1)
         code, data = api_client.volumes.create(&#34;&#34;, spec)
 
@@ -93,12 +109,21 @@ class TestVolumesNegative:
 @pytest.mark.volumes
 class TestVolumes:
     def test_create(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Create a new image from the default entries in the spec
+        2. Check that the create command gets a 201 response
+        &#34;&#34;&#34;
         spec = api_client.volumes.Spec(1)
         code, data = api_client.volumes.create(unique_name, spec)
 
         assert 201 == code, (code, data)
 
     def test_get(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Runs a get command on the volume created in the previous test
+        note: this will fail if you run it by itself
+        2. It will fail if it doesn&#39;t return a 200
+        &#34;&#34;&#34;
         # Case 1: get all volumes
         code, data = api_client.volumes.get()
 
@@ -112,6 +137,11 @@ class TestVolumes:
         assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
 
     def test_update_size(self, api_client, unique_name, wait_timeout):
+        &#34;&#34;&#34;
+        1. Updates the volume created in the previous test to 10GB
+        note: this will fail if you run it by itself
+        2. It will loop while waiting for it to update and error out if it doesn&#39;t
+        &#34;&#34;&#34;
         # Pre-condition: Volume is Ready
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
@@ -132,6 +162,11 @@ class TestVolumes:
         assert 200 == code, (f&#34;Failed to update volume with error: {code}, {data}&#34;)
 
     def test_delete(self, api_client, unique_name, wait_timeout):
+        &#34;&#34;&#34;
+        1. Deletes the volume created in the previous test
+        note: this will fail if you run it by itself
+        2. It will loop while waiting for it to delete and error out if it doesn&#39;t
+        &#34;&#34;&#34;
         code, data = api_client.volumes.delete(unique_name)
 
         assert 200 == code, (f&#34;Failed to delete volume with error: {code}, {data}&#34;)
@@ -171,12 +206,21 @@ class TestVolumes:
 @pytest.mark.volumes
 class TestVolumes:
     def test_create(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Create a new image from the default entries in the spec
+        2. Check that the create command gets a 201 response
+        &#34;&#34;&#34;
         spec = api_client.volumes.Spec(1)
         code, data = api_client.volumes.create(unique_name, spec)
 
         assert 201 == code, (code, data)
 
     def test_get(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Runs a get command on the volume created in the previous test
+        note: this will fail if you run it by itself
+        2. It will fail if it doesn&#39;t return a 200
+        &#34;&#34;&#34;
         # Case 1: get all volumes
         code, data = api_client.volumes.get()
 
@@ -190,6 +234,11 @@ class TestVolumes:
         assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
 
     def test_update_size(self, api_client, unique_name, wait_timeout):
+        &#34;&#34;&#34;
+        1. Updates the volume created in the previous test to 10GB
+        note: this will fail if you run it by itself
+        2. It will loop while waiting for it to update and error out if it doesn&#39;t
+        &#34;&#34;&#34;
         # Pre-condition: Volume is Ready
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
@@ -210,6 +259,11 @@ class TestVolumes:
         assert 200 == code, (f&#34;Failed to update volume with error: {code}, {data}&#34;)
 
     def test_delete(self, api_client, unique_name, wait_timeout):
+        &#34;&#34;&#34;
+        1. Deletes the volume created in the previous test
+        note: this will fail if you run it by itself
+        2. It will loop while waiting for it to delete and error out if it doesn&#39;t
+        &#34;&#34;&#34;
         code, data = api_client.volumes.delete(unique_name)
 
         assert 200 == code, (f&#34;Failed to delete volume with error: {code}, {data}&#34;)
@@ -239,12 +293,19 @@ class TestVolumes:
 <span>def <span class="ident">test_create</span></span>(<span>self, api_client, unique_name)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><ol>
+<li>Create a new image from the default entries in the spec</li>
+<li>Check that the create command gets a 201 response</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_create(self, api_client, unique_name):
+    &#34;&#34;&#34;
+    1. Create a new image from the default entries in the spec
+    2. Check that the create command gets a 201 response
+    &#34;&#34;&#34;
     spec = api_client.volumes.Spec(1)
     code, data = api_client.volumes.create(unique_name, spec)
 
@@ -255,12 +316,21 @@ class TestVolumes:
 <span>def <span class="ident">test_delete</span></span>(<span>self, api_client, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><ol>
+<li>Deletes the volume created in the previous test
+note: this will fail if you run it by itself</li>
+<li>It will loop while waiting for it to delete and error out if it doesn't</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_delete(self, api_client, unique_name, wait_timeout):
+    &#34;&#34;&#34;
+    1. Deletes the volume created in the previous test
+    note: this will fail if you run it by itself
+    2. It will loop while waiting for it to delete and error out if it doesn&#39;t
+    &#34;&#34;&#34;
     code, data = api_client.volumes.delete(unique_name)
 
     assert 200 == code, (f&#34;Failed to delete volume with error: {code}, {data}&#34;)
@@ -282,12 +352,21 @@ class TestVolumes:
 <span>def <span class="ident">test_get</span></span>(<span>self, api_client, unique_name)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><ol>
+<li>Runs a get command on the volume created in the previous test
+note: this will fail if you run it by itself</li>
+<li>It will fail if it doesn't return a 200</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_get(self, api_client, unique_name):
+    &#34;&#34;&#34;
+    1. Runs a get command on the volume created in the previous test
+    note: this will fail if you run it by itself
+    2. It will fail if it doesn&#39;t return a 200
+    &#34;&#34;&#34;
     # Case 1: get all volumes
     code, data = api_client.volumes.get()
 
@@ -305,12 +384,21 @@ class TestVolumes:
 <span>def <span class="ident">test_update_size</span></span>(<span>self, api_client, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><ol>
+<li>Updates the volume created in the previous test to 10GB
+note: this will fail if you run it by itself</li>
+<li>It will loop while waiting for it to update and error out if it doesn't</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_update_size(self, api_client, unique_name, wait_timeout):
+    &#34;&#34;&#34;
+    1. Updates the volume created in the previous test to 10GB
+    note: this will fail if you run it by itself
+    2. It will loop while waiting for it to update and error out if it doesn&#39;t
+    &#34;&#34;&#34;
     # Pre-condition: Volume is Ready
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
@@ -347,18 +435,30 @@ class TestVolumes:
 @pytest.mark.volumes
 class TestVolumesNegative:
     def test_get_not_exist(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Tries to get a volume that doesn&#39;t exist
+        2. Checks that the get command gets a 404
+        &#34;&#34;&#34;
         code, data = api_client.volumes.get(unique_name)
 
         assert 404 == code, (code, data)
         assert &#34;NotFound&#34; == data.get(&#39;code&#39;), (code, data)
 
     def test_delete_not_exist(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Tries to delete a volume that doesn&#39;t exist
+        2. Checks that it gets a 404
+        &#34;&#34;&#34;
         code, data = api_client.volumes.delete(unique_name)
 
         assert 404 == code, (code, data)
         assert &#34;NotFound&#34; == data.get(&#34;code&#34;), (code, data)
 
     def test_create_without_size(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Tries to create a volume without a size
+        2. Checks that it gets a 422
+        &#34;&#34;&#34;
         spec = api_client.volumes.Spec(0)
         code, data = api_client.volumes.create(unique_name, spec)
 
@@ -366,6 +466,10 @@ class TestVolumesNegative:
         assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)
 
     def test_create_without_name(self, api_client):
+        &#34;&#34;&#34;
+        1. Tries to create a volume without a name
+        2. Checks that it gets a  422
+        &#34;&#34;&#34;
         spec = api_client.volumes.Spec(1)
         code, data = api_client.volumes.create(&#34;&#34;, spec)
 
@@ -385,12 +489,20 @@ class TestVolumesNegative:
 <span>def <span class="ident">test_create_without_name</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><ol>
+<li>Tries to create a volume without a name</li>
+<li>Checks that it gets a
+422</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_create_without_name(self, api_client):
+    &#34;&#34;&#34;
+    1. Tries to create a volume without a name
+    2. Checks that it gets a  422
+    &#34;&#34;&#34;
     spec = api_client.volumes.Spec(1)
     code, data = api_client.volumes.create(&#34;&#34;, spec)
 
@@ -402,12 +514,19 @@ class TestVolumesNegative:
 <span>def <span class="ident">test_create_without_size</span></span>(<span>self, api_client, unique_name)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><ol>
+<li>Tries to create a volume without a size</li>
+<li>Checks that it gets a 422</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_create_without_size(self, api_client, unique_name):
+    &#34;&#34;&#34;
+    1. Tries to create a volume without a size
+    2. Checks that it gets a 422
+    &#34;&#34;&#34;
     spec = api_client.volumes.Spec(0)
     code, data = api_client.volumes.create(unique_name, spec)
 
@@ -419,12 +538,19 @@ class TestVolumesNegative:
 <span>def <span class="ident">test_delete_not_exist</span></span>(<span>self, api_client, unique_name)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><ol>
+<li>Tries to delete a volume that doesn't exist</li>
+<li>Checks that it gets a 404</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_delete_not_exist(self, api_client, unique_name):
+    &#34;&#34;&#34;
+    1. Tries to delete a volume that doesn&#39;t exist
+    2. Checks that it gets a 404
+    &#34;&#34;&#34;
     code, data = api_client.volumes.delete(unique_name)
 
     assert 404 == code, (code, data)
@@ -435,12 +561,19 @@ class TestVolumesNegative:
 <span>def <span class="ident">test_get_not_exist</span></span>(<span>self, api_client, unique_name)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><ol>
+<li>Tries to get a volume that doesn't exist</li>
+<li>Checks that the get command gets a 404</li>
+</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_get_not_exist(self, api_client, unique_name):
+    &#34;&#34;&#34;
+    1. Tries to get a volume that doesn&#39;t exist
+    2. Checks that the get command gets a 404
+    &#34;&#34;&#34;
     code, data = api_client.volumes.get(unique_name)
 
     assert 404 == code, (code, data)

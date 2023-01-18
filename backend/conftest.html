@@ -108,6 +108,13 @@ def pytest_addoption(parser):
         help=&#39;Wait time for polling operations&#39;
     )
     parser.addoption(
+        &#39;--sleep-timeout&#39;,
+        action=&#39;store&#39;,
+        type=int,
+        default=config_data[&#39;sleep-timeout&#39;],
+        help=&#39;Wait time for polling operations&#39;
+    )
+    parser.addoption(
         &#39;--node-scripts-location&#39;,
         action=&#39;store&#39;,
         default=config_data[&#39;node-scripts-location&#39;],
@@ -431,6 +438,13 @@ def pytest_collection_modifyitems(config, items):
         action=&#39;store&#39;,
         type=int,
         default=config_data[&#39;wait-timeout&#39;],
+        help=&#39;Wait time for polling operations&#39;
+    )
+    parser.addoption(
+        &#39;--sleep-timeout&#39;,
+        action=&#39;store&#39;,
+        type=int,
+        default=config_data[&#39;sleep-timeout&#39;],
         help=&#39;Wait time for polling operations&#39;
     )
     parser.addoption(

@@ -29,7 +29,8 @@
 <pre><code class="python">import yaml
 import pytest
 import polling2
-
+from time import sleep
+from datetime import datetime, timedelta
 from harvester_e2e_tests import utils
 
 pytest_plugins = [
@@ -37,10 +38,11 @@ pytest_plugins = [
     &#39;harvester_e2e_tests.fixtures.volume&#39;,
     &#39;harvester_e2e_tests.fixtures.session&#39;,
     &#39;harvester_e2e_tests.fixtures.image&#39;,
+    &#39;harvester_e2e_tests.fixtures.images&#39;,
 ]
 
 
-@pytest.mark.volumes_p1
+@pytest.mark.volumes
 @pytest.mark.p1
 def test_create_volume_image_form(volume_image_form):
     # NOTE: if the volume is successfully create that means the test is good
@@ -52,7 +54,7 @@ def test_create_volume_image_form(volume_image_form):
     pass
 
 
-@pytest.mark.volumes_p1
+@pytest.mark.volumes
 @pytest.mark.p1
 def test_create_volume_using_image_by_yaml(request, admin_session,
                                            harvester_api_endpoints, image):
@@ -99,7 +101,57 @@ def validate_blank_volumes(request, admin_session, get_api_link):
         step=5,
         timeout=request.config.getoption(&#39;--wait-timeout&#39;))
     assert success, &#39;Timed out while waiting for volume to be ready.&#39;
-    return pvc_json</code></pre>
+    return pvc_json
+
+
+@pytest.mark.volumes
+@pytest.mark.p1
+def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
+                                     wait_timeout, sleep_timeout):
+    &#34;&#34;&#34;
+    1. Create a new image from URL
+    2. Check that it is created succesffully.
+    3. Create a new volume with the image_id of the previous image
+    4. Check that the new image is created
+    5. Delete image and volume
+    &#34;&#34;&#34;
+
+    code, image_data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+
+    assert 201 == code, (code, image_data)
+
+    # This waits for the import to finish
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_name)
+        image_conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+        if len(image_conds) &gt; 0 and image_conds[0][&#39;reason&#39;] == &#39;Imported&#39;:
+            break
+        sleep(sleep_timeout)
+
+    assert &#34;Initialized&#34; == image_conds[-1].get(&#34;type&#34;)
+    assert &#34;True&#34; == image_conds[-1].get(&#34;status&#34;)
+    spec = api_client.volumes.Spec(&#34;10Gi&#34;, f&#34;longhorn-{image_data[&#39;spec&#39;][&#39;displayName&#39;]}&#34;)
+    image_id = f&#34;{image_data[&#39;metadata&#39;][&#39;namespace&#39;]}/{image_data[&#39;metadata&#39;][&#39;name&#39;]}&#34;
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id)
+    assert 201 == code, (code, unique_name, data, image_id)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, volume_data = api_client.volumes.get(unique_name)
+        assert 200 == code, (code, unique_name, volume_data)
+        if volume_data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;:
+            break
+        sleep(sleep_timeout)
+
+    # This is for checking that the volume was created
+    code, volume_data = api_client.volumes.get(unique_name)
+    code, image_data = api_client.images.get(unique_name)
+    assert 200 == code, (code, volume_data)
+    assert unique_name == volume_data[&#39;metadata&#39;][&#39;name&#39;], (code, volume_data)
+    assert volume_data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (volume_data)
+    assert image_id == volume_data[&#39;id&#39;], (volume_data)
+    api_client.volumes.delete(unique_name)
+    api_client.images.delete(unique_name)</code></pre>
 </details>
 </section>
 <section>
@@ -109,6 +161,71 @@ def validate_blank_volumes(request, admin_session, get_api_link):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="harvester_e2e_tests.integration.test_volumes.test_create_volume_backing_image"><code class="name flex">
+<span>def <span class="ident">test_create_volume_backing_image</span></span>(<span>api_client, unique_name, opensuse_image, wait_timeout, sleep_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"><ol>
+<li>Create a new image from URL</li>
+<li>Check that it is created succesffully.</li>
+<li>Create a new volume with the image_id of the previous image</li>
+<li>Check that the new image is created</li>
+<li>Delete image and volume</li>
+</ol></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.volumes
+@pytest.mark.p1
+def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
+                                     wait_timeout, sleep_timeout):
+    &#34;&#34;&#34;
+    1. Create a new image from URL
+    2. Check that it is created succesffully.
+    3. Create a new volume with the image_id of the previous image
+    4. Check that the new image is created
+    5. Delete image and volume
+    &#34;&#34;&#34;
+
+    code, image_data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+
+    assert 201 == code, (code, image_data)
+
+    # This waits for the import to finish
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_name)
+        image_conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+        if len(image_conds) &gt; 0 and image_conds[0][&#39;reason&#39;] == &#39;Imported&#39;:
+            break
+        sleep(sleep_timeout)
+
+    assert &#34;Initialized&#34; == image_conds[-1].get(&#34;type&#34;)
+    assert &#34;True&#34; == image_conds[-1].get(&#34;status&#34;)
+    spec = api_client.volumes.Spec(&#34;10Gi&#34;, f&#34;longhorn-{image_data[&#39;spec&#39;][&#39;displayName&#39;]}&#34;)
+    image_id = f&#34;{image_data[&#39;metadata&#39;][&#39;namespace&#39;]}/{image_data[&#39;metadata&#39;][&#39;name&#39;]}&#34;
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id)
+    assert 201 == code, (code, unique_name, data, image_id)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, volume_data = api_client.volumes.get(unique_name)
+        assert 200 == code, (code, unique_name, volume_data)
+        if volume_data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;:
+            break
+        sleep(sleep_timeout)
+
+    # This is for checking that the volume was created
+    code, volume_data = api_client.volumes.get(unique_name)
+    code, image_data = api_client.images.get(unique_name)
+    assert 200 == code, (code, volume_data)
+    assert unique_name == volume_data[&#39;metadata&#39;][&#39;name&#39;], (code, volume_data)
+    assert volume_data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (volume_data)
+    assert image_id == volume_data[&#39;id&#39;], (volume_data)
+    api_client.volumes.delete(unique_name)
+    api_client.images.delete(unique_name)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.integration.test_volumes.test_create_volume_image_form"><code class="name flex">
 <span>def <span class="ident">test_create_volume_image_form</span></span>(<span>volume_image_form)</span>
 </code></dt>
@@ -120,7 +237,7 @@ def validate_blank_volumes(request, admin_session, get_api_link):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.volumes_p1
+<pre><code class="python">@pytest.mark.volumes
 @pytest.mark.p1
 def test_create_volume_image_form(volume_image_form):
     # NOTE: if the volume is successfully create that means the test is good
@@ -143,7 +260,7 @@ def test_create_volume_image_form(volume_image_form):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.volumes_p1
+<pre><code class="python">@pytest.mark.volumes
 @pytest.mark.p1
 def test_create_volume_using_image_by_yaml(request, admin_session,
                                            harvester_api_endpoints, image):
@@ -220,6 +337,7 @@ def test_create_volume_using_image_by_yaml(request, admin_session,
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.integration.test_volumes.test_create_volume_backing_image" href="#harvester_e2e_tests.integration.test_volumes.test_create_volume_backing_image">test_create_volume_backing_image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_volumes.test_create_volume_image_form" href="#harvester_e2e_tests.integration.test_volumes.test_create_volume_image_form">test_create_volume_image_form</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_volumes.test_create_volume_using_image_by_yaml" href="#harvester_e2e_tests.integration.test_volumes.test_create_volume_using_image_by_yaml">test_create_volume_using_image_by_yaml</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_volumes.validate_blank_volumes" href="#harvester_e2e_tests.integration.test_volumes.validate_blank_volumes">validate_blank_volumes</a></code></li>
