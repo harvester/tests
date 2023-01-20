@@ -22,6 +22,7 @@ import yaml
 def pytest_addoption(parser):
     with open('config.yml') as f:
         config_data = yaml.safe_load(f)
+        print(config_data)
     parser.addoption(
         '--endpoint',
         action='store',
@@ -73,17 +74,17 @@ def pytest_addoption(parser):
         help='Physical NIC for VLAN. Default is "eth0"'
     )
     parser.addoption(
+        '--sleeptimeout',
+        action='store',
+        type=int,
+        default=config_data['sleep-timeout'],
+        help='Sleep time while waiting before next poll operation'
+    )
+    parser.addoption(
         '--wait-timeout',
         action='store',
         type=int,
         default=config_data['wait-timeout'],
-        help='Wait time for polling operations'
-    )
-    parser.addoption(
-        '--sleep-timeout',
-        action='store',
-        type=int,
-        default=config_data['sleep-timeout'],
         help='Wait time for polling operations'
     )
     parser.addoption(

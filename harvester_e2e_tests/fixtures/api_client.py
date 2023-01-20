@@ -36,7 +36,7 @@ def wait_timeout(request):
 
 @pytest.fixture(scope="session")
 def sleep_timeout(request):
-    return request.config.getoption("--sleep-timeout", 4)
+    return request.config.getoption("--sleeptimeout", 3)
 
 
 @pytest.fixture(scope="session")
