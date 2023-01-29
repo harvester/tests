@@ -148,23 +148,3 @@ def image_using_terraform(request, admin_session, harvester_api_endpoints):
     yield image_json
     if not request.config.getoption('--do-not-cleanup'):
         utils.destroy_resource(request, admin_session, 'all')
-
-
-@pytest.fixture(scope='class')
-def qcow2_image_url():
-    base_url = "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.1/images/"
-    image_name = "openSUSE-Leap-15.1-OpenStack.x86_64.qcow2"
-    return base_url + image_name
-
-
-@pytest.fixture(scope='class')
-def iso_image_url():
-    base_url = "https://github.com/rancher/k3os/releases/download/v0.20.11-k3s2r1/"
-    image_name = "k3os-amd64.iso"
-    return base_url + image_name
-
-
-@pytest.fixture(scope='class')
-def export_storage_class():
-    storage_class = "harvester-longhorn"
-    return storage_class
