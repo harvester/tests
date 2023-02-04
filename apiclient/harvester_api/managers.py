@@ -416,17 +416,17 @@ class NetworkManager(BaseManager):
         else:
             return "harvester-br0"
 
-    def create_data(self, name, namespace, vlan_id, bridge_name):
+    def create_data(self, name, namespace, vlan_id, bridge_name, mode="auto", cidr="", gateway=""):
         data = {
             "apiVersion": self.API_VERSION,
             "kind": self._KIND,
             "metadata": {
                 "annotations": {
                     "network.harvesterhci.io/route": json.dumps({
-                        "mode": "auto",
+                        "mode": mode,
                         "serverIPAddr": "",
-                        "cidr": "",
-                        "gateway": ""
+                        "cidr": cidr,
+                        "gateway": gateway
                     })
                 },
                 "name": name,
@@ -451,8 +451,8 @@ class NetworkManager(BaseManager):
         return self._get(path, raw=raw)
 
     def create(self, name, vlan_id, namespace=DEFAULT_NAMESPACE, *,
-               cluster_network=None, raw=False):
-        data = self.create_data(name, namespace, vlan_id, self._bridge_name(cluster_network))
+               cluster_network=None, mode="auto", cidr="", gateway="", raw=False):
+        data = self.create_data(name, namespace, vlan_id, self._bridge_name(cluster_network), mode=mode, cidr=cidr, gateway=gateway)
         path = self.PATH_fmt.format(uid="", ns=namespace, NETWORK_API=self.API_VERSION)
         return self._create(path, json=data, raw=raw)
 
