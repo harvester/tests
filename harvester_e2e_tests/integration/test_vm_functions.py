@@ -1010,3 +1010,28 @@ class TestVMWithVolumes:
             f"existing Volume {size}G not found\n"
             f"lsblk output: {out}"
         )
+
+        # Tear down: Stop VM and remove added volumes
+        code, data = api_client.vms.get(unique_vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_spec.run_strategy = "Halted"
+        vols, claims = [], []
+        for vd in vm_spec.volumes:
+            if vd['disk']['name'] == vol_name:
+                claims.append(vd['volume']['persistentVolumeClaim']['claimName'])
+            else:
+                vols.append(vd)
+        else:
+            vm_spec.volumes = vols
+
+        api_client.vms.update(unique_vm_name, vm_spec)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get(unique_vm_name)
+            if ('Stopped' == data['status']['printableStatus']
+                    and 'Halted' == data['spec']['runStrategy']):
+                break
+            sleep(3)
+
+        for claim in claims:
+            api_client.volumes.delete(claim)

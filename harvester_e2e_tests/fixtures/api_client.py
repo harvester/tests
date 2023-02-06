@@ -59,7 +59,7 @@ def host_state(request):
 
 @pytest.fixture(scope='module')
 def unique_name():
-    return datetime.now().strftime("%m-%d-%Hh%Mm%Ss%f")
+    return datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")
 
 
 @pytest.fixture(scope="module")
