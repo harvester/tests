@@ -68,7 +68,7 @@ def unique_vm_name(unique_name):
 
 @pytest.fixture(scope="class")
 def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
-    unique_vm_name = f"stopped-{unique_vm_name}"
+    unique_vm_name = f"stopped-{datetime.now().strftime('%m%S%f')}-{unique_vm_name}"
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
     vm_spec = api_client.vms.Spec(cpu, mem)
@@ -80,13 +80,22 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
     vm_spec.user_data = yaml.dump(userdata)
 
     code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if data.get('status'):
+            break
+        sleep(1)
 
     yield unique_vm_name, image['user']
+
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
 
     api_client.vms.delete(unique_vm_name)
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        code, data = api_client.vms.get(unique_vm_name)
+        code, data = api_client.vms.get_status(unique_vm_name)
         if 404 == code:
             break
         sleep(3)
@@ -918,6 +927,7 @@ class TestVMWithVolumes:
 
         # Start VM with 2 additional volumes
         code, data = api_client.vms.update(unique_vm_name, vm_spec)
+        assert 200 == code, (code, data)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
