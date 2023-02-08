@@ -128,7 +128,6 @@ def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
     else:
         raise AssertionError(
             f"Failed to create Minimal VM({cpu} core, {mem} RAM) with errors:\n"
-            f"Phase: {data.get('status', {}).get('phase')}\t"
             f"Status: {data.get('status')}\n"
             f"API Status({code}): {data}"
         )
@@ -260,7 +259,6 @@ class TestVMOperations:
         else:
             raise AssertionError(
                 f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Phase: {data.get('status', {}).get('phase')}\t"
                 f"Status: {data.get('status')}\n"
                 f"API Status({code}): {data}"
             )
@@ -308,7 +306,6 @@ class TestVMOperations:
         else:
             raise AssertionError(
                 f"Failed to Restart VM({unique_vm_name}) with errors:\n"
-                f"Phase: {data.get('status', {}).get('phase')}\t"
                 f"Status: {data.get('status')}\n"
                 f"API Status({code}): {data}"
             )
@@ -522,8 +519,9 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         code, data = api_client.vms.get(unique_vm_name)
-        if ('Stopped' == data['status']['printableStatus']
-                and 'Halted' == data['spec']['runStrategy']):
+        if (code == 200
+                and 'Halted' == data['spec']['runStrategy']
+                and 'Stopped' == data.get('status', {}).get('printableStatus')):
             break
         sleep(3)
     else:
@@ -575,7 +573,6 @@ class TestVMClone:
         else:
             raise AssertionError(
                 f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Phase: {data.get('status', {}).get('phase')}\t"
                 f"Status: {data.get('status')}\n"
                 f"API Status({code}): {data}"
             )
@@ -636,7 +633,6 @@ class TestVMClone:
         else:
             raise AssertionError(
                 f"Failed to Start VM({cloned_name}) with errors:\n"
-                f"Phase: {data.get('status', {}).get('phase')}\t"
                 f"Status: {data.get('status')}\n"
                 f"API Status({code}): {data}"
             )
@@ -737,7 +733,6 @@ class TestVMClone:
         else:
             raise AssertionError(
                 f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Phase: {data.get('status', {}).get('phase')}\t"
                 f"Status: {data.get('status')}\n"
                 f"API Status({code}): {data}"
             )
@@ -804,7 +799,7 @@ class TestVMClone:
             code, data = api_client.vms.get(cloned_name)
             if (200 == code
                and "Halted" == data['spec'].get('runStrategy')
-               and "Stopped" == data['status'].get('printableStatus')):
+               and "Stopped" == data.get('status', {}).get('printableStatus')):
                 break
             sleep(3)
         else:
@@ -829,7 +824,6 @@ class TestVMClone:
         else:
             raise AssertionError(
                 f"Failed to Start VM({cloned_name}) with errors:\n"
-                f"Phase: {data.get('status', {}).get('phase')}\t"
                 f"Status: {data.get('status')}\n"
                 f"API Status({code}): {data}"
             )
@@ -897,8 +891,8 @@ class TestVMClone:
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 class TestVMWithVolumes:
-    def test_with_two_volumes(self, api_client, ssh_keypair, wait_timeout,
-                              host_shell, vm_shell, stopped_vm):
+    def test_create_with_two_volumes(self, api_client, ssh_keypair, wait_timeout,
+                                     host_shell, vm_shell, stopped_vm):
         """
         To cover test:
         - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/ # noqa
@@ -938,7 +932,6 @@ class TestVMWithVolumes:
         else:
             raise AssertionError(
                 f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Phase: {data.get('status', {}).get('phase')}\t"
                 f"Status: {data.get('status')}\n"
                 f"API Status({code}): {data}"
             )
@@ -1010,16 +1003,17 @@ class TestVMWithVolumes:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get(unique_vm_name)
-            if ('Stopped' == data['status']['printableStatus']
-                    and 'Halted' == data['spec']['runStrategy']):
+            if (code == 200
+                    and 'Halted' == data['spec']['runStrategy']
+                    and 'Stopped' == data.get('status', {}).get('printableStatus')):
                 break
             sleep(3)
 
         for vol_name in claims:
             api_client.volumes.delete(vol_name)
 
-    def test_with_existing_volume(self, api_client, ssh_keypair, wait_timeout,
-                                  host_shell, vm_shell, stopped_vm):
+    def test_create_with_existing_volume(self, api_client, ssh_keypair, wait_timeout,
+                                         host_shell, vm_shell, stopped_vm):
         """
         To cover test:
         - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/ # noqa
@@ -1065,7 +1059,6 @@ class TestVMWithVolumes:
         else:
             raise AssertionError(
                 f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Phase: {data.get('status', {}).get('phase')}\t"
                 f"Status: {data.get('status')}\n"
                 f"API Status({code}): {data}"
             )
@@ -1133,8 +1126,9 @@ class TestVMWithVolumes:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get(unique_vm_name)
-            if ('Stopped' == data['status']['printableStatus']
-                    and 'Halted' == data['spec']['runStrategy']):
+            if (code == 200
+                    and 'Halted' == data['spec']['runStrategy']
+                    and 'Stopped' == data.get('status', {}).get('printableStatus')):
                 break
             sleep(3)
 
