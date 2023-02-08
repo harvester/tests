@@ -452,7 +452,8 @@ class NetworkManager(BaseManager):
 
     def create(self, name, vlan_id, namespace=DEFAULT_NAMESPACE, *,
                cluster_network=None, mode="auto", cidr="", gateway="", raw=False):
-        data = self.create_data(name, namespace, vlan_id, self._bridge_name(cluster_network), mode=mode, cidr=cidr, gateway=gateway)
+        data = self.create_data(name, namespace, vlan_id, self._bridge_name(cluster_network),
+                                mode=mode, cidr=cidr, gateway=gateway)
         path = self.PATH_fmt.format(uid="", ns=namespace, NETWORK_API=self.API_VERSION)
         return self._create(path, json=data, raw=raw)
 
