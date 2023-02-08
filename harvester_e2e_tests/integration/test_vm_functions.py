@@ -506,6 +506,18 @@ class TestVMOperations:
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
+    """
+    To cover test:
+    - https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/ # noqa
+
+    Steps:
+        1. Create a VM with 1 CPU 2 Memory and runStrategy is `Halted`
+        2. Save
+    Exepected Result:
+        - VM should created
+        - VM should Stooped
+        - VMI should not exist
+    """
     unique_vm_name, _ = stopped_vm
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
@@ -529,6 +541,22 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
 class TestVMClone:
     def test_clone_running_vm(self, api_client, ssh_keypair, wait_timeout,
                               host_shell, vm_shell, stopped_vm):
+        """
+        To cover test:
+        - (legacy) https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/ # noqa
+        - (new) https://github.com/harvester/tests/issues/361
+
+        Steps:
+            1. Create a VM with 1 CPU 2 Memory
+            2. Start the VM and write some data
+            3. Clone the VM into VM-cloned
+            4. Verify VM-Cloned
+
+        Exepected Result:
+            - Cloned-VM should be available and starting
+            - Cloned-VM should becomes `Running`
+            - Written data should available in Cloned-VM
+        """
         unique_vm_name, ssh_user = stopped_vm
         pub_key, pri_key = ssh_keypair
         code, data = api_client.vms.start(unique_vm_name)
@@ -674,6 +702,23 @@ class TestVMClone:
 
     def test_clone_stopped_vm(self, api_client, ssh_keypair, wait_timeout,
                               host_shell, vm_shell, stopped_vm):
+        """
+        To cover test:
+        - (legacy) https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-off/ # noqa
+        - (new) https://github.com/harvester/tests/issues/361
+
+        Steps:
+            1. Create a VM with 1 CPU 2 Memory
+            2. Start the VM and write some data
+            3. Stop the VM
+            4. Clone the VM into VM-cloned
+            5. Verify VM-Cloned
+
+        Exepected Result:
+            - Cloned-VM should be available and stopped
+            - Cloned-VM should able to start and becomes `Running`
+            - Written data should available in Cloned-VM
+        """
         unique_vm_name, ssh_user = stopped_vm
         pub_key, pri_key = ssh_keypair
         code, data = api_client.vms.start(unique_vm_name)
@@ -733,12 +778,43 @@ class TestVMClone:
                 assert not err, (out, err)
                 sh.exec_command('sync')
 
+        # Stop the VM
+        code, data = api_client.vms.stop(unique_vm_name)
+        assert 204 == code, "`Stop` return unexpected status code"
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(unique_vm_name)
+            if 404 == code:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Failed to Stop VM({unique_vm_name}) with errors:\n"
+                f"Status({code}): {data}"
+            )
+
         # Clone VM into new VM
         cloned_name = f"cloned-{unique_vm_name}"
         code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
         assert 204 == code, f"Failed to clone VM {unique_vm_name} into new VM {cloned_name}"
 
-        # Check VM started
+        # Check cloned VM is available and stooped
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get(cloned_name)
+            if (200 == code
+               and "Halted" == data['spec'].get('runStrategy')
+               and "Stopped" == data['status'].get('printableStatus')):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Cloned VM {cloned_name} is not available and stopped"
+                f"Status({code}): {data}"
+            )
+
+        # Check cloned VM started
+        api_client.vms.start(cloned_name)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(cloned_name)
@@ -823,6 +899,20 @@ class TestVMClone:
 class TestVMWithVolumes:
     def test_with_two_volumes(self, api_client, ssh_keypair, wait_timeout,
                               host_shell, vm_shell, stopped_vm):
+        """
+        To cover test:
+        - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/ # noqa
+
+        Steps:
+            1. Create a VM with 1 CPU 2 Memory and 2 disk volumes
+            2. Start the VM
+            3. Verify the VM
+
+        Exepected Result:
+            - VM should able to start and becomes `Running`
+            - 2 disk volumes should be available in the VM
+            - Disk size in VM should be the same as its volume configured
+        """
         unique_vm_name, ssh_user = stopped_vm
         pub_key, pri_key = ssh_keypair
         code, data = api_client.vms.get(unique_vm_name)
@@ -930,6 +1020,21 @@ class TestVMWithVolumes:
 
     def test_with_existing_volume(self, api_client, ssh_keypair, wait_timeout,
                                   host_shell, vm_shell, stopped_vm):
+        """
+        To cover test:
+        - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/ # noqa
+
+        Steps:
+            1. Create a data volume
+            2. Create a VM with 1 CPU 2 Memory and the existing data volume
+            3. Start the VM
+            4. Verify the VM
+
+        Exepected Result:
+            - VM should able to start and becomes `Running`
+            - Disk volume should be available in the VM
+            - Disk size in VM should be the same as its volume configured
+        """
         unique_vm_name, ssh_user = stopped_vm
         pub_key, pri_key = ssh_keypair
 
