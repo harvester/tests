@@ -902,6 +902,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2665-2892-reinstall-agent-node/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/rejoin-node-after-upgrade/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/remove-management-node-then-reinstall/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/deployment/remove-node-cluster/</loc>
@@ -1050,7 +1052,21 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2546-upgrade-guest-k8s-version-upgrade-cloud-provider/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/upgrade-from-new-network-design/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/upgrade-from-traditional-network-design/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/fully-airgapped-upgrade/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/3045-upgrade-with-bonded-nic/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/bonded-nics-traditional-network-upgrade/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/upgrade-with-hdd-disk/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/ipv6-dhcp-upgrade/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2750-support-audit-event-log/</loc>
   </url><url>

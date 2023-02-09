@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Upgrade Harvester on Harvester manual test cases</title>
+    <link>https://harvester.github.io/tests/manual/upgrade/</link>
+    <description>Recent content in Upgrade Harvester on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/upgrade/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Rejoin node machine after Harvester upgrade</title>
+      <link>https://harvester.github.io/tests/manual/upgrade/rejoin-node-after-upgrade/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/upgrade/rejoin-node-after-upgrade/</guid>
+      <description>Related issues: #2655 [BUG] reinstall 1st node Category: Upgrade Harvester Environment requirement Network environment has available VLAN id setup on DHCP server DHCP server has setup the IP range can allocate to above VLAN id Harvester node can route to DHCP server through VLAN id to retrieve IP address Network has at least two NICs Suggest not to use SMR type HDD disk Verification Steps Create a 3 nodes v1.</description>
+    </item>
+    
+    <item>
+      <title>Upgrade Harvester from new cluster network design (after v1.1.0)</title>
+      <link>https://harvester.github.io/tests/manual/upgrade/upgrade-from-new-network-design/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/upgrade/upgrade-from-new-network-design/</guid>
+      <description>Category: Upgrade Harvester Environment requirement Network environment has available VLAN id setup on DHCP server DHCP server has setup the IP range can allocate to above VLAN id Harvester node can route to DHCP server through VLAN id to retrieve IP address Network has at least two NICs Suggest not to use SMR type HDD disk We can select VM or Bare machine network setup according to available resource
+Virtual Machine environment setup Clone ipxe-example https://github.</description>
+    </item>
+    
+    <item>
+      <title>Upgrade Harvester from traditonal cluster network design (before v1.1.0)</title>
+      <link>https://harvester.github.io/tests/manual/upgrade/upgrade-from-traditional-network-design/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/upgrade/upgrade-from-traditional-network-design/</guid>
+      <description>Category: Upgrade Harvester Environment requirement Network environment has available VLAN id setup on DHCP server DHCP server has setup the IP range can allocate to above VLAN id Harvester node can route to DHCP server through VLAN id to retrieve IP address Network has at least two NICs Network has at least two NICs Suggest not to use SMR type HDD disk We can select VM or Bare machine network setup according to available resource</description>
+    </item>
+    
+    <item>
+      <title>Upgrade Harvester in Fully Airgapped Environment</title>
+      <link>https://harvester.github.io/tests/manual/upgrade/fully-airgapped-upgrade/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/upgrade/fully-airgapped-upgrade/</guid>
+      <description>Category: Upgrade Harvester Environment requirement Airgapped Network without internet connectivity Network environment has available VLAN id setup on DHCP server DHCP server has setup the IP range can allocate to above VLAN id Harvester node can route to DHCP server through VLAN id to retrieve IP address Network has at least two NICs Suggest not to use SMR type HDD disk We can select VM or Bare machine network setup according to your available resource Virtual Machine environment setup Clone ipxe-example https://github.</description>
+    </item>
+    
+    <item>
+      <title>Upgrade Harvester with bonded NICs on network</title>
+      <link>https://harvester.github.io/tests/manual/upgrade/bonded-nics-traditional-network-upgrade/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/upgrade/bonded-nics-traditional-network-upgrade/</guid>
+      <description>Related issues: #3047 [BUG] migrate_harv_mgmt_to_mgmt_br.sh should remove ClusterNetwork resource Category: Upgrade Harvester Environment setup from v1.0.3 upgrade to v1.1.1 Clone ipxe-example and switch to v1.0 branch Add three additional Network interface in Vagrantfile harvester_node.vm.network &amp;#39;private_network&amp;#39;, libvirt__network_name: &amp;#39;harvester&amp;#39;, mac: @settings[&amp;#39;harvester_network_config&amp;#39;][&amp;#39;cluster&amp;#39;][node_number][&amp;#39;mac&amp;#39;] harvester_node.vm.network &amp;#39;private_network&amp;#39;, libvirt__network_name: &amp;#39;harvester&amp;#39; harvester_node.vm.network &amp;#39;private_network&amp;#39;, libvirt__network_name: &amp;#39;harvester&amp;#39; harvester_node.vm.network &amp;#39;private_network&amp;#39;, libvirt__network_name: &amp;#39;harvester&amp;#39; Edit the config-create.yaml.j2 and config-join.yaml.j2 in /ansible/role/harvester/template/ Add the cluster_network and defaultPysicalNIC to harvester-mgmt cluster_networks: vlan: enable: true description: &amp;#34;some description about this cluster network&amp;#34; config: defaultPhysicalNIC: harvester-mgmt Bond multiple NICs on harvester-mgmt and harvester-vlan networks networks: harvester-mgmt: interfaces: - name: {{ settings[&amp;#39;harvester_network_config&amp;#39;][&amp;#39;cluster&amp;#39;][0][&amp;#39;mgmt_interface&amp;#39;] }} # The management interface name - name: ens9 method: dhcp bond0: interfaces: - name: {{ settings[&amp;#39;harvester_network_config&amp;#39;][&amp;#39;cluster&amp;#39;][0][&amp;#39;vagrant_interface&amp;#39;] }} method: dhcp harvester-vlan: interfaces: - name: ens7 - name: ens8 method: none Verification Steps Provision previous version of Harvester cluster</description>
+    </item>
+    
+    <item>
+      <title>Upgrade Harvester with HDD Disks</title>
+      <link>https://harvester.github.io/tests/manual/upgrade/upgrade-with-hdd-disk/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/upgrade/upgrade-with-hdd-disk/</guid>
+      <description>Category: Upgrade Harvester Environment requirement Network environment has available VLAN id setup on DHCP server DHCP server has setup the IP range can allocate to above VLAN id Harvester node can route to DHCP server through VLAN id to retrieve IP address Network has at least two NICs Use HDD disk with SMR type or slow I/O speed n1-103:~ # smartctl -a /dev/sda smartctl 7.2 2021-09-14 r5237... === START OF INFORMATION SECTION === Model Family: Seagate BarraCuda 3.</description>
+    </item>
+    
+    <item>
+      <title>Upgrade Harvester with IPv6 DHCP</title>
+      <link>https://harvester.github.io/tests/manual/upgrade/ipv6-dhcp-upgrade/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/upgrade/ipv6-dhcp-upgrade/</guid>
+      <description>Related issues: #2962 [BUG] Host IP is inconsistent Category: Upgrade Harvester Environment setup Open the virtual machine manager
+Open the Connection Details -&amp;gt; Virtual Networks
+Create a new virtual network workload
+Add the following XML content
+&amp;lt;network&amp;gt; &amp;lt;name&amp;gt;workload&amp;lt;/name&amp;gt; &amp;lt;uuid&amp;gt;ac62e6bf-6869-41a9-a2b7-25c06c7601c9&amp;lt;/uuid&amp;gt; &amp;lt;forward mode=&amp;#34;nat&amp;#34;&amp;gt; &amp;lt;nat&amp;gt; &amp;lt;port start=&amp;#34;1024&amp;#34; end=&amp;#34;65535&amp;#34;/&amp;gt; &amp;lt;/nat&amp;gt; &amp;lt;/forward&amp;gt; &amp;lt;bridge name=&amp;#34;virbr5&amp;#34; stp=&amp;#34;on&amp;#34; delay=&amp;#34;0&amp;#34;/&amp;gt; &amp;lt;mac address=&amp;#34;52:54:00:7b:ed:99&amp;#34;/&amp;gt; &amp;lt;domain name=&amp;#34;workload&amp;#34;/&amp;gt; &amp;lt;ip address=&amp;#34;192.168.101.1&amp;#34; netmask=&amp;#34;255.255.255.0&amp;#34;&amp;gt; &amp;lt;dhcp&amp;gt; &amp;lt;range start=&amp;#34;192.168.101.128&amp;#34; end=&amp;#34;192.168.101.254&amp;#34;/&amp;gt; &amp;lt;/dhcp&amp;gt; &amp;lt;/ip&amp;gt; &amp;lt;ip family=&amp;#34;ipv6&amp;#34; address=&amp;#34;fd7d:844d:3e17:f3ae::1&amp;#34; prefix=&amp;#34;64&amp;#34;&amp;gt; &amp;lt;dhcp&amp;gt; &amp;lt;range start=&amp;#34;fd7d:844d:3e17:f3ae::100&amp;#34; end=&amp;#34;fd7d:844d:3e17:f3ae::1ff&amp;#34;/&amp;gt; &amp;lt;/dhcp&amp;gt; &amp;lt;/ip&amp;gt; &amp;lt;/network&amp;gt; Change the bridge name to a new one</description>
+    </item>
+    
+  </channel>
+</rss>
