@@ -45,7 +45,7 @@ We can select VM or Bare machine network setup according to available resource
 1. Create several virtual machines, set network to `management-network` or available `vlan` 
 1. Create virtual machine on different target node
 1. Setup NFS or S3 backup target in settings
-1. Back each virtual machines
+1. Backup each virtual machines
 1. Shutdown all virtual machines
 1. Offline upgrade to target version, refer to https://docs.harvesterhci.io/v1.1/upgrade/automatic
 1. Import Harvester into the Rancher cluster
