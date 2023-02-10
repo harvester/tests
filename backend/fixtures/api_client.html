@@ -92,7 +92,7 @@ def host_state(request):
 
 @pytest.fixture(scope=&#39;module&#39;)
 def unique_name():
-    return datetime.now().strftime(&#34;%m-%d-%Hh%Mm%Ss%f&#34;)
+    return datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)
 
 
 @pytest.fixture(scope=&#34;module&#34;)
@@ -603,7 +603,7 @@ def support_bundle_state():
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
 def unique_name():
-    return datetime.now().strftime(&#34;%m-%d-%Hh%Mm%Ss%f&#34;)</code></pre>
+    return datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.wait_timeout"><code class="name flex">
