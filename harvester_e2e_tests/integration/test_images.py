@@ -1,5 +1,4 @@
 
-import os
 
 from tempfile import NamedTemporaryFile
 from pathlib import Path
@@ -11,7 +10,6 @@ import pytest
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
-    'harvester_e2e_tests.fixtures.vm',
 ]
 
 
@@ -42,19 +40,20 @@ def iso_name(unique_name):
     return name
 
 
+qcow2_base_url = "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.1/images/"  # noqa
+qcow2_image_name = "openSUSE-Leap-15.1-OpenStack.x86_64.qcow2"
+
+iso_base_url = "https://github.com/rancher/k3os/releases/download/v0.20.11-k3s2r1/"  # noqa
+iso_image_name = "k3os-amd64.iso"
+
+image_name = ["qcow2-", "iso-"]
+image_url = [qcow2_base_url + qcow2_image_name, iso_base_url + iso_image_name]
+
+
 @pytest.fixture(scope='session')
 def export_storage_class():
     storage_class = "harvester-longhorn"
     return storage_class
-
-
-@pytest.fixture(scope="session")
-def fake_image_file():
-    with NamedTemporaryFile("wb") as f:
-        f.seek(10 * 1024 ** 2 - 1)  # 10MB
-        f.write(b"\0")
-        f.seek(0)
-        yield Path(f.name)
 
 
 @pytest.fixture(scope="session")
@@ -84,32 +83,27 @@ def update_by_input(api_client, unique_name, updates):
     )
 
 
-def upload_file(api_client, unique_name, file_name, size):
-    create_image_cmd = "qemu-img create " + file_name + " " + size
-    os.system(create_image_cmd)
-    resp = api_client.images.create_by_file(unique_name, file_name)
-
-    assert 200 == resp.status_code, (
-        f"Failed to upload fake image with error:{resp.status_code}, {resp.content}"
-    )
-
-
 def get_export(api_client, display_name, wait_timeout):
 
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
+
     while endtime > datetime.now():
         code, data = api_client.images.get()
         assert 200 == code, (code, data)
+        image_name = ""
 
         for item in data['items']:
             if item['spec']['displayName'] == display_name:
-                image_name = item['metadata']['name']
-                endtime = datetime.now()
-                break
+                if "progress" in item['status']:
+                    if item['status']['progress'] == 100:
+                        image_name = item['metadata']['name']
+
             else:
                 raise AssertionError(
                     f"Failed to find image {display_name}"
                 )
+        if image_name != "":
+            break
 
     return image_name
 
@@ -215,12 +209,13 @@ def create_with_invalid_url(api_client, unique_name):
     api_client.images.delete(unique_name)
 
 
+@pytest.mark.p0
 class TestBackendImages:
 
-    @pytest.mark.images_p1
+    @pytest.mark.p0
     @pytest.mark.dependency(name="create_image_from_volume")
-    def test_create_image_from_volume(self, api_client, request,
-                                      unique_name, export_storage_class):
+    def test_create_image_from_volume(self, api_client, unique_name,
+                                      export_storage_class, wait_timeout):
         """
     Test create image from volume
 
@@ -231,12 +226,26 @@ class TestBackendImages:
         4. Cleanup image "export-image" on Images page
         5. Cleanup volume "test-volume" on Volumes page
         """
-        wait_timeout = request.config.getoption('--wait-timeout')
 
         spec = api_client.volumes.Spec(1)
         code, data = api_client.volumes.create(unique_name, spec)
 
         assert 201 == code, (code, data)
+
+        code, data = api_client.volumes.get(unique_name)
+
+        # Check volume ready
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.volumes.get(unique_name)
+            if data["status"]["phase"] == "Bound":
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Failed to delete volume {unique_name} bound in {wait_timeout} timed out\n"
+                f"Still got {code} with {data}"
+            )
 
         get_volume(api_client, unique_name)
 
@@ -244,12 +253,15 @@ class TestBackendImages:
 
         image_id = get_export(api_client, unique_name, wait_timeout)
 
+        delete_volume(api_client, unique_name, wait_timeout)
         delete_image(api_client, image_id, wait_timeout)
 
-    @pytest.mark.images_p1
+    @pytest.mark.p0
     @pytest.mark.dependency(name="create_image_url")
-    def test_create_image_url(self, api_client, request, iso_image_url,
-                              qcow2_image_url, qcow2_name, iso_name):
+    @pytest.mark.parametrize("image_name, image_url",
+                             [("qcow2-", qcow2_base_url + qcow2_image_name),
+                              ("iso-", iso_base_url + iso_image_name)])
+    def test_create_image_url(self, image_name, image_url, unique_name, api_client, wait_timeout):
         """
         Test create raw and iso type image from url
 
@@ -260,15 +272,15 @@ class TestBackendImages:
         4. Input iso image file download URL, wait for download complete
         5. Check the iso image exists
         """
-        wait_timeout = request.config.getoption('--wait-timeout')
+        create_image_url(api_client, image_name + unique_name, image_url, wait_timeout)
 
-        create_image_url(api_client, qcow2_name, qcow2_image_url, wait_timeout)
-        create_image_url(api_client, iso_name, iso_image_url, wait_timeout)
-
-    @pytest.mark.images_p1
+    @pytest.mark.p0
     @pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
-    def test_delete_image_recreate(self, api_client, request,
-                                   iso_image_url, unique_name, qcow2_name, fake_image_file):
+    @pytest.mark.parametrize("image_name, image_url",
+                             [("qcow2-", qcow2_base_url + qcow2_image_name),
+                              ("iso-", iso_base_url + iso_image_name)])
+    def test_delete_image_recreate(self, api_client, image_name, image_url, unique_name,
+                                   fake_image_file, wait_timeout):
         """
         Test create raw and iso type image from file
 
@@ -281,13 +293,12 @@ class TestBackendImages:
         5. Delete the newly uploaded file
         6. Upload a new qcow2 file type image
         """
-        wait_timeout = request.config.getoption('--wait-timeout')
 
-        get_image(api_client, qcow2_name)
-        delete_image(api_client, qcow2_name, wait_timeout)
+        get_image(api_client, image_name + unique_name)
+        delete_image(api_client, image_name + unique_name, wait_timeout)
 
-        create_image_url(api_client, qcow2_name, iso_image_url, wait_timeout)
-        get_image(api_client, qcow2_name)
+        create_image_url(api_client, image_name + unique_name, image_url, wait_timeout)
+        get_image(api_client, image_name + unique_name)
 
         resp = api_client.images.create_by_file(unique_name, fake_image_file)
 
@@ -324,7 +335,8 @@ class TestBackendImages:
         Test create upload image from invalid file type
 
         Steps:
-        1. Try to upload invalid image file to images page, something like dmg, or tar.gzps
+        1. Prepare an invalid file that is not in a multiple of 512 bytes
+        2. Try to upload invalid image file which to images page
         2. Check should get an error
         """
 
@@ -333,47 +345,53 @@ class TestBackendImages:
         assert 500 == resp.status_code, (
             f"File size correct, it's a multiple of 512 bytes:{resp.status_code}, {resp.content}"
         )
+        delete_image(api_client, unique_name, wait_timeout)
 
-    @pytest.mark.images_p1
+    @pytest.mark.p0
     @pytest.mark.dependency(name="edit_image_in_use", depends=["create_image_url"])
-    def test_edit_image_in_use(self, api_client, request, unique_name, qcow2_name):
+    def test_edit_image_in_use(self, api_client, unique_name, qcow2_name,
+                               iso_name, wait_timeout):
         """
         Test can edit image which already in use
 
         Steps:
         1. Check the image created from URL exists
-        2. Create a VM and use the existing image created from url
+        2. Create a volume from existing image
         3. Update the image labels and description
         4. Check can change the image content
         """
 
-        wait_timeout = request.config.getoption('--wait-timeout')
-
         get_image(api_client, qcow2_name)
 
-        spec = api_client.vms.Spec(1, 1)
-        spec.add_image(qcow2_name, "default/" + qcow2_name)
-        code, data = api_client.vms.create(unique_name, spec)
+        code, data = api_client.images.get()
+        assert 200 == code, (code, data)
 
-        assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
+        for item in data['items']:
+            if item['spec']['displayName'] == qcow2_name:
+                image_id = item['metadata']['uid']
 
-        # Check VM start in running state
+        # Create volume from image_id
+        spec = api_client.volumes.Spec(1)
+        code, data = api_client.volumes.create(unique_name, spec, image_id=image_id)
+
+        assert 201 == code, (code, data)
+
+        # Check volume ready
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
         while endtime > datetime.now():
-            code, data = api_client.vms.get(unique_name)
-            vm_fields = data['metadata']['fields']
-
-            assert 200 == code, (code, data)
-            if vm_fields[2] == 'Running':
+            code, data = api_client.volumes.get(unique_name)
+            if data["status"]["phase"] == "Bound":
                 break
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to create VM {unique_name} in Running status, exceed 10 minutes\n"
+                f"Failed to delete volume {unique_name} bound in {wait_timeout} timed out\n"
                 f"Still got {code} with {data}"
             )
 
+        get_volume(api_client, unique_name)
+
+        # Update image
         updates = {
             "labels": {
                 "usage-label": "yes"
