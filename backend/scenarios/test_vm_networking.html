@@ -327,6 +327,7 @@ def backup_restore_chained_backups(request, admin_session,
                                            backuptarget, backup_json)
 
 
+@pytest.mark.skip(&#34;get_vlan API removed&#34;)
 @pytest.mark.network_p1
 @pytest.mark.p1
 @pytest.mark.public_network
@@ -498,6 +499,7 @@ class TestVMNetworking:
             &#39;still accessible.&#39; % (vm_name, public_ip))
 
 
+@pytest.mark.skip(&#34;get_vlan API removed&#34;)
 @pytest.mark.public_network
 def test_two_vms_on_same_vlan(request, admin_session,
                               harvester_api_endpoints, keypair,
@@ -521,6 +523,7 @@ def test_two_vms_on_same_vlan(request, admin_session,
         assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
 
+@pytest.mark.skip(&#34;get_vlan API removed&#34;)
 @pytest.mark.public_network
 def test_update_vm_management_network_to_vlan(request, admin_session,
                                               harvester_api_endpoints, keypair,
@@ -571,6 +574,7 @@ def test_update_vm_management_network_to_vlan(request, admin_session,
     assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
 
+@pytest.mark.skip(&#34;get_vlan API removed&#34;)
 @pytest.mark.public_network
 def test_update_vm_vlan_network_to_management(request, admin_session,
                                               harvester_api_endpoints, keypair,
@@ -632,6 +636,7 @@ def test_update_vm_vlan_network_to_management(request, admin_session,
             ip))
 
 
+@pytest.mark.skip(&#34;get_vlan API removed&#34;)
 @pytest.mark.network_p2
 @pytest.mark.p2
 @pytest.mark.public_network
@@ -656,6 +661,7 @@ def test_vm_network_with_bogus_vlan(request, admin_session,
         &#39;VM should not have gotten an IPv4 address. Got %s&#39; % (public_ip))
 
 
+@pytest.mark.skip(&#34;get_vlan API removed&#34;)
 @pytest.mark.public_network
 def test_create_update_vm_user_data(request, admin_session, image,
                                     keypair, harvester_api_endpoints, network,
@@ -730,6 +736,7 @@ def test_create_update_vm_user_data(request, admin_session, image,
                                 harvester_api_endpoints, single_vm)
 
 
+@pytest.mark.skip(&#34;get_vlan API removed&#34;)
 @pytest.mark.terraform
 @pytest.mark.terraform_provider_p1
 @pytest.mark.p1
@@ -1722,7 +1729,8 @@ def test_chained_del_middle_backup_nfs(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.public_network
+<pre><code class="python">@pytest.mark.skip(&#34;get_vlan API removed&#34;)
+@pytest.mark.public_network
 def test_create_update_vm_user_data(request, admin_session, image,
                                     keypair, harvester_api_endpoints, network,
                                     user_data_with_guest_agent, network_data):
@@ -1809,7 +1817,8 @@ terraform-provider-03-define kube config</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.terraform
+<pre><code class="python">@pytest.mark.skip(&#34;get_vlan API removed&#34;)
+@pytest.mark.terraform
 @pytest.mark.terraform_provider_p1
 @pytest.mark.p1
 def test_create_vm_using_terraform(request, admin_session,
@@ -1932,7 +1941,8 @@ def test_restore_chained_backups_nfs(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.public_network
+<pre><code class="python">@pytest.mark.skip(&#34;get_vlan API removed&#34;)
+@pytest.mark.public_network
 def test_two_vms_on_same_vlan(request, admin_session,
                               harvester_api_endpoints, keypair,
                               vms_with_same_vlan, network):
@@ -1966,7 +1976,8 @@ def test_two_vms_on_same_vlan(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.public_network
+<pre><code class="python">@pytest.mark.skip(&#34;get_vlan API removed&#34;)
+@pytest.mark.public_network
 def test_update_vm_management_network_to_vlan(request, admin_session,
                                               harvester_api_endpoints, keypair,
                                               basic_vm, network):
@@ -2027,7 +2038,8 @@ def test_update_vm_management_network_to_vlan(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.public_network
+<pre><code class="python">@pytest.mark.skip(&#34;get_vlan API removed&#34;)
+@pytest.mark.public_network
 def test_update_vm_vlan_network_to_management(request, admin_session,
                                               harvester_api_endpoints, keypair,
                                               vms_with_vlan_as_default_network,
@@ -2102,7 +2114,8 @@ IPv4 address.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.network_p2
+<pre><code class="python">@pytest.mark.skip(&#34;get_vlan API removed&#34;)
+@pytest.mark.network_p2
 @pytest.mark.p2
 @pytest.mark.public_network
 def test_vm_network_with_bogus_vlan(request, admin_session,
@@ -2140,7 +2153,8 @@ def test_vm_network_with_bogus_vlan(request, admin_session,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.network_p1
+<pre><code class="python">@pytest.mark.skip(&#34;get_vlan API removed&#34;)
+@pytest.mark.network_p1
 @pytest.mark.p1
 @pytest.mark.public_network
 class TestVMNetworking:

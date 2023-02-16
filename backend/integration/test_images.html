@@ -43,7 +43,7 @@ pytest_plugins = [
 @pytest.mark.images
 @pytest.mark.p0
 @pytest.mark.dependency(name=&#34;create_image_url&#34;)
-def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout, sleep_timeout):
+def test_create_with_url(api_client, image_opensuse, unique_name, wait_timeout, sleep_timeout):
     &#34;&#34;&#34;
     Test if you can create an image from a URL.
 
@@ -57,7 +57,7 @@ def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout, 
     4. Check if the image is intialzied and the status is true
     5. Remove image
     &#34;&#34;&#34;
-    code, data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+    code, data = api_client.images.create_by_url(unique_name, image_opensuse.url)
     assert 201 == code, (
                 f&#34;Failed to create image {unique_name} from URL got\n&#34;
                 f&#34;Creation got {code} with {data}&#34;
@@ -83,7 +83,7 @@ def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout, 
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.integration.test_images.test_create_with_url"><code class="name flex">
-<span>def <span class="ident">test_create_with_url</span></span>(<span>api_client, opensuse_image, unique_name, wait_timeout, sleep_timeout)</span>
+<span>def <span class="ident">test_create_with_url</span></span>(<span>api_client, image_opensuse, unique_name, wait_timeout, sleep_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Test if you can create an image from a URL.</p>
@@ -104,7 +104,7 @@ an opensuse image.</p>
 <pre><code class="python">@pytest.mark.images
 @pytest.mark.p0
 @pytest.mark.dependency(name=&#34;create_image_url&#34;)
-def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout, sleep_timeout):
+def test_create_with_url(api_client, image_opensuse, unique_name, wait_timeout, sleep_timeout):
     &#34;&#34;&#34;
     Test if you can create an image from a URL.
 
@@ -118,7 +118,7 @@ def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout, 
     4. Check if the image is intialzied and the status is true
     5. Remove image
     &#34;&#34;&#34;
-    code, data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+    code, data = api_client.images.create_by_url(unique_name, image_opensuse.url)
     assert 201 == code, (
                 f&#34;Failed to create image {unique_name} from URL got\n&#34;
                 f&#34;Creation got {code} with {data}&#34;

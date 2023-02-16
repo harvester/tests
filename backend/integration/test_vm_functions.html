@@ -63,10 +63,10 @@ def kubeconfig_file(api_client):
 
 
 @pytest.fixture(scope=&#34;module&#34;)
-def image(api_client, opensuse_image, unique_name, wait_timeout):
+def image(api_client, image_opensuse, unique_name, wait_timeout):
     unique_image_id = f&#39;image-{unique_name}&#39;
     code, data = api_client.images.create_by_url(
-        unique_image_id, opensuse_image.url, display_name=f&#34;{unique_name}-{opensuse_image.name}&#34;
+        unique_image_id, image_opensuse.url, display_name=f&#34;{unique_name}-{image_opensuse.name}&#34;
     )
 
     assert 201 == code, (code, data)
@@ -84,7 +84,7 @@ def image(api_client, opensuse_image, unique_name, wait_timeout):
         )
 
     yield dict(id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
-               user=opensuse_image.ssh_user)
+               user=image_opensuse.ssh_user)
 
     code, data = api_client.images.delete(unique_image_id)
 
@@ -1182,7 +1182,7 @@ class TestVMWithVolumes:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.integration.test_vm_functions.image"><code class="name flex">
-<span>def <span class="ident">image</span></span>(<span>api_client, opensuse_image, unique_name, wait_timeout)</span>
+<span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1191,10 +1191,10 @@ class TestVMWithVolumes:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
-def image(api_client, opensuse_image, unique_name, wait_timeout):
+def image(api_client, image_opensuse, unique_name, wait_timeout):
     unique_image_id = f&#39;image-{unique_name}&#39;
     code, data = api_client.images.create_by_url(
-        unique_image_id, opensuse_image.url, display_name=f&#34;{unique_name}-{opensuse_image.name}&#34;
+        unique_image_id, image_opensuse.url, display_name=f&#34;{unique_name}-{image_opensuse.name}&#34;
     )
 
     assert 201 == code, (code, data)
@@ -1212,7 +1212,7 @@ def image(api_client, opensuse_image, unique_name, wait_timeout):
         )
 
     yield dict(id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
-               user=opensuse_image.ssh_user)
+               user=image_opensuse.ssh_user)
 
     code, data = api_client.images.delete(unique_image_id)</code></pre>
 </details>

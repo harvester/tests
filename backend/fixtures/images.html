@@ -40,7 +40,7 @@ DEFAULT_OPENSUSE_IMAGE_URL = (&#34;https://download.opensuse.org/repositories/Cl
 
 
 @pytest.fixture(scope=&#34;session&#34;)
-def opensuse_image(request, api_client):
+def image_opensuse(request, api_client):
     image_server = request.config.getoption(&#39;--image-cache-url&#39;)
     url = urlparse(request.config.getoption(&#39;--opensuse-image-url&#39;) or DEFAULT_OPENSUSE_IMAGE_URL)
 
@@ -78,8 +78,8 @@ class ImageInfo:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.fixtures.images.opensuse_image"><code class="name flex">
-<span>def <span class="ident">opensuse_image</span></span>(<span>request, api_client)</span>
+<dt id="harvester_e2e_tests.fixtures.images.image_opensuse"><code class="name flex">
+<span>def <span class="ident">image_opensuse</span></span>(<span>request, api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -88,7 +88,7 @@ class ImageInfo:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def opensuse_image(request, api_client):
+def image_opensuse(request, api_client):
     image_server = request.config.getoption(&#39;--image-cache-url&#39;)
     url = urlparse(request.config.getoption(&#39;--opensuse-image-url&#39;) or DEFAULT_OPENSUSE_IMAGE_URL)
 
@@ -179,7 +179,7 @@ def url(self):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.fixtures.images.opensuse_image" href="#harvester_e2e_tests.fixtures.images.opensuse_image">opensuse_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.images.image_opensuse" href="#harvester_e2e_tests.fixtures.images.image_opensuse">image_opensuse</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
