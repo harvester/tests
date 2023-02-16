@@ -35,10 +35,10 @@ def kubeconfig_file(api_client):
 
 
 @pytest.fixture(scope="module")
-def image(api_client, opensuse_image, unique_name, wait_timeout):
+def image(api_client, image_opensuse, unique_name, wait_timeout):
     unique_image_id = f'image-{unique_name}'
     code, data = api_client.images.create_by_url(
-        unique_image_id, opensuse_image.url, display_name=f"{unique_name}-{opensuse_image.name}"
+        unique_image_id, image_opensuse.url, display_name=f"{unique_name}-{image_opensuse.name}"
     )
 
     assert 201 == code, (code, data)
@@ -56,7 +56,7 @@ def image(api_client, opensuse_image, unique_name, wait_timeout):
         )
 
     yield dict(id=f"{data['metadata']['namespace']}/{unique_image_id}",
-               user=opensuse_image.ssh_user)
+               user=image_opensuse.ssh_user)
 
     code, data = api_client.images.delete(unique_image_id)
 
