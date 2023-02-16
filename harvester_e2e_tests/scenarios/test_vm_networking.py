@@ -299,6 +299,7 @@ def backup_restore_chained_backups(request, admin_session,
                                            backuptarget, backup_json)
 
 
+@pytest.mark.skip("get_vlan API removed")
 @pytest.mark.network_p1
 @pytest.mark.p1
 @pytest.mark.public_network
@@ -470,6 +471,7 @@ class TestVMNetworking:
             'still accessible.' % (vm_name, public_ip))
 
 
+@pytest.mark.skip("get_vlan API removed")
 @pytest.mark.public_network
 def test_two_vms_on_same_vlan(request, admin_session,
                               harvester_api_endpoints, keypair,
@@ -493,6 +495,7 @@ def test_two_vms_on_same_vlan(request, admin_session,
         assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
 
+@pytest.mark.skip("get_vlan API removed")
 @pytest.mark.public_network
 def test_update_vm_management_network_to_vlan(request, admin_session,
                                               harvester_api_endpoints, keypair,
@@ -543,6 +546,7 @@ def test_update_vm_management_network_to_vlan(request, admin_session,
     assert_ssh_into_vm(public_ip, timeout, keypair=keypair)
 
 
+@pytest.mark.skip("get_vlan API removed")
 @pytest.mark.public_network
 def test_update_vm_vlan_network_to_management(request, admin_session,
                                               harvester_api_endpoints, keypair,
@@ -604,6 +608,7 @@ def test_update_vm_vlan_network_to_management(request, admin_session,
             ip))
 
 
+@pytest.mark.skip("get_vlan API removed")
 @pytest.mark.network_p2
 @pytest.mark.p2
 @pytest.mark.public_network
@@ -628,6 +633,7 @@ def test_vm_network_with_bogus_vlan(request, admin_session,
         'VM should not have gotten an IPv4 address. Got %s' % (public_ip))
 
 
+@pytest.mark.skip("get_vlan API removed")
 @pytest.mark.public_network
 def test_create_update_vm_user_data(request, admin_session, image,
                                     keypair, harvester_api_endpoints, network,
@@ -702,6 +708,7 @@ def test_create_update_vm_user_data(request, admin_session, image,
                                 harvester_api_endpoints, single_vm)
 
 
+@pytest.mark.skip("get_vlan API removed")
 @pytest.mark.terraform
 @pytest.mark.terraform_provider_p1
 @pytest.mark.p1
