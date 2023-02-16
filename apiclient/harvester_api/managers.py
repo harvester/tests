@@ -356,7 +356,7 @@ class BackupManager(BaseManager):
 
     def create(self, name, restore_spec, namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
         _, data = self.get(name, namespace)
-        old_vm = data['spec']['source']
+        old_vm = data['spec']['source']['name']
         spec = restore_spec.to_dict(name, namespace, old_vm)
         path = self.RESTORE_fmt.format(ns=restore_spec.namespace or namespace)
         return self._create(path, json=spec, raw=raw, **kwargs)
