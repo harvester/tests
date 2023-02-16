@@ -15,7 +15,7 @@ pytest_plugins = [
 @pytest.mark.images
 @pytest.mark.p0
 @pytest.mark.dependency(name="create_image_url")
-def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout, sleep_timeout):
+def test_create_with_url(api_client, image_opensuse, unique_name, wait_timeout, sleep_timeout):
     """
     Test if you can create an image from a URL.
 
@@ -29,7 +29,7 @@ def test_create_with_url(api_client, opensuse_image, unique_name, wait_timeout, 
     4. Check if the image is intialzied and the status is true
     5. Remove image
     """
-    code, data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+    code, data = api_client.images.create_by_url(unique_name, image_opensuse.url)
     assert 201 == code, (
                 f"Failed to create image {unique_name} from URL got\n"
                 f"Creation got {code} with {data}"

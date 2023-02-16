@@ -12,7 +12,7 @@ DEFAULT_OPENSUSE_IMAGE_URL = ("https://download.opensuse.org/repositories/Cloud:
 
 
 @pytest.fixture(scope="session")
-def opensuse_image(request, api_client):
+def image_opensuse(request, api_client):
     image_server = request.config.getoption('--image-cache-url')
     url = urlparse(request.config.getoption('--opensuse-image-url') or DEFAULT_OPENSUSE_IMAGE_URL)
 
