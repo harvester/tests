@@ -1225,7 +1225,7 @@ Verification Steps Because configuring the network of the installation environme
     </item>
     
     <item>
-      <title>Change user passowrd</title>
+      <title>Change user password (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/authentication/1409-change-password/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -1449,7 +1449,7 @@ Turbolinux Mandriva Xandros In v1.1.0 master we add the SUSE Linux Enterprise in
     </item>
     
     <item>
-      <title>Clone image</title>
+      <title>Clone image (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2562-clone-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2421,7 +2421,7 @@ Test Information Environment: baremetal DL360G9 5 nodes Harvester Version: maste
     </item>
     
     <item>
-      <title>Delete VM template default version</title>
+      <title>Delete VM template default version (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2376-2379-delete-vm-template-default-version/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3041,7 +3041,7 @@ Clone ipxe example repository https://github.com/harvester/ipxe-examples Edit th
     </item>
     
     <item>
-      <title>Image filtering by labels</title>
+      <title>Image filtering by labels (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2474-image-filtering-by-labels/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -3062,7 +3062,7 @@ Create the install-terraform-provider-harvester.sh with the following content
     </item>
     
     <item>
-      <title>Image naming with inline CSS</title>
+      <title>Image naming with inline CSS (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2563-image-naming-inline-css/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -4277,7 +4277,7 @@ Test Information Environment: qemu/KVM 3 nodes Harvester Version: master-f96827b
     </item>
     
     <item>
-      <title>Set backup target S3</title>
+      <title>Set backup target S3	(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -5291,7 +5291,7 @@ https://github.com/harvester/harvester/issues/1446 https://github.com/harvester/
     </item>
     
     <item>
-      <title>VM scheduling on Specific node</title>
+      <title>VM scheduling on Specific node (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

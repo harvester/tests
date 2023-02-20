@@ -820,7 +820,7 @@ https://github.com/harvester/harvester/issues/1446 https://github.com/harvester/
     </item>
     
     <item>
-      <title>VM scheduling on Specific node</title>
+      <title>VM scheduling on Specific node (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

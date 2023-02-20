@@ -210,7 +210,7 @@ Turbolinux Mandriva Xandros In v1.1.0 master we add the SUSE Linux Enterprise in
     </item>
     
     <item>
-      <title>Clone image</title>
+      <title>Clone image (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2562-clone-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -297,7 +297,7 @@ Test Information Environment: baremetal DL360G9 5 nodes Harvester Version: maste
     </item>
     
     <item>
-      <title>Delete VM template default version</title>
+      <title>Delete VM template default version (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2376-2379-delete-vm-template-default-version/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -464,7 +464,7 @@ Verify Steps: Install Harvester via ISO The default Bond Mode should select acti
     </item>
     
     <item>
-      <title>Image filtering by labels</title>
+      <title>Image filtering by labels (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2474-image-filtering-by-labels/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -485,7 +485,7 @@ Create the install-terraform-provider-harvester.sh with the following content
     </item>
     
     <item>
-      <title>Image naming with inline CSS</title>
+      <title>Image naming with inline CSS (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2563-image-naming-inline-css/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
