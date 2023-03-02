@@ -65,62 +65,19 @@ def fake_invalid_image_file():
         yield Path(f.name)
 
 
-def update_by_input(api_client, unique_name, updates):
-
-    code, data = api_client.images.update(unique_name, dict(metadata=updates))
-
-    assert 200 == code, (f"Failed to update image with error: {code}, {data}")
-
-    unexpected = list()
-    for field, pairs in updates.items():
-        for k, val in pairs.items():
-            if data['metadata'][field].get(k) != val:
-                unexpected.append((field, k, val, data['metadata'][field].get(k)))
-
-    assert not unexpected, (
-        "\n".join(f"Update {f} failed, set key {k} as {v} but got {n}"
-                  for f, k, v, n in unexpected)
-    )
-
-
-def get_export(api_client, display_name, wait_timeout):
-
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-    while endtime > datetime.now():
-        code, data = api_client.images.get()
-        assert 200 == code, (code, data)
-        image_name = ""
-
-        for item in data['items']:
-            if item['spec']['displayName'] == display_name:
-                if "progress" in item['status']:
-                    if item['status']['progress'] == 100:
-                        image_name = item['metadata']['name']
-
-            else:
-                raise AssertionError(
-                    f"Failed to find image {display_name}"
-                )
-        if image_name != "":
-            break
-
-    return image_name
-
-
-def create_image_url(api_client, display_name, image_url, wait_timeout):
-    code, data = api_client.images.create_by_url(display_name, image_url)
+def create_image_url(api_client, name, image_url, wait_timeout):
+    code, data = api_client.images.create_by_url(name, image_url)
 
     assert 201 == code, (code, data)
     image_spec = data.get('spec')
 
-    assert display_name == image_spec.get('displayName')
+    assert name == image_spec.get('displayName')
     assert "download" == image_spec.get('sourceType')
 
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
     while endtime > datetime.now():
-        code, data = api_client.images.get(display_name)
+        code, data = api_client.images.get(name)
         image_status = data.get('status', {})
 
         assert 200 == code, (code, data)
@@ -129,7 +86,7 @@ def create_image_url(api_client, display_name, image_url, wait_timeout):
         sleep(5)
     else:
         raise AssertionError(
-            f"Failed to download image {display_name} with {wait_timeout} timed out\n"
+            f"Failed to download image {name} with {wait_timeout} timed out\n"
             f"Still got {code} with {data}"
         )
 
@@ -188,32 +145,11 @@ def get_image(api_client, unique_name):
     assert unique_name == data['metadata']['name']
 
 
-def create_with_invalid_url(api_client, unique_name):
-    code, data = api_client.images.create_by_url(unique_name, f"https://{unique_name}.img")
-
-    assert 201 == code, (code, data)
-
-    endtime = datetime.now() + timedelta(minutes=3)
-    while endtime > datetime.now():
-        code, data = api_client.images.get(unique_name)
-        image_conds = data.get('status', {}).get('conditions', [])
-        if len(image_conds) > 0:
-            break
-        sleep(3)
-
-    assert len(image_conds) == 1, f"Got unexpected image conditions!\n{data}"
-    assert "Initialized" == image_conds[0].get("type")
-    assert "False" == image_conds[0].get("status")
-    assert "no such host" in image_conds[0].get("message")
-
-    api_client.images.delete(unique_name)
-
-
-@pytest.mark.p0
+@ pytest.mark.p0
 class TestBackendImages:
 
-    @pytest.mark.p0
-    @pytest.mark.dependency(name="create_image_from_volume")
+    @ pytest.mark.p0
+    @ pytest.mark.dependency(name="create_image_from_volume")
     def test_create_image_from_volume(self, api_client, unique_name,
                                       export_storage_class, wait_timeout):
         """
@@ -232,8 +168,6 @@ class TestBackendImages:
 
         assert 201 == code, (code, data)
 
-        code, data = api_client.volumes.get(unique_name)
-
         # Check volume ready
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
@@ -247,20 +181,37 @@ class TestBackendImages:
                 f"Still got {code} with {data}"
             )
 
-        get_volume(api_client, unique_name)
-
         api_client.volumes.export(unique_name, unique_name, export_storage_class)
 
-        image_id = get_export(api_client, unique_name, wait_timeout)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+
+        while endtime > datetime.now():
+            code, data = api_client.images.get()
+            assert 200 == code, (code, data)
+            image_id = ""
+
+            for image in data['items']:
+                if image['spec']['displayName'] == unique_name:
+                    if 100 == image.get('status', {}).get('progress', 0):
+                        image_id = image['metadata']['name']
+                        # return image['metadata']['name']
+                    sleep(3)  # snooze
+                else:
+                    raise AssertionError(
+                        f"Failed to find image {unique_name}"
+                    )
+
+            if image_id != "":
+                break
 
         delete_volume(api_client, unique_name, wait_timeout)
         delete_image(api_client, image_id, wait_timeout)
 
-    @pytest.mark.p0
-    @pytest.mark.dependency(name="create_image_url")
-    @pytest.mark.parametrize("image_name, image_url",
-                             [("qcow2-", qcow2_base_url + qcow2_image_name),
-                              ("iso-", iso_base_url + iso_image_name)])
+    @ pytest.mark.p0
+    @ pytest.mark.dependency(name="create_image_url")
+    @ pytest.mark.parametrize("image_name, image_url",
+                              [("qcow2-", qcow2_base_url + qcow2_image_name),
+                               ("iso-", iso_base_url + iso_image_name)])
     def test_create_image_url(self, image_name, image_url, unique_name, api_client, wait_timeout):
         """
         Test create raw and iso type image from url
@@ -274,11 +225,11 @@ class TestBackendImages:
         """
         create_image_url(api_client, image_name + unique_name, image_url, wait_timeout)
 
-    @pytest.mark.p0
-    @pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
-    @pytest.mark.parametrize("image_name, image_url",
-                             [("qcow2-", qcow2_base_url + qcow2_image_name),
-                              ("iso-", iso_base_url + iso_image_name)])
+    @ pytest.mark.p0
+    @ pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
+    @ pytest.mark.parametrize("image_name, image_url",
+                              [("qcow2-", qcow2_base_url + qcow2_image_name),
+                               ("iso-", iso_base_url + iso_image_name)])
     def test_delete_image_recreate(self, api_client, image_name, image_url, unique_name,
                                    fake_image_file, wait_timeout):
         """
@@ -347,8 +298,8 @@ class TestBackendImages:
         )
         delete_image(api_client, unique_name, wait_timeout)
 
-    @pytest.mark.p0
-    @pytest.mark.dependency(name="edit_image_in_use", depends=["create_image_url"])
+    @ pytest.mark.p0
+    @ pytest.mark.dependency(name="edit_image_in_use", depends=["create_image_url"])
     def test_edit_image_in_use(self, api_client, unique_name, qcow2_name,
                                iso_name, wait_timeout):
         """
@@ -391,7 +342,7 @@ class TestBackendImages:
 
         get_volume(api_client, unique_name)
 
-        # Update image
+        # Update image content
         updates = {
             "labels": {
                 "usage-label": "yes"
