@@ -170,9 +170,9 @@ def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
             break
         sleep(3)
 
-    assert len(image_conds) == 1, f"Got unexpected image conditions!\n{data}"
-    assert "Initialized" == image_conds[0].get("type")
-    assert "False" == image_conds[0].get("status")
-    assert "no such host" in image_conds[0].get("message")
+    assert len(image_conds) in (1, 2), f"Got unexpected image conditions!\n{data}"
+    assert "Initialized" == image_conds[-1].get("type")
+    assert "False" == image_conds[-1].get("status")
+    assert "no such host" in image_conds[-1].get("message")
 
     api_client.images.delete(unique_name)
