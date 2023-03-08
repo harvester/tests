@@ -48,7 +48,7 @@ def test_get_host(api_client):
 @pytest.mark.dependency(depends=["get_host"], name="enable_maintenance_mode")
 @pytest.mark.hosts
 @pytest.mark.p2
-def test_maintenance_mode(api_client):
+def test_maintenance_mode(api_client, wait_timeout):
     """
     Test the hosts are the nodes which make the cluster
     Covers:
@@ -59,20 +59,41 @@ def test_maintenance_mode(api_client):
     _, nodes_info = api_client.hosts.get()
 
     # Test on the last node to avoid affect VIP
-    node = nodes_info['data'][-1]
+    node_id = nodes_info['data'][-1]['id']
 
     # Case 1: enable
-    status_code, node_stats = api_client.hosts.maintenance_mode(node['id'], enable=True)
-    maintain_status = node_stats["metadata"]["annotations"]["harvesterhci.io/maintain-status"]
+    status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=True)
+    assert 204 == status_code, (status_code, node_stats)
 
-    assert node_stats["spec"]["unschedulable"]
-    assert maintain_status in ("running", "completed")
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        _, stats = api_client.hosts.get(node_id)
+        if stats['spec'].get('unschedulable'):
+            maintain_stat = stats["metadata"]["annotations"].get("harvesterhci.io/maintain-status")
+            if maintain_stat in ("running", "completed"):
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Node({node_id}) not entered maintenance mode after {wait_timeout} secs\n"
+            f"maintain-status: {maintain_stat}\t"
+        )
 
     # Case 2: disable
-    status_code, node_stats = api_client.hosts.maintenance_mode(node['id'], enable=False)
+    status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=False)
 
-    assert "unschedulable" not in node_stats["spec"]
-    assert "harvesterhci.io/maintain-status" not in node_stats["metadata"]["annotations"]
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        _, stats = api_client.hosts.get(node_id)
+        if ("harvesterhci.io/maintain-status" not in node_stats["metadata"]["annotations"]
+           and "unschedulable" not in node_stats["spec"]):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Node({node_id}) not leave maintenance mode after disabled {wait_timeout} secs\n"
+            f'maintain stat:{stats["metadata"]["annotations"]["harvesterhci.io/maintain-status"]}'
+        )
 
 
 @pytest.mark.dependency(depends=["get_host"])

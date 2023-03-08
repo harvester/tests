@@ -105,10 +105,10 @@ class HostManager(BaseManager):
     def get_metrics(self, name="", *, raw=False):
         return self._get(self.METRIC_fmt.format(uid=name), raw=raw)
 
-    def maintenance_mode(self, name, enable=True):
+    def maintenance_mode(self, name, enable=True, force=False):
         action = "enable" if enable else "disable"
         params = dict(action=f"{action}MaintenanceMode")
-        self._create(self.PATH_fmt.format(uid=name), params=params)
+        self._create(self.PATH_fmt.format(uid=name), params=params, data=dict(force=force))
         return self.get(name)
 
 
