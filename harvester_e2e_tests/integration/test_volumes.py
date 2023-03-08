@@ -78,7 +78,7 @@ def validate_blank_volumes(request, admin_session, get_api_link):
 
 @pytest.mark.volumes
 @pytest.mark.p1
-def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
+def test_create_volume_backing_image(api_client, unique_name, image_opensuse,
                                      wait_timeout, sleep_timeout):
     """
     1. Create a new image from URL
@@ -88,7 +88,7 @@ def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
     5. Delete image and volume
     """
 
-    code, image_data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+    code, image_data = api_client.images.create_by_url(unique_name, image_opensuse.url)
 
     assert 201 == code, (code, image_data)
 
