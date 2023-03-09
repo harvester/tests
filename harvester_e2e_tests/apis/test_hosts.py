@@ -85,8 +85,8 @@ def test_maintenance_mode(api_client, wait_timeout):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         _, stats = api_client.hosts.get(node_id)
-        if ("harvesterhci.io/maintain-status" not in node_stats["metadata"]["annotations"]
-           and "unschedulable" not in node_stats["spec"]):
+        if ("harvesterhci.io/maintain-status" not in stats["metadata"]["annotations"]
+           and "unschedulable" not in stats["spec"]):
             break
         sleep(5)
     else:
