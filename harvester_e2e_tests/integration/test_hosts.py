@@ -226,7 +226,7 @@ def test_maintenance_mode_trigger_vm_migrate(api_client, focal_vm, wait_timeout,
     src_host = data['status']['nodeName']
 
     code, data = api_client.hosts.maintenance_mode(src_host, enable=True)
-    assert 200 == code, (
+    assert 204 == code, (
         f"Failed to enable maintenance mode on node {src_host} with error: {code}, {data}",
     )
 
@@ -260,7 +260,7 @@ def test_maintenance_mode_trigger_vm_migrate(api_client, focal_vm, wait_timeout,
 
     # teardown
     code, data = api_client.hosts.maintenance_mode(src_host, enable=False)
-    assert 200 == code, (
+    assert 204 == code, (
         f"Failed to disable maintenance mode on node {src_host} with error: {code}, {data}",
     )
 

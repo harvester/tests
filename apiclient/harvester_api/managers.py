@@ -108,8 +108,8 @@ class HostManager(BaseManager):
     def maintenance_mode(self, name, enable=True, force=False):
         action = "enable" if enable else "disable"
         params = dict(action=f"{action}MaintenanceMode")
-        self._create(self.PATH_fmt.format(uid=name), params=params, data=dict(force=force))
-        return self.get(name)
+        payload = dict(force=str(force).lower())
+        return self._create(self.PATH_fmt.format(uid=name), params=params, json=payload)
 
 
 class ImageManager(BaseManager):
