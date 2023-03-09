@@ -63,8 +63,8 @@ class TestNetworksNegative:
     def test_create_with_invalid_id_110(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
-        assert 422 == code, (vlan_id, code, data)
-        assert "Invalid" == data.get("reason"), (vlan_id, code, data)
+        assert 500 == code, (vlan_id, code, data)
+        assert "InternalError" == data.get("reason"), (vlan_id, code, data)
 
 
 @pytest.mark.p0

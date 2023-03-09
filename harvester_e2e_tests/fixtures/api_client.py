@@ -147,11 +147,13 @@ def k8s_version(request):
 @pytest.fixture(autouse=True)
 def skip_version_before(request, api_client):
     mark = request.node.get_closest_marker("skip_version_before")
-    if mark and parse_version(mark.args[0]) > api_client.cluster_version:
-        pytest.skip(
-            f"Cluster Version `{api_client.cluster_version}` is not included"
-            f" in the supported version (most >= `{mark.args[0]}`)"
-        )
+    if mark:
+        cluster_ver = api_client.cluster_version
+        if '-head' not in cluster_ver.public and parse_version(mark.args[0]) > cluster_ver:
+            pytest.skip(
+                f"Cluster Version `{api_client.cluster_version}` is not included"
+                f" in the supported version (most >= `{mark.args[0]}`)"
+            )
 
 
 @pytest.fixture(autouse=True)
@@ -159,7 +161,7 @@ def skip_version_after(request, api_client):
     mark = request.node.get_closest_marker("skip_version_after")
     if mark:
         cluster_ver = api_client.cluster_version
-        if hasattr(cluster_ver, 'major') and parse_version(mark.args[0]) <= cluster_ver:
+        if not hasattr(cluster_ver, 'major') or parse_version(mark.args[0]) <= cluster_ver:
             pytest.skip(
                 f"Cluster Version `{api_client.cluster_version}` is not included"
                 f" in the supported version (most < `{mark.args[0]}`)"
