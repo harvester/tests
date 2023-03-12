@@ -46,7 +46,7 @@ class TestNetworksNegative:
 
     @pytest.mark.parametrize("vlan_id", [0, 4095])
     @pytest.mark.skip_version_after("v1.0.3")  # ref to harvester/issues/3151
-    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+    def test_create_with_invalid_id_103(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
         assert 422 == code, (vlan_id, code, data)
@@ -60,7 +60,7 @@ class TestNetworksNegative:
 
     @pytest.mark.parametrize("vlan_id", [4095])
     @pytest.mark.skip_version_before("v1.1.0")  # ref to harvester/issues/3151
-    def test_create_with_invalid_id_110(self, api_client, unique_name, vlan_id):
+    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
         assert 500 == code, (vlan_id, code, data)
@@ -73,12 +73,12 @@ class TestNetworks:
 
     @pytest.mark.dependency(name="create_network")
     @pytest.mark.skip_version_after("v1.0.3")
-    def test_create(self, api_client, unique_name):
+    def test_create_103(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
         assert 201 == code, (code, data)
 
     @pytest.mark.skip_version_before("v1.1.0")
-    def test_create_110(self, api_client, unique_name):
+    def test_create(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID, cluster_network='mgmt')
         assert 201 == code, (code, data)
 
