@@ -197,7 +197,8 @@ def test_host_poweron_state(api_client, host_state, wait_timeout):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         _, metric = api_client.hosts.get_metrics(node[&#39;id&#39;])
-        if not metric.get(&#34;metadata&#34;, {}).get(&#34;state&#34;, {}).get(&#34;error&#34;):
+        state = metric.get(&#34;metadata&#34;, {}).get(&#34;state&#34;, {})
+        if not state.get(&#34;error&#34;) or state.get(&#39;name&#39;) != &#39;unavailable&#39;:
             break
         sleep(5)
     else:
@@ -253,7 +254,7 @@ def test_maintenance_mode_trigger_vm_migrate(api_client, focal_vm, wait_timeout,
     src_host = data[&#39;status&#39;][&#39;nodeName&#39;]
 
     code, data = api_client.hosts.maintenance_mode(src_host, enable=True)
-    assert 200 == code, (
+    assert 204 == code, (
         f&#34;Failed to enable maintenance mode on node {src_host} with error: {code}, {data}&#34;,
     )
 
@@ -287,7 +288,7 @@ def test_maintenance_mode_trigger_vm_migrate(api_client, focal_vm, wait_timeout,
 
     # teardown
     code, data = api_client.hosts.maintenance_mode(src_host, enable=False)
-    assert 200 == code, (
+    assert 204 == code, (
         f&#34;Failed to disable maintenance mode on node {src_host} with error: {code}, {data}&#34;,
     )
 
@@ -567,7 +568,8 @@ def test_host_poweron_state(api_client, host_state, wait_timeout):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         _, metric = api_client.hosts.get_metrics(node[&#39;id&#39;])
-        if not metric.get(&#34;metadata&#34;, {}).get(&#34;state&#34;, {}).get(&#34;error&#34;):
+        state = metric.get(&#34;metadata&#34;, {}).get(&#34;state&#34;, {})
+        if not state.get(&#34;error&#34;) or state.get(&#39;name&#39;) != &#39;unavailable&#39;:
             break
         sleep(5)
     else:
@@ -603,7 +605,7 @@ def test_maintenance_mode_trigger_vm_migrate(api_client, focal_vm, wait_timeout,
     src_host = data[&#39;status&#39;][&#39;nodeName&#39;]
 
     code, data = api_client.hosts.maintenance_mode(src_host, enable=True)
-    assert 200 == code, (
+    assert 204 == code, (
         f&#34;Failed to enable maintenance mode on node {src_host} with error: {code}, {data}&#34;,
     )
 
@@ -637,7 +639,7 @@ def test_maintenance_mode_trigger_vm_migrate(api_client, focal_vm, wait_timeout,
 
     # teardown
     code, data = api_client.hosts.maintenance_mode(src_host, enable=False)
-    assert 200 == code, (
+    assert 204 == code, (
         f&#34;Failed to disable maintenance mode on node {src_host} with error: {code}, {data}&#34;,
     )</code></pre>
 </details>

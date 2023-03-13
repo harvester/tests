@@ -106,7 +106,7 @@ def validate_blank_volumes(request, admin_session, get_api_link):
 
 @pytest.mark.volumes
 @pytest.mark.p1
-def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
+def test_create_volume_backing_image(api_client, unique_name, image_opensuse,
                                      wait_timeout, sleep_timeout):
     &#34;&#34;&#34;
     1. Create a new image from URL
@@ -116,7 +116,7 @@ def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
     5. Delete image and volume
     &#34;&#34;&#34;
 
-    code, image_data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+    code, image_data = api_client.images.create_by_url(unique_name, image_opensuse.url)
 
     assert 201 == code, (code, image_data)
 
@@ -162,7 +162,7 @@ def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.integration.test_volumes.test_create_volume_backing_image"><code class="name flex">
-<span>def <span class="ident">test_create_volume_backing_image</span></span>(<span>api_client, unique_name, opensuse_image, wait_timeout, sleep_timeout)</span>
+<span>def <span class="ident">test_create_volume_backing_image</span></span>(<span>api_client, unique_name, image_opensuse, wait_timeout, sleep_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><ol>
@@ -178,7 +178,7 @@ def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
 </summary>
 <pre><code class="python">@pytest.mark.volumes
 @pytest.mark.p1
-def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
+def test_create_volume_backing_image(api_client, unique_name, image_opensuse,
                                      wait_timeout, sleep_timeout):
     &#34;&#34;&#34;
     1. Create a new image from URL
@@ -188,7 +188,7 @@ def test_create_volume_backing_image(api_client, unique_name, opensuse_image,
     5. Delete image and volume
     &#34;&#34;&#34;
 
-    code, image_data = api_client.images.create_by_url(unique_name, opensuse_image.url)
+    code, image_data = api_client.images.create_by_url(unique_name, image_opensuse.url)
 
     assert 201 == code, (code, image_data)
 

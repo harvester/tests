@@ -198,10 +198,10 @@ def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
             break
         sleep(3)
 
-    assert len(image_conds) == 1, f&#34;Got unexpected image conditions!\n{data}&#34;
-    assert &#34;Initialized&#34; == image_conds[0].get(&#34;type&#34;)
-    assert &#34;False&#34; == image_conds[0].get(&#34;status&#34;)
-    assert &#34;no such host&#34; in image_conds[0].get(&#34;message&#34;)
+    assert len(image_conds) in (1, 2), f&#34;Got unexpected image conditions!\n{data}&#34;
+    assert &#34;Initialized&#34; == image_conds[-1].get(&#34;type&#34;)
+    assert &#34;False&#34; == image_conds[-1].get(&#34;status&#34;)
+    assert &#34;no such host&#34; in image_conds[-1].get(&#34;message&#34;)
 
     api_client.images.delete(unique_name)</code></pre>
 </details>
@@ -239,10 +239,10 @@ def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
             break
         sleep(3)
 
-    assert len(image_conds) == 1, f&#34;Got unexpected image conditions!\n{data}&#34;
-    assert &#34;Initialized&#34; == image_conds[0].get(&#34;type&#34;)
-    assert &#34;False&#34; == image_conds[0].get(&#34;status&#34;)
-    assert &#34;no such host&#34; in image_conds[0].get(&#34;message&#34;)
+    assert len(image_conds) in (1, 2), f&#34;Got unexpected image conditions!\n{data}&#34;
+    assert &#34;Initialized&#34; == image_conds[-1].get(&#34;type&#34;)
+    assert &#34;False&#34; == image_conds[-1].get(&#34;status&#34;)
+    assert &#34;no such host&#34; in image_conds[-1].get(&#34;message&#34;)
 
     api_client.images.delete(unique_name)</code></pre>
 </details>

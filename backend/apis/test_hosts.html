@@ -76,7 +76,7 @@ def test_get_host(api_client):
 @pytest.mark.dependency(depends=[&#34;get_host&#34;], name=&#34;enable_maintenance_mode&#34;)
 @pytest.mark.hosts
 @pytest.mark.p2
-def test_maintenance_mode(api_client):
+def test_maintenance_mode(api_client, wait_timeout):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
@@ -87,20 +87,41 @@ def test_maintenance_mode(api_client):
     _, nodes_info = api_client.hosts.get()
 
     # Test on the last node to avoid affect VIP
-    node = nodes_info[&#39;data&#39;][-1]
+    node_id = nodes_info[&#39;data&#39;][-1][&#39;id&#39;]
 
     # Case 1: enable
-    status_code, node_stats = api_client.hosts.maintenance_mode(node[&#39;id&#39;], enable=True)
-    maintain_status = node_stats[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]
+    status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=True)
+    assert 204 == status_code, (status_code, node_stats)
 
-    assert node_stats[&#34;spec&#34;][&#34;unschedulable&#34;]
-    assert maintain_status in (&#34;running&#34;, &#34;completed&#34;)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        _, stats = api_client.hosts.get(node_id)
+        if stats[&#39;spec&#39;].get(&#39;unschedulable&#39;):
+            maintain_stat = stats[&#34;metadata&#34;][&#34;annotations&#34;].get(&#34;harvesterhci.io/maintain-status&#34;)
+            if maintain_stat in (&#34;running&#34;, &#34;completed&#34;):
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Node({node_id}) not entered maintenance mode after {wait_timeout} secs\n&#34;
+            f&#34;maintain-status: {maintain_stat}\t&#34;
+        )
 
     # Case 2: disable
-    status_code, node_stats = api_client.hosts.maintenance_mode(node[&#39;id&#39;], enable=False)
+    status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=False)
 
-    assert &#34;unschedulable&#34; not in node_stats[&#34;spec&#34;]
-    assert &#34;harvesterhci.io/maintain-status&#34; not in node_stats[&#34;metadata&#34;][&#34;annotations&#34;]
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        _, stats = api_client.hosts.get(node_id)
+        if (&#34;harvesterhci.io/maintain-status&#34; not in stats[&#34;metadata&#34;][&#34;annotations&#34;]
+           and &#34;unschedulable&#34; not in stats[&#34;spec&#34;]):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Node({node_id}) not leave maintenance mode after disabled {wait_timeout} secs\n&#34;
+            f&#39;maintain stat:{stats[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]}&#39;
+        )
 
 
 @pytest.mark.dependency(depends=[&#34;get_host&#34;])
@@ -290,7 +311,7 @@ def test_get_host(api_client):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_hosts.test_maintenance_mode"><code class="name flex">
-<span>def <span class="ident">test_maintenance_mode</span></span>(<span>api_client)</span>
+<span>def <span class="ident">test_maintenance_mode</span></span>(<span>api_client, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
@@ -304,7 +325,7 @@ hosts-12-Host with no VMs on it</p></div>
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;get_host&#34;], name=&#34;enable_maintenance_mode&#34;)
 @pytest.mark.hosts
 @pytest.mark.p2
-def test_maintenance_mode(api_client):
+def test_maintenance_mode(api_client, wait_timeout):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
@@ -315,20 +336,41 @@ def test_maintenance_mode(api_client):
     _, nodes_info = api_client.hosts.get()
 
     # Test on the last node to avoid affect VIP
-    node = nodes_info[&#39;data&#39;][-1]
+    node_id = nodes_info[&#39;data&#39;][-1][&#39;id&#39;]
 
     # Case 1: enable
-    status_code, node_stats = api_client.hosts.maintenance_mode(node[&#39;id&#39;], enable=True)
-    maintain_status = node_stats[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]
+    status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=True)
+    assert 204 == status_code, (status_code, node_stats)
 
-    assert node_stats[&#34;spec&#34;][&#34;unschedulable&#34;]
-    assert maintain_status in (&#34;running&#34;, &#34;completed&#34;)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        _, stats = api_client.hosts.get(node_id)
+        if stats[&#39;spec&#39;].get(&#39;unschedulable&#39;):
+            maintain_stat = stats[&#34;metadata&#34;][&#34;annotations&#34;].get(&#34;harvesterhci.io/maintain-status&#34;)
+            if maintain_stat in (&#34;running&#34;, &#34;completed&#34;):
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Node({node_id}) not entered maintenance mode after {wait_timeout} secs\n&#34;
+            f&#34;maintain-status: {maintain_stat}\t&#34;
+        )
 
     # Case 2: disable
-    status_code, node_stats = api_client.hosts.maintenance_mode(node[&#39;id&#39;], enable=False)
+    status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=False)
 
-    assert &#34;unschedulable&#34; not in node_stats[&#34;spec&#34;]
-    assert &#34;harvesterhci.io/maintain-status&#34; not in node_stats[&#34;metadata&#34;][&#34;annotations&#34;]</code></pre>
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        _, stats = api_client.hosts.get(node_id)
+        if (&#34;harvesterhci.io/maintain-status&#34; not in stats[&#34;metadata&#34;][&#34;annotations&#34;]
+           and &#34;unschedulable&#34; not in stats[&#34;spec&#34;]):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Node({node_id}) not leave maintenance mode after disabled {wait_timeout} secs\n&#34;
+            f&#39;maintain stat:{stats[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]}&#39;
+        )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_hosts.test_update_node"><code class="name flex">

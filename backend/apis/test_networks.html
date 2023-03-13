@@ -74,7 +74,7 @@ class TestNetworksNegative:
 
     @pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
     @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)  # ref to harvester/issues/3151
-    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+    def test_create_with_invalid_id_103(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
         assert 422 == code, (vlan_id, code, data)
@@ -86,14 +86,28 @@ class TestNetworksNegative:
         assert 422 == code, (code, data)
         assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
 
+    @pytest.mark.parametrize(&#34;vlan_id&#34;, [4095])
+    @pytest.mark.skip_version_before(&#34;v1.1.0&#34;)  # ref to harvester/issues/3151
+    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+        code, data = api_client.networks.create(unique_name, vlan_id)
+
+        assert 500 == code, (vlan_id, code, data)
+        assert &#34;InternalError&#34; == data.get(&#34;reason&#34;), (vlan_id, code, data)
+
 
 @pytest.mark.p0
 @pytest.mark.networks
 class TestNetworks:
 
     @pytest.mark.dependency(name=&#34;create_network&#34;)
-    def test_create(self, api_client, unique_name):
+    @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)
+    def test_create_103(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
+        assert 201 == code, (code, data)
+
+    @pytest.mark.skip_version_before(&#34;v1.1.0&#34;)
+    def test_create(self, api_client, unique_name):
+        code, data = api_client.networks.create(unique_name, VLAN_ID, cluster_network=&#39;mgmt&#39;)
         assert 201 == code, (code, data)
 
     @pytest.mark.dependency(depends=[&#34;create_network&#34;])
@@ -152,8 +166,14 @@ class TestNetworks:
 class TestNetworks:
 
     @pytest.mark.dependency(name=&#34;create_network&#34;)
-    def test_create(self, api_client, unique_name):
+    @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)
+    def test_create_103(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
+        assert 201 == code, (code, data)
+
+    @pytest.mark.skip_version_before(&#34;v1.1.0&#34;)
+    def test_create(self, api_client, unique_name):
+        code, data = api_client.networks.create(unique_name, VLAN_ID, cluster_network=&#39;mgmt&#39;)
         assert 201 == code, (code, data)
 
     @pytest.mark.dependency(depends=[&#34;create_network&#34;])
@@ -206,8 +226,24 @@ class TestNetworks:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(name=&#34;create_network&#34;)
+<pre><code class="python">@pytest.mark.skip_version_before(&#34;v1.1.0&#34;)
 def test_create(self, api_client, unique_name):
+    code, data = api_client.networks.create(unique_name, VLAN_ID, cluster_network=&#39;mgmt&#39;)
+    assert 201 == code, (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworks.test_create_103"><code class="name flex">
+<span>def <span class="ident">test_create_103</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;create_network&#34;)
+@pytest.mark.skip_version_after(&#34;v1.0.3&#34;)
+def test_create_103(self, api_client, unique_name):
     code, data = api_client.networks.create(unique_name, VLAN_ID)
     assert 201 == code, (code, data)</code></pre>
 </details>
@@ -294,7 +330,7 @@ class TestNetworksNegative:
 
     @pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
     @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)  # ref to harvester/issues/3151
-    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+    def test_create_with_invalid_id_103(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
         assert 422 == code, (vlan_id, code, data)
@@ -304,7 +340,15 @@ class TestNetworksNegative:
         code, data = api_client.networks.create(&#34;&#34;, VLAN_ID)
 
         assert 422 == code, (code, data)
-        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)</code></pre>
+        assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
+
+    @pytest.mark.parametrize(&#34;vlan_id&#34;, [4095])
+    @pytest.mark.skip_version_before(&#34;v1.1.0&#34;)  # ref to harvester/issues/3151
+    def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+        code, data = api_client.networks.create(unique_name, vlan_id)
+
+        assert 500 == code, (vlan_id, code, data)
+        assert &#34;InternalError&#34; == data.get(&#34;reason&#34;), (vlan_id, code, data)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -324,9 +368,27 @@ class TestNetworksNegative:
 <summary>
 <span>Expand source code</span>
 </summary>
+<pre><code class="python">@pytest.mark.parametrize(&#34;vlan_id&#34;, [4095])
+@pytest.mark.skip_version_before(&#34;v1.1.0&#34;)  # ref to harvester/issues/3151
+def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+    code, data = api_client.networks.create(unique_name, vlan_id)
+
+    assert 500 == code, (vlan_id, code, data)
+    assert &#34;InternalError&#34; == data.get(&#34;reason&#34;), (vlan_id, code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_with_invalid_id_103"><code class="name flex">
+<span>def <span class="ident">test_create_with_invalid_id_103</span></span>(<span>self, api_client, unique_name, vlan_id)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
 <pre><code class="python">@pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
 @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)  # ref to harvester/issues/3151
-def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
+def test_create_with_invalid_id_103(self, api_client, unique_name, vlan_id):
     code, data = api_client.networks.create(unique_name, vlan_id)
 
     assert 422 == code, (vlan_id, code, data)
@@ -404,6 +466,7 @@ def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
 <ul class="">
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.pytestmark" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.test_create" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.test_create">test_create</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.test_create_103" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.test_create_103">test_create_103</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.test_delete" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.test_delete">test_delete</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworks.test_get" href="#harvester_e2e_tests.apis.test_networks.TestNetworks.test_get">test_get</a></code></li>
 </ul>
@@ -413,6 +476,7 @@ def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
 <ul class="">
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.pytestmark" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_with_invalid_id" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_with_invalid_id">test_create_with_invalid_id</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_with_invalid_id_103" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_with_invalid_id_103">test_create_with_invalid_id_103</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_without_name" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_create_without_name">test_create_without_name</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_delete_not_exist" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_delete_not_exist">test_delete_not_exist</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_get_not_exist" href="#harvester_e2e_tests.apis.test_networks.TestNetworksNegative.test_get_not_exist">test_get_not_exist</a></code></li>
