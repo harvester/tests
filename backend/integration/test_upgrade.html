@@ -26,65 +26,873 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import pytest
+<pre><code class="python">import json
+import os
+import re
+import socket
+from time import sleep
+from datetime import datetime, timedelta
+
+import pytest
+
+from harvester_api.managers import DEFAULT_HARVESTER_NAMESPACE, DEFAULT_LONGHORN_NAMESPACE
+from paramiko.ssh_exception import ChannelException, AuthenticationException, \
+                                   NoValidConnectionsError
+
+DEFAULT_STORAGE_CLS = &#34;harvester-longhorn&#34;
+
+DEFAULT_USER = &#34;ubuntu&#34;
+DEFAULT_PASSWORD = &#34;root&#34;
+
+NETWORK_VLAN_ID_LABEL = &#34;network.harvesterhci.io/vlan-id&#34;
+UPGRADE_STATE_LABEL = &#34;harvesterhci.io/upgradeState&#34;
+CONTROL_PLANE_LABEL = &#34;node-role.kubernetes.io/control-plane&#34;
+NODE_INTERNAL_IP_ANNOTATION = &#34;rke2.io/internal-ip&#34;
+
+LOGGING_NAMESPACE = &#34;cattle-logging-system&#34;
+
+expected_harvester_crds = {
+    &#34;addons.harvesterhci.io&#34;: False,
+    &#34;blockdevices.harvesterhci.io&#34;: False,
+    &#34;keypairs.harvesterhci.io&#34;: False,
+    &#34;preferences.harvesterhci.io&#34;: False,
+    &#34;settings.harvesterhci.io&#34;: False,
+    &#34;supportbundles.harvesterhci.io&#34;: False,
+    &#34;upgrades.harvesterhci.io&#34;: False,
+    &#34;versions.harvesterhci.io&#34;: False,
+    &#34;virtualmachinebackups.harvesterhci.io&#34;: False,
+    &#34;virtualmachineimages.harvesterhci.io&#34;: False,
+    &#34;virtualmachinerestores.harvesterhci.io&#34;: False,
+    &#34;virtualmachinetemplates.harvesterhci.io&#34;: False,
+    &#34;virtualmachinetemplateversions.harvesterhci.io&#34;: False,
+
+    &#34;clusternetworks.network.harvesterhci.io&#34;: False,
+    &#34;linkmonitors.network.harvesterhci.io&#34;: False,
+    &#34;nodenetworks.network.harvesterhci.io&#34;: False,
+    &#34;vlanconfigs.network.harvesterhci.io&#34;: False,
+    &#34;vlanstatuses.network.harvesterhci.io&#34;: False,
+
+    &#34;ksmtuneds.node.harvesterhci.io&#34;: False,
+
+    &#34;loadbalancers.loadbalancer.harvesterhci.io&#34;: False,
+}
+
+pytest_plugins = [
+    &#34;harvester_e2e_tests.fixtures.api_client&#34;,
+    &#34;harvester_e2e_tests.fixtures.virtualmachines&#34;
+]
+
+minio_manifest_fmt = &#34;&#34;&#34;
+cat &lt;&lt;EOF | sudo /var/lib/rancher/rke2/bin/kubectl apply \
+    --kubeconfig /etc/rancher/rke2/rke2.yaml -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-secret
+  namespace: default
+type: Opaque
+data:
+  AWS_ACCESS_KEY_ID: bG9uZ2hvcm4tdGVzdC1hY2Nlc3Mta2V5
+  AWS_SECRET_ACCESS_KEY: bG9uZ2hvcm4tdGVzdC1zZWNyZXQta2V5
+  AWS_ENDPOINTS: aHR0cHM6Ly9taW5pby1zZXJ2aWNlLmRlZmF1bHQ6OTAwMA==
+  AWS_CERT: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURMRENDQWhTZ0F3SUJBZ0lSQ\
+U1kbzQycGhUZXlrMTcvYkxyWjVZRHN3RFFZSktvWklodmNOQVFFTEJRQXcKR2pFWU1CWUdBMVVFQ2\
+hNUFRHOXVaMmh2Y200Z0xTQlVaWE4wTUNBWERUSXdNRFF5TnpJek1EQXhNVm9ZRHpJeApNakF3TkR\
+Bek1qTXdNREV4V2pBYU1SZ3dGZ1lEVlFRS0V3OU1iMjVuYUc5eWJpQXRJRlJsYzNRd2dnRWlNQTBH\
+CkNTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFEWHpVdXJnUFpEZ3pUM0RZdWFlYmdld\
+3Fvd2RlQUQKODRWWWF6ZlN1USs3K21Oa2lpUVBvelVVMmZvUWFGL1BxekJiUW1lZ29hT3l5NVhqM1\
+VFeG1GcmV0eDBaRjVOVgpKTi85ZWFJNWRXRk9teHhpMElPUGI2T0RpbE1qcXVEbUVPSXljdjRTaCs\
+vSWo5Zk1nS0tXUDdJZGxDNUJPeThkCncwOVdkckxxaE9WY3BKamNxYjN6K3hISHd5Q05YeGhoRm9t\
+b2xQVnpJbnlUUEJTZkRuSDBuS0lHUXl2bGhCMGsKVHBHSzYxc2prZnFTK3hpNTlJeHVrbHZIRXNQc\
+jFXblRzYU9oaVh6N3lQSlorcTNBMWZoVzBVa1JaRFlnWnNFbQovZ05KM3JwOFhZdURna2kzZ0UrOE\
+lXQWRBWHExeWhqRDdSSkI4VFNJYTV0SGpKUUtqZ0NlSG5HekFnTUJBQUdqCmF6QnBNQTRHQTFVZER\
+3RUIvd1FFQXdJQ3BEQVRCZ05WSFNVRUREQUtCZ2dyQmdFRkJRY0RBVEFQQmdOVkhSTUIKQWY4RUJU\
+QURBUUgvTURFR0ExVWRFUVFxTUNpQ0NXeHZZMkZzYUc5emRJSVZiV2x1YVc4dGMyVnlkbWxqWlM1a\
+wpaV1poZFd4MGh3Ui9BQUFCTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFDbUZMMzlNSHVZMzFhMT\
+FEajRwMjVjCnFQRUM0RHZJUWozTk9kU0dWMmQrZjZzZ3pGejFXTDhWcnF2QjFCMVM2cjRKYjJQRXV\
+JQkQ4NFlwVXJIT1JNU2MKd3ViTEppSEtEa0Jmb2U5QWI1cC9VakpyS0tuajM0RGx2c1cvR3AwWTZY\
+c1BWaVdpVWorb1JLbUdWSTI0Q0JIdgpnK0JtVzNDeU5RR1RLajk0eE02czNBV2xHRW95YXFXUGU1e\
+HllVWUzZjFBWkY5N3RDaklKUmVWbENtaENGK0JtCmFUY1RSUWN3cVdvQ3AwYmJZcHlERFlwUmxxOE\
+dQbElFOW8yWjZBc05mTHJVcGFtZ3FYMmtYa2gxa3lzSlEralAKelFadHJSMG1tdHVyM0RuRW0yYmk\
+0TktIQVFIcFc5TXUxNkdRakUxTmJYcVF0VEI4OGpLNzZjdEg5MzRDYWw2VgotLS0tLUVORCBDRVJU\
+SUZJQ0FURS0tLS0t
+  AWS_CERT_KEY: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa\
+2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRFh6VXVyZ1BaRGd6VDMKRFl1YWViZ2V3cW\
+93ZGVBRDg0VllhemZTdVErNyttTmtpaVFQb3pVVTJmb1FhRi9QcXpCYlFtZWdvYU95eTVYagozVUV\
+4bUZyZXR4MFpGNU5WSk4vOWVhSTVkV0ZPbXh4aTBJT1BiNk9EaWxNanF1RG1FT0l5Y3Y0U2grL0lq\
+OWZNCmdLS1dQN0lkbEM1Qk95OGR3MDlXZHJMcWhPVmNwSmpjcWIzeit4SEh3eUNOWHhoaEZvbW9sU\
+FZ6SW55VFBCU2YKRG5IMG5LSUdReXZsaEIwa1RwR0s2MXNqa2ZxUyt4aTU5SXh1a2x2SEVzUHIxV2\
+5Uc2FPaGlYejd5UEpaK3EzQQoxZmhXMFVrUlpEWWdac0VtL2dOSjNycDhYWXVEZ2tpM2dFKzhJV0F\
+kQVhxMXloakQ3UkpCOFRTSWE1dEhqSlFLCmpnQ2VIbkd6QWdNQkFBRUNnZ0VBZlVyQ1hrYTN0Q2Jm\
+ZjNpcnp2cFFmZnVEbURNMzV0TmlYaDJTQVpSVW9FMFYKbSsvZ1UvdnIrN2s2eUgvdzhMOXhpZXFhQ\
+TljVkZkL0JuTlIrMzI2WGc2dEpCNko2ZGZxODJZdmZOZ0VDaUFMaQpqalNGemFlQmhnT3ZsWXZHbT\
+R5OTU1Q0FGdjQ1cDNac1VsMTFDRXJlL1BGbGtaWHRHeGlrWFl6NC85UTgzblhZCnM2eDdPYTgyUjd\
+wT2lraWh3Q0FvVTU3Rjc4ZWFKOG1xTmkwRlF2bHlxSk9QMTFCbVp4dm54ZU11S2poQjlPTnAKTFNw\
+MWpzZXk5bDZNR2pVbjBGTG53RHZkVWRiK0ZlUEkxTjdWYUNBd3hJK3JHa3JTWkhnekhWWE92VUpON\
+2t2QQpqNUZPNW9uNGgvK3hXbkYzM3lxZ0VvWWZ0MFFJL2pXS2NOV1d1a2pCd1FLQmdRRGVFNlJGRU\
+psT2Q1aVcxeW1qCm45RENnczVFbXFtRXN3WU95bkN3U2RhK1lNNnZVYmlac1k4WW9wMVRmVWN4cUh\
+2NkFQWGpVd2NBUG1QVE9KRW8KMlJtS0xTYkhsTnc4bFNOMWJsWDBEL3Mzamc1R3VlVW9nbW5TVnhM\
+a0h1OFhKR0o3VzFReEUzZG9IUHRrcTNpagpoa09QTnJpZFM0UmxqNTJwYkhscjUvQzRjUUtCZ1FEN\
+HhFYmpuck1heFV2b0xxVTRvT2xiOVc5UytSUllTc0cxCmxJUmgzNzZTV0ZuTTlSdGoyMTI0M1hkaE\
+4zUFBtSTNNeiswYjdyMnZSUi9LMS9Cc1JUQnlrTi9kbkVuNVUxQkEKYm90cGZIS1Jvc1FUR1hIQkE\
+vM0JrNC9qOWplU3RmVXgzZ2x3eUI0L2hORy9KM1ZVV2FXeURTRm5qZFEvcGJsRwp6VWlsSVBmK1l3\
+S0JnUUNwMkdYYmVJMTN5TnBJQ3psS2JqRlFncEJWUWVDQ29CVHkvUHRncUtoM3BEeVBNN1kyCnZla\
+09VMWgyQVN1UkhDWHRtQXgzRndvVXNxTFFhY1FEZEw4bXdjK1Y5eERWdU02TXdwMDBjNENVQmE1L2\
+d5OXoKWXdLaUgzeFFRaVJrRTZ6S1laZ3JqSkxYYXNzT1BHS2cxbEFYV1NlckRaV3R3MEEyMHNLdXQ\
+0NlEwUUtCZ0hGZQpxZHZVR0ZXcjhvTDJ0dzlPcmVyZHVJVTh4RnZVZmVFdHRRTVJ2N3pjRE5qT0gx\
+UnJ4Wk9aUW0ySW92dkp6MTIyCnFKMWhPUXJtV3EzTHFXTCtTU3o4L3pqMG4vWERWVUIzNElzTFR2O\
+DJDVnVXN2ZPRHlTSnVDRlpnZ0VVWkxZd3oKWDJRSm4xZGRSV1Z6S3hKczVJbDNXSERqL3dXZWxnaE\
+JSOGtSZEZOM0FvR0FJNldDdjJQQ1lUS1ZZNjAwOFYwbgpyTDQ3YTlPanZ0Yy81S2ZxSjFpMkpKTUg\
+yQi9jbU1WRSs4M2dpODFIU1FqMWErNnBjektmQVppZWcwRk9nL015ClB6VlZRYmpKTnY0QzM5Kzdx\
+SDg1WGdZTXZhcTJ0aDFEZWUvQ3NsMlM4QlV0cW5mc0VuMUYwcWhlWUJZb2RibHAKV3RUaE5oRi9oR\
+VhzbkJROURyWkJKT1U9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: longhorn-test-minio
+  namespace: default
+  labels:
+    app: longhorn-test-minio
+  finalizers:
+  - forcekeeper.harvesterhci.io/v1beta1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: longhorn-test-minio
+  template:
+    metadata:
+      labels:
+        app: longhorn-test-minio
+    spec:
+      nodeName: {node_name}
+      volumes:
+      - name: minio-volume
+        hostPath:
+          path: /var/lib/harvester/defaultdisk/
+          type: Directory
+      - name: minio-certificates
+        secret:
+          secretName: minio-secret
+          items:
+          - key: AWS_CERT
+            path: public.crt
+          - key: AWS_CERT_KEY
+            path: private.key
+      containers:
+      - name: minio
+        image: minio/minio:RELEASE.2022-02-01T18-00-14Z
+        command: [&#34;sh&#34;, &#34;-c&#34;, &#34;mkdir -p /storage/backupbucket &amp;&amp; \
+mkdir -p /root/.minio/certs &amp;&amp; \
+ln -s /root/certs/private.key /root/.minio/certs/private.key &amp;&amp; \
+ln -s /root/certs/public.crt /root/.minio/certs/public.crt &amp;&amp; \
+exec minio server /storage&#34;]
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: AWS_ACCESS_KEY_ID
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: AWS_SECRET_ACCESS_KEY
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - name: minio-volume
+          mountPath: &#34;/storage&#34;
+        - name: minio-certificates
+          mountPath: &#34;/root/certs&#34;
+          readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+  namespace: default
+spec:
+  selector:
+    app: longhorn-test-minio
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+  sessionAffinity: ClientIP
+EOF
+&#34;&#34;&#34;
+
+minio_cert = &#34;&#34;&#34;
+-----BEGIN CERTIFICATE-----
+MIIDLDCCAhSgAwIBAgIRAMdo42phTeyk17/bLrZ5YDswDQYJKoZIhvcNAQELBQAw
+GjEYMBYGA1UEChMPTG9uZ2hvcm4gLSBUZXN0MCAXDTIwMDQyNzIzMDAxMVoYDzIx
+MjAwNDAzMjMwMDExWjAaMRgwFgYDVQQKEw9Mb25naG9ybiAtIFRlc3QwggEiMA0G
+CSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDXzUurgPZDgzT3DYuaebgewqowdeAD
+84VYazfSuQ+7+mNkiiQPozUU2foQaF/PqzBbQmegoaOyy5Xj3UExmFretx0ZF5NV
+JN/9eaI5dWFOmxxi0IOPb6ODilMjquDmEOIycv4Sh+/Ij9fMgKKWP7IdlC5BOy8d
+w09WdrLqhOVcpJjcqb3z+xHHwyCNXxhhFomolPVzInyTPBSfDnH0nKIGQyvlhB0k
+TpGK61sjkfqS+xi59IxuklvHEsPr1WnTsaOhiXz7yPJZ+q3A1fhW0UkRZDYgZsEm
+/gNJ3rp8XYuDgki3gE+8IWAdAXq1yhjD7RJB8TSIa5tHjJQKjgCeHnGzAgMBAAGj
+azBpMA4GA1UdDwEB/wQEAwICpDATBgNVHSUEDDAKBggrBgEFBQcDATAPBgNVHRMB
+Af8EBTADAQH/MDEGA1UdEQQqMCiCCWxvY2FsaG9zdIIVbWluaW8tc2VydmljZS5k
+ZWZhdWx0hwR/AAABMA0GCSqGSIb3DQEBCwUAA4IBAQCmFL39MHuY31a11Dj4p25c
+qPEC4DvIQj3NOdSGV2d+f6sgzFz1WL8VrqvB1B1S6r4Jb2PEuIBD84YpUrHORMSc
+wubLJiHKDkBfoe9Ab5p/UjJrKKnj34DlvsW/Gp0Y6XsPViWiUj+oRKmGVI24CBHv
+g+BmW3CyNQGTKj94xM6s3AWlGEoyaqWPe5xyeUe3f1AZF97tCjIJReVlCmhCF+Bm
+aTcTRQcwqWoCp0bbYpyDDYpRlq8GPlIE9o2Z6AsNfLrUpamgqX2kXkh1kysJQ+jP
+zQZtrR0mmtur3DnEm2bi4NKHAQHpW9Mu16GQjE1NbXqQtTB88jK76ctH934Cal6V
+-----END CERTIFICATE-----
+&#34;&#34;&#34;
 
 
-@pytest.fixture(scope=&#34;module&#34;)
-def cluster_state(self):
+def _lookup_image(api_client, name):
+    code, data = api_client.images.get()
+    if code == 200:
+        for image in data[&#39;items&#39;]:
+            if image[&#39;metadata&#39;][&#39;name&#39;] == name:
+                return image
+    return None
+
+
+def _create_image(api_client, url, name, wait_timeout):
+    image_data = _lookup_image(api_client, name)
+    if image_data is None:
+        code, image_data = api_client.images.create_by_url(name, url)
+        assert code == 201, (
+            f&#34;failed to create image: {image_data}&#34;)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.images.get(name)
+            if 100 == data.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                &#34;Failed to create Image with error:\n&#34;
+                f&#34;Status({code}): {data}&#34;
+            )
+
+    return image_data
+
+
+def _get_ip_from_vmi(vmi):
+    assert _check_vm_ip_assigned(vmi), &#34;virtual machine does not have ip assigned&#34;
+    return vmi[&#39;status&#39;][&#39;interfaces&#39;][0][&#39;ipAddress&#39;]
+
+
+def _check_vm_is_running(vmi):
+    return (vmi.get(&#39;status&#39;, {}).get(&#39;phase&#39;) == &#39;Running&#39; and
+            vmi.get(&#39;status&#39;, {}).get(&#39;nodeName&#39;) != &#34;&#34;)
+
+
+def _check_vm_ip_assigned(vmi):
+    return (len(vmi.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;)) &gt; 0 and
+            vmi.get(&#39;status&#39;).get(&#39;interfaces&#39;)[0].get(&#39;ipAddress&#39;) is not None)
+
+
+def _check_assigned_ip_func(api_client, vm_name):
+    def _check_assigned_ip():
+        code, data = api_client.vms.get_status(vm_name)
+        if code != 200:
+            return False
+        return _check_vm_is_running(data) and _check_vm_ip_assigned(data)
+    return _check_assigned_ip
+
+
+def _wait_for_vm_ready(api_client, vm_name, timeout=300):
+    endtime = datetime.now() + timedelta(seconds=timeout)
+    while endtime &gt; datetime.now():
+        if _check_assigned_ip_func(api_client, vm_name)():
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for vm to be created&#34;)
+
+
+def _wait_for_write_data(vm_shell, ip, ssh_user=&#34;ubuntu&#34;, timeout=300):
+    endtime = datetime.now() + timedelta(seconds=timeout)
+
+    script = &#34;head /dev/urandom | md5sum | head -c 20 &gt; ~/generate_str; sync&#34;
+    while endtime &gt; datetime.now():
+        try:
+            with vm_shell.login(ip, ssh_user, password=DEFAULT_PASSWORD) as sh:
+                stdout, stderr = sh.exec_command(script, get_pty=True)
+                assert not stderr, (
+                    f&#34;Failed to execute {script} on {ip}: {stderr}&#34;)
+                return
+        except (ChannelException, AuthenticationException, NoValidConnectionsError,
+                socket.timeout):
+            continue
+    else:
+        raise AssertionError(f&#34;Time out while waiting for execute the script: {script}&#34;)
+
+
+def _get_data_from_vm(vm_shell, ip, ssh_user=&#34;ubuntu&#34;, timeout=300):
+    endtime = datetime.now() + timedelta(seconds=timeout)
+
+    script = &#34;cat ~/generate_str&#34;
+    while endtime &gt; datetime.now():
+        try:
+            with vm_shell.login(ip, ssh_user, password=DEFAULT_PASSWORD) as sh:
+                stdout, stderr = sh.exec_command(script, get_pty=True)
+                assert not stderr, (
+                    f&#34;Failed to execute {script} on {ip}: {stderr}&#34;)
+                return stdout
+        except (ChannelException, AuthenticationException, NoValidConnectionsError,
+                socket.timeout):
+            continue
+    else:
+        raise AssertionError(f&#34;Time out while waiting for execute the script: {script}&#34;)
+
+
+def _ping(vm_shell, vm_ip, target_ip, ssh_user=&#34;ubuntu&#34;, timeout=300):
+    endtime = datetime.now() + timedelta(seconds=timeout)
+
+    script = f&#34;ping -c1 {target_ip} &gt; /dev/null &amp;&amp; echo -n success || echo -n fail&#34;
+    while endtime &gt; datetime.now():
+        try:
+            with vm_shell.login(vm_ip, ssh_user, password=DEFAULT_PASSWORD) as sh:
+                stdout, stderr = sh.exec_command(script, get_pty=True)
+                assert not stderr, (
+                    f&#34;Failed to execute {script} on {vm_ip}: {stderr}&#34;)
+                if stdout == &#39;success&#39;:
+                    return True
+                return False
+        except (ChannelException, AuthenticationException, NoValidConnectionsError,
+                socket.timeout):
+            continue
+    else:
+        raise AssertionError(f&#34;Time out while waiting for execute the script: {script}&#34;)
+
+
+def _create_basic_vm(api_client, cluster_state, vm_shell, vm_prefix, sc=&#34;&#34;,
+                     timeout=300):
+    reused = False
+    vm_name = &#34;&#34;
+    code, data = api_client.vms.get()
+    if code == 200:
+        for v in data[&#34;data&#34;]:
+            if vm_prefix in v[&#39;metadata&#39;][&#39;name&#39;]:
+                reused = True
+                vm_name = v[&#39;metadata&#39;][&#39;name&#39;]
+                cluster_state.unique_id = cluster_state.unique_id[len(vm_prefix)+1:]
+
+    if not reused:
+        vm_name = f&#39;{vm_prefix}-{cluster_state.unique_id}&#39;
+
+        vmspec = api_client.vms.Spec(1, 1, mgmt_network=False)
+
+        image_id = (f&#34;{cluster_state.ubuntu_image[&#39;metadata&#39;][&#39;namespace&#39;]}/&#34;
+                    f&#34;{cluster_state.ubuntu_image[&#39;metadata&#39;][&#39;name&#39;]}&#34;)
+        vmspec.add_image(cluster_state.ubuntu_image[&#39;metadata&#39;][&#39;name&#39;], image_id, size=5)
+        vmspec.add_volume(&#34;new-sc-disk&#34;, 5, storage_cls=sc)
+
+        network_id = (f&#34;{cluster_state.network[&#39;metadata&#39;][&#39;namespace&#39;]}/&#34;
+                      f&#34;{cluster_state.network[&#39;metadata&#39;][&#39;name&#39;]}&#34;)
+        vmspec.add_network(&#34;vlan&#34;, network_id)
+        vmspec.user_data = f&#34;&#34;&#34;#cloud-config
+chpasswd:
+  expire: false
+package_update: true
+packages:
+- qemu-guest-agent
+password: {DEFAULT_PASSWORD}
+runcmd:
+- - systemctl
+  - enable
+  - --now
+  - qemu-guest-agent.service
+ssh_pwauth: true
+write_files:
+  - owner: root:root
+    path: /etc/netplan/50-cloud-init.yaml
+    permissions: &#39;0644&#39;
+    content: |
+        network:
+            version: 2
+            ethernets:
+                enp1s0:
+                    dhcp4: yes
+                    dhcp-identifier: mac
+&#34;&#34;&#34;
+
+        code, vm = api_client.vms.create(vm_name, vmspec)
+        assert code == 201, (
+            &#34;Failed to create vm1: %s&#34; % (data))
+
+    _wait_for_vm_ready(api_client, vm_name, timeout=timeout)
+
+    code, vmi = api_client.vms.get_status(vm_name)
+    if code != 200:
+        return None
+
+    if not reused:
+        _wait_for_write_data(vm_shell, _get_ip_from_vmi(vmi), cluster_state.image_ssh_user,
+                             timeout=timeout)
+
+    return vmi
+
+
+def _create_version(request, api_client, version=&#34;master&#34;):
+    if version == &#34;&#34;:
+        version = &#34;master&#34;
+
+    isoURL = request.config.getoption(&#39;--upgrade-iso-url&#39;)
+    checksum = request.config.getoption(&#39;--upgrade-iso-checksum&#39;)
+
+    return api_client.versions.create(version, isoURL, checksum)
+
+
+def _get_all_nodes(api_client):
+    code, data = api_client.hosts.get()
+    assert code == 200, (
+       f&#34;Failed to get nodes: {code}, {data}&#34;)
+    return data[&#39;data&#39;]
+
+
+def _get_master_and_worker_nodes(api_client):
+    nodes = _get_all_nodes(api_client)
+    master_nodes = []
+    worker_nodes = []
+    for node in nodes:
+        if node[&#39;metadata&#39;][&#39;labels&#39;].get(CONTROL_PLANE_LABEL) == &#34;true&#34;:
+            master_nodes.append(node)
+        else:
+            worker_nodes.append(node)
+    return master_nodes, worker_nodes
+
+
+def _is_installed_version(api_client, target_version):
+    code, data = api_client.upgrades.get()
+    if code == 200 and len(data[&#39;items&#39;]) &gt; 0:
+        for upgrade in data[&#39;items&#39;]:
+            if upgrade.get(&#39;spec&#39;, {}).get(&#39;version&#39;) == target_version and \
+               upgrade[&#39;metadata&#39;][&#39;labels&#39;].get(UPGRADE_STATE_LABEL) == &#39;Succeeded&#39;:
+                return True
+    return False
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def network(request, api_client, cluster_state):
+    code, data = api_client.networks.get()
+    assert code == 200, (
+        &#34;Failed to get networks: %s&#34; % (data))
+
+    vlan_id = request.config.getoption(&#39;--vlan-id&#39;) or 1
+    for network in data[&#39;items&#39;]:
+        if network[&#39;metadata&#39;][&#39;labels&#39;].get(NETWORK_VLAN_ID_LABEL) == f&#34;{vlan_id}&#34;:
+            cluster_state.network = network
+            return
+
+    raise AssertionError(&#34;Failed to find a routable vlan network&#34;)
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def unique_id(cluster_state, unique_name):
+    cluster_state.unique_id = unique_name
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def cluster_state():
     class ClusterState:
+        vm1 = None
+        vm2 = None
+        vm3 = None
         pass
 
     return ClusterState()
 
 
-@pytest.fixture(scope=&#34;module&#34;)
-def cluster_prereq(self, api_client, cluster_state):
-    # create cluster network
-    # create a routable vlan
-    cluster_state.clusternetwork = &#34;cluster network name&#34;
-    cluster_state.vm_network = (&#34;name&#34;, &#34;vlanid&#34;, &#34;cluster network name&#34;)
-    cluster_state.vlan = &#34;routable vlan id&#34;
+@pytest.fixture(scope=&#34;class&#34;)
+def cluster_prereq(request, cluster_state, prepare_dependence, unique_id, network, base_sc,
+                   ubuntu_image, new_sc):
+    assert request.config.getoption(&#39;--upgrade-iso-url&#39;), (
+        &#34;upgrade-iso-url must be not empty&#34;)
+
+    assert request.config.getoption(&#39;--upgrade-iso-checksum&#39;), (
+        &#34;upgrade-iso-checksum must be not empty&#34;)
+
+    if request.config.getoption(&#39;--upgrade-target-version&#39;):
+        cluster_state.version_verify = True
+        cluster_state.version = request.config.getoption(&#39;--upgrade-target-version&#39;)
+    else:
+        cluster_state.version_verify = False
+        cluster_state.version = f&#34;version-{cluster_state.unique_id}&#34;
 
 
-@pytest.fixture(scope=&#34;module&#34;)
-def vm_prereq(self, api_client, cluster_state):
-    cluster_state.old_target = &#34;existing backup target&#34; or &#34;&#34;
-    # setup backup target
+@pytest.fixture(scope=&#39;class&#39;)
+def ubuntu_image(request, api_client, cluster_state, wait_timeout):
+    image_name = &#34;focal-server-cloudimg-amd64&#34;
+
+    base_url = &#39;https://cloud-images.ubuntu.com/focal/current/&#39;
+
+    cache_url = request.config.getoption(&#39;--image-cache-url&#39;)
+    if cache_url:
+        base_url = cache_url
+    url = os.path.join(base_url, &#39;focal-server-cloudimg-amd64.img&#39;)
+
+    image_json = _create_image(api_client, url, name=image_name,
+                               wait_timeout=wait_timeout)
+    cluster_state.ubuntu_image = image_json
+    cluster_state.image_ssh_user = &#34;ubuntu&#34;
+    return image_json
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def openSUSE_image(request, api_client, cluster_state, wait_timeout):
+    image_name = &#34;opensuse-leap-15-4&#34;
+
+    base_url = (&#39;https://repo.opensuse.id//repositories/Cloud:/Images:&#39;
+                &#39;/Leap_15.4/images&#39;)
+
+    cache_url = request.config.getoption(&#39;--image-cache-url&#39;)
+    if cache_url:
+        base_url = cache_url
+    url = os.path.join(base_url, &#39;openSUSE-Leap-15.4.x86_64-NoCloud.qcow2&#39;)
+
+    image_json = _create_image(api_client, url, name=image_name,
+                               timeout=wait_timeout)
+    cluster_state.openSUSE_image = image_json
+    cluster_state.image_ssh_user = &#34;root&#34;
+    return image_json
+
+
+def _vm1_backup(api_client, cluster_state, timeout=300):
+    code, backups = api_client.backups.get()
+    assert code in (200, 404), &#34;Failed to get backups.&#34;
+
+    backup_name = None
+    for backup in backups[&#39;data&#39;]:
+        if &#34;vm1-backup&#34; in backup[&#39;metadata&#39;][&#39;name&#39;]:
+            backup_name = backup[&#39;metadata&#39;][&#39;name&#39;]
+            break
+
+    if backup_name is None:
+        backup_name = f&#34;vm1-backup-{cluster_state.unique_id}&#34;
+        code, data = api_client.vms.backup(cluster_state.vm1[&#39;metadata&#39;][&#39;name&#39;], backup_name)
+        assert code == 204, (
+            f&#34;Failed to backup vm: {data}&#34;)
+
+    def _wait_for_backup():
+        nonlocal data
+        code, data = api_client.backups.get(backup_name)
+        assert code == 200, (
+            f&#34;Failed to get backup {backup_name}: {data}&#34;)
+
+        return data.get(&#39;status&#39;, {}).get(&#39;readyToUse&#39;, False)
+
+    endtime = datetime.now() + timedelta(seconds=timeout)
+    while endtime &gt; datetime.now():
+        if _wait_for_backup():
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for backup to be created&#34;)
+
+    return data
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def base_sc(request, api_client, cluster_state):
+    code, data = api_client.scs.get()
+    assert code == 200, (f&#34;Failed to get storage classes: {data}&#34;)
+
+    for sc in data[&#39;items&#39;]:
+        if &#34;base-sc&#34; in sc[&#39;metadata&#39;][&#39;name&#39;]:
+            cluster_state.base_sc = sc
+            return
+
+    sc_name = f&#34;base-sc-{cluster_state.unique_id}&#34;
+    cluster_state.base_sc = _create_default_storage_class(request, api_client, sc_name)
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def new_sc(request, api_client, cluster_state):
+    code, data = api_client.scs.get()
+    assert code == 200, (f&#34;Failed to get storage classes: {data}&#34;)
+
+    for sc in data[&#39;items&#39;]:
+        if &#34;new-sc&#34; in sc[&#39;metadata&#39;][&#39;name&#39;]:
+            cluster_state.new_sc = sc
+            return
+
+    sc_name = f&#34;new-sc-{cluster_state.unique_id}&#34;
+    cluster_state.new_sc = _create_default_storage_class(request, api_client, sc_name)
+
+
+def _create_default_storage_class(request, api_client, name):
+    replicas = request.config.getoption(&#39;--upgrade-sc-replicas&#39;) or 3
+
+    code, data = api_client.scs.get(name)
+    if code != 200:
+        code, data = api_client.scs.create(name, replicas)
+        assert code == 201, (
+            f&#34;Failed to create new storage class {name}: {data}&#34;)
+
+    sc_data = data
+
+    code, data = api_client.scs.set_default(name)
+    assert code == 200, (
+        f&#34;Failed to set default storage class {name}: {data}&#34;)
+
+    return sc_data
+
+
+@pytest.fixture(scope=&#39;class&#39;)
+def prepare_dependence(request, api_client, host_shell, wait_timeout):
+    predep = request.config.getoption(&#39;--upgrade-prepare-dependence&#39;) or False
+    if not predep:
+        return
+
+    _prepare_network(request, api_client)
+
+    _prepare_minio(api_client, host_shell)
+
+    _prepare_configuration(api_client, wait_timeout)
+
+
+def _prepare_network(request, api_client):
+    code, data = api_client.networks.get()
+    assert code == 200, (
+        &#34;Failed to get networks: %s&#34; % (data))
+
+    vlan_id = request.config.getoption(&#39;--vlan-id&#39;) or 1
+    for network in data[&#39;items&#39;]:
+        if network[&#39;metadata&#39;][&#39;labels&#39;].get(NETWORK_VLAN_ID_LABEL) == f&#34;{vlan_id}&#34;:
+            break
+    else:
+        # create cluster network and network if not existing
+        vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+        assert vlan_nic is not None, &#34;vlan nic is not configured&#34;
+
+        code, clusternetwork = api_client.clusternetworks.get(vlan_nic)
+        assert code in {200, 404}, &#34;Failed to get cluster network&#34;
+        if code == 404:
+            code, clusternetwork = api_client.clusternetworks.create(vlan_nic)
+            assert code == 201, &#34;Failed to create cluster network&#34;
+
+        code, networkconfig = api_client.clusternetworks.get_config(vlan_nic)
+        assert code in {200, 404}, &#34;Failed to get network config&#34;
+        if code == 404:
+            code, networkconfig = api_client.clusternetworks.create_config(vlan_nic,
+                                                                           vlan_nic,
+                                                                           vlan_nic)
+            assert code == 201, &#34;Failed to create network config&#34;
+
+        code, network = api_client.networks.create(f&#34;vlan{vlan_id}&#34;, vlan_id,
+                                                   cluster_network=vlan_nic)
+        assert code == 201, &#34;Failed to create network config&#34;
+
+
+def _prepare_minio(api_client, host_shell):
+    masters, workers = _get_master_and_worker_nodes(api_client)
+    assert len(masters) &gt; 0, &#34;Failed to get nodes&#34;
+
+    node_name = &#34;&#34;
+    node_ip = &#34;&#34;
+    for node in masters:
+        if NODE_INTERNAL_IP_ANNOTATION in node[&#34;metadata&#34;][&#34;annotations&#34;]:
+            node_name = node[&#34;metadata&#34;][&#34;name&#34;]
+            node_ip = node[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION]
+            break
+    else:
+        raise AssertionError(&#34;Failed to get node ip from all nodes&#34;)
+
+    script = minio_manifest_fmt.format(node_name=node_name)
+
+    try:
+        with host_shell.login(node_ip) as shell:
+            out, err = shell.exec_command(script)
+        assert not err, f&#34;Failed to create minio: f{err}&#34;
+    except Exception as e:
+        raise AssertionError(f&#34;Failed to execute command script: {e}&#34;)
+
+
+def _prepare_configuration(api_client, wait_timeout):
+    code, ca = api_client.settings.update(&#34;additional-ca&#34;, {&#34;value&#34;: minio_cert})
+    assert code == 200, (
+        f&#34;Failed to update ca: ${ca}&#34;)
+
+    value = {
+        &#34;type&#34;: &#34;s3&#34;,
+        &#34;endpoint&#34;: &#34;https://minio-service.default:9000&#34;,
+        &#34;accessKeyId&#34;: &#34;longhorn-test-access-key&#34;,
+        &#34;secretAccessKey&#34;: &#34;longhorn-test-secret-key&#34;,
+        &#34;bucketName&#34;: &#34;backupbucket&#34;,
+        &#34;bucketRegion&#34;: &#34;us-east-1&#34;,
+        &#34;cert&#34;: &#34;&#34;,
+        &#34;virtualHostedStyle&#34;: False,
+    }
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, backup_target = api_client.settings.update(&#34;backup-target&#34;,
+                                                         {&#34;value&#34;: json.dumps(value)})
+        if code == 200:
+            break
+        sleep(10)
+    else:
+        raise AssertionError(
+            &#34;Failed to update backup-target:\n&#34;
+            f&#34;{backup_target}&#34;
+        )
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def vm_prereq(cluster_state, api_client, vm_shell, wait_timeout):
     # create new storage class, make it default
     # create 3 VMs:
     # - having the new storage class
     # - the VM that have some data written, take backup
     # - the VM restored from the backup
-    # check VMs should able to reach each others (in same networks)
+    cluster_state.vm1 = _create_basic_vm(api_client,
+                                         cluster_state, vm_shell, vm_prefix=&#34;vm1&#34;,
+                                         sc=cluster_state.base_sc[&#39;metadata&#39;][&#39;name&#39;],
+                                         timeout=wait_timeout)
+    cluster_state.backup = _vm1_backup(api_client, cluster_state, wait_timeout)
 
-    cluster_state.storage_class = &#34;Created storage class name&#34;
-    cluster_state.backup_name = &#34;backup name from the VM&#34;
-    cluster_state.backup_target = &#34;backup_target&#34;
-    cluster_state.vms = {
-        &#34;backed up&#34;: &#34;backuped VM&#34;,
-        &#34;restored&#34;: &#34;restored VM&#34;,
-        &#34;storage class&#34;: &#34;VM having different storageclass&#34;
-    }
+    code, vms = api_client.vms.get()
+    assert code in (200, 404), &#34;Failed to get vms&#34;
+
+    vm2_name = None
+    for vm in vms[&#39;data&#39;]:
+        if &#34;vm2&#34; in vm[&#39;metadata&#39;][&#39;name&#39;]:
+            vm2_name = vm[&#39;metadata&#39;][&#39;name&#39;]
+
+    if vm2_name is None:
+        vm2_name = f&#34;vm2-{cluster_state.unique_id}&#34;
+        restore_spec = api_client.backups.RestoreSpec(True, vm_name=vm2_name)
+        code, data = api_client.backups.create(cluster_state.backup[&#39;metadata&#39;][&#39;name&#39;],
+                                               restore_spec)
+        assert code == 201, (
+            f&#34;Failed to restore to vm2: {data}&#34;)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        if _check_assigned_ip_func(api_client, vm2_name)():
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for assigned ip for vm2&#34;)
+
+    # modify the hostname
+    code, data = api_client.vms.get(vm2_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.hostname = vm2_name
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.update(vm2_name, vm_spec)
+        if code == 200:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for update hostname&#34;)
+
+    # restart the vm2
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.restart(vm2_name)
+        if code == 204:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for update hostname&#34;)
+
+    # waiting for vm2 perform to restart
+    sleep(60)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        if _check_assigned_ip_func(api_client, vm2_name)():
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for assigned ip for vm2&#34;)
+
+    code, cluster_state.vm2 = api_client.vms.get_status(vm2_name)
+    assert code == 200, (
+        f&#34;Failed to get vm2 vmi: {data}&#34;)
+
+    # verify data
+    vm1_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                                 cluster_state.image_ssh_user,
+                                 timeout=wait_timeout)
+    vm2_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm2),
+                                 cluster_state.image_ssh_user,
+                                 timeout=wait_timeout)
+
+    assert vm1_data == vm2_data, (&#34;Data in VM is lost&#34;)
+
+    # check VMs should able to reach each others (in same networks)
+    assert _ping(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                 _get_ip_from_vmi(cluster_state.vm2),
+                 cluster_state.image_ssh_user,
+                 timeout=wait_timeout), (
+        &#34;Failed to ping each other&#34;)
+
+    cluster_state.vm3 = _create_basic_vm(api_client, cluster_state, vm_shell,
+                                         vm_prefix=&#34;vm3&#34;,
+                                         sc=cluster_state.new_sc[&#39;metadata&#39;][&#39;name&#39;],
+                                         timeout=wait_timeout)
 
 
 @pytest.mark.upgrade
-@pytest.mark.any_nodes
 @pytest.mark.negative
 class TestInvalidUpgrade:
-    def test_invalid_manifest(self):
-        &#34;&#34;&#34;
-        Criteria: https://github.com/harvester/tests/issues/518
+    VM_PREFIX = &#34;vm-degraded-volume&#34;
 
-        Steps:
-        1. Create an invalid manifest.
-        2. Try to upgrade with the invalid manifest.
-        3. Upgrade should not start and fail.
-        &#34;&#34;&#34;
+    def _create_vm(self, api_client, cluster_state, vm_shell, wait_timeout):
+        return _create_basic_vm(api_client, cluster_state, vm_shell, self.VM_PREFIX,
+                                sc=DEFAULT_STORAGE_CLS,
+                                timeout=wait_timeout)
 
-    def test_degraded_volume(self):
+    def _degrad_volume(self, api_client, pvc_name):
+        code, data = api_client.volumes.get(name=pvc_name)
+        assert code == 200, (
+            f&#34;Failed to get volume {pvc_name}: {data}&#34;)
+
+        volume = data
+        volume_name = volume[&#34;spec&#34;][&#34;volumeName&#34;]
+
+        code, data = api_client.lhreplicas.get()
+        assert code == 200 and len(data), (
+            f&#34;Failed to get longhorn replicas or have no replicas: {data}&#34;)
+
+        replicas = data[&#34;items&#34;]
+        for replica in replicas:
+            if replica[&#34;spec&#34;][&#34;volumeName&#34;] == volume_name:
+                api_client.lhreplicas.delete(name=replica[&#34;metadata&#34;][&#34;name&#34;])
+                break
+
+        # wait for volume be degraded status
+        sleep(10)
+
+    def _upgrade(self, request, api_client, version):
+        code, data = _create_version(request, api_client, version)
+        assert code == 201, (
+            f&#34;Failed to create version {version}: {data}&#34;)
+
+        code, data = api_client.upgrades.create(version)
+        assert code == 400, (
+            f&#34;Failed to verify degraded volume: {code}, {data}&#34;)
+
+        return data
+
+    def _clean_degraded_volume(self, api_client, version):
+        code, data = api_client.vms.delete(self.vm[&#34;metadata&#34;][&#34;name&#34;])
+        assert code == 200, (
+            f&#34;Failed to delete vm {self.vm[&#39;metadata&#39;][&#39;name&#39;]}: {data}&#34;)
+
+        code, data = api_client.versions.delete(version)
+        assert code == 204, (
+            f&#34;Failed to delete version {version}: {data}&#34;)
+
+    def test_degraded_volume(self, cluster_prereq, request, api_client, cluster_state, vm_shell,
+                             wait_timeout):
         &#34;&#34;&#34;
         Criteria: create upgrade should fails if there are any degraded volumes
-
         Steps:
         1. Create a VM using a volume with 3 replicas.
         2. Delete one replica of the volume. Let the volume stay in
@@ -92,61 +900,430 @@ class TestInvalidUpgrade:
         3. Immediately upgrade Harvester.
         4. Upgrade should fail.
         &#34;&#34;&#34;
+        self.vm = self._create_vm(api_client, cluster_state, vm_shell, wait_timeout)
+
+        claim_name = self.vm[&#34;spec&#34;][&#34;volumes&#34;][0][&#34;persistentVolumeClaim&#34;][&#34;claimName&#34;]
+        self._degrad_volume(api_client, claim_name)
+
+        if cluster_state.version_verify:
+            assert not _is_installed_version(api_client, cluster_state.version), (
+                f&#34;The current version is already {cluster_state.version}&#34;)
+        self._upgrade(request, api_client, cluster_state.version)
+
+        self._clean_degraded_volume(api_client, cluster_state.version)
+
+    # TODO: waiting for https://github.com/harvester/harvester/issues/3310 to be fixed
+    @pytest.mark.skip(&#34;known issue #3310&#34;)
+    def test_invalid_manifest(self, api_client):
+        &#34;&#34;&#34;
+        Criteria: https://github.com/harvester/tests/issues/518
+        Steps:
+        1. Create an invalid manifest.
+        2. Try to upgrade with the invalid manifest.
+        3. Upgrade should not start and fail.
+        &#34;&#34;&#34;
+        # version_name = &#34;v0.0.0&#34;
+
+        # code, data = api_client.versions.get(version_name)
+        # if code != 200:
+        #     code, data = api_client.versions.create(version_name, &#34;https://invalid_version_url&#34;)
+        #     assert code == 201, (
+        #         &#34;Failed to create invalid version: %s&#34;, data)
+
+        # code, data = api_client.upgrades.create(version_name)
+        # assert code == 201, (
+        #     &#34;Failed to create invalid upgrade: %s&#34;, data)
 
 
 @pytest.mark.upgrade
-@pytest.mark.single_node
-class TestSingleNodeUpgrade:
-    @pytest.mark.dependency(name=&#34;single_node_upgrade&#34;)
-    def test_perform_upgrade(self):
-        pass
+@pytest.mark.any_nodes
+class TestAnyNodesUpgrade:
 
-
-@pytest.mark.upgrade
-@pytest.mark.three_nodes
-class TestThreeNodesUpgrade:
-    @pytest.mark.dependency(name=&#34;three_nodes_upgrade&#34;)
-    def test_perform_upgrade(self, cluster_prereq, vm_prereq):
+    @pytest.mark.dependency(name=&#34;any_nodes_upgrade&#34;)
+    def test_perform_upgrade(self, cluster_prereq, vm_prereq, request, api_client, cluster_state,
+                             wait_timeout):
         &#34;&#34;&#34;
         - perform upgrade
         - check all nodes upgraded
         &#34;&#34;&#34;
+        if cluster_state.version_verify:
+            assert not _is_installed_version(api_client, cluster_state.version), (
+                f&#34;The current version is already {cluster_state.version}&#34;)
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-    def test_verify_logging(self):
+        self._perform_upgrade(request, api_client, cluster_state)
+
+        # start vms when are stopped
+        code, data = api_client.vms.get()
+        assert code == 200, (f&#34;Failed to get vms: {data}&#34;)
+
+        for vm in data[&#34;data&#34;]:
+            if &#34;ready&#34; not in vm[&#34;status&#34;] or not vm[&#34;status&#34;][&#34;ready&#34;]:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime &gt; datetime.now():
+                    code, data = api_client.vms.start(vm[&#34;metadata&#34;][&#34;name&#34;])
+                    if code == 204:
+                        break
+                    sleep(5)
+                else:
+                    raise AssertionError(f&#34;start vm timeout: {data}&#34;)
+
+                # wait for vm to be assigned an IP
+                _wait_for_vm_ready(api_client, vm[&#34;metadata&#34;][&#34;name&#34;],
+                                   timeout=wait_timeout)
+
+    def _perform_upgrade(self, request, api_client, cluster_state):
+        # force create upgrade version
+        code, data = api_client.versions.get(cluster_state.version)
+        if code == 200:
+            code, data = api_client.versions.delete(cluster_state.version)
+            assert code == 204, (
+                f&#34;Failed to delete version {cluster_state.version}: {data}&#34;)
+
+        code, data = _create_version(request, api_client, cluster_state.version)
+        assert code == 201, (
+            f&#34;Failed to create version {cluster_state.version}: {data}&#34;)
+
+        code, data = api_client.upgrades.create(cluster_state.version)
+        assert code == 201, (
+            f&#34;Failed to upgrade version {cluster_state.version}: {code}, {data}&#34;)
+
+        def _wait_for_upgrade():
+            try:
+                code, upgrade_data = api_client.upgrades.get(data[&#34;metadata&#34;][&#34;name&#34;])
+                if code != 200:
+                    return False, {}
+            except Exception:
+                return False, upgrade_data.get(&#39;status&#39;, {})
+
+            status = upgrade_data.get(&#39;status&#39;, {})
+
+            if upgrade_data[&#39;metadata&#39;].get(&#39;labels&#39;, {}).get(UPGRADE_STATE_LABEL) == &#34;Succeeded&#34;:
+                return True, status
+
+            conds = upgrade_data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+            if len(conds) &gt; 0:
+                for cond in conds:
+                    if cond[&#34;status&#34;] == &#34;False&#34;:
+                        cond_type = cond[&#34;type&#34;]
+                        raise AssertionError(f&#34;Upgrade failed: {cond_type}: {cond}&#34;)
+
+                    if cond[&#34;type&#34;] == &#34;Completed&#34; and cond[&#34;status&#34;] == &#34;True&#34;:
+                        return True, status
+
+            return False, status
+
+        nodes = _get_all_nodes(api_client)
+        upgrade_timeout = request.config.getoption(&#39;--upgrade-wait-timeout&#39;) or 7200
+        endtime = datetime.now() + timedelta(seconds=upgrade_timeout * len(nodes))
+        while endtime &gt; datetime.now():
+            upgraded, status = _wait_for_upgrade()
+            if upgraded:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(f&#34;Upgrade timeout: {status}&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_logging_pods(self, api_client):
         &#34;&#34;&#34; Verify logging pods and logs
         Criteria: https://github.com/harvester/tests/issues/535
         &#34;&#34;&#34;
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+        code, pods = api_client.get_pods(namespace=LOGGING_NAMESPACE)
+        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
+
+        fails = []
+        for pod in pods[&#39;data&#39;]:
+            # Verify pod is running or completed
+            phase = pod[&#34;status&#34;][&#34;phase&#34;]
+            if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
+                fails.append((pod[&#39;metadata&#39;][&#39;name&#39;], phase))
+        else:
+            assert not fails, (
+                &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails)
+            )
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_audit_log(self, api_client, host_shell, wait_timeout):
+        masters, workers = _get_master_and_worker_nodes(api_client)
+        assert len(masters) &gt; 0, &#34;No master nodes found&#34;
+
+        script = (&#34;sudo tail /var/lib/rancher/rke2/server/logs/audit.log | awk &#39;END{print}&#39; &#34;
+                  &#34;| jq .requestReceivedTimestamp &#34;
+                  &#34;| xargs -I {} date -d \&#34;{}\&#34; +%s&#34;)
+
+        node_ips = [n[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION] for n in masters]
+        cmp = dict()
+        done = set()
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            for ip in done.symmetric_difference(node_ips):
+                try:
+                    with host_shell.login(ip) as shell:
+                        out, err = shell.exec_command(script)
+                        timestamp = int(out)
+                        if not err and ip not in cmp:
+                            cmp[ip] = timestamp
+                            continue
+                        if not err and cmp[ip] &lt; timestamp:
+                            done.add(ip)
+                except (ChannelException, AuthenticationException, NoValidConnectionsError,
+                        socket.timeout):
+                    continue
+
+            if not done.symmetric_difference(node_ips):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                &#34;\n&#34;.join(&#34;Node {ip} audit log is not updated.&#34; for ip in set(node_ips) ^ done)
+            )
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
     def test_verify_network(self, api_client, cluster_state):
         &#34;&#34;&#34; Verify cluster and VLAN networks
         - cluster network `mgmt` should exists
         - Created VLAN should exists
         &#34;&#34;&#34;
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-    def test_verify_vms(self, api_client, cluster_state):
+        code, cnets = api_client.clusternetworks.get()
+        assert code == 200, (
+            &#34;Failed to get Networks: %d, %s&#34; % (code, cnets))
+
+        assert len(cnets[&#34;items&#34;]) &gt; 0, (&#34;No Networks found&#34;)
+
+        assert any(n[&#39;metadata&#39;][&#39;name&#39;] == &#34;mgmt&#34; for n in cnets[&#39;items&#39;]), (
+            &#34;Cluster network mgmt not found&#34;)
+
+        code, vnets = api_client.networks.get()
+        assert code == 200, (f&#34;Failed to get VLANs: {code}, {vnets}&#34; % (code, vnets))
+        assert len(vnets[&#34;items&#34;]) &gt; 0, (&#34;No VLANs found&#34;)
+
+        used_vlan = cluster_state.network[&#39;metadata&#39;][&#39;name&#39;]
+        assert any(used_vlan == n[&#39;metadata&#39;][&#39;name&#39;] for n in vnets[&#39;items&#39;]), (
+            f&#34;VLAN {used_vlan} not found&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_vms(self, api_client, cluster_state, vm_shell, wait_timeout):
         &#34;&#34;&#34; Verify VMs&#39; state and data
         Criteria:
         - VMs should keep in running state
         - data in VMs should not lost
         &#34;&#34;&#34;
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-    def test_verify_restore_vm(self, api_client, cluster_state):
+        code, vmis = api_client.vms.get_status()
+        assert code == 200, (
+            f&#34;Failed to get VMs: {code}, {vmis}&#34;)
+
+        assert len(vmis[&#34;data&#34;]) &gt; 0, (&#34;No VMs found&#34;)
+
+        fails = []
+        for vmi in vmis[&#39;data&#39;]:
+            if &#34;vm1&#34; in vmi[&#39;metadata&#39;][&#39;name&#39;]:
+                cluster_state.vm1 = vmi
+            if &#34;vm2&#34; in vmi[&#39;metadata&#39;][&#39;name&#39;]:
+                cluster_state.vm2 = vmi
+            if not _check_vm_is_running(vmi):
+                fails.append(vmi[&#39;metadata&#39;][&#39;name&#39;])
+        assert not fails, &#34;\n&#34;.join(f&#34;VM {n} is not running&#34; for n in fails)
+
+        vm1_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                                     cluster_state.image_ssh_user,
+                                     timeout=wait_timeout)
+        vm2_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm2),
+                                     cluster_state.image_ssh_user,
+                                     timeout=wait_timeout)
+        assert vm1_data == vm2_data, (&#34;Data in VM is lost&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_restore_vm(self, api_client, cluster_state, vm_shell, wait_timeout):
         &#34;&#34;&#34; Verify VM restored from the backup
         Criteria:
         - VM should able to start
         - data in VM should not lost
         &#34;&#34;&#34;
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-    def test_verify_storage_class(self, api_client, cluster_state):
+        vm4_name = f&#34;vm4-{cluster_state.unique_id}&#34;
+        restore_spec = api_client.backups.RestoreSpec(True, vm_name=vm4_name)
+        code, data = api_client.backups.create(cluster_state.backup[&#39;metadata&#39;][&#39;name&#39;],
+                                               restore_spec)
+        assert code == 201, (
+            f&#34;Failed to restore to vm4: {data}&#34;)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            if _check_assigned_ip_func(api_client, vm4_name)():
+                break
+            sleep(5)
+        else:
+            raise AssertionError(&#34;Time out while waiting for assigned ip for vm4&#34;)
+
+        code, vm4 = api_client.vms.get_status(vm4_name)
+        assert code == 200, (
+            f&#34;Failed to get vm2 vmi: {vm4}&#34;)
+
+        vm4_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(vm4),
+                                     cluster_state.image_ssh_user,
+                                     timeout=wait_timeout)
+        vm1_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                                     cluster_state.image_ssh_user,
+                                     timeout=wait_timeout)
+        assert vm1_data == vm4_data, (&#34;Data in VM is not the same as the original&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_storage_class(self, api_client):
         &#34;&#34;&#34; Verify StorageClasses and defaults
-        - `harvester-longhorn` should be settle as default
+        - `new_sc` should be settle as default
         - `longhorn` should exists
-        &#34;&#34;&#34;</code></pre>
+        &#34;&#34;&#34;
+        code, scs = api_client.scs.get()
+        assert code == 200, (
+            &#34;Failed to get StorageClasses: %d, %s&#34; % (code, scs))
+
+        assert len(scs[&#34;items&#34;]) &gt; 0, (&#34;No StorageClasses found&#34;)
+
+        longhorn_exists = False
+        test_exists = False
+        test_default = False
+        for sc in scs[&#34;items&#34;]:
+            annotations = sc[&#34;metadata&#34;].get(&#39;annotations&#39;, {})
+            if sc[&#34;metadata&#34;][&#34;name&#34;] == &#34;longhorn&#34;:
+                longhorn_exists = True
+
+            if &#34;new-sc&#34; in sc[&#34;metadata&#34;][&#34;name&#34;]:
+                test_exists = True
+                default = annotations[&#34;storageclass.kubernetes.io/is-default-class&#34;]
+                if default == &#34;true&#34;:
+                    test_default = True
+
+        assert longhorn_exists, (&#34;longhorn StorageClass not found&#34;)
+        assert test_exists, (&#34;test StorageClass not found&#34;)
+        assert test_default, (&#34;test StorageClass is not default&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_os_version(self, request, api_client, cluster_state, host_shell):
+        # Verify /etc/os-release on all nodes
+        script = &#34;cat /etc/os-release&#34;
+        if not cluster_state.version_verify:
+            pytest.skip(&#34;skip verify os version&#34;)
+
+        # Get all nodes
+        nodes = _get_all_nodes(api_client)
+        for node in nodes:
+            node_ip = node[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION]
+
+            with host_shell.login(node_ip) as sh:
+                lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
+                assert not stderr, (
+                    f&#34;Failed to execute {script} on {node_ip}: {stderr}&#34;)
+
+                # eg: PRETTY_NAME=&#34;Harvester v1.1.0&#34;
+                assert cluster_state.version == re.findall(r&#34;Harvester (.+?)\&#34;&#34;, lines[3])[0], (
+                    &#34;OS version is not correct&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_rke2_version(self, api_client, host_shell):
+        # Verify node version on all nodes
+        script = &#34;cat /etc/harvester-release.yaml&#34;
+
+        # Verify rke2 version
+        except_rke2_version = &#34;&#34;
+        masters, workers = _get_master_and_worker_nodes(api_client)
+        for node in masters:
+            node_ip = node[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION]
+
+            # Get except rke2 version
+            if except_rke2_version == &#34;&#34;:
+                with host_shell.login(node_ip) as sh:
+                    lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
+                    assert not stderr, (
+                        f&#34;Failed to execute {script} on {node_ip}: {stderr}&#34;)
+
+                    for line in lines:
+                        if &#34;kubernetes&#34; in line:
+                            except_rke2_version = re.findall(r&#34;kubernetes: (.*)&#34;, line.strip())[0]
+                            break
+
+                    assert except_rke2_version != &#34;&#34;, (&#34;Failed to get except rke2 version&#34;)
+
+            assert node.get(&#39;status&#39;, {}).get(&#39;nodeInfo&#39;, {}).get(
+                   &#34;kubeletVersion&#34;, &#34;&#34;) == except_rke2_version, (
+                   &#34;rke2 version is not correct&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_deployed_components_version(self, api_client):
+        &#34;&#34;&#34; Verify deployed kubevirt and longhorn version
+        Criteria:
+        - except version(get from apps.catalog.cattle.io/harvester) should be equal to the version
+          of kubevirt and longhorn
+        &#34;&#34;&#34;
+
+        kubevirt_version_existed = False
+        engine_image_version_existed = False
+        longhorn_manager_version_existed = False
+
+        # Get except version from apps.catalog.cattle.io/harvester
+        code, apps = api_client.get_apps_catalog(name=&#34;harvester&#34;,
+                                                 namespace=DEFAULT_HARVESTER_NAMESPACE)
+        assert code == 200 and apps[&#39;type&#39;] != &#34;error&#34;, (
+            f&#34;Failed to get apps.catalog.cattle.io/harvester: {apps[&#39;message&#39;]}&#34;)
+
+        # Get except image of kubevirt and longhorn
+        kubevirt_operator = (
+            apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;kubevirt-operator&#39;][&#39;containers&#39;][&#39;operator&#39;])
+        kubevirt_operator_image = (
+            f&#34;{kubevirt_operator[&#39;image&#39;][&#39;repository&#39;]}:{kubevirt_operator[&#39;image&#39;][&#39;tag&#39;]}&#34;)
+
+        longhorn = apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;longhorn&#39;][&#39;image&#39;][&#39;longhorn&#39;]
+        longhorn_images = {
+            &#34;engine-image&#34;: f&#34;{longhorn[&#39;engine&#39;][&#39;repository&#39;]}:{longhorn[&#39;engine&#39;][&#39;tag&#39;]}&#34;,
+            &#34;longhorn-manager&#34;: f&#34;{longhorn[&#39;manager&#39;][&#39;repository&#39;]}:{longhorn[&#39;manager&#39;][&#39;tag&#39;]}&#34;
+        }
+
+        # Verify kubevirt version
+        code, pods = api_client.get_pods(namespace=DEFAULT_HARVESTER_NAMESPACE)
+        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, (
+            f&#34;Failed to get pods in namespace {DEFAULT_HARVESTER_NAMESPACE}&#34;)
+
+        for pod in pods[&#39;data&#39;]:
+            if &#34;virt-operator&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+                kubevirt_version_existed = (
+                    kubevirt_operator_image == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+
+        # Verify longhorn version
+        code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
+        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, (
+            f&#34;Failed to get pods in namespace {DEFAULT_LONGHORN_NAMESPACE}&#34;)
+
+        for pod in pods[&#39;data&#39;]:
+            if &#34;longhorn-manager&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+                longhorn_manager_version_existed = (
+                  longhorn_images[&#34;longhorn-manager&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+            elif &#34;engine-image&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+                engine_image_version_existed = (
+                    longhorn_images[&#34;engine-image&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+
+        assert kubevirt_version_existed, &#34;kubevirt version is not correct&#34;
+        assert engine_image_version_existed, &#34;longhorn engine image version is not correct&#34;
+        assert longhorn_manager_version_existed, &#34;longhorn manager version is not correct&#34;
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_crds_existed(self, api_client):
+        &#34;&#34;&#34; Verify crds existed
+        Criteria:
+        - crds should be existed
+        &#34;&#34;&#34;
+        not_existed_crds = []
+        exist_crds = True
+        for crd in expected_harvester_crds:
+            code, _ = api_client.get_crds(name=crd)
+
+            if code != 200:
+                exist_crds = False
+                not_existed_crds.append(crd)
+
+        if not exist_crds:
+            raise AssertionError(f&#34;CRDs {not_existed_crds} are not existed&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -156,8 +1333,8 @@ class TestThreeNodesUpgrade:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.cluster_prereq"><code class="name flex">
-<span>def <span class="ident">cluster_prereq</span></span>(<span>self, api_client, cluster_state)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.base_sc"><code class="name flex">
+<span>def <span class="ident">base_sc</span></span>(<span>request, api_client, cluster_state)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -165,17 +1342,48 @@ class TestThreeNodesUpgrade:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
-def cluster_prereq(self, api_client, cluster_state):
-    # create cluster network
-    # create a routable vlan
-    cluster_state.clusternetwork = &#34;cluster network name&#34;
-    cluster_state.vm_network = (&#34;name&#34;, &#34;vlanid&#34;, &#34;cluster network name&#34;)
-    cluster_state.vlan = &#34;routable vlan id&#34;</code></pre>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def base_sc(request, api_client, cluster_state):
+    code, data = api_client.scs.get()
+    assert code == 200, (f&#34;Failed to get storage classes: {data}&#34;)
+
+    for sc in data[&#39;items&#39;]:
+        if &#34;base-sc&#34; in sc[&#39;metadata&#39;][&#39;name&#39;]:
+            cluster_state.base_sc = sc
+            return
+
+    sc_name = f&#34;base-sc-{cluster_state.unique_id}&#34;
+    cluster_state.base_sc = _create_default_storage_class(request, api_client, sc_name)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.cluster_prereq"><code class="name flex">
+<span>def <span class="ident">cluster_prereq</span></span>(<span>request, cluster_state, prepare_dependence, unique_id, network, base_sc, ubuntu_image, new_sc)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def cluster_prereq(request, cluster_state, prepare_dependence, unique_id, network, base_sc,
+                   ubuntu_image, new_sc):
+    assert request.config.getoption(&#39;--upgrade-iso-url&#39;), (
+        &#34;upgrade-iso-url must be not empty&#34;)
+
+    assert request.config.getoption(&#39;--upgrade-iso-checksum&#39;), (
+        &#34;upgrade-iso-checksum must be not empty&#34;)
+
+    if request.config.getoption(&#39;--upgrade-target-version&#39;):
+        cluster_state.version_verify = True
+        cluster_state.version = request.config.getoption(&#39;--upgrade-target-version&#39;)
+    else:
+        cluster_state.version_verify = False
+        cluster_state.version = f&#34;version-{cluster_state.unique_id}&#34;</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_upgrade.cluster_state"><code class="name flex">
-<span>def <span class="ident">cluster_state</span></span>(<span>self)</span>
+<span>def <span class="ident">cluster_state</span></span>(<span>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -183,16 +1391,19 @@ def cluster_prereq(self, api_client, cluster_state):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
-def cluster_state(self):
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def cluster_state():
     class ClusterState:
+        vm1 = None
+        vm2 = None
+        vm3 = None
         pass
 
     return ClusterState()</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.vm_prereq"><code class="name flex">
-<span>def <span class="ident">vm_prereq</span></span>(<span>self, api_client, cluster_state)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.network"><code class="name flex">
+<span>def <span class="ident">network</span></span>(<span>request, api_client, cluster_state)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -200,25 +1411,240 @@ def cluster_state(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
-def vm_prereq(self, api_client, cluster_state):
-    cluster_state.old_target = &#34;existing backup target&#34; or &#34;&#34;
-    # setup backup target
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def network(request, api_client, cluster_state):
+    code, data = api_client.networks.get()
+    assert code == 200, (
+        &#34;Failed to get networks: %s&#34; % (data))
+
+    vlan_id = request.config.getoption(&#39;--vlan-id&#39;) or 1
+    for network in data[&#39;items&#39;]:
+        if network[&#39;metadata&#39;][&#39;labels&#39;].get(NETWORK_VLAN_ID_LABEL) == f&#34;{vlan_id}&#34;:
+            cluster_state.network = network
+            return
+
+    raise AssertionError(&#34;Failed to find a routable vlan network&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.new_sc"><code class="name flex">
+<span>def <span class="ident">new_sc</span></span>(<span>request, api_client, cluster_state)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def new_sc(request, api_client, cluster_state):
+    code, data = api_client.scs.get()
+    assert code == 200, (f&#34;Failed to get storage classes: {data}&#34;)
+
+    for sc in data[&#39;items&#39;]:
+        if &#34;new-sc&#34; in sc[&#39;metadata&#39;][&#39;name&#39;]:
+            cluster_state.new_sc = sc
+            return
+
+    sc_name = f&#34;new-sc-{cluster_state.unique_id}&#34;
+    cluster_state.new_sc = _create_default_storage_class(request, api_client, sc_name)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.openSUSE_image"><code class="name flex">
+<span>def <span class="ident">openSUSE_image</span></span>(<span>request, api_client, cluster_state, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def openSUSE_image(request, api_client, cluster_state, wait_timeout):
+    image_name = &#34;opensuse-leap-15-4&#34;
+
+    base_url = (&#39;https://repo.opensuse.id//repositories/Cloud:/Images:&#39;
+                &#39;/Leap_15.4/images&#39;)
+
+    cache_url = request.config.getoption(&#39;--image-cache-url&#39;)
+    if cache_url:
+        base_url = cache_url
+    url = os.path.join(base_url, &#39;openSUSE-Leap-15.4.x86_64-NoCloud.qcow2&#39;)
+
+    image_json = _create_image(api_client, url, name=image_name,
+                               timeout=wait_timeout)
+    cluster_state.openSUSE_image = image_json
+    cluster_state.image_ssh_user = &#34;root&#34;
+    return image_json</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.prepare_dependence"><code class="name flex">
+<span>def <span class="ident">prepare_dependence</span></span>(<span>request, api_client, host_shell, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
+def prepare_dependence(request, api_client, host_shell, wait_timeout):
+    predep = request.config.getoption(&#39;--upgrade-prepare-dependence&#39;) or False
+    if not predep:
+        return
+
+    _prepare_network(request, api_client)
+
+    _prepare_minio(api_client, host_shell)
+
+    _prepare_configuration(api_client, wait_timeout)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.ubuntu_image"><code class="name flex">
+<span>def <span class="ident">ubuntu_image</span></span>(<span>request, api_client, cluster_state, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
+def ubuntu_image(request, api_client, cluster_state, wait_timeout):
+    image_name = &#34;focal-server-cloudimg-amd64&#34;
+
+    base_url = &#39;https://cloud-images.ubuntu.com/focal/current/&#39;
+
+    cache_url = request.config.getoption(&#39;--image-cache-url&#39;)
+    if cache_url:
+        base_url = cache_url
+    url = os.path.join(base_url, &#39;focal-server-cloudimg-amd64.img&#39;)
+
+    image_json = _create_image(api_client, url, name=image_name,
+                               wait_timeout=wait_timeout)
+    cluster_state.ubuntu_image = image_json
+    cluster_state.image_ssh_user = &#34;ubuntu&#34;
+    return image_json</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.unique_id"><code class="name flex">
+<span>def <span class="ident">unique_id</span></span>(<span>cluster_state, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def unique_id(cluster_state, unique_name):
+    cluster_state.unique_id = unique_name</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.vm_prereq"><code class="name flex">
+<span>def <span class="ident">vm_prereq</span></span>(<span>cluster_state, api_client, vm_shell, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def vm_prereq(cluster_state, api_client, vm_shell, wait_timeout):
     # create new storage class, make it default
     # create 3 VMs:
     # - having the new storage class
     # - the VM that have some data written, take backup
     # - the VM restored from the backup
-    # check VMs should able to reach each others (in same networks)
+    cluster_state.vm1 = _create_basic_vm(api_client,
+                                         cluster_state, vm_shell, vm_prefix=&#34;vm1&#34;,
+                                         sc=cluster_state.base_sc[&#39;metadata&#39;][&#39;name&#39;],
+                                         timeout=wait_timeout)
+    cluster_state.backup = _vm1_backup(api_client, cluster_state, wait_timeout)
 
-    cluster_state.storage_class = &#34;Created storage class name&#34;
-    cluster_state.backup_name = &#34;backup name from the VM&#34;
-    cluster_state.backup_target = &#34;backup_target&#34;
-    cluster_state.vms = {
-        &#34;backed up&#34;: &#34;backuped VM&#34;,
-        &#34;restored&#34;: &#34;restored VM&#34;,
-        &#34;storage class&#34;: &#34;VM having different storageclass&#34;
-    }</code></pre>
+    code, vms = api_client.vms.get()
+    assert code in (200, 404), &#34;Failed to get vms&#34;
+
+    vm2_name = None
+    for vm in vms[&#39;data&#39;]:
+        if &#34;vm2&#34; in vm[&#39;metadata&#39;][&#39;name&#39;]:
+            vm2_name = vm[&#39;metadata&#39;][&#39;name&#39;]
+
+    if vm2_name is None:
+        vm2_name = f&#34;vm2-{cluster_state.unique_id}&#34;
+        restore_spec = api_client.backups.RestoreSpec(True, vm_name=vm2_name)
+        code, data = api_client.backups.create(cluster_state.backup[&#39;metadata&#39;][&#39;name&#39;],
+                                               restore_spec)
+        assert code == 201, (
+            f&#34;Failed to restore to vm2: {data}&#34;)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        if _check_assigned_ip_func(api_client, vm2_name)():
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for assigned ip for vm2&#34;)
+
+    # modify the hostname
+    code, data = api_client.vms.get(vm2_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.hostname = vm2_name
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.update(vm2_name, vm_spec)
+        if code == 200:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for update hostname&#34;)
+
+    # restart the vm2
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.restart(vm2_name)
+        if code == 204:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for update hostname&#34;)
+
+    # waiting for vm2 perform to restart
+    sleep(60)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        if _check_assigned_ip_func(api_client, vm2_name)():
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for assigned ip for vm2&#34;)
+
+    code, cluster_state.vm2 = api_client.vms.get_status(vm2_name)
+    assert code == 200, (
+        f&#34;Failed to get vm2 vmi: {data}&#34;)
+
+    # verify data
+    vm1_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                                 cluster_state.image_ssh_user,
+                                 timeout=wait_timeout)
+    vm2_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm2),
+                                 cluster_state.image_ssh_user,
+                                 timeout=wait_timeout)
+
+    assert vm1_data == vm2_data, (&#34;Data in VM is lost&#34;)
+
+    # check VMs should able to reach each others (in same networks)
+    assert _ping(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                 _get_ip_from_vmi(cluster_state.vm2),
+                 cluster_state.image_ssh_user,
+                 timeout=wait_timeout), (
+        &#34;Failed to ping each other&#34;)
+
+    cluster_state.vm3 = _create_basic_vm(api_client, cluster_state, vm_shell,
+                                         vm_prefix=&#34;vm3&#34;,
+                                         sc=cluster_state.new_sc[&#39;metadata&#39;][&#39;name&#39;],
+                                         timeout=wait_timeout)</code></pre>
 </details>
 </dd>
 </dl>
@@ -226,8 +1652,8 @@ def vm_prereq(self, api_client, cluster_state):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade"><code class="flex name class">
-<span>class <span class="ident">TestInvalidUpgrade</span></span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade"><code class="flex name class">
+<span>class <span class="ident">TestAnyNodesUpgrade</span></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -237,200 +1663,405 @@ def vm_prereq(self, api_client, cluster_state):
 </summary>
 <pre><code class="python">@pytest.mark.upgrade
 @pytest.mark.any_nodes
-@pytest.mark.negative
-class TestInvalidUpgrade:
-    def test_invalid_manifest(self):
-        &#34;&#34;&#34;
-        Criteria: https://github.com/harvester/tests/issues/518
+class TestAnyNodesUpgrade:
 
-        Steps:
-        1. Create an invalid manifest.
-        2. Try to upgrade with the invalid manifest.
-        3. Upgrade should not start and fail.
-        &#34;&#34;&#34;
-
-    def test_degraded_volume(self):
-        &#34;&#34;&#34;
-        Criteria: create upgrade should fails if there are any degraded volumes
-
-        Steps:
-        1. Create a VM using a volume with 3 replicas.
-        2. Delete one replica of the volume. Let the volume stay in
-           degraded state.
-        3. Immediately upgrade Harvester.
-        4. Upgrade should fail.
-        &#34;&#34;&#34;</code></pre>
-</details>
-<h3>Class variables</h3>
-<dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume"><code class="name flex">
-<span>def <span class="ident">test_degraded_volume</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Criteria: create upgrade should fails if there are any degraded volumes</p>
-<p>Steps:
-1. Create a VM using a volume with 3 replicas.
-2. Delete one replica of the volume. Let the volume stay in
-degraded state.
-3. Immediately upgrade Harvester.
-4. Upgrade should fail.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def test_degraded_volume(self):
-    &#34;&#34;&#34;
-    Criteria: create upgrade should fails if there are any degraded volumes
-
-    Steps:
-    1. Create a VM using a volume with 3 replicas.
-    2. Delete one replica of the volume. Let the volume stay in
-       degraded state.
-    3. Immediately upgrade Harvester.
-    4. Upgrade should fail.
-    &#34;&#34;&#34;</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest"><code class="name flex">
-<span>def <span class="ident">test_invalid_manifest</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Criteria: <a href="https://github.com/harvester/tests/issues/518">https://github.com/harvester/tests/issues/518</a></p>
-<p>Steps:
-1. Create an invalid manifest.
-2. Try to upgrade with the invalid manifest.
-3. Upgrade should not start and fail.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def test_invalid_manifest(self):
-    &#34;&#34;&#34;
-    Criteria: https://github.com/harvester/tests/issues/518
-
-    Steps:
-    1. Create an invalid manifest.
-    2. Try to upgrade with the invalid manifest.
-    3. Upgrade should not start and fail.
-    &#34;&#34;&#34;</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade"><code class="flex name class">
-<span>class <span class="ident">TestSingleNodeUpgrade</span></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.upgrade
-@pytest.mark.single_node
-class TestSingleNodeUpgrade:
-    @pytest.mark.dependency(name=&#34;single_node_upgrade&#34;)
-    def test_perform_upgrade(self):
-        pass</code></pre>
-</details>
-<h3>Class variables</h3>
-<dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.test_perform_upgrade"><code class="name flex">
-<span>def <span class="ident">test_perform_upgrade</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.dependency(name=&#34;single_node_upgrade&#34;)
-def test_perform_upgrade(self):
-    pass</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade"><code class="flex name class">
-<span>class <span class="ident">TestThreeNodesUpgrade</span></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.upgrade
-@pytest.mark.three_nodes
-class TestThreeNodesUpgrade:
-    @pytest.mark.dependency(name=&#34;three_nodes_upgrade&#34;)
-    def test_perform_upgrade(self, cluster_prereq, vm_prereq):
+    @pytest.mark.dependency(name=&#34;any_nodes_upgrade&#34;)
+    def test_perform_upgrade(self, cluster_prereq, vm_prereq, request, api_client, cluster_state,
+                             wait_timeout):
         &#34;&#34;&#34;
         - perform upgrade
         - check all nodes upgraded
         &#34;&#34;&#34;
+        if cluster_state.version_verify:
+            assert not _is_installed_version(api_client, cluster_state.version), (
+                f&#34;The current version is already {cluster_state.version}&#34;)
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-    def test_verify_logging(self):
+        self._perform_upgrade(request, api_client, cluster_state)
+
+        # start vms when are stopped
+        code, data = api_client.vms.get()
+        assert code == 200, (f&#34;Failed to get vms: {data}&#34;)
+
+        for vm in data[&#34;data&#34;]:
+            if &#34;ready&#34; not in vm[&#34;status&#34;] or not vm[&#34;status&#34;][&#34;ready&#34;]:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime &gt; datetime.now():
+                    code, data = api_client.vms.start(vm[&#34;metadata&#34;][&#34;name&#34;])
+                    if code == 204:
+                        break
+                    sleep(5)
+                else:
+                    raise AssertionError(f&#34;start vm timeout: {data}&#34;)
+
+                # wait for vm to be assigned an IP
+                _wait_for_vm_ready(api_client, vm[&#34;metadata&#34;][&#34;name&#34;],
+                                   timeout=wait_timeout)
+
+    def _perform_upgrade(self, request, api_client, cluster_state):
+        # force create upgrade version
+        code, data = api_client.versions.get(cluster_state.version)
+        if code == 200:
+            code, data = api_client.versions.delete(cluster_state.version)
+            assert code == 204, (
+                f&#34;Failed to delete version {cluster_state.version}: {data}&#34;)
+
+        code, data = _create_version(request, api_client, cluster_state.version)
+        assert code == 201, (
+            f&#34;Failed to create version {cluster_state.version}: {data}&#34;)
+
+        code, data = api_client.upgrades.create(cluster_state.version)
+        assert code == 201, (
+            f&#34;Failed to upgrade version {cluster_state.version}: {code}, {data}&#34;)
+
+        def _wait_for_upgrade():
+            try:
+                code, upgrade_data = api_client.upgrades.get(data[&#34;metadata&#34;][&#34;name&#34;])
+                if code != 200:
+                    return False, {}
+            except Exception:
+                return False, upgrade_data.get(&#39;status&#39;, {})
+
+            status = upgrade_data.get(&#39;status&#39;, {})
+
+            if upgrade_data[&#39;metadata&#39;].get(&#39;labels&#39;, {}).get(UPGRADE_STATE_LABEL) == &#34;Succeeded&#34;:
+                return True, status
+
+            conds = upgrade_data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+            if len(conds) &gt; 0:
+                for cond in conds:
+                    if cond[&#34;status&#34;] == &#34;False&#34;:
+                        cond_type = cond[&#34;type&#34;]
+                        raise AssertionError(f&#34;Upgrade failed: {cond_type}: {cond}&#34;)
+
+                    if cond[&#34;type&#34;] == &#34;Completed&#34; and cond[&#34;status&#34;] == &#34;True&#34;:
+                        return True, status
+
+            return False, status
+
+        nodes = _get_all_nodes(api_client)
+        upgrade_timeout = request.config.getoption(&#39;--upgrade-wait-timeout&#39;) or 7200
+        endtime = datetime.now() + timedelta(seconds=upgrade_timeout * len(nodes))
+        while endtime &gt; datetime.now():
+            upgraded, status = _wait_for_upgrade()
+            if upgraded:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(f&#34;Upgrade timeout: {status}&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_logging_pods(self, api_client):
         &#34;&#34;&#34; Verify logging pods and logs
         Criteria: https://github.com/harvester/tests/issues/535
         &#34;&#34;&#34;
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+        code, pods = api_client.get_pods(namespace=LOGGING_NAMESPACE)
+        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
+
+        fails = []
+        for pod in pods[&#39;data&#39;]:
+            # Verify pod is running or completed
+            phase = pod[&#34;status&#34;][&#34;phase&#34;]
+            if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
+                fails.append((pod[&#39;metadata&#39;][&#39;name&#39;], phase))
+        else:
+            assert not fails, (
+                &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails)
+            )
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_audit_log(self, api_client, host_shell, wait_timeout):
+        masters, workers = _get_master_and_worker_nodes(api_client)
+        assert len(masters) &gt; 0, &#34;No master nodes found&#34;
+
+        script = (&#34;sudo tail /var/lib/rancher/rke2/server/logs/audit.log | awk &#39;END{print}&#39; &#34;
+                  &#34;| jq .requestReceivedTimestamp &#34;
+                  &#34;| xargs -I {} date -d \&#34;{}\&#34; +%s&#34;)
+
+        node_ips = [n[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION] for n in masters]
+        cmp = dict()
+        done = set()
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            for ip in done.symmetric_difference(node_ips):
+                try:
+                    with host_shell.login(ip) as shell:
+                        out, err = shell.exec_command(script)
+                        timestamp = int(out)
+                        if not err and ip not in cmp:
+                            cmp[ip] = timestamp
+                            continue
+                        if not err and cmp[ip] &lt; timestamp:
+                            done.add(ip)
+                except (ChannelException, AuthenticationException, NoValidConnectionsError,
+                        socket.timeout):
+                    continue
+
+            if not done.symmetric_difference(node_ips):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                &#34;\n&#34;.join(&#34;Node {ip} audit log is not updated.&#34; for ip in set(node_ips) ^ done)
+            )
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
     def test_verify_network(self, api_client, cluster_state):
         &#34;&#34;&#34; Verify cluster and VLAN networks
         - cluster network `mgmt` should exists
         - Created VLAN should exists
         &#34;&#34;&#34;
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-    def test_verify_vms(self, api_client, cluster_state):
+        code, cnets = api_client.clusternetworks.get()
+        assert code == 200, (
+            &#34;Failed to get Networks: %d, %s&#34; % (code, cnets))
+
+        assert len(cnets[&#34;items&#34;]) &gt; 0, (&#34;No Networks found&#34;)
+
+        assert any(n[&#39;metadata&#39;][&#39;name&#39;] == &#34;mgmt&#34; for n in cnets[&#39;items&#39;]), (
+            &#34;Cluster network mgmt not found&#34;)
+
+        code, vnets = api_client.networks.get()
+        assert code == 200, (f&#34;Failed to get VLANs: {code}, {vnets}&#34; % (code, vnets))
+        assert len(vnets[&#34;items&#34;]) &gt; 0, (&#34;No VLANs found&#34;)
+
+        used_vlan = cluster_state.network[&#39;metadata&#39;][&#39;name&#39;]
+        assert any(used_vlan == n[&#39;metadata&#39;][&#39;name&#39;] for n in vnets[&#39;items&#39;]), (
+            f&#34;VLAN {used_vlan} not found&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_vms(self, api_client, cluster_state, vm_shell, wait_timeout):
         &#34;&#34;&#34; Verify VMs&#39; state and data
         Criteria:
         - VMs should keep in running state
         - data in VMs should not lost
         &#34;&#34;&#34;
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-    def test_verify_restore_vm(self, api_client, cluster_state):
+        code, vmis = api_client.vms.get_status()
+        assert code == 200, (
+            f&#34;Failed to get VMs: {code}, {vmis}&#34;)
+
+        assert len(vmis[&#34;data&#34;]) &gt; 0, (&#34;No VMs found&#34;)
+
+        fails = []
+        for vmi in vmis[&#39;data&#39;]:
+            if &#34;vm1&#34; in vmi[&#39;metadata&#39;][&#39;name&#39;]:
+                cluster_state.vm1 = vmi
+            if &#34;vm2&#34; in vmi[&#39;metadata&#39;][&#39;name&#39;]:
+                cluster_state.vm2 = vmi
+            if not _check_vm_is_running(vmi):
+                fails.append(vmi[&#39;metadata&#39;][&#39;name&#39;])
+        assert not fails, &#34;\n&#34;.join(f&#34;VM {n} is not running&#34; for n in fails)
+
+        vm1_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                                     cluster_state.image_ssh_user,
+                                     timeout=wait_timeout)
+        vm2_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm2),
+                                     cluster_state.image_ssh_user,
+                                     timeout=wait_timeout)
+        assert vm1_data == vm2_data, (&#34;Data in VM is lost&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_restore_vm(self, api_client, cluster_state, vm_shell, wait_timeout):
         &#34;&#34;&#34; Verify VM restored from the backup
         Criteria:
         - VM should able to start
         - data in VM should not lost
         &#34;&#34;&#34;
 
-    @pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-    def test_verify_storage_class(self, api_client, cluster_state):
+        vm4_name = f&#34;vm4-{cluster_state.unique_id}&#34;
+        restore_spec = api_client.backups.RestoreSpec(True, vm_name=vm4_name)
+        code, data = api_client.backups.create(cluster_state.backup[&#39;metadata&#39;][&#39;name&#39;],
+                                               restore_spec)
+        assert code == 201, (
+            f&#34;Failed to restore to vm4: {data}&#34;)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            if _check_assigned_ip_func(api_client, vm4_name)():
+                break
+            sleep(5)
+        else:
+            raise AssertionError(&#34;Time out while waiting for assigned ip for vm4&#34;)
+
+        code, vm4 = api_client.vms.get_status(vm4_name)
+        assert code == 200, (
+            f&#34;Failed to get vm2 vmi: {vm4}&#34;)
+
+        vm4_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(vm4),
+                                     cluster_state.image_ssh_user,
+                                     timeout=wait_timeout)
+        vm1_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                                     cluster_state.image_ssh_user,
+                                     timeout=wait_timeout)
+        assert vm1_data == vm4_data, (&#34;Data in VM is not the same as the original&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_storage_class(self, api_client):
         &#34;&#34;&#34; Verify StorageClasses and defaults
-        - `harvester-longhorn` should be settle as default
+        - `new_sc` should be settle as default
         - `longhorn` should exists
-        &#34;&#34;&#34;</code></pre>
+        &#34;&#34;&#34;
+        code, scs = api_client.scs.get()
+        assert code == 200, (
+            &#34;Failed to get StorageClasses: %d, %s&#34; % (code, scs))
+
+        assert len(scs[&#34;items&#34;]) &gt; 0, (&#34;No StorageClasses found&#34;)
+
+        longhorn_exists = False
+        test_exists = False
+        test_default = False
+        for sc in scs[&#34;items&#34;]:
+            annotations = sc[&#34;metadata&#34;].get(&#39;annotations&#39;, {})
+            if sc[&#34;metadata&#34;][&#34;name&#34;] == &#34;longhorn&#34;:
+                longhorn_exists = True
+
+            if &#34;new-sc&#34; in sc[&#34;metadata&#34;][&#34;name&#34;]:
+                test_exists = True
+                default = annotations[&#34;storageclass.kubernetes.io/is-default-class&#34;]
+                if default == &#34;true&#34;:
+                    test_default = True
+
+        assert longhorn_exists, (&#34;longhorn StorageClass not found&#34;)
+        assert test_exists, (&#34;test StorageClass not found&#34;)
+        assert test_default, (&#34;test StorageClass is not default&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_os_version(self, request, api_client, cluster_state, host_shell):
+        # Verify /etc/os-release on all nodes
+        script = &#34;cat /etc/os-release&#34;
+        if not cluster_state.version_verify:
+            pytest.skip(&#34;skip verify os version&#34;)
+
+        # Get all nodes
+        nodes = _get_all_nodes(api_client)
+        for node in nodes:
+            node_ip = node[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION]
+
+            with host_shell.login(node_ip) as sh:
+                lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
+                assert not stderr, (
+                    f&#34;Failed to execute {script} on {node_ip}: {stderr}&#34;)
+
+                # eg: PRETTY_NAME=&#34;Harvester v1.1.0&#34;
+                assert cluster_state.version == re.findall(r&#34;Harvester (.+?)\&#34;&#34;, lines[3])[0], (
+                    &#34;OS version is not correct&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_rke2_version(self, api_client, host_shell):
+        # Verify node version on all nodes
+        script = &#34;cat /etc/harvester-release.yaml&#34;
+
+        # Verify rke2 version
+        except_rke2_version = &#34;&#34;
+        masters, workers = _get_master_and_worker_nodes(api_client)
+        for node in masters:
+            node_ip = node[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION]
+
+            # Get except rke2 version
+            if except_rke2_version == &#34;&#34;:
+                with host_shell.login(node_ip) as sh:
+                    lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
+                    assert not stderr, (
+                        f&#34;Failed to execute {script} on {node_ip}: {stderr}&#34;)
+
+                    for line in lines:
+                        if &#34;kubernetes&#34; in line:
+                            except_rke2_version = re.findall(r&#34;kubernetes: (.*)&#34;, line.strip())[0]
+                            break
+
+                    assert except_rke2_version != &#34;&#34;, (&#34;Failed to get except rke2 version&#34;)
+
+            assert node.get(&#39;status&#39;, {}).get(&#39;nodeInfo&#39;, {}).get(
+                   &#34;kubeletVersion&#34;, &#34;&#34;) == except_rke2_version, (
+                   &#34;rke2 version is not correct&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_deployed_components_version(self, api_client):
+        &#34;&#34;&#34; Verify deployed kubevirt and longhorn version
+        Criteria:
+        - except version(get from apps.catalog.cattle.io/harvester) should be equal to the version
+          of kubevirt and longhorn
+        &#34;&#34;&#34;
+
+        kubevirt_version_existed = False
+        engine_image_version_existed = False
+        longhorn_manager_version_existed = False
+
+        # Get except version from apps.catalog.cattle.io/harvester
+        code, apps = api_client.get_apps_catalog(name=&#34;harvester&#34;,
+                                                 namespace=DEFAULT_HARVESTER_NAMESPACE)
+        assert code == 200 and apps[&#39;type&#39;] != &#34;error&#34;, (
+            f&#34;Failed to get apps.catalog.cattle.io/harvester: {apps[&#39;message&#39;]}&#34;)
+
+        # Get except image of kubevirt and longhorn
+        kubevirt_operator = (
+            apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;kubevirt-operator&#39;][&#39;containers&#39;][&#39;operator&#39;])
+        kubevirt_operator_image = (
+            f&#34;{kubevirt_operator[&#39;image&#39;][&#39;repository&#39;]}:{kubevirt_operator[&#39;image&#39;][&#39;tag&#39;]}&#34;)
+
+        longhorn = apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;longhorn&#39;][&#39;image&#39;][&#39;longhorn&#39;]
+        longhorn_images = {
+            &#34;engine-image&#34;: f&#34;{longhorn[&#39;engine&#39;][&#39;repository&#39;]}:{longhorn[&#39;engine&#39;][&#39;tag&#39;]}&#34;,
+            &#34;longhorn-manager&#34;: f&#34;{longhorn[&#39;manager&#39;][&#39;repository&#39;]}:{longhorn[&#39;manager&#39;][&#39;tag&#39;]}&#34;
+        }
+
+        # Verify kubevirt version
+        code, pods = api_client.get_pods(namespace=DEFAULT_HARVESTER_NAMESPACE)
+        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, (
+            f&#34;Failed to get pods in namespace {DEFAULT_HARVESTER_NAMESPACE}&#34;)
+
+        for pod in pods[&#39;data&#39;]:
+            if &#34;virt-operator&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+                kubevirt_version_existed = (
+                    kubevirt_operator_image == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+
+        # Verify longhorn version
+        code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
+        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, (
+            f&#34;Failed to get pods in namespace {DEFAULT_LONGHORN_NAMESPACE}&#34;)
+
+        for pod in pods[&#39;data&#39;]:
+            if &#34;longhorn-manager&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+                longhorn_manager_version_existed = (
+                  longhorn_images[&#34;longhorn-manager&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+            elif &#34;engine-image&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+                engine_image_version_existed = (
+                    longhorn_images[&#34;engine-image&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+
+        assert kubevirt_version_existed, &#34;kubevirt version is not correct&#34;
+        assert engine_image_version_existed, &#34;longhorn engine image version is not correct&#34;
+        assert longhorn_manager_version_existed, &#34;longhorn manager version is not correct&#34;
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_verify_crds_existed(self, api_client):
+        &#34;&#34;&#34; Verify crds existed
+        Criteria:
+        - crds should be existed
+        &#34;&#34;&#34;
+        not_existed_crds = []
+        exist_crds = True
+        for crd in expected_harvester_crds:
+            code, _ = api_client.get_crds(name=crd)
+
+            if code != 200:
+                exist_crds = False
+                not_existed_crds.append(crd)
+
+        if not exist_crds:
+            raise AssertionError(f&#34;CRDs {not_existed_crds} are not existed&#34;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_perform_upgrade"><code class="name flex">
-<span>def <span class="ident">test_perform_upgrade</span></span>(<span>self, cluster_prereq, vm_prereq)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade"><code class="name flex">
+<span>def <span class="ident">test_perform_upgrade</span></span>(<span>self, cluster_prereq, vm_prereq, request, api_client, cluster_state, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><ul>
@@ -441,16 +2072,187 @@ class TestThreeNodesUpgrade:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(name=&#34;three_nodes_upgrade&#34;)
-def test_perform_upgrade(self, cluster_prereq, vm_prereq):
+<pre><code class="python">@pytest.mark.dependency(name=&#34;any_nodes_upgrade&#34;)
+def test_perform_upgrade(self, cluster_prereq, vm_prereq, request, api_client, cluster_state,
+                         wait_timeout):
     &#34;&#34;&#34;
     - perform upgrade
     - check all nodes upgraded
-    &#34;&#34;&#34;</code></pre>
+    &#34;&#34;&#34;
+    if cluster_state.version_verify:
+        assert not _is_installed_version(api_client, cluster_state.version), (
+            f&#34;The current version is already {cluster_state.version}&#34;)
+
+    self._perform_upgrade(request, api_client, cluster_state)
+
+    # start vms when are stopped
+    code, data = api_client.vms.get()
+    assert code == 200, (f&#34;Failed to get vms: {data}&#34;)
+
+    for vm in data[&#34;data&#34;]:
+        if &#34;ready&#34; not in vm[&#34;status&#34;] or not vm[&#34;status&#34;][&#34;ready&#34;]:
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                code, data = api_client.vms.start(vm[&#34;metadata&#34;][&#34;name&#34;])
+                if code == 204:
+                    break
+                sleep(5)
+            else:
+                raise AssertionError(f&#34;start vm timeout: {data}&#34;)
+
+            # wait for vm to be assigned an IP
+            _wait_for_vm_ready(api_client, vm[&#34;metadata&#34;][&#34;name&#34;],
+                               timeout=wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_logging"><code class="name flex">
-<span>def <span class="ident">test_verify_logging</span></span>(<span>self)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log"><code class="name flex">
+<span>def <span class="ident">test_verify_audit_log</span></span>(<span>self, api_client, host_shell, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_audit_log(self, api_client, host_shell, wait_timeout):
+    masters, workers = _get_master_and_worker_nodes(api_client)
+    assert len(masters) &gt; 0, &#34;No master nodes found&#34;
+
+    script = (&#34;sudo tail /var/lib/rancher/rke2/server/logs/audit.log | awk &#39;END{print}&#39; &#34;
+              &#34;| jq .requestReceivedTimestamp &#34;
+              &#34;| xargs -I {} date -d \&#34;{}\&#34; +%s&#34;)
+
+    node_ips = [n[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION] for n in masters]
+    cmp = dict()
+    done = set()
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        for ip in done.symmetric_difference(node_ips):
+            try:
+                with host_shell.login(ip) as shell:
+                    out, err = shell.exec_command(script)
+                    timestamp = int(out)
+                    if not err and ip not in cmp:
+                        cmp[ip] = timestamp
+                        continue
+                    if not err and cmp[ip] &lt; timestamp:
+                        done.add(ip)
+            except (ChannelException, AuthenticationException, NoValidConnectionsError,
+                    socket.timeout):
+                continue
+
+        if not done.symmetric_difference(node_ips):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            &#34;\n&#34;.join(&#34;Node {ip} audit log is not updated.&#34; for ip in set(node_ips) ^ done)
+        )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed"><code class="name flex">
+<span>def <span class="ident">test_verify_crds_existed</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Verify crds existed
+Criteria:
+- crds should be existed</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_crds_existed(self, api_client):
+    &#34;&#34;&#34; Verify crds existed
+    Criteria:
+    - crds should be existed
+    &#34;&#34;&#34;
+    not_existed_crds = []
+    exist_crds = True
+    for crd in expected_harvester_crds:
+        code, _ = api_client.get_crds(name=crd)
+
+        if code != 200:
+            exist_crds = False
+            not_existed_crds.append(crd)
+
+    if not exist_crds:
+        raise AssertionError(f&#34;CRDs {not_existed_crds} are not existed&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version"><code class="name flex">
+<span>def <span class="ident">test_verify_deployed_components_version</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Verify deployed kubevirt and longhorn version
+Criteria:
+- except version(get from apps.catalog.cattle.io/harvester) should be equal to the version
+of kubevirt and longhorn</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_deployed_components_version(self, api_client):
+    &#34;&#34;&#34; Verify deployed kubevirt and longhorn version
+    Criteria:
+    - except version(get from apps.catalog.cattle.io/harvester) should be equal to the version
+      of kubevirt and longhorn
+    &#34;&#34;&#34;
+
+    kubevirt_version_existed = False
+    engine_image_version_existed = False
+    longhorn_manager_version_existed = False
+
+    # Get except version from apps.catalog.cattle.io/harvester
+    code, apps = api_client.get_apps_catalog(name=&#34;harvester&#34;,
+                                             namespace=DEFAULT_HARVESTER_NAMESPACE)
+    assert code == 200 and apps[&#39;type&#39;] != &#34;error&#34;, (
+        f&#34;Failed to get apps.catalog.cattle.io/harvester: {apps[&#39;message&#39;]}&#34;)
+
+    # Get except image of kubevirt and longhorn
+    kubevirt_operator = (
+        apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;kubevirt-operator&#39;][&#39;containers&#39;][&#39;operator&#39;])
+    kubevirt_operator_image = (
+        f&#34;{kubevirt_operator[&#39;image&#39;][&#39;repository&#39;]}:{kubevirt_operator[&#39;image&#39;][&#39;tag&#39;]}&#34;)
+
+    longhorn = apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;longhorn&#39;][&#39;image&#39;][&#39;longhorn&#39;]
+    longhorn_images = {
+        &#34;engine-image&#34;: f&#34;{longhorn[&#39;engine&#39;][&#39;repository&#39;]}:{longhorn[&#39;engine&#39;][&#39;tag&#39;]}&#34;,
+        &#34;longhorn-manager&#34;: f&#34;{longhorn[&#39;manager&#39;][&#39;repository&#39;]}:{longhorn[&#39;manager&#39;][&#39;tag&#39;]}&#34;
+    }
+
+    # Verify kubevirt version
+    code, pods = api_client.get_pods(namespace=DEFAULT_HARVESTER_NAMESPACE)
+    assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, (
+        f&#34;Failed to get pods in namespace {DEFAULT_HARVESTER_NAMESPACE}&#34;)
+
+    for pod in pods[&#39;data&#39;]:
+        if &#34;virt-operator&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+            kubevirt_version_existed = (
+                kubevirt_operator_image == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+
+    # Verify longhorn version
+    code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
+    assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, (
+        f&#34;Failed to get pods in namespace {DEFAULT_LONGHORN_NAMESPACE}&#34;)
+
+    for pod in pods[&#39;data&#39;]:
+        if &#34;longhorn-manager&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+            longhorn_manager_version_existed = (
+              longhorn_images[&#34;longhorn-manager&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+        elif &#34;engine-image&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
+            engine_image_version_existed = (
+                longhorn_images[&#34;engine-image&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+
+    assert kubevirt_version_existed, &#34;kubevirt version is not correct&#34;
+    assert engine_image_version_existed, &#34;longhorn engine image version is not correct&#34;
+    assert longhorn_manager_version_existed, &#34;longhorn manager version is not correct&#34;</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods"><code class="name flex">
+<span>def <span class="ident">test_verify_logging_pods</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Verify logging pods and logs
@@ -459,14 +2261,28 @@ Criteria: <a href="https://github.com/harvester/tests/issues/535">https://github
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-def test_verify_logging(self):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_logging_pods(self, api_client):
     &#34;&#34;&#34; Verify logging pods and logs
     Criteria: https://github.com/harvester/tests/issues/535
-    &#34;&#34;&#34;</code></pre>
+    &#34;&#34;&#34;
+
+    code, pods = api_client.get_pods(namespace=LOGGING_NAMESPACE)
+    assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
+
+    fails = []
+    for pod in pods[&#39;data&#39;]:
+        # Verify pod is running or completed
+        phase = pod[&#34;status&#34;][&#34;phase&#34;]
+        if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
+            fails.append((pod[&#39;metadata&#39;][&#39;name&#39;], phase))
+    else:
+        assert not fails, (
+            &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails)
+        )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_network"><code class="name flex">
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_network"><code class="name flex">
 <span>def <span class="ident">test_verify_network</span></span>(<span>self, api_client, cluster_state)</span>
 </code></dt>
 <dd>
@@ -477,16 +2293,64 @@ def test_verify_logging(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
 def test_verify_network(self, api_client, cluster_state):
     &#34;&#34;&#34; Verify cluster and VLAN networks
     - cluster network `mgmt` should exists
     - Created VLAN should exists
-    &#34;&#34;&#34;</code></pre>
+    &#34;&#34;&#34;
+
+    code, cnets = api_client.clusternetworks.get()
+    assert code == 200, (
+        &#34;Failed to get Networks: %d, %s&#34; % (code, cnets))
+
+    assert len(cnets[&#34;items&#34;]) &gt; 0, (&#34;No Networks found&#34;)
+
+    assert any(n[&#39;metadata&#39;][&#39;name&#39;] == &#34;mgmt&#34; for n in cnets[&#39;items&#39;]), (
+        &#34;Cluster network mgmt not found&#34;)
+
+    code, vnets = api_client.networks.get()
+    assert code == 200, (f&#34;Failed to get VLANs: {code}, {vnets}&#34; % (code, vnets))
+    assert len(vnets[&#34;items&#34;]) &gt; 0, (&#34;No VLANs found&#34;)
+
+    used_vlan = cluster_state.network[&#39;metadata&#39;][&#39;name&#39;]
+    assert any(used_vlan == n[&#39;metadata&#39;][&#39;name&#39;] for n in vnets[&#39;items&#39;]), (
+        f&#34;VLAN {used_vlan} not found&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_restore_vm"><code class="name flex">
-<span>def <span class="ident">test_verify_restore_vm</span></span>(<span>self, api_client, cluster_state)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version"><code class="name flex">
+<span>def <span class="ident">test_verify_os_version</span></span>(<span>self, request, api_client, cluster_state, host_shell)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_os_version(self, request, api_client, cluster_state, host_shell):
+    # Verify /etc/os-release on all nodes
+    script = &#34;cat /etc/os-release&#34;
+    if not cluster_state.version_verify:
+        pytest.skip(&#34;skip verify os version&#34;)
+
+    # Get all nodes
+    nodes = _get_all_nodes(api_client)
+    for node in nodes:
+        node_ip = node[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION]
+
+        with host_shell.login(node_ip) as sh:
+            lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
+            assert not stderr, (
+                f&#34;Failed to execute {script} on {node_ip}: {stderr}&#34;)
+
+            # eg: PRETTY_NAME=&#34;Harvester v1.1.0&#34;
+            assert cluster_state.version == re.findall(r&#34;Harvester (.+?)\&#34;&#34;, lines[3])[0], (
+                &#34;OS version is not correct&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm"><code class="name flex">
+<span>def <span class="ident">test_verify_restore_vm</span></span>(<span>self, api_client, cluster_state, vm_shell, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Verify VM restored from the backup
@@ -497,36 +2361,125 @@ Criteria:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-def test_verify_restore_vm(self, api_client, cluster_state):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_restore_vm(self, api_client, cluster_state, vm_shell, wait_timeout):
     &#34;&#34;&#34; Verify VM restored from the backup
     Criteria:
     - VM should able to start
     - data in VM should not lost
-    &#34;&#34;&#34;</code></pre>
+    &#34;&#34;&#34;
+
+    vm4_name = f&#34;vm4-{cluster_state.unique_id}&#34;
+    restore_spec = api_client.backups.RestoreSpec(True, vm_name=vm4_name)
+    code, data = api_client.backups.create(cluster_state.backup[&#39;metadata&#39;][&#39;name&#39;],
+                                           restore_spec)
+    assert code == 201, (
+        f&#34;Failed to restore to vm4: {data}&#34;)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        if _check_assigned_ip_func(api_client, vm4_name)():
+            break
+        sleep(5)
+    else:
+        raise AssertionError(&#34;Time out while waiting for assigned ip for vm4&#34;)
+
+    code, vm4 = api_client.vms.get_status(vm4_name)
+    assert code == 200, (
+        f&#34;Failed to get vm2 vmi: {vm4}&#34;)
+
+    vm4_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(vm4),
+                                 cluster_state.image_ssh_user,
+                                 timeout=wait_timeout)
+    vm1_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                                 cluster_state.image_ssh_user,
+                                 timeout=wait_timeout)
+    assert vm1_data == vm4_data, (&#34;Data in VM is not the same as the original&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_storage_class"><code class="name flex">
-<span>def <span class="ident">test_verify_storage_class</span></span>(<span>self, api_client, cluster_state)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version"><code class="name flex">
+<span>def <span class="ident">test_verify_rke2_version</span></span>(<span>self, api_client, host_shell)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_rke2_version(self, api_client, host_shell):
+    # Verify node version on all nodes
+    script = &#34;cat /etc/harvester-release.yaml&#34;
+
+    # Verify rke2 version
+    except_rke2_version = &#34;&#34;
+    masters, workers = _get_master_and_worker_nodes(api_client)
+    for node in masters:
+        node_ip = node[&#34;metadata&#34;][&#34;annotations&#34;][NODE_INTERNAL_IP_ANNOTATION]
+
+        # Get except rke2 version
+        if except_rke2_version == &#34;&#34;:
+            with host_shell.login(node_ip) as sh:
+                lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
+                assert not stderr, (
+                    f&#34;Failed to execute {script} on {node_ip}: {stderr}&#34;)
+
+                for line in lines:
+                    if &#34;kubernetes&#34; in line:
+                        except_rke2_version = re.findall(r&#34;kubernetes: (.*)&#34;, line.strip())[0]
+                        break
+
+                assert except_rke2_version != &#34;&#34;, (&#34;Failed to get except rke2 version&#34;)
+
+        assert node.get(&#39;status&#39;, {}).get(&#39;nodeInfo&#39;, {}).get(
+               &#34;kubeletVersion&#34;, &#34;&#34;) == except_rke2_version, (
+               &#34;rke2 version is not correct&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class"><code class="name flex">
+<span>def <span class="ident">test_verify_storage_class</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Verify StorageClasses and defaults
-- <code>harvester-longhorn</code> should be settle as default
+- <code><a title="harvester_e2e_tests.integration.test_upgrade.new_sc" href="#harvester_e2e_tests.integration.test_upgrade.new_sc">new_sc()</a></code> should be settle as default
 - <code>longhorn</code> should exists</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-def test_verify_storage_class(self, api_client, cluster_state):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_storage_class(self, api_client):
     &#34;&#34;&#34; Verify StorageClasses and defaults
-    - `harvester-longhorn` should be settle as default
+    - `new_sc` should be settle as default
     - `longhorn` should exists
-    &#34;&#34;&#34;</code></pre>
+    &#34;&#34;&#34;
+    code, scs = api_client.scs.get()
+    assert code == 200, (
+        &#34;Failed to get StorageClasses: %d, %s&#34; % (code, scs))
+
+    assert len(scs[&#34;items&#34;]) &gt; 0, (&#34;No StorageClasses found&#34;)
+
+    longhorn_exists = False
+    test_exists = False
+    test_default = False
+    for sc in scs[&#34;items&#34;]:
+        annotations = sc[&#34;metadata&#34;].get(&#39;annotations&#39;, {})
+        if sc[&#34;metadata&#34;][&#34;name&#34;] == &#34;longhorn&#34;:
+            longhorn_exists = True
+
+        if &#34;new-sc&#34; in sc[&#34;metadata&#34;][&#34;name&#34;]:
+            test_exists = True
+            default = annotations[&#34;storageclass.kubernetes.io/is-default-class&#34;]
+            if default == &#34;true&#34;:
+                test_default = True
+
+    assert longhorn_exists, (&#34;longhorn StorageClass not found&#34;)
+    assert test_exists, (&#34;test StorageClass not found&#34;)
+    assert test_default, (&#34;test StorageClass is not default&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_vms"><code class="name flex">
-<span>def <span class="ident">test_verify_vms</span></span>(<span>self, api_client, cluster_state)</span>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_vms"><code class="name flex">
+<span>def <span class="ident">test_verify_vms</span></span>(<span>self, api_client, cluster_state, vm_shell, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Verify VMs' state and data
@@ -537,13 +2490,231 @@ Criteria:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;three_nodes_upgrade&#34;])
-def test_verify_vms(self, api_client, cluster_state):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_verify_vms(self, api_client, cluster_state, vm_shell, wait_timeout):
     &#34;&#34;&#34; Verify VMs&#39; state and data
     Criteria:
     - VMs should keep in running state
     - data in VMs should not lost
-    &#34;&#34;&#34;</code></pre>
+    &#34;&#34;&#34;
+
+    code, vmis = api_client.vms.get_status()
+    assert code == 200, (
+        f&#34;Failed to get VMs: {code}, {vmis}&#34;)
+
+    assert len(vmis[&#34;data&#34;]) &gt; 0, (&#34;No VMs found&#34;)
+
+    fails = []
+    for vmi in vmis[&#39;data&#39;]:
+        if &#34;vm1&#34; in vmi[&#39;metadata&#39;][&#39;name&#39;]:
+            cluster_state.vm1 = vmi
+        if &#34;vm2&#34; in vmi[&#39;metadata&#39;][&#39;name&#39;]:
+            cluster_state.vm2 = vmi
+        if not _check_vm_is_running(vmi):
+            fails.append(vmi[&#39;metadata&#39;][&#39;name&#39;])
+    assert not fails, &#34;\n&#34;.join(f&#34;VM {n} is not running&#34; for n in fails)
+
+    vm1_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm1),
+                                 cluster_state.image_ssh_user,
+                                 timeout=wait_timeout)
+    vm2_data = _get_data_from_vm(vm_shell, _get_ip_from_vmi(cluster_state.vm2),
+                                 cluster_state.image_ssh_user,
+                                 timeout=wait_timeout)
+    assert vm1_data == vm2_data, (&#34;Data in VM is lost&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade"><code class="flex name class">
+<span>class <span class="ident">TestInvalidUpgrade</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.upgrade
+@pytest.mark.negative
+class TestInvalidUpgrade:
+    VM_PREFIX = &#34;vm-degraded-volume&#34;
+
+    def _create_vm(self, api_client, cluster_state, vm_shell, wait_timeout):
+        return _create_basic_vm(api_client, cluster_state, vm_shell, self.VM_PREFIX,
+                                sc=DEFAULT_STORAGE_CLS,
+                                timeout=wait_timeout)
+
+    def _degrad_volume(self, api_client, pvc_name):
+        code, data = api_client.volumes.get(name=pvc_name)
+        assert code == 200, (
+            f&#34;Failed to get volume {pvc_name}: {data}&#34;)
+
+        volume = data
+        volume_name = volume[&#34;spec&#34;][&#34;volumeName&#34;]
+
+        code, data = api_client.lhreplicas.get()
+        assert code == 200 and len(data), (
+            f&#34;Failed to get longhorn replicas or have no replicas: {data}&#34;)
+
+        replicas = data[&#34;items&#34;]
+        for replica in replicas:
+            if replica[&#34;spec&#34;][&#34;volumeName&#34;] == volume_name:
+                api_client.lhreplicas.delete(name=replica[&#34;metadata&#34;][&#34;name&#34;])
+                break
+
+        # wait for volume be degraded status
+        sleep(10)
+
+    def _upgrade(self, request, api_client, version):
+        code, data = _create_version(request, api_client, version)
+        assert code == 201, (
+            f&#34;Failed to create version {version}: {data}&#34;)
+
+        code, data = api_client.upgrades.create(version)
+        assert code == 400, (
+            f&#34;Failed to verify degraded volume: {code}, {data}&#34;)
+
+        return data
+
+    def _clean_degraded_volume(self, api_client, version):
+        code, data = api_client.vms.delete(self.vm[&#34;metadata&#34;][&#34;name&#34;])
+        assert code == 200, (
+            f&#34;Failed to delete vm {self.vm[&#39;metadata&#39;][&#39;name&#39;]}: {data}&#34;)
+
+        code, data = api_client.versions.delete(version)
+        assert code == 204, (
+            f&#34;Failed to delete version {version}: {data}&#34;)
+
+    def test_degraded_volume(self, cluster_prereq, request, api_client, cluster_state, vm_shell,
+                             wait_timeout):
+        &#34;&#34;&#34;
+        Criteria: create upgrade should fails if there are any degraded volumes
+        Steps:
+        1. Create a VM using a volume with 3 replicas.
+        2. Delete one replica of the volume. Let the volume stay in
+           degraded state.
+        3. Immediately upgrade Harvester.
+        4. Upgrade should fail.
+        &#34;&#34;&#34;
+        self.vm = self._create_vm(api_client, cluster_state, vm_shell, wait_timeout)
+
+        claim_name = self.vm[&#34;spec&#34;][&#34;volumes&#34;][0][&#34;persistentVolumeClaim&#34;][&#34;claimName&#34;]
+        self._degrad_volume(api_client, claim_name)
+
+        if cluster_state.version_verify:
+            assert not _is_installed_version(api_client, cluster_state.version), (
+                f&#34;The current version is already {cluster_state.version}&#34;)
+        self._upgrade(request, api_client, cluster_state.version)
+
+        self._clean_degraded_volume(api_client, cluster_state.version)
+
+    # TODO: waiting for https://github.com/harvester/harvester/issues/3310 to be fixed
+    @pytest.mark.skip(&#34;known issue #3310&#34;)
+    def test_invalid_manifest(self, api_client):
+        &#34;&#34;&#34;
+        Criteria: https://github.com/harvester/tests/issues/518
+        Steps:
+        1. Create an invalid manifest.
+        2. Try to upgrade with the invalid manifest.
+        3. Upgrade should not start and fail.
+        &#34;&#34;&#34;
+        # version_name = &#34;v0.0.0&#34;
+
+        # code, data = api_client.versions.get(version_name)
+        # if code != 200:
+        #     code, data = api_client.versions.create(version_name, &#34;https://invalid_version_url&#34;)
+        #     assert code == 201, (
+        #         &#34;Failed to create invalid version: %s&#34;, data)
+
+        # code, data = api_client.upgrades.create(version_name)
+        # assert code == 201, (
+        #     &#34;Failed to create invalid upgrade: %s&#34;, data)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.VM_PREFIX"><code class="name">var <span class="ident">VM_PREFIX</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume"><code class="name flex">
+<span>def <span class="ident">test_degraded_volume</span></span>(<span>self, cluster_prereq, request, api_client, cluster_state, vm_shell, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Criteria: create upgrade should fails if there are any degraded volumes
+Steps:
+1. Create a VM using a volume with 3 replicas.
+2. Delete one replica of the volume. Let the volume stay in
+degraded state.
+3. Immediately upgrade Harvester.
+4. Upgrade should fail.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_degraded_volume(self, cluster_prereq, request, api_client, cluster_state, vm_shell,
+                         wait_timeout):
+    &#34;&#34;&#34;
+    Criteria: create upgrade should fails if there are any degraded volumes
+    Steps:
+    1. Create a VM using a volume with 3 replicas.
+    2. Delete one replica of the volume. Let the volume stay in
+       degraded state.
+    3. Immediately upgrade Harvester.
+    4. Upgrade should fail.
+    &#34;&#34;&#34;
+    self.vm = self._create_vm(api_client, cluster_state, vm_shell, wait_timeout)
+
+    claim_name = self.vm[&#34;spec&#34;][&#34;volumes&#34;][0][&#34;persistentVolumeClaim&#34;][&#34;claimName&#34;]
+    self._degrad_volume(api_client, claim_name)
+
+    if cluster_state.version_verify:
+        assert not _is_installed_version(api_client, cluster_state.version), (
+            f&#34;The current version is already {cluster_state.version}&#34;)
+    self._upgrade(request, api_client, cluster_state.version)
+
+    self._clean_degraded_volume(api_client, cluster_state.version)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest"><code class="name flex">
+<span>def <span class="ident">test_invalid_manifest</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Criteria: <a href="https://github.com/harvester/tests/issues/518">https://github.com/harvester/tests/issues/518</a>
+Steps:
+1. Create an invalid manifest.
+2. Try to upgrade with the invalid manifest.
+3. Upgrade should not start and fail.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.skip(&#34;known issue #3310&#34;)
+def test_invalid_manifest(self, api_client):
+    &#34;&#34;&#34;
+    Criteria: https://github.com/harvester/tests/issues/518
+    Steps:
+    1. Create an invalid manifest.
+    2. Try to upgrade with the invalid manifest.
+    3. Upgrade should not start and fail.
+    &#34;&#34;&#34;
+    # version_name = &#34;v0.0.0&#34;
+
+    # code, data = api_client.versions.get(version_name)
+    # if code != 200:
+    #     code, data = api_client.versions.create(version_name, &#34;https://invalid_version_url&#34;)
+    #     assert code == 201, (
+    #         &#34;Failed to create invalid version: %s&#34;, data)
+
+    # code, data = api_client.upgrades.create(version_name)
+    # assert code == 201, (
+    #     &#34;Failed to create invalid upgrade: %s&#34;, data)</code></pre>
 </details>
 </dd>
 </dl>
@@ -563,39 +2734,45 @@ def test_verify_vms(self, api_client, cluster_state):
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.base_sc" href="#harvester_e2e_tests.integration.test_upgrade.base_sc">base_sc</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.cluster_prereq" href="#harvester_e2e_tests.integration.test_upgrade.cluster_prereq">cluster_prereq</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.cluster_state" href="#harvester_e2e_tests.integration.test_upgrade.cluster_state">cluster_state</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.network" href="#harvester_e2e_tests.integration.test_upgrade.network">network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.new_sc" href="#harvester_e2e_tests.integration.test_upgrade.new_sc">new_sc</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.openSUSE_image" href="#harvester_e2e_tests.integration.test_upgrade.openSUSE_image">openSUSE_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.prepare_dependence" href="#harvester_e2e_tests.integration.test_upgrade.prepare_dependence">prepare_dependence</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.ubuntu_image" href="#harvester_e2e_tests.integration.test_upgrade.ubuntu_image">ubuntu_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.unique_id" href="#harvester_e2e_tests.integration.test_upgrade.unique_id">unique_id</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.vm_prereq" href="#harvester_e2e_tests.integration.test_upgrade.vm_prereq">vm_prereq</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade">TestAnyNodesUpgrade</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log">test_verify_audit_log</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed">test_verify_crds_existed</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version">test_verify_deployed_components_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods">test_verify_logging_pods</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_network" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_network">test_verify_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version">test_verify_os_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm">test_verify_restore_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version">test_verify_rke2_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class">test_verify_storage_class</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_vms" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_vms">test_verify_vms</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade">TestInvalidUpgrade</a></code></h4>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.VM_PREFIX" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.VM_PREFIX">VM_PREFIX</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume">test_degraded_volume</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest">test_invalid_manifest</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade">TestSingleNodeUpgrade</a></code></h4>
-<ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestSingleNodeUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade">TestThreeNodesUpgrade</a></code></h4>
-<ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_logging" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_logging">test_verify_logging</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_network" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_network">test_verify_network</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_restore_vm" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_restore_vm">test_verify_restore_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_storage_class" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_storage_class">test_verify_storage_class</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_vms" href="#harvester_e2e_tests.integration.test_upgrade.TestThreeNodesUpgrade.test_verify_vms">test_verify_vms</a></code></li>
 </ul>
 </li>
 </ul>
