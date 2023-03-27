@@ -135,11 +135,11 @@ def get_image(api_client, unique_name):
     assert unique_name == data['metadata']['name']
 
 
-@ pytest.mark.p0
+@pytest.mark.p0
 class TestBackendImages:
 
-    @ pytest.mark.p0
-    @ pytest.mark.dependency(name="create_image_from_volume")
+    @pytest.mark.p0
+    @pytest.mark.dependency(name="create_image_from_volume")
     def test_create_image_from_volume(self, api_client, unique_name,
                                       export_storage_class, wait_timeout):
         """
@@ -200,11 +200,11 @@ class TestBackendImages:
         delete_volume(api_client, unique_name, wait_timeout)
         delete_image(api_client, image_id, wait_timeout)
 
-    @ pytest.mark.p0
-    @ pytest.mark.dependency(name="create_image_url")
-    @ pytest.mark.parametrize("image_name, image_url",
-                              [("qcow2-", qcow2_base_url + qcow2_image_name),
-                               ("iso-", iso_base_url + iso_image_name)])
+    @pytest.mark.p0
+    @pytest.mark.dependency(name="create_image_url")
+    @pytest.mark.parametrize("image_name, image_url",
+                             [("qcow2-", qcow2_base_url + qcow2_image_name),
+                              ("iso-", iso_base_url + iso_image_name)])
     def test_create_image_url(self, image_name, image_url, unique_name, api_client, wait_timeout):
         """
         Test create raw and iso type image from url
@@ -218,11 +218,11 @@ class TestBackendImages:
         """
         create_image_url(api_client, image_name + unique_name, image_url, wait_timeout)
 
-    @ pytest.mark.p0
-    @ pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
-    @ pytest.mark.parametrize("image_name, image_url",
-                              [("qcow2-", qcow2_base_url + qcow2_image_name),
-                               ("iso-", iso_base_url + iso_image_name)])
+    @pytest.mark.p0
+    @pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
+    @pytest.mark.parametrize("image_name, image_url",
+                             [("qcow2-", qcow2_base_url + qcow2_image_name),
+                              ("iso-", iso_base_url + iso_image_name)])
     def test_delete_image_recreate(self, api_client, image_name, image_url, unique_name,
                                    fake_image_file, wait_timeout):
         """
@@ -262,7 +262,7 @@ class TestBackendImages:
         get_image(api_client, unique_name)
         delete_image(api_client, unique_name, wait_timeout)
 
-    @ pytest.mark.p0
+    @pytest.mark.p0
     def test_create_invalid_file(self, api_client, unique_name,
                                  fake_invalid_image_file, wait_timeout):
         """
@@ -281,8 +281,8 @@ class TestBackendImages:
         )
         delete_image(api_client, unique_name, wait_timeout)
 
-    @ pytest.mark.p0
-    @ pytest.mark.dependency(name="edit_image_in_use", depends=["create_image_url"])
+    @pytest.mark.p0
+    @pytest.mark.dependency(name="edit_image_in_use", depends=["create_image_url"])
     def test_edit_image_in_use(self, api_client, unique_name, qcow2_name,
                                iso_name, wait_timeout):
         """
@@ -364,9 +364,11 @@ class TestBackendImages:
 def test_create_with_url(api_client, image_opensuse, unique_name, wait_timeout, sleep_timeout):
     """
     Test if you can create an image from a URL.
+
     Prerequisite:
     Setting opensuse-image-url set to a valid URL for
     an opensuse image.
+
     1. Create an image from URL.
     2. Check for 201 response.
     3. loop until the image has conditions.
@@ -375,8 +377,8 @@ def test_create_with_url(api_client, image_opensuse, unique_name, wait_timeout, 
     """
     code, data = api_client.images.create_by_url(unique_name, image_opensuse.url)
     assert 201 == code, (
-        f"Failed to create image {unique_name} from URL got\n"
-        f"Creation got {code} with {data}"
+                f"Failed to create image {unique_name} from URL got\n"
+                f"Creation got {code} with {data}"
     )
     endtime = datetime.now() + timedelta(wait_timeout)
     while endtime > datetime.now():
