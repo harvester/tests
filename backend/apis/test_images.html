@@ -43,10 +43,12 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+
 from time import sleep
 from datetime import datetime, timedelta
 
 import pytest
+
 
 pytest_plugins = [
     &#34;harvester_e2e_tests.fixtures.api_client&#34;,
@@ -115,11 +117,14 @@ class TestImages:
                 &#34;test-label&#34;: &#34;42&#34;
             },
             &#34;annotations&#34;: {
-                &#34;test-annotation&#34;: &#34;dummy&#34;
-            }
+                &#34;test-annotation&#34;: &#34;dummy&#34;,
+                &#34;field.cattle.io/description&#34;: &#39;test description&#39;
+            },
+
         }
 
         code, data = api_client.images.update(unique_name, dict(metadata=updates))
+
         assert 200 == code, (f&#34;Failed to update image with error: {code}, {data}&#34;)
 
         unexpected = list()
@@ -290,11 +295,14 @@ class TestImages:
                 &#34;test-label&#34;: &#34;42&#34;
             },
             &#34;annotations&#34;: {
-                &#34;test-annotation&#34;: &#34;dummy&#34;
-            }
+                &#34;test-annotation&#34;: &#34;dummy&#34;,
+                &#34;field.cattle.io/description&#34;: &#39;test description&#39;
+            },
+
         }
 
         code, data = api_client.images.update(unique_name, dict(metadata=updates))
+
         assert 200 == code, (f&#34;Failed to update image with error: {code}, {data}&#34;)
 
         unexpected = list()
@@ -486,11 +494,14 @@ def test_get(self, api_client, unique_name):
             &#34;test-label&#34;: &#34;42&#34;
         },
         &#34;annotations&#34;: {
-            &#34;test-annotation&#34;: &#34;dummy&#34;
-        }
+            &#34;test-annotation&#34;: &#34;dummy&#34;,
+            &#34;field.cattle.io/description&#34;: &#39;test description&#39;
+        },
+
     }
 
     code, data = api_client.images.update(unique_name, dict(metadata=updates))
+
     assert 200 == code, (f&#34;Failed to update image with error: {code}, {data}&#34;)
 
     unexpected = list()
