@@ -34,6 +34,7 @@ def test_create_images_using_terraform(admin_session, image_using_terraform):
     pass
 
 
+@pytest.mark.skip("get_vlan API removed")
 @pytest.mark.terraform_provider_p1
 @pytest.mark.p1
 @pytest.mark.terraform

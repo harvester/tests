@@ -1,17 +1,17 @@
 # Harvester API endpoint
 endpoint: 'https://localhost:30443'
 
-#Harvester username
+# Harvester username
 username: 'admin'
 
-#Harvester password
+# Harvester password
 password: 'password1234'
 
 # To access Harvester node, fill in one of following is enough.
 host-password: ''
 host-private-key: ''
 
-#Do not cleanup the test artifacts
+# Do not cleanup the test artifacts
 do-not-cleanup: False
 
 # harvester_cluster_nodes
@@ -23,8 +23,11 @@ vlan-id: 1
 # Physical NIC for VLAN. Default is "harvester-mgmt"
 vlan-nic: 'harvester-mgmt'
 
-#Wait time for polling operations
+# Wait time for polling operations
 wait-timeout: 600
+
+# Sleep time for polling operations
+sleep-timeout: 3
 
 node-scripts-location: 'scripts/vagrant'
 
@@ -63,3 +66,13 @@ kubernetes-version: 'v1.24.8+rke2r1'
 
 # Wait time for polling Rancher cluster status.
 rancher-cluster-wait-timeout: 7200
+
+# Upgrade parameters
+upgrade-prepare-dependence: False
+upgrade-sc-replicas: 3
+# If the value is empty, then skip the os version validation.
+upgrade-target-version: ""
+upgrade-iso-url: ""
+upgrade-iso-checksum: ""
+# Based on the number of nodes, i.e., upgrade-wait-timeout * 3 nodes
+upgrade-wait-timeout: 7200

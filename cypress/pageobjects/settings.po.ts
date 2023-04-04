@@ -10,6 +10,16 @@ interface OvercommitInterface {
   memory?: string,
   storage?: string,
 }
+
+interface BackupTargetInterface {
+    type?: string, 
+    endpoint: string, 
+    bucketName: string,
+    bucketRegion: string,
+    accessKeyId: string,
+    secretAccessKey: string
+}
+
 export default class SettingsPagePo extends CruResource {
     private detailPageHead = 'main .outlet header h1 a';
 
@@ -69,5 +79,21 @@ export default class SettingsPagePo extends CruResource {
         const select = new LabeledSelectPo("section .labeled-select.hoverable", `:contains("Type")`);
         select.select({option: type, selector: '.vs__dropdown-menu'});
         new LabeledInputPo('.labeled-input', `:contains("Endpoint")`).input(endpoint);
+    }
+
+    setS3BackupTarget(value: BackupTargetInterface) {
+        const type = new LabeledSelectPo(".labeled-select.hoverable", `:contains("Type")`);
+        const endpoint = new LabeledInputPo('.labeled-input', `:contains("Endpoint")`);
+        const bucketName = new LabeledInputPo('.labeled-input', `:contains("Bucket Name")`);
+        const bucketRegion = new LabeledInputPo('.labeled-input', `:contains("Bucket Region")`);
+        const accessKeyId = new LabeledInputPo('.labeled-input', `:contains("Access Key ID")`);
+        const secretAccessKey = new LabeledInputPo('.labeled-input', `:contains("Secret Access Key")`);
+
+        type.select({option: value.type || 'S3'});
+        endpoint.input(value.endpoint);
+        bucketName.input(value.bucketName);
+        bucketRegion.input(value.bucketRegion);
+        accessKeyId.input(value.accessKeyId);
+        secretAccessKey.input(value.secretAccessKey);
     }
 }

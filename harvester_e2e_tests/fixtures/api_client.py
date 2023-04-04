@@ -31,7 +31,12 @@ def api_client(request):
 
 @pytest.fixture(scope="session")
 def wait_timeout(request):
-    return request.config.getoption('--wait-timeout', 300)
+    return request.config.getoption("--wait-timeout", 300)
+
+
+@pytest.fixture(scope="session")
+def sleep_timeout(request):
+    return request.config.getoption("--sleep-timeout", 4)
 
 
 @pytest.fixture(scope="session")
@@ -59,10 +64,10 @@ def host_state(request):
 
 @pytest.fixture(scope='module')
 def unique_name():
-    return datetime.now().strftime("%m-%d-%Hh%Mm%Ss%f")
+    return datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def ssh_keypair():
     private_key = asymmetric.rsa.generate_private_key(
         public_exponent=65537,
@@ -142,21 +147,25 @@ def k8s_version(request):
 @pytest.fixture(autouse=True)
 def skip_version_before(request, api_client):
     mark = request.node.get_closest_marker("skip_version_before")
-    if mark and parse_version(mark.args[0]) > api_client.cluster_version:
-        pytest.skip(
-            f"Cluster Version `{api_client.cluster_version}` is not included"
-            f" in the supported version (most >= `{mark.args[0]}`)"
-        )
+    if mark:
+        cluster_ver = api_client.cluster_version
+        if '-head' not in cluster_ver.public and parse_version(mark.args[0]) > cluster_ver:
+            pytest.skip(
+                f"Cluster Version `{api_client.cluster_version}` is not included"
+                f" in the supported version (most >= `{mark.args[0]}`)"
+            )
 
 
 @pytest.fixture(autouse=True)
 def skip_version_after(request, api_client):
     mark = request.node.get_closest_marker("skip_version_after")
-    if mark and parse_version(mark.args[0]) <= api_client.cluster_version:
-        pytest.skip(
-            f"Cluster Version `{api_client.cluster_version}` is not included"
-            f" in the supported version (most < `{mark.args[0]}`)"
-        )
+    if mark:
+        cluster_ver = api_client.cluster_version
+        if not hasattr(cluster_ver, 'major') or parse_version(mark.args[0]) <= cluster_ver:
+            pytest.skip(
+                f"Cluster Version `{api_client.cluster_version}` is not included"
+                f" in the supported version (most < `{mark.args[0]}`)"
+            )
 
 
 @pytest.fixture(scope="session")
@@ -184,17 +193,28 @@ def host_shell(request):
         def client(self):
             return self._client
 
-        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
-            if not self.client:
+        def reconnect(self, ipaddr, port=22, **kwargs):
+            if self.client:
+                self.client.close()
                 self._client = cli = SSHClient()
                 cli.set_missing_host_key_policy(MissingHostKeyPolicy())
                 kws = dict(username=self.username, password=self.password, pkey=self.pkey)
                 kws.update(kwargs)
                 cli.connect(ipaddr, port, **kws)
 
+        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
+            if not self.client:
+                cli = SSHClient()
+                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+                kws = dict(username=self.username, password=self.password, pkey=self.pkey)
+                kws.update(kwargs)
+                cli.connect(ipaddr, port, **kws)
+                self._client = cli
+
                 if jumphost:
                     self.jumphost_policy()
                     self._jump = True
+                    self.reconnect(ipaddr, port, **kws)
 
             return self
 
@@ -206,9 +226,13 @@ def host_shell(request):
                 self.client.close()
                 self._client = None
 
-        def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None):
+        def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None,
+                         splitlines=False):
             _, out, err = self.client.exec_command(command, bufsize, timeout, get_pty, env)
-            return out.read().decode(), err.read().decode()
+            out, err = out.read().decode(), err.read().decode()
+            if splitlines:
+                out = out.splitlines()
+            return out, err
 
         def jumphost_policy(self, allow=True):
             ctx, err = self.exec_command("sudo cat /etc/ssh/sshd_config")

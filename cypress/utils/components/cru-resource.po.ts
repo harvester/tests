@@ -64,7 +64,7 @@ export default class CruResourcePo extends PagePo {
     this.setValue(value)
     
     if (urlWithNamespace) {
-      this.save(value.namespace)
+      this.save({namespace: value.namespace})
     } else {
       this.save()
     }
@@ -79,34 +79,37 @@ export default class CruResourcePo extends PagePo {
   }
   
 
-  public save(namespace?:string | any) {
+  public save({namespace, buttonText = 'save'} : {namespace?:string, buttonText?:string} = {}) {
     if (namespace) {
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}`).as('create');
     } else {
       cy.intercept('POST', `/v1/harvester/${this.realType}s`).as('create');
     }
     
-    cy.get(this.footerButtons).contains('Create').click()
+    this.clickFooterBtn(buttonText)
     cy.wait('@create').then(res => {
       expect(res.response?.statusCode, `Create ${this.type} success`).to.equal(201);
     })
   }
 
-  public delete(namespace:any, name:string, { id }: { id?: string } = {}) {
+  public delete(namespace:any, name:string, displayName?: string) {
     cy.visit(`/harvester/c/local/${this.type}`)
 
-    this.clickAction(name, 'Delete')
+    this.clickAction(displayName || name, 'Delete')
 
-    if (id) {
-      cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${id}*`).as('delete');
+    let id = '';
+    
+    if (!namespace) {
+      id = name;
     } else {
-      cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${namespace}/${name}*`).as('delete');
+      id = `${namespace}/${name}`;
     }
 
+    cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${id}*`).as('delete');
     cy.get(this.confirmRemove).contains('Delete').click();
     cy.wait('@delete').then(res => {
       cy.window().then((win) => {
-        this.checkDelete(this.storeType as string, `${namespace}/name`);
+        this.checkDelete(this.storeType as string, id);
         expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
       })
     })
@@ -170,6 +173,21 @@ export default class CruResourcePo extends PagePo {
     cy.wait('@update').then(res => {
       expect(res.response?.statusCode, `Check edit ${id}`).to.equal(200);
     })
+  }
+
+  public hasAction({name, nameIndex = 3, ns, nsIndex = 4, action, expect = true, nameSelector}: { name:string, nameIndex?:number, ns:string, nsIndex?:number, action: string, expect?:boolean, nameSelector?:string }) {
+    this.search(name);
+    cy.wait(2000);
+    cy.wrap('async').then(() => {
+      this.table.find(name, nameIndex, ns, nsIndex, nameSelector).then((rowIndex: any) => {
+        if (typeof rowIndex === 'number') {
+          cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).find(this.actionMenuIcon).click();
+          cy.get(this.actionMenu).should(`${expect ? '' : 'not.'}contain`, action);
+          // click outside to close action menu
+          cy.get('body').click(0,0);
+        }
+      })
+    });
   }
 
   public clickAction(name:string, action: string) {
@@ -246,5 +264,18 @@ export default class CruResourcePo extends PagePo {
   public goToEdit(name: string) {
     this.goToList()
     this.clickAction(name, 'Edit Config');
+  }
+
+  public goToDetail({name, nameIndex = 3, ns, nsIndex = 4, nameSelector}: { name:string, nameIndex?:number, ns:string, nsIndex?:number, nameSelector?:string }) {
+    this.goToList();
+    this.search(name);
+    cy.wait(2000);
+    cy.wrap('async').then(() => {
+      this.table.find(name, nameIndex, ns, nsIndex, nameSelector).then((rowIndex: any) => {
+        if (typeof rowIndex === 'number') {
+          cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).contains(name).click();
+        }
+      })
+    })
   }
 }

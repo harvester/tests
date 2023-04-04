@@ -1,3 +1,4 @@
+import { HCI } from '@/constants/types';
 import { generateName } from '@/utils/utils';
 import templatePage from "@/pageobjects/template.po";
 
@@ -18,15 +19,59 @@ describe('Create a vm template with all the required values', () => {
   });
 
   it('Create a vm template with the required values', () => {
-    const value = {
-      name: NAME,
-      cpu: '2',
-      memory: '4',
-      namespace,
-    }
+    templates.goToList();
+    templates.goToCreate();
+    templates.setNameNsDescription(NAME, namespace);
+    templates.setBasics('2', '4');
+    templates.save({namespace});
+    templates.delete(namespace, NAME);
+  });
+});
 
-    templates.create(value, true);
+/**
+ * https://harvester.github.io/tests/manual/_incoming/2376-2379-delete-vm-template-default-version/
+*/
+describe('Delete VM template default version', () => {
+  const NAME = generateName('test-template');
+  const namespace = 'default';
+  let DEFAULT_VERSION_NAME = '', NEW_VERSION_NAME = '';
 
-    templates.delete(namespace, NAME)
+  beforeEach(() => {
+    cy.login();
+  });
+
+  it('Create a vm template with the required values', () => {
+    cy.intercept('POST', `v1/harvester/${HCI.VM_VERSION}s/default`).as('create');
+
+    templates.goToList();
+    templates.goToCreate();
+    templates.setNameNsDescription(NAME, namespace);
+    templates.setBasics('2', '4');
+    cy.wrap(templates.save({namespace})).then((versionName) => {
+      DEFAULT_VERSION_NAME = versionName as string;
+
+      templates.hasAction({
+        name: DEFAULT_VERSION_NAME,
+        ns: namespace,
+        action: 'Delete',
+        expect: false,
+      })
+  
+      templates.clickAction(DEFAULT_VERSION_NAME, 'Modify template (Create new version)');
+    })
+
+    templates.setBasics('1', '2');
+
+    cy.wrap(templates.save({namespace})).then((versionName) => {
+      NEW_VERSION_NAME = versionName as string;
+
+      templates.hasAction({
+        name: NEW_VERSION_NAME,
+        ns: namespace,
+        action: 'Delete',
+      })
+    })
+
+    templates.delete(namespace, NAME);
   });
 });

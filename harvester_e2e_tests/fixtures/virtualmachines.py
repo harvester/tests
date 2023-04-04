@@ -38,14 +38,16 @@ def vm_shell():
                 else:
                     ch = None
 
-                if self.pkey:
-                    pkey = RSAKey.from_private_key(StringIO(self.pkey))
+                pkey = RSAKey.from_private_key(StringIO(self.pkey)) if self.pkey else None
 
-                self._client = cli = SSHClient()
+                cli = SSHClient()
                 cli.set_missing_host_key_policy(MissingHostKeyPolicy())
                 kws = dict(username=self.username, password=self.password, pkey=pkey, sock=ch)
                 kws.update(kwargs)
                 cli.connect(ipaddr, port, **kws)
+
+                self._client = cli
+
             return self
 
         def close(self):

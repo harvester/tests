@@ -174,6 +174,9 @@ class VMSpec:
 
     @user_data.setter
     def user_data(self, val):
+        if isinstance(val, str):
+            if val.split('\n', 1)[0] != "#cloud-config":
+                val = f"#cloud-config\n{val}"
         self._cloudinit_vol['volume']['cloudInitNoCloud']['userData'] = val
 
     @property
@@ -383,7 +386,7 @@ class VMSpec:
         spec, metadata = data.get('spec', {}), data.get('metadata', {})
         vm_spec = spec['template']['spec']
 
-        os_type = metadata['labels'].get("harvesterhci.io/os", "")
+        os_type = metadata.get('labels', {}).get("harvesterhci.io/os", "")
         desc = metadata['annotations'].get("field.cattle.io/description", "")
         reserved_mem = metadata['annotations'].get("harvesterhci.io/reservedMemory", "")
         run_strategy = spec['runStrategy']

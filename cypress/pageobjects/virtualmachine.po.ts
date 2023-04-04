@@ -3,6 +3,7 @@ import { HCI } from '@/constants/types';
 import LabeledSelectPo from '@/utils/components/labeled-select.po';
 import LabeledInputPo from '@/utils/components/labeled-input.po';
 import LabeledTextAreaPo from '@/utils/components/labeled-textarea.po';
+import RadioButtonPo from '@/utils/components/radio-button.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
 import { ImagePage } from "@/pageobjects/image.po";
 import CruResourcePo from '@/utils/components/cru-resource.po';
@@ -94,6 +95,28 @@ export class VmsPage extends CruResourcePo {
     })
   }
 
+  selectSchedulingType({ type = 'any' }: { type:string }) {
+    const map:any = {
+      any: 'Run VM on any available node',
+      specific: 'Run VM on specific node - (Live migration is not supported)',
+      rules: 'Run VM on node(s) matching scheduling rules'
+    }
+
+    this.clickTab('nodeScheduling');
+
+    cy.get('.tab-container section#nodeScheduling').within(() => {
+      const scheduling = new RadioButtonPo('.radio-group');
+
+      scheduling.input(map[type]);
+    })
+  }
+  
+  checkSpecificNodes({includeNodes = [], excludeNodes = []}: { includeNodes: Array<string>, excludeNodes?: Array<string> }) {
+    this.specificNode().self().click();
+    includeNodes.forEach((node) => cy.get('.vs__dropdown-menu').should('contain', node));
+    excludeNodes.forEach((node) => cy.get('.vs__dropdown-menu').should('not.contain', node));
+  }
+
   setAdvancedOption(option: {[index: string]: any}) {
     this.clickTab('advanced');
 
@@ -130,15 +153,15 @@ export class VmsPage extends CruResourcePo {
     })
   }
 
-  cpu() {
+  public cpu() {
     return new LabeledInputPo('.labeled-input', `:contains("CPU")`)
   }
 
-  memory() {
+  public memory() {
     return new LabeledInputPo('.labeled-input', `:contains("Memory")`)
   }
 
-  image() {
+  public image() {
     return new LabeledSelectPo('.labeled-select', `:contains("Image")`)
   }
 
@@ -161,6 +184,10 @@ export class VmsPage extends CruResourcePo {
 
   plugVolumeName() {
     return new LabeledSelectPo('.labeled-select', `:contains("Volume")`);
+  }
+
+  specificNode() {
+    return new LabeledSelectPo('.labeled-select', `:contains("Node Name")`); 
   }
 
   networks(networks: Array<Network> = []) {
@@ -225,11 +252,13 @@ export class VmsPage extends CruResourcePo {
         image.setNameNsDescription(name, namespace);
         image.setBasics({url});
         image.save();
-        image.censorInColumn(name, 3, namespace, 4, 'Active', 2, { timeout: constants.timeout.uploadTimeout });
-        image.censorInColumn(name, 3, namespace, 4, 'Completed', 5);
-        image.censorInColumn(name, 3, namespace, 4, '16 MB', 6);
+        image.checkState({name, namespace});
       }
     })
+  }
+
+  public checkState({name = '', namespace = 'default', state = 'Running'}: {name?:string, namespace?:string, state?:string}) {
+    this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
   }
 
   public goToEdit(name: string) {
@@ -253,7 +282,7 @@ export class VmsPage extends CruResourcePo {
     cy.get('.cru-resource-footer').contains('Save').click()
   }
 
-  public delete(namespace:string, name: string, { removeRootDisk, id }: { removeRootDisk?: boolean, id?: string } = { removeRootDisk: true }) {
+  public delete(namespace:string, name: string, displayName?: string, { removeRootDisk, id }: { removeRootDisk?: boolean, id?: string } = { removeRootDisk: true }) {
     cy.visit(`/harvester/c/local/${this.type}`)
 
     this.clickAction(name, 'Delete').then((_) => {

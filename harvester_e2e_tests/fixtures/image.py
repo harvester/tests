@@ -15,8 +15,11 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-from harvester_e2e_tests import utils
+
 import os
+
+from harvester_e2e_tests import utils
+
 import pytest
 
 

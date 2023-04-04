@@ -15,13 +15,17 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+
 from time import sleep
 from datetime import datetime, timedelta
 
 import pytest
 
+
 pytest_plugins = [
-    "harvester_e2e_tests.fixtures.api_client"
+    "harvester_e2e_tests.fixtures.api_client",
+    "harvester_e2e_tests.fixtures.images",
+
 ]
 
 
@@ -85,11 +89,14 @@ class TestImages:
                 "test-label": "42"
             },
             "annotations": {
-                "test-annotation": "dummy"
-            }
+                "test-annotation": "dummy",
+                "field.cattle.io/description": 'test description'
+            },
+
         }
 
         code, data = api_client.images.update(unique_name, dict(metadata=updates))
+
         assert 200 == code, (f"Failed to update image with error: {code}, {data}")
 
         unexpected = list()
@@ -123,7 +130,8 @@ class TestImages:
             )
 
     @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])
-    def test_create_with_reuse_display_name(self, api_client, unique_name, fake_image_file):
+    def test_create_with_reuse_display_name(
+            self, wait_timeout, api_client, unique_name, fake_image_file):
         code, data = api_client.images.get(unique_name)
 
         assert 404 == code, f"Image {unique_name} not be deleted by previous test."
@@ -136,18 +144,30 @@ class TestImages:
         )
 
         _ = api_client.images.delete(unique_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+
+        while endtime > datetime.now():
+            code, data = api_client.images.get(unique_name)
+            if code == 404:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Failed to delete image {unique_name} with {wait_timeout} timed out\n"
+                f"Still got {code} with {data}"
+            )
 
 
 @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])
 @pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.images
-def test_create_with_invalid_url(api_client, unique_name):
+def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
     code, data = api_client.images.create_by_url(unique_name, f"https://{unique_name}.img")
 
     assert 201 == code, (code, data)
 
-    endtime = datetime.now() + timedelta(minutes=3)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         code, data = api_client.images.get(unique_name)
         image_conds = data.get('status', {}).get('conditions', [])
@@ -155,9 +175,9 @@ def test_create_with_invalid_url(api_client, unique_name):
             break
         sleep(3)
 
-    assert len(image_conds) == 1, f"Got unexpected image conditions!\n{data}"
-    assert "Initialized" == image_conds[0].get("type")
-    assert "False" == image_conds[0].get("status")
-    assert "no such host" in image_conds[0].get("message")
+    assert len(image_conds) in (1, 2), f"Got unexpected image conditions!\n{data}"
+    assert "Initialized" == image_conds[-1].get("type")
+    assert "False" == image_conds[-1].get("status")
+    assert "no such host" in image_conds[-1].get("message")
 
     api_client.images.delete(unique_name)

@@ -62,3 +62,23 @@ describe('Setting Page', () => {
         settings.update('backup-target');
     })
 })
+
+/**
+ * https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/
+ */
+describe('Set backup target S3', () => {
+    it('Set backup target S3', () => {
+        cy.login();
+        settings.goToList();
+        settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
+        settings.setS3BackupTarget({
+            type: 'S3', 
+            endpoint: 'https://minio-service.default:9000', 
+            bucketName: 'backupbucket',
+            bucketRegion: 'us-east-1',
+            accessKeyId: 'longhorn-test-access-key',
+            secretAccessKey: 'longhorn-test-secret-key'
+        })
+        settings.update('backup-target');
+    });
+})

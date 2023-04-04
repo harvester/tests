@@ -44,8 +44,8 @@ describe("Create image from Volume", () => {
     vms.setVolumes(volumes);
     vms.save();
 
-    // // check VM state
-    vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+    // check VM state
+    vms.checkState({name: VM_NAME});
 
     // // export IMAGE
     image.exportImage(VM_NAME, IMAGE_NAME, namespace);
@@ -64,7 +64,7 @@ describe("Create image from Volume", () => {
     vms.save();
 
     // check VM state
-    vms.censorInColumn(ANOTHER_VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+    vms.checkState({name: ANOTHER_VM_NAME});
 
     // delete VM
     vms.delete(namespace, ANOTHER_VM_NAME);
@@ -76,9 +76,9 @@ describe("Create image from Volume", () => {
     cy.window().then(async (win) => {
       const imageList = (win as any).$nuxt.$store.getters['harvester/all'](HCI.IMAGE);
       const imageObj = imageList.find((I: any) => I.spec.displayName === IMAGE_NAME);
-      const imageId = imageObj?.id;
+      const realName = imageObj?.metadata?.name;
 
-      image.delete(namespace, IMAGE_NAME, { id: imageId });
+      image.delete(namespace, realName, IMAGE_NAME);
     })
   });
 });
@@ -157,10 +157,10 @@ describe("Delete volume that was attached to VM but now is not", () => {
       const volumeName = vm.spec?.template?.spec?.volumes?.[0]?.persistentVolumeClaim?.claimName || '';
 
       // check VM state
-      vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+      vms.checkState({name: VM_NAME});
 
       // delete VM
-      vms.delete(namespace, VM_NAME, { removeRootDisk: false });
+      vms.delete(namespace, VM_NAME, VM_NAME, { removeRootDisk: false });
 
       // check VOLUME state
       volumes.goToList()
@@ -222,7 +222,7 @@ describe("Support Volume Hot Unplug", () => {
     vms.save();
 
     // check VM state
-    vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+    vms.checkState({name: VM_NAME});
 
     vms.plugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
     vms.unplugVolume(VM_NAME, [1,2], namespace);
@@ -277,7 +277,7 @@ describe("Support Volume Hot Unplug", () => {
       // check VM state
       vms.clickAction(VM_NAME, 'Stop');
       vms.searchClear();
-      vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Off', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
+      vms.checkState({name: VM_NAME, state: 'Off'});
 
       volumes.goToEdit(volumeName);
       volumes.setBasics({size: '20'});
