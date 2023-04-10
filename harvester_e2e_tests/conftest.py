@@ -314,7 +314,8 @@ def pytest_configure(config):
         ("single_node", ("{_r} tests which could only be ran on cluster with single node")),
         ("three_nodes", ("{_r} tests which could only be ran on cluster with three nodes")),
         ('rancher', ("{_r} reancher integration tests")),
-        ('terraform', ("{_r} terraform tests"))
+        ('terraform', ("{_r} terraform tests")),
+        ('virtualmachines', ('{_r} virtualmachines tests')),
     ]
 
     for m, msg in markers:
