@@ -342,7 +342,8 @@ def pytest_configure(config):
         (&#34;single_node&#34;, (&#34;{_r} tests which could only be ran on cluster with single node&#34;)),
         (&#34;three_nodes&#34;, (&#34;{_r} tests which could only be ran on cluster with three nodes&#34;)),
         (&#39;rancher&#39;, (&#34;{_r} reancher integration tests&#34;)),
-        (&#39;terraform&#39;, (&#34;{_r} terraform tests&#34;))
+        (&#39;terraform&#39;, (&#34;{_r} terraform tests&#34;)),
+        (&#39;virtualmachines&#39;, (&#39;{_r} virtualmachines tests&#39;)),
     ]
 
     for m, msg in markers:
@@ -781,7 +782,8 @@ def pytest_collection_modifyitems(config, items):
         (&#34;single_node&#34;, (&#34;{_r} tests which could only be ran on cluster with single node&#34;)),
         (&#34;three_nodes&#34;, (&#34;{_r} tests which could only be ran on cluster with three nodes&#34;)),
         (&#39;rancher&#39;, (&#34;{_r} reancher integration tests&#34;)),
-        (&#39;terraform&#39;, (&#34;{_r} terraform tests&#34;))
+        (&#39;terraform&#39;, (&#34;{_r} terraform tests&#34;)),
+        (&#39;virtualmachines&#39;, (&#39;{_r} virtualmachines tests&#39;)),
     ]
 
     for m, msg in markers:
