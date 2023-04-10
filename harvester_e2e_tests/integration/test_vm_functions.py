@@ -83,7 +83,7 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         code, data = api_client.vms.get(unique_vm_name)
-        if data.get('status'):
+        if "Stopped" == data.get('status', {}).get('printableStatus'):
             break
         sleep(1)
 
@@ -193,8 +193,8 @@ class TestVMOperations:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
-            conds = data['status'].get('conditions', [])
-            if 0 != len(conds) == len([c for c in conds if "Paused" not in c['type']]):
+            cond_types = set(c['type'] for c in data['status'].get('conditions', []))
+            if {"AgentConnected"} & cond_types and not {"Paused"} & cond_types:
                 break
             sleep(3)
         else:
@@ -295,7 +295,7 @@ class TestVMOperations:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
-            if old_pods.difference(data['status'].get('activePods', old_pods)):
+            if old_pods.difference(data['status'].get('activePods', old_pods).items()):
                 break
             sleep(5)
         else:
