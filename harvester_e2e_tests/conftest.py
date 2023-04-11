@@ -17,6 +17,28 @@
 
 import pytest
 import yaml
+from pytest_dependency import DependencyManager as DepMgr
+
+
+def check_depends(self, depends, item):
+    # monkey patch `DependencyManager.checkDepends`
+    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
+
+    marker = item.get_closest_marker("dependency")
+    if marker.kwargs.get('any'):
+        for depend in depends:
+            try:
+                self._check_depend([depend], item)
+            except pytest.skip.Exception:
+                continue
+            else:
+                return
+        pytest.skip("%s depends on any of %s" % (item.name, ", ".join(depends)))
+    else:
+        self._check_depend(depends, item)
+
+
+DepMgr.checkDepend, DepMgr._check_depend = check_depends, DepMgr.checkDepend
 
 
 def pytest_addoption(parser):
