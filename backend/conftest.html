@@ -45,6 +45,28 @@
 
 import pytest
 import yaml
+from pytest_dependency import DependencyManager as DepMgr
+
+
+def check_depends(self, depends, item):
+    # monkey patch `DependencyManager.checkDepends`
+    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
+
+    marker = item.get_closest_marker(&#34;dependency&#34;)
+    if marker.kwargs.get(&#39;any&#39;):
+        for depend in depends:
+            try:
+                self._check_depend([depend], item)
+            except pytest.skip.Exception:
+                continue
+            else:
+                return
+        pytest.skip(&#34;%s depends on any of %s&#34; % (item.name, &#34;, &#34;.join(depends)))
+    else:
+        self._check_depend(depends, item)
+
+
+DepMgr.checkDepend, DepMgr._check_depend = check_depends, DepMgr.checkDepend
 
 
 def pytest_addoption(parser):
@@ -409,6 +431,33 @@ def pytest_collection_modifyitems(config, items):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="harvester_e2e_tests.conftest.check_depends"><code class="name flex">
+<span>def <span class="ident">check_depends</span></span>(<span>self, depends, item)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_depends(self, depends, item):
+    # monkey patch `DependencyManager.checkDepends`
+    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
+
+    marker = item.get_closest_marker(&#34;dependency&#34;)
+    if marker.kwargs.get(&#39;any&#39;):
+        for depend in depends:
+            try:
+                self._check_depend([depend], item)
+            except pytest.skip.Exception:
+                continue
+            else:
+                return
+        pytest.skip(&#34;%s depends on any of %s&#34; % (item.name, &#34;, &#34;.join(depends)))
+    else:
+        self._check_depend(depends, item)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.conftest.pytest_addoption"><code class="name flex">
 <span>def <span class="ident">pytest_addoption</span></span>(<span>parser)</span>
 </code></dt>
@@ -809,6 +858,7 @@ def pytest_collection_modifyitems(config, items):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.conftest.check_depends" href="#harvester_e2e_tests.conftest.check_depends">check_depends</a></code></li>
 <li><code><a title="harvester_e2e_tests.conftest.pytest_addoption" href="#harvester_e2e_tests.conftest.pytest_addoption">pytest_addoption</a></code></li>
 <li><code><a title="harvester_e2e_tests.conftest.pytest_collection_modifyitems" href="#harvester_e2e_tests.conftest.pytest_collection_modifyitems">pytest_collection_modifyitems</a></code></li>
 <li><code><a title="harvester_e2e_tests.conftest.pytest_configure" href="#harvester_e2e_tests.conftest.pytest_configure">pytest_configure</a></code></li>

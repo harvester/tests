@@ -73,6 +73,94 @@ def test_get_host(api_client):
     assert node_id == node[&#39;id&#39;], f&#34;Responsed unexpected Node {node[&#39;id&#39;]}&#34;
 
 
+@pytest.mark.dependency(depends=[&#34;get_host&#34;])
+@pytest.mark.hosts
+@pytest.mark.p0
+def test_update_node(api_client):
+    &#34;&#34;&#34;
+    Test the hosts are the nodes which make the cluster
+    Covers:
+        hosts-04-Edit Config Add description and other details
+    &#34;&#34;&#34;
+
+    fields = (&#39;field.cattle.io/description&#39;, &#39;harvesterhci.io/host-custom-name&#39;)
+
+    _, nodes_info = api_client.hosts.get()
+
+    # There is no different to update any nodes, so we use the last.
+    node = nodes_info[&#39;data&#39;][-1]
+    original_annotations = {k: node[&#39;metadata&#39;][&#39;annotations&#39;].get(k, &#34;&#34;)
+                            for k in fields}
+
+    test_annotations = {k: f&#34;Test_update_{k}_{datetime.now()}&#34; for k in fields}
+    test_data = dict(metadata=dict(annotations=test_annotations))
+
+    status_code, node_stats = api_client.hosts.update(node[&#39;id&#39;], test_data)
+
+    not_updated_fields = list()
+    for k, v in test_annotations.items():
+        if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
+            not_updated_fields.append((k, v, node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k)))
+
+    assert len(not_updated_fields) == 0, (
+        f&#34;Fields not fully updated, API return `{status_code}`\n&#34;
+        &#34;\n&#34;.join(f&#34;field:{k}, expected: {v}, got {o}&#34; for k, v, o in not_updated_fields)
+    )
+
+    # For teardown
+    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
+    code, data = api_client.hosts.update(node[&#39;id&#39;],
+                                         dict(metadata=dict(annotations=original_annotations)))
+
+    assert 200 == code, (code, data)
+
+
+@pytest.mark.dependency(depends=[&#34;get_host&#34;])
+@pytest.mark.hosts
+@pytest.mark.p2
+def test_update_using_yaml(api_client):
+    &#34;&#34;&#34;
+    Test the hosts are the nodes which make the cluster
+    Covers:
+        hosts-05-Edit through Yaml
+    &#34;&#34;&#34;
+
+    fields = (&#39;field.cattle.io/description&#39;, &#39;harvesterhci.io/host-custom-name&#39;)
+
+    _, nodes_info = api_client.hosts.get()
+
+    # There is no different to update any nodes, so we use the last.
+    node = nodes_info[&#39;data&#39;][-1]
+    original_annotations = {k: node[&#39;metadata&#39;][&#39;annotations&#39;].get(k, &#34;&#34;)
+                            for k in fields}
+
+    test_annotations = {k: f&#34;Test_update_{k}_{datetime.now()}&#34; for k in fields}
+    for k, v in test_annotations.items():
+        node[&#39;metadata&#39;][&#39;annotations&#39;][k] = v
+
+    api_client.hosts.update(node[&#39;id&#39;], yaml.dump(node, sort_keys=False), as_json=False,
+                            headers={&#34;Content-Type&#34;: &#34;application/yaml&#34;})
+
+    status_code, node_stats = api_client.hosts.get(node[&#39;id&#39;])
+
+    not_updated_fields = list()
+    for k, v in test_annotations.items():
+        if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
+            not_updated_fields.append((k, v, node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k)))
+
+    assert len(not_updated_fields) == 0, (
+        f&#34;Fields not fully updated, API return `{status_code}`\n&#34;
+        &#34;\n&#34;.join(f&#34;field:{k}, expected: {v}, got {o}&#34; for k, v, o in not_updated_fields)
+    )
+
+    # For teardown
+    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
+    code, data = api_client.hosts.update(node[&#39;id&#39;],
+                                         dict(metadata=dict(annotations=original_annotations)))
+
+    assert 200 == code, (code, data)
+
+
 @pytest.mark.dependency(depends=[&#34;get_host&#34;], name=&#34;enable_maintenance_mode&#34;)
 @pytest.mark.hosts
 @pytest.mark.p2
@@ -122,88 +210,6 @@ def test_maintenance_mode(api_client, wait_timeout):
             f&#34;Node({node_id}) not leave maintenance mode after disabled {wait_timeout} secs\n&#34;
             f&#39;maintain stat:{stats[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/maintain-status&#34;]}&#39;
         )
-
-
-@pytest.mark.dependency(depends=[&#34;get_host&#34;])
-@pytest.mark.hosts
-@pytest.mark.p0
-def test_update_node(api_client):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-04-Edit Config Add description and other details
-    &#34;&#34;&#34;
-
-    fields = (&#39;field.cattle.io/description&#39;, &#39;harvesterhci.io/host-custom-name&#39;)
-
-    _, nodes_info = api_client.hosts.get()
-
-    # There is no different to update any nodes, so we use the last.
-    node = nodes_info[&#39;data&#39;][-1]
-    original_annotations = {k: node[&#39;metadata&#39;][&#39;annotations&#39;].get(k, &#34;&#34;)
-                            for k in fields}
-
-    test_annotations = {k: f&#34;Test_update_{k}_{datetime.now()}&#34; for k in fields}
-    test_data = dict(metadata=dict(annotations=test_annotations))
-
-    status_code, node_stats = api_client.hosts.update(node[&#39;id&#39;], test_data)
-
-    not_updated_fields = list()
-    for k, v in test_annotations.items():
-        if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
-            not_updated_fields.append((k, v, node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k)))
-
-    assert len(not_updated_fields) == 0, (
-        f&#34;Fields not fully updated, API return `{status_code}`\n&#34;
-        &#34;\n&#34;.join(f&#34;field:{k}, expected: {v}, got {o}&#34; for k, v, o in not_updated_fields)
-    )
-
-    # For teardown
-    _ = api_client.hosts.update(node[&#39;id&#39;],
-                                dict(metadata=dict(annotations=original_annotations)))
-
-
-@pytest.mark.dependency(depends=[&#34;get_host&#34;])
-@pytest.mark.hosts
-@pytest.mark.p2
-def test_update_using_yaml(api_client):
-    &#34;&#34;&#34;
-    Test the hosts are the nodes which make the cluster
-    Covers:
-        hosts-05-Edit through Yaml
-    &#34;&#34;&#34;
-
-    fields = (&#39;field.cattle.io/description&#39;, &#39;harvesterhci.io/host-custom-name&#39;)
-
-    _, nodes_info = api_client.hosts.get()
-
-    # There is no different to update any nodes, so we use the last.
-    node = nodes_info[&#39;data&#39;][-1]
-    original_annotations = {k: node[&#39;metadata&#39;][&#39;annotations&#39;].get(k, &#34;&#34;)
-                            for k in fields}
-
-    test_annotations = {k: f&#34;Test_update_{k}_{datetime.now()}&#34; for k in fields}
-    for k, v in test_annotations.items():
-        node[&#39;metadata&#39;][&#39;annotations&#39;][k] = v
-
-    api_client.hosts.update(node[&#39;id&#39;], yaml.dump(node, sort_keys=False), as_json=False,
-                            headers={&#34;Content-Type&#34;: &#34;application/yaml&#34;})
-
-    status_code, node_stats = api_client.hosts.get(node[&#39;id&#39;])
-
-    not_updated_fields = list()
-    for k, v in test_annotations.items():
-        if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
-            not_updated_fields.append((k, v, node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k)))
-
-    assert len(not_updated_fields) == 0, (
-        f&#34;Fields not fully updated, API return `{status_code}`\n&#34;
-        &#34;\n&#34;.join(f&#34;field:{k}, expected: {v}, got {o}&#34; for k, v, o in not_updated_fields)
-    )
-
-    # For teardown
-    _ = api_client.hosts.update(node[&#39;id&#39;],
-                                dict(metadata=dict(annotations=original_annotations)))
 
 
 @pytest.mark.dependency(depends=[&#34;get_host&#34;], name=&#34;delete_host&#34;)
@@ -419,8 +425,11 @@ def test_update_node(api_client):
     )
 
     # For teardown
-    _ = api_client.hosts.update(node[&#39;id&#39;],
-                                dict(metadata=dict(annotations=original_annotations)))</code></pre>
+    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
+    code, data = api_client.hosts.update(node[&#39;id&#39;],
+                                         dict(metadata=dict(annotations=original_annotations)))
+
+    assert 200 == code, (code, data)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_hosts.test_update_using_yaml"><code class="name flex">
@@ -473,8 +482,11 @@ def test_update_using_yaml(api_client):
     )
 
     # For teardown
-    _ = api_client.hosts.update(node[&#39;id&#39;],
-                                dict(metadata=dict(annotations=original_annotations)))</code></pre>
+    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
+    code, data = api_client.hosts.update(node[&#39;id&#39;],
+                                         dict(metadata=dict(annotations=original_annotations)))
+
+    assert 200 == code, (code, data)</code></pre>
 </details>
 </dd>
 </dl>
