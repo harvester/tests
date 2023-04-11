@@ -71,18 +71,19 @@ class TestNetworksNegative:
 @pytest.mark.networks
 class TestNetworks:
 
-    @pytest.mark.dependency(name="create_network")
+    @pytest.mark.dependency(name="create_network_103")
     @pytest.mark.skip_version_after("v1.0.3")
     def test_create_103(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
         assert 201 == code, (code, data)
 
+    @pytest.mark.dependency(name="create_network")
     @pytest.mark.skip_version_before("v1.1.0")
     def test_create(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID, cluster_network='mgmt')
         assert 201 == code, (code, data)
 
-    @pytest.mark.dependency(depends=["create_network"])
+    @pytest.mark.dependency(depends=["create_network_103", "create_network"], any=True)
     def test_get(self, api_client, unique_name):
         # Case 1: get all vlan networks
         code, data = api_client.networks.get()
@@ -96,7 +97,7 @@ class TestNetworks:
         assert 200 == code, (code, data)
         assert unique_name == data['metadata']['name'], (code, data)
 
-    @pytest.mark.dependency(depends=["create_network"])
+    @pytest.mark.dependency(depends=["create_network_103", "create_network"], any=True)
     def test_delete(self, api_client, unique_name, wait_timeout):
         code, data = api_client.networks.delete(unique_name)
 
