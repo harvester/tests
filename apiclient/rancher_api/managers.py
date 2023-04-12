@@ -532,6 +532,10 @@ class ClusterManager(BaseManager):
     def delete(self, name, *, raw=False):
         return self._delete(self.PATH_fmt.format(uid=name), raw=raw)
 
+    def explore(self, name):
+        from .cluster_api import ClusterExploreAPI  # circular dependency
+        return ClusterExploreAPI(self.api.endpoint, self.api.session, name)
+
 
 class NodePoolManager(BaseManager):
     PATH_fmt = "v3/nodepool/{ns}{uid}"
