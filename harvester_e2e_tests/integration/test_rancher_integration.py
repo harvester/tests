@@ -282,6 +282,32 @@ class TestRKE:
 
     @pytest.mark.rke2
     @pytest.mark.dependency(depends=["TestRKE::test_create_rke2"])
+    def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
+                        unique_name, wait_timeout):
+        cluster_id = harvester_mgmt_cluster['status']['clusterName']
+        capi = rancher_api_client.clusters.explore(cluster_id)
+
+        spec = capi.pvcs.Spec(1)
+        code, data = capi.pvcs.create(unique_name, spec)
+        assert 201 == code, (code, data)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = capi.pvcs.get(unique_name)
+            if "Bound" == data['status'].get('phase'):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"PVC Created but stuck in phase {data['status'].get('phase')}\n"
+                f"Status({code}): {data}"
+            )
+
+        # teardown
+        capi.pvcs.delete(unique_name)
+
+    @pytest.mark.rke2
+    @pytest.mark.dependency(depends=["TestRKE::test_create_rke2"])
     def test_delete_rke2(self, api_client, rancher_api_client, rke2_cluster_name,
                          rancher_wait_timeout):
         code, data = rancher_api_client.mgmt_clusters.delete(rke2_cluster_name)

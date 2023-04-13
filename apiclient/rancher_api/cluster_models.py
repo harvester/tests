@@ -73,7 +73,6 @@ class PersistentVolumeClaimSpec:
             },
             "spec": {
                 "accessModes": modes,
-                "storageClassName": "" if volume else self.storage_cls,
                 "volumeName": volume or (self._data and self._data['spec'].get('volumeName')),
                 "resources": {
                     "requests": dict(storage=size)
@@ -81,6 +80,9 @@ class PersistentVolumeClaimSpec:
             },
             "accessModes": modes
         }
+
+        if self.storage_cls or volume:
+            data['spec']['storageClassName'] = "" if volume else self.storage_cls
 
         if self.description:
             data['metadata']['annotations']['field.cattle.io/description'] = self.description
