@@ -99,6 +99,8 @@ def test_multiple_migrations(api_client, unique_name, focal_image, wait_timeout,
                     all_vm_ready = False
                     break
                 vmi_data.append(data)
+            else:
+                all_vm_ready = False
         if all_vm_ready:
             break
         sleep(5)
