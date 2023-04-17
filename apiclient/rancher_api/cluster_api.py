@@ -1,6 +1,8 @@
 from urllib.parse import urljoin
 
-from .cluster_managers import (StorageClassManager, PersistentVolumeClaimManager)
+from .cluster_managers import (
+    PersistentVolumeManager, StorageClassManager, PersistentVolumeClaimManager
+)
 
 
 class ClusterExploreAPI:
@@ -10,6 +12,7 @@ class ClusterExploreAPI:
         self.session = session
 
         # Storage
+        self.PersistentVolumes = self.pvs = PersistentVolumeManager(self)
         self.storageclasses = self.scs = StorageClassManager(self)
         self.persistentvolumeclaims = self.pvcs = PersistentVolumeClaimManager(self)
 
