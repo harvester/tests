@@ -286,11 +286,12 @@ class TestRKE:
                         unique_name, wait_timeout):
         cluster_id = harvester_mgmt_cluster['status']['clusterName']
         capi = rancher_api_client.clusters.explore(cluster_id)
-
-        spec = capi.pvcs.Spec(1)
+        # Create PVC
+        size = "1Gi"
+        spec = capi.pvcs.Spec(size)
         code, data = capi.pvcs.create(unique_name, spec)
         assert 201 == code, (code, data)
-
+        # Verify PVC is created
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = capi.pvcs.get(unique_name)
@@ -302,6 +303,38 @@ class TestRKE:
                 f"PVC Created but stuck in phase {data['status'].get('phase')}\n"
                 f"Status({code}): {data}"
             )
+        # Verify the PV for created PVC
+        pv_code, pv_data = capi.pvs.get(data['spec']['volumeName'])
+        assert 200 == pv_code, (
+            f"Relevant PV is NOT available for created PVC's PV({data['spec']['volumeName']})\n"
+            f"Response data of PV: {data}"
+        )
+        # Verify size of the PV is aligned to requested size of PVC
+        assert size == pv_data['spec']['capacity']['storage'], (
+            "Size of the PV is NOT aligned to requested size of PVC,"
+            f" expected: {size}, PV's size: {pv_data['spec']['capacity']['storage']}\n"
+            f"Response data of PV: {data}"
+        )
+        # Verify PVC's size
+        created_spec = capi.pvcs.Spec.from_dict(data)
+        assert size == spec.size, (
+            f"Size is NOT correct in created PVC, expected: {size}, created: {spec.size}\n"
+            f"Response data: {data}"
+        )
+        # Verify the storage class exists
+        sc_code, sc_data = capi.scs.get(created_spec.storage_cls)
+        assert 200 == sc_code, (
+            f"Storage Class is NOT exists for created PVC\n"
+            f"Created PVC Spec: {data}\n"
+            f"SC Status({sc_code}): {sc_data}"
+        )
+        # verify the storage class is marked `default`
+        assert 'true' == sc_data['metadata']['annotations'][capi.pvcs.scs.DEFAULT_KEY], (
+            f"Storage Class is NOT the DEFAULT for created PVC\n"
+            f"Requested Storage Class: {spec.storage_cls!r}"
+            f"Created PVC Spec: {data}\n"
+            f"SC Status({sc_code}): {sc_data}"
+        )
 
         # teardown
         capi.pvcs.delete(unique_name)
