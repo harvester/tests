@@ -310,6 +310,65 @@ class TestRKE:
 
     @pytest.mark.rke2
     @pytest.mark.dependency(depends=[&#34;TestRKE::test_create_rke2&#34;])
+    def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
+                        unique_name, wait_timeout):
+        cluster_id = harvester_mgmt_cluster[&#39;status&#39;][&#39;clusterName&#39;]
+        capi = rancher_api_client.clusters.explore(cluster_id)
+        # Create PVC
+        size = &#34;1Gi&#34;
+        spec = capi.pvcs.Spec(size)
+        code, data = capi.pvcs.create(unique_name, spec)
+        assert 201 == code, (code, data)
+        # Verify PVC is created
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = capi.pvcs.get(unique_name)
+            if &#34;Bound&#34; == data[&#39;status&#39;].get(&#39;phase&#39;):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;PVC Created but stuck in phase {data[&#39;status&#39;].get(&#39;phase&#39;)}\n&#34;
+                f&#34;Status({code}): {data}&#34;
+            )
+        # Verify the PV for created PVC
+        pv_code, pv_data = capi.pvs.get(data[&#39;spec&#39;][&#39;volumeName&#39;])
+        assert 200 == pv_code, (
+            f&#34;Relevant PV is NOT available for created PVC&#39;s PV({data[&#39;spec&#39;][&#39;volumeName&#39;]})\n&#34;
+            f&#34;Response data of PV: {data}&#34;
+        )
+        # Verify size of the PV is aligned to requested size of PVC
+        assert size == pv_data[&#39;spec&#39;][&#39;capacity&#39;][&#39;storage&#39;], (
+            &#34;Size of the PV is NOT aligned to requested size of PVC,&#34;
+            f&#34; expected: {size}, PV&#39;s size: {pv_data[&#39;spec&#39;][&#39;capacity&#39;][&#39;storage&#39;]}\n&#34;
+            f&#34;Response data of PV: {data}&#34;
+        )
+        # Verify PVC&#39;s size
+        created_spec = capi.pvcs.Spec.from_dict(data)
+        assert size == spec.size, (
+            f&#34;Size is NOT correct in created PVC, expected: {size}, created: {spec.size}\n&#34;
+            f&#34;Response data: {data}&#34;
+        )
+        # Verify the storage class exists
+        sc_code, sc_data = capi.scs.get(created_spec.storage_cls)
+        assert 200 == sc_code, (
+            f&#34;Storage Class is NOT exists for created PVC\n&#34;
+            f&#34;Created PVC Spec: {data}\n&#34;
+            f&#34;SC Status({sc_code}): {sc_data}&#34;
+        )
+        # verify the storage class is marked `default`
+        assert &#39;true&#39; == sc_data[&#39;metadata&#39;][&#39;annotations&#39;][capi.pvcs.scs.DEFAULT_KEY], (
+            f&#34;Storage Class is NOT the DEFAULT for created PVC\n&#34;
+            f&#34;Requested Storage Class: {spec.storage_cls!r}&#34;
+            f&#34;Created PVC Spec: {data}\n&#34;
+            f&#34;SC Status({sc_code}): {sc_data}&#34;
+        )
+
+        # teardown
+        capi.pvcs.delete(unique_name)
+
+    @pytest.mark.rke2
+    @pytest.mark.dependency(depends=[&#34;TestRKE::test_create_rke2&#34;])
     def test_delete_rke2(self, api_client, rancher_api_client, rke2_cluster_name,
                          rancher_wait_timeout):
         code, data = rancher_api_client.mgmt_clusters.delete(rke2_cluster_name)
@@ -795,6 +854,65 @@ class TestRKE:
 
     @pytest.mark.rke2
     @pytest.mark.dependency(depends=[&#34;TestRKE::test_create_rke2&#34;])
+    def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
+                        unique_name, wait_timeout):
+        cluster_id = harvester_mgmt_cluster[&#39;status&#39;][&#39;clusterName&#39;]
+        capi = rancher_api_client.clusters.explore(cluster_id)
+        # Create PVC
+        size = &#34;1Gi&#34;
+        spec = capi.pvcs.Spec(size)
+        code, data = capi.pvcs.create(unique_name, spec)
+        assert 201 == code, (code, data)
+        # Verify PVC is created
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = capi.pvcs.get(unique_name)
+            if &#34;Bound&#34; == data[&#39;status&#39;].get(&#39;phase&#39;):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;PVC Created but stuck in phase {data[&#39;status&#39;].get(&#39;phase&#39;)}\n&#34;
+                f&#34;Status({code}): {data}&#34;
+            )
+        # Verify the PV for created PVC
+        pv_code, pv_data = capi.pvs.get(data[&#39;spec&#39;][&#39;volumeName&#39;])
+        assert 200 == pv_code, (
+            f&#34;Relevant PV is NOT available for created PVC&#39;s PV({data[&#39;spec&#39;][&#39;volumeName&#39;]})\n&#34;
+            f&#34;Response data of PV: {data}&#34;
+        )
+        # Verify size of the PV is aligned to requested size of PVC
+        assert size == pv_data[&#39;spec&#39;][&#39;capacity&#39;][&#39;storage&#39;], (
+            &#34;Size of the PV is NOT aligned to requested size of PVC,&#34;
+            f&#34; expected: {size}, PV&#39;s size: {pv_data[&#39;spec&#39;][&#39;capacity&#39;][&#39;storage&#39;]}\n&#34;
+            f&#34;Response data of PV: {data}&#34;
+        )
+        # Verify PVC&#39;s size
+        created_spec = capi.pvcs.Spec.from_dict(data)
+        assert size == spec.size, (
+            f&#34;Size is NOT correct in created PVC, expected: {size}, created: {spec.size}\n&#34;
+            f&#34;Response data: {data}&#34;
+        )
+        # Verify the storage class exists
+        sc_code, sc_data = capi.scs.get(created_spec.storage_cls)
+        assert 200 == sc_code, (
+            f&#34;Storage Class is NOT exists for created PVC\n&#34;
+            f&#34;Created PVC Spec: {data}\n&#34;
+            f&#34;SC Status({sc_code}): {sc_data}&#34;
+        )
+        # verify the storage class is marked `default`
+        assert &#39;true&#39; == sc_data[&#39;metadata&#39;][&#39;annotations&#39;][capi.pvcs.scs.DEFAULT_KEY], (
+            f&#34;Storage Class is NOT the DEFAULT for created PVC\n&#34;
+            f&#34;Requested Storage Class: {spec.storage_cls!r}&#34;
+            f&#34;Created PVC Spec: {data}\n&#34;
+            f&#34;SC Status({sc_code}): {sc_data}&#34;
+        )
+
+        # teardown
+        capi.pvcs.delete(unique_name)
+
+    @pytest.mark.rke2
+    @pytest.mark.dependency(depends=[&#34;TestRKE::test_create_rke2&#34;])
     def test_delete_rke2(self, api_client, rancher_api_client, rke2_cluster_name,
                          rancher_wait_timeout):
         code, data = rancher_api_client.mgmt_clusters.delete(rke2_cluster_name)
@@ -931,6 +1049,75 @@ class TestRKE:
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_pvc"><code class="name flex">
+<span>def <span class="ident">test_create_pvc</span></span>(<span>self, rancher_api_client, harvester_mgmt_cluster, unique_name, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.rke2
+@pytest.mark.dependency(depends=[&#34;TestRKE::test_create_rke2&#34;])
+def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
+                    unique_name, wait_timeout):
+    cluster_id = harvester_mgmt_cluster[&#39;status&#39;][&#39;clusterName&#39;]
+    capi = rancher_api_client.clusters.explore(cluster_id)
+    # Create PVC
+    size = &#34;1Gi&#34;
+    spec = capi.pvcs.Spec(size)
+    code, data = capi.pvcs.create(unique_name, spec)
+    assert 201 == code, (code, data)
+    # Verify PVC is created
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = capi.pvcs.get(unique_name)
+        if &#34;Bound&#34; == data[&#39;status&#39;].get(&#39;phase&#39;):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;PVC Created but stuck in phase {data[&#39;status&#39;].get(&#39;phase&#39;)}\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+    # Verify the PV for created PVC
+    pv_code, pv_data = capi.pvs.get(data[&#39;spec&#39;][&#39;volumeName&#39;])
+    assert 200 == pv_code, (
+        f&#34;Relevant PV is NOT available for created PVC&#39;s PV({data[&#39;spec&#39;][&#39;volumeName&#39;]})\n&#34;
+        f&#34;Response data of PV: {data}&#34;
+    )
+    # Verify size of the PV is aligned to requested size of PVC
+    assert size == pv_data[&#39;spec&#39;][&#39;capacity&#39;][&#39;storage&#39;], (
+        &#34;Size of the PV is NOT aligned to requested size of PVC,&#34;
+        f&#34; expected: {size}, PV&#39;s size: {pv_data[&#39;spec&#39;][&#39;capacity&#39;][&#39;storage&#39;]}\n&#34;
+        f&#34;Response data of PV: {data}&#34;
+    )
+    # Verify PVC&#39;s size
+    created_spec = capi.pvcs.Spec.from_dict(data)
+    assert size == spec.size, (
+        f&#34;Size is NOT correct in created PVC, expected: {size}, created: {spec.size}\n&#34;
+        f&#34;Response data: {data}&#34;
+    )
+    # Verify the storage class exists
+    sc_code, sc_data = capi.scs.get(created_spec.storage_cls)
+    assert 200 == sc_code, (
+        f&#34;Storage Class is NOT exists for created PVC\n&#34;
+        f&#34;Created PVC Spec: {data}\n&#34;
+        f&#34;SC Status({sc_code}): {sc_data}&#34;
+    )
+    # verify the storage class is marked `default`
+    assert &#39;true&#39; == sc_data[&#39;metadata&#39;][&#39;annotations&#39;][capi.pvcs.scs.DEFAULT_KEY], (
+        f&#34;Storage Class is NOT the DEFAULT for created PVC\n&#34;
+        f&#34;Requested Storage Class: {spec.storage_cls!r}&#34;
+        f&#34;Created PVC Spec: {data}\n&#34;
+        f&#34;SC Status({sc_code}): {sc_data}&#34;
+    )
+
+    # teardown
+    capi.pvcs.delete(unique_name)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_rke1"><code class="name flex">
 <span>def <span class="ident">test_create_rke1</span></span>(<span>self, rancher_api_client, unique_name, harvester_cloud_credential, rke1_cluster_name, focal_image, vlan_network, k8s_version, rancher_wait_timeout)</span>
 </code></dt>
@@ -1213,8 +1400,9 @@ def test_delete_rke2(self, api_client, rancher_api_client, rke2_cluster_name,
 <ul>
 <li>
 <h4><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE">TestRKE</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE.pytestmark" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_pvc" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_pvc">test_create_pvc</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_rke1" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_rke1">test_create_rke1</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_rke2" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_rke2">test_create_rke2</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_delete_rke1" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_delete_rke1">test_delete_rke1</a></code></li>
