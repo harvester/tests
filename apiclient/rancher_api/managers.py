@@ -1,5 +1,6 @@
 import base64
 import json
+import yaml
 from weakref import ref
 
 
@@ -303,8 +304,22 @@ class SecretManager(BaseManager):
 class HarvesterConfigManager(BaseManager):
     PATH_fmt = "v1/rke-machine-config.cattle.io.harvesterconfigs/fleet-default"
 
+    def _inject_guest_agent(self, user_data):
+        cmd = 'systemctl enable --now qemu-guest-agent.service'
+        userdata = yaml.safe_load(user_data) or dict()
+        pkgs = userdata.get('packages', [])
+        runcmds = [' '.join(c) for c in userdata.get('runcmd', [])]
+        if 'qemu-guest-agent' not in pkgs:
+            userdata.setdefault('packages', []).append('qemu-guest-agent')
+
+        if cmd not in runcmds:
+            userdata.setdefault('runcmd', []).append(cmd.split())
+        return f"#cloud-config\n{yaml.dump(userdata)}"
+
     def create_data(self, name, cpus, mems, disks, image_id, network_id,
                     ssh_user, user_data, network_data, vm_namespace=DEFAULT_NAMESPACE):
+        user_data = self._inject_guest_agent(user_data)
+
         return {
             "cpuCount": cpus,
             "diskSize": disks,
@@ -317,7 +332,7 @@ class HarvesterConfigManager(BaseManager):
             "networkName": network_id,
             "sshUser": ssh_user,
             "userData": base64.b64encode(user_data.encode('UTF-8')).decode('UTF-8'),
-            "networkData": base64.b64decode(network_data.encode('UTF-8')).decode('UTF-8'),
+            "networkData": base64.b64encode(network_data.encode('UTF-8')).decode('UTF-8'),
             "vmNamespace": vm_namespace,
             "type": "rke-machine-config.cattle.io.harvesterconfig"
         }
