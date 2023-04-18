@@ -329,7 +329,7 @@ class TestRKE:
             f"SC Status({sc_code}): {sc_data}"
         )
         # verify the storage class is marked `default`
-        assert 'true' == sc_data['metadata']['annotations'][capi.pvcs.scs.DEFAULT_KEY], (
+        assert 'true' == sc_data['metadata']['annotations'][capi.scs.DEFAULT_KEY], (
             f"Storage Class is NOT the DEFAULT for created PVC\n"
             f"Requested Storage Class: {spec.storage_cls!r}"
             f"Created PVC Spec: {data}\n"
