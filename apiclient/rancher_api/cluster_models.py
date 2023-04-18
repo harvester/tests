@@ -41,11 +41,11 @@ class PersistentVolumeClaimSpec:
         self.access_modes = op(self.access_modes, AccessModes.ReadWriteOnce)
 
     @property
-    def mode_rwm(self):
+    def mode_rwx(self):
         return bool(self.access_modes & AccessModes.ReadWriteMany)
 
-    @mode_rwm.setter
-    def mode_rwm(self, enable):
+    @mode_rwx.setter
+    def mode_rwx(self, enable):
         op = or_ if enable else xor
         self.access_modes = op(self.access_modes, AccessModes.ReadWriteMany)
 
