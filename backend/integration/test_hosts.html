@@ -198,7 +198,7 @@ def test_host_poweron_state(api_client, host_state, wait_timeout):
     while endtime &gt; datetime.now():
         _, metric = api_client.hosts.get_metrics(node[&#39;id&#39;])
         state = metric.get(&#34;metadata&#34;, {}).get(&#34;state&#34;, {})
-        if not state.get(&#34;error&#34;) and state.get(&#39;name&#39;) != &#39;unavailable&#39;:
+        if state and not state.get(&#34;error&#34;) and state.get(&#39;name&#39;) != &#39;unavailable&#39;:
             break
         sleep(5)
     else:
@@ -569,7 +569,7 @@ def test_host_poweron_state(api_client, host_state, wait_timeout):
     while endtime &gt; datetime.now():
         _, metric = api_client.hosts.get_metrics(node[&#39;id&#39;])
         state = metric.get(&#34;metadata&#34;, {}).get(&#34;state&#34;, {})
-        if not state.get(&#34;error&#34;) and state.get(&#39;name&#39;) != &#39;unavailable&#39;:
+        if state and not state.get(&#34;error&#34;) and state.get(&#39;name&#39;) != &#39;unavailable&#39;:
             break
         sleep(5)
     else:
