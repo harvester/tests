@@ -43,7 +43,24 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 
     yield dict(ssh_user="ubuntu", id=f"{namespace}/{name}")
 
-    api_client.images.delete(name, namespace)
+    is_delete = False
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        if not is_delete:
+            code, data = api_client.images.delete(name, namespace)
+            if code == 200:
+                is_delete = True
+
+        if is_delete:
+            code, data = api_client.images.get(unique_name)
+            if code == 404:
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Image {unique_name} can't be deleted with {wait_timeout} timed out\n"
+            f"Got error: {code}, {data}"
+        )
 
 
 @pytest.fixture(scope="class")
