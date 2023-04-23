@@ -5,7 +5,9 @@ from collections.abc import Mapping
 
 from pkg_resources import parse_version
 
-from .models import VolumeSpec, VMSpec, BaseSettingSpec, BackupTargetSpec, RestoreSpec
+from .models import (
+    VolumeSpec, VMSpec, BaseSettingSpec, BackupTargetSpec, RestoreSpec, StorageNetworkSpec
+)
 
 DEFAULT_NAMESPACE = "default"
 DEFAULT_HARVESTER_NAMESPACE = "harvester-system"
@@ -487,16 +489,17 @@ class SettingManager(BaseManager):
     # "v1/harvesterhci.io.settings/{name}"
     Spec = BaseSettingSpec
     BackupTargetSpec = BackupTargetSpec
+    StorageNetworkSpec = StorageNetworkSpec
 
     def get(self, name="", *, raw=False):
         return self._get(self.PATH_fmt.format(name=name))
 
     def update(self, name, spec, *, raw=False, as_json=True, **kwargs):
         path = self.PATH_fmt.format(name=name)
+        _, node = self.get(name)
         if isinstance(spec, BaseSettingSpec):
-            spec = spec.to_dict()
+            spec = spec.to_dict(node)
         if isinstance(spec, Mapping) and as_json:
-            _, node = self.get(name)
             spec = merge_dict(spec, node)
         return self._update(path, spec, raw=raw, as_json=as_json, **kwargs)
 
