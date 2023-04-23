@@ -77,3 +77,42 @@ def test_update_log_level(api_client):
     # For teardown
     updates = {"value": original_value}
     api_client.settings.update("log-level", updates)
+
+
+@pytest.mark.p0
+@pytest.mark.settings
+def test_get_storage_network(api_client):
+    code, data = api_client.settings.get("storage-network")
+    assert 200 == code, (f"Failed to get storage-network setting with error: {code}, {data}")
+
+
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.settings
+class TestUpdateInvalidStorageNetwork:
+    invalid_vlan_id = 4095
+    invalid_ip_range = "127.0.0.1/24"
+    mgmt_network = "mgmt"
+
+    def test_invalid_vlanid(self, api_client):
+        spec = api_client.settings.StorageNetworkSpec.enable_with(
+            self.invalid_vlan_id, self.mgmt_network, "192.168.1.0/24"
+        )
+        code, data = api_client.settings.update('storage-network', spec)
+
+        assert 422 == code, (
+            f"Storage Network should NOT able to create with VLAN ID: {self.invalid_vlan_id}\n"
+            f"API Status({code}): {data}"
+        )
+
+    def test_invalid_iprange(self, api_client):
+        valid_vlan_id = 1
+        spec = api_client.settings.StorageNetworkSpec.enable_with(
+            valid_vlan_id, self.mgmt_network, self.invalid_ip_range
+        )
+        code, data = api_client.settings.update('storage-network', spec)
+
+        assert 422 == code, (
+            f"Storage Network should NOT able to create with IP Range: {self.invalid_ip_range}\n"
+            f"API Status({code}): {data}"
+        )
