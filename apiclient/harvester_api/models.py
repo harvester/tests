@@ -482,12 +482,24 @@ class VolumeSpec:
 class BaseSettingSpec:
     """ Base class for instance check and create"""
     _name = ""  # to point out the name of setting
+    _default = False  # to point out to use default value
 
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, value=None):
+        self.value = value or dict()
 
-    def to_dict(self):
-        return self.data
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.value})"
+
+    @property
+    def use_default(self):
+        return self._default
+
+    @use_default.setter
+    def use_default(self, val):
+        self._default = val
+
+    def to_dict(self, data):
+        return dict(value=dumps(self.value))
 
     @classmethod
     def from_dict(cls, data):
@@ -518,7 +530,7 @@ class BackupTargetSpec(BaseSettingSpec):
 
     @classmethod
     def from_dict(cls, data):
-        value = loads(data['value'])
+        value = loads(data.get('value', "{}"))
         return cls(value)
 
     @classmethod
@@ -538,3 +550,32 @@ class BackupTargetSpec(BaseSettingSpec):
     @classmethod
     def NFS(cls, endpoint):
         return cls(dict(type="nfs", endpoint=endpoint))
+
+
+class StorageNetworkSpec(BaseSettingSpec):
+    _name = "storage-network"
+
+    @classmethod
+    def disable(cls):
+        obj = cls()
+        obj.use_default = True
+        return obj
+
+    @classmethod
+    def enable_with(cls, vlan_id, cluster_network, ip_range, *excludes):
+        return cls({
+            "vlan": vlan_id,
+            "clusterNetwork": cluster_network,
+            "range": ip_range,
+            "exclude": excludes
+        })
+
+    @classmethod
+    def from_dict(cls, data):
+        value = loads(data.get('value', "{}"))
+        return cls(value)
+
+    def to_dict(self, data):
+        if self.use_default or not self.value:
+            return dict(value=None)
+        return super().to_dict(data)
