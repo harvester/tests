@@ -512,21 +512,12 @@ class BaseSettingSpec:
 class BackupTargetSpec(BaseSettingSpec):
     _name = "backup-target"
 
-    def __init__(self, value=None):
-        self.value = value or dict()
-
-    def __repr__(self):
-        return f"{__class__.__name__}({self.value})"
-
     @property
     def type(self):
         return self.value.get('type')
 
     def clear(self):
         self.value = dict()
-
-    def to_dict(self):
-        return dict(value=dumps(self.value))
 
     @classmethod
     def from_dict(cls, data):
