@@ -597,7 +597,7 @@ class ClusterNetworkManager(BaseManager):
         }
 
         if hostname is not None:
-            data['spec']['nodeSelector']["kubernetes.io/hostname"] = hostname
+            data['spec']['nodeSelector'] = {"kubernetes.io/hostname": hostname}
 
         if miimon is not None:
             data['spec']['uplink']['bondOptions']['miimon'] = miimon
