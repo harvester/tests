@@ -35,7 +35,7 @@ clean-docs:
 
 run-all-tests:
 	tox -e testenv -- harvester_e2e_tests --html=test_result.html
-	
+
 run-api-tests:
 	tox -e testenv -- harvester_e2e_tests/apis --html=test_result.html
 
@@ -44,3 +44,9 @@ run-scenario-tests:
 
 run-integration-tests:
 	tox -r -e testenv -- harvester_e2e_tests/integration --html=test_result.html
+
+build-docker-backend-tests-image:
+	docker build -f Dockerfile . -t harvester-tests-backend:latest;
+
+destroy-docker-backend-tests-image:
+	docker image rm harvester-tests-backend:latest --force
