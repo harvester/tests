@@ -1296,3 +1296,34 @@ class TestAnyNodesUpgrade:
 
         if not exist_crds:
             raise AssertionError(f"CRDs {not_existed_crds} are not existed")
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade"])
+    def test_upgrade_vm_deleted(self, api_client):
+        code, data = api_client.vms.get(namespace='harvester-system')
+        upgrade_vms = [vm for vm in data['data'] if 'upgrade' in vm['id']]
+
+        assert not upgrade_vms, (
+            "Upgrade related VM still available:\n"
+            f"{upgrade_vms}"
+        )
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade"])
+    def test_upgrade_volume_deleted(self, api_client):
+        code, data = api_client.volumes.get(namespace='harvester-system')
+        upgrade_vols = [vol for vol in data['data'] if 'upgrade' in vol['id']]
+
+        assert not upgrade_vols, (
+            "Upgrade related volume(s) still available:\n"
+            f"{upgrade_vols}"
+        )
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade"])
+    def test_upgrade_image_deleted(self, api_client):
+        code, data = api_client.images.get(namespace='harvester-system')
+        upgrade_images = [image for image in data['items']
+                          if 'upgrade' in image['spec']['displayName']]
+
+        assert not upgrade_images, (
+            "Upgrade related image(s) still available:\n"
+            f"{upgrade_images}"
+        )
