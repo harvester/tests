@@ -104,7 +104,46 @@ def test_update_log_level(api_client):
 
     # For teardown
     updates = {&#34;value&#34;: original_value}
-    api_client.settings.update(&#34;log-level&#34;, updates)</code></pre>
+    api_client.settings.update(&#34;log-level&#34;, updates)
+
+
+@pytest.mark.p0
+@pytest.mark.settings
+def test_get_storage_network(api_client):
+    code, data = api_client.settings.get(&#34;storage-network&#34;)
+    assert 200 == code, (f&#34;Failed to get storage-network setting with error: {code}, {data}&#34;)
+
+
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.settings
+class TestUpdateInvalidStorageNetwork:
+    invalid_vlan_id = 4095
+    invalid_ip_range = &#34;127.0.0.1/24&#34;
+    mgmt_network = &#34;mgmt&#34;
+
+    def test_invalid_vlanid(self, api_client):
+        spec = api_client.settings.StorageNetworkSpec.enable_with(
+            self.invalid_vlan_id, self.mgmt_network, &#34;192.168.1.0/24&#34;
+        )
+        code, data = api_client.settings.update(&#39;storage-network&#39;, spec)
+
+        assert 422 == code, (
+            f&#34;Storage Network should NOT able to create with VLAN ID: {self.invalid_vlan_id}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    def test_invalid_iprange(self, api_client):
+        valid_vlan_id = 1
+        spec = api_client.settings.StorageNetworkSpec.enable_with(
+            valid_vlan_id, self.mgmt_network, self.invalid_ip_range
+        )
+        code, data = api_client.settings.update(&#39;storage-network&#39;, spec)
+
+        assert 422 == code, (
+            f&#34;Storage Network should NOT able to create with IP Range: {self.invalid_ip_range}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -171,6 +210,22 @@ def test_get_all_settings_v110(api_client, expected_settings):
         warnings.warn(UserWarning(f&#34;New setting(s) added: {added}&#34;))</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.apis.test_settings.test_get_storage_network"><code class="name flex">
+<span>def <span class="ident">test_get_storage_network</span></span>(<span>api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.settings
+def test_get_storage_network(api_client):
+    code, data = api_client.settings.get(&#34;storage-network&#34;)
+    assert 200 == code, (f&#34;Failed to get storage-network setting with error: {code}, {data}&#34;)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.apis.test_settings.test_update_log_level"><code class="name flex">
 <span>def <span class="ident">test_update_log_level</span></span>(<span>api_client)</span>
 </code></dt>
@@ -200,6 +255,115 @@ def test_update_log_level(api_client):
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork"><code class="flex name class">
+<span>class <span class="ident">TestUpdateInvalidStorageNetwork</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.settings
+class TestUpdateInvalidStorageNetwork:
+    invalid_vlan_id = 4095
+    invalid_ip_range = &#34;127.0.0.1/24&#34;
+    mgmt_network = &#34;mgmt&#34;
+
+    def test_invalid_vlanid(self, api_client):
+        spec = api_client.settings.StorageNetworkSpec.enable_with(
+            self.invalid_vlan_id, self.mgmt_network, &#34;192.168.1.0/24&#34;
+        )
+        code, data = api_client.settings.update(&#39;storage-network&#39;, spec)
+
+        assert 422 == code, (
+            f&#34;Storage Network should NOT able to create with VLAN ID: {self.invalid_vlan_id}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    def test_invalid_iprange(self, api_client):
+        valid_vlan_id = 1
+        spec = api_client.settings.StorageNetworkSpec.enable_with(
+            valid_vlan_id, self.mgmt_network, self.invalid_ip_range
+        )
+        code, data = api_client.settings.update(&#39;storage-network&#39;, spec)
+
+        assert 422 == code, (
+            f&#34;Storage Network should NOT able to create with IP Range: {self.invalid_ip_range}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.invalid_ip_range"><code class="name">var <span class="ident">invalid_ip_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.invalid_vlan_id"><code class="name">var <span class="ident">invalid_vlan_id</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.mgmt_network"><code class="name">var <span class="ident">mgmt_network</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.test_invalid_iprange"><code class="name flex">
+<span>def <span class="ident">test_invalid_iprange</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_invalid_iprange(self, api_client):
+    valid_vlan_id = 1
+    spec = api_client.settings.StorageNetworkSpec.enable_with(
+        valid_vlan_id, self.mgmt_network, self.invalid_ip_range
+    )
+    code, data = api_client.settings.update(&#39;storage-network&#39;, spec)
+
+    assert 422 == code, (
+        f&#34;Storage Network should NOT able to create with IP Range: {self.invalid_ip_range}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.test_invalid_vlanid"><code class="name flex">
+<span>def <span class="ident">test_invalid_vlanid</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_invalid_vlanid(self, api_client):
+    spec = api_client.settings.StorageNetworkSpec.enable_with(
+        self.invalid_vlan_id, self.mgmt_network, &#34;192.168.1.0/24&#34;
+    )
+    code, data = api_client.settings.update(&#39;storage-network&#39;, spec)
+
+    assert 422 == code, (
+        f&#34;Storage Network should NOT able to create with VLAN ID: {self.invalid_vlan_id}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -217,7 +381,23 @@ def test_update_log_level(api_client):
 <ul class="">
 <li><code><a title="harvester_e2e_tests.apis.test_settings.test_get_all_settings" href="#harvester_e2e_tests.apis.test_settings.test_get_all_settings">test_get_all_settings</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_settings.test_get_all_settings_v110" href="#harvester_e2e_tests.apis.test_settings.test_get_all_settings_v110">test_get_all_settings_v110</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.test_get_storage_network" href="#harvester_e2e_tests.apis.test_settings.test_get_storage_network">test_get_storage_network</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_settings.test_update_log_level" href="#harvester_e2e_tests.apis.test_settings.test_update_log_level">test_update_log_level</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork">TestUpdateInvalidStorageNetwork</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.invalid_ip_range" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.invalid_ip_range">invalid_ip_range</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.invalid_vlan_id" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.invalid_vlan_id">invalid_vlan_id</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.mgmt_network" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.mgmt_network">mgmt_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.pytestmark" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.test_invalid_iprange" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.test_invalid_iprange">test_invalid_iprange</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.test_invalid_vlanid" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork.test_invalid_vlanid">test_invalid_vlanid</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
