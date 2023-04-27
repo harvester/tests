@@ -71,7 +71,24 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 
     yield dict(ssh_user=&#34;ubuntu&#34;, id=f&#34;{namespace}/{name}&#34;)
 
-    api_client.images.delete(name, namespace)
+    is_delete = False
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        if not is_delete:
+            code, data = api_client.images.delete(name, namespace)
+            if code == 200:
+                is_delete = True
+
+        if is_delete:
+            code, data = api_client.images.get(unique_name)
+            if code == 404:
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Image {unique_name} can&#39;t be deleted with {wait_timeout} timed out\n&#34;
+            f&#34;Got error: {code}, {data}&#34;
+        )
 
 
 @pytest.fixture(scope=&#34;class&#34;)
@@ -422,7 +439,24 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 
     yield dict(ssh_user=&#34;ubuntu&#34;, id=f&#34;{namespace}/{name}&#34;)
 
-    api_client.images.delete(name, namespace)</code></pre>
+    is_delete = False
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        if not is_delete:
+            code, data = api_client.images.delete(name, namespace)
+            if code == 200:
+                is_delete = True
+
+        if is_delete:
+            code, data = api_client.images.get(unique_name)
+            if code == 404:
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Image {unique_name} can&#39;t be deleted with {wait_timeout} timed out\n&#34;
+            f&#34;Got error: {code}, {data}&#34;
+        )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_vm.focal_image_url"><code class="name flex">
