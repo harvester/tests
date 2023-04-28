@@ -1323,7 +1323,38 @@ class TestAnyNodesUpgrade:
                 not_existed_crds.append(crd)
 
         if not exist_crds:
-            raise AssertionError(f&#34;CRDs {not_existed_crds} are not existed&#34;)</code></pre>
+            raise AssertionError(f&#34;CRDs {not_existed_crds} are not existed&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_upgrade_vm_deleted(self, api_client):
+        code, data = api_client.vms.get(namespace=&#39;harvester-system&#39;)
+        upgrade_vms = [vm for vm in data[&#39;data&#39;] if &#39;upgrade&#39; in vm[&#39;id&#39;]]
+
+        assert not upgrade_vms, (
+            &#34;Upgrade related VM still available:\n&#34;
+            f&#34;{upgrade_vms}&#34;
+        )
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_upgrade_volume_deleted(self, api_client):
+        code, data = api_client.volumes.get(namespace=&#39;harvester-system&#39;)
+        upgrade_vols = [vol for vol in data[&#39;data&#39;] if &#39;upgrade&#39; in vol[&#39;id&#39;]]
+
+        assert not upgrade_vols, (
+            &#34;Upgrade related volume(s) still available:\n&#34;
+            f&#34;{upgrade_vols}&#34;
+        )
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_upgrade_image_deleted(self, api_client):
+        code, data = api_client.images.get(namespace=&#39;harvester-system&#39;)
+        upgrade_images = [image for image in data[&#39;items&#39;]
+                          if &#39;upgrade&#39; in image[&#39;spec&#39;][&#39;displayName&#39;]]
+
+        assert not upgrade_images, (
+            &#34;Upgrade related image(s) still available:\n&#34;
+            f&#34;{upgrade_images}&#34;
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -2049,7 +2080,38 @@ class TestAnyNodesUpgrade:
                 not_existed_crds.append(crd)
 
         if not exist_crds:
-            raise AssertionError(f&#34;CRDs {not_existed_crds} are not existed&#34;)</code></pre>
+            raise AssertionError(f&#34;CRDs {not_existed_crds} are not existed&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_upgrade_vm_deleted(self, api_client):
+        code, data = api_client.vms.get(namespace=&#39;harvester-system&#39;)
+        upgrade_vms = [vm for vm in data[&#39;data&#39;] if &#39;upgrade&#39; in vm[&#39;id&#39;]]
+
+        assert not upgrade_vms, (
+            &#34;Upgrade related VM still available:\n&#34;
+            f&#34;{upgrade_vms}&#34;
+        )
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_upgrade_volume_deleted(self, api_client):
+        code, data = api_client.volumes.get(namespace=&#39;harvester-system&#39;)
+        upgrade_vols = [vol for vol in data[&#39;data&#39;] if &#39;upgrade&#39; in vol[&#39;id&#39;]]
+
+        assert not upgrade_vols, (
+            &#34;Upgrade related volume(s) still available:\n&#34;
+            f&#34;{upgrade_vols}&#34;
+        )
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+    def test_upgrade_image_deleted(self, api_client):
+        code, data = api_client.images.get(namespace=&#39;harvester-system&#39;)
+        upgrade_images = [image for image in data[&#39;items&#39;]
+                          if &#39;upgrade&#39; in image[&#39;spec&#39;][&#39;displayName&#39;]]
+
+        assert not upgrade_images, (
+            &#34;Upgrade related image(s) still available:\n&#34;
+            f&#34;{upgrade_images}&#34;
+        )</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -2103,6 +2165,67 @@ def test_perform_upgrade(self, cluster_prereq, vm_prereq, request, api_client, c
             # wait for vm to be assigned an IP
             _wait_for_vm_ready(api_client, vm[&#34;metadata&#34;][&#34;name&#34;],
                                timeout=wait_timeout)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted"><code class="name flex">
+<span>def <span class="ident">test_upgrade_image_deleted</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_upgrade_image_deleted(self, api_client):
+    code, data = api_client.images.get(namespace=&#39;harvester-system&#39;)
+    upgrade_images = [image for image in data[&#39;items&#39;]
+                      if &#39;upgrade&#39; in image[&#39;spec&#39;][&#39;displayName&#39;]]
+
+    assert not upgrade_images, (
+        &#34;Upgrade related image(s) still available:\n&#34;
+        f&#34;{upgrade_images}&#34;
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted"><code class="name flex">
+<span>def <span class="ident">test_upgrade_vm_deleted</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_upgrade_vm_deleted(self, api_client):
+    code, data = api_client.vms.get(namespace=&#39;harvester-system&#39;)
+    upgrade_vms = [vm for vm in data[&#39;data&#39;] if &#39;upgrade&#39; in vm[&#39;id&#39;]]
+
+    assert not upgrade_vms, (
+        &#34;Upgrade related VM still available:\n&#34;
+        f&#34;{upgrade_vms}&#34;
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted"><code class="name flex">
+<span>def <span class="ident">test_upgrade_volume_deleted</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
+def test_upgrade_volume_deleted(self, api_client):
+    code, data = api_client.volumes.get(namespace=&#39;harvester-system&#39;)
+    upgrade_vols = [vol for vol in data[&#39;data&#39;] if &#39;upgrade&#39; in vol[&#39;id&#39;]]
+
+    assert not upgrade_vols, (
+        &#34;Upgrade related volume(s) still available:\n&#34;
+        f&#34;{upgrade_vols}&#34;
+    )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log"><code class="name flex">
@@ -2754,6 +2877,9 @@ def test_invalid_manifest(self, api_client):
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted">test_upgrade_image_deleted</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted">test_upgrade_vm_deleted</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted">test_upgrade_volume_deleted</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log">test_verify_audit_log</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed">test_verify_crds_existed</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version">test_verify_deployed_components_version</a></code></li>
