@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Rancher2 Terraform Provider Integration on Harvester manual test cases</title>
+    <link>https://harvester.github.io/tests/manual/harvester-rancher2-terraform-integration/</link>
+    <description>Recent content in Rancher2 Terraform Provider Integration on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/harvester-rancher2-terraform-integration/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Terraform Rancher2 Provider Testing</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher2-terraform-integration/terraform_rancher2_provider_testing/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher2-terraform-integration/terraform_rancher2_provider_testing/</guid>
+      <description>Ref: https://github.com/rancher/terraform-provider-rancher2/issues/1009
+Test Information Environment Rancher: v2.7.X Environment for Harvester: bare-metal or qemu Harvester Version: v1.1.X ui-source Option: Auto Rancher2 Terraform Provider Plugin: v3.0.X rancher2 Test Setup Rancher2 Terraform Provider: make sure terraform is installed at version equal or greater than 1.3.9, ie: sudo apt install terraform utilize the setup-provider.sh script from the rancher2 terraform provider repo if testing an rc it would look something like ./setup-provider.sh rancher2 v3.0.0-rc1 ensure the provider is installed, can cross check the directory structures under ~/.</description>
+    </item>
+    
+  </channel>
+</rss>
