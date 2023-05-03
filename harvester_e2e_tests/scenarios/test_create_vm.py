@@ -140,6 +140,7 @@ def test_create_windows_vm(admin_session, windows_vm, harvester_api_endpoints):
 @pytest.mark.virtual_machines_p2
 @pytest.mark.p2
 @pytest.mark.multivmtest
+@pytest.mark.skip(reason="TODO with new framework")
 def test_create_multiple_vms(admin_session, image, multiple_vms,
                              harvester_api_endpoints):
     """
@@ -251,31 +252,6 @@ def test_create_vm_overcommit_memory_failed(
             if resp.status_code != 404:
                 utils.delete_vm(request, admin_session,
                                 harvester_api_endpoints, vm_json)
-
-
-@pytest.mark.virtual_machines_p2
-@pytest.mark.p2
-def test_create_vm_do_not_start(request, admin_session, image, keypair,
-                                harvester_api_endpoints):
-    """
-    Test create virtual machines
-    Covers:
-        virtual-machines-37-Create a VM with start VM on creation unchecked
-    """
-    created = False
-    try:
-        vm_json = utils.create_vm(request, admin_session, image,
-                                  harvester_api_endpoints, keypair=keypair,
-                                  running=False)
-        created = True
-        resp = admin_session.get(harvester_api_endpoints.get_vm_instance % (
-            vm_json['metadata']['name']))
-        assert resp.status_code == 404, (
-            'Failed to create a VM with do not start: %s' % (resp.content))
-    finally:
-        if created and not request.config.getoption('--do-not-cleanup'):
-            utils.delete_vm(request, admin_session, harvester_api_endpoints,
-                            vm_json)
 
 
 @pytest.mark.usbvmtest
