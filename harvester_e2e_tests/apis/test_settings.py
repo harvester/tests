@@ -116,3 +116,49 @@ class TestUpdateInvalidStorageNetwork:
             f"Storage Network should NOT able to create with IP Range: {self.invalid_ip_range}\n"
             f"API Status({code}): {data}"
         )
+
+
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.settings
+class TestUpdateInvalidBackupTarget:
+    def test_invalid_nfs(self, api_client):
+        NFSSpec = api_client.settings.BackupTargetSpec.NFS
+
+        spec = NFSSpec('not_starts_with_nfs://')
+        code, data = api_client.settings.update('backup-target', spec)
+        assert 422 == code, (
+            f"NFS backup-target should check endpoint starting with `nfs://`\n"
+            f"API Status({code}): {data}"
+        )
+
+        spec = NFSSpec('nfs://:/lack_server')
+        code, data = api_client.settings.update('backup-target', spec)
+        assert 422 == code, (
+            f"NFS backup-target should check endpoint had server path\n"
+            f"API Status({code}): {data}"
+        )
+
+        spec = NFSSpec('nfs://127.0.0.1:')
+        code, data = api_client.settings.update('backup-target', spec)
+        assert 422 == code, (
+            f"NFS backup-target should check endpoint had mount path\n"
+            f"API Status({code}): {data}"
+        )
+
+    def test_invalid_S3(self, api_client):
+        S3Spec = api_client.settings.BackupTargetSpec.S3
+
+        spec = S3Spec('bogus_bucket', 'bogus_region', 'bogus_key', 'bogus_secret')
+        code, data = api_client.settings.update('backup-target', spec)
+        assert 422 == code, (
+            f"S3 backup-target should check key/secret/bucket/region"
+            f"API Status({code}): {data}"
+        )
+
+        spec = S3Spec('', '', '', '', endpoint="http://127.0.0.1")
+        code, data = api_client.settings.update('backup-target', spec)
+        assert 422 == code, (
+            f"S3 backup-target should check key/secret/bucket/region"
+            f"API Status({code}): {data}"
+        )
