@@ -15,6 +15,9 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import re
+import os
+import warnings
 from time import sleep
 from datetime import datetime, timedelta
 
@@ -47,6 +50,32 @@ def rke2_cluster_name(unique_name):
     return f"{unique_name}-rke2"
 
 
+@pytest.fixture(scope='module')
+def rke1_k8s_version(k8s_version, rancher_api_client):
+    # `v1.24.11+rke2r1` -> `v1.24.11-rancher2-1`
+    version = re.sub(r'\+rke(\d+)r(\d+)', lambda g: "-rancher%s-%s" % g.groups(), k8s_version)
+
+    code, data = rancher_api_client.settings.get('k8s-versions-current')
+    assert 200 == code, (code, data)
+    current = data['value']
+    if version in current:
+        return version
+
+    code, data = rancher_api_client.settings.get('k8s-versions-deprecated')
+    assert 200 == code, (code, data)
+    if data['value'] and version in data['value']:
+        return version
+
+    latest = current.split(',')[-1]
+
+    warnings.warn(UserWarning(
+        f"Kubernetes version {version} is not in supported list,"
+        f" change to use latest version {latest} instead."
+    ))
+
+    return latest
+
+
 @pytest.fixture(scope='session')
 def vlan_network(request, api_client):
     vlan_nic = request.config.getoption('--vlan-nic')
@@ -72,8 +101,10 @@ def vlan_network(request, api_client):
 
 
 @pytest.fixture(scope="session")
-def focal_image_url():
-    return "http://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img"  # noqa
+def focal_image_url(request):
+    external = 'https://cloud-images.ubuntu.com/focal/current/'
+    base_url = request.config.getoption('--image-cache-url') or external
+    return os.path.join(base_url, "focal-server-cloudimg-amd64.img")
 
 
 @pytest.fixture(scope="class")
@@ -371,9 +402,9 @@ class TestRKE:
 
     @pytest.mark.rke1
     @pytest.mark.dependency()
-    def test_create_rke1(self, rancher_api_client, unique_name, harvester_cloud_credential,
-                         rke1_cluster_name, focal_image, vlan_network, k8s_version,
-                         rancher_wait_timeout):
+    def test_create_rke1(self, rancher_api_client, unique_name, rancher_wait_timeout,
+                         rke1_cluster_name, rke1_k8s_version, harvester_cloud_credential,
+                         focal_image, vlan_network):
         code, data = rancher_api_client.node_templates.create(
             name=unique_name,
             cpus=2,
@@ -397,11 +428,24 @@ class TestRKE:
 
         node_template_id = data['id']
 
-        code, data = rancher_api_client.clusters.create(rke1_cluster_name, k8s_version)
+        code, data = rancher_api_client.clusters.create(rke1_cluster_name, rke1_k8s_version)
         assert 201 == code, (
             f"Failed to create cluster {rke1_cluster_name} with error: {code}, {data}"
         )
         cluster_id = data['id']
+        # check cluster created and ready for use
+        endtime = datetime.now() + timedelta(seconds=rancher_wait_timeout)
+        while endtime > datetime.now():
+            code, data = rancher_api_client.clusters.get(cluster_id)
+            types = [c['type'] for c in data['conditions']]
+            if 200 == code and "RKESecretsMigrated" in types:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"RKE1 cluster {rke1_cluster_name} not ready after {rancher_wait_timeout}s\n"
+                f"API Status({code}): {data}"
+            )
 
         code, data = rancher_api_client.node_pools.create(
             cluster_id=cluster_id,
