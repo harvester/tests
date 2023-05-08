@@ -143,6 +143,52 @@ class TestUpdateInvalidStorageNetwork:
         assert 422 == code, (
             f&#34;Storage Network should NOT able to create with IP Range: {self.invalid_ip_range}\n&#34;
             f&#34;API Status({code}): {data}&#34;
+        )
+
+
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.settings
+class TestUpdateInvalidBackupTarget:
+    def test_invalid_nfs(self, api_client):
+        NFSSpec = api_client.settings.BackupTargetSpec.NFS
+
+        spec = NFSSpec(&#39;not_starts_with_nfs://&#39;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;NFS backup-target should check endpoint starting with `nfs://`\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        spec = NFSSpec(&#39;nfs://:/lack_server&#39;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;NFS backup-target should check endpoint had server path\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        spec = NFSSpec(&#39;nfs://127.0.0.1:&#39;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;NFS backup-target should check endpoint had mount path\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    def test_invalid_S3(self, api_client):
+        S3Spec = api_client.settings.BackupTargetSpec.S3
+
+        spec = S3Spec(&#39;bogus_bucket&#39;, &#39;bogus_region&#39;, &#39;bogus_key&#39;, &#39;bogus_secret&#39;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;S3 backup-target should check key/secret/bucket/region&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        spec = S3Spec(&#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;&#39;, endpoint=&#34;http://127.0.0.1&#34;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;S3 backup-target should check key/secret/bucket/region&#34;
+            f&#34;API Status({code}): {data}&#34;
         )</code></pre>
 </details>
 </section>
@@ -257,6 +303,132 @@ def test_update_log_level(api_client):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget"><code class="flex name class">
+<span>class <span class="ident">TestUpdateInvalidBackupTarget</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.settings
+class TestUpdateInvalidBackupTarget:
+    def test_invalid_nfs(self, api_client):
+        NFSSpec = api_client.settings.BackupTargetSpec.NFS
+
+        spec = NFSSpec(&#39;not_starts_with_nfs://&#39;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;NFS backup-target should check endpoint starting with `nfs://`\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        spec = NFSSpec(&#39;nfs://:/lack_server&#39;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;NFS backup-target should check endpoint had server path\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        spec = NFSSpec(&#39;nfs://127.0.0.1:&#39;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;NFS backup-target should check endpoint had mount path\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    def test_invalid_S3(self, api_client):
+        S3Spec = api_client.settings.BackupTargetSpec.S3
+
+        spec = S3Spec(&#39;bogus_bucket&#39;, &#39;bogus_region&#39;, &#39;bogus_key&#39;, &#39;bogus_secret&#39;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;S3 backup-target should check key/secret/bucket/region&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        spec = S3Spec(&#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;&#39;, endpoint=&#34;http://127.0.0.1&#34;)
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        assert 422 == code, (
+            f&#34;S3 backup-target should check key/secret/bucket/region&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.test_invalid_S3"><code class="name flex">
+<span>def <span class="ident">test_invalid_S3</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_invalid_S3(self, api_client):
+    S3Spec = api_client.settings.BackupTargetSpec.S3
+
+    spec = S3Spec(&#39;bogus_bucket&#39;, &#39;bogus_region&#39;, &#39;bogus_key&#39;, &#39;bogus_secret&#39;)
+    code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+    assert 422 == code, (
+        f&#34;S3 backup-target should check key/secret/bucket/region&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    spec = S3Spec(&#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;&#39;, endpoint=&#34;http://127.0.0.1&#34;)
+    code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+    assert 422 == code, (
+        f&#34;S3 backup-target should check key/secret/bucket/region&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.test_invalid_nfs"><code class="name flex">
+<span>def <span class="ident">test_invalid_nfs</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_invalid_nfs(self, api_client):
+    NFSSpec = api_client.settings.BackupTargetSpec.NFS
+
+    spec = NFSSpec(&#39;not_starts_with_nfs://&#39;)
+    code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+    assert 422 == code, (
+        f&#34;NFS backup-target should check endpoint starting with `nfs://`\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    spec = NFSSpec(&#39;nfs://:/lack_server&#39;)
+    code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+    assert 422 == code, (
+        f&#34;NFS backup-target should check endpoint had server path\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    spec = NFSSpec(&#39;nfs://127.0.0.1:&#39;)
+    code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+    assert 422 == code, (
+        f&#34;NFS backup-target should check endpoint had mount path\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork"><code class="flex name class">
 <span>class <span class="ident">TestUpdateInvalidStorageNetwork</span></span>
 </code></dt>
@@ -387,6 +559,14 @@ class TestUpdateInvalidStorageNetwork:
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget">TestUpdateInvalidBackupTarget</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.pytestmark" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.test_invalid_S3" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.test_invalid_S3">test_invalid_S3</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.test_invalid_nfs" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidBackupTarget.test_invalid_nfs">test_invalid_nfs</a></code></li>
+</ul>
+</li>
 <li>
 <h4><code><a title="harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork" href="#harvester_e2e_tests.apis.test_settings.TestUpdateInvalidStorageNetwork">TestUpdateInvalidStorageNetwork</a></code></h4>
 <ul class="">
