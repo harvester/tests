@@ -117,7 +117,7 @@ For example, to overwrite the `endpoint` option, we can use the `--endpoint` par
 - `image-cache-url`
 - `win-image-url`
 
-While running the tests, the image fixtures will attempt to create the test images by providing the download URLs for the various cloud image providers (e.g. `htps://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2`). Sometimes a given cloud image provider URL can be slow or inaccessible, which cause the underlying tests to fail. Therefore, it is recommended to create a local web server to cache the images that the tests depended on. We can then use the `--image-cache-url` parameter to convey the image cache URL to the tests. The absence of the `--image-cache-url` parameter means the tests will attempt to directly download the images directly from the cloud image providers instead.
+While running the tests, the image fixtures will attempt to create the test images by providing the download URLs for the various cloud image providers (e.g. `https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2`). Sometimes a given cloud image provider URL can be slow or inaccessible, which cause the underlying tests to fail. Therefore, it is recommended to create a local web server to cache the images that the tests depended on. We can then use the `--image-cache-url` parameter to convey the image cache URL to the tests. The absence of the `--image-cache-url` parameter means the tests will attempt to directly download the images directly from the cloud image providers instead.
 
 ### Network Config Options <a name="network_config" />
 - `vlan-id`, be used to create **VM Network**, should be integer and in range 1 to 4094
