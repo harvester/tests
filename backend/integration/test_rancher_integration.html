@@ -43,6 +43,9 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import re
+import os
+import warnings
 from time import sleep
 from datetime import datetime, timedelta
 
@@ -75,6 +78,32 @@ def rke2_cluster_name(unique_name):
     return f&#34;{unique_name}-rke2&#34;
 
 
+@pytest.fixture(scope=&#39;module&#39;)
+def rke1_k8s_version(k8s_version, rancher_api_client):
+    # `v1.24.11+rke2r1` -&gt; `v1.24.11-rancher2-1`
+    version = re.sub(r&#39;\+rke(\d+)r(\d+)&#39;, lambda g: &#34;-rancher%s-%s&#34; % g.groups(), k8s_version)
+
+    code, data = rancher_api_client.settings.get(&#39;k8s-versions-current&#39;)
+    assert 200 == code, (code, data)
+    current = data[&#39;value&#39;]
+    if version in current:
+        return version
+
+    code, data = rancher_api_client.settings.get(&#39;k8s-versions-deprecated&#39;)
+    assert 200 == code, (code, data)
+    if data[&#39;value&#39;] and version in data[&#39;value&#39;]:
+        return version
+
+    latest = current.split(&#39;,&#39;)[-1]
+
+    warnings.warn(UserWarning(
+        f&#34;Kubernetes version {version} is not in supported list,&#34;
+        f&#34; change to use latest version {latest} instead.&#34;
+    ))
+
+    return latest
+
+
 @pytest.fixture(scope=&#39;session&#39;)
 def vlan_network(request, api_client):
     vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
@@ -100,8 +129,10 @@ def vlan_network(request, api_client):
 
 
 @pytest.fixture(scope=&#34;session&#34;)
-def focal_image_url():
-    return &#34;http://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img&#34;  # noqa
+def focal_image_url(request):
+    external = &#39;https://cloud-images.ubuntu.com/focal/current/&#39;
+    base_url = request.config.getoption(&#39;--image-cache-url&#39;) or external
+    return os.path.join(base_url, &#34;focal-server-cloudimg-amd64.img&#34;)
 
 
 @pytest.fixture(scope=&#34;class&#34;)
@@ -399,9 +430,9 @@ class TestRKE:
 
     @pytest.mark.rke1
     @pytest.mark.dependency()
-    def test_create_rke1(self, rancher_api_client, unique_name, harvester_cloud_credential,
-                         rke1_cluster_name, focal_image, vlan_network, k8s_version,
-                         rancher_wait_timeout):
+    def test_create_rke1(self, rancher_api_client, unique_name, rancher_wait_timeout,
+                         rke1_cluster_name, rke1_k8s_version, harvester_cloud_credential,
+                         focal_image, vlan_network):
         code, data = rancher_api_client.node_templates.create(
             name=unique_name,
             cpus=2,
@@ -425,11 +456,24 @@ class TestRKE:
 
         node_template_id = data[&#39;id&#39;]
 
-        code, data = rancher_api_client.clusters.create(rke1_cluster_name, k8s_version)
+        code, data = rancher_api_client.clusters.create(rke1_cluster_name, rke1_k8s_version)
         assert 201 == code, (
             f&#34;Failed to create cluster {rke1_cluster_name} with error: {code}, {data}&#34;
         )
         cluster_id = data[&#39;id&#39;]
+        # check cluster created and ready for use
+        endtime = datetime.now() + timedelta(seconds=rancher_wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = rancher_api_client.clusters.get(cluster_id)
+            types = [c[&#39;type&#39;] for c in data[&#39;conditions&#39;]]
+            if 200 == code and &#34;RKESecretsMigrated&#34; in types:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;RKE1 cluster {rke1_cluster_name} not ready after {rancher_wait_timeout}s\n&#34;
+                f&#34;API Status({code}): {data}&#34;
+            )
 
         code, data = rancher_api_client.node_pools.create(
             cluster_id=cluster_id,
@@ -542,7 +586,7 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_rancher_integration.focal_image_url"><code class="name flex">
-<span>def <span class="ident">focal_image_url</span></span>(<span>)</span>
+<span>def <span class="ident">focal_image_url</span></span>(<span>request)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -551,8 +595,10 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def focal_image_url():
-    return &#34;http://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img&#34;  # noqa</code></pre>
+def focal_image_url(request):
+    external = &#39;https://cloud-images.ubuntu.com/focal/current/&#39;
+    base_url = request.config.getoption(&#39;--image-cache-url&#39;) or external
+    return os.path.join(base_url, &#34;focal-server-cloudimg-amd64.img&#34;)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_rancher_integration.harvester_cloud_credential"><code class="name flex">
@@ -706,6 +752,41 @@ def rancher_wait_timeout(request):
 <pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
 def rke1_cluster_name(unique_name):
     return f&#34;{unique_name}-rke1&#34;</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_rancher_integration.rke1_k8s_version"><code class="name flex">
+<span>def <span class="ident">rke1_k8s_version</span></span>(<span>k8s_version, rancher_api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def rke1_k8s_version(k8s_version, rancher_api_client):
+    # `v1.24.11+rke2r1` -&gt; `v1.24.11-rancher2-1`
+    version = re.sub(r&#39;\+rke(\d+)r(\d+)&#39;, lambda g: &#34;-rancher%s-%s&#34; % g.groups(), k8s_version)
+
+    code, data = rancher_api_client.settings.get(&#39;k8s-versions-current&#39;)
+    assert 200 == code, (code, data)
+    current = data[&#39;value&#39;]
+    if version in current:
+        return version
+
+    code, data = rancher_api_client.settings.get(&#39;k8s-versions-deprecated&#39;)
+    assert 200 == code, (code, data)
+    if data[&#39;value&#39;] and version in data[&#39;value&#39;]:
+        return version
+
+    latest = current.split(&#39;,&#39;)[-1]
+
+    warnings.warn(UserWarning(
+        f&#34;Kubernetes version {version} is not in supported list,&#34;
+        f&#34; change to use latest version {latest} instead.&#34;
+    ))
+
+    return latest</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_rancher_integration.rke2_cluster_name"><code class="name flex">
@@ -943,9 +1024,9 @@ class TestRKE:
 
     @pytest.mark.rke1
     @pytest.mark.dependency()
-    def test_create_rke1(self, rancher_api_client, unique_name, harvester_cloud_credential,
-                         rke1_cluster_name, focal_image, vlan_network, k8s_version,
-                         rancher_wait_timeout):
+    def test_create_rke1(self, rancher_api_client, unique_name, rancher_wait_timeout,
+                         rke1_cluster_name, rke1_k8s_version, harvester_cloud_credential,
+                         focal_image, vlan_network):
         code, data = rancher_api_client.node_templates.create(
             name=unique_name,
             cpus=2,
@@ -969,11 +1050,24 @@ class TestRKE:
 
         node_template_id = data[&#39;id&#39;]
 
-        code, data = rancher_api_client.clusters.create(rke1_cluster_name, k8s_version)
+        code, data = rancher_api_client.clusters.create(rke1_cluster_name, rke1_k8s_version)
         assert 201 == code, (
             f&#34;Failed to create cluster {rke1_cluster_name} with error: {code}, {data}&#34;
         )
         cluster_id = data[&#39;id&#39;]
+        # check cluster created and ready for use
+        endtime = datetime.now() + timedelta(seconds=rancher_wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = rancher_api_client.clusters.get(cluster_id)
+            types = [c[&#39;type&#39;] for c in data[&#39;conditions&#39;]]
+            if 200 == code and &#34;RKESecretsMigrated&#34; in types:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;RKE1 cluster {rke1_cluster_name} not ready after {rancher_wait_timeout}s\n&#34;
+                f&#34;API Status({code}): {data}&#34;
+            )
 
         code, data = rancher_api_client.node_pools.create(
             cluster_id=cluster_id,
@@ -1119,7 +1213,7 @@ def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE.test_create_rke1"><code class="name flex">
-<span>def <span class="ident">test_create_rke1</span></span>(<span>self, rancher_api_client, unique_name, harvester_cloud_credential, rke1_cluster_name, focal_image, vlan_network, k8s_version, rancher_wait_timeout)</span>
+<span>def <span class="ident">test_create_rke1</span></span>(<span>self, rancher_api_client, unique_name, rancher_wait_timeout, rke1_cluster_name, rke1_k8s_version, harvester_cloud_credential, focal_image, vlan_network)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1129,9 +1223,9 @@ def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
 </summary>
 <pre><code class="python">@pytest.mark.rke1
 @pytest.mark.dependency()
-def test_create_rke1(self, rancher_api_client, unique_name, harvester_cloud_credential,
-                     rke1_cluster_name, focal_image, vlan_network, k8s_version,
-                     rancher_wait_timeout):
+def test_create_rke1(self, rancher_api_client, unique_name, rancher_wait_timeout,
+                     rke1_cluster_name, rke1_k8s_version, harvester_cloud_credential,
+                     focal_image, vlan_network):
     code, data = rancher_api_client.node_templates.create(
         name=unique_name,
         cpus=2,
@@ -1155,11 +1249,24 @@ def test_create_rke1(self, rancher_api_client, unique_name, harvester_cloud_cred
 
     node_template_id = data[&#39;id&#39;]
 
-    code, data = rancher_api_client.clusters.create(rke1_cluster_name, k8s_version)
+    code, data = rancher_api_client.clusters.create(rke1_cluster_name, rke1_k8s_version)
     assert 201 == code, (
         f&#34;Failed to create cluster {rke1_cluster_name} with error: {code}, {data}&#34;
     )
     cluster_id = data[&#39;id&#39;]
+    # check cluster created and ready for use
+    endtime = datetime.now() + timedelta(seconds=rancher_wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = rancher_api_client.clusters.get(cluster_id)
+        types = [c[&#39;type&#39;] for c in data[&#39;conditions&#39;]]
+        if 200 == code and &#34;RKESecretsMigrated&#34; in types:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;RKE1 cluster {rke1_cluster_name} not ready after {rancher_wait_timeout}s\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
 
     code, data = rancher_api_client.node_pools.create(
         cluster_id=cluster_id,
@@ -1392,6 +1499,7 @@ def test_delete_rke2(self, api_client, rancher_api_client, rke2_cluster_name,
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.harvester_mgmt_cluster" href="#harvester_e2e_tests.integration.test_rancher_integration.harvester_mgmt_cluster">harvester_mgmt_cluster</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.rancher_wait_timeout" href="#harvester_e2e_tests.integration.test_rancher_integration.rancher_wait_timeout">rancher_wait_timeout</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.rke1_cluster_name" href="#harvester_e2e_tests.integration.test_rancher_integration.rke1_cluster_name">rke1_cluster_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.rke1_k8s_version" href="#harvester_e2e_tests.integration.test_rancher_integration.rke1_k8s_version">rke1_k8s_version</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.rke2_cluster_name" href="#harvester_e2e_tests.integration.test_rancher_integration.rke2_cluster_name">rke2_cluster_name</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.vlan_network" href="#harvester_e2e_tests.integration.test_rancher_integration.vlan_network">vlan_network</a></code></li>
 </ul>
