@@ -9,7 +9,7 @@ pytest_plugins = [
 # TODO: remove it after update CI's config.yml
 DEFAULT_OPENSUSE_IMAGE_URL = ("https://download.opensuse.org/repositories/Cloud:/Images:"
                               "/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2")
-
+DEFAULT_JAMMY_IMAGE_URL = "https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64-disk-kvm.img"
 
 @pytest.fixture(scope="session")
 def image_opensuse(request, api_client):
@@ -21,6 +21,19 @@ def image_opensuse(request, api_client):
         url = urlparse(urljoin(f"{image_server}/", image_name))
 
     return ImageInfo(url, ssh_user='opensuse')
+
+
+# needed for openstack, as openstack impl only works with jammy
+@pytest.fixture(scope="session")
+def image_jammy(request, api_client):
+    image_server = request.config.getoption('--image-cache-url')
+    url = urlparse(request.config.getoption('--ubuntu-image-url') or DEFAULT_JAMMY_IMAGE_URL)
+
+    if image_server:
+        *_, image_name = url.path.rsplit('/', 1)
+        url = urlparse(urljoin(f"{image_server}/", image_name))
+
+    return ImageInfo(url, ssh_user='ubuntu')
 
 
 class ImageInfo:
