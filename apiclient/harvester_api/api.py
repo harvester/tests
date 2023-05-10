@@ -4,11 +4,13 @@ import requests
 from pkg_resources import parse_version
 from requests.packages.urllib3.util.retry import Retry
 
-from .managers import (HostManager, KeypairManager, ImageManager, SettingManager,
-                       NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
-                       ClusterNetworkManager, VirtualMachineManager, StorageClassManager,
-                       BackupManager, VersionManager, UpgradeManager, LonghornReplicaManager,
-                       LonghornVolumeManager)
+from .managers import (
+    HostManager, KeypairManager, ImageManager, SettingManager,
+    NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
+    ClusterNetworkManager, VirtualMachineManager, StorageClassManager,
+    BackupManager, VersionManager, UpgradeManager, LonghornReplicaManager,
+    LonghornVolumeManager, VirtualMachineSnapshotManager
+)
 
 from .managers import DEFAULT_NAMESPACE
 
@@ -49,8 +51,9 @@ class HarvesterAPI:
         self.clusternetworks = ClusterNetworkManager(self)
         self.vms = VirtualMachineManager(self)
         self.backups = BackupManager(self)
+        self.vm_snapshots = VirtualMachineSnapshotManager(self)
         self.scs = StorageClassManager(self)
-        self.backups = BackupManager(self)
+        # not available in dashboard
         self.versions = VersionManager(self)
         self.upgrades = UpgradeManager(self)
         self.lhreplicas = LonghornReplicaManager(self)
