@@ -54,6 +54,16 @@ class RestoreSpec:
         return cls(False, delete_volumes=delete_volumes)
 
 
+class SnapshotRestoreSpec(RestoreSpec):
+    @classmethod
+    def for_new(cls, vm_name):
+        return super().for_new(vm_name, None)
+
+    @classmethod
+    def for_existing(cls):
+        return super().for_existing(False)
+
+
 class VMSpec:
     # ref: https://kubevirt.io/api-reference/master/definitions.html#_v1_virtualmachineinstancespec
     # defaults
