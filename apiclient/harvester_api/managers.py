@@ -6,7 +6,8 @@ from collections.abc import Mapping
 from pkg_resources import parse_version
 
 from .models import (
-    VolumeSpec, VMSpec, BaseSettingSpec, BackupTargetSpec, RestoreSpec, StorageNetworkSpec
+    VolumeSpec, VMSpec, BaseSettingSpec, BackupTargetSpec, RestoreSpec, StorageNetworkSpec,
+    SnapshotRestoreSpec
 )
 
 DEFAULT_NAMESPACE = "default"
@@ -388,11 +389,14 @@ class BackupManager(BaseManager):
         return self.api.vms.backup(*args, **kwargs)
 
     def restore(self, name, restore_spec, namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
-        _, data = self.get(name, namespace)
-        old_vm = data['spec']['source']['name']
-        spec = restore_spec.to_dict(name, namespace, old_vm)
-        path = self.RESTORE_fmt.format(ns=restore_spec.namespace or namespace)
-        return self._create(path, json=spec, raw=raw, **kwargs)
+        code, data = self.get(name, namespace)
+        try:
+            old_vm = data['spec']['source']['name']
+            spec = restore_spec.to_dict(name, namespace, old_vm)
+            path = self.RESTORE_fmt.format(ns=restore_spec.namespace or namespace)
+            return self._create(path, json=spec, raw=raw, **kwargs)
+        except KeyError:
+            return code, data
 
     def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
         path = self.BACKUP_fmt.format(uid=f"/{name}", ns=namespace)
@@ -400,6 +404,7 @@ class BackupManager(BaseManager):
 
 
 class VirtualMachineSnapshotManager(BackupManager):
+    RestoreSpec = SnapshotRestoreSpec
 
     def create_data(self, vm_uid, vm_name, snapshot_name, namespace):
         return {
