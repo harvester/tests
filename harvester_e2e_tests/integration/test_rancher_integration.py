@@ -36,11 +36,6 @@ def rancher_wait_timeout(request):
 
 
 @pytest.fixture(scope='class')
-def harvester_cluster_name(unique_name):
-    return f"{unique_name}-harv"
-
-
-@pytest.fixture(scope='class')
 def rke1_cluster_name(unique_name):
     return f"{unique_name}-rke1"
 
@@ -136,68 +131,28 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 
 
 @pytest.fixture(scope='class')
-def harvester_mgmt_cluster(api_client, rancher_api_client, harvester_cluster_name,
-                           wait_timeout):
-    code, data = rancher_api_client.mgmt_clusters.create_harvester(harvester_cluster_name)
+def harvester_mgmt_cluster(api_client, rancher_api_client, unique_name, wait_timeout):
+    cluster_name = f"{unique_name}-harv"
 
-    assert 201 == code, (
-        f"Failed to create Harvester MgmtCluster {harvester_cluster_name} with \
-            error: {code}, {data}"
-    )
+    code, data = rancher_api_client.mgmt_clusters.create_harvester(cluster_name)
+    assert 201 == code, (code, data)
 
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        code, data = rancher_api_client.mgmt_clusters.get(
-            harvester_cluster_name)
-        if data.get('status', {}).get('clusterName', "") != "":
+        code, data = rancher_api_client.mgmt_clusters.get(cluster_name)
+        if data.get('status', {}).get('clusterName'):
             break
         sleep(5)
     else:
         raise AssertionError(
-            f"Can't find clusterName in MgmtCluster \
-                {harvester_cluster_name} with {wait_timeout} timed out\n"
+            f"Can't find clusterName in MgmtCluster {cluster_name} with {wait_timeout} timed out\n"
             f"Got error: {code}, {data}"
         )
 
-    cluster_name = data['status']['clusterName']
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = rancher_api_client.cluster_registration_tokens.get(cluster_name)
-        if code == 200 and 'manifestUrl' in data:
-            break
-        sleep(5)
-    else:
-        raise AssertionError(
-            f"Can't find clusterRegistrationToken for cluster {cluster_name} \
-                with {wait_timeout} timed out\n"
-            f"Got error: {code}, {data}"
-        )
+    yield dict(id=data['status']['clusterName'], name=cluster_name)
 
-    manifest_url = data['manifestUrl']
-    updates = {
-        "value": manifest_url
-    }
-    code, data = api_client.settings.update("cluster-registration-url", updates)
-    assert 200 == code, (
-        f"Failed to update cluster-registration-url setting with error: {code}, {data}"
-    )
-
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = rancher_api_client.mgmt_clusters.get(harvester_cluster_name)
-        if data.get('status', {}).get('ready', False):
-            break
-        sleep(5)
-    else:
-        raise AssertionError(
-            f"MgmtCluster {harvester_cluster_name} can't be ready \
-                with {wait_timeout} timed out\n"
-            f"Got error: {code}, {data}"
-        )
-
-    yield data
-
-    rancher_api_client.mgmt_clusters.delete(harvester_cluster_name)
+    # teardown
+    rancher_api_client.mgmt_clusters.delete(cluster_name)
     updates = {
         "value": ""
     }
@@ -211,7 +166,7 @@ def harvester_cloud_credential(api_client, rancher_api_client,
     code, data = rancher_api_client.cloud_credentials.create(
         unique_name,
         harvester_kubeconfig,
-        harvester_mgmt_cluster['status']['clusterName']
+        harvester_mgmt_cluster['id']
     )
 
     assert 201 == code, (
@@ -231,12 +186,52 @@ def harvester_cloud_credential(api_client, rancher_api_client,
 @pytest.mark.p0
 @pytest.mark.rancher_integration_with_external_rancher
 class TestRKE:
+    @pytest.mark.rancher
+    @pytest.mark.dependency(name="import_harvester")
+    def test_import_harvester(self, api_client, rancher_api_client, wait_timeout,
+                              harvester_mgmt_cluster):
+        cluster_id, cluster_name = harvester_mgmt_cluster['id'], harvester_mgmt_cluster['name']
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = rancher_api_client.cluster_registration_tokens.get(cluster_id)
+            if 200 == code and data.get('manifestUrl'):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Harvester Imported but registration URL is NOT available after {wait_timeout}s\n"
+                f"Cluster Info: {harvester_mgmt_cluster}\n"
+                f"API Status({code}): {data}"
+            )
+
+        updates = dict(value=data['manifestUrl'])
+        code, data = api_client.settings.update("cluster-registration-url", updates)
+        assert 200 == code, (
+            f"Failed to update Harvester's settings `cluster-registration-url`"
+            f" with error: {code}, {data}"
+        )
+
+        # Check Cluster becomes `active` in Rancher's Virtualization Management
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = rancher_api_client.mgmt_clusters.get(cluster_name)
+            state = data['metadata']['state']
+            if "active" == state['name'] and "Ready" in state['message']:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Imported Harvester stuck in state {state['name']!r} after {wait_timeout}s\n"
+                f"API Status({code}): {data}"
+            )
+
     @pytest.mark.rke2
-    @pytest.mark.dependency()
+    @pytest.mark.dependency(depends=["import_harvester"])
     def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                          harvester_cloud_credential, rke2_cluster_name, focal_image, vlan_network,
                          k8s_version, rancher_wait_timeout):
-        cluster_name = harvester_mgmt_cluster['status']['clusterName']
+        cluster_name = harvester_mgmt_cluster['id']
         code, data = rancher_api_client.kube_configs.create(
             rke2_cluster_name,
             cluster_name
@@ -315,7 +310,7 @@ class TestRKE:
     @pytest.mark.dependency(depends=["TestRKE::test_create_rke2"])
     def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
                         unique_name, wait_timeout):
-        cluster_id = harvester_mgmt_cluster['status']['clusterName']
+        cluster_id = harvester_mgmt_cluster['id']
         capi = rancher_api_client.clusters.explore(cluster_id)
         # Create PVC
         size = "1Gi"
@@ -401,7 +396,7 @@ class TestRKE:
         assert 0 == remaining_vm_cnt, (f"Still have {remaining_vm_cnt} RKE2 VMs")
 
     @pytest.mark.rke1
-    @pytest.mark.dependency()
+    @pytest.mark.dependency(depends=["import_harvester"])
     def test_create_rke1(self, rancher_api_client, unique_name, rancher_wait_timeout,
                          rke1_cluster_name, rke1_k8s_version, harvester_cloud_credential,
                          focal_image, vlan_network):
