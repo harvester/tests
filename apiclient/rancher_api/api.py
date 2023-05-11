@@ -7,7 +7,8 @@ from requests.packages.urllib3.util.retry import Retry
 from .managers import (
     CloudCredentialManager, ClusterRegistrationTokenManager, HarvesterConfigManager,
     KubeConfigManager, MgmtClusterManager, SecretManager, SettingManager,
-    ClusterManager, NodeTemplateManager, NodePoolManager)
+    ClusterManager, NodeTemplateManager, NodePoolManager, UserManager
+)
 
 
 class RancherAPI:
@@ -32,6 +33,7 @@ class RancherAPI:
         self._version = None
 
         self.endpoint = endpoint
+        self.users = UserManager(self)
         self.cloud_credentials = CloudCredentialManager(self)
         self.cluster_registration_tokens = ClusterRegistrationTokenManager(self)
         self.harvester_configs = HarvesterConfigManager(self)

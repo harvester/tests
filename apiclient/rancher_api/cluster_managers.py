@@ -1,7 +1,68 @@
-from .managers import BaseManager
+from .managers import BaseManager, merge_dict
 from .cluster_models import PersistentVolumeClaimSpec
 
 DEFAULT_NAMESPACE = "default"
+
+
+class ProjectManager(BaseManager):
+    PATH_fmt = "v3/projects/{pid}"
+
+    def get(self, project_id="", *, raw=False, **kwargs):
+        if project_id:
+            path = self.v3_PATH.format(pid=project_id)
+            params = dict() or kwargs.pop('params', {})
+        else:
+            path = self.PATH_fmt.format(pid="")
+            params = merge_dict(dict(clusterId=self.api.cluster_id), kwargs.pop('params', {}))
+        return self._get(path, from_cluster=False, raw=raw, params=params)
+
+    def get_by_name(self, name, *, raw=False):
+        resp = self.get(params=dict(name=name))
+        if raw:
+            return resp
+        try:
+            code, data = resp
+            return code, data['data'][0]
+        except KeyError:
+            return code, data
+        except IndexError:
+            return 404, dict(type="error", status=404, code="notFound",
+                             message=f"Failed to find project {name!r}")
+
+    def delete(self, project_id, *, raw=False):
+        path = self.PATH_fmt.format(pid=project_id)
+        return self._delete(path, from_cluster=False, raw=raw)
+
+
+class ProjectMemberManager(BaseManager):
+    PATH_fmt = "v3/projectroletemplatebindings/{uid}"
+
+    def get(self, uid="", *, raw=False, **kwargs):
+        resp = self._get(self.PATH_fmt.format(uid=uid), from_cluster=False, **kwargs)
+        if raw:
+            return resp
+        try:
+            code, data = resp
+            cluster_id = self.api.cluster_id
+            data['data'] = [d for d in data['data'] if d['projectId'].startswith(cluster_id)]
+            return code, data
+        except KeyError:
+            return code, data
+
+    def get_by_project_id(self, project_id, *, raw=False):
+        return self.get(params=dict(projectId=project_id), raw=raw)
+
+    def create(self, project_id, user_pid, role_tid, *, raw=False):
+        data = {
+            "type": "projectroletemplatebinding",
+            "projectId": project_id,
+            "roleTemplateId": role_tid,
+            "userPrincipalId": user_pid
+        }
+        return self._create(self.PATH_fmt.format(uid=""), json=data, raw=raw, from_cluster=False)
+
+    def delete(self, uid, *, raw=False):
+        return self._delete(self.PATH_fmt.format(uid=uid), raw=raw, from_cluster=False)
 
 
 class PersistentVolumeManager(BaseManager):
