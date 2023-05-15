@@ -40,6 +40,7 @@ image-cache-url: ''
 terraform-scripts-location: 'terraform_test_artifacts'
 
 # Backup Target S3
+s3-endpoint: ''
 region: ''
 accessKeyId: ''
 secretAccessKey: ''
