@@ -22,10 +22,17 @@ from pytest_dependency import DependencyManager as DepMgr
 
 def check_depends(self, depends, item):
     # monkey patch `DependencyManager.checkDepends`
-    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
 
     marker = item.get_closest_marker("dependency")
-    if marker.kwargs.get('any'):
+    if marker and marker.kwargs.get('param'):
+        try:
+            param_id = item.callspec.id
+            depends = [f"{d}[{param_id}]" for d in depends]
+        except AttributeError:
+            pass
+
+    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
+    if marker and marker.kwargs.get('any'):
         for depend in depends:
             try:
                 self._check_depend([depend], item)
@@ -344,6 +351,9 @@ def pytest_configure(config):
         ('rancher', ("{_r} reancher integration tests")),
         ('terraform', ("{_r} terraform tests")),
         ('virtualmachines', ('{_r} virtualmachines tests')),
+        ('backup_target', ('{_r} backup-target tests')),
+        ('S3', ('{_r} backup-target tests with S3')),
+        ('NFS', ('{_r} backup-target tests with NFS'))
     ]
 
     for m, msg in markers:
