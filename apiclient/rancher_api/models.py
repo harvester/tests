@@ -1,9 +1,3 @@
-# from copy import deepcopy
-# from json import dumps, loads
-
-# import yaml
-
-
 class UserSpec:
     _data = None
 
