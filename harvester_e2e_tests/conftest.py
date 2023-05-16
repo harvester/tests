@@ -179,7 +179,7 @@ def pytest_addoption(parser):
     parser.addoption(
         '--s3-endpoint',
         action='store',
-        default=config_data['s3-endpoint'],
+        default=config_data.get('s3-endpoint', ''),
         help=('S3 endpoint')
     )
     parser.addoption(
