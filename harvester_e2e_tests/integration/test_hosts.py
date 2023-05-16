@@ -212,8 +212,9 @@ def test_verify_host_info(api_client):
 
 @pytest.mark.hosts
 @pytest.mark.p0
-def test_maintenance_mode_trigger_vm_migrate(api_client, focal_vm, wait_timeout,
-                                             available_node_names):
+def test_maintenance_mode_trigger_vm_migrate(
+    api_client, focal_vm, wait_timeout, available_node_names
+):
     assert 2 <= len(available_node_names), (
         f"The cluster only have {len(available_node_names)} available node. \
             It's not enough for migration test."
@@ -268,8 +269,9 @@ def test_maintenance_mode_trigger_vm_migrate(api_client, focal_vm, wait_timeout,
 @pytest.mark.hosts
 @pytest.mark.p0
 @pytest.mark.dependency(depends=["host_poweroff, host_poweron"])
-def test_poweroff_node_trigger_vm_migrate(api_client, host_state, focal_vm, wait_timeout,
-                                          available_node_names, vm_force_reset_policy):
+def test_poweroff_node_trigger_vm_migrate(
+    api_client, host_state, focal_vm, wait_timeout, available_node_names, vm_force_reset_policy
+):
     assert 2 <= len(available_node_names), (
         f"The cluster only have {len(available_node_names)} available node. \
             It's not enough for migration test."
@@ -334,4 +336,159 @@ def test_poweroff_node_trigger_vm_migrate(api_client, host_state, focal_vm, wait
         raise AssertionError(
             f"Node {node['id']} still unavailable after PowerOn script executed"
             f", script path: {host_state.path}"
+        )
+
+
+@pytest.mark.p0
+@pytest.mark.hosts
+@pytest.mark.dependency(depends=["host_poweroff, host_poweron"])
+def test_delete_vm_while_host_shutdown(
+    api_client, host_state, wait_timeout, focal_vm, available_node_names
+):
+    assert 2 <= len(available_node_names), (
+        f"The cluster only have {len(available_node_names)} available node."
+        " It's not enough for test."
+    )
+
+    code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+    assert 200 == code, (
+        f"Can't get VMI {focal_vm['namespace']}/{focal_vm['name']} with error: {code}, {data}"
+    )
+    src_host = data['status']['nodeName']
+
+    # poweroff host
+    _, node = api_client.hosts.get(src_host)
+    node_ip = next(val["address"] for val in node['status']['addresses']
+                   if val["type"] == "InternalIP")
+    rc, out, err = host_state.power(node['id'], node_ip, on=False)
+    assert rc == 0, (f"Failed to PowerOff node {node['id']} with error({rc}):\n"
+                     f"stdout: {out}\n\nstderr: {err}")
+    sleep(host_state.delay)  # Wait for the node to disappear
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        _, metric = api_client.hosts.get_metrics(node['id'])
+        if metric.get("status") == 404:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Node {node['id']} still available after PowerOff script executed"
+            f", script path: {host_state.path}"
+        )
+
+    # Delete VM and check it been deleted
+    code, data = api_client.vms.delete(focal_vm['name'], focal_vm['namespace'])
+    assert 200 == code, (code, data)
+    spec = api_client.vms.Spec.from_dict(data)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(focal_vm['name'], focal_vm['namespace'])
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f"Failed to Delete VM({focal_vm['name']}) with errors:\n"
+            f"Status({code}): {data}"
+        )
+
+    fails, check = [], dict()
+    for vol in spec.volumes:
+        vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+        check[vol_name] = api_client.volumes.delete(vol_name)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        l_check = dict()
+        for vol_name, (code, data) in check.items():
+            if 200 != code:
+                fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
+            else:
+                code, data = api_client.volumes.get(vol_name)
+                if 404 != code:
+                    l_check[vol_name] = (code, data)
+        check = l_check
+        if not check:
+            break
+        sleep(5)
+    else:
+        for vol_name, (code, data) in check.items():
+            fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
+
+    assert not fails, (
+        f"Failed to delete VM({focal_vm['name']})'s volumes with errors:\n"
+        "\n".join(f"Volume({n}): {r}" for n, r in fails)
+    )
+
+    # teardown: power on the host
+    rc, out, err = host_state.power(node['id'], node_ip, on=True)
+    assert rc == 0, (f"Failed to PowerOn node {node['id']} with error({rc}):\n"
+                     f"stdout: {out}\n\nstderr: {err}")
+    sleep(host_state.delay)  # Wait for the node to disappear
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        _, metric = api_client.hosts.get_metrics(node['id'])
+        if not metric.get("metadata", {}).get("state", {}).get("error"):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Node {node['id']} still unavailable after PowerOn script executed"
+            f", script path: {host_state.path}"
+        )
+
+
+@pytest.mark.p0
+@pytest.mark.hosts
+@pytest.mark.dependency(depends=["host_poweroff, host_poweron"])
+def test_vm_migrated_after_host_reboot(
+    api_client, host_state, wait_timeout, focal_vm, available_node_names
+):
+    assert 2 <= len(available_node_names), (
+        f"The cluster only have {len(available_node_names)} available node. \
+            It's not enough for migration test."
+    )
+
+    code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+    assert 200 == code, (
+        f"Can't get VMI {focal_vm['namespace']}/{focal_vm['name']} with error: {code}, {data}"
+    )
+    src_host = data['status']['nodeName']
+
+    # reboot the host
+    _, node = api_client.hosts.get(src_host)
+    node_ip = next(val["address"] for val in node['status']['addresses']
+                   if val["type"] == "InternalIP")
+    rc, out, err = host_state.reboot(node['id'], node_ip)
+    assert rc == 0, (f"Failed to PowerOff node {node['id']} with error({rc}):\n"
+                     f"stdout: {out}\n\nstderr: {err}")
+    sleep(host_state.delay)  # Wait for the node to disappear
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        _, metric = api_client.hosts.get_metrics(node['id'])
+        if metric.get("status") == 404:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Node {node['id']} still available after PowerOff script executed"
+            f", script path: {host_state.path}"
+        )
+
+    # check vm is migrated to another host
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+        if data.get('status', {}).get('phase', "") == "Running":
+            assert src_host != data['status']['nodeName'], (
+                f"Failed to migrate vm {focal_vm['namespace']}/{focal_vm['name']} \
+                    from {src_host} to another node"
+            )
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"VM {focal_vm['namespace']}/{focal_vm['name']} can't be Running \
+                with {wait_timeout} timed out\n"
+            f"Got error: {code}, {data}"
         )
