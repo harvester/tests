@@ -188,6 +188,14 @@ def base_vm_with_data(
         "data": dict(path="~/vmname", content=f'{unique_vm_name}')
     }
 
+    # remove backups link to the VM and is ready
+    code, data = api_client.backups.get()
+    for backup in data['data']:
+        if (backup['status'].get('readyToUse') and
+                unique_vm_name == backup['spec']['source']['name']):
+            api_client.backups.delete(backup['metadata']['name'])
+
+    # remove created VM
     code, data = api_client.vms.get(unique_vm_name)
     vm_spec = api_client.vms.Spec.from_dict(data)
 
