@@ -13,7 +13,7 @@ def focal_image_url():
     return "http://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img"  # noqa
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
     code, data = api_client.images.create_by_url(unique_name, focal_image_url)
     assert 201 == code, (
