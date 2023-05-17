@@ -30,31 +30,45 @@
 
 import pytest
 
-pytest_plugins = [
-    &#34;harvester_e2e_tests.fixtures.api_client&#34;
-]
+pytest_plugins = [&#34;harvester_e2e_tests.fixtures.api_client&#34;]
 
 # TODO: remove it after update CI&#39;s config.yml
-DEFAULT_OPENSUSE_IMAGE_URL = (&#34;https://download.opensuse.org/repositories/Cloud:/Images:&#34;
-                              &#34;/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2&#34;)
+DEFAULT_OPENSUSE_IMAGE_URL = (
+    &#34;https://download.opensuse.org/repositories/Cloud:/Images:&#34;
+    &#34;/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2&#34;
+)
 
 
 @pytest.fixture(scope=&#34;session&#34;)
 def image_opensuse(request, api_client):
-    image_server = request.config.getoption(&#39;--image-cache-url&#39;)
-    url = urlparse(request.config.getoption(&#39;--opensuse-image-url&#39;) or DEFAULT_OPENSUSE_IMAGE_URL)
+    image_server = request.config.getoption(&#34;--image-cache-url&#34;)
+    url = urlparse(
+        request.config.getoption(&#34;--opensuse-image-url&#34;) or DEFAULT_OPENSUSE_IMAGE_URL
+    )
 
     if image_server:
-        *_, image_name = url.path.rsplit(&#39;/&#39;, 1)
+        *_, image_name = url.path.rsplit(&#34;/&#34;, 1)
         url = urlparse(urljoin(f&#34;{image_server}/&#34;, image_name))
 
-    return ImageInfo(url, ssh_user=&#39;opensuse&#39;)
+    return ImageInfo(url, name=&#34;opensuse&#34;, ssh_user=&#34;opensuse&#34;)
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def image_k3s(request):
+    external = &#34;https://github.com/rancher/k3os/releases/download/v0.20.11-k3s2r1/&#34;
+    base_url = request.config.getoption(&#34;--image-cache-url&#34;) or external
+    url = urlparse(urljoin(f&#34;{base_url}/&#34;, &#34;k3os-amd64.iso&#34;))
+
+    return ImageInfo(url, ssh_user=&#34;k3s&#34;)
 
 
 class ImageInfo:
-    def __init__(self, url_result, ssh_user=None):
+    def __init__(self, url_result, name=&#34;&#34;, ssh_user=None):
         self.url_result = url_result
-        self.name = self.url.rsplit(&#39;/&#39;, 1)[-1]
+        if name:
+            self.name = name
+        else:
+            self.name = self.url.rsplit(&#34;/&#34;, 1)[-1]
         self.ssh_user = ssh_user
 
     def __repr__(self):
@@ -62,12 +76,12 @@ class ImageInfo:
 
     @property
     def is_file(self):
-        return &#39;file&#39; == self.url_result.scheme
+        return &#34;file&#34; == self.url_result.scheme
 
     @property
     def url(self):
         if self.is_file:
-            return self.url_result.geturl().split(&#39;file://&#39;, 1)[-1]
+            return self.url_result.geturl().split(&#34;file://&#34;, 1)[-1]
         return self.url_result.geturl()</code></pre>
 </details>
 </section>
@@ -78,6 +92,24 @@ class ImageInfo:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="harvester_e2e_tests.fixtures.images.image_k3s"><code class="name flex">
+<span>def <span class="ident">image_k3s</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def image_k3s(request):
+    external = &#34;https://github.com/rancher/k3os/releases/download/v0.20.11-k3s2r1/&#34;
+    base_url = request.config.getoption(&#34;--image-cache-url&#34;) or external
+    url = urlparse(urljoin(f&#34;{base_url}/&#34;, &#34;k3os-amd64.iso&#34;))
+
+    return ImageInfo(url, ssh_user=&#34;k3s&#34;)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.images.image_opensuse"><code class="name flex">
 <span>def <span class="ident">image_opensuse</span></span>(<span>request, api_client)</span>
 </code></dt>
@@ -89,14 +121,16 @@ class ImageInfo:
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
 def image_opensuse(request, api_client):
-    image_server = request.config.getoption(&#39;--image-cache-url&#39;)
-    url = urlparse(request.config.getoption(&#39;--opensuse-image-url&#39;) or DEFAULT_OPENSUSE_IMAGE_URL)
+    image_server = request.config.getoption(&#34;--image-cache-url&#34;)
+    url = urlparse(
+        request.config.getoption(&#34;--opensuse-image-url&#34;) or DEFAULT_OPENSUSE_IMAGE_URL
+    )
 
     if image_server:
-        *_, image_name = url.path.rsplit(&#39;/&#39;, 1)
+        *_, image_name = url.path.rsplit(&#34;/&#34;, 1)
         url = urlparse(urljoin(f&#34;{image_server}/&#34;, image_name))
 
-    return ImageInfo(url, ssh_user=&#39;opensuse&#39;)</code></pre>
+    return ImageInfo(url, name=&#34;opensuse&#34;, ssh_user=&#34;opensuse&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -106,7 +140,7 @@ def image_opensuse(request, api_client):
 <dl>
 <dt id="harvester_e2e_tests.fixtures.images.ImageInfo"><code class="flex name class">
 <span>class <span class="ident">ImageInfo</span></span>
-<span>(</span><span>url_result, ssh_user=None)</span>
+<span>(</span><span>url_result, name='', ssh_user=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -115,9 +149,12 @@ def image_opensuse(request, api_client):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ImageInfo:
-    def __init__(self, url_result, ssh_user=None):
+    def __init__(self, url_result, name=&#34;&#34;, ssh_user=None):
         self.url_result = url_result
-        self.name = self.url.rsplit(&#39;/&#39;, 1)[-1]
+        if name:
+            self.name = name
+        else:
+            self.name = self.url.rsplit(&#34;/&#34;, 1)[-1]
         self.ssh_user = ssh_user
 
     def __repr__(self):
@@ -125,12 +162,12 @@ def image_opensuse(request, api_client):
 
     @property
     def is_file(self):
-        return &#39;file&#39; == self.url_result.scheme
+        return &#34;file&#34; == self.url_result.scheme
 
     @property
     def url(self):
         if self.is_file:
-            return self.url_result.geturl().split(&#39;file://&#39;, 1)[-1]
+            return self.url_result.geturl().split(&#34;file://&#34;, 1)[-1]
         return self.url_result.geturl()</code></pre>
 </details>
 <h3>Instance variables</h3>
@@ -144,7 +181,7 @@ def image_opensuse(request, api_client):
 </summary>
 <pre><code class="python">@property
 def is_file(self):
-    return &#39;file&#39; == self.url_result.scheme</code></pre>
+    return &#34;file&#34; == self.url_result.scheme</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.images.ImageInfo.url"><code class="name">var <span class="ident">url</span></code></dt>
@@ -157,7 +194,7 @@ def is_file(self):
 <pre><code class="python">@property
 def url(self):
     if self.is_file:
-        return self.url_result.geturl().split(&#39;file://&#39;, 1)[-1]
+        return self.url_result.geturl().split(&#34;file://&#34;, 1)[-1]
     return self.url_result.geturl()</code></pre>
 </details>
 </dd>
@@ -179,6 +216,7 @@ def url(self):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.images.image_k3s" href="#harvester_e2e_tests.fixtures.images.image_k3s">image_k3s</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.images.image_opensuse" href="#harvester_e2e_tests.fixtures.images.image_opensuse">image_opensuse</a></code></li>
 </ul>
 </li>
