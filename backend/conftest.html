@@ -50,10 +50,17 @@ from pytest_dependency import DependencyManager as DepMgr
 
 def check_depends(self, depends, item):
     # monkey patch `DependencyManager.checkDepends`
-    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
 
     marker = item.get_closest_marker(&#34;dependency&#34;)
-    if marker.kwargs.get(&#39;any&#39;):
+    if marker and marker.kwargs.get(&#39;param&#39;):
+        try:
+            param_id = item.callspec.id
+            depends = [f&#34;{d}[{param_id}]&#34; for d in depends]
+        except AttributeError:
+            pass
+
+    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
+    if marker and marker.kwargs.get(&#39;any&#39;):
         for depend in depends:
             try:
                 self._check_depend([depend], item)
@@ -196,6 +203,12 @@ def pytest_addoption(parser):
         action=&#39;store&#39;,
         default=config_data[&#39;region&#39;],
         help=(&#39;Region of the bucket&#39;)
+    )
+    parser.addoption(
+        &#39;--s3-endpoint&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;s3-endpoint&#39;, &#39;&#39;),
+        help=(&#39;S3 endpoint&#39;)
     )
     parser.addoption(
         &#39;--nfs-endpoint&#39;,
@@ -366,6 +379,9 @@ def pytest_configure(config):
         (&#39;rancher&#39;, (&#34;{_r} reancher integration tests&#34;)),
         (&#39;terraform&#39;, (&#34;{_r} terraform tests&#34;)),
         (&#39;virtualmachines&#39;, (&#39;{_r} virtualmachines tests&#39;)),
+        (&#39;backup_target&#39;, (&#39;{_r} backup-target tests&#39;)),
+        (&#39;S3&#39;, (&#39;{_r} backup-target tests with S3&#39;)),
+        (&#39;NFS&#39;, (&#39;{_r} backup-target tests with NFS&#39;))
     ]
 
     for m, msg in markers:
@@ -442,10 +458,17 @@ def pytest_collection_modifyitems(config, items):
 </summary>
 <pre><code class="python">def check_depends(self, depends, item):
     # monkey patch `DependencyManager.checkDepends`
-    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
 
     marker = item.get_closest_marker(&#34;dependency&#34;)
-    if marker.kwargs.get(&#39;any&#39;):
+    if marker and marker.kwargs.get(&#39;param&#39;):
+        try:
+            param_id = item.callspec.id
+            depends = [f&#34;{d}[{param_id}]&#34; for d in depends]
+        except AttributeError:
+            pass
+
+    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
+    if marker and marker.kwargs.get(&#39;any&#39;):
         for depend in depends:
             try:
                 self._check_depend([depend], item)
@@ -594,6 +617,12 @@ def pytest_collection_modifyitems(config, items):
         action=&#39;store&#39;,
         default=config_data[&#39;region&#39;],
         help=(&#39;Region of the bucket&#39;)
+    )
+    parser.addoption(
+        &#39;--s3-endpoint&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;s3-endpoint&#39;, &#39;&#39;),
+        help=(&#39;S3 endpoint&#39;)
     )
     parser.addoption(
         &#39;--nfs-endpoint&#39;,
@@ -833,6 +862,9 @@ def pytest_collection_modifyitems(config, items):
         (&#39;rancher&#39;, (&#34;{_r} reancher integration tests&#34;)),
         (&#39;terraform&#39;, (&#34;{_r} terraform tests&#34;)),
         (&#39;virtualmachines&#39;, (&#39;{_r} virtualmachines tests&#39;)),
+        (&#39;backup_target&#39;, (&#39;{_r} backup-target tests&#39;)),
+        (&#39;S3&#39;, (&#39;{_r} backup-target tests with S3&#39;)),
+        (&#39;NFS&#39;, (&#39;{_r} backup-target tests with NFS&#39;))
     ]
 
     for m, msg in markers:
