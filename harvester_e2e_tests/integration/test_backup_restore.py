@@ -106,12 +106,20 @@ def config_backup_target(api_client, backup_config):
 
     yield spec
 
+    # restore to original backup-target and remove backups not belong to it
     code, data = api_client.settings.update('backup-target', origin_spec)
+    code, data = api_client.backups.get()
+    assert 200 == code, "Failed to list backups"
+
+    for backup in data['data']:
+        endpoint = backup['status']['backupTarget'].get('endpoint')
+        if endpoint != origin_spec.value.get('endpoint'):
+            api_client.backups.delete(backup['metadata']['name'])
 
 
 @pytest.fixture(scope="class")
 def base_vm_with_data(
-    api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image
+    api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image, backup_config
 ):
     unique_vm_name = f"{datetime.now().strftime('%m%S%f')}-{unique_name}"
     cpu, mem = 1, 2
@@ -436,7 +444,7 @@ class TestMultipleBackupRestore:
     @pytest.mark.dependency()
     def test_backup_multiple(
         self, api_client, wait_timeout, host_shell, vm_shell, ssh_keypair,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         def write_data(content):
             pub_key, pri_key = ssh_keypair
@@ -525,7 +533,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_first_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
         pub_key, pri_key = ssh_keypair
@@ -631,7 +639,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_last_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
         pub_key, pri_key = ssh_keypair
@@ -736,7 +744,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_middle_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
         pub_key, pri_key = ssh_keypair
