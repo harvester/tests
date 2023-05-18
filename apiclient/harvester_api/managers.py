@@ -221,6 +221,18 @@ class VolumeManager(BaseManager):
         return self._create(path, params=params, json=export_spec, raw=raw)
 
 
+class VolumeSnapshotManager(BaseManager):
+    PATH_fmt = "v1/harvester/snapshot.storage.k8s.io.volumesnapshots/{ns}/{uid}"
+
+    def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace)
+        return self._delete(path, raw=raw)
+
+    def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=name, ns=namespace)
+        return self._get(path, raw=raw)
+
+
 class TemplateManager(BaseManager):
     # get, create, delete
     PATH_fmt = "apis/{{API_VERSION}}/namespaces/{ns}/virtualmachinetemplates/{uid}"
