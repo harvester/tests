@@ -6,7 +6,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 from .managers import (
     HostManager, KeypairManager, ImageManager, SettingManager,
-    NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
+    NetworkManager, VolumeManager, VolumeSnapshotManager, TemplateManager, SupportBundlemanager,
     ClusterNetworkManager, VirtualMachineManager, StorageClassManager,
     BackupManager, VersionManager, UpgradeManager, LonghornReplicaManager,
     LonghornVolumeManager, VirtualMachineSnapshotManager
@@ -45,6 +45,7 @@ class HarvesterAPI:
         self.images = ImageManager(self)
         self.networks = NetworkManager(self)
         self.volumes = VolumeManager(self)
+        self.volsnapshots = VolumeSnapshotManager(self)
         self.templates = TemplateManager(self)
         self.supportbundle = SupportBundlemanager(self)
         self.settings = SettingManager(self)
