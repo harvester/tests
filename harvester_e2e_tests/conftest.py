@@ -418,39 +418,46 @@ def pytest_collection_modifyitems(session, config, items):
         "class": pytest.Class
     }
     # ref: https://github.com/RKrahl/pytest-dependency/blob/0.5.1/pytest_dependency.py#L77
-    # named_items : dict['dep-scope', dict['dep-name', list['test-item']]]
-    deselected, named_items = list(), dict()
-    for item in all_items:
+    # deselected : list['test-item']
+    # named_items : dict[('dep-scope', 'dep-name'), list[(idx, 'test-item')]]
+    # picked : list[(idx, 'test-item')]
+    deselected, named_items, picked = list(), dict(), list()
+    for idx, item in enumerate(all_items):
         if item in items:
-            continue
+            picked.append((idx, item))
         try:
             marker = item.get_closest_marker('dependency')
             scope = marker.kwargs.get('scope', 'module')
             node = item.getparent(scope_cls[scope])
-            named_items.setdefault(node, {}).setdefault(marker.kwargs['name'], [])
-            named_items[node][marker.kwargs['name']].append(item)
+            named_items.setdefault((node, marker.kwargs['name']), []).append((idx, item))
         except AttributeError:
             deselected.append(item)
             continue
         except KeyError:
             nodeid = item.nodeid.replace("::()::", "::")
             if scope not in ("session", "package"):
-                idx = 2 if scope == "class" else 1
-                nodeid = nodeid.split("::", idx)[idx]
-            named_items[node].setdefault(nodeid, []).append(item)
+                shift = 2 if scope == "class" else 1
+                nodeid = nodeid.split("::", shift)[shift]
+            named_items.setdefault((node, nodeid), []).append((idx, item))
 
-    depends = []
-    for item in items:
+    def pick_depends(idx, item, items):
+        picked = []
         try:
             marker = item.get_closest_marker('dependency')
             scope = marker.kwargs.get('scope', 'module')
             node = item.getparent(scope_cls[scope])
             for name in marker.kwargs['depends']:
-                depends.extend(named_items[node].pop(name, []))
+                picked.extend(items.get((node, name), []))
         except (AttributeError, KeyError):
-            continue
+            pass
+        return picked
 
-    session.items = depends + items
-    deselected.extend(t for v in named_items.values() for ts in v.values() for t in ts)
+    depends = []  # list[(idx, 'test-item')]
+    while picked:
+        depends.append(picked.pop())
+        picked.extend(pick_depends(*depends[-1], named_items))
+
+    session.items = items = [it for idx, it in sorted(set(depends), key=lambda it: it[0])]
+    deselected.extend(t for ts in named_items.values() for i, t in ts if t not in items)
     # update to let the report shows correct counts
     config.pluginmanager.get_plugin('terminalreporter').stats['deselected'] = deselected
