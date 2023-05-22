@@ -134,12 +134,20 @@ def config_backup_target(api_client, backup_config):
 
     yield spec
 
+    # restore to original backup-target and remove backups not belong to it
     code, data = api_client.settings.update(&#39;backup-target&#39;, origin_spec)
+    code, data = api_client.backups.get()
+    assert 200 == code, &#34;Failed to list backups&#34;
+
+    for backup in data[&#39;data&#39;]:
+        endpoint = backup[&#39;status&#39;][&#39;backupTarget&#39;].get(&#39;endpoint&#39;)
+        if endpoint != origin_spec.value.get(&#39;endpoint&#39;):
+            api_client.backups.delete(backup[&#39;metadata&#39;][&#39;name&#39;])
 
 
 @pytest.fixture(scope=&#34;class&#34;)
 def base_vm_with_data(
-    api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image
+    api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image, backup_config
 ):
     unique_vm_name = f&#34;{datetime.now().strftime(&#39;%m%S%f&#39;)}-{unique_name}&#34;
     cpu, mem = 1, 2
@@ -464,7 +472,7 @@ class TestMultipleBackupRestore:
     @pytest.mark.dependency()
     def test_backup_multiple(
         self, api_client, wait_timeout, host_shell, vm_shell, ssh_keypair,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         def write_data(content):
             pub_key, pri_key = ssh_keypair
@@ -553,7 +561,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_first_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
@@ -659,7 +667,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_last_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
@@ -764,7 +772,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_middle_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
@@ -936,7 +944,7 @@ def backup_config(request):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data"><code class="name flex">
-<span>def <span class="ident">base_vm_with_data</span></span>(<span>api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image)</span>
+<span>def <span class="ident">base_vm_with_data</span></span>(<span>api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image, backup_config)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -946,7 +954,7 @@ def backup_config(request):
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
 def base_vm_with_data(
-    api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image
+    api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image, backup_config
 ):
     unique_vm_name = f&#34;{datetime.now().strftime(&#39;%m%S%f&#39;)}-{unique_name}&#34;
     cpu, mem = 1, 2
@@ -1071,7 +1079,15 @@ def config_backup_target(api_client, backup_config):
 
     yield spec
 
-    code, data = api_client.settings.update(&#39;backup-target&#39;, origin_spec)</code></pre>
+    # restore to original backup-target and remove backups not belong to it
+    code, data = api_client.settings.update(&#39;backup-target&#39;, origin_spec)
+    code, data = api_client.backups.get()
+    assert 200 == code, &#34;Failed to list backups&#34;
+
+    for backup in data[&#39;data&#39;]:
+        endpoint = backup[&#39;status&#39;][&#39;backupTarget&#39;].get(&#39;endpoint&#39;)
+        if endpoint != origin_spec.value.get(&#39;endpoint&#39;):
+            api_client.backups.delete(backup[&#39;metadata&#39;][&#39;name&#39;])</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.image"><code class="name flex">
@@ -1608,7 +1624,7 @@ class TestMultipleBackupRestore:
     @pytest.mark.dependency()
     def test_backup_multiple(
         self, api_client, wait_timeout, host_shell, vm_shell, ssh_keypair,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         def write_data(content):
             pub_key, pri_key = ssh_keypair
@@ -1697,7 +1713,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_first_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
@@ -1803,7 +1819,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_last_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
@@ -1908,7 +1924,7 @@ class TestMultipleBackupRestore:
     )
     def test_delete_middle_backup(
         self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-        backup_config, base_vm_with_data
+        backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
@@ -2018,7 +2034,7 @@ class TestMultipleBackupRestore:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_backup_multiple"><code class="name flex">
-<span>def <span class="ident">test_backup_multiple</span></span>(<span>self, api_client, wait_timeout, host_shell, vm_shell, ssh_keypair, backup_config, base_vm_with_data)</span>
+<span>def <span class="ident">test_backup_multiple</span></span>(<span>self, api_client, wait_timeout, host_shell, vm_shell, ssh_keypair, backup_config, config_backup_target, base_vm_with_data)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2029,7 +2045,7 @@ class TestMultipleBackupRestore:
 <pre><code class="python">@pytest.mark.dependency()
 def test_backup_multiple(
     self, api_client, wait_timeout, host_shell, vm_shell, ssh_keypair,
-    backup_config, base_vm_with_data
+    backup_config, config_backup_target, base_vm_with_data
 ):
     def write_data(content):
         pub_key, pri_key = ssh_keypair
@@ -2115,7 +2131,7 @@ def test_backup_multiple(
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_first_backup"><code class="name flex">
-<span>def <span class="ident">test_delete_first_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, base_vm_with_data)</span>
+<span>def <span class="ident">test_delete_first_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, config_backup_target, base_vm_with_data)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2128,7 +2144,7 @@ def test_backup_multiple(
 )
 def test_delete_first_backup(
     self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-    backup_config, base_vm_with_data
+    backup_config, config_backup_target, base_vm_with_data
 ):
     unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
     pub_key, pri_key = ssh_keypair
@@ -2231,7 +2247,7 @@ def test_delete_first_backup(
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_last_backup"><code class="name flex">
-<span>def <span class="ident">test_delete_last_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, base_vm_with_data)</span>
+<span>def <span class="ident">test_delete_last_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, config_backup_target, base_vm_with_data)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2244,7 +2260,7 @@ def test_delete_first_backup(
 )
 def test_delete_last_backup(
     self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-    backup_config, base_vm_with_data
+    backup_config, config_backup_target, base_vm_with_data
 ):
     unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
     pub_key, pri_key = ssh_keypair
@@ -2346,7 +2362,7 @@ def test_delete_last_backup(
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_middle_backup"><code class="name flex">
-<span>def <span class="ident">test_delete_middle_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, base_vm_with_data)</span>
+<span>def <span class="ident">test_delete_middle_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, config_backup_target, base_vm_with_data)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2359,7 +2375,7 @@ def test_delete_last_backup(
 )
 def test_delete_middle_backup(
     self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
-    backup_config, base_vm_with_data
+    backup_config, config_backup_target, base_vm_with_data
 ):
     unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
     pub_key, pri_key = ssh_keypair
