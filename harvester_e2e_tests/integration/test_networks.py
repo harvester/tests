@@ -12,16 +12,15 @@ import shlex
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
-    'harvester_e2e_tests.fixtures.network',
-    'harvester_e2e_tests.fixtures.vm',
     "harvester_e2e_tests.fixtures.virtualmachines"
 ]
 
+tcp = "sudo sed -i 's/AllowTcpForwarding no/AllowTcpForwarding yes/g' /etc/ssh/sshd_config"
+restart_ssh = "sudo systemctl restart sshd.service"
 
 image_name = "suse"
 vm_credential = {"user": "opensuse", "password": "123456"}
 node_user = "rancher"
-node_password = "p@ssword"
 
 cloud_user_data = \
     """
@@ -62,12 +61,9 @@ def vlan_network(request, api_client):
     api_client.clusternetworks.delete(vlan_nic)
 
 
-@pytest.fixture(scope='session')
-def qcow2_image_url():
-    base_url = "https://downloadcontent-us1.opensuse.org/repositories/" \
-        "Cloud:/Images:/Leap_15.4/images/"
-    image_name = "openSUSE-Leap-15.4.x86_64-NoCloud.qcow2"
-    return base_url + image_name
+@pytest.fixture(params=["image_opensuse"], scope="module")
+def image_info(request):
+    return request.getfixturevalue(request.param)
 
 
 @pytest.fixture(scope="module")
@@ -123,13 +119,13 @@ def check_vm_ip_exists(api_client, unique_name, wait_timeout):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
     while endtime > datetime.now():
-        code, data = api_client.vms.vm_instance(unique_name)
+        code, data = api_client.vms.get_status(unique_name)
         if 'ipAddress' in data['status']['interfaces'][0]:
             break
         sleep(5)
     else:
         raise AssertionError(
-            f"Failed to get VM {unique_name} IP address, exceed 10 minutes timed out\n"
+            f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
             f"Still got {code} with {data}"
         )
 
@@ -156,8 +152,8 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     @pytest.mark.dependency(name="mgmt_network_connection")
-    def test_mgmt_network_connection(self, api_client, request, client,
-                                     unique_name, qcow2_image_url):
+    def test_mgmt_network_connection(self, api_client, request, client, image_info,
+                                     unique_name, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/validate-network-management-network/
@@ -167,26 +163,27 @@ class TestBackendNetwork:
         1. Create a new VM
         2. Make sure that the network is set to the management network with masquerade as the type
         3. Wait until the VM boot in running state
-        4. Check can ping VM
-        5. Check can SSH to VM
+        4. Check can ping VM from Harvester node
+        5. Check can SSH to VM from Harvester node
         """
-        wait_timeout = request.config.getoption('--wait-timeout')
-        client_ip = request.config.getoption('--endpoint').strip('https://')
+        vip = request.config.getoption('--endpoint').strip('https://')
+
+        node_password = request.config.getoption("--host-password")
+
+        image_url = image_info.url
 
         # Check image exists
         code, data = api_client.images.get(image_name)
 
         if code == 404:
-            create_image_url(api_client, image_name, qcow2_image_url, wait_timeout)
+            create_image_url(api_client, image_name, image_url, wait_timeout)
 
         # Update AllowTcpForwarding for ssh jumpstart
-        tcp = "sudo sed -i 's/AllowTcpForwarding no/AllowTcpForwarding yes/g' /etc/ssh/sshd_config"
-        restart_ssh = "sudo systemctl restart sshd.service"
 
-        self.ssh_client(client, client_ip, node_user, node_password,
+        self.ssh_client(client, vip, node_user, node_password,
                         tcp, wait_timeout)
 
-        self.ssh_client(client, client_ip, node_user, node_password,
+        self.ssh_client(client, vip, node_user, node_password,
                         restart_ssh, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2)
@@ -196,6 +193,7 @@ class TestBackendNetwork:
         unique_name = unique_name + "-mgmt"
         # Create VM
         spec.add_image(image_name, "default/" + image_name)
+
         code, data = api_client.vms.create(unique_name, spec)
         assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
 
@@ -206,7 +204,8 @@ class TestBackendNetwork:
         check_vm_ip_exists(api_client, unique_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.vm_instance(unique_name)
+        code, data = api_client.vms.get_status(unique_name)
+
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
             ip_addresses = interface['ipAddresses']
@@ -216,7 +215,7 @@ class TestBackendNetwork:
         ping_command = "ping -c 50 {0}".format(mgmt_ip)
 
         _stdout, _stderr = self.ssh_client(
-            client, client_ip, node_user, node_password, ping_command, wait_timeout)
+            client, vip, node_user, node_password, ping_command, wait_timeout)
 
         stdout = _stdout.read().decode('ascii').strip("\n")
 
@@ -225,7 +224,7 @@ class TestBackendNetwork:
 
         # SSH to management ip address and execute command
         _stdout, _stderr = self.ssh_jumpstart(
-            client, mgmt_ip, client_ip, node_user, node_password,
+            client, mgmt_ip, vip, node_user, node_password,
             vm_credential["user"], vm_credential["password"], "ls")
 
         stdout = _stdout.read().decode('ascii').strip("\n")
@@ -237,10 +236,10 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
-    @pytest.mark.dependency(name="vlan_network_connection",
-                            depends=["mgmt_network_connection"])
+    @pytest.mark.dependency(name="vlan_network_connection")
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
-                                     vlan_network, vlan_subnet_prefix_store):
+                                     image_info, vlan_network,
+                                     vlan_subnet_prefix_store, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/validate-network-external-vlan/
@@ -248,14 +247,19 @@ class TestBackendNetwork:
 
         Steps:
         1. Create an external VLAN network
-        2. Create a new VM already with the vlan network
-        3. Check can ping external VLAN IP
-        4. Check can SSH to VM from external IP
+        2. Create a new VM and add the external vlan network
+        3. Check can ping external VLAN IP from external host
+        4. Check can SSH to VM from external IP from external host
         """
-        wait_timeout = request.config.getoption('--wait-timeout')
         unique_name = unique_name + "-vlan"
 
-        # client_ip = request.config.getoption('--endpoint').strip('https://')
+        image_url = image_info.url
+
+        # Check image exists
+        code, data = api_client.images.get(image_name)
+
+        if code == 404:
+            create_image_url(api_client, image_name, image_url, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
@@ -274,7 +278,8 @@ class TestBackendNetwork:
         check_vm_ip_exists(api_client, unique_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.vm_instance(unique_name)
+        code, data = api_client.vms.get_status(unique_name)
+
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
             ip_addresses = interface['ipAddresses']
@@ -307,12 +312,12 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     @pytest.mark.dependency(name="reboot_vlan_connection",
-                            depends=["mgmt_network_connection"])
-    def test_reboot_vlan_connection(self, api_client, request, client, unique_name,
-                                    vlan_network):
+                            depends=["vlan_network_connection"])
+    def test_reboot_vlan_connection(self, api_client, request, unique_name,
+                                    image_info, vlan_network, wait_timeout):
         """
         Manual test plan reference:
-        https://harvester.github.io/tests/manual/network/validate-network-external-vlan/
+        https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/
 
 
         Steps:
@@ -326,10 +331,15 @@ class TestBackendNetwork:
         8. Ping VM during after reboot
         9. Check can ping VM
         """
-        wait_timeout = request.config.getoption('--wait-timeout')
         unique_name = unique_name + "-reboot-vlan"
 
-        # client_ip = request.config.getoption('--endpoint').strip('https://')
+        image_url = image_info.url
+
+        # Check image exists
+        code, data = api_client.images.get(image_name)
+
+        if code == 404:
+            create_image_url(api_client, image_name, image_url, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
@@ -348,7 +358,8 @@ class TestBackendNetwork:
         check_vm_ip_exists(api_client, unique_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.vm_instance(unique_name)
+        code, data = api_client.vms.get_status(unique_name)
+
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
             ip_addresses = interface['ipAddresses']
@@ -391,7 +402,8 @@ class TestBackendNetwork:
         check_vm_ip_exists(api_client, unique_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.vm_instance(unique_name)
+        code, data = api_client.vms.get_status(unique_name)
+
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
             ip_addresses = interface['ipAddresses']
@@ -409,9 +421,10 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     @pytest.mark.dependency(name="mgmt_vlan_connection",
-                            depends=["mgmt_network_connection", "vlan_network_connection"])
+                            depends=["vlan_network_connection"])
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
-                                     vlan_network, vlan_subnet_prefix_store):
+                                     image_info, vlan_network,
+                                     vlan_subnet_prefix_store, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -430,6 +443,14 @@ class TestBackendNetwork:
         wait_timeout = request.config.getoption('--wait-timeout')
         # vlan_subnet_prefix = request.config.getoption('--vlan-cidr').rsplit('.', 1)[0]
         vlan_subnet_prefix = vlan_subnet_prefix_store["value"]
+
+        image_url = image_info.url
+
+        # Check image exists
+        code, data = api_client.images.get(image_name)
+
+        if code == 404:
+            create_image_url(api_client, image_name, image_url, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
@@ -465,7 +486,8 @@ class TestBackendNetwork:
         check_vm_ip_exists(api_client, unique_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.vm_instance(unique_name)
+        code, data = api_client.vms.get_status(unique_name)
+
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
             ip_addresses = interface['ipAddresses']
@@ -477,14 +499,14 @@ class TestBackendNetwork:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
         while endtime > datetime.now():
-            code, data = api_client.vms.vm_instance(unique_name)
+            code, data = api_client.vms.get_status(unique_name)
             if 'ipAddress' in data['status']['interfaces'][0]:
                 break
 
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed 10 minutes timed out\n"
+                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
                 f"Still got {code} with {data}"
             )
 
@@ -492,7 +514,7 @@ class TestBackendNetwork:
         ip_addresses = []
 
         while endtime > datetime.now():
-            code, data = api_client.vms.vm_instance(unique_name)
+            code, data = api_client.vms.get_status(unique_name)
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
@@ -533,10 +555,9 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
-    @pytest.mark.dependency(name="vlan_mgmt_connection",
-                            depends=["mgmt_network_connection"])
+    @pytest.mark.dependency(name="vlan_mgmt_connection")
     def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
-                                     vlan_network):
+                                     image_info, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -552,16 +573,22 @@ class TestBackendNetwork:
         7. Check can ping the VM on the management network
         """
 
-        wait_timeout = request.config.getoption('--wait-timeout')
-        client_ip = request.config.getoption('--endpoint').strip('https://')
+        vip = request.config.getoption('--endpoint').strip('https://')
 
-        tcp = "sudo sed -i 's/AllowTcpForwarding no/AllowTcpForwarding yes/g' /etc/ssh/sshd_config"
-        restart_ssh = "sudo systemctl restart sshd.service"
+        node_password = request.config.getoption("--host-password")
 
-        self.ssh_client(client, client_ip, node_user, node_password,
+        image_url = image_info.url
+
+        # Check image exists
+        code, data = api_client.images.get(image_name)
+
+        if code == 404:
+            create_image_url(api_client, image_name, image_url, wait_timeout)
+
+        self.ssh_client(client, vip, node_user, node_password,
                         tcp, wait_timeout)
 
-        self.ssh_client(client, client_ip, node_user, node_password,
+        self.ssh_client(client, vip, node_user, node_password,
                         restart_ssh, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
@@ -618,14 +645,14 @@ class TestBackendNetwork:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
         while endtime > datetime.now():
-            code, data = api_client.vms.vm_instance(unique_name)
+            code, data = api_client.vms.get_status(unique_name)
             if 'ipAddress' in data['status']['interfaces'][0]:
                 break
 
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed 10 minutes timed out\n"
+                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
                 f"Still got {code} with {data}"
             )
 
@@ -633,7 +660,7 @@ class TestBackendNetwork:
         ip_addresses = []
 
         while endtime > datetime.now():
-            code, data = api_client.vms.vm_instance(unique_name)
+            code, data = api_client.vms.get_status(unique_name)
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
@@ -645,7 +672,7 @@ class TestBackendNetwork:
                 sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed 10 minutes timed out\n"
+                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
                 f"Still got {code} with {data}"
             )
 
@@ -655,7 +682,7 @@ class TestBackendNetwork:
         ping_command = "ping -c 50 {0}".format(mgmt_ip)
 
         _stdout, _stderr = self.ssh_client(
-            client, client_ip, node_user, node_password, ping_command, wait_timeout)
+            client, vip, node_user, node_password, ping_command, wait_timeout)
 
         stdout = _stdout.read().decode('ascii').strip("\n")
 
@@ -664,7 +691,7 @@ class TestBackendNetwork:
 
         # ssh to host and execute command
         _stdout, _stderr = self.ssh_jumpstart(
-            client, mgmt_ip, client_ip, node_user, node_password,
+            client, mgmt_ip, vip, node_user, node_password,
             vm_credential["user"], vm_credential["password"], "ls")
 
         stdout = _stdout.read().decode('ascii').strip("\n")
@@ -676,10 +703,9 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
-    @pytest.mark.dependency(name="delete_vlan_connection",
-                            depends=["mgmt_network_connection"])
+    @pytest.mark.dependency(name="delete_vlan_connection")
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
-                                       vlan_network):
+                                       image_info, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/delete-vlan-network-form/
@@ -695,8 +721,16 @@ class TestBackendNetwork:
         8. Check can ping the VM on the management network
         """
 
-        wait_timeout = request.config.getoption('--wait-timeout')
-        client_ip = request.config.getoption('--endpoint').strip('https://')
+        vip = request.config.getoption('--endpoint').strip('https://')
+        node_password = request.config.getoption("--host-password")
+
+        image_url = image_info.url
+
+        # Check image exists
+        code, data = api_client.images.get(image_name)
+
+        if code == 404:
+            create_image_url(api_client, image_name, image_url, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
@@ -763,14 +797,14 @@ class TestBackendNetwork:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
         while endtime > datetime.now():
-            code, data = api_client.vms.vm_instance(unique_name)
+            code, data = api_client.vms.get_status(unique_name)
             if 'ipAddress' in data['status']['interfaces'][0]:
                 break
 
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed 10 minutes timed out\n"
+                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
                 f"Still got {code} with {data}"
             )
 
@@ -778,7 +812,7 @@ class TestBackendNetwork:
         ip_addresses = []
 
         while endtime > datetime.now():
-            code, data = api_client.vms.vm_instance(unique_name)
+            code, data = api_client.vms.get_status(unique_name)
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
@@ -791,7 +825,7 @@ class TestBackendNetwork:
                 sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed 10 minutes timed out\n"
+                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
                 f"Still got {code} with {data}"
             )
 
@@ -801,7 +835,7 @@ class TestBackendNetwork:
         ping_command = "ping -c 50 {0}".format(mgmt_ip)
 
         _stdout, _stderr = self.ssh_client(
-            client, client_ip, "rancher", "p@ssword", ping_command, wait_timeout)
+            client, vip, node_user, node_password, ping_command, wait_timeout)
 
         stdout = _stdout.read().decode('ascii').strip("\n")
 
@@ -813,7 +847,6 @@ class TestBackendNetwork:
 
     def ssh_client(self, client, dest_ip, username, password, command, timeout):
         client.connect(dest_ip, username=username, password=password, timeout=timeout)
-        # _stdin, _stdout, _stderr = client.exec_command(command, get_pty=True)
 
         split_command = shlex.split(command)
         _stdin, _stdout, _stderr = client.exec_command(' '.join(
@@ -832,7 +865,6 @@ class TestBackendNetwork:
         jumpstart = paramiko.SSHClient()
         jumpstart.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         jumpstart.connect(dest_ip, username=dest_user, password=dest_password, sock=client_channel)
-        # _stdin, _stdout, _stderr = jumpstart.exec_command(command, get_pty=True)
 
         split_command = shlex.split(command)
         _stdin, _stdout, _stderr = jumpstart.exec_command(' '.join(
