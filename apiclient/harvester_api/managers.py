@@ -822,10 +822,6 @@ class VirtualMachineManager(BaseManager):
         params = dict(action="softreboot")
         return self._create(path, raw=raw, params=params)
 
-    def vm_instance(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
-        path = self.VMI_fmt.format(uid=f"/{name}", ns=namespace, VM_API=self.API_VERSION)
-        return self._get(path, raw=raw, **kwargs)
-
 
 class StorageClassManager(BaseManager):
     API_VERSION = "storage.k8s.io"
