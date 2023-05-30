@@ -389,7 +389,8 @@ def pytest_configure(config):
         config.addinivalue_line(&#34;markers&#34;, f&#34;{m}:{msg.format(_r=related)}&#34;)
 
 
-def pytest_collection_modifyitems(config, items):
+@pytest.hookimpl(hookwrapper=True)
+def pytest_collection_modifyitems(session, config, items):
     if config.getoption(&#39;--vlan-id&#39;) == -1:
         skip_public_network = pytest.mark.skip(reason=(
             &#39;VM not accessible because no VLAN setup with public routing&#39;))
@@ -437,7 +438,73 @@ def pytest_collection_modifyitems(config, items):
     if not config.getoption(&#34;--delete-host&#34;, False):
         for item in items:
             if &#34;delete_host&#34; in item.keywords:
-                item.add_marker(pytest.mark.skip(reason=&#34;Not configured to test host deletion.&#34;))</code></pre>
+                item.add_marker(pytest.mark.skip(reason=&#34;Not configured to test host deletion.&#34;))
+
+    # legacy code above
+    # &#39;&#39;&#39; To enable the test select with `and depends` keyword,
+    #     to select test cases and it depended test cases.
+    # &#39;&#39;&#39;
+
+    if &#34;and depends&#34; not in config.option.keyword:
+        # DO nothing
+        yield
+        return
+
+    all_items, old_keyword = items.copy(), config.option.keyword
+    config.option.keyword = old_keyword.replace(&#39;and depends&#39;, &#39;&#39;)
+
+    yield
+
+    scope_cls = {
+        &#34;session&#34;: pytest.Session,
+        &#34;package&#34;: pytest.Package,
+        &#34;module&#34;: pytest.Module,
+        &#34;class&#34;: pytest.Class
+    }
+    # ref: https://github.com/RKrahl/pytest-dependency/blob/0.5.1/pytest_dependency.py#L77
+    # deselected : list[&#39;test-item&#39;]
+    # named_items : dict[(&#39;dep-scope&#39;, &#39;dep-name&#39;), list[(idx, &#39;test-item&#39;)]]
+    # picked : list[(idx, &#39;test-item&#39;)]
+    deselected, named_items, picked = list(), dict(), list()
+    for idx, item in enumerate(all_items):
+        if item in items:
+            picked.append((idx, item))
+        try:
+            marker = item.get_closest_marker(&#39;dependency&#39;)
+            scope = marker.kwargs.get(&#39;scope&#39;, &#39;module&#39;)
+            node = item.getparent(scope_cls[scope])
+            named_items.setdefault((node, marker.kwargs[&#39;name&#39;]), []).append((idx, item))
+        except AttributeError:
+            deselected.append(item)
+            continue
+        except KeyError:
+            nodeid = item.nodeid.replace(&#34;::()::&#34;, &#34;::&#34;)
+            if scope not in (&#34;session&#34;, &#34;package&#34;):
+                shift = 2 if scope == &#34;class&#34; else 1
+                nodeid = nodeid.split(&#34;::&#34;, shift)[shift]
+            named_items.setdefault((node, nodeid), []).append((idx, item))
+
+    def pick_depends(idx, item, items):
+        picked = []
+        try:
+            marker = item.get_closest_marker(&#39;dependency&#39;)
+            scope = marker.kwargs.get(&#39;scope&#39;, &#39;module&#39;)
+            node = item.getparent(scope_cls[scope])
+            for name in marker.kwargs[&#39;depends&#39;]:
+                picked.extend(items.get((node, name), []))
+        except (AttributeError, KeyError):
+            pass
+        return picked
+
+    depends = []  # list[(idx, &#39;test-item&#39;)]
+    while picked:
+        depends.append(picked.pop())
+        picked.extend(pick_depends(*depends[-1], named_items))
+
+    session.items = items = [it for idx, it in sorted(set(depends), key=lambda it: it[0])]
+    deselected.extend(t for ts in named_items.values() for i, t in ts if t not in items)
+    # update to let the report shows correct counts
+    config.pluginmanager.get_plugin(&#39;terminalreporter&#39;).stats[&#39;deselected&#39;] = deselected</code></pre>
 </details>
 </section>
 <section>
@@ -719,7 +786,7 @@ def pytest_collection_modifyitems(config, items):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.conftest.pytest_collection_modifyitems"><code class="name flex">
-<span>def <span class="ident">pytest_collection_modifyitems</span></span>(<span>config, items)</span>
+<span>def <span class="ident">pytest_collection_modifyitems</span></span>(<span>session, config, items)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -727,7 +794,8 @@ def pytest_collection_modifyitems(config, items):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def pytest_collection_modifyitems(config, items):
+<pre><code class="python">@pytest.hookimpl(hookwrapper=True)
+def pytest_collection_modifyitems(session, config, items):
     if config.getoption(&#39;--vlan-id&#39;) == -1:
         skip_public_network = pytest.mark.skip(reason=(
             &#39;VM not accessible because no VLAN setup with public routing&#39;))
@@ -775,7 +843,73 @@ def pytest_collection_modifyitems(config, items):
     if not config.getoption(&#34;--delete-host&#34;, False):
         for item in items:
             if &#34;delete_host&#34; in item.keywords:
-                item.add_marker(pytest.mark.skip(reason=&#34;Not configured to test host deletion.&#34;))</code></pre>
+                item.add_marker(pytest.mark.skip(reason=&#34;Not configured to test host deletion.&#34;))
+
+    # legacy code above
+    # &#39;&#39;&#39; To enable the test select with `and depends` keyword,
+    #     to select test cases and it depended test cases.
+    # &#39;&#39;&#39;
+
+    if &#34;and depends&#34; not in config.option.keyword:
+        # DO nothing
+        yield
+        return
+
+    all_items, old_keyword = items.copy(), config.option.keyword
+    config.option.keyword = old_keyword.replace(&#39;and depends&#39;, &#39;&#39;)
+
+    yield
+
+    scope_cls = {
+        &#34;session&#34;: pytest.Session,
+        &#34;package&#34;: pytest.Package,
+        &#34;module&#34;: pytest.Module,
+        &#34;class&#34;: pytest.Class
+    }
+    # ref: https://github.com/RKrahl/pytest-dependency/blob/0.5.1/pytest_dependency.py#L77
+    # deselected : list[&#39;test-item&#39;]
+    # named_items : dict[(&#39;dep-scope&#39;, &#39;dep-name&#39;), list[(idx, &#39;test-item&#39;)]]
+    # picked : list[(idx, &#39;test-item&#39;)]
+    deselected, named_items, picked = list(), dict(), list()
+    for idx, item in enumerate(all_items):
+        if item in items:
+            picked.append((idx, item))
+        try:
+            marker = item.get_closest_marker(&#39;dependency&#39;)
+            scope = marker.kwargs.get(&#39;scope&#39;, &#39;module&#39;)
+            node = item.getparent(scope_cls[scope])
+            named_items.setdefault((node, marker.kwargs[&#39;name&#39;]), []).append((idx, item))
+        except AttributeError:
+            deselected.append(item)
+            continue
+        except KeyError:
+            nodeid = item.nodeid.replace(&#34;::()::&#34;, &#34;::&#34;)
+            if scope not in (&#34;session&#34;, &#34;package&#34;):
+                shift = 2 if scope == &#34;class&#34; else 1
+                nodeid = nodeid.split(&#34;::&#34;, shift)[shift]
+            named_items.setdefault((node, nodeid), []).append((idx, item))
+
+    def pick_depends(idx, item, items):
+        picked = []
+        try:
+            marker = item.get_closest_marker(&#39;dependency&#39;)
+            scope = marker.kwargs.get(&#39;scope&#39;, &#39;module&#39;)
+            node = item.getparent(scope_cls[scope])
+            for name in marker.kwargs[&#39;depends&#39;]:
+                picked.extend(items.get((node, name), []))
+        except (AttributeError, KeyError):
+            pass
+        return picked
+
+    depends = []  # list[(idx, &#39;test-item&#39;)]
+    while picked:
+        depends.append(picked.pop())
+        picked.extend(pick_depends(*depends[-1], named_items))
+
+    session.items = items = [it for idx, it in sorted(set(depends), key=lambda it: it[0])]
+    deselected.extend(t for ts in named_items.values() for i, t in ts if t not in items)
+    # update to let the report shows correct counts
+    config.pluginmanager.get_plugin(&#39;terminalreporter&#39;).stats[&#39;deselected&#39;] = deselected</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.conftest.pytest_configure"><code class="name flex">
