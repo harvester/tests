@@ -361,7 +361,8 @@ def pytest_configure(config):
         config.addinivalue_line("markers", f"{m}:{msg.format(_r=related)}")
 
 
-def pytest_collection_modifyitems(config, items):
+@pytest.hookimpl(hookwrapper=True)
+def pytest_collection_modifyitems(session, config, items):
     if config.getoption('--vlan-id') == -1:
         skip_public_network = pytest.mark.skip(reason=(
             'VM not accessible because no VLAN setup with public routing'))
@@ -410,3 +411,69 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "delete_host" in item.keywords:
                 item.add_marker(pytest.mark.skip(reason="Not configured to test host deletion."))
+
+    # legacy code above
+    # ''' To enable the test select with `and depends` keyword,
+    #     to select test cases and it depended test cases.
+    # '''
+
+    if "and depends" not in config.option.keyword:
+        # DO nothing
+        yield
+        return
+
+    all_items, old_keyword = items.copy(), config.option.keyword
+    config.option.keyword = old_keyword.replace('and depends', '')
+
+    yield
+
+    scope_cls = {
+        "session": pytest.Session,
+        "package": pytest.Package,
+        "module": pytest.Module,
+        "class": pytest.Class
+    }
+    # ref: https://github.com/RKrahl/pytest-dependency/blob/0.5.1/pytest_dependency.py#L77
+    # deselected : list['test-item']
+    # named_items : dict[('dep-scope', 'dep-name'), list[(idx, 'test-item')]]
+    # picked : list[(idx, 'test-item')]
+    deselected, named_items, picked = list(), dict(), list()
+    for idx, item in enumerate(all_items):
+        if item in items:
+            picked.append((idx, item))
+        try:
+            marker = item.get_closest_marker('dependency')
+            scope = marker.kwargs.get('scope', 'module')
+            node = item.getparent(scope_cls[scope])
+            named_items.setdefault((node, marker.kwargs['name']), []).append((idx, item))
+        except AttributeError:
+            deselected.append(item)
+            continue
+        except KeyError:
+            nodeid = item.nodeid.replace("::()::", "::")
+            if scope not in ("session", "package"):
+                shift = 2 if scope == "class" else 1
+                nodeid = nodeid.split("::", shift)[shift]
+            named_items.setdefault((node, nodeid), []).append((idx, item))
+
+    def pick_depends(idx, item, items):
+        picked = []
+        try:
+            marker = item.get_closest_marker('dependency')
+            scope = marker.kwargs.get('scope', 'module')
+            node = item.getparent(scope_cls[scope])
+            for name in marker.kwargs['depends']:
+                picked.extend(items.get((node, name), []))
+        except (AttributeError, KeyError):
+            pass
+        return picked
+
+    depends = []  # list[(idx, 'test-item')]
+    while picked:
+        depends.append(picked.pop())
+        picked.extend(pick_depends(*depends[-1], named_items))
+
+    session.items = items = [it for idx, it in sorted(set(depends), key=lambda it: it[0])]
+    deselected.extend(t for ts in named_items.values() for i, t in ts if t not in items)
+    # update to let the report shows correct counts
+    config.pluginmanager.get_plugin('terminalreporter').stats['deselected'] = deselected
