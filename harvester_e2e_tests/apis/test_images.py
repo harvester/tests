@@ -63,6 +63,21 @@ class TestImagesNegative:
 @pytest.mark.p0
 @pytest.mark.images
 class TestImages:
+    def image_do_created(self, api_client, unique_name, wait_timeout):
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.images.get(unique_name)
+            name = data['metadata']['name']
+            reason = data['status']['conditions'][0]['reason']
+            if all([code == 200, name == unique_name, reason == "Imported"]):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Failed to get image {unique_name} with {wait_timeout} timed out\n"
+                f"Still got {code} with {data}"
+            )
+
     @pytest.mark.dependency(name="create_image")
     def test_create(self, api_client, unique_name, fake_image_file):
         resp = api_client.images.create_by_file(unique_name, fake_image_file)
@@ -72,16 +87,14 @@ class TestImages:
         )
 
     @pytest.mark.dependency(name="get_image")
-    def test_get(self, api_client, unique_name):
+    def test_get(self, api_client, unique_name, wait_timeout):
         # Case 1: get all images
         code, data = api_client.images.get()
 
         assert len(data['items']) > 0, (code, data)
 
         # Case 2: get created image
-        code, data = api_client.images.get(unique_name)
-        assert 200 == code, (code, data)
-        assert unique_name == data['metadata']['name']
+        self.image_do_created(api_client, unique_name, wait_timeout)
 
     def test_update(self, api_client, unique_name):
         updates = {
@@ -142,6 +155,7 @@ class TestImages:
             f"failed to upload fake image with reused name {unique_name}, "
             f"got error: {resp.status_code}, {resp.content}"
         )
+        self.image_do_created(api_client, unique_name, wait_timeout)
 
         _ = api_client.images.delete(unique_name)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
