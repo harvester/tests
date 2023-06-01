@@ -618,7 +618,10 @@ class TestBackendNetwork:
         # Update VM spec
         code, data = api_client.vms.update(unique_name, spec)
 
-        spec.delete_vlan_network(spec, vlan_network['id'])
+        # Remove external vlan network from spec
+        net_uid = vlan_network['id']
+        spec.networks = [net for net in spec.networks
+                         if net_uid != net["network"].get('multus', {}).get('networkName')]
 
         code, data = api_client.vms.update(unique_name, spec)
 
@@ -769,8 +772,10 @@ class TestBackendNetwork:
         code, data = api_client.vms.get(unique_name)
         spec = spec.from_dict(data)
 
-        # Delete external vlan from VM spec
-        spec.delete_vlan_network(spec, "default/" + vlan_network['id'])
+        # Remove external vlan network from spec
+        net_uid = "default/" + vlan_network['id']
+        spec.networks = [net for net in spec.networks
+                         if net_uid != net["network"].get('multus', {}).get('networkName')]
 
         code, data = api_client.vms.update(unique_name, spec)
 

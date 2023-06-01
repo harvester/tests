@@ -248,17 +248,6 @@ class VMSpec:
         self.networks.append(net)
         return net
 
-    def delete_vlan_network(self, vm_spec, net_uid):
-        for index, value in enumerate(vm_spec.networks):
-            if "multus" not in value["network"]:
-                continue
-            if value["network"]["multus"]["networkName"] == net_uid:
-                vm_spec.networks.pop(index)
-                return vm_spec
-        raise AssertionError(
-            f"Can't find vlan network {net_uid} in spec file"
-        )
-
     def _update_bootorder(self):
         its = enumerate([v['disk'] for v in self.volumes if 'disk' in v], 1)
         for idx, disk in its:
