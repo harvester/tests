@@ -64,8 +64,18 @@ class HarvesterAPI:
         if not self._version:
             code, data = self.settings.get('server-version')
             ver = data['value']
-            # XXX: fix master-xxx-head to 8.8.8, need the API fix the problem
-            self._version = parse_version('8.8.8' if 'master' in ver else ver)
+            try:
+                # XXX: https://github.com/harvester/harvester/issues/3137
+                # Fixed as:
+                # 1. va.b-xxx-head => va.b.99
+                # 2. master-xxx-head => v8.8.99
+                cur, _, _ = ver.split('-')
+                cur = "v8.8" if "master" in cur else cur
+                self._version = parse_version(f"{cur}.99")
+            except ValueError:
+                self._version = parse_version(ver)
+            # store the raw version returns from `server-version` for reference
+            self._version.raw = ver
         return self._version
 
     def __repr__(self):
