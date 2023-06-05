@@ -63,7 +63,8 @@ class TestImagesNegative:
 @pytest.mark.p0
 @pytest.mark.images
 class TestImages:
-    def image_do_created(self, api_client, unique_name, wait_timeout):
+    # TODO: This is a temporary enhancement for harvester#4027, consider just check return code after fix.
+    def verify_image_created(self, api_client, unique_name, wait_timeout):
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.images.get(unique_name)
@@ -94,7 +95,7 @@ class TestImages:
         assert len(data['items']) > 0, (code, data)
 
         # Case 2: get created image
-        self.image_do_created(api_client, unique_name, wait_timeout)
+        self.verify_image_created(api_client, unique_name, wait_timeout)
 
     def test_update(self, api_client, unique_name):
         updates = {
@@ -155,7 +156,7 @@ class TestImages:
             f"failed to upload fake image with reused name {unique_name}, "
             f"got error: {resp.status_code}, {resp.content}"
         )
-        self.image_do_created(api_client, unique_name, wait_timeout)
+        self.verify_image_created(api_client, unique_name, wait_timeout)
 
         _ = api_client.images.delete(unique_name)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
