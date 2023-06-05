@@ -26,6 +26,7 @@ cloud_user_data = \
     """
 password: {password}\nchpasswd: {{ expire: False }}\nssh_pwauth: True
 """
+vlan_name = "external-vlan"
 
 
 @pytest.fixture(scope="session")
@@ -64,11 +65,6 @@ def vlan_network(request, api_client):
 @pytest.fixture(params=["image_opensuse"], scope="module")
 def image_info(request):
     return request.getfixturevalue(request.param)
-
-
-@pytest.fixture(scope="module")
-def vlan_subnet_prefix_store():
-    return {"value": None}
 
 
 def create_image_url(api_client, display_name, image_url, wait_timeout):
@@ -110,7 +106,7 @@ def check_vm_running(api_client, unique_name, wait_timeout):
         sleep(5)
     else:
         raise AssertionError(
-            f"Failed to create VM {unique_name} in Running status, exceed 10 minutes\n"
+            f"Failed to create VM {unique_name} in Running status, exceed given timeout\n"
             f"Still got {code} with {data}"
         )
 
@@ -142,7 +138,7 @@ def delete_vm(api_client, unique_name, wait_timeout):
         sleep(5)
     else:
         raise AssertionError(
-            f"Failed to delete VM {unique_name}, exceed 10 minutes\n"
+            f"Failed to delete VM {unique_name}, exceed given timeout\n"
             f"Still got {code} with {data}"
         )
 
@@ -163,8 +159,9 @@ class TestBackendNetwork:
         1. Create a new VM
         2. Make sure that the network is set to the management network with masquerade as the type
         3. Wait until the VM boot in running state
-        4. Check can ping VM from Harvester node
-        5. Check can SSH to VM from Harvester node
+        4. Check can ping VM with management network from Harvester node
+        5. Check can SSH to VM with management network from Harvester node
+        6. Check can't SSH to VM with management network from external host
         """
         vip = request.config.getoption('--endpoint').strip('https://')
 
@@ -210,7 +207,7 @@ class TestBackendNetwork:
         for interface in interfaces_data:
             ip_addresses = interface['ipAddresses']
 
-        # # Ping management ip address
+        # # Ping management ip address from Harvester node
         mgmt_ip = ip_addresses[0]
         ping_command = "ping -c 50 {0}".format(mgmt_ip)
 
@@ -222,7 +219,7 @@ class TestBackendNetwork:
         assert stdout.find("64 bytes from {0}".format(mgmt_ip)) > 0, (
             'Failed to ping VM management IP %s' % (mgmt_ip))
 
-        # SSH to management ip address and execute command
+        # SSH to management ip address and execute command from Harvester node
         _stdout, _stderr = self.ssh_jumpstart(
             client, mgmt_ip, vip, node_user, node_password,
             vm_credential["user"], vm_credential["password"], "ls")
@@ -232,14 +229,24 @@ class TestBackendNetwork:
         assert stdout.find("bin") == 0, (
             'Failed to ssh to VM management IP %s' % (mgmt_ip))
 
+        # Check should not SSH to management ip address from external host
+        command = ['/usr/bin/ssh', '-o', 'ConnectTimeout=5', mgmt_ip]
+        try:
+            result = subprocess.check_output(
+                command, stderr=subprocess.STDOUT, shell=False, encoding="utf-8")
+        except subprocess.CalledProcessError as e:
+            result = e.output
+
+        assert "connect to host {0} port 22: No route to host".format(mgmt_ip) in result, (
+            'Failed: Should not be able to SSH to VM management IP %s' % (mgmt_ip))
+
         # cleanup VM
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
     @pytest.mark.dependency(name="vlan_network_connection")
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
-                                     image_info, vlan_network,
-                                     vlan_subnet_prefix_store, wait_timeout):
+                                     image_info, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/validate-network-external-vlan/
@@ -286,11 +293,7 @@ class TestBackendNetwork:
 
         vlan_ip = ip_addresses[0]
 
-        vlan_subnet_prefix = vlan_ip.rsplit('.', 1)[0]
-        vlan_subnet_prefix_store["value"] = vlan_subnet_prefix
-
-        # Ping management ip address
-
+        # Ping vlan ip address from external host
         command = ['/usr/bin/ping', '-c', '50', vlan_ip]
 
         result = subprocess.check_output(command, shell=False, encoding="utf-8")
@@ -298,7 +301,7 @@ class TestBackendNetwork:
         assert result.find("64 bytes from {0}".format(vlan_ip)) > 0, (
             'Failed to ping VM management IP %s' % (vlan_ip))
 
-        # SSH to vlan ip address and execute command
+        # SSH to vlan ip address and execute command from external host
         _stdout, _stderr = self.ssh_client(
             client, vlan_ip, vm_credential["user"], vm_credential["password"], 'ls', wait_timeout)
 
@@ -391,7 +394,7 @@ class TestBackendNetwork:
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to restart VM {unique_name} in Starting status, exceed 10 minutes\n"
+                f"Failed to restart VM {unique_name} in Starting status, exceed given timeout\n"
                 f"Still got {code} with {data}"
             )
 
@@ -420,11 +423,9 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
-    @pytest.mark.dependency(name="mgmt_vlan_connection",
-                            depends=["vlan_network_connection"])
+    @pytest.mark.dependency(name="mgmt_vlan_connection")
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
-                                     image_info, vlan_network,
-                                     vlan_subnet_prefix_store, wait_timeout):
+                                     image_info, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -437,12 +438,11 @@ class TestBackendNetwork:
         4. Wait until the VM boot in running state
         5. Edit VM and change management network to external VLAN with bridge type
         6. Check VM should save and reboot
-        7. Check can ping the VM from an external network
+        7. Check can ping the VM from an external network host
+        8. Check can ssh to the VM from an external network host
         """
 
         wait_timeout = request.config.getoption('--wait-timeout')
-        # vlan_subnet_prefix = request.config.getoption('--vlan-cidr').rsplit('.', 1)[0]
-        vlan_subnet_prefix = vlan_subnet_prefix_store["value"]
 
         image_url = image_info.url
 
@@ -472,7 +472,9 @@ class TestBackendNetwork:
 
         # Switch to vlan network
         spec.mgmt_network = False
-        spec.add_network("default", "default/" + vlan_network['id'])
+        # spec.add_network("default", "default/" + vlan_network['id'])
+
+        spec.add_network(vlan_name, "default/" + vlan_network['id'])
 
         # Update VM spec
         code, data = api_client.vms.update(unique_name, spec)
@@ -510,6 +512,7 @@ class TestBackendNetwork:
                 f"Still got {code} with {data}"
             )
 
+        # Determine by vlan network Name
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         ip_addresses = []
 
@@ -523,12 +526,12 @@ class TestBackendNetwork:
                         ip_addresses.append(interface['ipAddress'])
 
                 if len(ip_addresses) > 0:
-                    if vlan_subnet_prefix in ip_addresses[0]:
+                    if vlan_name in interface['name']:
                         break
                 sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed 10 minutes\n"
+                f"Failed to get VM {unique_name} IP address, exceed given timeout\n"
                 f"Still got {code} with {data}"
             )
 
@@ -570,7 +573,9 @@ class TestBackendNetwork:
         4. Wait until the VM boot in running state
         5. Edit VM and change from external VLAN to management network
         6. Check VM should save and reboot
-        7. Check can ping the VM on the management network
+        7. Check can ping VM with management network from Harvester node
+        8. Check can SSH to VM with management network from Harvester node
+        9. Check can't SSH to VM with management network from external host
         """
 
         vip = request.config.getoption('--endpoint').strip('https://')
@@ -640,7 +645,7 @@ class TestBackendNetwork:
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to create VM {unique_name} in Running status, exceed 10 minutes\n"
+                f"Failed to create VM {unique_name} in Running status, exceed given timeout\n"
                 f"Still got {code} with {data}"
             )
 
@@ -679,7 +684,7 @@ class TestBackendNetwork:
                 f"Still got {code} with {data}"
             )
 
-        # Ping management ip address
+        # Check can ping management ip address from Harvester node
         mgmt_ip = ip_addresses[0]
 
         ping_command = "ping -c 50 {0}".format(mgmt_ip)
@@ -692,7 +697,7 @@ class TestBackendNetwork:
         assert stdout.find("64 bytes from {0}".format(mgmt_ip)) > 0, (
             'Failed to ping VM management IP %s' % (mgmt_ip))
 
-        # ssh to host and execute command
+        # Check can ssh to host and execute command from Harvester node
         _stdout, _stderr = self.ssh_jumpstart(
             client, mgmt_ip, vip, node_user, node_password,
             vm_credential["user"], vm_credential["password"], "ls")
@@ -701,6 +706,17 @@ class TestBackendNetwork:
 
         assert stdout.find("bin") == 0, (
             'Failed to ssh to VM management IP %s' % (mgmt_ip))
+
+        # Check should not SSH to management ip address from external host
+        command = ['/usr/bin/ssh', '-o', 'ConnectTimeout=5', mgmt_ip]
+        try:
+            result = subprocess.check_output(
+                command, stderr=subprocess.STDOUT, shell=False, encoding="utf-8")
+        except subprocess.CalledProcessError as e:
+            result = e.output
+
+        assert "connect to host {0} port 22: No route to host".format(mgmt_ip) in result, (
+            'Failed: Should not be able to SSH to VM management IP %s' % (mgmt_ip))
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -794,7 +810,7 @@ class TestBackendNetwork:
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to create VM {unique_name} in Running status, exceed 10 minutes\n"
+                f"Failed to create VM {unique_name} in Running status, exceed given timeout\n"
                 f"Still got {code} with {data}"
             )
 
