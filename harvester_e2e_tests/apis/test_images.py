@@ -63,7 +63,7 @@ class TestImagesNegative:
 @pytest.mark.p0
 @pytest.mark.images
 class TestImages:
-    # TODO: This is a temporary enhancement for harvester#4027, consider just check return code after fix.
+    # TODO: This is a temporary fix for harvester#4027, consider just check return code after.
     def verify_image_created(self, api_client, unique_name, wait_timeout):
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
