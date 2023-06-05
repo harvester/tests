@@ -342,9 +342,25 @@ def test_poweroff_node_trigger_vm_migrate(
 @pytest.mark.p0
 @pytest.mark.hosts
 @pytest.mark.dependency(depends=["host_poweroff", "host_poweron"])
-def test_delete_vm_while_host_shutdown(
+def test_delete_vm_after_host_shutdown(
     api_client, host_state, wait_timeout, focal_vm, available_node_names
 ):
+    """
+    To cover test:
+    - https://harvester.github.io/tests/manual/hosts/delete_vm_after_host_shutdown
+
+    Prerequisite:
+        - Cluster's nodes >= 2
+    Steps:
+        1. Create a VM with 1 CPU 1 Memory and runStrategy is `RerunOnFailure`
+        2. Power off the node hosting the VM
+        3. Delete the VM
+        4. Verify the VM
+    Exepected Result:
+        - VM should created and started successfully
+        - Node should be unavailable after shutdown
+        - VM should able to be deleted
+    """
     assert 2 <= len(available_node_names), (
         f"The cluster only have {len(available_node_names)} available node."
         " It's not enough for test."
@@ -444,6 +460,21 @@ def test_delete_vm_while_host_shutdown(
 def test_vm_migrated_after_host_reboot(
     api_client, host_state, wait_timeout, focal_vm, available_node_names
 ):
+    """
+    To cover test:
+    - https://harvester.github.io/tests/manual/hosts/vm_migrated_after_host_reboot
+
+    Prerequisite:
+        - Cluster's nodes >= 2
+    Steps:
+        1. Create a VM with 1 CPU 1 Memory and runStrategy is `RerunOnFailure`
+        2. Reboot the node hosting the VM
+        4. Verify the VM
+    Exepected Result:
+        - VM should created
+        - Node should be unavailable while rebooting
+        - VM should be migrated to ohter node
+    """
     assert 2 <= len(available_node_names), (
         f"The cluster only have {len(available_node_names)} available node. \
             It's not enough for migration test."
@@ -460,7 +491,7 @@ def test_vm_migrated_after_host_reboot(
     node_ip = next(val["address"] for val in node['status']['addresses']
                    if val["type"] == "InternalIP")
     rc, out, err = host_state.reboot(node['id'], node_ip)
-    assert rc == 0, (f"Failed to PowerOff node {node['id']} with error({rc}):\n"
+    assert rc == 0, (f"Failed to reboot node {node['id']} with error({rc}):\n"
                      f"stdout: {out}\n\nstderr: {err}")
     sleep(host_state.delay)  # Wait for the node to disappear
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
@@ -471,7 +502,7 @@ def test_vm_migrated_after_host_reboot(
         sleep(5)
     else:
         raise AssertionError(
-            f"Node {node['id']} still available after PowerOff script executed"
+            f"Node {node['id']} still available after reboot script executed"
             f", script path: {host_state.path}"
         )
 
@@ -491,4 +522,17 @@ def test_vm_migrated_after_host_reboot(
             f"VM {focal_vm['namespace']}/{focal_vm['name']} can't be Running \
                 with {wait_timeout} timed out\n"
             f"Got error: {code}, {data}"
+        )
+
+    # check the node is back
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        _, metric = api_client.hosts.get_metrics(node['id'])
+        if not metric.get("metadata", {}).get("state", {}).get("error"):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Node {node['id']} still unavailable after reboot script executed"
+            f", script path: {host_state.path}"
         )
