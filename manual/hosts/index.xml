@@ -267,6 +267,16 @@ edit https://github.com/harvester/ipxe-examples/blob/main/vagrant-pxe-harvester/
     </item>
     
     <item>
+      <title>Reboot host trigger VM migration</title>
+      <link>https://harvester.github.io/tests/manual/hosts/vm_migrated_after_host_reboot/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/vm_migrated_after_host_reboot/</guid>
+      <description>Ref: N/A, legacy test case
+Criteria VM should created and started successfully Node should be unavailable while rebooting VM should be migrated to ohter node Verify Steps: Install Harvester with at least 2 nodes Create a image for VM creation Create a VM vm1 and start it vm1 should started successfully Reboot the node hosting vm1 the node should becomes unavailable on dashboard vm1 should be automatically migrated to another node </description>
+    </item>
+    
+    <item>
       <title>Reboot node</title>
       <link>https://harvester.github.io/tests/manual/hosts/negative-reboot-node/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -324,6 +334,16 @@ Expected Results Within 3 nodes and 3 virtual machines testing environment.</des
       
       <guid>https://harvester.github.io/tests/manual/hosts/1272-shutdown-host-in-maintenance-mode/</guid>
       <description> Related issues: #1272 Shut down a node with maintenance mode should show red label Verification Steps Open host page Set a node to maintenance mode Turn off host vm of the node Check node status Turn on host Check node status Expected Results The node should go into maintenance mode The node label should go red When turned on the node status should go back to yellow </description>
+    </item>
+    
+    <item>
+      <title>Shut down host then delete hosted VM</title>
+      <link>https://harvester.github.io/tests/manual/hosts/delete_vm_after_host_shutdown/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/hosts/delete_vm_after_host_shutdown/</guid>
+      <description>Ref: N/A, legacy test case
+Criteria VM should created and started successfully Node should be unavailable after shutdown VM should able to be deleted Verify Steps: Install Harvester with at least 2 nodes Create a image for VM creation Create a VM vm1 and start it vm1 should started successfully Power off the node hosting vm1 the node should becomes unavailable on dashboard Delete vm1, vm1 should be deleted successfully </description>
     </item>
     
     <item>
