@@ -29,6 +29,12 @@ pytest_plugins = [
 
 
 @pytest.fixture(scope="module")
+def conflict_retries():
+    # This might be able to moved to config options in need.
+    return 5
+
+
+@pytest.fixture(scope="module")
 def image(api_client, unique_name, wait_timeout, image_opensuse):
     unique_image_id = f'image-{unique_name}'
     code, data = api_client.images.create_by_url(
@@ -92,13 +98,25 @@ def backup_config(request):
 
 
 @pytest.fixture(scope="class")
-def config_backup_target(api_client, backup_config):
+def config_backup_target(api_client, conflict_retries, backup_config):
     backup_type, config = backup_config
     code, data = api_client.settings.get('backup-target')
     origin_spec = api_client.settings.BackupTargetSpec.from_dict(data)
 
     spec = getattr(api_client.settings.BackupTargetSpec, backup_type)(**config)
-    code, data = api_client.settings.update('backup-target', spec)
+    # ???: when switching S3 -> NFS, update backup-target will easily hit resource conflict
+    # so we would need retries to apply the change.
+    for _ in range(conflict_retries):
+        code, data = api_client.settings.update('backup-target', spec)
+        if 409 == code and "Conflict" == data['reason']:
+            sleep(3)
+        else:
+            break
+    else:
+        raise AssertionError(
+            f"Unable to update backup-target after {conflict_retries} retried."
+            f"API Status({code}): {data}"
+        )
     assert 200 == code, (
         f'Failed to update backup target to {backup_type} with {config}\n'
         f"API Status({code}): {data}"
