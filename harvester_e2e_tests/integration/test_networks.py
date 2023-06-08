@@ -216,8 +216,9 @@ class TestBackendNetwork:
 
         stdout = _stdout.read().decode('ascii').strip("\n")
 
-        assert stdout.find("64 bytes from {0}".format(mgmt_ip)) > 0, (
-            'Failed to ping VM management IP %s' % (mgmt_ip))
+        assert stdout.find(f"64 bytes from {mgmt_ip}") > 0, (
+            f"Failed to ping VM management IP {mgmt_ip} "
+            f"on management interface from Harvester node")
 
         # SSH to management ip address and execute command from Harvester node
         _stdout, _stderr = self.ssh_jumpstart(
@@ -227,7 +228,8 @@ class TestBackendNetwork:
         stdout = _stdout.read().decode('ascii').strip("\n")
 
         assert stdout.find("bin") == 0, (
-            'Failed to ssh to VM management IP %s' % (mgmt_ip))
+            f"Failed to ssh to VM management IP {mgmt_ip} "
+            f"on management interface from Harvester node")
 
         # Check should not SSH to management ip address from external host
         command = ['/usr/bin/ssh', '-o', 'ConnectTimeout=5', mgmt_ip]
@@ -238,7 +240,8 @@ class TestBackendNetwork:
             result = e.output
 
         assert "connect to host {0} port 22: No route to host".format(mgmt_ip) in result, (
-            'Failed: Should not be able to SSH to VM management IP %s' % (mgmt_ip))
+            f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
+            f"on management interface from Harvester node")
 
         # cleanup VM
         delete_vm(api_client, unique_name, wait_timeout)
@@ -298,8 +301,9 @@ class TestBackendNetwork:
 
         result = subprocess.check_output(command, shell=False, encoding="utf-8")
 
-        assert result.find("64 bytes from {0}".format(vlan_ip)) > 0, (
-            'Failed to ping VM management IP %s' % (vlan_ip))
+        assert result.find(f"64 bytes from {vlan_ip}") > 0, (
+            f"Failed to ping VM external vlan IP {vlan_ip} "
+            f"on vlan interface from external node")
 
         # SSH to vlan ip address and execute command from external host
         _stdout, _stderr = self.ssh_client(
@@ -308,7 +312,8 @@ class TestBackendNetwork:
         stdout = _stdout.read().decode('ascii').strip("\n")
 
         assert stdout.find("bin") == 0, (
-            'Failed to ssh to VM management IP %s' % (vlan_ip))
+            f"Failed to ssh to VM external vlan IP {vlan_ip}"
+            f"on vlan interface from external node")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -371,12 +376,13 @@ class TestBackendNetwork:
 
         # Check can ping vlan ip
 
-        command = ['/usr/bin/ping', '-c', '50', vlan_ip]
+        command = ['/usr/bin/ping', '-c', '10', vlan_ip]
 
         result = subprocess.check_output(command, shell=False, encoding="utf-8")
 
-        assert result.find("64 bytes from {0}".format(vlan_ip)) > 0, (
-            'Failed to ping VM vlan IP %s' % (vlan_ip))
+        assert result.find(f"64 bytes from {vlan_ip}") > 0, (
+            f"Failed to ping VM external vlan IP {vlan_ip} "
+            f"on vlan interface from external node")
 
         # Restart VM
         code, data = api_client.vms.restart(unique_name)
@@ -413,11 +419,15 @@ class TestBackendNetwork:
 
         vlan_ip = ip_addresses[0]
 
-        # Ping management ip address
+        # Ping vlan ip address
 
-        command = ['/usr/bin/ping', '-c', '3', vlan_ip]
+        command = ['/usr/bin/ping', '-c', '10', vlan_ip]
 
         result = subprocess.check_output(command, shell=False, encoding="utf-8")
+
+        assert result.find(f"64 bytes from {vlan_ip}") > 0, (
+            f"Failed to ping VM external vlan IP {vlan_ip} "
+            f"on vlan interface from external node")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -542,8 +552,9 @@ class TestBackendNetwork:
 
         result = subprocess.check_output(command, shell=False, encoding="utf-8")
 
-        assert result.find("64 bytes from {0}".format(vlan_ip)) > 0, (
-            'Failed to ping VM management IP %s' % (vlan_ip))
+        assert result.find(f"64 bytes from {vlan_ip}") > 0, (
+            f"Failed to ping VM external vlan IP {vlan_ip} "
+            f"on vlan interface from external node")
 
         # SSH to vlan ip address and execute command
         _stdout, _stderr = self.ssh_client(
@@ -552,7 +563,8 @@ class TestBackendNetwork:
         stdout = _stdout.read().decode('ascii').strip("\n")
 
         assert stdout.find("bin") == 0, (
-            'Failed to ssh to VM management IP %s' % (vlan_ip))
+            f"Failed to ssh to VM external vlan IP {vlan_ip}"
+            f"on vlan interface from external node")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -694,8 +706,9 @@ class TestBackendNetwork:
 
         stdout = _stdout.read().decode('ascii').strip("\n")
 
-        assert stdout.find("64 bytes from {0}".format(mgmt_ip)) > 0, (
-            'Failed to ping VM management IP %s' % (mgmt_ip))
+        assert stdout.find(f"64 bytes from {mgmt_ip}") > 0, (
+            f"Failed to ping VM management IP {mgmt_ip} "
+            f"on management interface from Harvester node")
 
         # Check can ssh to host and execute command from Harvester node
         _stdout, _stderr = self.ssh_jumpstart(
@@ -705,7 +718,8 @@ class TestBackendNetwork:
         stdout = _stdout.read().decode('ascii').strip("\n")
 
         assert stdout.find("bin") == 0, (
-            'Failed to ssh to VM management IP %s' % (mgmt_ip))
+            f"Failed to ssh to VM management IP {mgmt_ip} "
+            f"on management interface from Harvester node")
 
         # Check should not SSH to management ip address from external host
         command = ['/usr/bin/ssh', '-o', 'ConnectTimeout=5', mgmt_ip]
@@ -716,7 +730,8 @@ class TestBackendNetwork:
             result = e.output
 
         assert "connect to host {0} port 22: No route to host".format(mgmt_ip) in result, (
-            'Failed: Should not be able to SSH to VM management IP %s' % (mgmt_ip))
+            f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
+            f"on management interface from Harvester node")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -731,13 +746,12 @@ class TestBackendNetwork:
 
         Steps:
         1. Create an external VLAN network
-        2. Create a new VM
-        3. Make sure that the network is set to the management network with masquerade as the type
-        4. Add another external VLAN management
+        2. Make sure that the network is set to the management network with masquerade as the type
+        3. Add another external VLAN management
+        4. Create VM
         5. Wait until the VM boot in running state
         6. Delete the external VLAN from VM
-        7. Validate interface was removed with ip link status
-        8. Check can ping the VM on the management network
+        7. Check can ping the VM on the management network
         """
 
         vip = request.config.getoption('--endpoint').strip('https://')
@@ -754,29 +768,16 @@ class TestBackendNetwork:
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
         unique_name = unique_name + "-delete-vlan"
-        # Create VM
+
+        # Add image
         spec.add_image(image_name, "default/" + image_name)
 
-        code, data = api_client.vms.create(unique_name, spec)
-        assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
-
-        # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
-
-        # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
-
-        # get data from running VM and transfer to spec
-        code, data = api_client.vms.get(unique_name)
-        spec = spec.from_dict(data)
-
-        # Switch to vlan network
+        # Add external vlan network
         spec.add_network("nic-1", "default/" + vlan_network['id'])
 
-        # Update VM spec
-        code, data = api_client.vms.update(unique_name, spec)
-
-        code, data = api_client.vms.restart(unique_name)
+        # Create VM
+        code, data = api_client.vms.create(unique_name, spec)
+        assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
 
         # Check VM start in running state
         check_vm_running(api_client, unique_name, wait_timeout)
@@ -860,8 +861,9 @@ class TestBackendNetwork:
 
         stdout = _stdout.read().decode('ascii').strip("\n")
 
-        assert stdout.find("64 bytes from {0}".format(mgmt_ip)) > 0, (
-            'Failed to ping VM management IP %s' % (mgmt_ip))
+        assert stdout.find(f"64 bytes from {mgmt_ip}") > 0, (
+            f"Failed to ping VM management IP {mgmt_ip} "
+            f"on management interface from Harvester node")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
