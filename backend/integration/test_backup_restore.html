@@ -57,6 +57,12 @@ pytest_plugins = [
 
 
 @pytest.fixture(scope=&#34;module&#34;)
+def conflict_retries():
+    # This might be able to moved to config options in need.
+    return 5
+
+
+@pytest.fixture(scope=&#34;module&#34;)
 def image(api_client, unique_name, wait_timeout, image_opensuse):
     unique_image_id = f&#39;image-{unique_name}&#39;
     code, data = api_client.images.create_by_url(
@@ -120,13 +126,25 @@ def backup_config(request):
 
 
 @pytest.fixture(scope=&#34;class&#34;)
-def config_backup_target(api_client, backup_config):
+def config_backup_target(api_client, conflict_retries, backup_config):
     backup_type, config = backup_config
     code, data = api_client.settings.get(&#39;backup-target&#39;)
     origin_spec = api_client.settings.BackupTargetSpec.from_dict(data)
 
     spec = getattr(api_client.settings.BackupTargetSpec, backup_type)(**config)
-    code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+    # ???: when switching S3 -&gt; NFS, update backup-target will easily hit resource conflict
+    # so we would need retries to apply the change.
+    for _ in range(conflict_retries):
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        if 409 == code and &#34;Conflict&#34; == data[&#39;reason&#39;]:
+            sleep(3)
+        else:
+            break
+    else:
+        raise AssertionError(
+            f&#34;Unable to update backup-target after {conflict_retries} retried.&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
     assert 200 == code, (
         f&#39;Failed to update backup target to {backup_type} with {config}\n&#39;
         f&#34;API Status({code}): {data}&#34;
@@ -1056,7 +1074,7 @@ def base_vm_with_data(
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.config_backup_target"><code class="name flex">
-<span>def <span class="ident">config_backup_target</span></span>(<span>api_client, backup_config)</span>
+<span>def <span class="ident">config_backup_target</span></span>(<span>api_client, conflict_retries, backup_config)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1065,13 +1083,25 @@ def base_vm_with_data(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
-def config_backup_target(api_client, backup_config):
+def config_backup_target(api_client, conflict_retries, backup_config):
     backup_type, config = backup_config
     code, data = api_client.settings.get(&#39;backup-target&#39;)
     origin_spec = api_client.settings.BackupTargetSpec.from_dict(data)
 
     spec = getattr(api_client.settings.BackupTargetSpec, backup_type)(**config)
-    code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+    # ???: when switching S3 -&gt; NFS, update backup-target will easily hit resource conflict
+    # so we would need retries to apply the change.
+    for _ in range(conflict_retries):
+        code, data = api_client.settings.update(&#39;backup-target&#39;, spec)
+        if 409 == code and &#34;Conflict&#34; == data[&#39;reason&#39;]:
+            sleep(3)
+        else:
+            break
+    else:
+        raise AssertionError(
+            f&#34;Unable to update backup-target after {conflict_retries} retried.&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
     assert 200 == code, (
         f&#39;Failed to update backup target to {backup_type} with {config}\n&#39;
         f&#34;API Status({code}): {data}&#34;
@@ -1088,6 +1118,21 @@ def config_backup_target(api_client, backup_config):
         endpoint = backup[&#39;status&#39;][&#39;backupTarget&#39;].get(&#39;endpoint&#39;)
         if endpoint != origin_spec.value.get(&#39;endpoint&#39;):
             api_client.backups.delete(backup[&#39;metadata&#39;][&#39;name&#39;])</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.conflict_retries"><code class="name flex">
+<span>def <span class="ident">conflict_retries</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def conflict_retries():
+    # This might be able to moved to config options in need.
+    return 5</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.image"><code class="name flex">
@@ -2499,6 +2544,7 @@ def test_delete_middle_backup(
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.backup_config" href="#harvester_e2e_tests.integration.test_backup_restore.backup_config">backup_config</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data" href="#harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data">base_vm_with_data</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.config_backup_target" href="#harvester_e2e_tests.integration.test_backup_restore.config_backup_target">config_backup_target</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.conflict_retries" href="#harvester_e2e_tests.integration.test_backup_restore.conflict_retries">conflict_retries</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.image" href="#harvester_e2e_tests.integration.test_backup_restore.image">image</a></code></li>
 </ul>
 </li>
