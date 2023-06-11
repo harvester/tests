@@ -822,6 +822,18 @@ class VirtualMachineManager(BaseManager):
         params = dict(action="softreboot")
         return self._create(path, raw=raw, params=params)
 
+    def add_volume(self, name, disk_name, volume_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="addVolume")
+        json = dict(diskName=disk_name, volumeSourceName=volume_name)
+        return self._create(path, params=params, json=json, raw=raw)
+
+    def remove_volume(self, name, disk_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        json = dict(diskName=disk_name)
+        params = dict(action="removeVolume")
+        return self._create(path, params=params, json=json, raw=raw)
+
 
 class StorageClassManager(BaseManager):
     API_VERSION = "storage.k8s.io"
