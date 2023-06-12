@@ -1,5 +1,6 @@
 from time import sleep
 from datetime import datetime, timedelta
+from urllib.parse import urljoin
 
 import pytest
 
@@ -9,8 +10,10 @@ pytest_plugins = [
 
 
 @pytest.fixture(scope="session")
-def focal_image_url():
-    return "http://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img"  # noqa
+def focal_image_url(request):
+    base_url = request.config.getoption("--image-cache-url").strip()
+    base_url = base_url or "http://cloud-images.ubuntu.com/releases/focal/release"
+    return urljoin(f"{base_url}/", "ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img")
 
 
 @pytest.fixture(scope="module")
@@ -121,14 +124,17 @@ def vm_force_reset_policy(api_client):
 @pytest.mark.p1
 @pytest.mark.host_management
 @pytest.mark.dependency(name="host_poweroff")
-def test_host_poweroff_state(api_client, host_state, wait_timeout):
+def test_host_poweroff_state(api_client, host_state, wait_timeout, available_node_names):
     """
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-01-Negative test-Verify the state for Powered down node
     """
-    _, nodes_info = api_client.hosts.get()
+    assert 1 < len(available_node_names), (
+        f"Cluster has {len(available_node_names)} available node, not enough for poweroff test."
+    )
 
+    _, nodes_info = api_client.hosts.get()
     node = nodes_info['data'][-1]
     node_ip = next(val["address"] for val in node['status']['addresses']
                    if val["type"] == "InternalIP")
@@ -154,7 +160,7 @@ def test_host_poweroff_state(api_client, host_state, wait_timeout):
 @pytest.mark.hosts
 @pytest.mark.p1
 @pytest.mark.host_management
-@pytest.mark.dependency(name="host_poweron")
+@pytest.mark.dependency(name="host_poweron", depends=["host_poweroff"])
 def test_host_poweron_state(api_client, host_state, wait_timeout):
     _, nodes_info = api_client.hosts.get()
 
