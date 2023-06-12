@@ -98,7 +98,7 @@ def backup_config(request):
 
 
 @pytest.fixture(scope="class")
-def config_backup_target(api_client, conflict_retries, backup_config):
+def config_backup_target(api_client, conflict_retries, backup_config, wait_timeout):
     backup_type, config = backup_config
     code, data = api_client.settings.get('backup-target')
     origin_spec = api_client.settings.BackupTargetSpec.from_dict(data)
@@ -129,10 +129,27 @@ def config_backup_target(api_client, conflict_retries, backup_config):
     code, data = api_client.backups.get()
     assert 200 == code, "Failed to list backups"
 
+    check_names = []
     for backup in data['data']:
         endpoint = backup['status']['backupTarget'].get('endpoint')
         if endpoint != origin_spec.value.get('endpoint'):
             api_client.backups.delete(backup['metadata']['name'])
+            check_names.append(backup['metadata']['name'])
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        for name in check_names[:]:
+            code, data = api_client.backups.get(name)
+            if 404 == code:
+                check_names.remove(name)
+        if not check_names:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f"Failed to delete backups: {check_names}\n"
+            f"Last API Status({code}): {data}"
+            )
 
 
 @pytest.fixture(scope="class")
@@ -216,10 +233,28 @@ def base_vm_with_data(
 
     # remove backups link to the VM and is ready
     code, data = api_client.backups.get()
+
+    check_names = []
     for backup in data['data']:
         if (backup['status'].get('readyToUse') and
                 unique_vm_name == backup['spec']['source']['name']):
             api_client.backups.delete(backup['metadata']['name'])
+            check_names.append(backup['metadata']['name'])
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        for name in check_names[:]:
+            code, data = api_client.backups.get(name)
+            if 404 == code:
+                check_names.remove(name)
+        if not check_names:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f"Failed to delete backups: {check_names}\n"
+            f"Last API Status({code}): {data}"
+            )
 
     # remove created VM
     code, data = api_client.vms.get(unique_vm_name)
