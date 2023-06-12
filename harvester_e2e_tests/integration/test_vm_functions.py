@@ -1,6 +1,4 @@
 from datetime import datetime, timedelta
-from pathlib import Path
-from tempfile import NamedTemporaryFile
 from time import sleep
 
 import json
@@ -17,25 +15,6 @@ pytest_plugins = [
 
 # GLOBAL Vars:
 MAX = 999999
-
-
-@pytest.fixture(scope="session")
-def virtctl(api_client):
-    code, ctx = api_client.vms.download_virtctl()
-
-    with NamedTemporaryFile("wb") as f:
-        f.write(ctx)
-        f.seek(0)
-        yield Path(f.name)
-
-
-@pytest.fixture(scope="session")
-def kubeconfig_file(api_client):
-    kubeconfig = api_client.generate_kubeconfig()
-    with NamedTemporaryFile("w") as f:
-        f.write(kubeconfig)
-        f.seek(0)
-        yield Path(f.name)
 
 
 @pytest.fixture(scope='module')
@@ -122,6 +101,19 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
 @pytest.fixture(scope="module")
 def unique_vm_name(unique_name):
     return f"vm-{unique_name}"
+
+
+@pytest.fixture(scope="class")
+def small_volume(api_client, unique_name):
+    vol_name, size = f"sv-{unique_name}", 3
+    vol_spec = api_client.volumes.Spec(size)
+    code, data = api_client.volumes.create(vol_name, vol_spec)
+
+    assert 201 == code, (code, data)
+
+    yield vol_name, size
+
+    code, data = api_client.volumes.delete(vol_name)
 
 
 @pytest.fixture(scope="class")
@@ -1591,3 +1583,188 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
         f"Failed to delete VM({unique_vm_name})'s volumes with errors:\n"
         "\n".join(f"Volume({n}): {r}" for n, r in fails)
     )
+
+
+@pytest.mark.p0
+@pytest.mark.virtualmachines
+class TestHotPlugVolume:
+    """
+    To cover test:
+    - https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/
+
+    Steps:
+        1. Create and start VM
+        2. Create Data volume
+        3. Attach data volume
+        4. Detach data volume
+    Exepected Result:
+        - VM should started successfully
+        - Data volume should attached and available in VM
+        - Data volume should detached and unavailable in VM
+        - VM should not be reboot or restart while attaching/detaching volume
+    """
+
+    disk_name = "disk-hot-plug"
+
+    @pytest.mark.dependency(name="hot_plug_volume")
+    def test_add(
+        self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, small_volume, stopped_vm
+    ):
+        unique_vm_name, ssh_user = stopped_vm
+        pub_key, pri_key = ssh_keypair
+
+        # Start VM
+        code, data = api_client.vms.start(unique_vm_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(unique_vm_name)
+            if 200 == code:
+                phase = data.get('status', {}).get('phase')
+                conds = data.get('status', {}).get('conditions', [{}])
+                if ("Running" == phase
+                   and "AgentConnected" == conds[-1].get('type')
+                   and data['status'].get('interfaces')):
+                    break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Failed to Start VM({unique_vm_name}) with errors:\n"
+                f"Status: {data.get('status')}\n"
+                f"API Status({code}): {data}"
+            )
+        # Log into VM to verify OS is ready
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(ssh_user, pkey=pri_key)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    login_ex = e
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
+
+            with vm_sh as sh:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    out, err = sh.exec_command('cloud-init status')
+                    if 'done' in out:
+                        break
+                    sleep(3)
+                else:
+                    raise AssertionError(
+                        f"VM {unique_vm_name} Started {wait_timeout} seconds"
+                        f", but cloud-init still in {out}"
+                    )
+
+        # attach volume
+        vol_name, vol_size = small_volume
+        code, data = api_client.vms.add_volume(unique_vm_name, self.disk_name, vol_name)
+
+        assert 204 == code, (code, data)
+
+        # Login to VM to verify volume hot pluged
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(ssh_user, pkey=pri_key)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    login_ex = e
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
+
+            with vm_sh as sh:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    scsi, err = sh.exec_command(
+                        "ls -d /sys/block/sd*/device/scsi_device/*"
+                        " | awk -F '[/]' '{print $4,$7}'"
+                    )
+                    if scsi:
+                        break
+                    sleep(3)
+                else:
+                    raise AssertionError(
+                        f"Hot pluged Volume {vol_name} unavailable after {wait_timeout}s\n"
+                        f"STDOUT: {scsi}, STDERR: {err}"
+                    )
+
+                out, err = sh.exec_command(
+                    f"lsblk -r | grep {scsi.split()[0]}"
+                )
+
+        assert f"{vol_size}G 0 disk" in out, (
+            f"existing Volume {vol_size}G not found\n"
+            f"lsblk output: {out}"
+        )
+
+    @pytest.mark.dependency(depends=["hot_plug_volume"])
+    def test_remove(
+        self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, small_volume, stopped_vm
+    ):
+        unique_vm_name, ssh_user = stopped_vm
+        pub_key, pri_key = ssh_keypair
+
+        # remove volume
+        vol_name, vol_size = small_volume
+        code, data = api_client.vms.remove_volume(unique_vm_name, self.disk_name)
+
+        assert 204 == code, (code, data)
+
+        # Log into VM to verify volume removed
+        code, data = api_client.vms.get_status(unique_vm_name)
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(ssh_user, pkey=pri_key)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    login_ex = e
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
+
+            with vm_sh as sh:
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    scsi, err = sh.exec_command(
+                        "ls -d1 /sys/block/* | grep 'sd'"
+                    )
+                    if not scsi:
+                        break
+                    sleep(3)
+                else:
+                    raise AssertionError(
+                        f"Hot pluged Volume {vol_name} still available after {wait_timeout}s\n"
+                        f"STDOUT: {scsi}, STDERR: {err}"
+                    )
+
+                out, err = sh.exec_command(
+                    "lsblk -r | grep 'sd'"
+                )
+
+        assert not scsi, "SCSI device still available in `/sys/block/`"
+        assert not out, "SCSI device still available in `lsblk -r`"
