@@ -28,6 +28,7 @@
 </summary>
 <pre><code class="python">from time import sleep
 from datetime import datetime, timedelta
+from urllib.parse import urljoin
 
 import pytest
 
@@ -37,8 +38,10 @@ pytest_plugins = [
 
 
 @pytest.fixture(scope=&#34;session&#34;)
-def focal_image_url():
-    return &#34;http://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img&#34;  # noqa
+def focal_image_url(request):
+    base_url = request.config.getoption(&#34;--image-cache-url&#34;).strip()
+    base_url = base_url or &#34;http://cloud-images.ubuntu.com/releases/focal/release&#34;
+    return urljoin(f&#34;{base_url}/&#34;, &#34;ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img&#34;)
 
 
 @pytest.fixture(scope=&#34;module&#34;)
@@ -149,14 +152,17 @@ def vm_force_reset_policy(api_client):
 @pytest.mark.p1
 @pytest.mark.host_management
 @pytest.mark.dependency(name=&#34;host_poweroff&#34;)
-def test_host_poweroff_state(api_client, host_state, wait_timeout):
+def test_host_poweroff_state(api_client, host_state, wait_timeout, available_node_names):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-01-Negative test-Verify the state for Powered down node
     &#34;&#34;&#34;
-    _, nodes_info = api_client.hosts.get()
+    assert 1 &lt; len(available_node_names), (
+        f&#34;Cluster has {len(available_node_names)} available node, not enough for poweroff test.&#34;
+    )
 
+    _, nodes_info = api_client.hosts.get()
     node = nodes_info[&#39;data&#39;][-1]
     node_ip = next(val[&#34;address&#34;] for val in node[&#39;status&#39;][&#39;addresses&#39;]
                    if val[&#34;type&#34;] == &#34;InternalIP&#34;)
@@ -182,7 +188,7 @@ def test_host_poweroff_state(api_client, host_state, wait_timeout):
 @pytest.mark.hosts
 @pytest.mark.p1
 @pytest.mark.host_management
-@pytest.mark.dependency(name=&#34;host_poweron&#34;)
+@pytest.mark.dependency(name=&#34;host_poweron&#34;, depends=[&#34;host_poweroff&#34;])
 def test_host_poweron_state(api_client, host_state, wait_timeout):
     _, nodes_info = api_client.hosts.get()
 
@@ -640,7 +646,7 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_hosts.focal_image_url"><code class="name flex">
-<span>def <span class="ident">focal_image_url</span></span>(<span>)</span>
+<span>def <span class="ident">focal_image_url</span></span>(<span>request)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -649,8 +655,10 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def focal_image_url():
-    return &#34;http://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img&#34;  # noqa</code></pre>
+def focal_image_url(request):
+    base_url = request.config.getoption(&#34;--image-cache-url&#34;).strip()
+    base_url = base_url or &#34;http://cloud-images.ubuntu.com/releases/focal/release&#34;
+    return urljoin(f&#34;{base_url}/&#34;, &#34;ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img&#34;)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_hosts.focal_vm"><code class="name flex">
@@ -840,7 +848,7 @@ def test_delete_vm_after_host_shutdown(
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_hosts.test_host_poweroff_state"><code class="name flex">
-<span>def <span class="ident">test_host_poweroff_state</span></span>(<span>api_client, host_state, wait_timeout)</span>
+<span>def <span class="ident">test_host_poweroff_state</span></span>(<span>api_client, host_state, wait_timeout, available_node_names)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Test the hosts are the nodes which make the cluster</p>
@@ -854,14 +862,17 @@ def test_delete_vm_after_host_shutdown(
 @pytest.mark.p1
 @pytest.mark.host_management
 @pytest.mark.dependency(name=&#34;host_poweroff&#34;)
-def test_host_poweroff_state(api_client, host_state, wait_timeout):
+def test_host_poweroff_state(api_client, host_state, wait_timeout, available_node_names):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster
     Covers:
         hosts-01-Negative test-Verify the state for Powered down node
     &#34;&#34;&#34;
-    _, nodes_info = api_client.hosts.get()
+    assert 1 &lt; len(available_node_names), (
+        f&#34;Cluster has {len(available_node_names)} available node, not enough for poweroff test.&#34;
+    )
 
+    _, nodes_info = api_client.hosts.get()
     node = nodes_info[&#39;data&#39;][-1]
     node_ip = next(val[&#34;address&#34;] for val in node[&#39;status&#39;][&#39;addresses&#39;]
                    if val[&#34;type&#34;] == &#34;InternalIP&#34;)
@@ -896,7 +907,7 @@ def test_host_poweroff_state(api_client, host_state, wait_timeout):
 <pre><code class="python">@pytest.mark.hosts
 @pytest.mark.p1
 @pytest.mark.host_management
-@pytest.mark.dependency(name=&#34;host_poweron&#34;)
+@pytest.mark.dependency(name=&#34;host_poweron&#34;, depends=[&#34;host_poweroff&#34;])
 def test_host_poweron_state(api_client, host_state, wait_timeout):
     _, nodes_info = api_client.hosts.get()
 
