@@ -538,7 +538,7 @@ class TestBackendNetwork:
                 if len(ip_addresses) > 0:
                     if vlan_name in interface['name']:
                         break
-                sleep(5)
+            sleep(5)
         else:
             raise AssertionError(
                 f"Failed to get VM {unique_name} IP address, exceed given timeout\n"
