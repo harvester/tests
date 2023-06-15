@@ -64,7 +64,14 @@ def host_state(request):
 
 @pytest.fixture(scope='module')
 def unique_name():
+    """Default unique name"""
     return datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")
+
+
+@pytest.fixture(scope='module')
+def gen_unique_name():
+    """Generate unique name on-demand"""
+    return lambda: datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")
 
 
 @pytest.fixture(scope="module")
