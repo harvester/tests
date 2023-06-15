@@ -162,7 +162,8 @@ class TestImages:
 @pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.images
-def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
+def test_create_with_invalid_url(api_client, gen_unique_name, wait_timeout):
+    unique_name = gen_unique_name()
     code, data = api_client.images.create_by_url(unique_name, f"https://{unique_name}.img")
 
     assert 201 == code, (code, data)

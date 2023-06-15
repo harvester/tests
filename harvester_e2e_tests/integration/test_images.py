@@ -241,7 +241,7 @@ class TestBackendImages:
 
     @pytest.mark.p0
     def test_create_invalid_file(
-        self, api_client, unique_name, fake_invalid_image_file, wait_timeout
+        self, api_client, gen_unique_name, fake_invalid_image_file, wait_timeout
     ):
         """
         Test create upload image from invalid file type
@@ -251,7 +251,7 @@ class TestBackendImages:
         2. Try to upload invalid image file which to images page
         2. Check should get an error
         """
-
+        unique_name = gen_unique_name()
         resp = api_client.images.create_by_file(unique_name, fake_invalid_image_file)
 
         assert (
