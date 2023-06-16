@@ -92,7 +92,14 @@ def host_state(request):
 
 @pytest.fixture(scope=&#39;module&#39;)
 def unique_name():
+    &#34;&#34;&#34;Default unique name&#34;&#34;&#34;
     return datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)
+
+
+@pytest.fixture(scope=&#39;module&#39;)
+def gen_unique_name():
+    &#34;&#34;&#34;Generate unique name on-demand&#34;&#34;&#34;
+    return lambda: datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)
 
 
 @pytest.fixture(scope=&#34;module&#34;)
@@ -364,6 +371,21 @@ def fake_image_file():
         yield Path(f.name)</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.gen_unique_name"><code class="name flex">
+<span>def <span class="ident">gen_unique_name</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate unique name on-demand</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def gen_unique_name():
+    &#34;&#34;&#34;Generate unique name on-demand&#34;&#34;&#34;
+    return lambda: datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.host_shell"><code class="name flex">
 <span>def <span class="ident">host_shell</span></span>(<span>request)</span>
 </code></dt>
@@ -612,13 +634,14 @@ def support_bundle_state():
 <span>def <span class="ident">unique_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Default unique name</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
 def unique_name():
+    &#34;&#34;&#34;Default unique name&#34;&#34;&#34;
     return datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)</code></pre>
 </details>
 </dd>
@@ -657,6 +680,7 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.api_client" href="#harvester_e2e_tests.fixtures.api_client.api_client">api_client</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.expected_settings" href="#harvester_e2e_tests.fixtures.api_client.expected_settings">expected_settings</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.fake_image_file" href="#harvester_e2e_tests.fixtures.api_client.fake_image_file">fake_image_file</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.gen_unique_name" href="#harvester_e2e_tests.fixtures.api_client.gen_unique_name">gen_unique_name</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_shell" href="#harvester_e2e_tests.fixtures.api_client.host_shell">host_shell</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_state" href="#harvester_e2e_tests.fixtures.api_client.host_state">host_state</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.k8s_version" href="#harvester_e2e_tests.fixtures.api_client.k8s_version">k8s_version</a></code></li>

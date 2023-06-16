@@ -190,7 +190,8 @@ class TestImages:
 @pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.images
-def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
+def test_create_with_invalid_url(api_client, gen_unique_name, wait_timeout):
+    unique_name = gen_unique_name()
     code, data = api_client.images.create_by_url(unique_name, f&#34;https://{unique_name}.img&#34;)
 
     assert 201 == code, (code, data)
@@ -219,7 +220,7 @@ def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.apis.test_images.test_create_with_invalid_url"><code class="name flex">
-<span>def <span class="ident">test_create_with_invalid_url</span></span>(<span>api_client, unique_name, wait_timeout)</span>
+<span>def <span class="ident">test_create_with_invalid_url</span></span>(<span>api_client, gen_unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -231,7 +232,8 @@ def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
 @pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.images
-def test_create_with_invalid_url(api_client, unique_name, wait_timeout):
+def test_create_with_invalid_url(api_client, gen_unique_name, wait_timeout):
+    unique_name = gen_unique_name()
     code, data = api_client.images.create_by_url(unique_name, f&#34;https://{unique_name}.img&#34;)
 
     assert 201 == code, (code, data)
