@@ -434,10 +434,9 @@ def pytest_collection_modifyitems(session, config, items):
         "class": pytest.Class
     }
     # ref: https://github.com/RKrahl/pytest-dependency/blob/0.5.1/pytest_dependency.py#L77
-    # deselected : list['test-item']
     # named_items : dict[('dep-scope', 'dep-name'), list[(idx, 'test-item')]]
     # picked : list[(idx, 'test-item')]
-    deselected, named_items, picked = list(), dict(), list()
+    named_items, picked = dict(), list()
     for idx, item in enumerate(all_items):
         if item in items:
             picked.append((idx, item))
@@ -447,7 +446,6 @@ def pytest_collection_modifyitems(session, config, items):
             node = item.getparent(scope_cls[scope])
             named_items.setdefault((node, marker.kwargs['name']), []).append((idx, item))
         except AttributeError:
-            deselected.append(item)
             continue
         except KeyError:
             nodeid = item.nodeid.replace("::()::", "::")
@@ -474,6 +472,7 @@ def pytest_collection_modifyitems(session, config, items):
         picked.extend(pick_depends(*depends[-1], named_items))
 
     session.items = items = [it for idx, it in sorted(set(depends), key=lambda it: it[0])]
-    deselected.extend(t for ts in named_items.values() for i, t in ts if t not in items)
+    # deselected.extend(t for ts in named_items.values() for i, t in ts if t not in items)
+    deselected = [t for t in all_items if t not in items]
     # update to let the report shows correct counts
     config.pluginmanager.get_plugin('terminalreporter').stats['deselected'] = deselected
