@@ -1,6 +1,38 @@
-<aside style="width: 30%; padding: 1%; border-right: 1px solid lightgray;">
-  <a href="{{ "manual" | absURL }}"><h2>Manual Test Cases</h2></a>
+<aside 
+  style="
+    width: 30%; 
+    padding: 1%; 
+    border-right: 1px solid lightgray;
+    height: 100vh;
+    overflow-y: scroll;
+  "
+>
+  <a 
+    href="{{ "manual" | absURL }}"
+  >
+    <h2>
+      Manual Test Cases
+    </h2>
+  </a>
   {{ with .Site.GetPage "manual" }}
-  {{ partial "listing.html" .Page }}
+    {{ partial "listing.html" .Page }}
   {{ end }}
 </aside>
+
+<script>
+  var currentAnchor = window.location.href;
+
+  var menuItems = document.querySelectorAll('.menu-item');
+
+  for (var i = 0; i < menuItems.length; i++) {
+    var menuItem = menuItems[i];
+    var menuItemUrl = menuItem.getAttribute('href');
+    if (menuItemUrl === currentAnchor) {
+      var menuOffset = menuItem.offsetTop;
+      var menuElem = document.querySelectorAll('aside')[0]; 
+
+      menuElem.scrollTo(0, menuOffset - 10);
+      break;
+    }
+  }
+</script>
