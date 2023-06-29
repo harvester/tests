@@ -279,6 +279,21 @@ def test_maintenance_mode_trigger_vm_migrate(
 def test_poweroff_node_trigger_vm_reschedule(
     api_client, host_state, focal_vm, wait_timeout, available_node_names, vm_force_reset_policy
 ):
+    """
+    To cover test:
+    - https://harvester.github.io/tests/manual/hosts/vm_rescheduled_after_host_poweroff
+
+    Prerequisite:
+        - Cluster's nodes >= 2
+    Steps:
+        1. Create a VM with 1 CPU 1 Memory and runStrategy is `RerunOnFailure`
+        2. Power off the node hosting the VM
+        3. Verify the VM
+    Exepected Result:
+        - VM should created and started successfully
+        - Node should be unavailable after shutdown
+        - VM should restarted automatically
+    """
     assert 2 <= len(available_node_names), (
         f"The cluster only have {len(available_node_names)} available node. \
             It's not enough for migration test."
@@ -521,7 +536,7 @@ def test_vm_restarted_after_host_reboot(
         sleep(5)
     else:
         raise AssertionError(
-            "VMI not be changed after host rebooted.\n"
+            "VMI didn't changed after host rebooted.\n"
             f"Got error: {code}, {data}"
         )
 
