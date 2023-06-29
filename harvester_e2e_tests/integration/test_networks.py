@@ -116,6 +116,7 @@ def check_vm_ip_exists(api_client, unique_name, wait_timeout):
 
     while endtime > datetime.now():
         code, data = api_client.vms.get_status(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
         if 'ipAddress' in data['status']['interfaces'][0]:
             break
         sleep(5)
@@ -202,6 +203,7 @@ class TestBackendNetwork:
 
         # Get VM interface ipAddresses
         code, data = api_client.vms.get_status(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
@@ -289,6 +291,7 @@ class TestBackendNetwork:
 
         # Get VM interface ipAddresses
         code, data = api_client.vms.get_status(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
@@ -367,6 +370,7 @@ class TestBackendNetwork:
 
         # Get VM interface ipAddresses
         code, data = api_client.vms.get_status(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
@@ -393,6 +397,7 @@ class TestBackendNetwork:
 
         while endtime > datetime.now():
             code, data = api_client.vms.get(unique_name)
+            assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
             vm_fields = data['metadata']['fields']
 
             if vm_fields[2] == 'Starting':
@@ -412,6 +417,7 @@ class TestBackendNetwork:
 
         # Get VM interface ipAddresses
         code, data = api_client.vms.get_status(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
@@ -452,8 +458,6 @@ class TestBackendNetwork:
         8. Check can ssh to the VM from an external network host
         """
 
-        wait_timeout = request.config.getoption('--wait-timeout')
-
         image_url = image_info.url
 
         # Check image exists
@@ -478,6 +482,8 @@ class TestBackendNetwork:
 
         # get data from running VM and transfer to spec
         code, data = api_client.vms.get(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
+
         spec = spec.from_dict(data)
 
         # Switch to vlan network
@@ -488,8 +494,10 @@ class TestBackendNetwork:
 
         # Update VM spec
         code, data = api_client.vms.update(unique_name, spec)
+        assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
 
         code, data = api_client.vms.restart(unique_name)
+        assert 204 == code, (f"Failed to restart specific vm: {code}, {data}")
 
         # Check VM start in running state
         check_vm_running(api_client, unique_name, wait_timeout)
@@ -499,6 +507,7 @@ class TestBackendNetwork:
 
         # Get VM interface ipAddresses
         code, data = api_client.vms.get_status(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
         for interface in interfaces_data:
@@ -512,6 +521,7 @@ class TestBackendNetwork:
 
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_name)
+            assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
             if 'ipAddress' in data['status']['interfaces'][0]:
                 break
 
@@ -528,6 +538,7 @@ class TestBackendNetwork:
 
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_name)
+            assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
@@ -627,13 +638,15 @@ class TestBackendNetwork:
 
         # get data from running VM and transfer to spec
         code, data = api_client.vms.get(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
         spec = spec.from_dict(data)
 
         # Switch to vlan network
         spec.mgmt_network = True
 
         # Update VM spec
-        code, data = api_client.vms.update(unique_name, spec)
+        # code, data = api_client.vms.update(unique_name, spec)
+        # assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
 
         # Remove external vlan network from spec
         net_uid = vlan_network['id']
@@ -641,8 +654,10 @@ class TestBackendNetwork:
                          if net_uid != net["network"].get('multus', {}).get('networkName')]
 
         code, data = api_client.vms.update(unique_name, spec)
+        assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
 
         code, data = api_client.vms.restart(unique_name)
+        assert 204 == code, (f"Failed to restart specific vm: {code}, {data}")
 
         # Check VM start in running state
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
@@ -666,6 +681,7 @@ class TestBackendNetwork:
 
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_name)
+            assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
             if 'ipAddress' in data['status']['interfaces'][0]:
                 break
 
@@ -681,6 +697,7 @@ class TestBackendNetwork:
 
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_name)
+            assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
@@ -787,6 +804,7 @@ class TestBackendNetwork:
 
         # get data from running VM and transfer to spec
         code, data = api_client.vms.get(unique_name)
+        assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
         spec = spec.from_dict(data)
 
         # Remove external vlan network from spec
@@ -795,8 +813,10 @@ class TestBackendNetwork:
                          if net_uid != net["network"].get('multus', {}).get('networkName')]
 
         code, data = api_client.vms.update(unique_name, spec)
+        assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
 
         code, data = api_client.vms.restart(unique_name)
+        assert 204 == code, (f"Failed to restart specific vm: {code}, {data}")
 
         # Check VM start in running state
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
@@ -820,6 +840,7 @@ class TestBackendNetwork:
 
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_name)
+            assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
             if 'ipAddress' in data['status']['interfaces'][0]:
                 break
 
@@ -835,6 +856,7 @@ class TestBackendNetwork:
 
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_name)
+            assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
@@ -844,7 +866,7 @@ class TestBackendNetwork:
 
                     if '10.52' in ip_addresses[0]:
                         break
-                sleep(5)
+            sleep(5)
         else:
             raise AssertionError(
                 f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
