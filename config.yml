@@ -63,7 +63,9 @@ rancher-version: 'v2.6-head'
 #rancher-admin-password: 'rancher_password'
 
 # Kubernetes version to use for Rancher integration tests
-kubernetes-version: 'v1.24.8+rke2r1'
+kubernetes-version: 'v1.24.11+rke2r1'
+RKE1-version: 'v1.24.11-rancher2-1'
+RKE2-version: 'v1.24.11+rke2r1'
 
 # Wait time for polling Rancher cluster status.
 rancher-cluster-wait-timeout: 7200
