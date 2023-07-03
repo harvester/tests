@@ -146,11 +146,6 @@ def expected_settings():
     }
 
 
-@pytest.fixture(scope="session")
-def k8s_version(request):
-    return request.config.getoption("--kubernetes-version")
-
-
 @pytest.fixture(autouse=True)
 def skip_version_before(request, api_client):
     mark = request.node.get_closest_marker("skip_version_before")
