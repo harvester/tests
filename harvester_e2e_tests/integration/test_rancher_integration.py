@@ -46,7 +46,11 @@ def rke2_cluster_name(unique_name):
 
 
 @pytest.fixture(scope='module')
-def rke1_k8s_version(k8s_version, rancher_api_client):
+def rke1_k8s_version(request, k8s_version, rancher_api_client):
+    configured = request.config.getoption("--RKE1-version")
+    if configured:
+        return configured
+
     # `v1.24.11+rke2r1` -> `v1.24.11-rancher2-1`
     version = re.sub(r'\+rke(\d+)r(\d+)', lambda g: "-rancher%s-%s" % g.groups(), k8s_version)
 

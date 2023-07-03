@@ -15,3 +15,9 @@ def rancher_api_client(request):
     api.session.verify = ssl_verify
 
     return api
+
+
+@pytest.fixture(scope="session")
+def k8s_version(request):
+    return (request.config.getoption("--RKE2-version")
+            or request.config.getoption("--kubernetes-version"))
