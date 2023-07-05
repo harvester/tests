@@ -861,7 +861,9 @@ class TestBackendNetwork:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
 
-                if 'ipAddress' in data['status']['interfaces'][0]:
+                interfaces = data['status']['interfaces']
+
+                if len(interfaces) == 1 and 'ipAddress' in interfaces[0]:
                     ip_addresses.append(interfaces_data[0]['ipAddress'])
 
                     if '10.52' in ip_addresses[0]:
@@ -885,7 +887,7 @@ class TestBackendNetwork:
 
         assert stdout.find(f"64 bytes from {mgmt_ip}") > 0, (
             f"Failed to ping VM management IP {mgmt_ip} "
-            f"on management interface from Harvester node")
+            f"on management interface from Harvester node: {code}, {data}")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
