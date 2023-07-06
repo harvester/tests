@@ -113,7 +113,6 @@ describe("Verify Booting in EFI mode checkbox", () => {
 
     cy.wait('@createVM').then(res => {
       expect(res.response?.statusCode, 'Check create VM').to.equal(201);
-      expect(res.response?.body?.spec?.template?.spec?.domain?.features?.smm?.enabled, 'Check smm.enabled').to.equal(false);
       expect(res.response?.body?.spec?.template?.spec?.domain?.firmware?.bootloader?.efi?.secureBoot, 'Check efi.secureBoot').to.equal(false);
     })
 

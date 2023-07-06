@@ -37,6 +37,9 @@
     "delete:reports": "rm cypress/results/* || true",
     "prereport": "npm run delete:reports",
     "report": "node scripts/run.js",
-    "open": "npx cypress open"
+    "open": "./node_modules/.bin/cypress open",
+    "e2e": "yarn run delete:reports && ./node_modules/.bin/cypress run --browser chrome --reporter mochawesome",
+    "report:merge": "rm -rf cypress/results/merge && mkdir -p cypress/results/merge && ./node_modules/.bin/mochawesome-merge 'cypress/results/*.json' > cypress/results/merge/mochawesome.json && ./node_modules/.bin/marge cypress/results/merge/mochawesome.json -o cypress/results/mochawesome-report",
+    "report:html": "yarn report:merge && open cypress/results/mochawesome-report/mochawesome.html"
   }
 }

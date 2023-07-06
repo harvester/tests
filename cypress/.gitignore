@@ -7,3 +7,4 @@ docs
 cypress.env.json
 cypress/*
 *.mp4
+mochawesome-report

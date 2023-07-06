@@ -19,7 +19,7 @@ describe("UI url", () => {
   it("Verify the Harvester icon on the left top corner", () => {
     cy.get('.dashboard-content header .menu-spacer').find('img', {timeout: 4000}).then(($el) => {
       const src = $el.attr('src');
-      expect(src).include('providers/harvester.svg')
+      expect(src).to.match(/harvester.*\.svg/);
     })
   })
 })

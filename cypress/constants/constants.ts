@@ -35,9 +35,7 @@ export const MenuNav = {
     vmBackup:       ['VM Backups', 'harvester/c/local/harvesterhci.io.virtualmachinebackup', 'VM Backups', ['Backup & Snapshot']],
     vmSnapshot:     ['VM Snapshots', 'harvester/c/local/harvesterhci.io.vmsnapshot', 'VM Snapshots', ['Backup & Snapshot']],
     volumeSnapshot: ['Volume Snapshots', 'harvester/c/local/harvesterhci.io.volumesnapshot', 'Volume Snapshots', ['Backup & Snapshot']],
-    monitoringConfiguration: ['Configuration', 'harvester/c/local/harvesterhci.io.managedchart/fleet-local/rancher-monitoring?mode=edit', 'rancher-monitoring', ['Monitoring & Logging', 'Monitoring'], false],
     alertmanagerConfig:      ['Alertmanager Configs', 'harvester/c/local/harvesterhci.io.monitoring.alertmanagerconfig', 'Alertmanager Configs', ['Monitoring & Logging', 'Monitoring']],
-    loggingConfiguration:    ['Configuration', 'harvester/c/local/harvesterhci.io.managedchart/fleet-local/rancher-logging?mode=edit', 'rancher-logging', ['Monitoring & Logging', 'Logging'], false],
     clusterFlow:             ['Cluster Flow', 'harvester/c/local/harvesterhci.io.logging.clusterflow', 'Cluster Flows', ['Monitoring & Logging', 'Logging']],
     clusterOutput:           ['Cluster Output', 'harvester/c/local/harvesterhci.io.logging.clusteroutput', 'Cluster Outputs', ['Monitoring & Logging', 'Logging']],
     flow:                    ['Flow', 'harvester/c/local/harvesterhci.io.logging.flow', 'Flows', ['Monitoring & Logging', 'Logging']],
@@ -46,7 +44,7 @@ export const MenuNav = {
     sshKey:                  ['SSH Keys', 'harvester/c/local/harvesterhci.io.keypair', 'SSH Keys', ['Advanced']],
     cloudConfigTemplate:     ['Cloud Config Templates', 'harvester/c/local/harvesterhci.io.cloudtemplate', 'Cloud Config Templates', ['Advanced']],
     storageClass:            ['Storage Classes', 'harvester/c/local/harvesterhci.io.storage', 'Storage Classes', ['Advanced']],
-    pciDevice:               ['PCI Devices', 'harvester/c/local/devices.harvesterhci.io.pcidevice', 'PCI Devices (Experimental)', ['Advanced']],
+    pciDevice:               ['PCI Devices', 'harvester/c/local/devices.harvesterhci.io.pcidevice', 'PCI Devices', ['Advanced']],
     addon:                   ['Addons', 'harvester/c/local/harvesterhci.io.addon', 'Addons', ['Advanced']],
     setting:                 ['Settings', 'harvester/c/local/harvesterhci.io.setting', 'Settings', ['Advanced']]
 }

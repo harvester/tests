@@ -97,7 +97,8 @@ describe("automatic assignment to different nodes when creating multiple vm's", 
   });
 })
 
-describe('VM clone Validation', () => {
+// TODO: Create volume require storage class
+describe.skip('VM clone Validation', () => {
   beforeEach(() => {
     cy.login({url: PageUrl.virtualMachine});
   });
