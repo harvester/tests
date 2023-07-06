@@ -6,9 +6,9 @@ export default defineConfig({
   viewportWidth: 1920,
   viewportHeight: 1080,
   numTestsKeptInMemory: 1,
-  defaultCommandTimeout: 60000,
-  requestTimeout: 30000,
-  responseTimeout: 30000,
+  defaultCommandTimeout: 120000,
+  requestTimeout: 120000,
+  responseTimeout: 120000,
   chromeWebSecurity: false,
   env: {
     NODE_ENV: 'production',

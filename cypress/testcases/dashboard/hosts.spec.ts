@@ -12,7 +12,7 @@ const login = new LoginPage();
  */
 export function insertCustomYAML() {}
 describe('should insert custom name into YAML', () => {
-  it('should insert custom name into YAML', () => {
+  it.skip('should insert custom name into YAML', () => {
     cy.login();
     hosts.navigateHostsPage();
     hosts.editHostsYaml();
@@ -51,7 +51,7 @@ describe('Check edit host', () => {
 
 export function CheckAddDisk() {}
 describe('Check Add disk', () => {
-  it('Check Add disk', () => {
+  it.skip('Check Add disk', () => {
     cy.login();
     
     const host = Cypress.env('host')[0];

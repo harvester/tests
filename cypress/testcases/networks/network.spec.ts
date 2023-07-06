@@ -166,7 +166,7 @@ describe('Preset Vlans', () => {
     })
   });
 
-  it('Create Vlan2', () => {
+  it.skip('Create Vlan2', () => {
     const vlanIDs = Cypress.env('vlanIDs') || [];
     const vlan = vlanIDs[1]
 

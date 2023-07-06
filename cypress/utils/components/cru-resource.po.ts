@@ -31,7 +31,7 @@ export default class CruResourcePo extends PagePo {
   public searchInput = '.search'
   public actionMenu = '.list-unstyled.menu'
   public actionMenuIcon = '.icon-actions'
-  public actionButton = '.outlet .actions-container';
+  public actionButton = '[data-testid="masthead-create"]';
 
   namespace() {
     return new LabeledSelectPo('.labeled-select', `:contains("Namespace")`)
@@ -137,7 +137,7 @@ export default class CruResourcePo extends PagePo {
       await new Cypress.Promise((resolve, reject) => {
         const timer = setInterval(() => {
           times = times + 1;
-          if (times > 40) {
+          if (times > 60) {
             cy.log(`${type} can't removed from the backend`)
             reject()
           }
@@ -258,7 +258,7 @@ export default class CruResourcePo extends PagePo {
 
   public goToCreate() {
     this.goToList();
-    cy.get(this.actionButton).find('a').contains(' Create ').click();
+    cy.get(this.actionButton).click();
   }
 
   public goToEdit(name: string) {

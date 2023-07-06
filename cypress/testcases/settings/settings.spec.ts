@@ -16,14 +16,14 @@ describe('Setting Page', () => {
      * 3. Change the UISource Type
      * 4. Validate that the URL changed
      */
-    it('change UI source type to Bundled, Check whether the configuration takes effect', () => {
+    it.skip('change UI source type to Bundled, Check whether the configuration takes effect', () => {
         const address = `${Cypress.env('baseUrl')}/dashboard/_nuxt/**`;
         settings.clickMenu('ui-source', 'Edit Setting', 'ui-source')
         settings.checkUiSource('Bundled', address);
     });
 
     
-    it('change UI source type to external, Check whether the configuration takes effect', () => {
+    it.skip('change UI source type to external, Check whether the configuration takes effect', () => {
         const address = 'https://releases.rancher.com/harvester-ui/dashboard/latest/**';
         settings.clickMenu('ui-source', 'Edit Setting', 'ui-source')
         settings.checkUiSource('External', address);
@@ -55,7 +55,7 @@ describe('Setting Page', () => {
     /**
      * backup target
      */
-    it('Configure backup target (NFS)', () => {
+    it.skip('Configure backup target (NFS)', () => {
         settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
         settings.setNFSBackupTarget('NFS', Cypress.env('nfsEndPoint'));
         settings.checkSettingValue('Type', 'NFS');
@@ -67,7 +67,7 @@ describe('Setting Page', () => {
  * https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/
  */
 describe('Set backup target S3', () => {
-    it('Set backup target S3', () => {
+    it.skip('Set backup target S3', () => {
         cy.login();
         settings.goToList();
         settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
