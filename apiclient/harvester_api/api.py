@@ -129,13 +129,7 @@ class HarvesterAPI:
         self.session.mount("http://", adapter)
 
     def generate_kubeconfig(self):
-        # `v1.2-xxx-head` will less than v1.2.0, so use `v1.1.99` instead.
-        if self.cluster_version < parse_version('v1.1.99'):
-            path = "v1/management.cattle.io.clusters/local?action=generateKubeconfig"
-        else:
-            # new endpoint since embeded rancher introduced
-            path = "v3/clusters/local?action=generateKubeconfig"
-
+        path = "v1/management.cattle.io.clusters/local?action=generateKubeconfig"
         r = self._post(path)
         return r.json()['config']
 
