@@ -9,7 +9,8 @@ const hosts = new HostsPage();
 /**
  * https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/
  */
-describe('VM scheduling on Specific node', () => { 
+// TODO: require two nodes
+describe.skip('VM scheduling on Specific node', () => { 
   beforeEach(() => {
     cy.login();
   });

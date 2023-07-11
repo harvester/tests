@@ -126,7 +126,8 @@ describe('Check network with Manual Mode', () => {
 
 
 export function CreateVlan1() {}
-describe('Preset Vlans', () => {
+// TODO: Require two vlan IDs
+describe.skip('Preset Vlans', () => {
   function createVlan(vlan: Vlan) {
     cy.intercept('POST', `/v1/harvester/k8s.cni.cncf.io.network-attachment-definitions`).as('create');
 

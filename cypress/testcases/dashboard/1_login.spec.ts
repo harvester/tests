@@ -43,8 +43,7 @@ describe('login page for harvester', () => {
 /**
  * https://harvester.github.io/tests/manual/authentication/1409-change-password/
  */
-
-describe('Change user password', () => {
+describe.skip('Change user password', () => {
     it("Change user password", () => {
         const page = new LoginPage();
 

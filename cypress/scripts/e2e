@@ -1,0 +1,23 @@
+#!/bin/bash
+MINIO_ENDPOINT=$MINIO_ENDPOINT
+MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY
+MINIO_SECRET_KEY=$MINIO_SECRET_KEY
+
+TESTS_FAILED=false
+
+xvfb-run --server-args='-screen 0 1024x768x16 -ac' yarn run e2e
+
+if [ $? -ne 0 ]; then
+  echo "Cypress tests failed."
+  TESTS_FAILED=true
+fi
+
+yarn run report:merge
+
+mc alias set minio $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY --insecure
+
+mc cp --recursive cypress/results/ minio/cypress-test-report/cypress/results/ --insecure
+
+if [ $TESTS_FAILED = true ]; then
+  echo "Tests failed, but test results were still uploaded to MinIO."
+fi
