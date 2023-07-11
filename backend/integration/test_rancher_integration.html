@@ -74,7 +74,11 @@ def rke2_cluster_name(unique_name):
 
 
 @pytest.fixture(scope=&#39;module&#39;)
-def rke1_k8s_version(k8s_version, rancher_api_client):
+def rke1_k8s_version(request, k8s_version, rancher_api_client):
+    configured = request.config.getoption(&#34;--RKE1-version&#34;)
+    if configured:
+        return configured
+
     # `v1.24.11+rke2r1` -&gt; `v1.24.11-rancher2-1`
     version = re.sub(r&#39;\+rke(\d+)r(\d+)&#39;, lambda g: &#34;-rancher%s-%s&#34; % g.groups(), k8s_version)
 
@@ -746,7 +750,7 @@ def rke1_cluster_name(unique_name):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_rancher_integration.rke1_k8s_version"><code class="name flex">
-<span>def <span class="ident">rke1_k8s_version</span></span>(<span>k8s_version, rancher_api_client)</span>
+<span>def <span class="ident">rke1_k8s_version</span></span>(<span>request, k8s_version, rancher_api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -755,7 +759,11 @@ def rke1_cluster_name(unique_name):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
-def rke1_k8s_version(k8s_version, rancher_api_client):
+def rke1_k8s_version(request, k8s_version, rancher_api_client):
+    configured = request.config.getoption(&#34;--RKE1-version&#34;)
+    if configured:
+        return configured
+
     # `v1.24.11+rke2r1` -&gt; `v1.24.11-rancher2-1`
     version = re.sub(r&#39;\+rke(\d+)r(\d+)&#39;, lambda g: &#34;-rancher%s-%s&#34; % g.groups(), k8s_version)
 

@@ -174,11 +174,6 @@ def expected_settings():
     }
 
 
-@pytest.fixture(scope=&#34;session&#34;)
-def k8s_version(request):
-    return request.config.getoption(&#34;--kubernetes-version&#34;)
-
-
 @pytest.fixture(autouse=True)
 def skip_version_before(request, api_client):
     mark = request.node.get_closest_marker(&#34;skip_version_before&#34;)
@@ -508,20 +503,6 @@ def host_state(request):
     return HostState(request.config.getoption(&#34;--node-scripts-location&#34;))</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.fixtures.api_client.k8s_version"><code class="name flex">
-<span>def <span class="ident">k8s_version</span></span>(<span>request)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def k8s_version(request):
-    return request.config.getoption(&#34;--kubernetes-version&#34;)</code></pre>
-</details>
-</dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.skip_version_after"><code class="name flex">
 <span>def <span class="ident">skip_version_after</span></span>(<span>request, api_client)</span>
 </code></dt>
@@ -683,7 +664,6 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.gen_unique_name" href="#harvester_e2e_tests.fixtures.api_client.gen_unique_name">gen_unique_name</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_shell" href="#harvester_e2e_tests.fixtures.api_client.host_shell">host_shell</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_state" href="#harvester_e2e_tests.fixtures.api_client.host_state">host_state</a></code></li>
-<li><code><a title="harvester_e2e_tests.fixtures.api_client.k8s_version" href="#harvester_e2e_tests.fixtures.api_client.k8s_version">k8s_version</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_after" href="#harvester_e2e_tests.fixtures.api_client.skip_version_after">skip_version_after</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_before" href="#harvester_e2e_tests.fixtures.api_client.skip_version_before">skip_version_before</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.sleep_timeout" href="#harvester_e2e_tests.fixtures.api_client.sleep_timeout">sleep_timeout</a></code></li>
