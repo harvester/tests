@@ -7,7 +7,8 @@ const network = new NetworkPage()
 const vms = new VmsPage();
 const login = new LoginPage();
 
-describe('Add a network to an existing VM with only 1 network', () => {
+//TODO: require two networks
+describe.skip('Add a network to an existing VM with only 1 network', () => {
   const VM_NAME = generateName('test-network');
   const NETWORK_1 = 'vlan1'
   const NETWORK_2 = 'vlan2'

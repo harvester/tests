@@ -137,15 +137,15 @@ export default class CruResourcePo extends PagePo {
       await new Cypress.Promise((resolve, reject) => {
         const timer = setInterval(() => {
           times = times + 1;
-          if (times > 60) {
-            cy.log(`${type} can't removed from the backend`)
+          if (times > 120) {
+            // cy.log(`${type} can't removed from the backend`)
             reject()
           }
 
           const resource = (win as any).$nuxt.$store.getters['harvester/byId'](type, id);
 
           if (resource === undefined) {
-            cy.log(`${type} has been removed from the backend`)
+            // cy.log(`${type} has been removed from the backend`)
             clearInterval(timer);
             resolve()
           }

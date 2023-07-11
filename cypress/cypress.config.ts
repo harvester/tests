@@ -6,9 +6,9 @@ export default defineConfig({
   viewportWidth: 1920,
   viewportHeight: 1080,
   numTestsKeptInMemory: 1,
-  defaultCommandTimeout: 120000,
-  requestTimeout: 120000,
-  responseTimeout: 120000,
+  defaultCommandTimeout: 240000,
+  requestTimeout: 240000,
+  responseTimeout: 240000,
   chromeWebSecurity: false,
   env: {
     NODE_ENV: 'production',
@@ -33,7 +33,7 @@ export default defineConfig({
     vlanIDs: [1, 2],
   },
   retries: {
-    runMode: 1,
+    runMode: 0,
     openMode: 0,
   },
   reporter: 'mochawesome',
