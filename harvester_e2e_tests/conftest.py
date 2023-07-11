@@ -210,19 +210,19 @@ def pytest_addoption(parser):
     parser.addoption(
         '--kubernetes-version',
         action='store',
-        default=config_data.get('kubernetes-version', 'v1.24.11+rke2r1'),
+        default=config_data.get('kubernetes-version'),
         help='Kubernetes version to use for Rancher integration tests'
     )
     parser.addoption(
         '--RKE2-version',
         action='store',
-        default=config_data.get('RKE2-version', 'v1.24.11+rke2r1'),
+        default=config_data.get('RKE2-version'),
         help='RKE2 Kubernetes version to use for Rancher integration tests'
     )
     parser.addoption(
         '--RKE1-version',
         action='store',
-        default=config_data.get('RKE1-version', 'v1.24.11-rancher2-1'),
+        default=config_data.get('RKE1-version'),
         help='RKE1 Kubernetes version to use for Rancher integration tests'
     )
     parser.addoption(
