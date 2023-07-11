@@ -59,5 +59,6 @@ export default defineConfig({
     supportFile: './support/index.js',
     baseUrl: 'https://192.168.0.131',
     experimentalSessionAndOrigin: true,
+    video: false,
   },
 })
