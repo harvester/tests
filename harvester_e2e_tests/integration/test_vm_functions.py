@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
 from time import sleep
+from datetime import datetime, timedelta
+from contextlib import contextmanager
 
 import json
 import re
@@ -1606,6 +1607,27 @@ class TestHotPlugVolume:
 
     disk_name = "disk-hot-plug"
 
+    @contextmanager
+    def login_to_vm_from_host(
+        host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+    ):
+        with host_shell.login(host_ip, jumphost=True) as host_sh:
+            vm_sh = vm_shell(ssh_user, pkey=pri_key)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=host_sh.client)
+                except ChannelException as e:
+                    login_ex = e
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
+
+            with vm_sh as vm_sh:
+                yield (vm_sh, host_sh)
+
     @pytest.mark.dependency(name="hot_plug_volume")
     def test_add(
         self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, small_volume, stopped_vm
@@ -1639,32 +1661,20 @@ class TestHotPlugVolume:
         host_ip = next(addr['address'] for addr in data['status']['addresses']
                        if addr['type'] == 'InternalIP')
 
-        with host_shell.login(host_ip, jumphost=True) as h:
-            vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        with self.login_to_vm_from_host(
+            host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+        ) as (sh, host_sh):
             endtime = datetime.now() + timedelta(seconds=wait_timeout)
             while endtime > datetime.now():
-                try:
-                    vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
-                    login_ex = e
-                    sleep(3)
-                else:
+                out, err = sh.exec_command('cloud-init status')
+                if 'done' in out:
                     break
+                sleep(3)
             else:
-                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
-
-            with vm_sh as sh:
-                endtime = datetime.now() + timedelta(seconds=wait_timeout)
-                while endtime > datetime.now():
-                    out, err = sh.exec_command('cloud-init status')
-                    if 'done' in out:
-                        break
-                    sleep(3)
-                else:
-                    raise AssertionError(
-                        f"VM {unique_vm_name} Started {wait_timeout} seconds"
-                        f", but cloud-init still in {out}"
-                    )
+                raise AssertionError(
+                    f"VM {unique_vm_name} Started {wait_timeout} seconds"
+                    f", but cloud-init still in {out}"
+                )
 
         # attach volume
         vol_name, vol_size = small_volume
@@ -1673,39 +1683,27 @@ class TestHotPlugVolume:
         assert 204 == code, (code, data)
 
         # Login to VM to verify volume hot pluged
-        with host_shell.login(host_ip, jumphost=True) as h:
-            vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        with self.login_to_vm_from_host(
+            host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+        ) as (sh, host_sh):
             endtime = datetime.now() + timedelta(seconds=wait_timeout)
             while endtime > datetime.now():
-                try:
-                    vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
-                    login_ex = e
-                    sleep(3)
-                else:
-                    break
-            else:
-                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
-
-            with vm_sh as sh:
-                endtime = datetime.now() + timedelta(seconds=wait_timeout)
-                while endtime > datetime.now():
-                    scsi, err = sh.exec_command(
-                        "ls -d /sys/block/sd*/device/scsi_device/*"
-                        " | awk -F '[/]' '{print $4,$7}'"
-                    )
-                    if scsi:
-                        break
-                    sleep(3)
-                else:
-                    raise AssertionError(
-                        f"Hot pluged Volume {vol_name} unavailable after {wait_timeout}s\n"
-                        f"STDOUT: {scsi}, STDERR: {err}"
-                    )
-
-                out, err = sh.exec_command(
-                    f"lsblk -r | grep {scsi.split()[0]}"
+                scsi, err = sh.exec_command(
+                    "ls -d /sys/block/sd*/device/scsi_device/*"
+                    " | awk -F '[/]' '{print $4,$7}'"
                 )
+                if scsi:
+                    break
+                sleep(3)
+            else:
+                raise AssertionError(
+                    f"Hot pluged Volume {vol_name} unavailable after {wait_timeout}s\n"
+                    f"STDOUT: {scsi}, STDERR: {err}"
+                )
+
+            out, err = sh.exec_command(
+                f"lsblk -r | grep {scsi.split()[0]}"
+            )
 
         assert f"{vol_size}G 0 disk" in out, (
             f"existing Volume {vol_size}G not found\n"
@@ -1733,38 +1731,26 @@ class TestHotPlugVolume:
         host_ip = next(addr['address'] for addr in data['status']['addresses']
                        if addr['type'] == 'InternalIP')
 
-        with host_shell.login(host_ip, jumphost=True) as h:
-            vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        with self.login_to_vm_from_host(
+            host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+        ) as (sh, host_sh):
             endtime = datetime.now() + timedelta(seconds=wait_timeout)
             while endtime > datetime.now():
-                try:
-                    vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
-                    login_ex = e
-                    sleep(3)
-                else:
-                    break
-            else:
-                raise AssertionError(f"Unable to login to VM {unique_vm_name}") from login_ex
-
-            with vm_sh as sh:
-                endtime = datetime.now() + timedelta(seconds=wait_timeout)
-                while endtime > datetime.now():
-                    scsi, err = sh.exec_command(
-                        "ls -d1 /sys/block/* | grep 'sd'"
-                    )
-                    if not scsi:
-                        break
-                    sleep(3)
-                else:
-                    raise AssertionError(
-                        f"Hot pluged Volume {vol_name} still available after {wait_timeout}s\n"
-                        f"STDOUT: {scsi}, STDERR: {err}"
-                    )
-
-                out, err = sh.exec_command(
-                    "lsblk -r | grep 'sd'"
+                scsi, err = sh.exec_command(
+                    "ls -d1 /sys/block/* | grep 'sd'"
                 )
+                if not scsi:
+                    break
+                sleep(3)
+            else:
+                raise AssertionError(
+                    f"Hot pluged Volume {vol_name} still available after {wait_timeout}s\n"
+                    f"STDOUT: {scsi}, STDERR: {err}"
+                )
+
+            out, err = sh.exec_command(
+                "lsblk -r | grep 'sd'"
+            )
 
         assert not scsi, "SCSI device still available in `/sys/block/`"
         assert not out, "SCSI device still available in `lsblk -r`"
