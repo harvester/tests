@@ -1,13 +1,12 @@
 
 
+import shlex
 import subprocess
-
 from time import sleep
 from datetime import datetime, timedelta
 
 import pytest
 import paramiko
-import shlex
 
 
 pytest_plugins = [
@@ -16,6 +15,7 @@ pytest_plugins = [
 ]
 
 tcp = "sudo sed -i 's/AllowTcpForwarding no/AllowTcpForwarding yes/g' /etc/ssh/sshd_config"
+restore_tcp = "sudo sed -i 's/AllowTcpForwarding yes/AllowTcpForwarding no/g' /etc/ssh/sshd_config"
 restart_ssh = "sudo systemctl restart sshd.service"
 
 image_name = "suse"
@@ -248,6 +248,14 @@ class TestBackendNetwork:
         # cleanup VM
         delete_vm(api_client, unique_name, wait_timeout)
 
+        # Revert AllowTcpForwarding for ssh jumpstart
+
+        self.ssh_client(client, vip, node_user, node_password,
+                        restore_tcp, wait_timeout)
+
+        self.ssh_client(client, vip, node_user, node_password,
+                        restart_ssh, wait_timeout)
+
     @pytest.mark.p0
     @pytest.mark.dependency(name="vlan_network_connection")
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
@@ -306,7 +314,7 @@ class TestBackendNetwork:
 
         assert result.find(f"64 bytes from {vlan_ip}") > 0, (
             f"Failed to ping VM external vlan IP {vlan_ip} "
-            f"on vlan interface from external node")
+            f"on vlan interface from external host")
 
         # SSH to vlan ip address and execute command from external host
         _stdout, _stderr = self.ssh_client(
@@ -316,7 +324,7 @@ class TestBackendNetwork:
 
         assert stdout.find("bin") == 0, (
             f"Failed to ssh to VM external vlan IP {vlan_ip}"
-            f"on vlan interface from external node")
+            f"on vlan interface from external host")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -333,13 +341,13 @@ class TestBackendNetwork:
 
         Steps:
         1. Create an external VLAN network
-        2. Create a new VM already with the vlan network
+        2. Create a new VM and add the external vlan network
         3. Check can ping external VLAN IP
         4. Reboot VM
         5. Ping VM during reboot
         6. Check can't ping VM during reboot
         7. Check the VM should reboot
-        8. Ping VM during after reboot
+        8. Ping VM after reboot
         9. Check can ping VM
         """
         unique_name = unique_name + "-reboot-vlan"
@@ -386,7 +394,7 @@ class TestBackendNetwork:
 
         assert result.find(f"64 bytes from {vlan_ip}") > 0, (
             f"Failed to ping VM external vlan IP {vlan_ip} "
-            f"on vlan interface from external node")
+            f"on vlan interface from external host")
 
         # Restart VM
         code, data = api_client.vms.restart(unique_name)
@@ -408,6 +416,19 @@ class TestBackendNetwork:
                 f"Failed to restart VM {unique_name} in Starting status, exceed given timeout\n"
                 f"Still got {code} with {data}"
             )
+
+        # Check can't ping vlan ip during reboot
+
+        command = ['/usr/bin/ping', '-c', '10', vlan_ip]
+
+        process = subprocess.run(command, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, universal_newlines=True)
+
+        result = process.stdout
+
+        assert result.find(f"64 bytes from {vlan_ip}") < 0, (
+            f"Failed: since can ping VM external vlan IP {vlan_ip} "
+            f"on vlan interface from external host during reboot")
 
         # Check VM start in running state
         check_vm_running(api_client, unique_name, wait_timeout)
@@ -433,7 +454,7 @@ class TestBackendNetwork:
 
         assert result.find(f"64 bytes from {vlan_ip}") > 0, (
             f"Failed to ping VM external vlan IP {vlan_ip} "
-            f"on vlan interface from external node")
+            f"on vlan interface from external host")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -488,7 +509,6 @@ class TestBackendNetwork:
 
         # Switch to vlan network
         spec.mgmt_network = False
-        # spec.add_network("default", "default/" + vlan_network['id'])
 
         spec.add_network(vlan_name, "default/" + vlan_network['id'])
 
@@ -565,7 +585,7 @@ class TestBackendNetwork:
 
         assert result.find(f"64 bytes from {vlan_ip}") > 0, (
             f"Failed to ping VM external vlan IP {vlan_ip} "
-            f"on vlan interface from external node")
+            f"on vlan interface from external host")
 
         # SSH to vlan ip address and execute command
         _stdout, _stderr = self.ssh_client(
@@ -575,7 +595,7 @@ class TestBackendNetwork:
 
         assert stdout.find("bin") == 0, (
             f"Failed to ssh to VM external vlan IP {vlan_ip}"
-            f"on vlan interface from external node")
+            f"on vlan interface from external host")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -641,17 +661,8 @@ class TestBackendNetwork:
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
         spec = spec.from_dict(data)
 
-        # Switch to vlan network
+        spec.networks = []
         spec.mgmt_network = True
-
-        # Update VM spec
-        # code, data = api_client.vms.update(unique_name, spec)
-        # assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
-
-        # Remove external vlan network from spec
-        net_uid = vlan_network['id']
-        spec.networks = [net for net in spec.networks
-                         if net_uid != net["network"].get('multus', {}).get('networkName')]
 
         code, data = api_client.vms.update(unique_name, spec)
         assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
@@ -753,6 +764,14 @@ class TestBackendNetwork:
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
 
+        # Revert AllowTcpForwarding for ssh jumpstart
+
+        self.ssh_client(client, vip, node_user, node_password,
+                        restore_tcp, wait_timeout)
+
+        self.ssh_client(client, vip, node_user, node_password,
+                        restart_ssh, wait_timeout)
+
     @pytest.mark.p0
     @pytest.mark.dependency(name="delete_vlan_connection")
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
@@ -769,6 +788,7 @@ class TestBackendNetwork:
         5. Wait until the VM boot in running state
         6. Delete the external VLAN from VM
         7. Check can ping the VM on the management network
+        8. Check can't SSH to VM with management network from external host
         """
 
         vip = request.config.getoption('--endpoint').strip('https://')
@@ -807,10 +827,8 @@ class TestBackendNetwork:
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
         spec = spec.from_dict(data)
 
-        # Remove external vlan network from spec
-        net_uid = "default/" + vlan_network['id']
-        spec.networks = [net for net in spec.networks
-                         if net_uid != net["network"].get('multus', {}).get('networkName')]
+        spec.networks = []
+        spec.mgmt_network = True
 
         code, data = api_client.vms.update(unique_name, spec)
         assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
@@ -888,6 +906,18 @@ class TestBackendNetwork:
         assert stdout.find(f"64 bytes from {mgmt_ip}") > 0, (
             f"Failed to ping VM management IP {mgmt_ip} "
             f"on management interface from Harvester node: {code}, {data}")
+
+        # Check should not SSH to management ip address from external host
+        command = ['/usr/bin/ssh', '-o', 'ConnectTimeout=5', mgmt_ip]
+        try:
+            result = subprocess.check_output(
+                command, stderr=subprocess.STDOUT, shell=False, encoding="utf-8")
+        except subprocess.CalledProcessError as e:
+            result = e.output
+
+        assert "connect to host {0} port 22: No route to host".format(mgmt_ip) in result, (
+            f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
+            f"on management interface from Harvester node")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
