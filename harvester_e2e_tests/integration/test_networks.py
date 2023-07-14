@@ -62,11 +62,6 @@ def vlan_network(request, api_client):
     api_client.clusternetworks.delete(vlan_nic)
 
 
-@pytest.fixture(params=["image_opensuse"], scope="module")
-def image_info(request):
-    return request.getfixturevalue(request.param)
-
-
 def create_image_url(api_client, display_name, image_url, wait_timeout):
     code, data = api_client.images.create_by_url(display_name, image_url)
 
@@ -149,7 +144,7 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     @pytest.mark.dependency(name="mgmt_network_connection")
-    def test_mgmt_network_connection(self, api_client, request, client, image_info,
+    def test_mgmt_network_connection(self, api_client, request, client, image_opensuse,
                                      unique_name, wait_timeout):
         """
         Manual test plan reference:
@@ -168,13 +163,11 @@ class TestBackendNetwork:
 
         node_password = request.config.getoption("--host-password")
 
-        image_url = image_info.url
-
         # Check image exists
         code, data = api_client.images.get(image_name)
 
         if code == 404:
-            create_image_url(api_client, image_name, image_url, wait_timeout)
+            create_image_url(api_client, image_name, image_opensuse.url, wait_timeout)
 
         # Update AllowTcpForwarding for ssh jumpstart
 
@@ -209,7 +202,7 @@ class TestBackendNetwork:
         for interface in interfaces_data:
             ip_addresses = interface['ipAddresses']
 
-        # # Ping management ip address from Harvester node
+        # Ping management ip address from Harvester node
         mgmt_ip = ip_addresses[0]
         ping_command = "ping -c 50 {0}".format(mgmt_ip)
 
@@ -259,7 +252,7 @@ class TestBackendNetwork:
     @pytest.mark.p0
     @pytest.mark.dependency(name="vlan_network_connection")
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
-                                     image_info, vlan_network, wait_timeout):
+                                     image_opensuse, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/validate-network-external-vlan/
@@ -273,13 +266,11 @@ class TestBackendNetwork:
         """
         unique_name = unique_name + "-vlan"
 
-        image_url = image_info.url
-
         # Check image exists
         code, data = api_client.images.get(image_name)
 
         if code == 404:
-            create_image_url(api_client, image_name, image_url, wait_timeout)
+            create_image_url(api_client, image_name, image_opensuse.url, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
@@ -333,7 +324,7 @@ class TestBackendNetwork:
     @pytest.mark.dependency(name="reboot_vlan_connection",
                             depends=["vlan_network_connection"])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
-                                    image_info, vlan_network, wait_timeout):
+                                    image_opensuse, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/
@@ -352,13 +343,11 @@ class TestBackendNetwork:
         """
         unique_name = unique_name + "-reboot-vlan"
 
-        image_url = image_info.url
-
         # Check image exists
         code, data = api_client.images.get(image_name)
 
         if code == 404:
-            create_image_url(api_client, image_name, image_url, wait_timeout)
+            create_image_url(api_client, image_name, image_opensuse.url, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
@@ -462,7 +451,7 @@ class TestBackendNetwork:
     @pytest.mark.p0
     @pytest.mark.dependency(name="mgmt_vlan_connection")
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
-                                     image_info, vlan_network, wait_timeout):
+                                     image_opensuse, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -479,13 +468,11 @@ class TestBackendNetwork:
         8. Check can ssh to the VM from an external network host
         """
 
-        image_url = image_info.url
-
         # Check image exists
         code, data = api_client.images.get(image_name)
 
         if code == 404:
-            create_image_url(api_client, image_name, image_url, wait_timeout)
+            create_image_url(api_client, image_name, image_opensuse.url, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
@@ -603,7 +590,7 @@ class TestBackendNetwork:
     @pytest.mark.p0
     @pytest.mark.dependency(name="vlan_mgmt_connection")
     def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
-                                     image_info, vlan_network, wait_timeout):
+                                     image_opensuse, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -625,13 +612,11 @@ class TestBackendNetwork:
 
         node_password = request.config.getoption("--host-password")
 
-        image_url = image_info.url
-
         # Check image exists
         code, data = api_client.images.get(image_name)
 
         if code == 404:
-            create_image_url(api_client, image_name, image_url, wait_timeout)
+            create_image_url(api_client, image_name, image_opensuse.url, wait_timeout)
 
         self.ssh_client(client, vip, node_user, node_password,
                         tcp, wait_timeout)
@@ -775,7 +760,7 @@ class TestBackendNetwork:
     @pytest.mark.p0
     @pytest.mark.dependency(name="delete_vlan_connection")
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
-                                       image_info, vlan_network, wait_timeout):
+                                       image_opensuse, vlan_network, wait_timeout):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/delete-vlan-network-form/
@@ -794,13 +779,11 @@ class TestBackendNetwork:
         vip = request.config.getoption('--endpoint').strip('https://')
         node_password = request.config.getoption("--host-password")
 
-        image_url = image_info.url
-
         # Check image exists
         code, data = api_client.images.get(image_name)
 
         if code == 404:
-            create_image_url(api_client, image_name, image_url, wait_timeout)
+            create_image_url(api_client, image_name, image_opensuse.url, wait_timeout)
 
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
