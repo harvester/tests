@@ -199,11 +199,14 @@ class TestBackendNetwork:
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
-        for interface in interfaces_data:
-            ip_addresses = interface['ipAddresses']
+
+        assert 1 == len(interfaces_data), (
+            f"Failed: get more than one interface: {interfaces_data}"
+        )
+
+        mgmt_ip = interfaces_data[0]['ipAddress']
 
         # Ping management ip address from Harvester node
-        mgmt_ip = ip_addresses[0]
         ping_command = "ping -c 50 {0}".format(mgmt_ip)
 
         _stdout, _stderr = self.ssh_client(
@@ -293,10 +296,12 @@ class TestBackendNetwork:
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
-        for interface in interfaces_data:
-            ip_addresses = interface['ipAddresses']
 
-        vlan_ip = ip_addresses[0]
+        assert 1 == len(interfaces_data), (
+            f"Failed: get more than one interface: {interfaces_data}"
+        )
+
+        vlan_ip = interfaces_data[0]['ipAddress']
 
         # Ping vlan ip address from external host
         command = ['/usr/bin/ping', '-c', '50', vlan_ip]
@@ -370,10 +375,12 @@ class TestBackendNetwork:
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
-        for interface in interfaces_data:
-            ip_addresses = interface['ipAddresses']
 
-        vlan_ip = ip_addresses[0]
+        assert 1 == len(interfaces_data), (
+            f"Failed: get more than one interface: {interfaces_data}"
+        )
+
+        vlan_ip = interfaces_data[0]['ipAddress']
 
         # Check can ping vlan ip
 
@@ -430,10 +437,12 @@ class TestBackendNetwork:
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
-        for interface in interfaces_data:
-            ip_addresses = interface['ipAddresses']
 
-        vlan_ip = ip_addresses[0]
+        assert 1 == len(interfaces_data), (
+            f"Failed: get more than one interface: {interfaces_data}"
+        )
+
+        vlan_ip = interfaces_data[0]['ipAddress']
 
         # Ping vlan ip address
 
