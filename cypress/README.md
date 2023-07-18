@@ -105,3 +105,77 @@ it('Generate Support Bundle', () => {
 });
 
 ```
+
+## How to use docker image
+
+### Build docker image
+
+```bash
+docker build . -t harvester/cypress-e2e
+```
+
+### Run docker image
+
+The following environment variables are required to run the docker image:
+- `MINIO_ENDPOINT`: The endpoint of the minio server
+- `MINIO_ACCESS_KEY`: The access key of the minio server
+- `MINIO_SECRET_KEY`: The secret key of the minio server
+
+```YAML
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cypress-e2e
+  namespace: harvester
+spec:
+  template:
+    spec:
+      containers:
+      - env:
+        - name: MINIO_ENDPOINT
+          value: 
+        - name: MINIO_ACCESS_KEY
+          value: 
+        - name: MINIO_SECRET_KEY
+          value: 
+        image: harvester/cypress-e2e
+        imagePullPolicy: Always
+        name: container-0
+        volumeMounts:
+        - mountPath: /src/cypress.env.json
+          name: vol-e2e
+          subPath: cypress.env.json
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: cypress-config
+        name: vol-e2e
+```
+
+```YAML
+apiVersion: v1
+data:
+  cypress.env.json: |-
+    {
+      "username": "admin",
+      "password": "password1234",
+      "baseUrl":  "https://192.0.0.1",
+    }
+kind: ConfigMap
+metadata:
+  name: cypress-config
+  namespace: harvester
+
+```
+
+
+### View the test result
+
+The docker image will automatically run cypress test and upload the test result to the minio server.
+The default bucket name is `cypress-test-report`, and the default dir path is `cypress/results/`.
+
+You can view the test result by clicking [here](https://minio.provo.rancherlabs.com:31524/cypress-test-report/index.html) for or using the following command:
+
+```bash
+./scripts/list-reporters
+```

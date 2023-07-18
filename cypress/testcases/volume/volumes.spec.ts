@@ -189,7 +189,7 @@ describe("Support Volume Hot Unplug", () => {
   const VOLUME_NAME_1 = generateName("hotplug-e2e-1");
   const VOLUME_NAME_2 = generateName("hotplug-e2e-2");
 
-  it.only("Support Volume Hot Unplug", () => {
+  it("Support Volume Hot Unplug", () => {
     cy.login();
 
     const imageEnv = Cypress.env("image");
