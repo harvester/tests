@@ -8,6 +8,7 @@ WORKDIR /src
 
 COPY . /src
 
+RUN yarn cache clean
 RUN yarn install
 
 ENV PATH /src/node_modules/.bin:$PATH

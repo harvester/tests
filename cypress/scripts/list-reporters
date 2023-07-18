@@ -1,6 +1,4 @@
 #!/bin/bash
-MINIO_ENDPOINT=$MINIO_ENDPOINT
-
 minio_dir="cypress-test-report/cypress/results/"
 minio_name="minio"
 
