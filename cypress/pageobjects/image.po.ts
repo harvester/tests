@@ -94,7 +94,7 @@ export class ImagePage extends CruResourcePo {
     this.search(vmName);
     cy.wait(2000);
     cy.wrap('async').then(() => {
-      this.table.find(vmName, 7, namespace, 4).then((index: any) => {
+      this.table.find(vmName, 7, namespace, 4).then((index: number) => {
         if (typeof index === 'number') {
           cy.get(`[data-testid="sortable-table-${index}-row"]`).find('td').eq(2).invoke('text').then((volumeName) => {
             volumes.exportImage(volumeName.trim(), imageName);

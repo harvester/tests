@@ -1,13 +1,9 @@
 #!/bin/bash
-MINIO_ENDPOINT=$MINIO_ENDPOINT
-MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY
-MINIO_SECRET_KEY=$MINIO_SECRET_KEY
-
 TESTS_FAILED=false
 
-xvfb-run --server-args='-screen 0 1024x768x16 -ac' yarn run e2e
+CMD=$(xvfb-run --server-args='-screen 0 1024x768x16 -ac' yarn run e2e)
 
-if [ $? -ne 0 ]; then
+if ! $CMD; then
   echo "Cypress tests failed."
   TESTS_FAILED=true
 fi
