@@ -12,11 +12,22 @@ if [ $? -ne 0 ]; then
   TESTS_FAILED=true
 fi
 
-yarn run report:merge
+timestamp=$(date +%Y%m%d-%H%M%S)
+commit_id=$(git rev-parse --short HEAD)
 
-mc alias set minio $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY --insecure
+report_dir="cypress/results/${timestamp}-${commit_id}"
 
-mc cp --recursive cypress/results/ minio/cypress-test-report/cypress/results/ --insecure
+mkdir -p ${report_dir}
+
+./node_modules/.bin/mochawesome-merge 'cypress/results/*.json' > cypress/results/merge/mochawesome.json 
+./node_modules/.bin/marge cypress/results/merge/mochawesome.json -o ${report_dir} -f index.html
+
+minio_dir="cypress-test-report/cypress/results/"
+minio_name="minio"
+
+mc alias set ${minio_name} $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY --insecure
+
+mc cp --recursive ${report_dir} ${minio_name}/${minio_dir} --insecure
 
 if [ $TESTS_FAILED = true ]; then
   echo "Tests failed, but test results were still uploaded to MinIO."

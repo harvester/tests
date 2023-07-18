@@ -1,0 +1,21 @@
+#!/bin/bash
+MINIO_ENDPOINT=$MINIO_ENDPOINT
+
+minio_dir="cypress-test-report/cypress/results/"
+minio_name="minio"
+
+files=$(mc ls ${minio_name}/${minio_dir} --insecure)
+
+bucket_url="$MINIO_ENDPOINT/${minio_dir}"
+
+blue='\033[0;34m'
+reset='\033[0m'
+count=0
+
+while read -r file; do
+  folder=$(echo "$file" | awk '{print $NF}')
+  url="${bucket_url}${folder}index.html"
+  
+  count=$((count + 1))
+  printf "%d. ${blue}%s${reset}\n" "$count" "$url"
+done <<< "$files"
