@@ -1609,7 +1609,7 @@ class TestHotPlugVolume:
 
     @contextmanager
     def login_to_vm_from_host(
-        host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+        self, host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
     ):
         with host_shell.login(host_ip, jumphost=True) as host_sh:
             vm_sh = vm_shell(ssh_user, pkey=pri_key)
