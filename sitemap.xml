@@ -242,8 +242,6 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/misc/download_kubeconfig/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/categories/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/templates/760-chained-vm-templates/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/760-chained-vm-templates/</loc>
@@ -987,8 +985,6 @@
     <loc>https://harvester.github.io/tests/manual/_incoming/1418-sync-topology-labels-to-rke2-guest-cluster-node/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2630-sync-image-display-name-to-image-labels/</loc>
-  </url><url>
-    <loc>https://harvester.github.io/tests/tags/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</loc>
   </url><url>

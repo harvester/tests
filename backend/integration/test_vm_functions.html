@@ -1637,7 +1637,7 @@ class TestHotPlugVolume:
 
     @contextmanager
     def login_to_vm_from_host(
-        host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+        self, host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
     ):
         with host_shell.login(host_ip, jumphost=True) as host_sh:
             vm_sh = vm_shell(ssh_user, pkey=pri_key)
@@ -2670,7 +2670,7 @@ class TestHotPlugVolume:
 
     @contextmanager
     def login_to_vm_from_host(
-        host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+        self, host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
     ):
         with host_shell.login(host_ip, jumphost=True) as host_sh:
             vm_sh = vm_shell(ssh_user, pkey=pri_key)
@@ -2830,7 +2830,7 @@ class TestHotPlugVolume:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.login_to_vm_from_host"><code class="name flex">
-<span>def <span class="ident">login_to_vm_from_host</span></span>(<span>host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip)</span>
+<span>def <span class="ident">login_to_vm_from_host</span></span>(<span>self, host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2840,7 +2840,7 @@ class TestHotPlugVolume:
 </summary>
 <pre><code class="python">@contextmanager
 def login_to_vm_from_host(
-    host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+    self, host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
 ):
     with host_shell.login(host_ip, jumphost=True) as host_sh:
         vm_sh = vm_shell(ssh_user, pkey=pri_key)
