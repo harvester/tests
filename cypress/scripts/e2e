@@ -1,9 +1,9 @@
 #!/bin/bash
 TESTS_FAILED=false
 
-CMD=$(xvfb-run --server-args='-screen 0 1024x768x16 -ac' yarn run e2e)
+xvfb-run --server-args='-screen 0 1024x768x16 -ac' yarn run e2e
 
-if ! $CMD; then
+if [ $? -ne 0 ]; then
   echo "Cypress tests failed."
   TESTS_FAILED=true
 fi
@@ -15,8 +15,10 @@ report_dir="cypress/results/${timestamp}-${commit_id}"
 
 mkdir -p ${report_dir}
 
-./node_modules/.bin/mochawesome-merge 'cypress/results/*.json' > cypress/results/merge/mochawesome.json 
-./node_modules/.bin/marge cypress/results/merge/mochawesome.json -o ${report_dir} -f index.html
+cp -rf cypress/results/mochawesome-report/assets/ ${report_dir}
+
+./node_modules/.bin/mochawesome-merge 'cypress/results/*.json' > ${report_dir}/merge.json 
+./node_modules/.bin/marge ${report_dir}/merge.json -o ${report_dir} -f index.html
 
 minio_dir="cypress-test-report/cypress/results/"
 minio_name="minio"

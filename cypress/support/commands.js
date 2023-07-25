@@ -1,4 +1,5 @@
 import cookie from 'cookie';
+import addContext from "mochawesome/addContext";
 
 import { Constants } from '../constants/constants'
 const constants = new Constants();
@@ -57,3 +58,10 @@ Cypress.Commands.overwrite('visit', (originalFn, url = '', options) => {
 Cypress.on('uncaught:exception', (err, runable) => {
   return false;
 })
+
+Cypress.on("test:after:run", (test, runnable) => {  
+  if (test.state === "failed") {    
+    const screenshot =`assets/${Cypress.spec.name}/${runnable.parent.title} -- ${test.title} (failed).png`;    
+    addContext({ test }, screenshot);  
+  }
+});

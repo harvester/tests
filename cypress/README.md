@@ -142,7 +142,7 @@ spec:
         imagePullPolicy: Always
         name: container-0
         volumeMounts:
-        - mountPath: /src/cypress.env.json
+        - mountPath: /tests/cypress/cypress.env.json
           name: vol-e2e
           subPath: cypress.env.json
       volumes:
