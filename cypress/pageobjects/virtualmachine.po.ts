@@ -7,6 +7,7 @@ import RadioButtonPo from '@/utils/components/radio-button.po';
 import CheckboxPo from '@/utils/components/checkbox.po';
 import { ImagePage } from "@/pageobjects/image.po";
 import CruResourcePo from '@/utils/components/cru-resource.po';
+import YamlEditorPo from '@/utils/components/yaml-editor.po';
 
 const constants = new Constants();
 const image = new ImagePage();
@@ -26,6 +27,8 @@ interface ValueInterface {
   createRunning?: boolean,
   usbTablet?: boolean,
   efiEnabled?: boolean,
+  userData?: string,
+  networkData?: string,
 }
 
 interface Volume {
@@ -123,6 +126,18 @@ export class VmsPage extends CruResourcePo {
     if (option.runStrategy) {
       new LabeledSelectPo('.labeled-select', `:contains("Run Strategy")`).select({option: option.runStrategy});
     }
+
+    if ([true, false].includes(option.efiEnabled)) {
+      this.efiEnabled().check(option.efiEnabled)
+    }
+
+    if (option.userData) {
+      this.userData().input(option?.userData)
+    }
+
+    if (option.networkData) {
+      this.networkData().input(option?.networkData)
+    }
   }
 
   checkVMState(name:  string, state: string = 'Running', namespace: string = 'default') {
@@ -167,13 +182,24 @@ export class VmsPage extends CruResourcePo {
     cy.get('.tab#advanced').click()
     this.usbTablet().check(value?.usbTablet)
     this.efiEnabled().check(value?.efiEnabled)
+    this.userData().input(value?.userData)
+    this.networkData().input(value?.networkData)
   }
 
-  public save() {
-    cy.intercept('POST', '/v1/harvester/kubevirt.io.virtualmachines/*').as('createVM');
-    cy.get('.cru-resource-footer').contains('Create').click()
+  public save({
+    edit = false,
+  } = {}) {
+    if (edit) {
+      cy.intercept('PUT', '/v1/harvester/kubevirt.io.virtualmachines/*/*').as('createVM');
+      cy.get('.cru-resource-footer').contains('Save').click()
+      cy.get('.card-actions').contains('Save & Restart').click()
+    } else {
+      cy.intercept('POST', '/v1/harvester/kubevirt.io.virtualmachines/*').as('createVM');
+      cy.get('.cru-resource-footer').contains('Create').click()
+    }
+
     cy.wait('@createVM').then(res => {
-      expect(res.response?.statusCode).to.equal(201);
+      expect(res.response?.statusCode).to.be.oneOf([201, 200]);
     })
   }
 
@@ -200,6 +226,26 @@ export class VmsPage extends CruResourcePo {
 
   rootDisk() {
     return cy.get(this.confirmRemove).find('.checkbox-container span[role="checkbox"].checkbox-custom');
+  }
+
+  template() {
+    return new LabeledSelectPo(cy.get('.labeled-select').contains('Template').eq(0));
+  }
+
+  version() {
+    return new LabeledSelectPo(cy.get('.labeled-select').contains('Version'));
+  }
+
+  multipleInstance() {
+    return new RadioButtonPo('.radio-group', ':contains("Multiple Instance")')
+  }
+
+  namePrefix() {
+    return new LabeledInputPo('.labeled-input', `:contains("Name Prefix")`)
+  }
+
+  count() {
+    return new LabeledInputPo('.labeled-input', `:contains("Count")`)
   }
 
   plugVolumeCustomName() {
@@ -320,7 +366,7 @@ export class VmsPage extends CruResourcePo {
     cy.wait('@delete').then(res => {
       cy.window().then((win) => {
         const id = `${namespace}/${name}`;
-        super.checkDelete(this.type, id)
+        super.checkDelete(this.type, id, 80)
         expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
       })
     })
@@ -366,5 +412,71 @@ export class VmsPage extends CruResourcePo {
 
   efiEnabled() {
     return new CheckboxPo('.checkbox-container', `:contains("Booting in EFI mode")`)
+  }
+
+  userData() {
+    const selector = cy.contains('User Data').parent().find('.CodeMirror')
+
+    return new YamlEditorPo(selector)
+  }
+
+  networkData() {
+    const selector = cy.contains('Network Data').parent().find('.CodeMirror')
+
+    return new YamlEditorPo(selector)
+  }
+
+  public selectTemplateAndVersion({name, namespace, id, version}: {
+    name?: string,
+    namespace?: string,
+    id?: string,
+    version?: string,
+  }) {
+    cy.contains('Use VM Template').click()
+    this.template().select({option: id || `${namespace}/${name}`})
+    this.version().select({
+      option: version,
+      selector: '.vs__dropdown-menu',
+    })
+  }
+
+  selectMultipleInstance() {
+    this.multipleInstance().input('Multiple Instance')
+  }
+
+  setMultipleInstance({namePrefix, count}: {
+    namePrefix?: string,
+    count?: string,
+  }) {
+    this.selectMultipleInstance()
+    this.namePrefix().input(namePrefix)
+    this.count().input(count)
+  }
+
+  setNodeScheduling({
+    radio, nodeName, selector
+  }: {
+    radio?: string,
+    nodeName?: string,
+    selector?: any,
+  }) {
+    this.clickTab('nodeScheduling');
+    
+    const anyRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on any available node")') 
+    const specificRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on specific node")') 
+    const rulesRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on node(s) matching scheduling rules")') 
+
+    if (radio === 'any') {
+      // anyRadio.input(null)
+    } else if (radio = 'Run VM on any available node') {
+      specificRadio.input('Run VM on specific node')
+
+      const nodeNameSelector = new LabeledSelectPo('.labeled-select', `:contains("Node Name")`)
+      nodeNameSelector.select({
+        option: nodeName,
+      })
+    } else if (radio === 'rules') {
+      rulesRadio.input('Run VM on node(s) matching scheduling rules')
+    }
   }
 }
