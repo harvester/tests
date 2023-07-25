@@ -12,7 +12,10 @@ export default class YamlEditorPo extends ComponentPo {
       this.self()
           .find('textarea')
           .clear({force: true})
-          .type(string, {force: true})
+          .type(string, {
+            force: true,
+            parseSpecialCharSequences: false,
+          })
     }
 
     return

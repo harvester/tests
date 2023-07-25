@@ -82,7 +82,34 @@ module.exports = (on, config) => {
       return globalVar;
     },
 
-  })
+    ssh ({username, host='', remoteCommand}) { 
+      return new Promise((resolve, reject) => {
+
+        const {NodeSSH} = require('node-ssh')
+        const ssh = new NodeSSH()
+
+        const privateKeyPath = config.env.privateKeyPath;
+
+        ssh.connect({   
+          host: host.trim(),
+          username,
+          privateKeyPath,
+        })
+        .then(function() {
+          ssh.execCommand(remoteCommand, { cwd:'/var/www' })
+            .then(function(result) {
+              resolve(result)
+            })
+            .catch((err) => {
+              reject(err)
+            })
+        })
+        .catch(err => {
+          reject(err)
+        })
+      })
+    },
+})
 
   // https://github.com/cypress-io/cypress/issues/349
   // add --disable-dev-shm-usage chrome flag

@@ -30,3 +30,19 @@ export const deleteDownloadsFolder = () => {
 export const generateName = (prefix: string) => {
     return `${prefix}-${Date.now()}`
 }
+
+export function base64DecodeToBuffer(string: string) {
+  if (string === null || typeof string === 'undefined') {
+    return string;
+  }
+
+  if ( typeof Buffer.from === 'function' && Buffer.from !== Uint8Array.from ) {
+    return Buffer.from(string, 'base64');
+  } else {
+    return new Buffer(string, 'base64');
+  }
+}
+
+export function base64Decode(string: string) {
+  return !string ? string : base64DecodeToBuffer(string.replace(/[-_]/g, char => char === '-' ? '+' : '/')).toString();
+}

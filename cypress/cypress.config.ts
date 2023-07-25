@@ -32,6 +32,8 @@ export default defineConfig({
     },
     nfsEndPoint: 'nfs://ip',
     vlanIDs: [1, 2],
+    sshKey: 'Your ssh public key, use for validate connect VM. e.g. ssh-rsa xxx',
+    privateKeyPath: 'Your ssh private Key Path'
   },
   retries: {
     runMode: 0,
