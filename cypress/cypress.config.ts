@@ -10,6 +10,7 @@ export default defineConfig({
   requestTimeout: 240000,
   responseTimeout: 240000,
   chromeWebSecurity: false,
+  screenshotsFolder: 'cypress/results/mochawesome-report/assets',
   env: {
     NODE_ENV: 'production',
     username: 'admin',
