@@ -58,6 +58,11 @@ title: 66-Deploy Harvester csi driver to k3s Cluster
 1. Install Harvester CSI Driver from the Rancher marketplace. You do not need to change the cloud-config path. 
     ![image](https://github.com/harvester/harvester/assets/29251855/188af4e3-9735-4c59-868d-2173c1ea3971)
 
+1. Open Storage -> StorageClasses
+1. PersistentVolumeClaims page
+1. Create a PVC named `test-pvc`, select `Harvester` in the Storage Class
+    ![image](https://github.com/harvester/harvester/assets/29251855/cf4e1682-3774-4b57-b897-411f36d1bc44)
+
 
 ## Expected Results
 1. Check can successfully install csi-driver on `Installed Apps`
@@ -67,3 +72,6 @@ title: 66-Deploy Harvester csi driver to k3s Cluster
 1. Check `Harvester` set to the `default` storage class
   ![image](https://github.com/harvester/harvester/assets/29251855/34489066-ea70-4271-a64f-12e9018aaa95)
 
+1. Check the `test-pvc` exists on `PersistentVolumeClaims` page
+1. Check a new pv created on PersistentVolumes  
+1. Check the created pv also exists on Harvester Volumes page
