@@ -871,6 +871,9 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/70-pool-loadbalancer-service-no-health-check/">70-Pool LoadBalancer service no health check</a></li>
   
 
+  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/71-manually-deploy-csi-driver-to-rke2-cluster/">71-Manually Deploy Harvester csi driver to RKE2 Cluster</a></li>
+  
+
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/better-load-balancer-config-rke2-cloud-provider/">Better Load Balancer Config of Harvester cloud provider</a></li>
   
 
@@ -1917,36 +1920,26 @@
   <div>
     <article id="content">
        <ul>
-<li>Related task: <a href="https://github.com/harvester/harvester/issues/1812">#1812</a> K3s cloud provider and csi driver support</li>
+<li>Related task: <a href="https://github.com/harvester/harvester/issues/2755#issuecomment-1552842389">#2755</a> Steps to manually install Harvester csi-driver on K3s cluster</li>
 </ul>
-<h3 id="environment-setup">Environment Setup</h3>
-<ol>
-<li>Docker install rancher v2.6.4</li>
-<li>Create one node harvester with enough resource</li>
-</ol>
 <h3 id="verify-steps">Verify steps</h3>
-<p>Follow step <strong>1~6</strong> in tets plan <code>66-Deploy Harvester csi driver to k3s Cluster</code></p>
-<h4 id="create-nginx-workload-for-testing">Create Nginx workload for testing</h4>
+<p>Follow test case <code>66-Deploy Harvester csi driver to k3s Cluster</code> to manually install csi-driver on k3s cluster</p>
 <ol>
 <li>
-<p>Create a nginx-csi deployment with image nginx:latest.
-<img src="https://user-images.githubusercontent.com/29251855/158934043-11d94957-5b85-469e-bdf7-5658edfec5d9.png" alt="image"></p>
+<p>Create a nginx deployment in Workload -&gt; Deployments</p>
 </li>
 <li>
-<p>Create a new PVC in storage tab:
-<img src="https://user-images.githubusercontent.com/29251855/158934170-8cb212e7-c84c-48d4-a15d-b921a9e6a8fc.png" alt="image"></p>
+<p>Create a Persistent Volume Claims, select storage class to <code>harvester</code></p>
 </li>
 <li>
-<p>Complete the nginx deployment, create related PV in Harvester volume
-<img src="https://user-images.githubusercontent.com/29251855/158934469-6b050d39-a45c-493d-9e29-89e16c1cf23d.png" alt="image">
-<img src="https://user-images.githubusercontent.com/29251855/158934499-6c7d9525-f43a-4426-8786-1e4aec099964.png" alt="image">
-<img src="https://user-images.githubusercontent.com/29251855/158934531-9c42b704-67cc-4c91-b24e-fa29f7183f05.png" alt="image"></p>
+<p>Select the <code>Single-Node Read/Write</code></p>
+</li>
+<li>
+<p>Open Harvester Volumes page, check the corresponding volume exists
+<img src="https://github.com/harvester/harvester/assets/29251855/8330c45f-ade1-4819-b2f0-5206e32123b6" alt="image"></p>
 </li>
 <li>
 <p>Click Execute shell to access Nginx container.</p>
-</li>
-<li>
-<p>Run <code>dd if=/dev/zero of=/test/tmpfile bs=1M count=512</code></p>
 </li>
 <li>
 <p>Run <code>dd if=/dev/null of=/test/tmpfile bs=1M count=512</code>
@@ -1955,28 +1948,54 @@
 <li>
 <p>Delete the Nginx deployment.</p>
 </li>
-</ol>
-<h4 id="resize-and-delete-volume-with-harvester-storage-class">Resize and delete volume with harvester storage class</h4>
-<ol>
-<li>Change to Harvester dashboard.</li>
-<li>Click the Edit config for the volume.</li>
-<li>Change volume size. We can see the volume is in Resizing status.
-<img src="https://user-images.githubusercontent.com/29251855/158935263-a8b6fa9e-1f4b-43ae-a687-6df3e34986a1.png" alt="image">
-<img src="https://user-images.githubusercontent.com/29251855/158935288-67409de3-d5d5-4c9d-af04-421f4153658b.png" alt="image"></li>
-<li>Delete PVC in k3s dashboard.</li>
-<li>Related volume should be deleted in Harvester too.</li>
+<li>
+<p>Create a standalone PVC on <code>PersistentVolumeClaims</code> page with <code>harvester</code> storage class</p>
+</li>
+<li>
+<p>Change to Harvester dashboard.</p>
+</li>
+<li>
+<p>Click the Edit config for the volume.</p>
+</li>
+<li>
+<p>Change volume size. We can see the volume is in Resizing status.</p>
+</li>
+<li>
+<p>Delete PVC in k3s dashboard.</p>
+</li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>
 <ol>
-<li>Can deploy nginx service with new PVC created
-<img src="https://user-images.githubusercontent.com/29251855/158934469-6b050d39-a45c-493d-9e29-89e16c1cf23d.png" alt="image">
-<img src="https://user-images.githubusercontent.com/29251855/158934499-6c7d9525-f43a-4426-8786-1e4aec099964.png" alt="image">
-<img src="https://user-images.githubusercontent.com/29251855/158934531-9c42b704-67cc-4c91-b24e-fa29f7183f05.png" alt="image"></li>
-<li>Can allocate size in nginx container
-<img src="https://user-images.githubusercontent.com/29251855/158934986-c08ddccc-3b33-4508-9861-6d10c5ded3c5.png" alt="image"></li>
-<li>Can resize and delete volume with harvester storage class
+<li>
+<p>Check can deploy nginx service correctly
+<img src="https://github.com/harvester/harvester/assets/29251855/53b606b9-f429-4806-8c5d-4fa2e06e9cf3" alt="image"></p>
+</li>
+<li>
+<p>Check can correctly create PVC in <code>PersistenVolumeClaims</code>
+<img src="https://github.com/harvester/harvester/assets/29251855/631e0977-51e0-491f-9cca-d01f88c41253" alt="image"></p>
+</li>
+<li>
+<p>Check can correctly create PV in <code>PersistentVolumes</code>
+<img src="https://github.com/harvester/harvester/assets/29251855/d9fb5bf1-debb-4644-8c9d-424cee6a5f22" alt="image"></p>
+</li>
+<li>
+<p>Check can allocate size in nginx container
+<img src="https://user-images.githubusercontent.com/29251855/158934986-c08ddccc-3b33-4508-9861-6d10c5ded3c5.png" alt="image"></p>
+</li>
+<li>
+<p>Check the created stand alone PVC and PV on Rancher and Harvester volumes page
+<img src="https://github.com/harvester/harvester/assets/29251855/a7029c09-84b6-4f49-bd6e-436162eece43" alt="image">
+<img src="https://github.com/harvester/harvester/assets/29251855/81c74645-2608-4fe4-9efa-bd8a7f34f295" alt="image">
+<img src="https://github.com/harvester/harvester/assets/29251855/8cf67085-6970-4a6c-a8e1-3f14b52e0b8c" alt="image"></p>
+</li>
+<li>
+<p>Check can resize and delete volume with harvester storage class
 <img src="https://user-images.githubusercontent.com/29251855/158935263-a8b6fa9e-1f4b-43ae-a687-6df3e34986a1.png" alt="image">
-<img src="https://user-images.githubusercontent.com/29251855/158935288-67409de3-d5d5-4c9d-af04-421f4153658b.png" alt="image"></li>
+<img src="https://user-images.githubusercontent.com/29251855/158935288-67409de3-d5d5-4c9d-af04-421f4153658b.png" alt="image"></p>
+</li>
+<li>
+<p>Check the related volume should be deleted in Harvester too.</p>
+</li>
 </ol>
 
     </article>

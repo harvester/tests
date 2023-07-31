@@ -676,12 +676,13 @@ apiVersion: v1 kind: Service metadata: annotations: cloudprovider.harvesterhci.i
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/66-deploy-harvester-csi-driver-to-k3s-cluster/</guid>
-      <description>Related task: #1812 K3s cloud provider and csi driver support Environment Setup Docker install rancher v2.6.4 Create one node harvester with enough resource Verify steps Follow step 1~13 in tets plan 59-Create K3s Kubernetes Cluster
-Download the Generate addon configuration for csi driver
-ssh to harvester node 1
-Execute cat /etc/rancher/rke2/rke2.yaml
-change the server value from https://127.0.0.1:6443 to your node1 IP
-Copy the kubeconfig and add into your local ~/.</description>
+      <description>Related task: #2755 Steps to manually install Harvester csi-driver on K3s cluster Reference Document Deploying with Harvester K3s Node Driver
+Verify steps Prepare a Harvester cluster with enough cpu, memory and disks for K3s guest cluster
+Create a Rancher instance
+Import Harvester in Rancher and create cloud credential
+ssh to Harvester management node
+Extract the kubeconfig of Harvester with cat /etc/rancher/rke2/rke2.yaml
+Change the server value from https://127.0.0.1:6443/ to your VIP</description>
     </item>
     
     <item>
@@ -690,8 +691,11 @@ Copy the kubeconfig and add into your local ~/.</description>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/67-harvester-persistent-volume-on-k3s-cluster/</guid>
-      <description>Related task: #1812 K3s cloud provider and csi driver support Environment Setup Docker install rancher v2.6.4 Create one node harvester with enough resource Verify steps Follow step 1~6 in tets plan 66-Deploy Harvester csi driver to k3s Cluster
-Create Nginx workload for testing Create a nginx-csi deployment with image nginx:latest. Create a new PVC in storage tab: Complete the nginx deployment, create related PV in Harvester volume Click Execute shell to access Nginx container.</description>
+      <description>Related task: #2755 Steps to manually install Harvester csi-driver on K3s cluster Verify steps Follow test case 66-Deploy Harvester csi driver to k3s Cluster to manually install csi-driver on k3s cluster
+Create a nginx deployment in Workload -&amp;gt; Deployments
+Create a Persistent Volume Claims, select storage class to harvester
+Select the Single-Node Read/Write
+Open Harvester Volumes page, check the corresponding volume exists Click Execute shell to access Nginx container.</description>
     </item>
     
     <item>
@@ -736,6 +740,22 @@ Click Services
 Click Create
 Select Load Balancer Given service name
 Provide Listening port and Target port Click Add-on Config</description>
+    </item>
+    
+    <item>
+      <title>71-Manually Deploy Harvester csi driver to RKE2 Cluster</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/71-manually-deploy-csi-driver-to-rke2-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/71-manually-deploy-csi-driver-to-rke2-cluster/</guid>
+      <description>Related task: #2755 Steps to manually install Harvester csi-driver on RKE2 cluster Reference Document Deploying with Harvester RKE2 Node Driver
+Verify steps ssh to Harvester management node
+Extract the kubeconfig of Harvester with cat /etc/rancher/rke2/rke2.yaml
+Change the server value from https://127.0.0.1:6443/ to your VIP
+Copy the kubeconfig and add into your local ~/.kube/config file
+Import Harvester in Rancher
+Create cloud credential
+Provision a RKE2 cluster Provide the login credential in user data</description>
     </item>
     
     <item>
