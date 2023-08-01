@@ -46,7 +46,8 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
 
 
 @pytest.fixture()
-def focal_vm(api_client, unique_name, focal_image, wait_timeout):
+def focal_vm(api_client, focal_image, wait_timeout):
+    unique_name = f'vm-{datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")}'
     vm_spec = api_client.vms.Spec(1, 1)
     vm_spec.add_image('disk-0', focal_image['id'])
     code, data = api_client.vms.create(unique_name, vm_spec)
@@ -126,7 +127,7 @@ def vm_force_reset_policy(api_client):
 @pytest.mark.host_management
 class TestHostState:
     @pytest.mark.dependency(name="host_poweroff")
-    def test_poweroff_state(api_client, host_state, wait_timeout, available_node_names):
+    def test_poweroff_state(self, api_client, host_state, wait_timeout, available_node_names):
         """
         Test the hosts are the nodes which make the cluster
         Covers:
@@ -161,7 +162,7 @@ class TestHostState:
         assert node["metadata"]["state"]["name"] in ("in-progress", "unavailable")
 
     @pytest.mark.dependency(name="host_poweron", depends=["host_poweroff"])
-    def test_poweron_state(api_client, host_state, wait_timeout, available_node_names):
+    def test_poweron_state(self, api_client, host_state, wait_timeout, available_node_names):
         assert 2 <= len(available_node_names), (
             f"The cluster only have {len(available_node_names)} available node."
             " It's not enough for power on test."
@@ -179,7 +180,7 @@ class TestHostState:
         rc, out, err = host_state.power(node['id'], node_ip, on=True)
         assert rc == 0, (f"Failed to PowerOn node {node['id']} with error({rc}):\n"
                          f"stdout: {out}\n\nstderr: {err}")
-        sleep(host_state.delay)  # Wait for the node to disappear
+        sleep(host_state.delay)  # Wait for the node to appear
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             _, metric = api_client.hosts.get_metrics(node['id'])
@@ -356,7 +357,7 @@ def test_poweroff_node_trigger_vm_reschedule(
         rc, out, err = host_state.power(node['id'], node_ip, on=True)
         assert rc == 0, (f"Failed to PowerOn node {node['id']} with error({rc}):\n"
                          f"stdout: {out}\n\nstderr: {err}")
-        sleep(host_state.delay)  # Wait for the node to disappear
+        sleep(host_state.delay)  # Wait for the node to appear
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             _, metric = api_client.hosts.get_metrics(node['id'])
