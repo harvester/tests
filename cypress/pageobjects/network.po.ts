@@ -28,11 +28,11 @@ export default class NetworkPage extends CruResourcePo {
   }
 
   public setValue(value: ValueInterface) {
-    this.namespace().select({option: value?.namespace})
+    this.namespace().select({ option: value?.namespace })
     this.name().input(value?.name)
     this.description().input(value?.description)
     this.vlan().input(value?.vlan)
-    this.clusterNetwork().select({option: value?.clusterNetwork})
+    this.clusterNetwork().select({ option: value?.clusterNetwork })
     cy.get(this.networkTab).click()
     this.mode().input(value.mode)
     this.dhcp().input(value.dhcp)
@@ -63,4 +63,17 @@ export default class NetworkPage extends CruResourcePo {
   gateway() {
     return new LabeledInputPo('.labeled-input', `:contains("Gateway")`)
   }
+
+  createVLAN(name: string, namespace: string, vlan_id: string, clusterNetwork: string) {
+    const network = new NetworkPage();
+
+    network.create({
+      name,
+      namespace,
+      vlan: vlan_id,
+      clusterNetwork,
+    });
+
+  }
+
 }
