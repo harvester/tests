@@ -4,6 +4,7 @@ const fs = require("fs");
 const yaml = require('js-yaml');
 const { isFileExist, findFiles } = require('cy-verify-downloads');
 const AdmZip = require("adm-zip");
+const path = require('path')
 
 let globalVar = {};
 // ***********************************************************
@@ -120,6 +121,20 @@ module.exports = (on, config) => {
     }
     return launchOptions;
   });
+
+  // on('after:screenshot', (details) => {
+  //   const fileName = path.basename(details.path)
+
+  //   const newPath = `cypress/results/mochawesome-report/assets/${details.specName}-${fileName}`
+
+  //   return new Promise((resolve, reject) => {
+  //     fs.rename(details.path, newPath, (err) => {
+  //       if (err) return reject(err)
+
+  //       resolve({ path: newPath })
+  //     })
+  //   })
+  // })
 
   return config;
 }
