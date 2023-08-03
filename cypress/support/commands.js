@@ -2,6 +2,9 @@ import cookie from 'cookie';
 import addContext from "mochawesome/addContext";
 
 import { Constants } from '../constants/constants'
+
+const path = require('path')
+
 const constants = new Constants();
 
 require('cy-verify-downloads').addCustomCommand();
@@ -60,8 +63,29 @@ Cypress.on('uncaught:exception', (err, runable) => {
 })
 
 Cypress.on("test:after:run", (test, runnable) => {  
-  if (test.state === "failed") {    
-    const screenshot =`assets/${Cypress.spec.name}/${runnable.parent.title} -- ${test.title} (failed).png`;    
+  if (test.state === "failed") {   
+    const dir = Cypress.spec.relative
+    const specDir = dir.split('/').slice(1, -1).join('/') 
+
+    let describe = ''
+    let context = ''
+    let it = test.title
+
+    let fileName = '' 
+
+    if (runnable.parent?.parent?.title) {
+      describe = runnable.parent.parent.title
+      context = runnable.parent.title
+      
+      fileName = `${describe} -- ${context} -- ${it} (failed).png`
+    } else {
+      describe = runnable.parent.title
+
+      fileName = `${runnable.parent.title} -- ${test.title} (failed).png`
+    }
+
+    const screenshot =`assets/${specDir}/${Cypress.spec.name}/${fileName}`;    
+    
     addContext({ test }, screenshot);  
   }
 });

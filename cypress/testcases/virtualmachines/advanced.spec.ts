@@ -179,19 +179,20 @@ sshpwauth: True
 
     vms.save()
 
-    cy.wait('@createVM').then(res => {
-      expect(res.response?.statusCode, 'Check create VM').to.equal(201);
+    for( let i=0; i<3; i++) {
+      cy.wait('@createVM').then(res => {
+        expect(res.response?.statusCode, 'Check create VM').to.equal(201);
+        
+        expect(res.response?.body?.spec?.template?.spec?.domain?.resources?.limits?.cpu).to.equal('1')
+        expect(res.response?.body?.spec?.template?.spec?.domain?.resources?.limits?.memory).to.equal('1Gi')
+      })
+      cy.wait('@createSecret').then(res => {
+        expect(res.response?.statusCode, 'Check create secret').to.equal(201);
 
-      expect(res.response?.body?.spec?.template?.spec?.domain?.resources?.limits?.cpu).to.equal('1')
-      expect(res.response?.body?.spec?.template?.spec?.domain?.resources?.limits?.memory).to.equal('1Gi')
-    })
-
-    cy.wait('@createSecret').then(res => {
-      expect(res.response?.statusCode, 'Check create secret').to.equal(201);
-
-      const userDataYAML = base64Decode(res.response?.body?.data?.userdata)
-      expect(userDataYAML, 'Check user data').to.equal(userData)
-    })
+        const userDataYAML = base64Decode(res.response?.body?.data?.userdata)
+        expect(userDataYAML, 'Check user data').to.equal(userData)
+      })
+    }
 
     vms.goToList()
     cy.get('.search').type(namePrefix)
