@@ -5,6 +5,7 @@ const yaml = require('js-yaml');
 const { isFileExist, findFiles } = require('cy-verify-downloads');
 const AdmZip = require("adm-zip");
 
+let globalVar = {};
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
 //
@@ -40,9 +41,9 @@ module.exports = (on, config) => {
         }
       })
     },
-    deleteFolder (folderName) {
+    deleteFolder(folderName) {
       return new Promise((resolve, reject) => {
-        fs.rmdir(folderName, {maxRetries: 5, recursive: true}, err => {
+        fs.rmdir(folderName, { maxRetries: 5, recursive: true }, err => {
           if (err && err.code !== "ENOENT") {
             console.error(err)
             reject(err.message)
@@ -51,9 +52,9 @@ module.exports = (on, config) => {
         })
       })
     },
-    deleteFile (fileName) {
+    deleteFile(fileName) {
       return new Promise((resolve, reject) => {
-        fs.rm(fileName, {maxRetries: 5, force: true}, err => {
+        fs.rm(fileName, { maxRetries: 5, force: true }, err => {
           if (err && err.code !== "ENOENT") {
             console.error(err)
             reject(err.message)
@@ -62,7 +63,7 @@ module.exports = (on, config) => {
         })
       })
     },
-    readZipFile (fileName) {
+    readZipFile(fileName) {
       return new Promise((resolve, reject) => {
         try {
           resolve(new AdmZip(fileName).getEntries())
@@ -71,8 +72,27 @@ module.exports = (on, config) => {
           resolve(e.message)
         }
       })
-    }
+    },
+
+    setGlobalVariable: (val) => {
+      return (globalVar = val);
+    },
+
+    getGlobalVariable: () => {
+      return globalVar;
+    },
+
   })
+
+  // https://github.com/cypress-io/cypress/issues/349
+  // add --disable-dev-shm-usage chrome flag
+  on('before:browser:launch', (browser, launchOptions) => {
+    if (browser.family === 'chromium') {
+      console.log('Adding Chrome flag: --disable-dev-shm-usage');
+      launchOptions.args.push('--disable-dev-shm-usage');
+    }
+    return launchOptions;
+  });
 
   return config;
 }
