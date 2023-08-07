@@ -73,12 +73,14 @@ def focal_vm(api_client, focal_image, wait_timeout):
     data['namespace'] = data['metadata']['namespace']
     yield data
 
-    volume_name = ""
-    for volume in data['spec']['volumes']:
-        if volume['name'] == 'disk-0':
-            volume_name = volume['persistentVolumeClaim']['claimName']
-    api_client.vms.delete(unique_name)
-    api_client.volumes.delete(volume_name)
+    code, data = api_client.vms.get(unique_name)
+    if 200 == code:  # ???: https://github.com/harvester/harvester/issues/4388
+        volume_name = ""
+        for volume in data['spec']['volumes']:
+            if volume['name'] == 'disk-0':
+                volume_name = volume['persistentVolumeClaim']['claimName']
+        api_client.vms.delete(unique_name)
+        api_client.volumes.delete(volume_name)
 
 
 @pytest.fixture(scope="class")
