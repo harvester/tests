@@ -32,7 +32,8 @@ def cluster_network(request, api_client, unique_name):
     all_nodes = set(n['id'] for n in data['data'])
     try:
         # vlad_nic configured on specific cluster network, reuse it
-        return next(cnet for cnet, nodes in cnet_nodes.items() if all_nodes == set(nodes))
+        yield next(cnet for cnet, nodes in cnet_nodes.items() if all_nodes == set(nodes))
+        return None
     except StopIteration:
         configured_nodes = reduce(add, cnet_nodes.values(), [])
         if any(n in configured_nodes for n in all_nodes):
