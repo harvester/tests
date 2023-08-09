@@ -76,7 +76,7 @@ def focal_vm(api_client, focal_image, wait_timeout):
     code, data = api_client.vms.get(unique_name)
     if 200 == code:  # ???: https://github.com/harvester/harvester/issues/4388
         volume_name = ""
-        for volume in data['spec']['volumes']:
+        for volume in data['spec']['template']['spec']['volumes']:
             if volume['name'] == 'disk-0':
                 volume_name = volume['persistentVolumeClaim']['claimName']
         api_client.vms.delete(unique_name)
@@ -543,7 +543,8 @@ def test_vm_restarted_after_host_reboot(
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
-        if old_uid != data['metadata']['uid'] and "Running" == data['status'].get('phase'):
+        if (200 == code and old_uid != data['metadata']['uid']
+                and "Running" == data['status'].get('phase')):
             break
         sleep(5)
     else:
