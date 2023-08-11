@@ -1,14 +1,16 @@
 import type { CypressChainable } from '@/utils/po.types'
 import { Constants } from "@/constants/constants";
 import LabeledInputPo from '@/utils/components/labeled-input.po';
+
 const constants = new Constants();
 
 export class LoginPage {
     private usernameInput = '#username';
     private passwordInput = '#password';
-    private submitButton = '#submit';
-    private checkboxEula = '#checkbox-eula'
-    private checkboxTelemetry = '#checkbox-telemetry';
+    private submitButton = '[data-testid="setup-submit"]';
+    private loginButton = '[data-testid="login-submit"]';
+    private checkboxEula = '[data-testid="setup-agreement"]'
+    private checkboxTelemetry = '[for="checkbox-telemetry"]';
     private allRadios = '.radio-container';
     private checkbox = '.checkbox-custom';
     private mainPageHeader = 'main .outlet header h1 span'
@@ -50,10 +52,11 @@ export class LoginPage {
     }
 
     public get submitBtn():CypressChainable {
-        return cy.get(`${this.submitButton}`).then($el => {
-            // first time page wrap the `button` inside #button.
-            return $el.children("button").length ? $el.children("button") : $el
-        })
+        return cy.get(`${this.submitButton}`)
+    }
+
+    public get loginBtn():CypressChainable {
+        return cy.get(`${this.loginButton}`)
     }
 
     public Message({iserror=true}: {iserror:boolean}):CypressChainable {
@@ -67,7 +70,7 @@ export class LoginPage {
         cy.visit(constants.loginUrl);
         cy.get(this.usernameInput).type(username);
         cy.get(this.passwordInput).type(password)
-        cy.get(this.submitButton).click()
+        cy.get(this.loginButton).click()
         this.validateLogin()
     }
     /**
