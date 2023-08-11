@@ -16,7 +16,7 @@ describe('login page for harvester', () => {
         page.inputUsername("admin");
         page.inputPassword("the Invalid Password");
 
-        page.submitBtn.click();
+        page.loginBtn.click();
         page.Message({iserror:true}).should("be.visible")
 
     })
@@ -32,7 +32,7 @@ describe('login page for harvester', () => {
         page.inputUsername()
         page.inputPassword()
 
-        page.submitBtn.click()
+        page.loginBtn.click()
         page.validateLogin();
 
         Dashboard.header.logout();
@@ -46,13 +46,13 @@ describe('login page for harvester', () => {
         page.inputUsername();
         page.inputPassword();
 
-        page.submitBtn.click();
+        page.loginBtn.click();
         page.validateLogin();
 
         Dashboard.header.logout();
         page.inputUsername();
         page.inputPassword();
-        page.submitBtn.click();
+        page.loginBtn.click();
         page.validateLogin();
     })
 });
@@ -60,7 +60,7 @@ describe('login page for harvester', () => {
 /**
  * https://harvester.github.io/tests/manual/authentication/1409-change-password/
  */
-describe.skip('Change user password', () => {
+describe('Change user password', () => {
     it("Change user password", () => {
         const page = new LoginPage();
 
@@ -75,7 +75,7 @@ describe.skip('Change user password', () => {
         Dashboard.header.logout();
         page.inputUsername();
         page.inputPassword();
-        page.submitBtn.click();
+        page.loginBtn.click();
         page.Message({iserror:true}).should("be.visible");
 
         // change password
