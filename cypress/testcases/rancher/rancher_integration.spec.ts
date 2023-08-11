@@ -95,7 +95,9 @@ describe('Rancher Integration Test', function () {
 
         // create IMAGE according to the value set
         image.goToCreate();
-        image.create(value);
+        image.setNameNsDescription(value.name, "default");
+        image.setBasics({ url: value.url });
+        image.save();
         image.checkState(value);
 
     });
@@ -107,7 +109,7 @@ describe('Rancher Integration Test', function () {
 
     });
 
-    it.only('Rancher import Harvester', { baseUrl: constants.rancherUrl }, () => {
+    it('Rancher import Harvester', { baseUrl: constants.rancherUrl }, () => {
         // cy.login();
         cy.visit('/');
 
@@ -123,13 +125,13 @@ describe('Rancher Integration Test', function () {
     });
 
 
-    it.only('Harvester import Rancher', () => {
+    it('Harvester import Rancher', () => {
         cy.login();
         rancher.registerRancher();
     });
 
 
-    it.only('Check Harvester Cluster Status', { baseUrl: constants.rancherUrl }, () => {
+    it('Check Harvester Cluster Status', { baseUrl: constants.rancherUrl }, () => {
         // cy.login();
         cy.visit('/');
         cy.wait(5000);

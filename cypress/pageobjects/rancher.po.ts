@@ -27,7 +27,7 @@ interface ValueInterface {
 
 
 export class rancherPage {
-    
+
     private login_page_usernameInput = '#username';
     private login_page_passwordInput = '#password > .labeled-input > input';
     private login_page_loginButton = '#submit > span';
@@ -46,7 +46,7 @@ export class rancherPage {
     private home_page_mainMenu = '.menu';
     private home_page_virtualManagement = ':nth-child(7) > .option > div';
 
-    private virtual_page_importButton = '.btn';
+    private virtual_page_importButton = '.actions > .btn';
     private virtual_page_clusterName = ':nth-child(1) > .labeled-input > input';
     private virtual_page_createCluster = '.cru-resource-footer > div > .role-primary';
 
@@ -54,7 +54,7 @@ export class rancherPage {
     private cloudCredential_page_harvester = '.subtypes-container > :nth-child(5)';
     private cloudCredential_page_clusterName = 'input[placeholder="A unique name"]';
     private cloudCredential_page_confirmCreate = 'button[class="btn role-primary"]';
-    
+
     private clusterManagement_page_create = '[href="/dashboard/c/local/manager/provisioning.cattle.io.cluster/create"]';
     private clusterManagement_rke_selector = '.slider';
 
@@ -73,7 +73,7 @@ export class rancherPage {
     private rke2Creation_page_ssh_user = 'input[placeholder="e.g. ubuntu"]';
     private rke2Creation_page_showAdvanced = '.advanced > .hand';
     private rke2Creation_page_userDataInput = ':nth-child(4) > .yaml-editor > .code-mirror > .vue-codemirror > .CodeMirror > .CodeMirror-scroll > .CodeMirror-sizer > [style="position: relative; top: 0px;"] > .CodeMirror-lines > [style="position: relative; outline: none;"] > .CodeMirror-code > [style="position: relative;"] > .CodeMirror-line';
-    
+
     private rke2Creation_page_k8sCombo = '#vs1__combobox';
     private rke2Creation_page_k8s_rke2Latest = '#vs1__option-1';
     private rke2Creation_page_k8s_rke2Stable = '#vs1__option-2';
@@ -107,38 +107,38 @@ export class rancherPage {
      */
     public firstTimeLogin() {
 
-        
+
         var rancher_vm_ip = (constants.rancherUrl as string).slice(8);
         cy.log(rancher_vm_ip);
         // cy.exec('sshpass -p vagrant ssh vagrant@192.168.0.34 -t "docker ps --format {{.ID}} | xargs docker logs 2>&1 | grep \'Bootstrap Password:\' | sed \'s/.*Password: //\'"', { env: { VM_PASSWORD: constants.rancher_vm_password} }).then((result) => {
-        cy.exec('sshpass -p $VM_PASSWORD ssh $VM_USER@$VM_IP -t "docker ps --format {{.ID}} | xargs docker logs 2>&1 | grep \'Bootstrap Password:\' | sed \'s/.*Password: //\'"', 
-        { env: { VM_PASSWORD: constants.rancher_vm_password, VM_USER: constants.rancher_vm_user, VM_IP: rancher_vm_ip} }).then((result) => {    
-            cy.log(result.stdout);
+        cy.exec('sshpass -p $VM_PASSWORD ssh $VM_USER@$VM_IP -t "docker ps --format {{.ID}} | xargs docker logs 2>&1 | grep \'Bootstrap Password:\' | sed \'s/.*Password: //\'"',
+            { env: { VM_PASSWORD: constants.rancher_vm_password, VM_USER: constants.rancher_vm_user, VM_IP: rancher_vm_ip } }).then((result) => {
+                cy.log(result.stdout);
 
-            cy.get(this.boostrap_page_boostrapPWInput).type(result.stdout).log('Input bootstrap secret');
-            cy.get(this.boostrap_page_boostrapPWSubmit).click();
+                cy.get(this.boostrap_page_boostrapPWInput).type(result.stdout).log('Input bootstrap secret');
+                cy.get(this.boostrap_page_boostrapPWSubmit).click();
 
-            // cy.log('Select a specific password to use')
-            cy.get(this.boostrap_page_radioSelectPW).click().log('Select a specific password to use');
+                // cy.log('Select a specific password to use')
+                cy.get(this.boostrap_page_radioSelectPW).click().log('Select a specific password to use');
 
-            // cy.log('Input new password')
-            cy.get(this.boostrap_page_newPWInput).type(constants.rancher_password).log('Input new password');
-            // cy.log('Confirm password again')
-            cy.get(this.boostrap_page_newPWRepeat).type(constants.rancher_password).log('Confirm password again');
+                // cy.log('Input new password')
+                cy.get(this.boostrap_page_newPWInput).type(constants.rancher_password).log('Input new password');
+                // cy.log('Confirm password again')
+                cy.get(this.boostrap_page_newPWRepeat).type(constants.rancher_password).log('Confirm password again');
 
-            // cy.log('Agree EULA')
-            cy.get(this.boostrap_page_checkAgreeEULA).click().log('Agree EULA');
+                // cy.log('Agree EULA')
+                cy.get(this.boostrap_page_checkAgreeEULA).click().log('Agree EULA');
 
-            cy.log('Continue to access rancher')    
-            cy.get(this.boostrap_page_confirmLogin).click().log('Continue to access rancher');
-        })
+                cy.log('Continue to access rancher')
+                cy.get(this.boostrap_page_confirmLogin).click().log('Continue to access rancher');
+            })
 
     }
 
     /**
      * Rancher login page: Input username and password -> submit 
      */
-     public login() {
+    public login() {
         cy.get(this.login_page_usernameInput).type(constants.rancher_user).log('Input username');
         cy.get(this.login_page_passwordInput).type(constants.rancher_password).log('Input password');
         cy.get(this.login_page_loginButton).click().log('Login with local user');
@@ -147,29 +147,29 @@ export class rancherPage {
     /**
     * Check the rancher landing page is first time login or not
     */
-     public rancherLogin() {
+    public rancherLogin() {
 
         cy.visit('/')
         cy.wait(1000).get('body').then($body => {
-            if ($body.find(this.boostrap_page_welcome).length) {   
-              cy.log('First time login')
-              this.firstTimeLogin();
-              
+            if ($body.find(this.boostrap_page_welcome).length) {
+                cy.log('First time login')
+                this.firstTimeLogin();
+
             } else {
-              cy.log('Not first time login')
-              this.login();
+                cy.log('Not first time login')
+                this.login();
             }
-          
+
         })
 
         this.validateLogin()
-        
+
     }
 
     /**
     * Validate correctly login to Rancher dashboard page
     */
-     public validateLogin() {
+    public validateLogin() {
         cy.get(this.main_page_title, { timeout: constants.timeout.maxTimeout })
         cy.url().should('contain', constants.rancher_dashboardPage);
     }
@@ -207,9 +207,9 @@ export class rancherPage {
         cy.contains(constants.rancherUrl, { timeout: 5000 });
 
         return cy.get('.copy');
-     
+
     }
-    
+
     public registerRancher() {
 
         cy.task('getGlobalVariable').then((globalVar) => {
@@ -219,9 +219,9 @@ export class rancherPage {
             settings.checkIsCurrentPage();
             cy.get('#cluster-registration-url').click();
             cy.get('.icon.icon.icon-edit').click();
-        
+
             cy.get('input').clear().type(url);
-           
+
         })
 
         cy.get('.cru-resource-footer > div > .btn').should('contain', 'Save').click();
@@ -242,15 +242,15 @@ export class rancherPage {
     public checkStatus(value: ValueInterface, valid: boolean = true, target: string) {
 
         let key: keyof ValueInterface;
-        for (key in value){
-            if (target == key){
+        for (key in value) {
+            if (target == key) {
                 cy.log(target);
                 // cy.get(this.search).should('be.visible');
                 cy.wait(1000).get(this.search).then(($search) => {
                     cy.wrap($search).click().type(value[target]);
                     cy.contains(value[target]).parentsUntil('tbody', 'tr').find('td.col-badge-state-formatter').contains(valid ? 'Active' : 'Pending', { timeout: constants.timeout.provisionTimeout }).should('be.visible');
                 });
-               
+
             } else {
                 cy.log('target not found');
             }
@@ -289,20 +289,20 @@ export class rancherPage {
 
     }
 
-    public createCloudCredential(cloud_credential: string, harvester_cluster_name: string){
+    public createCloudCredential(cloud_credential: string, harvester_cluster_name: string) {
 
         this.visit_cloudCredential();
-      
+
         cy.wait(1000).get(this.cloudCredential_page_createButton).click();
- 
+
         cy.get(this.cloudCredential_page_harvester).should('contain', 'Harvester').click();
-        
+
         cy.get(this.cloudCredential_page_clusterName).type(cloud_credential);
 
         cy.get('.vs__search').click().then(($list) => {
-            cy.contains(harvester_cluster_name).click();            
+            cy.contains(harvester_cluster_name).click();
         })
-        
+
         cy.get(this.cloudCredential_page_confirmCreate).should('contain', 'Create').click();
 
         cy.contains(cloud_credential);
@@ -311,7 +311,7 @@ export class rancherPage {
     public input_RKE2_Cluster_Content(rke2_cluster_attributes: any) {
 
         this.visit_clusterManagement();
-        
+
         cy.get(this.clusterManagement_page_create).click();
 
         // Set RKE2 checkbox back to default
@@ -319,11 +319,11 @@ export class rancherPage {
             let active = el.text();
             console.log('Current activate in: ', active)
             cy.log(active);
-            if (active == 'RKE2/K3s'){
+            if (active == 'RKE2/K3s') {
                 cy.get(this.clusterManagement_rke_selector).click();
             }
         })
-        
+
         // toggle slide
         cy.wait(1000).get(this.clusterManagement_rke_selector).click().then((el) => {
 
@@ -340,7 +340,7 @@ export class rancherPage {
 
             // Select Namespace
             cy.get(this.rke2Creation_page_namespaceCombo).click().then(($list) => {
-                cy.get(this.rke2Creation_page_namespaceOption).should('contain', rke2_cluster_attributes.namespace).click(); 
+                cy.get(this.rke2Creation_page_namespaceOption).should('contain', rke2_cluster_attributes.namespace).click();
             })
 
             // Select Image
@@ -350,7 +350,7 @@ export class rancherPage {
 
             // Select Network
             cy.get(this.rke2Creation_page_networkNameCombo).click().then(($list) => {
-                cy.get(this.rke2Creation_page_networkNameOption).should('contain', rke2_cluster_attributes.network_name).click(); 
+                cy.get(this.rke2Creation_page_networkNameOption).should('contain', rke2_cluster_attributes.network_name).click();
             })
 
             // Input SSH user 
@@ -358,14 +358,14 @@ export class rancherPage {
 
             // Click Adanced Settings
             cy.get(this.rke2Creation_page_showAdvanced).click();
-            
+
             // Input User data
             cy.get(this.rke2Creation_page_userDataInput).type(rke2_cluster_attributes.user_data_template, {
                 parseSpecialCharSequences: false,
             });
-            
+
         })
-        
+
     }
 
     public provision_RKE2_Cluster(rke2_name: string, rke2_cluster_attributes: any) {
@@ -379,19 +379,19 @@ export class rancherPage {
 
         // Select Kubernetes version
         cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
-            cy.get(this.rke2Creation_page_k8s_rke2Latest).should('contain', rke2_cluster_attributes.rke2_latest).click(); 
+            cy.get(this.rke2Creation_page_k8s_rke2Latest).should('contain', rke2_cluster_attributes.rke2_latest).click();
         })
 
         cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
-            cy.get(this.rke2Creation_page_k8s_rke2Stable).should('contain', rke2_cluster_attributes.rke2_stable).click(); 
+            cy.get(this.rke2Creation_page_k8s_rke2Stable).should('contain', rke2_cluster_attributes.rke2_stable).click();
         })
 
         cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
-            cy.get(this.rke2Creation_page_k8s_rke2Latest).should('contain', rke2_cluster_attributes.rke2_latest).click(); 
+            cy.get(this.rke2Creation_page_k8s_rke2Latest).should('contain', rke2_cluster_attributes.rke2_latest).click();
         })
 
         // cy.get(this.rke2Creation_page_createButton).click()
-    
+
         // Click the Create button to start provisioning RKE2 cluster 
         cy.get(this.rke2Creation_page_createButton).click().then((el) => {
             cy.wait(3000).visit(constants.rancher_clusterManagmentPage);
@@ -410,7 +410,7 @@ export class rancherPage {
 
         // Select Kubernetes version
         cy.get(this.rke2Creation_page_k8sCombo).scrollIntoView().click().then(($list) => {
-            cy.get(this.rke2Creation_page_k8s_k3sLatest).should('contain', rke2_cluster_attributes.k3s_latest).click(); 
+            cy.get(this.rke2Creation_page_k8s_k3sLatest).should('contain', rke2_cluster_attributes.k3s_latest).click();
         })
 
         // Confirm to create cluster
@@ -421,7 +421,7 @@ export class rancherPage {
         });
 
         cy.wait(3000).visit(constants.rancher_clusterManagmentPage);
-    
+
     }
 
 
@@ -489,7 +489,7 @@ export class rancherPage {
 
         cy.get(this.confirm_delete_button).click();
         cy.log('Click the doulbe confirm delete button');
-        
+
         cy.contains('There are no Harvester Clusters');
 
     }
