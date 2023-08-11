@@ -104,7 +104,7 @@ def focal_vm(api_client, focal_image, wait_timeout):
     code, data = api_client.vms.get(unique_name)
     if 200 == code:  # ???: https://github.com/harvester/harvester/issues/4388
         volume_name = &#34;&#34;
-        for volume in data[&#39;spec&#39;][&#39;volumes&#39;]:
+        for volume in data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;volumes&#39;]:
             if volume[&#39;name&#39;] == &#39;disk-0&#39;:
                 volume_name = volume[&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
         api_client.vms.delete(unique_name)
@@ -571,7 +571,8 @@ def test_vm_restarted_after_host_reboot(
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         code, data = api_client.vms.get_status(focal_vm[&#39;name&#39;], focal_vm[&#39;namespace&#39;])
-        if old_uid != data[&#39;metadata&#39;][&#39;uid&#39;] and &#34;Running&#34; == data[&#39;status&#39;].get(&#39;phase&#39;):
+        if (200 == code and old_uid != data[&#39;metadata&#39;][&#39;uid&#39;]
+                and &#34;Running&#34; == data[&#39;status&#39;].get(&#39;phase&#39;)):
             break
         sleep(5)
     else:
@@ -723,7 +724,7 @@ def focal_vm(api_client, focal_image, wait_timeout):
     code, data = api_client.vms.get(unique_name)
     if 200 == code:  # ???: https://github.com/harvester/harvester/issues/4388
         volume_name = &#34;&#34;
-        for volume in data[&#39;spec&#39;][&#39;volumes&#39;]:
+        for volume in data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;volumes&#39;]:
             if volume[&#39;name&#39;] == &#39;disk-0&#39;:
                 volume_name = volume[&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
         api_client.vms.delete(unique_name)
@@ -1170,7 +1171,8 @@ def test_vm_restarted_after_host_reboot(
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         code, data = api_client.vms.get_status(focal_vm[&#39;name&#39;], focal_vm[&#39;namespace&#39;])
-        if old_uid != data[&#39;metadata&#39;][&#39;uid&#39;] and &#34;Running&#34; == data[&#39;status&#39;].get(&#39;phase&#39;):
+        if (200 == code and old_uid != data[&#39;metadata&#39;][&#39;uid&#39;]
+                and &#34;Running&#34; == data[&#39;status&#39;].get(&#39;phase&#39;)):
             break
         sleep(5)
     else:
