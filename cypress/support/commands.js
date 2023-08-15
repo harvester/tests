@@ -11,8 +11,6 @@ Cypress.Commands.add('login', (params = {}) => {
     const username = params.username ||   Cypress.env('username');
     const password = params.password || Cypress.env('password');
 
-    const isDev = Cypress.env('NODE_ENV') === 'dev';
-    const baseUrl = isDev ? Cypress.config('baseUrl') : `${Cypress.config('baseUrl')}/dashboard`;
     cy.visit(`/auth/login`);
     cy.intercept('GET', '/v3-public/authProviders').as('authProviders');
     cy.wait('@authProviders').then(res => {
@@ -44,16 +42,10 @@ Cypress.Commands.add('stopOnFailed', () => {
   })
 })
 
-Cypress.Commands.overwrite('visit', (originalFn, url = '', options) => {
-  const isDev = Cypress.env('NODE_ENV') === 'dev';
-
-  if (!isDev) {
-    url = `/dashboard${url}`;
-  }
-
+Cypress.Commands.overwrite('visit', (originalFn, url, options) => {
+  url = Cypress.env('urlPath')
   return originalFn(url, options)
 })
-
 
 Cypress.on('uncaught:exception', (err, runable) => {
   return false;
