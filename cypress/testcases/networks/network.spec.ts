@@ -126,8 +126,7 @@ describe('Check network with Manual Mode', () => {
 
 
 export function CreateVlan1() {}
-// TODO: Require two vlan IDs
-describe.skip('Preset Vlans', () => {
+describe('Preset Vlans', () => {
   function createVlan(vlan: Vlan) {
     cy.intercept('POST', `/v1/harvester/k8s.cni.cncf.io.network-attachment-definitions`).as('create');
 
@@ -154,8 +153,8 @@ describe.skip('Preset Vlans', () => {
   }
 
   it('Create Vlan1', () => {
-    const vlanIDs = Cypress.env('vlanIDs') || [];
-    const vlan = vlanIDs[0]
+    const vlans = Cypress.env('vlans') || [];
+    const vlan = vlans[0].vlan
 
     cy.login();
     
@@ -167,9 +166,9 @@ describe.skip('Preset Vlans', () => {
     })
   });
 
-  it.skip('Create Vlan2', () => {
-    const vlanIDs = Cypress.env('vlanIDs') || [];
-    const vlan = vlanIDs[1]
+  it('Create Vlan2', () => {
+    const vlans = Cypress.env('vlans') || [];
+    const vlan = vlans[1].vlan
 
     cy.login();
     
