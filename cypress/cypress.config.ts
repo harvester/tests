@@ -31,7 +31,16 @@ export default defineConfig({
       url: 'https://download.opensuse.org/pub/opensuse/distribution/leap/15.3/appliances/openSUSE-Leap-15.3-JeOS.x86_64-15.3-OpenStack-Cloud-Current.qcow2',
     },
     nfsEndPoint: 'nfs://ip',
-    vlanIDs: [1, 2],
+    vlans: [
+      {
+        nic: 'ens7',
+        vlan: 100,
+      },
+      {
+        nic: 'ens8',
+        vlan: 104
+      }
+    ],
     sshKey: 'Your ssh public key, use for validate connect VM. e.g. ssh-rsa xxx',
     privateKeyPath: 'Your ssh private Key Path'
   },
