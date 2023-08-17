@@ -4,8 +4,8 @@ export class Constants {
     public password = Cypress.env("password");
     public mockPassword = Cypress.env("mockPassword");
     public rancherUrl = Cypress.env("rancherUrl");
-    public rancher_user = Cypress.env("rancher_user");
-    public rancher_password = Cypress.env("rancher_password");
+    public rancher_user = Cypress.env("rancherUser");
+    public rancher_password = Cypress.env("rancherPassword");
     public rancher_vm_user = Cypress.env("rancher_vm_user");
     public rancher_vm_password = Cypress.env("rancher_vm_password");
     public vagrant_pxe_path = Cypress.env("vagrant_pxe_path");
