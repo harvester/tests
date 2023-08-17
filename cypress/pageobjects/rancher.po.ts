@@ -106,33 +106,22 @@ export class rancherPage {
      * First time login using ssh 
      */
     public firstTimeLogin() {
+      cy.get(this.boostrap_page_boostrapPWInput).type(Cypress.env('bootstrapPassword')).log('Input bootstrap secret');
+      cy.get(this.boostrap_page_boostrapPWSubmit).click();
 
+      // cy.log('Select a specific password to use')
+      cy.get(this.boostrap_page_radioSelectPW).click().log('Select a specific password to use');
 
-        var rancher_vm_ip = (constants.rancherUrl as string).slice(8);
-        cy.log(rancher_vm_ip);
-        // cy.exec('sshpass -p vagrant ssh vagrant@192.168.0.34 -t "docker ps --format {{.ID}} | xargs docker logs 2>&1 | grep \'Bootstrap Password:\' | sed \'s/.*Password: //\'"', { env: { VM_PASSWORD: constants.rancher_vm_password} }).then((result) => {
-        cy.exec('sshpass -p $VM_PASSWORD ssh $VM_USER@$VM_IP -t "docker ps --format {{.ID}} | xargs docker logs 2>&1 | grep \'Bootstrap Password:\' | sed \'s/.*Password: //\'"',
-            { env: { VM_PASSWORD: constants.rancher_vm_password, VM_USER: constants.rancher_vm_user, VM_IP: rancher_vm_ip } }).then((result) => {
-                cy.log(result.stdout);
+      // cy.log('Input new password')
+      cy.get(this.boostrap_page_newPWInput).type(constants.rancher_password).log('Input new password');
+      // cy.log('Confirm password again')
+      cy.get(this.boostrap_page_newPWRepeat).type(constants.rancher_password).log('Confirm password again');
 
-                cy.get(this.boostrap_page_boostrapPWInput).type(result.stdout).log('Input bootstrap secret');
-                cy.get(this.boostrap_page_boostrapPWSubmit).click();
+      // cy.log('Agree EULA')
+      cy.get(this.boostrap_page_checkAgreeEULA).click().log('Agree EULA');
 
-                // cy.log('Select a specific password to use')
-                cy.get(this.boostrap_page_radioSelectPW).click().log('Select a specific password to use');
-
-                // cy.log('Input new password')
-                cy.get(this.boostrap_page_newPWInput).type(constants.rancher_password).log('Input new password');
-                // cy.log('Confirm password again')
-                cy.get(this.boostrap_page_newPWRepeat).type(constants.rancher_password).log('Confirm password again');
-
-                // cy.log('Agree EULA')
-                cy.get(this.boostrap_page_checkAgreeEULA).click().log('Agree EULA');
-
-                cy.log('Continue to access rancher')
-                cy.get(this.boostrap_page_confirmLogin).click().log('Continue to access rancher');
-            })
-
+      cy.log('Continue to access rancher')
+      cy.get(this.boostrap_page_confirmLogin).click().log('Continue to access rancher');
     }
 
     /**

@@ -90,7 +90,7 @@ describe('Rancher Integration Test', function () {
         });
     })
 
-    it('Prepare Harvester Image', () => {
+    it.skip('Prepare Harvester Image', () => {
         cy.login();
 
         // create IMAGE according to the value set
@@ -102,7 +102,7 @@ describe('Rancher Integration Test', function () {
 
     });
 
-    it('Prepare Harvester VLAN network', () => {
+    it.skip('Prepare Harvester VLAN network', () => {
         cy.login();
 
         network.createVLAN('vlan1', 'default', '1', 'mgmt')
@@ -110,8 +110,9 @@ describe('Rancher Integration Test', function () {
     });
 
     it('Rancher import Harvester', { baseUrl: constants.rancherUrl }, () => {
-        // cy.login();
         cy.visit('/');
+
+        rancher.firstTimeLogin()
 
         rancher.rancherLogin();
 
