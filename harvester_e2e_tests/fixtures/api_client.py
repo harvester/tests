@@ -1,9 +1,12 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import StringIO
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from subprocess import run, PIPE
+from typing import Callable
+from time import sleep
+from inspect import getfullargspec
 
 import pytest
 from paramiko import SSHClient, RSAKey, MissingHostKeyPolicy
@@ -249,3 +252,36 @@ def host_shell(request):
                               ' && sudo systemctl restart sshd')
 
     return HostShell('rancher', password, pkey)
+
+
+@pytest.fixture(scope="session")
+def polling_for(wait_timeout, sleep_timeout):
+    def _polling_for(subject: str,
+                     tester: Callable[..., bool],
+                     testee: Callable, *testee_args, **testee_kwargs):
+        """ Polling expected confition for `wait_timeout`s every `sleep_timeout`s
+
+        Arguments:
+          subject: what is waiting for
+          tester: Callable which accepts `testee` output and returns bool
+          testee: Callable returns output for `tester` to validate
+
+        Returns:
+          Any: `testee` output if qualified by `tester`
+
+        Raises:
+          AssertionError: if still NOT qualified by `tester` over `wait_timeout`
+        """
+        tester_args_len = len(getfullargspec(tester).args)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            output = testee(*testee_args, **testee_kwargs)
+            # unpack output for tester according to its signature
+            qualified = tester(*output) if tester_args_len > 1 else tester(output)
+            if qualified:
+                return output
+            sleep(sleep_timeout)
+        else:
+            raise AssertionError(f'Timeout wait for {subject}\n{output}')
+
+    return _polling_for
