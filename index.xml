@@ -1709,12 +1709,15 @@ Verify Steps: Install Harvester with 2+ nodes Login to Dashboard and create an i
     </item>
     
     <item>
-      <title>Create a new VM with Network Data from the form</title>
+      <title>Create a new VM with Network Data from the form (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-the-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-the-form/</guid>
-      <description> Add Network Data to the VM Here is an example of Network Data config to add DHCP to the physical interface eth0 network: version: 1 config: - type: physical name: eth0 subnets: - type: dhcp Save/Create the VM Expected Results Machine starts succesfully Network Data should show in YAML Network Datashould show in Form Machine should have DHCP for network on eth0 </description>
+      <description> Add Network Data to the VM
+Here is an example of Network Data config to add DHCP to the physical interface eth0
+network: version: 1 config: - type: physical name: eth0 subnets: - type: dhcp Save/Create the VM
+Expected Results Machine starts succesfully Network Data should show in YAML Network Datashould show in Form Machine should have DHCP for network on eth0 </description>
     </item>
     
     <item>
@@ -1853,7 +1856,7 @@ Verify Steps: Install Harvester with 2+ nodes Login to Dashboard and create an i
     </item>
     
     <item>
-      <title>Create multiple instances of the vm with raw image (e2e_be)</title>
+      <title>Create multiple instances of the vm with raw image (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-raw-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2069,12 +2072,12 @@ Verify Steps: Install Harvester with 2+ nodes Login to Dashboard and create an i
     </item>
     
     <item>
-      <title>Create vm using a template of non-default version</title>
+      <title>Create vm using a template of non-default version (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-non-default-version/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-non-default-version/</guid>
-      <description> Create a new VM with a template of non-default version Expected Results After selecting appropriate template and/or version it should populate other fields CPU, Memory, Image, and SSH key should match saved template info VM should start after creation if Start Virtual Machine is selected </description>
+      <description> Create a new VM with a template of non-default version Expected Results After selecting appropriate template and/or version it should populate other fields CPU, Memory, Image, and SSH key should match saved template info </description>
     </item>
     
     <item>
@@ -2096,7 +2099,7 @@ Verify Steps: Install Harvester with 2+ nodes Login to Dashboard and create an i
     </item>
     
     <item>
-      <title>Create VM with existing Volume (e2e_be)</title>
+      <title>Create VM with existing Volume (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2450,7 +2453,7 @@ Test Information Environment: baremetal DL360G9 5 nodes Harvester Version: maste
     </item>
     
     <item>
-      <title>Delete VM with exported image</title>
+      <title>Delete VM with exported image (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/1602-delete-vm-with-exported-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -2604,12 +2607,14 @@ Power on node 1 to console page until you see management url Power on node 2 to 
     </item>
     
     <item>
-      <title>Edit a VM from the form to add user data</title>
+      <title>Edit a VM from the form to add user data (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-user-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-user-data/</guid>
-      <description> Add User data to the VM Here is an example of user data config to add a password `` #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Save/Create the VM Expected Results Machine starts succesfully User data should In YAML In Form Machine should have user password set </description>
+      <description> Add User data to the VM
+Here is an example of user data config to add a password `` #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Save/Create the VM
+Expected Results Machine starts succesfully User data should In YAML In Form Machine should have user password set </description>
     </item>
     
     <item>
@@ -2721,7 +2726,7 @@ Power on node 1 to console page until you see management url Power on node 2 to 
     </item>
     
     <item>
-      <title>Edit vm and insert ssh and check the ssh key is accepted for the login (e2e_be)</title>
+      <title>Edit vm and insert ssh and check the ssh key is accepted for the login (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-and-insert-ssh-and-check-the-ssh-key-is-accepted-for-the-login/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -4434,7 +4439,7 @@ Verify Items generated kubeconfig is able to access kubenetes API new node able 
     </item>
     
     <item>
-      <title>Stop VM Negative</title>
+      <title>Stop VM Negative (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-stop-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -4576,12 +4581,12 @@ Wait for the guest-cluster to be created successfully and check if the guest-clu
     </item>
     
     <item>
-      <title>template with EFI</title>
+      <title>template with EFI (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2577-template-with-efi/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://harvester.github.io/tests/manual/_incoming/2577-template-with-efi/</guid>
-      <description>Related issues: #2577 [BUG] Boot in EFI mode not selected when creating multiple VM instances using VM template with EFI mode selected. Category: Template Verification Steps Go to Template, create a VM template with Boot in EFI mode selected. Go to Virtual Machines, click Create, select Multiple instance, type in a random name prefix, and select the VM template we just created. Go to Advanced Options, for now this EFI checkbox should be checked without any issue.</description>
+      <description>Related issues: #2577 [BUG] Boot in EFI mode not selected when creating multiple VM instances using VM template with EFI mode selected. Category Template Verification Steps Go to Template, create a VM template with Boot in EFI mode selected. Go to Virtual Machines, click Create, select Multiple instance, type in a random name prefix, and select the VM template we just created. Go to Advanced Options, for now this EFI checkbox should be checked without any issue.</description>
     </item>
     
     <item>
