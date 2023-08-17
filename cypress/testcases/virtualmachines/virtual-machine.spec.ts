@@ -11,7 +11,6 @@ const volumePO = new VolumePage();
 const constants = new Constants();
 const namespaces = new NamespacePage();
 const imagePO = new ImagePage();
-const constants = new Constants();
 
 describe('VM Form Validation', () => {
   beforeEach(() => {
@@ -159,19 +158,19 @@ describe.skip('VM clone Validation', () => {
   })
 })
 
- it('Clone VM from Virtual Machine list that was created from existing volume (Depends on the previous case)', () => {
-    const VM_NAME = 'use-existing-volume';
+it('Clone VM from Virtual Machine list that was created from existing volume (Depends on the previous case)', () => {
+  const VM_NAME = 'use-existing-volume';
 
-    cy.login({url: PageUrl.virtualMachine});
-    vms.goToList();
+  cy.login({url: PageUrl.virtualMachine});
+  vms.goToList();
 
-    vms.clickCloneAction(VM_NAME);
+  vms.clickCloneAction(VM_NAME);
 
-    vms.setNameNsDescription(`repeat-${VM_NAME}`, 'default');
-    cy.get('.cru-resource-footer').contains('Create').click();
-    cy.get('#cru-errors').contains('the volume existing-volume is already used by VM');
-  });
-})
+  vms.setNameNsDescription(`repeat-${VM_NAME}`, 'default');
+  cy.get('.cru-resource-footer').contains('Create').click();
+  cy.get('#cru-errors').contains('the volume existing-volume is already used by VM');
+});
+
 
 describe('VM runStategy Validation (Halted)', () => {
   beforeEach(() => {
@@ -204,6 +203,7 @@ describe('VM runStategy Validation (Halted)', () => {
     vms.save();
     vms.checkVMState(VM_NAME, 'Off')
   });
+})
 
 /**
  * 1. Create vm “vm-1”
