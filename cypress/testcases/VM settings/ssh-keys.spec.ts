@@ -40,3 +40,22 @@ describe('Create a ssh key', () => {
     ssh.delete(namespace, cloneName)
   });
 });
+
+export function PresetSsh() {}
+describe('Preset a ssh key', () => {
+  // TODO: Require a clear harvester
+  it.skip('Preset a ssh key', () => {
+    cy.login();
+
+    const name = 'preset-ssh';
+    const namespace = 'default'
+
+    const sshKey = Cypress.env('sshKey');
+
+    ssh.create({
+      name,
+      namespace,
+      sshKey,
+    })
+  });
+});

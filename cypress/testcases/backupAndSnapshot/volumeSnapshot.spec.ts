@@ -48,7 +48,7 @@ describe('Validation volume snapshot', () => {
     
     const newName = 'create-new-from-snapshot';
 
-    volumes.deleteFromStore(`default/${newName}`);
+    volumes.deleteFromStore(`default/${volumeSnapshotName}`);
 
     volumeSnapshots.goToList();
     volumeSnapshots.restoreNew(volumeSnapshotName, newName);

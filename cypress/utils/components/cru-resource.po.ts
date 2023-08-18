@@ -79,7 +79,15 @@ export default class CruResourcePo extends PagePo {
   }
   
 
-  public save({namespace, buttonText = 'save'} : {namespace?:string, buttonText?:string} = {}) {
+  public save({
+    namespace, 
+    buttonText = 'save',
+    edit,
+  } : {
+    namespace?:string, 
+    buttonText?:string,
+    edit?: boolean;
+  } = {}) {
     if (namespace) {
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}`).as('create');
     } else {
@@ -131,17 +139,16 @@ export default class CruResourcePo extends PagePo {
     })
   }
 
-  public checkDelete(type: string = this.type, id: string) {
+  public checkDelete(type: string = this.type, id: string, retry: number = 120) {
     cy.window().then(async (win) => {
       let times = 0;
       await new Cypress.Promise((resolve, reject) => {
         const timer = setInterval(() => {
           times = times + 1;
-          if (times > 120) {
+          if (times > retry) {
             // cy.log(`${type} can't removed from the backend`)
             reject()
           }
-
           const resource = (win as any).$nuxt.$store.getters['harvester/byId'](type, id);
 
           if (resource === undefined) {

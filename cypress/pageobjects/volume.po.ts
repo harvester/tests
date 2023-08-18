@@ -48,7 +48,7 @@ export class VolumePage extends CruResourcePo {
 
   checkSnapshotCount(volumeName: string, count: number, namespace: string = 'default') {
     this.goToList();
-    this.censorInColumn(volumeName, 3, namespace, 4, count, 7);
+    this.censorInColumn(volumeName, 3, namespace, 4, count, 8);
   }
 
   clickVolumeSnapshotAction(name: string, snapshotName: string) {

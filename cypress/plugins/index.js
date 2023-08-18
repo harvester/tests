@@ -4,6 +4,7 @@ const fs = require("fs");
 const yaml = require('js-yaml');
 const { isFileExist, findFiles } = require('cy-verify-downloads');
 const AdmZip = require("adm-zip");
+const path = require('path')
 
 let globalVar = {};
 // ***********************************************************
@@ -82,7 +83,34 @@ module.exports = (on, config) => {
       return globalVar;
     },
 
-  })
+    ssh ({username, host='', remoteCommand}) { 
+      return new Promise((resolve, reject) => {
+
+        const {NodeSSH} = require('node-ssh')
+        const ssh = new NodeSSH()
+
+        const privateKeyPath = config.env.privateKeyPath;
+
+        ssh.connect({   
+          host: host.trim(),
+          username,
+          privateKeyPath,
+        })
+        .then(function() {
+          ssh.execCommand(remoteCommand, { cwd:'/var/www' })
+            .then(function(result) {
+              resolve(result)
+            })
+            .catch((err) => {
+              reject(err)
+            })
+        })
+        .catch(err => {
+          reject(err)
+        })
+      })
+    },
+})
 
   // https://github.com/cypress-io/cypress/issues/349
   // add --disable-dev-shm-usage chrome flag
@@ -93,6 +121,20 @@ module.exports = (on, config) => {
     }
     return launchOptions;
   });
+
+  // on('after:screenshot', (details) => {
+  //   const fileName = path.basename(details.path)
+
+  //   const newPath = `cypress/results/mochawesome-report/assets/${details.specName}-${fileName}`
+
+  //   return new Promise((resolve, reject) => {
+  //     fs.rename(details.path, newPath, (err) => {
+  //       if (err) return reject(err)
+
+  //       resolve({ path: newPath })
+  //     })
+  //   })
+  // })
 
   return config;
 }
