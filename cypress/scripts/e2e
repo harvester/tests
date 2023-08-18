@@ -8,10 +8,16 @@ if [ $? -ne 0 ]; then
   TESTS_FAILED=true
 fi
 
-timestamp=$(date +%Y%m%d-%H%M%S)
-commit_id=$(git rev-parse --short HEAD)
+if (REPORT_NAME) {
+  echo "Custom report name provided: ${REPORT_NAME}"
+} else {
+  timestamp=$(date +%Y%m%d-%H%M%S)
+  commit_id=$(git rev-parse --short HEAD)
 
-report_dir="cypress/results/${timestamp}-${commit_id}"
+  REPORT_NAME = "${timestamp}-${commit_id}"
+}
+
+report_dir="cypress/results/${REPORT_NAME}"
 
 mkdir -p ${report_dir}
 
