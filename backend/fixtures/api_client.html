@@ -27,11 +27,14 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import StringIO
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from subprocess import run, PIPE
+from typing import Callable
+from time import sleep
+from inspect import getfullargspec
 
 import pytest
 from paramiko import SSHClient, RSAKey, MissingHostKeyPolicy
@@ -276,7 +279,40 @@ def host_shell(request):
             self.exec_command(&#39;sudo mv _config /etc/ssh/sshd_config&#39;
                               &#39; &amp;&amp; sudo systemctl restart sshd&#39;)
 
-    return HostShell(&#39;rancher&#39;, password, pkey)</code></pre>
+    return HostShell(&#39;rancher&#39;, password, pkey)
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def polling_for(wait_timeout, sleep_timeout):
+    def _polling_for(subject: str,
+                     tester: Callable[..., bool],
+                     testee: Callable, *testee_args, **testee_kwargs):
+        &#34;&#34;&#34; Polling expected confition for `wait_timeout`s every `sleep_timeout`s
+
+        Arguments:
+          subject: what is waiting for
+          tester: Callable which accepts `testee` output and returns bool
+          testee: Callable returns output for `tester` to validate
+
+        Returns:
+          Any: `testee` output if qualified by `tester`
+
+        Raises:
+          AssertionError: if still NOT qualified by `tester` over `wait_timeout`
+        &#34;&#34;&#34;
+        tester_args_len = len(getfullargspec(tester).args)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            output = testee(*testee_args, **testee_kwargs)
+            # unpack output for tester according to its signature
+            qualified = tester(*output) if tester_args_len &gt; 1 else tester(output)
+            if qualified:
+                return output
+            sleep(sleep_timeout)
+        else:
+            raise AssertionError(f&#39;Timeout wait for {subject}\n{output}&#39;)
+
+    return _polling_for</code></pre>
 </details>
 </section>
 <section>
@@ -503,6 +539,48 @@ def host_state(request):
     return HostState(request.config.getoption(&#34;--node-scripts-location&#34;))</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.polling_for"><code class="name flex">
+<span>def <span class="ident">polling_for</span></span>(<span>wait_timeout, sleep_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def polling_for(wait_timeout, sleep_timeout):
+    def _polling_for(subject: str,
+                     tester: Callable[..., bool],
+                     testee: Callable, *testee_args, **testee_kwargs):
+        &#34;&#34;&#34; Polling expected confition for `wait_timeout`s every `sleep_timeout`s
+
+        Arguments:
+          subject: what is waiting for
+          tester: Callable which accepts `testee` output and returns bool
+          testee: Callable returns output for `tester` to validate
+
+        Returns:
+          Any: `testee` output if qualified by `tester`
+
+        Raises:
+          AssertionError: if still NOT qualified by `tester` over `wait_timeout`
+        &#34;&#34;&#34;
+        tester_args_len = len(getfullargspec(tester).args)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            output = testee(*testee_args, **testee_kwargs)
+            # unpack output for tester according to its signature
+            qualified = tester(*output) if tester_args_len &gt; 1 else tester(output)
+            if qualified:
+                return output
+            sleep(sleep_timeout)
+        else:
+            raise AssertionError(f&#39;Timeout wait for {subject}\n{output}&#39;)
+
+    return _polling_for</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.skip_version_after"><code class="name flex">
 <span>def <span class="ident">skip_version_after</span></span>(<span>request, api_client)</span>
 </code></dt>
@@ -664,6 +742,7 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.gen_unique_name" href="#harvester_e2e_tests.fixtures.api_client.gen_unique_name">gen_unique_name</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_shell" href="#harvester_e2e_tests.fixtures.api_client.host_shell">host_shell</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_state" href="#harvester_e2e_tests.fixtures.api_client.host_state">host_state</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.polling_for" href="#harvester_e2e_tests.fixtures.api_client.polling_for">polling_for</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_after" href="#harvester_e2e_tests.fixtures.api_client.skip_version_after">skip_version_after</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_before" href="#harvester_e2e_tests.fixtures.api_client.skip_version_before">skip_version_before</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.sleep_timeout" href="#harvester_e2e_tests.fixtures.api_client.sleep_timeout">sleep_timeout</a></code></li>
