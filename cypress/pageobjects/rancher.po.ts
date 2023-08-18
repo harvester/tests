@@ -106,7 +106,7 @@ export class rancherPage {
      * First time login using ssh 
      */
     public firstTimeLogin() {
-      cy.get(this.boostrap_page_boostrapPWInput).type(Cypress.env('bootstrapPassword')).log('Input bootstrap secret');
+      cy.get(this.boostrap_page_boostrapPWInput).type(Cypress.env('rancherBootstrapPassword')).log('Input bootstrap secret');
       cy.get(this.boostrap_page_boostrapPWSubmit).click();
 
       // cy.log('Select a specific password to use')
