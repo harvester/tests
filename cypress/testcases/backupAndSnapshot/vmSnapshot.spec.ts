@@ -6,7 +6,7 @@ import { PageUrl } from "@/constants/constants";
 const vms = new VmsPage();
 const vmsnapshots = new VMSnapshot();
 
-describe('VM Form Validation', () => {
+describe('VM snapshot Form Validation', () => {
   const vmName = 'test';
   let createVMSnapshotSuccess: boolean = false ;
   const vmSnapshotName = 'test-vm-snapshot';
