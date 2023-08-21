@@ -155,7 +155,7 @@ export class VmsPage extends CruResourcePo {
     this.clickAction(name, 'Take VM Snapshot');
     cy.get('.v--modal-box .card-title').find('h4').contains('Take VM Snapshot');
 
-    new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name")`).input(snapshotName)
+    new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name *")`).input(snapshotName)
     cy.get('.v--modal-box button').contains('Create').click();
     cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
   }
