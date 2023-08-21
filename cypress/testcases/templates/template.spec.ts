@@ -48,7 +48,7 @@ describe('Delete VM template default version', () => {
     templates.goToList();
     templates.goToCreate();
     templates.setNameNsDescription(NAME, namespace);
-    templates.setBasics('2', '4');
+    templates.setBasics('1', '1');
     cy.wrap(templates.save({namespace})).then((versionName) => {
       DEFAULT_VERSION_NAME = versionName as string;
 

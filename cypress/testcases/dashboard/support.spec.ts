@@ -30,7 +30,6 @@ describe("Support Page", () => {
     it("Should be Downloaded", () => {
       const kubeconfig = `${Cypress.config("downloadsFolder")}/local.yaml`
       page.downloadKubeConfigBtn.click()
-
       cy.readFile(kubeconfig)
         .should("exist")
 

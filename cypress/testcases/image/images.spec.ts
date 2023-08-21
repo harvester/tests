@@ -167,7 +167,7 @@ describe('Delete VM with exported image', () => {
         // create VM
         vms.goToCreate();
         vms.setNameNsDescription(VM_NAME, namespace);
-        vms.setBasics('2', '4');
+        vms.setBasics('1', '1');
         vms.setVolumes(volumes);
         vms.save();
         
@@ -215,7 +215,7 @@ describe('Update image labels after deleting source VM', () => {
         // create VM
         vms.goToCreate();
         vms.setNameNsDescription(VM_NAME, namespace);
-        vms.setBasics('2', '4');
+        vms.setBasics('1', '1');
         vms.setVolumes(volumes);
         vms.save();
         vms.checkState({name: VM_NAME, namespace});
@@ -335,7 +335,7 @@ describe('Create a ISO image via upload', () => {
 
             vms.goToCreate();
             vms.setNameNsDescription(VM_NAME, namespace);
-            vms.setBasics('2', '4');
+            vms.setBasics('1', '1');
             vms.setVolumes(volumes);
             vms.save();
             vms.checkState({name: VM_NAME});
