@@ -40,7 +40,7 @@ describe("Create image from Volume", () => {
     vms.init();
     vms.goToCreate();
     vms.setNameNsDescription(VM_NAME, namespace);
-    vms.setBasics('2', '4');
+    vms.setBasics('1', '1');
     vms.setVolumes(volumes);
     vms.save();
 
@@ -59,7 +59,7 @@ describe("Create image from Volume", () => {
     // create VM
     vms.goToCreate();
     vms.setNameNsDescription(ANOTHER_VM_NAME, namespace);
-    vms.setBasics('2', '4');
+    vms.setBasics('1', '1');
     vms.setVolumes(volumes);
     vms.save();
 
@@ -146,7 +146,7 @@ describe("Delete volume that was attached to VM but now is not", () => {
     cy.intercept('POST', `v1/harvester/${HCI.VM}s/default`).as('create');
     vms.goToCreate();
     vms.setNameNsDescription(VM_NAME, namespace);
-    vms.setBasics('2', '4');
+    vms.setBasics('1', '1');
     vms.setVolumes(volumesInVM);
     vms.save();
 
@@ -217,7 +217,7 @@ describe("Support Volume Hot Unplug", () => {
 
     vms.goToCreate();
     vms.setNameNsDescription(VM_NAME, namespace);
-    vms.setBasics('2', '4');
+    vms.setBasics('1', '1');
     vms.setVolumes(volumesInVM);
     vms.save();
 
@@ -264,7 +264,7 @@ describe("Support Volume Hot Unplug", () => {
     cy.intercept('POST', `v1/harvester/${HCI.VM}s/default`).as('create');
     vms.goToCreate();
     vms.setNameNsDescription(VM_NAME, namespace);
-    vms.setBasics('2', '4');
+    vms.setBasics('1', '1');
     vms.setVolumes(volumesInVM);
     vms.save();
 

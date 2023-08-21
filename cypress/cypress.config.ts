@@ -1,16 +1,19 @@
 import { defineConfig } from 'cypress'
 
 export default defineConfig({
+  // https://docs.cypress.io/guides/references/configuration#Folders-Files
+  defaultCommandTimeout: 240000,
   pageLoadTimeout: 120000,
-  fixturesFolder: './fixtures',
+  responseTimeout: 240000,
+  requestTimeout: 240000,
   viewportWidth: 1920,
   viewportHeight: 1080,
+
+  fixturesFolder: './fixtures',
   numTestsKeptInMemory: 1,
-  defaultCommandTimeout: 240000,
-  requestTimeout: 240000,
-  responseTimeout: 240000,
   chromeWebSecurity: false,
   screenshotsFolder: 'cypress/results/mochawesome-report/assets',
+  downloadsFolder: 'cypress/downloads',
   env: {
     NODE_ENV: 'production',
     username: 'admin',
