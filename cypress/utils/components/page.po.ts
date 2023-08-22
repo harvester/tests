@@ -162,12 +162,15 @@ export default class PagePo extends ComponentPo {
     return PagePo.goTo(this.path);
   }
 
-  isCurrentPage(): Cypress.Chainable<boolean> {
-    return cy.url().then(url => url === Cypress.env('baseUrl') + this.wrapPath(this.path));
+  isCurrentPage(exact: boolean = true): Cypress.Chainable<boolean> {
+    return cy.url().then(url => {
+      const targetUrl = Cypress.env('baseUrl') + this.wrapPath(this.path)
+      return exact ? url === targetUrl : url.includes(targetUrl);
+    });
   }
 
-  checkIsCurrentPage() {
-    return this.isCurrentPage().should('eq', true);
+  checkIsCurrentPage(exact: boolean = true) {
+    return this.isCurrentPage(exact).should('eq', true);
   }
 
   wrapPath(path: string) {

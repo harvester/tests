@@ -30,8 +30,11 @@ export default class SettingsPagePo extends CruResource {
     /**
      * Go to the setting edit page. Then it checks the URL
      */
-    clickMenu(name: string, actionText: string, urlSuffix: string, type?: string) {
+    clickMenu(name: string, actionText: string, urlSuffix: string, type?: string, tab?: string) {
         const editPageUrl = type ? `/harvester/c/local/${type}` : constants.settingsUrl;
+        if (tab === 'UI') {
+            cy.get('[data-testid="btn-ui"]').contains('UI').click();
+        }
 
         cy.get(`.advanced-setting #${name} button`).click()
   
@@ -60,9 +63,8 @@ export default class SettingsPagePo extends CruResource {
     checkUiSource(type: string, address: string) {
         new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Value")`).select({option: type})
         this.update('ui-source');
-        this.checkIsCurrentPage();
+        this.checkIsCurrentPage(false);
         cy.reload();
-
         cy.intercept('GET', address).as('fetch');
         cy.wait('@fetch', { timeout: constants.timeout.maxTimeout}).then(res => {
             cy.log(`Check Passed ui-source (${type})`)
