@@ -21,7 +21,7 @@ export default defineConfig({
     mockPassword: "mockPassword",
     baseUrl: 'https://online-server',
     host: {
-      name: '',
+      name: 'harvester-node-1',
       disks: [
         {
           name: '',
