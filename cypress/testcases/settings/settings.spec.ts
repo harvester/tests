@@ -16,16 +16,16 @@ describe('Setting Page', () => {
      * 3. Change the UISource Type
      * 4. Validate that the URL changed
      */
-    it.skip('change UI source type to Bundled, Check whether the configuration takes effect', () => {
-        const address = `${Cypress.env('baseUrl')}/dashboard/_nuxt/**`;
-        settings.clickMenu('ui-source', 'Edit Setting', 'ui-source')
+    it('change UI source type to Bundled, Check whether the configuration takes effect', () => {
+        const address = `${Cypress.env('baseUrl')}/dashboard/js/**`;
+        settings.clickMenu('ui-source', 'Edit Setting', 'ui-source', undefined,'UI')
         settings.checkUiSource('Bundled', address);
     });
 
     
-    it.skip('change UI source type to external, Check whether the configuration takes effect', () => {
-        const address = 'https://releases.rancher.com/harvester-ui/dashboard/latest/**';
-        settings.clickMenu('ui-source', 'Edit Setting', 'ui-source')
+    it('change UI source type to external, Check whether the configuration takes effect', () => {
+        const address = 'https://releases.rancher.com/harvester-ui/dashboard/**';
+        settings.clickMenu('ui-source', 'Edit Setting', 'ui-source', undefined, 'UI')
         settings.checkUiSource('External', address);
     });
 
