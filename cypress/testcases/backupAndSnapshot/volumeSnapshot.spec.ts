@@ -27,7 +27,7 @@ describe('Validation volume snapshot', () => {
     // create a new volume
     volumes.goToCreate();
     volumes.setNameNsDescription(volumeName, namespace);
-    volumes.setBasics({size: '10'});
+    volumes.setBasics({size: '4'});
     volumes.save();
     volumes.censorInColumn(volumeName, 3, namespace, 4, 'Ready');
 

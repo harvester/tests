@@ -1,6 +1,5 @@
 import YAML from 'js-yaml'
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
-import { LoginPage } from "@/pageobjects/login.po";
 import { generateName, base64Decode } from '@/utils/utils';
 
 const vms = new VmsPage();
