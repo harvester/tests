@@ -34,7 +34,7 @@ export class rancherPage {
     private main_page_title = '.title';
     private dashboardURL = 'dashboard/home';
 
-    private boostrap_page_welcome = '.info-box > :nth-child(1)';
+    private boostrap_page_welcome = '[data-testid="first-login-message"]';
     private boostrap_page_boostrapPWInput = 'input';
     private boostrap_page_boostrapPWSubmit = '#submit > span';
     private boostrap_page_radioSelectPW = ':nth-child(2) > .radio-container';
@@ -128,8 +128,8 @@ export class rancherPage {
      * Rancher login page: Input username and password -> submit 
      */
     public login() {
-        cy.get(this.login_page_usernameInput).type(constants.rancher_user).log('Input username');
-        cy.get(this.login_page_passwordInput).type(constants.rancher_password).log('Input password');
+        cy.get(this.login_page_usernameInput).type(constants.rancherUser).log('Input username');
+        cy.get(this.login_page_passwordInput).type(constants.rancherPassword).log('Input password');
         cy.get(this.login_page_loginButton).click().log('Login with local user');
     }
 
