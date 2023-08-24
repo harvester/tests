@@ -106,7 +106,6 @@ describe('Rancher Integration Test', function () {
         cy.login();
 
         network.createVLAN('vlan1', 'default', '1', 'mgmt')
-
     });
 
     it('Rancher import Harvester', { baseUrl: constants.rancherUrl }, () => {
