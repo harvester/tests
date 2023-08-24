@@ -26,7 +26,6 @@ describe("Create image from Volume", () => {
   it("Create image from Volume", () => {
     cy.login();
 
-
     // create VM
     const imageEnv = Cypress.env("image");
     const namespace = 'default';
@@ -203,13 +202,13 @@ describe("Support Volume Hot Unplug", () => {
     // create VOLUME
     volumes.goToCreate();
     volumes.setNameNsDescription(VOLUME_NAME_1, namespace);
-    volumes.setBasics({size: '10'});
+    volumes.setBasics({size: '4'});
     volumes.save();
     volumes.censorInColumn(VOLUME_NAME_1, 3, namespace, 4, 'Ready');
 
     volumes.goToCreate();
     volumes.setNameNsDescription(VOLUME_NAME_2, namespace);
-    volumes.setBasics({size: '10'});
+    volumes.setBasics({size: '4'});
     volumes.save();
     volumes.censorInColumn(VOLUME_NAME_2, 3, namespace, 4, 'Ready');
 
@@ -280,7 +279,7 @@ describe("Support Volume Hot Unplug", () => {
       vms.checkState({name: VM_NAME, state: 'Off'});
 
       volumes.goToEdit(volumeName);
-      volumes.setBasics({size: '20'});
+      volumes.setBasics({size: '4'});
       volumes.update(`${namespace}/${volumeName}`);
       
       // check VOLUME state

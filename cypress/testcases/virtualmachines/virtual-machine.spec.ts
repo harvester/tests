@@ -137,7 +137,7 @@ describe.skip('VM clone Validation', () => {
       image: `default/${Cypress._.toLower(imageEnv.name)}`,
     }, {
       buttonText: 'Add Volume',
-      size: 12,
+      size: 5,
       create: true,
     }, {
       buttonText: 'Add Existing Volume',
