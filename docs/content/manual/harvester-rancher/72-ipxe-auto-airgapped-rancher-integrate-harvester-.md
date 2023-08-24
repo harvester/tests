@@ -181,7 +181,8 @@ After we already made Harvester imported in Rancher, we can use the following st
     sudo systemctl status rke2-server.service
     ```
 1. if you rke2-server failed to start, you can check the /etc/hosts file on the guest cluster machine
-1. Check RKE2 cluster provisioning enter into `waiting for cluster to join`
+1. Check RKE2 cluster provisioning enter into `Waiting for cluster agent to connect`
+    ![image](https://github.com/harvester/harvester/assets/29251855/9b44e2b4-ed13-492b-b821-b7b1671ee7aa)
 1. Get the kubectl command on RKE2 VM
     ```
     export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
@@ -299,5 +300,7 @@ Restart related service
 1. Can import harvester from Rancher correctly 
 1. Can access downstream harvester cluster from Rancher dashboard 
 1. Can provision at least one node RKE2 cluster to harvester correctly with running status
+    ![image](https://github.com/harvester/harvester/assets/29251855/8f256256-849a-45a7-81c3-6741f7afc3b4)
+
 1. Can explore provisioned RKE2 cluster nodes 
 1. RKE2 cluster VM created running correctly on harvester node
