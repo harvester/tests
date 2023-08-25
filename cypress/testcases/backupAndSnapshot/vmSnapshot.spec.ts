@@ -25,6 +25,7 @@ describe('VM snapshot Form Validation', () => {
       buttonText: 'Add Volume',
       create: false,
       image: `default/${Cypress._.toLower(imageEnv.name)}`,
+      size: 4
     }];
 
     vmsnapshots.deleteFromStore(`${namespace}/${vmSnapshotName}`)

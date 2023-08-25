@@ -35,7 +35,7 @@ export class LoginPage {
     */
     public static isFirstTimeLogin(): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            cy.intercept('GET', '/v1/management.cattle.io.setting').as('getFirstLogin')
+            cy.intercept('GET', '/v1/management.cattle.io.setting?exclude=metadata.managedFields').as('getFirstLogin')
               .visit("/")
               .wait('@getFirstLogin').then(login => {
                 const data: any[] = login.response?.body.data;

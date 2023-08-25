@@ -1,4 +1,3 @@
-import YAML from 'js-yaml'
 import { rancherPage } from "@/pageobjects/rancher.po";
 import { rke_guest_clusterPage } from "@/pageobjects/rancher_guest_cluster.po";
 import { ImagePage } from "@/pageobjects/image.po";
@@ -7,7 +6,8 @@ import NetworkPage from "@/pageobjects/network.po";
 import type { CypressChainable } from '@/utils/po.types'
 import { Constants } from '../../constants/constants'
 import cypress from 'cypress';
-
+import { LoginPage } from "@/pageobjects/login.po";
+import { onlyOn } from "@cypress/skip-test";
 
 const constants = new Constants();
 const rancher = new rancherPage();
@@ -71,10 +71,8 @@ let rData = {
  * 5. User should be able to create a new image with same name.
  */
 describe('Rancher Integration Test', function () {
+    let isFirstTimeLogin: boolean = false;
 
-    const imageEnv = Cypress.env('image');
-    // const IMAGE_NAME = imageEnv.name;
-    // const IMAGE_URL = imageEnv.url;
     const IMAGE_NAME = 'focal-server-cloudimg-amd64.img';
     const IMAGE_URL = 'https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img';
 
@@ -83,10 +81,13 @@ describe('Rancher Integration Test', function () {
         url: IMAGE_URL,
     }
 
+    before(async () => {
+        isFirstTimeLogin = await rancherPage.isFirstTimeLogin();
+    })
+
     beforeEach(() => {
         cy.fixture('rancher').then((data) => {
             rData = data;
-
         });
     })
 
@@ -108,9 +109,14 @@ describe('Rancher Integration Test', function () {
         network.createVLAN('vlan1', 'default', '1', 'mgmt')
     });
 
-    it('Rancher import Harvester', { baseUrl: constants.rancherUrl }, () => {
-        cy.visit('/');
+    it('Rancher First Login', { baseUrl: constants.rancherUrl }, () => {
+        onlyOn(isFirstTimeLogin);
+        const page = new rancherPage();
+        page.firstTimeLogin();
+    });
 
+
+    it('Rancher import Harvester', { baseUrl: constants.rancherUrl }, () => {
         rancher.rancherLogin();
 
         rancher.importHarvester().then((el) => {
@@ -121,7 +127,6 @@ describe('Rancher Integration Test', function () {
         }).as('importCluster');
 
     });
-
 
     it('Harvester import Rancher', () => {
         cy.login();

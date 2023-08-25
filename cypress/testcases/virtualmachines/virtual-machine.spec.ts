@@ -135,6 +135,7 @@ describe.skip('VM clone Validation', () => {
       buttonText: 'Add Volume',
       create: false,
       image: `default/${Cypress._.toLower(imageEnv.name)}`,
+      size: 4
     }, {
       buttonText: 'Add Volume',
       size: 5,
@@ -189,6 +190,7 @@ describe('VM runStategy Validation (Halted)', () => {
       buttonText: 'Add Volume',
       create: false,
       image: `default/${Cypress._.toLower(imageEnv.name)}`,
+      size: 4
     }];
 
     const advancedOption = {
@@ -283,6 +285,7 @@ describe('Edit vm and insert ssh and check the ssh key is accepted for the login
       buttonText: 'Add Volume',
       create: false,
       image: `default/${Cypress._.toLower(imageEnv.name)}`,
+      size: 4
     }];
 
     vms.goToCreate();
@@ -344,6 +347,7 @@ describe('All Namespace filtering in VM list', () => {
       buttonText: 'Add Volume',
       create: false,
       image: `default/${Cypress._.toLower(imageEnv.name)}`,
+      size: 4
     }];
 
     vms.goToCreate();
