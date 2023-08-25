@@ -54,6 +54,21 @@ export class HostsPage extends CruResourcePo {
     this.consoleUrl().input(value.consoleUrl)
   }
 
+  checkBasicValue(name: string, options: {
+    customName?: string,
+    consoleUrl?: string,
+  }) {
+    this.goToEdit(name);
+
+    if (options?.customName) {
+      cy.get('.labeled-input').contains('Custom Name').next().should('have.value', options.customName);
+    }
+
+    if (options?.consoleUrl) {
+      cy.get('.labeled-input').contains('Console URL').next().should('have.value', options.consoleUrl);
+    }
+  }
+
   enableMaintenance(name:string) {
     cy.intercept('POST', `/v1/harvester/${this.realType}s/${name}?action=enableMaintenanceMode`).as('enable');
     this.clickAction(name, 'Enable Maintenance Mode');

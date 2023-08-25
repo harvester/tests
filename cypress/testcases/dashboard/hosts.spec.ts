@@ -1,16 +1,14 @@
 import { HostsPage } from "@/pageobjects/hosts.po";
 import { EditYamlPage } from "@/pageobjects/editYaml.po";
-import { LoginPage } from "@/pageobjects/login.po";
 import { HCI } from '@/constants/types'
 
 const hosts = new HostsPage();
 const editYaml = new EditYamlPage();
-const login = new LoginPage();
 
 /**
+ * TODO:
  * This will insert custom YAML into the hosts page while editing
  */
-export function insertCustomYAML() {}
 describe('should insert custom name into YAML', () => {
   it.skip('should insert custom name into YAML', () => {
     cy.login();
@@ -20,36 +18,32 @@ describe('should insert custom name into YAML', () => {
   });
 });
 
-export function CheckEdit() {}
 describe('Check edit host', () => {
-  it('Check edit host', () => {
+  it.only('Check edit host', () => {
     cy.login();
     
     const host = Cypress.env('host')[0];
-    
-    cy.visit(`/harvester/c/local/${HCI.HOST}/${host.name}?mode=edit`)
 
     const customName = 'test-custom-name'
     const consoleUrl = 'test-console-url'
 
+    hosts.goToEdit(host.name);
     hosts.setValue({
       customName,
       consoleUrl,
     })
 
-    cy.intercept('PUT', `/v1/harvester/nodes/*`).as('update');
-
+    // TODO: The footer position is inconsistent on the host edit page.
     hosts.update(host.name)
 
-    cy.wait('@update').then(res => {
-      const annotations = res.response?.body?.metadata?.annotations || {}
-      expect(annotations['harvesterhci.io/host-custom-name'], 'Check custom name').to.equal(customName);
-      expect(annotations['harvesterhci.io/host-console-url'], 'Check console url').to.equal(consoleUrl);
+    hosts.goToEdit(customName);
+    hosts.checkBasicValue(customName, {
+      customName,
+      consoleUrl
     })
   })
 })
 
-export function CheckAddDisk() {}
 describe('Check Add disk', () => {
   it.skip('Check Add disk', () => {
     cy.login();

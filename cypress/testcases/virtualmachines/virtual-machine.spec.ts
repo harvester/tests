@@ -157,20 +157,21 @@ describe.skip('VM clone Validation', () => {
     vms.deleteVMFromStore(`${namespace}/${VM_NAME}`);
     volumePO.deleteFromStore(`${namespace}/${volumeValue.name}`);
   })
+
+
+  it('Clone VM from Virtual Machine list that was created from existing volume (Depends on the previous case)', () => {
+    const VM_NAME = 'use-existing-volume';
+
+    cy.login({url: PageUrl.virtualMachine});
+    vms.goToList();
+
+    vms.clickCloneAction(VM_NAME);
+
+    vms.setNameNsDescription(`repeat-${VM_NAME}`, 'default');
+    cy.get('.cru-resource-footer').contains('Create').click();
+    cy.get('#cru-errors').contains('the volume existing-volume is already used by VM');
+  });
 })
-
-it('Clone VM from Virtual Machine list that was created from existing volume (Depends on the previous case)', () => {
-  const VM_NAME = 'use-existing-volume';
-
-  cy.login({url: PageUrl.virtualMachine});
-  vms.goToList();
-
-  vms.clickCloneAction(VM_NAME);
-
-  vms.setNameNsDescription(`repeat-${VM_NAME}`, 'default');
-  cy.get('.cru-resource-footer').contains('Create').click();
-  cy.get('#cru-errors').contains('the volume existing-volume is already used by VM');
-});
 
 
 describe('VM runStategy Validation (Halted)', () => {
@@ -180,7 +181,7 @@ describe('VM runStategy Validation (Halted)', () => {
 
   const namespace = 'default'
 
-  it.only('Craete VM use Halted (Run Strategy)', () => {
+  it('Craete VM use Halted (Run Strategy)', () => {
     vms.goToCreate();
 
     const imageEnv = Cypress.env('image');
@@ -203,7 +204,8 @@ describe('VM runStategy Validation (Halted)', () => {
     vms.setVolumes(volume);
     vms.setAdvancedOption(advancedOption);
     vms.save();
-    vms.checkVMState(VM_NAME, 'Off')
+    vms.checkVMState(VM_NAME, 'Off');
+    vms.deleteVMFromUI(namespace, VM_NAME)
   });
 })
 
