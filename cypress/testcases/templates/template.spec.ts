@@ -104,6 +104,7 @@ describe('Create vm using a template of non-default version', () => {
       buttonText: 'Add Volume',
       create: false,
       image: `default/${Cypress._.toLower(imageEnv.name)}`,
+      size: 4
     }];
 
     templates.goToCreate()

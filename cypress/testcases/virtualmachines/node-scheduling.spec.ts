@@ -18,6 +18,7 @@ describe('Stop VM Negative', () => {
       buttonText: 'Add Volume',
       create: false,
       image: `default/${Cypress._.toLower(imageEnv.name)}`,
+      size: 4
     }];
 
     vmPO.goToCreate();

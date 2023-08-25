@@ -9,7 +9,6 @@ import { List } from 'cypress/types/lodash';
 
 const constants = new Constants();
 const settings = new SettingsPagePo();
-var registrationURL;
 
 interface ValueInterface {
     namespace?: string,
@@ -103,6 +102,23 @@ export class rancherPage {
     // }
 
     /**
+    * To check whether the Harvester is first time to login.
+    * @returns the boolean value to identify is first time login or not.
+    */
+    public static isFirstTimeLogin(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            cy.intercept('GET', '/v1/management.cattle.io.setting?exclude=metadata.managedFields').as('getFirstLogin')
+                .visit("/")
+                .wait('@getFirstLogin').then(login => {
+                const data: any[] = login.response?.body.data;
+                const firstLogin = data.find(v => v?.id === "first-login");
+                resolve(firstLogin.value === 'true');
+                })
+                .end();
+        });
+    }
+
+    /**
      * First time login using ssh 
      */
     public firstTimeLogin() {
@@ -140,15 +156,7 @@ export class rancherPage {
 
         cy.visit('/')
         cy.wait(1000).get('body').then($body => {
-            if ($body.find(this.boostrap_page_welcome).length) {
-                cy.log('First time login')
-                this.firstTimeLogin();
-
-            } else {
-                cy.log('Not first time login')
-                this.login();
-            }
-
+            this.login();
         })
 
         this.validateLogin()
