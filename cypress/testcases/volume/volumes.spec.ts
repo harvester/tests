@@ -257,6 +257,7 @@ describe("Support Volume Hot Unplug", () => {
       buttonText: 'Add Volume',
       create: false,
       image: `default/${imageEnv.name}`,
+      size: 4
     }];
 
     // create VM
@@ -279,7 +280,7 @@ describe("Support Volume Hot Unplug", () => {
       vms.checkState({name: VM_NAME, state: 'Off'});
 
       volumes.goToEdit(volumeName);
-      volumes.setBasics({size: '4'});
+      volumes.setBasics({size: '5'});
       volumes.update(`${namespace}/${volumeName}`);
       
       // check VOLUME state

@@ -144,8 +144,8 @@ export class rancherPage {
      * Rancher login page: Input username and password -> submit 
      */
     public login() {
-        cy.get(this.login_page_usernameInput).type(constants.rancherUser).log('Input username');
-        cy.get(this.login_page_passwordInput).type(constants.rancherPassword).log('Input password');
+        cy.get(this.login_page_usernameInput).type(constants.rancher_user).log('Input username');
+        cy.get(this.login_page_passwordInput).type(constants.rancher_password).log('Input password');
         cy.get(this.login_page_loginButton).click().log('Login with local user');
     }
 

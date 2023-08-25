@@ -10,7 +10,7 @@ const constants = new Constants();
 require('cy-verify-downloads').addCustomCommand();
 
 Cypress.Commands.add('login', (params = {}) => {
-    const url = params.url || constants.dashboardUrl;
+    let url = params.url || constants.dashboardUrl;
     const username = params.username ||   Cypress.env('username');
     const password = params.password || Cypress.env('password');
 
@@ -33,9 +33,8 @@ Cypress.Commands.add('login', (params = {}) => {
           'x-api-csrf': CSRF
         }
       }).then(() => {
-        cy.visit(url); // After successful login, you can switch to the specified page, which is the home page by default
-        cy.get('.initial-load-spinner', { timeout: constants.timeout.maxTimeout })
-        cy.get(".dashboard-content .product-name").contains("Harvester")
+        cy.visit(url).log(url); // After successful login, you can switch to the specified page, which is the home page by default
+        cy.get(".dashboard-content .product-name", { timeout: constants.timeout.maxTimeout }).contains("Harvester")
       });
     })
 });

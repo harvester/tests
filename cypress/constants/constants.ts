@@ -62,5 +62,6 @@ export const MenuNav = {
     storageClass:            ['Storage Classes', 'harvester/c/local/harvesterhci.io.storage', 'Storage Classes', ['Advanced']],
     pciDevice:               ['PCI Devices', 'harvester/c/local/devices.harvesterhci.io.pcidevice', 'PCI Devices', ['Advanced']],
     addon:                   ['Addons', 'harvester/c/local/harvesterhci.io.addon', 'Addons', ['Advanced']],
+    secrets:                 ['Secrets', 'harvester/c/local/harvesterhci.io.secret', 'Secrets', ['Advanced']],
     setting:                 ['Settings', 'harvester/c/local/harvesterhci.io.setting', 'Settings', ['Advanced']]
 }

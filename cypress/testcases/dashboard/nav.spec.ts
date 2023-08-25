@@ -16,8 +16,9 @@ describe("UI url", () => {
     })
   })
 
+  // https://harvester.github.io/tests/manual/ui/verify-url/
   it("Verify the Harvester icon on the left top corner", () => {
-    cy.get('.dashboard-content header .menu-spacer').find('img', {timeout: 4000}).then(($el) => {
+    cy.get('.dashboard-content header .menu-spacer').find('img').then(($el) => {
       const src = $el.attr('src');
       expect(src).to.match(/harvester.*\.svg/);
     })

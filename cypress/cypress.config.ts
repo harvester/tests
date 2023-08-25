@@ -20,7 +20,7 @@ export default defineConfig({
     password: 'password1234',
     mockPassword: "mockPassword",
     baseUrl: 'https://online-server',
-    host: {
+    host: [{
       name: 'harvester-node-1',
       disks: [
         {
@@ -28,7 +28,7 @@ export default defineConfig({
           devPath: '',
         },
       ],
-    },
+    }],
     image: {
       name: 'openSUSE-Leap-15.3-3-NET-x86_64.qcow2',
       url: 'https://download.opensuse.org/pub/opensuse/distribution/leap/15.3/appliances/openSUSE-Leap-15.3-JeOS.x86_64-15.3-OpenStack-Cloud-Current.qcow2',

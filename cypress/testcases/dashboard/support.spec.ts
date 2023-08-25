@@ -1,5 +1,5 @@
 import { SupportPage } from "@/pageobjects/support.po";
-import {Constants} from "../../constants/constants";
+import { Constants } from "@/constants/constants";
 const constants = new Constants;
 
 describe("Support Page", () => {
@@ -35,7 +35,6 @@ describe("Support Page", () => {
 
       cy.task("readYaml", kubeconfig)
         .should(val => expect(val).to.not.be.a('string'))
-
     })
   })
 

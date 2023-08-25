@@ -220,6 +220,18 @@ export class VmsPage extends CruResourcePo {
     this.deleteFromStore(id, HCI.VMI); // You need to wait for the vmi to be deleted as well, because it will not be deleted until the vm is deleted
   }
 
+  deleteVMFromUI(namespace: string, name: string) {
+    this.goToList();
+    this.clickAction(name, 'Delete');
+    cy.get('[data-testid="card"]').get('[type="checkbox"]').each(($checkbox) => {
+      if (!$checkbox.is(':checked')) {
+        $checkbox.click();
+      }
+    });
+
+    cy.get('.v--modal-box button').contains('Delete').click();
+  }
+
   network() {
     return new LabeledSelectPo('section .labeled-select.hoverable', `:contains("Network")`)
   }
