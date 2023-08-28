@@ -155,12 +155,10 @@ export class rancherPage {
     public rancherLogin() {
 
         cy.visit('/')
-        cy.wait(1000).get('body').then($body => {
-            this.login();
-        })
+
+        this.login()
 
         this.validateLogin()
-
     }
 
     /**
@@ -213,7 +211,7 @@ export class rancherPage {
             const url = (globalVar as string).trim();
             cy.log(url);
             settings.goTo();
-            settings.checkIsCurrentPage();
+            settings.checkIsCurrentPage(false);
             cy.get('#cluster-registration-url').click();
             cy.get('.icon.icon.icon-edit').click();
 
@@ -222,6 +220,7 @@ export class rancherPage {
         })
 
         cy.get('.cru-resource-footer > div > .btn').should('contain', 'Save').click();
+        cy.get('.v--modal-box button').contains('OK').click();
     }
 
     // public checkState(value: ValueInterface, valid: boolean = true) {
@@ -256,12 +255,10 @@ export class rancherPage {
     }
 
     public checkState(target: string, valid: boolean = true) {
-
         cy.wait(1000).get(this.search).then(($search) => {
             cy.wrap($search).click().type(target);
             cy.contains(target).parentsUntil('tbody', 'tr').find('td.col-badge-state-formatter').contains(valid ? 'Active' : 'Pending', { timeout: constants.timeout.provisionTimeout }).should('be.visible');
         });
-
     }
 
     public checkExists(target: string, valid: boolean = true) {
