@@ -85,6 +85,19 @@ Cypress.on("test:after:run", (test, runnable) => {
 
     const screenshot =`assets/${specDir}/${Cypress.spec.name}/${fileName}`;    
     
-    addContext({ test }, screenshot);  
+    addContext({ test }, screenshot);
+
+    addContext({ test }, 'Environment variables:');
+    const env = Cypress.env();
+
+    Object.keys(env).forEach(key => {
+      const value = Cypress.env(key) 
+
+      if (typeof(value) !== 'object') {
+        addContext({ test }, `${key}: ${Cypress.env(key)}`);
+      } else {
+        addContext({ test }, `${key}: ${JSON.stringify(Cypress.env(key))}`); 
+      }
+    })
   }
 });
