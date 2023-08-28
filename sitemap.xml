@@ -156,6 +156,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/harvester-rancher/71-manually-deploy-csi-driver-to-rke2-cluster/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/72-ipxe-auto-airgapped-rancher-integrate-harvester-/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2715_adapt_alertmanager_to_dedicated_storage_network/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/node-driver/cluster-custom-docker-install-url/</loc>

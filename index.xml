@@ -789,6 +789,18 @@ Provision a RKE2 cluster Provide the login credential in user data</description>
     </item>
     
     <item>
+      <title>72-Use ipxe example to test fully airgapped rancher integration</title>
+      <link>https://harvester.github.io/tests/manual/harvester-rancher/72-ipxe-auto-airgapped-rancher-integrate-harvester-/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/harvester-rancher/72-ipxe-auto-airgapped-rancher-integrate-harvester-/</guid>
+      <description>Related task: #1808 RKE2 provisioning fails when Rancher has no internet access (air-gapped)
+Note1: In this test, we use vagrant-pxe-airgap-harvester to automatically provide the fully airgapped environment
+Note1: Compared to test case 68, we don&amp;rsquo;t need to manually create a separate VM for the Rancher instance and docker private registry, all the prerequisite environment can be done with the vagrant-pxe-airgap-harvester solution
+Environment Setup Phase 1: Create airgapped Harvester cluster, Rancher and private registry Clone the latest ipxe-example which include the vagrant-pxe-airgap-harvester Follow the Sample Host Loadout and Prerequisites in readme to prepare the prerequisite package If you use Opensuse Leap operating system, you may need to comment out the following line in Vagrantfile file # libvirt.</description>
+    </item>
+    
+    <item>
       <title>Adapt alertmanager to dedicated storage network</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2715_adapt_alertmanager_to_dedicated_storage_network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
