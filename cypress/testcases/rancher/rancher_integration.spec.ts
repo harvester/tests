@@ -85,36 +85,29 @@ describe('Rancher Integration Test', function () {
         isFirstTimeLogin = await rancherPage.isFirstTimeLogin();
     })
 
-    beforeEach(() => {
-        cy.fixture('rancher').then((data) => {
-            rData = data;
-        });
-    })
+    // it.skip('Prepare Harvester Image', () => {
+    //     cy.login();
 
-    it.skip('Prepare Harvester Image', () => {
-        cy.login();
+    //     // create IMAGE according to the value set
+    //     image.goToCreate();
+    //     image.setNameNsDescription(value.name, "default");
+    //     image.setBasics({ url: value.url });
+    //     image.save();
+    //     image.checkState(value);
 
-        // create IMAGE according to the value set
-        image.goToCreate();
-        image.setNameNsDescription(value.name, "default");
-        image.setBasics({ url: value.url });
-        image.save();
-        image.checkState(value);
+    // });
 
-    });
+    // it.skip('Prepare Harvester VLAN network', () => {
+    //     cy.login();
 
-    it.skip('Prepare Harvester VLAN network', () => {
-        cy.login();
-
-        network.createVLAN('vlan1', 'default', '1', 'mgmt')
-    });
+    //     network.createVLAN('vlan1', 'default', '1', 'mgmt')
+    // });
 
     it('Rancher First Login', { baseUrl: constants.rancherUrl }, () => {
         onlyOn(isFirstTimeLogin);
         const page = new rancherPage();
         page.firstTimeLogin();
     });
-
 
     it('Rancher import Harvester', { baseUrl: constants.rancherUrl }, () => {
         rancher.rancherLogin();
@@ -127,12 +120,20 @@ describe('Rancher Integration Test', function () {
         }).as('importCluster');
 
     });
+});
+
+
+describe('Harvester import Rancher', function () {
+    beforeEach(() => {
+        cy.fixture('rancher').then((data) => {
+            rData = data;
+        });
+    })
 
     it('Harvester import Rancher', () => {
         cy.login();
         rancher.registerRancher();
     });
-
 
     it('Check Harvester Cluster Status', { baseUrl: constants.rancherUrl }, () => {
         // cy.login();
@@ -144,11 +145,5 @@ describe('Rancher Integration Test', function () {
         rancher.visit_virtualizationManagement();
 
         rancher.checkState(rData.harvester_cluster_name);
-
     });
-
-
-
-});
-
-
+})
