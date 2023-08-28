@@ -388,8 +388,11 @@ https://github.com/harvester/ipxe-examples/pull/32
 
 
 ### Test steps
+After we already made Harvester imported in Rancher, we can use the following steps to Provision an RKE2 guest cluster
 
-1. Update coredns in k3s `sudo vim /var/lib/rancher/k3s/server/manifests/coredns.yaml`.
+1. ssh to the Rancher VM instance
+1. (On k3s with Rancher VM), Update coredns in k3s `sudo vim /var/lib/rancher/k3s/server/manifests/coredns.yaml`
+1. Update Configmap data to the following
     ```
     # update ConfigMap
       Corefile: |
@@ -411,69 +414,41 @@ https://github.com/harvester/ipxe-examples/pull/32
             reload
             loadbalance
         }
+        import /etc/coredns/custom/*.server
       customdomains.db: |
         192.168.0.50 airgap helm-install.local
-
-    # update deployment
-    # remove NodeHost key and path
-    # add customdomains.db
-                - key: customdomains.db
-                  path: customdomains.db
+    ```
+1.  Update deployment -> volumes, remove the NodeHost key and path, change with `    customdomains.db`
+    ```
+    volumes:
+    - name: config-volume
+    configMap:
+        name: coredns
+        items:
+        - key: Corefile
+        path: Corefile
+        - key: customdomains.db
+        path: customdomains.db
     ```
 
-1. Import `SLES15-SP3-JeOS.x86_64-15.3-OpenStack-Cloud-GM.qcow2` to Harvester.
-1. Create RKE2 cluster with following userData.
+1. Import `SLES15-SP3-JeOS.x86_64-15.3-OpenStack-Cloud-GM.qcow2` to Harvester (We can also use opensuse leap 15.4 which contains qemu-agent)
+1. Provision the RKE2 cluster, on the creation page add the following userData in advanced
     ```
+    #cloud-config
+    password: 123456
+    chpasswd: { expire: False }
+    ssh_pwauth: True
     runcmd:
     - - systemctl
-      - enable
-      - --now
-      - qemu-guest-agent
-    ```
-
-1. (k3s with Rancher VM) Update coredns in `sudo vim /var/lib/rancher/k3s/server/manifests/coredns.yaml`.
-    ```
-    # update ConfigMap
-      Corefile: |
-        .:53 {
-            errors
-            health
-            ready
-            kubernetes cluster.local in-addr.arpa ip6.arpa {
-              pods insecure
-              fallthrough in-addr.arpa ip6.arpa
-            }
-            hosts /etc/coredns/customdomains.db {
-              fallthrough
-            }
-            prometheus :9153
-            forward . /etc/resolv.conf
-            cache 30
-            loop
-            reload
-            loadbalance
-        }
-      customdomains.db: |
-        192.168.0.50 airgap helm-install.local
-
-    # update deployment
-    # remove NodeHost key and path
-    # add customdomains.db
-                - key: customdomains.db
-                  path: customdomains.db
-    ```
-1. Import `SLES15-SP3-JeOS.x86_64-15.3-OpenStack-Cloud-GM.qcow2` to Harvester.
-1. Create RKE2 cluster with following userData.
-    ```
-    runcmd:
-    - - systemctl
-      - enable
-      - --now
-      - qemu-guest-agent
+        - enable
+        - '--now'
+        - qemu-guest-agent
     bootcmd:
-      - echo 192.168.0.50 helm-install.local myregistry.test >> /etc/hosts
-    ```
-1. (RKE2 VM) Create a file in `/etc/rancher/agent/tmp_registries.yaml`:
+    - echo 192.168.0.50 helm-install.local helm-install.local >> /etc/hosts
+   ```
+1. Wait for the guest cluster VM ready on Harvester to expose IP address
+1. ssh to the RKE2 guest cluster VM
+1. (On the RKE2 guest VM), Create a file in `/etc/rancher/agent/tmp_registries.yaml`:
     ```
     mirrors:
       docker.io:
@@ -484,15 +459,15 @@ https://github.com/harvester/ipxe-examples/pull/32
         tls:
           insecure_skip_verify: true
     ```
-1. (RKE2 VM) Update rancher-system-agent config file `/etc/rancher/agent/config.yaml`.
+1. (On the RKE2 guest VM), Update rancher-system-agent config file `/etc/rancher/agent/config.yaml`.
     ```
     agentRegistriesFile: /etc/rancher/agent/tmp_registries.yaml
     ```
-1. (RKE2 VM) Restart rancher-system-agent.
+1. (On the RKE2 guest VM) Restart rancher-system-agent.
     ```
     systemctl restart rancher-system-agent.service
     ```
-1. (RKE2 VM) Create a file in `/etc/rancher/rke2/registries.yaml`:
+1. (On the RKE2 guest VM) Create a file in `/etc/rancher/rke2/registries.yaml`:
     ```
     mirrors:
       docker.io:
@@ -503,7 +478,21 @@ https://github.com/harvester/ipxe-examples/pull/32
         tls:
           insecure_skip_verify: true
     ```
-1. (RKE2 VM) Update ConfigMap `kube-system/rke2-coredns-rke2-coredns` in RKE2.
+1. Check RKE2 cluster provisioning enter into waiting for cluster to join
+1. Get the kubectl command on RKE2 VM
+    ```
+    export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+    /var/lib/rancher/rke2/bin/kubectl get nodes
+
+    NAME                               STATUS   ROLES                              AGE     VERSION
+    rke2-v12316-pool1-43416171-x2l8f   Ready    control-plane,etcd,master,worker   7h52m   v1.23.16+rke2r1
+    ```
+1. (On the RKE2 guest VM) Update ConfigMap `kube-system/rke2-coredns-rke2-coredns` in RKE2.
+
+    ```
+    ./kubectl get configmaps -A
+    ./kubectl edit configmaps rke2-coredns-rke2-coredns -n kube-system
+    ```
     ```
     data:
       Corefile: ".:53 {\n    errors \n    health  {\n        lameduck 5s\n    }\n    ready
@@ -515,14 +504,86 @@ https://github.com/harvester/ipxe-examples/pull/32
       customdomains.db: |
         192.168.0.50 helm-install.local
     ```
-1. (RKE2 VM) Update Deployment `kube-system/rke2-coredns-rke2-coredns`.
+1. (On the RKE2 guest VM) Update Deployment `kube-system/rke2-coredns-rke2-coredns`.
+    ```
+    ./kubectl get deployments -A
+    ./kubectl edit deployments rke2-coredns-rke2-coredns -n kube-system
+    ```
     ```
     # add following to volumes[].configMap
-    - key: customdomains.db
-      path: customdomains.db
-    ```
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: Corefile
+            path: Corefile
+          - key: customdomains.db
+            path: customdomains.db
+          name: rke2-coredns-rke2-coredns
+        name: config-volume
 
-## Expected Results
+    ```
+1. We can check the pod status to confirm all relative pods are recreating. And finally we could have the following pods running
+    ```
+    rke2-v12316-pool1-43416171-x2l8f:/var/lib/rancher/rke2/bin # ./kubectl get pods -A
+    NAMESPACE             NAME                                                              READY   STATUS              RESTARTS        AGE
+    calico-system         calico-kube-controllers-c6b87769c-hffq8                           1/1     Running             0               5h55m
+    calico-system         calico-node-whndb                                                 1/1     Running             0               5h55m
+    calico-system         calico-typha-74756dc885-fl5jt                                     1/1     Running             0               5h55m
+    cattle-fleet-system   fleet-agent-7bbcf895fd-jkbk8                                      1/1     Running             0               9m10s
+    cattle-system         apply-system-agent-upgrader-on-rke2-v12316-pool1-43416171-vlxlq   0/1     Completed           0               8m29s
+    cattle-system         cattle-cluster-agent-6d94b9674b-hdtl6                             1/1     Running             0               10m
+    cattle-system         system-upgrade-controller-79885c67d5-7b74n                        1/1     Running             0               9m10s
+    kube-system           etcd-rke2-v12316-pool1-43416171-x2l8f                             1/1     Running             0               5h57m
+    kube-system           harvester-cloud-provider-67589589b-nsftg                          1/1     Running             0               5h55m
+    kube-system           harvester-csi-driver-controllers-86ccc7f485-4r8x5                 3/3     Running             0               5h55m
+    kube-system           harvester-csi-driver-controllers-86ccc7f485-5hrxc                 3/3     Running             0               5h55m
+    kube-system           harvester-csi-driver-controllers-86ccc7f485-hc622                 3/3     Running             0               5h55m
+    kube-system           harvester-csi-driver-wz7lt                                        2/2     Running             0               5h54m
+    kube-system           helm-install-harvester-cloud-provider-thqg2                       0/1     Completed           0               5h57m
+    kube-system           helm-install-harvester-csi-driver-9ftrf                           0/1     Completed           0               5h57m
+    kube-system           helm-install-rke2-calico-crd-p7tj6                                0/1     Completed           0               5h57m
+    kube-system           helm-install-rke2-calico-zh7b8                                    0/1     Completed           2               5h57m
+    kube-system           helm-install-rke2-coredns-7bdr7                                   0/1     Completed           0               5h57m
+    kube-system           helm-install-rke2-ingress-nginx-rm2c7                             0/1     Completed           0               5h57m
+    kube-system           helm-install-rke2-metrics-server-vrq4q                            0/1     Completed           0               5h57m
+    kube-system           kube-apiserver-rke2-v12316-pool1-43416171-x2l8f                   1/1     Running             0               5h56m
+    kube-system           kube-controller-manager-rke2-v12316-pool1-43416171-x2l8f          1/1     Running             1 (5h56m ago)   5h57m
+    kube-system           kube-proxy-rke2-v12316-pool1-43416171-x2l8f                       1/1     Running             0               5h57m
+    kube-system           kube-scheduler-rke2-v12316-pool1-43416171-x2l8f                   1/1     Running             1 (5h56m ago)   5h57m
+    kube-system           rke2-coredns-rke2-coredns-78946844cc-7kf57                        1/1     Running             0               14m
+    kube-system           rke2-coredns-rke2-coredns-autoscaler-695f789679-5vrzm             1/1     Running             0               5h55m
+    kube-system           rke2-ingress-nginx-controller-qr6ml                               0/1     ContainerCreating   0               5h51m
+    kube-system           rke2-metrics-server-f969c4b85-skc5c                               1/1     Running             0               5h54m
+    tigera-operator       tigera-operator-7765f9f56-vnwdd                                   1/1     Running  
+    ```
+### Troubleshooting
+Query the images to check whether the specific kubernetes version package is supported
+
+Please ensure your client can route to the RKE2 guest cluster VM
+
+* Check rke2-runtime 
+  ```
+  curl -k https://myregistry.local:5000/v2/rancher/rke2-runtime/tags/list | jq
+  ```
+* Check system-agent-installer
+  ```
+  curl -k https://myregistry.local:5000/v2f/rancher/system-agent-installer-rke2/tags/list | jq
+  ```
+
+If encounter failure, we can also check the following service logs for more details
+
+* Check rancher-system-agent log
+  ```
+  journalctl -u rancher-system-agent.service --follow
+  ```
+* Check rke2-server log
+  ```
+  journalctl -u rke2-server.service --follow
+  ```
+
+
+### Expected Results
 1. Can import harvester from Rancher correctly 
 1. Can access downstream harvester cluster from Rancher dashboard 
 1. Can provision at least one node RKE2 cluster to harvester correctly with running status
