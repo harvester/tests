@@ -112,8 +112,6 @@ describe('Rancher Integration Test', function () {
     it('Rancher import Harvester', { baseUrl: constants.rancherUrl }, () => {
         cy.visit('/');
 
-        rancher.firstTimeLogin()
-
         rancher.rancherLogin();
 
         rancher.importHarvester().then((el) => {

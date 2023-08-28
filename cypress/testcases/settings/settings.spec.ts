@@ -67,17 +67,17 @@ describe('Setting Page', () => {
  * https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/
  */
 describe('Set backup target S3', () => {
-    it.skip('Set backup target S3', () => {
+    it('Set backup target S3', () => {
         cy.login();
         settings.goToList();
         settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
         settings.setS3BackupTarget({
             type: 'S3', 
-            endpoint: 'https://minio-service.default:9000', 
-            bucketName: 'backupbucket',
-            bucketRegion: 'us-east-1',
-            accessKeyId: 'longhorn-test-access-key',
-            secretAccessKey: 'longhorn-test-secret-key'
+            endpoint: Cypress.env('backupTarget.endpoint'), 
+            bucketName: 'cypress-backup-test',
+            bucketRegion: Cypress.env('backupTarget.bucketRegion'),
+            accessKeyId: Cypress.env('backupTarget.accessKey'),
+            secretAccessKey: Cypress.env('backupTarget.secretKey'),
         })
         settings.update('backup-target');
     });
