@@ -85,8 +85,7 @@ describe('Delete VM template default version', () => {
  * 2. CPU, Memory, Image, and SSH key should match saved template info
 */
 describe('Create vm using a template of non-default version', () => {
-  // TODO: Dependency on preset ssh key "default/preset-ssh"
-  it.skip('Create vm using a template of non-default version', () => {
+  it('Create vm using a template of non-default version', () => {
     cy.login();
 
     const NAME = generateName('test-template')

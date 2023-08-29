@@ -44,7 +44,7 @@ export default defineConfig({
         vlan: 104
       }
     ],
-    sshKey: 'Your ssh public key, use for validate connect VM. e.g. ssh-rsa xxx',
+    sshKey: 'ssh-rsa AAAAC3NzaC1lZDI1NTE5AAAAILNT75vavgc8gtphADJAhbUyj9TQRxLWJEXy5n+7HbIH username@email.com',
     privateKeyPath: 'Your ssh private Key Path'
   },
   retries: {
