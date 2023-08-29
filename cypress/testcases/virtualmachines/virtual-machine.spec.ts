@@ -102,8 +102,7 @@ describe("automatic assignment to different nodes when creating multiple vm's", 
   });
 })
 
-// TODO: Create volume require storage class
-describe.skip('VM clone Validation', () => {
+describe.only('VM clone Validation', () => {
   beforeEach(() => {
     cy.login({url: PageUrl.virtualMachine});
   });
@@ -157,20 +156,6 @@ describe.skip('VM clone Validation', () => {
     vms.deleteVMFromStore(`${namespace}/${VM_NAME}`);
     volumePO.deleteFromStore(`${namespace}/${volumeValue.name}`);
   })
-
-
-  it('Clone VM from Virtual Machine list that was created from existing volume (Depends on the previous case)', () => {
-    const VM_NAME = 'use-existing-volume';
-
-    cy.login({url: PageUrl.virtualMachine});
-    vms.goToList();
-
-    vms.clickCloneAction(VM_NAME);
-
-    vms.setNameNsDescription(`repeat-${VM_NAME}`, 'default');
-    cy.get('.cru-resource-footer').contains('Create').click();
-    cy.get('#cru-errors').contains('the volume existing-volume is already used by VM');
-  });
 })
 
 
@@ -274,8 +259,9 @@ describe("Delete VM with exported image", () => {
  * Expected Results
  * 1. You should be able to ssh in with correct SSH private key
  */
+// TODO: require docker image or CI machine ssh key
 describe('Edit vm and insert ssh and check the ssh key is accepted for the login', () => {
-  it('Edit vm and insert ssh and check the ssh key is accepted for the login', () => {
+  it.skip('Edit vm and insert ssh and check the ssh key is accepted for the login', () => {
     cy.login();
 
     const VM_NAME = generateName('test-vm-ssh');

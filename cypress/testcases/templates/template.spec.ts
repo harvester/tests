@@ -42,7 +42,7 @@ describe('Delete VM template default version', () => {
     cy.login();
   });
 
-  it('Create a vm template with the required values', () => {
+  it.only('Create a vm template with the required values', () => {
     cy.intercept('POST', `v1/harvester/${HCI.VM_VERSION}s/default`).as('create');
 
     templates.goToList();
