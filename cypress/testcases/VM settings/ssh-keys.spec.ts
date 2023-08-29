@@ -43,8 +43,7 @@ describe('Create a ssh key', () => {
 
 export function PresetSsh() {}
 describe('Preset a ssh key', () => {
-  // TODO: Require a clear harvester
-  it.skip('Preset a ssh key', () => {
+  it('Preset a ssh key', () => {
     cy.login();
 
     const name = 'preset-ssh';
