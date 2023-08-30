@@ -1,5 +1,7 @@
 #!/bin/bash
 TESTS_FAILED=false
+MAX_RETRIES=3
+RETRY_DELAY=5
 
 xvfb-run --server-args='-screen 0 1024x768x16 -ac' yarn run e2e
 
@@ -31,7 +33,22 @@ minio_name="minio"
 
 mc alias set ${minio_name} $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY --insecure
 
-mc cp --recursive ${report_dir} ${minio_name}/${minio_dir} --insecure
+attempt=1
+success=false
+
+while [ $attempt -le $MAX_RETRIES ] && [ $success = false ]; do
+  echo "Attempting to upload files to MinIO (Attempt: $attempt)"
+
+  mc cp --recursive ${report_dir} ${minio_name}/${minio_dir} --insecure
+
+  if [ $? -eq 0 ]; then
+    success=true
+  else
+    echo "Upload failed. Retrying in $RETRY_DELAY seconds..."
+    sleep $RETRY_DELAY
+    attempt=$((attempt + 1))
+  fi
+done
 
 if [ $TESTS_FAILED = true ]; then
   echo "Tests failed, but test results were still uploaded to MinIO."
