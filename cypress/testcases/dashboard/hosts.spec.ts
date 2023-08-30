@@ -19,7 +19,7 @@ describe('should insert custom name into YAML', () => {
 });
 
 describe('Check edit host', () => {
-  it.only('Check edit host', () => {
+  it('Check edit host', () => {
     cy.login();
     
     const host = Cypress.env('host')[0];

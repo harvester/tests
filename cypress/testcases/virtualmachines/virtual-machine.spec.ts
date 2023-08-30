@@ -102,7 +102,7 @@ describe("automatic assignment to different nodes when creating multiple vm's", 
   });
 })
 
-describe.only('VM clone Validation', () => {
+describe('VM clone Validation', () => {
   beforeEach(() => {
     cy.login({url: PageUrl.virtualMachine});
   });
