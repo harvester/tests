@@ -3,6 +3,9 @@ TESTS_FAILED=false
 MAX_RETRIES=3
 RETRY_DELAY=5
 
+current_time=$(date +"%Y-%m-%d %H:%M:%S")
+echo "Current Time: $current_time"
+
 xvfb-run --server-args='-screen 0 1024x768x16 -ac' yarn run e2e
 
 if [ $? -ne 0 ]; then
@@ -10,14 +13,14 @@ if [ $? -ne 0 ]; then
   TESTS_FAILED=true
 fi
 
-if (REPORT_NAME) {
-  echo "Custom report name provided: ${REPORT_NAME}"
-} else {
+if [ -n "$REPORT_NAME" ]; then
+  echo "Custom report name provided: $REPORT_NAME"
+else
   timestamp=$(date +%Y%m%d-%H%M%S)
   commit_id=$(git rev-parse --short HEAD)
 
-  REPORT_NAME = "${timestamp}-${commit_id}"
-}
+  REPORT_NAME="${timestamp}-${commit_id}"
+fi
 
 report_dir="cypress/results/${REPORT_NAME}"
 
