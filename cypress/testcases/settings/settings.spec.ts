@@ -51,6 +51,32 @@ describe('Setting Page', () => {
         settings.clickMenu('log-level', 'Edit Setting', 'log-level')
         settings.checkSettingValue('Value', 'Trace');
     })
+})
+
+/**
+ * https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/
+ */
+describe('Set backup target S3', () => {
+    beforeEach(() => {
+        cy.login({url: PageUrl.setting});
+        settings.checkIsCurrentPage(false);
+    })
+
+    it.only('Set backup target S3', () => {
+        settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
+
+        const backupTarget = Cypress.env('backupTarget');
+        settings.setS3BackupTarget({
+            type: 'S3', 
+            endpoint: backupTarget.endpoint, 
+            bucketName: backupTarget.bucketName,
+            bucketRegion: backupTarget.bucketRegion,
+            accessKeyId: backupTarget.accessKey,
+            secretAccessKey: backupTarget.secretKey,
+        })
+
+        settings.update('backup-target');
+    });
 
     /**
      * backup target
@@ -61,24 +87,4 @@ describe('Setting Page', () => {
         settings.checkSettingValue('Type', 'NFS');
         settings.update('backup-target');
     })
-})
-
-/**
- * https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/
- */
-describe('Set backup target S3', () => {
-    it('Set backup target S3', () => {
-        cy.login();
-        settings.goToList();
-        settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
-        settings.setS3BackupTarget({
-            type: 'S3', 
-            endpoint: Cypress.env('backupTarget.endpoint'), 
-            bucketName: 'cypress-backup-test',
-            bucketRegion: Cypress.env('backupTarget.bucketRegion'),
-            accessKeyId: Cypress.env('backupTarget.accessKey'),
-            secretAccessKey: Cypress.env('backupTarget.secretKey'),
-        })
-        settings.update('backup-target');
-    });
 })
