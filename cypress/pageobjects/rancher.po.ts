@@ -136,8 +136,9 @@ export class rancherPage {
       // cy.log('Agree EULA')
       cy.get(this.boostrap_page_checkAgreeEULA).click().log('Agree EULA');
 
-      cy.log('Continue to access rancher')
       cy.get(this.boostrap_page_confirmLogin).click().log('Continue to access rancher');
+
+      cy.url().should('include', 'dashboard/home').log('Login Success');
     }
 
     /**
@@ -220,7 +221,6 @@ export class rancherPage {
         })
 
         cy.get('.cru-resource-footer > div > .btn').should('contain', 'Save').click();
-        cy.get('.v--modal-box button').contains('OK').click();
     }
 
     // public checkState(value: ValueInterface, valid: boolean = true) {
