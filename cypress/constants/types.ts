@@ -29,6 +29,17 @@ export const HCI = {
   volumeSnapshot:     'snapshot.storage.k8s.io.volumesnapshot'
 };
 
+
+export const CAPI = {
+  RANCHER_CLUSTER:      'provisioning.cattle.io.cluster', 
+};
+
+export const MANAGEMENT = {
+  USER:                          'management.cattle.io.user',
+  CLUSTER_ROLE_TEMPLATE_BINDING: 'management.cattle.io.clusterroletemplatebinding',
+  PROJECT:                       'management.cattle.io.project',
+}
+
 export const HCI_URL = {
   volumeSnapshot: 'harvesterhci.io.volumesnapshot'
 }

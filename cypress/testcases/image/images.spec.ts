@@ -34,7 +34,7 @@ describe('Auto setup image from cypress environment', () => {
       if (imageFound) {
         return
       } else {
-        const namespace = 'default';
+        const namespace = 'harvester-public';
 
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
