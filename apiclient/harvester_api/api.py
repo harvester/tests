@@ -9,7 +9,8 @@ from .managers import (
     NetworkManager, VolumeManager, VolumeSnapshotManager, TemplateManager, SupportBundlemanager,
     ClusterNetworkManager, VirtualMachineManager, StorageClassManager,
     BackupManager, VersionManager, UpgradeManager, LonghornReplicaManager,
-    LonghornVolumeManager, VirtualMachineSnapshotManager
+    LonghornVolumeManager, VirtualMachineSnapshotManager,
+    LonghornBackupVolumeManager
 )
 
 from .managers import DEFAULT_NAMESPACE
@@ -59,6 +60,7 @@ class HarvesterAPI:
         self.upgrades = UpgradeManager(self)
         self.lhreplicas = LonghornReplicaManager(self)
         self.lhvolumes = LonghornVolumeManager(self)
+        self.lhbackupvolumes = LonghornBackupVolumeManager(self)
 
     @property
     def cluster_version(self):

@@ -124,6 +124,33 @@ def config_backup_target(api_client, conflict_retries, backup_config, wait_timeo
 
     yield spec
 
+    # remove unbound LH backupVolumes
+    code, data = api_client.lhbackupvolumes.get()
+    assert 200 == code, "Failed to list lhbackupvolumes"
+
+    check_names = []
+    for volume_data in data["items"]:
+        volume_name = volume_data["metadata"]["name"]
+        backup_name = volume_data["status"]["lastBackupName"]
+        if not backup_name:
+            api_client.lhbackupvolumes.delete(volume_name)
+            check_names.append(volume_name)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        for name in check_names[:]:
+            code, data = api_client.lhbackupvolumes.get(name)
+            if 404 == code:
+                check_names.remove(name)
+        if not check_names:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f"Failed to delete unbound lhbackupvolumes: {check_names}\n"
+            f"Last API Status({code}): {data}"
+            )
+
     # restore to original backup-target and remove backups not belong to it
     code, data = api_client.settings.update('backup-target', origin_spec)
     code, data = api_client.backups.get()
