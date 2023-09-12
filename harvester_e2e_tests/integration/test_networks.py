@@ -142,7 +142,6 @@ def delete_vm(api_client, unique_name, wait_timeout):
 class TestBackendNetwork:
 
     @pytest.mark.p0
-    @pytest.mark.dependency(name="mgmt_network_connection")
     def test_mgmt_network_connection(self, api_client, request, client, image_opensuse,
                                      unique_name, wait_timeout):
         """
@@ -330,8 +329,8 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
-    # @pytest.mark.dependency(name="reboot_vlan_connection",
-    #                         depends=["vlan_network_connection"])
+    @pytest.mark.dependency(name="reboot_vlan_connection",
+                            depends=["vlan_network_connection"])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
                                     image_opensuse, vlan_network, wait_timeout):
         """
@@ -471,7 +470,6 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
-    @pytest.mark.dependency(name="mgmt_vlan_connection")
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vlan_network, wait_timeout):
         """
@@ -610,7 +608,6 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
-    @pytest.mark.dependency(name="vlan_mgmt_connection")
     def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vlan_network, wait_timeout):
         """
@@ -780,7 +777,6 @@ class TestBackendNetwork:
                         restart_ssh, wait_timeout)
 
     @pytest.mark.p0
-    @pytest.mark.dependency(name="delete_vlan_connection")
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
                                        image_opensuse, vlan_network, wait_timeout):
         """
