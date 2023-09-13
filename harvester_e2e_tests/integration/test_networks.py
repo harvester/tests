@@ -261,7 +261,7 @@ class TestBackendNetwork:
 
         Steps:
         1. Create an external VLAN network
-        2. Create a new VM and add the external vlan network
+        2. Create a new VM and set the external vlan network to it
         3. Check can ping external VLAN IP from external host
         4. Check can SSH to VM from external IP from external host
         """
@@ -517,7 +517,9 @@ class TestBackendNetwork:
         # Switch to vlan network
         spec.mgmt_network = False
 
-        spec.add_network(vlan_name, "default/" + vlan_network['id'])
+        # spec.add_network(vlan_name, "default/" + vlan_network['id'])
+
+        spec.add_network("nic-1", "default/" + vlan_network['id'])
 
         # Update VM spec
         code, data = api_client.vms.update(unique_name, spec)
@@ -537,8 +539,10 @@ class TestBackendNetwork:
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
-        for interface in interfaces_data:
-            ip_addresses = interface['ipAddresses']
+
+        assert 1 == len(interfaces_data), (
+            f"Failed: get more than one interface: {interfaces_data}"
+        )
 
         # Check VM start in running state
         check_vm_running(api_client, unique_name, wait_timeout)
@@ -574,7 +578,7 @@ class TestBackendNetwork:
                         ip_addresses.append(interface['ipAddress'])
 
                 if len(ip_addresses) > 0:
-                    if vlan_name in interface['name']:
+                    if 'nic-1' in interface['name']:
                         break
             sleep(5)
         else:
