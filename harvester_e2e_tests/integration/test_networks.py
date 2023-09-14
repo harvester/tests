@@ -25,7 +25,6 @@ cloud_user_data = \
     """
 password: {password}\nchpasswd: {{ expire: False }}\nssh_pwauth: True
 """
-vlan_name = "external-vlan"
 
 
 @pytest.fixture(scope="session")
@@ -229,15 +228,15 @@ class TestBackendNetwork:
 
         # Check should not SSH to management ip address from external host
         command = ['/usr/bin/ssh', '-o', 'ConnectTimeout=5', mgmt_ip]
-        try:
-            result = subprocess.check_output(
-                command, stderr=subprocess.STDOUT, shell=False, encoding="utf-8")
-        except subprocess.CalledProcessError as e:
-            result = e.output
 
-        assert "connect to host {0} port 22: No route to host".format(mgmt_ip) in result, (
+        with pytest.raises(subprocess.CalledProcessError) as ex:
+            subprocess.check_output(command, stderr=subprocess.STDOUT,
+                                    shell=False, encoding="utf-8")
+
+        assert f"connect to host {mgmt_ip} port 22: No route to host" in ex.value.output, (
             f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
-            f"on management interface from Harvester node")
+            f"on management interface from Harvester node"
+        )
 
         # cleanup VM
         delete_vm(api_client, unique_name, wait_timeout)
@@ -517,8 +516,6 @@ class TestBackendNetwork:
         # Switch to vlan network
         spec.mgmt_network = False
 
-        # spec.add_network(vlan_name, "default/" + vlan_network['id'])
-
         spec.add_network("nic-1", "default/" + vlan_network['id'])
 
         # Update VM spec
@@ -543,25 +540,6 @@ class TestBackendNetwork:
         assert 1 == len(interfaces_data), (
             f"Failed: get more than one interface: {interfaces_data}"
         )
-
-        # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
-
-        # Check until VM ip address exists
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_name)
-            assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
-            if 'ipAddress' in data['status']['interfaces'][0]:
-                break
-
-            sleep(5)
-        else:
-            raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
-                f"Still got {code} with {data}"
-            )
 
         # Determine by vlan network Name
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
@@ -679,37 +657,10 @@ class TestBackendNetwork:
         assert 204 == code, (f"Failed to restart specific vm: {code}, {data}")
 
         # Check VM start in running state
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-        while endtime > datetime.now():
-            code, data = api_client.vms.get(unique_name)
-            vm_fields = data['metadata']['fields']
-
-            assert 200 == code, (code, data)
-            if vm_fields[2] == 'Running':
-                break
-            sleep(5)
-        else:
-            raise AssertionError(
-                f"Failed to create VM {unique_name} in Running status, exceed given timeout\n"
-                f"Still got {code} with {data}"
-            )
+        check_vm_running(api_client, unique_name, wait_timeout)
 
         # Check until VM ip address exists
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_name)
-            assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
-            if 'ipAddress' in data['status']['interfaces'][0]:
-                break
-
-            sleep(5)
-        else:
-            raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
-                f"Still got {code} with {data}"
-            )
+        check_vm_ip_exists(api_client, unique_name, wait_timeout)
 
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         ip_addresses = []
@@ -723,7 +674,7 @@ class TestBackendNetwork:
                 if 'ipAddress' in data['status']['interfaces'][0]:
                     ip_addresses.append(interfaces_data[0]['ipAddress'])
 
-                    if '10.52' in ip_addresses[0]:
+                    if 'default' in interfaces_data[0]['name']:
                         break
                 sleep(5)
         else:
@@ -759,15 +710,15 @@ class TestBackendNetwork:
 
         # Check should not SSH to management ip address from external host
         command = ['/usr/bin/ssh', '-o', 'ConnectTimeout=5', mgmt_ip]
-        try:
-            result = subprocess.check_output(
-                command, stderr=subprocess.STDOUT, shell=False, encoding="utf-8")
-        except subprocess.CalledProcessError as e:
-            result = e.output
 
-        assert "connect to host {0} port 22: No route to host".format(mgmt_ip) in result, (
+        with pytest.raises(subprocess.CalledProcessError) as ex:
+            subprocess.check_output(command, stderr=subprocess.STDOUT,
+                                    shell=False, encoding="utf-8")
+
+        assert f"connect to host {mgmt_ip} port 22: No route to host" in ex.value.output, (
             f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
-            f"on management interface from Harvester node")
+            f"on management interface from Harvester node"
+        )
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -842,37 +793,10 @@ class TestBackendNetwork:
         assert 204 == code, (f"Failed to restart specific vm: {code}, {data}")
 
         # Check VM start in running state
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-        while endtime > datetime.now():
-            code, data = api_client.vms.get(unique_name)
-            vm_fields = data['metadata']['fields']
-
-            assert 200 == code, (code, data)
-            if vm_fields[2] == 'Running':
-                break
-            sleep(5)
-        else:
-            raise AssertionError(
-                f"Failed to create VM {unique_name} in Running status, exceed given timeout\n"
-                f"Still got {code} with {data}"
-            )
+        check_vm_running(api_client, unique_name, wait_timeout)
 
         # Check until VM ip address exists
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_name)
-            assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
-            if 'ipAddress' in data['status']['interfaces'][0]:
-                break
-
-            sleep(5)
-        else:
-            raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
-                f"Still got {code} with {data}"
-            )
+        check_vm_ip_exists(api_client, unique_name, wait_timeout)
 
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         ip_addresses = []
@@ -889,7 +813,7 @@ class TestBackendNetwork:
                 if len(interfaces) == 1 and 'ipAddress' in interfaces[0]:
                     ip_addresses.append(interfaces_data[0]['ipAddress'])
 
-                    if '10.52' in ip_addresses[0]:
+                    if 'default' in interfaces_data[0]['name']:
                         break
             sleep(5)
         else:
@@ -912,17 +836,17 @@ class TestBackendNetwork:
             f"Failed to ping VM management IP {mgmt_ip} "
             f"on management interface from Harvester node: {code}, {data}")
 
-        # Check should not SSH to management ip address from external host
+        # #Check should not SSH to management ip address from external host
         command = ['/usr/bin/ssh', '-o', 'ConnectTimeout=5', mgmt_ip]
-        try:
-            result = subprocess.check_output(
-                command, stderr=subprocess.STDOUT, shell=False, encoding="utf-8")
-        except subprocess.CalledProcessError as e:
-            result = e.output
 
-        assert "connect to host {0} port 22: No route to host".format(mgmt_ip) in result, (
+        with pytest.raises(subprocess.CalledProcessError) as ex:
+            subprocess.check_output(command, stderr=subprocess.STDOUT,
+                                    shell=False, encoding="utf-8")
+
+        assert f"connect to host {mgmt_ip} port 22: No route to host" in ex.value.output, (
             f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
-            f"on management interface from Harvester node")
+            f"on management interface from Harvester node"
+        )
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
