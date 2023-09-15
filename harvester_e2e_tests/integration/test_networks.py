@@ -26,6 +26,21 @@ cloud_user_data = \
 password: {password}\nchpasswd: {{ expire: False }}\nssh_pwauth: True
 """
 
+cloud_network_data = \
+    """
+network:
+  version: 1
+  config:
+    - type: physical
+      name: eth0
+      subnets:
+        - type: dhcp
+    - type: physical
+      name: eth1
+      subnets:
+        - type: dhcp
+"""
+
 
 @pytest.fixture(scope="session")
 def client():
@@ -760,6 +775,10 @@ class TestBackendNetwork:
 
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
+
+        # Add network data to trigger DHCP on multiple NICs
+        spec.network_data += cloud_network_data
+
         unique_name = unique_name + "-delete-vlan"
 
         # Add image
@@ -775,8 +794,23 @@ class TestBackendNetwork:
         # Check VM start in running state
         check_vm_running(api_client, unique_name, wait_timeout)
 
-        # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        # Check have 2 NICs and wait until all ip address exists
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(unique_name)
+            assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
+            if len(data['status']['interfaces']) == 2:
+                if 'ipAddress' in data['status']['interfaces'][0]:
+                    if 'ipAddress' in data['status']['interfaces'][1]:
+                        break
+                sleep(5)
+
+        else:
+            raise AssertionError(
+                f"Failed to get multiple IPs on VM: {unique_name}, exceed the given timed out\n"
+                f"Still got {code} with {data}"
+            )
 
         # get data from running VM and transfer to spec
         code, data = api_client.vms.get(unique_name)
