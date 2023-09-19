@@ -678,19 +678,20 @@ class TestBackendNetwork:
         check_vm_ip_exists(api_client, unique_name, wait_timeout)
 
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        ip_addresses = []
 
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_name)
             assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
+
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
                 if 'ipAddress' in data['status']['interfaces'][0]:
-                    ip_addresses.append(interfaces_data[0]['ipAddress'])
 
                     if 'default' in interfaces_data[0]['name']:
-                        break
+                        if 'domain, guest-agent' not in interfaces_data[0]['infoSource']:
+                            ip_addresses.append(interfaces_data[0]['ipAddress'])
+                            break
                 sleep(5)
         else:
             raise AssertionError(
