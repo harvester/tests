@@ -320,6 +320,34 @@ class TestBackupRestore:
             )
 
     @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
+    def test_update_backup_by_yaml(
+        self, api_client, wait_timeout, backup_config, base_vm_with_data
+    ):
+        backup_name = base_vm_with_data['name']
+        # Get backup as yaml
+        req_yaml = dict(Accept='application/yaml')
+        resp = api_client.backups.get(backup_name, headers=req_yaml, raw=True)
+        assert 200 == resp.status_code, (resp.status_code, resp.text)
+
+        # update annotation
+        yaml_header = {'Content-Type': 'application/yaml'}
+        customized_annotations = {'test.harvesterhci.io': 'for-test-update'}
+        data = yaml.safe_load(resp.text)
+        data['metadata']['annotations'].update(customized_annotations)
+        yaml_data = yaml.safe_dump(data)
+        code, data = api_client.backups.update(backup_name, yaml_data,
+                                               as_json=False, headers=yaml_header)
+        assert 200 == code, (code, data)
+
+        # Verify annotation updated
+        code, data = api_client.backups.get(backup_name)
+        all_updated = all(
+            True for key, val in data['metadata']['annotations'].items()
+            if customized_annotations.get(key, "") == val
+        )
+        assert all_updated, f"Failed to update annotations: {customized_annotations!r}"
+
+    @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
     def test_restore_with_new_vm(
         self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout,
         backup_config, base_vm_with_data
@@ -337,7 +365,7 @@ class TestBackupRestore:
             sh.exec_command('sync')
 
         # Restore VM into new
-        restored_vm_name = f"nfs-restore-{unique_vm_name}"
+        restored_vm_name = f"{backup_config[0]}.lower()-restore-{unique_vm_name}"
         spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, (code, data)
