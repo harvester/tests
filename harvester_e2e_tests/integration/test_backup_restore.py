@@ -365,7 +365,7 @@ class TestBackupRestore:
             sh.exec_command('sync')
 
         # Restore VM into new
-        restored_vm_name = f"{backup_config[0]}.lower()-restore-{unique_vm_name}"
+        restored_vm_name = f"{backup_config[0].lower()}-restore-{unique_vm_name}"
         spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, (code, data)
