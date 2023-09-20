@@ -93,8 +93,14 @@ def vm_shell_from_host(vm_shell, host_shell, wait_timeout):
 
 
 @pytest.fixture(scope="session")
-def vm_checker(api_client, wait_timeout):
+def vm_checker(request, api_client, wait_timeout):
     def _cb(code, data):
+        ''' identity callback function for adjust checking condition.
+
+        :rtype: boolean
+        :return: True when hit the additional check
+        '''
+
         return True
 
     class VMChecker:
@@ -114,7 +120,7 @@ def vm_checker(api_client, wait_timeout):
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
                 code, data = self.vms.get_status(vm_name)
-                if 404 == code and _cb(code, data):
+                if 404 == code and callback(code, data):
                     break
                 sleep(self.snooze)
             else:
@@ -140,7 +146,7 @@ def vm_checker(api_client, wait_timeout):
                 if (
                     200 == code
                     and "Running" == data.get('status', {}).get('phase')
-                    and _cb(code, data)
+                    and callback(code, data)
                 ):
                     break
                 sleep(self.snooze)
@@ -149,28 +155,28 @@ def vm_checker(api_client, wait_timeout):
             return True, (code, data)
 
         def wait_agent_connected(self, vm_name, endtime=None, callback=_cb, **kws):
-            def cb_(code, data):
+            def cb(code, data):
                 conds = data.get('status', {}).get('conditions', [{}])
                 return (
                     "AgentConnected" == conds[-1].get('type')
-                    and _cb(code, data)
+                    and callback(code, data)
                 )
 
-            return self.wait_started(vm_name, endtime, cb_, **kws)
+            return self.wait_started(vm_name, endtime, cb, **kws)
 
         def wait_interfaces(self, vm_name, endtime=None, callback=_cb, **kws):
-            def cb_(code, data):
+            def cb(code, data):
                 return (
                     data.get('status', {}).get('interfaces')
-                    and _cb(code, data)
+                    and callback(code, data)
                 )
-            return self.wait_agent_connected(vm_name, endtime, callback, **kws)
+            return self.wait_agent_connected(vm_name, endtime, cb, **kws)
 
         def wait_cloudinit_done(self, shell, endtime=None, callback=_cb, **kws):
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
                 out, err = shell.exec_command('cloud-init status')
-                if 'done' in out and _cb(out, err):
+                if 'done' in out and callback(out, err):
                     break
                 sleep(self.snooze)
             else:
@@ -186,11 +192,15 @@ def vm_checker(api_client, wait_timeout):
             while endtime > datetime.now():
                 code, data = self.vms.get_status(vm_name)
                 migrating = data['metadata']['annotations'].get("harvesterhci.io/migrationState")
-                if not migrating and new_host == data['status']['nodeName'] and _cb(code, data):
+                if (
+                    not migrating and new_host == data['status']['nodeName']
+                    and callback(code, data)
+                ):
                     break
                 sleep(self.snooze)
             else:
                 return False, (code, data)
             return True, (code, data)
 
-    return VMChecker(api_client.vms, wait_timeout)
+    return VMChecker(api_client.vms, wait_timeout,
+                     request.config.getoption("--sleep-timeout") or 3)
