@@ -93,8 +93,24 @@ def vm_shell_from_host(vm_shell, host_shell, wait_timeout):
 
 
 @pytest.fixture(scope="session")
-def vm_checker(request, api_client, wait_timeout):
-    def _cb(code, data):
+def vm_checker(request, api_client, wait_timeout, sleep_timeout):
+    from dataclasses import dataclass, field
+
+    @dataclass
+    class ResponseContext:
+        callee: str
+        code: int
+        data: dict
+        options: dict = field(default_factory=dict, compare=False)
+
+    @dataclass
+    class ShellContext:
+        command: str
+        stdout: str
+        stderr: str
+        options: dict = field(default_factory=dict, compare=False)
+
+    def default_cb(ctx):
         ''' identity callback function for adjust checking condition.
 
         :rtype: boolean
@@ -112,95 +128,153 @@ def vm_checker(request, api_client, wait_timeout):
         def _endtime(self):
             return datetime.now() + timedelta(seconds=self.wait_timeout)
 
-        def wait_stopped(self, vm_name, endtime=None, callback=_cb, **kws):
-            code, data = self.vms.stop(vm_name)
-            if 204 != code:
-                return False, (code, data)
+        @contextmanager
+        def configure(self, snooze=None, wait_timeout=None):
+            s, t = self.snooze, self.wait_timeout
+            try:
+                self.snooze, self.wait_timeout = snooze or s, wait_timeout or t
+                yield self
+            finally:
+                self.snooze, self.wait_timeout = s, t
+
+        def wait_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext('vm.stop', *self.vms.stop(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, (ctx.code, ctx.data)
 
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
-                code, data = self.vms.get_status(vm_name)
-                if 404 == code and callback(code, data):
+                ctx = ResponseContext('get_status', *self.vms.get_status(vm_name, **kws))
+                if 404 == ctx.code and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, (ctx.code, ctx.data)
+            return True, (ctx.code, ctx.data)
 
-        def wait_deleted(self, vm_name, endtime=None, callback=_cb, **kws):
-            self.vms.delete(vm_name)
+        def wait_status_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == 'vm.stop':
+                    return callback(ctx)
+                ctx.code, ctx.data = self.vms.get(vm_name, **kws)
+                ctx.callee = 'vm.get'
+                return (
+                    200 == ctx.code
+                    and "Stopped" == ctx.data.get('status', {}).get('printableStatus')
+                    and callback(ctx)
+                )
+            return self.wait_stopped(vm_name, endtime, cb, **kws)
+
+        def wait_deleted(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext('vm.delete', *self.vms.delete(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, (ctx.code, ctx.data)
+
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
-                code, data = api_client.vms.get_status(vm_name)
-                if 404 == code:
+                ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws))
+                if 404 == ctx.code and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, (ctx.code, ctx.data)
+            return True, (ctx.code, ctx.data)
 
-        def wait_started(self, vm_name, endtime=None, callback=_cb, **kws):
+        def wait_restarted(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, (ctx.code, ctx.data)
+
+            options = dict(old_pods=set(ctx.data['status']['activePods'].items()))
+            ctx = ResponseContext('vm.restart', *self.vms.restart(vm_name, **kws), options)
+            if 204 != ctx.code and callback(ctx):
+                return False, (ctx.code, ctx.data)
+
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
-                code, data = self.vms.get_status(vm_name, **kws)
+                ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws),
+                                      ctx.options)
+                old_pods = ctx.options['old_pods']
+                cur_pods = ctx.data['status'].get('activePods', {}).items()
+                if old_pods.difference(cur_pods or old_pods) and callback(ctx):
+                    break
+                sleep(self.snooze)
+            else:
+                return False, (ctx.code, ctx.data)
+            return self.wait_started(vm_name, endtime, callback, **kws)
+
+        def wait_started(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext('vm.start', *self.vms.start(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, (ctx.code, ctx.data)
+
+            endtime = endtime or self._endtime()
+            while endtime > datetime.now():
+                ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws))
                 if (
-                    200 == code
-                    and "Running" == data.get('status', {}).get('phase')
-                    and callback(code, data)
+                    200 == ctx.code
+                    and "Running" == ctx.data.get('status', {}).get('phase')
+                    and callback(ctx)
                 ):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, (ctx.code, ctx.data)
+            return True, (ctx.code, ctx.data)
 
-        def wait_agent_connected(self, vm_name, endtime=None, callback=_cb, **kws):
-            def cb(code, data):
-                conds = data.get('status', {}).get('conditions', [{}])
+        def wait_agent_connected(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == 'vm.start':
+                    return callback(ctx)
+
+                conds = ctx.data.get('status', {}).get('conditions', [{}])
                 return (
                     "AgentConnected" == conds[-1].get('type')
-                    and callback(code, data)
+                    and callback(ctx)
                 )
 
             return self.wait_started(vm_name, endtime, cb, **kws)
 
-        def wait_interfaces(self, vm_name, endtime=None, callback=_cb, **kws):
-            def cb(code, data):
+        def wait_interfaces(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == 'vm.start':
+                    return callback(ctx)
+
                 return (
-                    data.get('status', {}).get('interfaces')
-                    and callback(code, data)
+                    ctx.data.get('status', {}).get('interfaces')
+                    and callback(ctx)
                 )
             return self.wait_agent_connected(vm_name, endtime, cb, **kws)
 
-        def wait_cloudinit_done(self, shell, endtime=None, callback=_cb, **kws):
+        def wait_cloudinit_done(self, shell, endtime=None, callback=default_cb, **kws):
+            cmd = 'cloud-init status'
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
-                out, err = shell.exec_command('cloud-init status')
-                if 'done' in out and callback(out, err):
+                ctx = ShellContext(cmd, *shell.exec_command(cmd))
+                if 'done' in ctx.stdout and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (out, err)
-            return True, (out, err)
+                return False, (ctx.stdout, ctx.stderr)
+            return True, (ctx.stdout, ctx.stderr)
 
-        def wait_migrated(self, vm_name, new_host, endtime=None, callback=_cb, **kws):
-            code, data = self.vms.migrate(vm_name, new_host)
-            if 204 != code:
-                return False, (code, data)
+        def wait_migrated(self, vm_name, new_host, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext('vm.migrate', *self.vms.migrate(vm_name, new_host, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, (ctx.code, ctx.data)
 
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
-                code, data = self.vms.get_status(vm_name)
-                migrating = data['metadata']['annotations'].get("harvesterhci.io/migrationState")
+                ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws))
                 if (
-                    not migrating and new_host == data['status']['nodeName']
-                    and callback(code, data)
+                    not ctx.data['metadata']['annotations'].get("harvesterhci.io/migrationState")
+                    and new_host == ctx.data['status']['nodeName']
+                    and callback(ctx)
                 ):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, (ctx.code, ctx.data)
+            return True, (ctx.code, ctx.data)
 
-    return VMChecker(api_client.vms, wait_timeout,
-                     request.config.getoption("--sleep-timeout") or 3)
+    return VMChecker(api_client.vms, wait_timeout, sleep_timeout)
