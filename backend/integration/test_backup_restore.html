@@ -181,9 +181,7 @@ def config_backup_target(api_client, conflict_retries, backup_config, wait_timeo
 
 
 @pytest.fixture(scope=&#34;class&#34;)
-def base_vm_with_data(
-    api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image, backup_config
-):
+def base_vm(api_client, ssh_keypair, unique_name, vm_checker, image, backup_config):
     unique_vm_name = f&#34;{datetime.now().strftime(&#39;%m%S%f&#39;)}-{unique_name}&#34;
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
@@ -199,63 +197,93 @@ def base_vm_with_data(
     code, data = api_client.vms.create(unique_vm_name, vm_spec)
 
     # Check VM started and get IPs (vm and host)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 200 == code:
-            phase = data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
-            conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
-            if (&#34;Running&#34; == phase
-               and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;)
-               and data[&#39;status&#39;].get(&#39;interfaces&#39;)):
-                break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
-            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
-            f&#34;API Status({code}): {data}&#34;
-        )
+    vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
     vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
                  if iface[&#39;name&#39;] == &#39;default&#39;)
     code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
     host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
                    if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    yield {
+        &#34;name&#34;: unique_vm_name,
+        &#34;host_ip&#34;: host_ip,
+        &#34;vm_ip&#34;: vm_ip,
+        &#34;ssh_user&#34;: image[&#39;user&#39;],
+    }
+
+    # remove created VM
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_deleted, (code, data) = vm_checker.wait_deleted(unique_vm_name)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def base_vm_migrated(api_client, vm_checker, backup_config, base_vm):
+    unique_vm_name = base_vm[&#39;name&#39;]
+
+    code, host_data = api_client.hosts.get()
+    assert 200 == code, (code, host_data)
+    code, data = api_client.vms.get_status(unique_vm_name)
+    cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+    assert cur_host, (
+        f&#34;VMI exists but `nodeName` is empty.\n&#34;
+        f&#34;{data}&#34;
+    )
+
+    new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;]
+                    if cur_host != h[&#39;id&#39;] and not h[&#39;spec&#39;].get(&#39;taint&#39;))
+
+    vm_migrated, (code, data) = vm_checker.wait_migrated(unique_vm_name, new_host)
+    assert vm_migrated, (
+        f&#34;Failed to Migrate VM({unique_vm_name}) from {cur_host} to {new_host}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # update for new IPs
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    base_vm[&#39;vm_ip&#39;] = vm_ip
+    base_vm[&#39;host_ip&#39;] = host_ip
+
+    return (cur_host, new_host)
+
+
+@pytest.fixture(scope=&#34;class&#34;)
+def base_vm_with_data(
+    api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker, backup_config, base_vm
+):
+    pub_key, pri_key = ssh_keypair
+    unique_vm_name = base_vm[&#39;name&#39;]
 
     # Log into VM to make some data
-    with host_shell.login(host_ip, jumphost=True) as h:
-        vm_sh = vm_shell(image[&#39;user&#39;], pkey=pri_key)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            try:
-                vm_sh.connect(vm_ip, jumphost=h.client)
-            except ChannelException as e:
-                login_ex = e
-                sleep(3)
-            else:
-                break
-        else:
-            raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
-
-        with vm_sh as sh:
-            endtime = datetime.now() + timedelta(seconds=wait_timeout)
-            while endtime &gt; datetime.now():
-                out, err = sh.exec_command(&#39;cloud-init status&#39;)
-                if &#39;done&#39; in out:
-                    break
-                sleep(3)
-            else:
-                raise AssertionError(
-                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
-                    f&#34;, but cloud-init still in {out}&#34;
-                )
-            out, err = sh.exec_command(f&#39;echo {unique_vm_name!r} &gt; ~/vmname&#39;)
-            assert not err, (out, err)
-            sh.exec_command(&#39;sync&#39;)
+    with vm_shell_from_host(
+        base_vm[&#39;host_ip&#39;], base_vm[&#39;vm_ip&#39;], base_vm[&#39;ssh_user&#39;], pkey=pri_key
+    ) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (
+            f&#34;VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds&#34;
+            f&#34;, but cloud-init still in {out}&#34;
+        )
+        out, err = sh.exec_command(f&#39;echo {unique_vm_name!r} &gt; ~/vmname&#39;)
+        assert not err, (out, err)
+        sh.exec_command(&#39;sync&#39;)
 
     yield {
         &#34;name&#34;: unique_vm_name,
-        &#34;ssh_user&#34;: image[&#39;user&#39;],
+        &#34;host_ip&#34;: base_vm[&#39;host_ip&#39;],
+        &#34;vm_ip&#34;: base_vm[&#39;vm_ip&#39;],
+        &#34;ssh_user&#34;: base_vm[&#39;ssh_user&#39;],
         &#34;data&#34;: dict(path=&#34;~/vmname&#34;, content=f&#39;{unique_vm_name}&#39;)
     }
 
@@ -283,22 +311,6 @@ def base_vm_with_data(
             f&#34;Failed to delete backups: {check_names}\n&#34;
             f&#34;Last API Status({code}): {data}&#34;
             )
-
-    # remove created VM
-    code, data = api_client.vms.get(unique_vm_name)
-    vm_spec = api_client.vms.Spec.from_dict(data)
-
-    api_client.vms.delete(unique_vm_name)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 404 == code:
-            break
-        sleep(3)
-
-    for vol in vm_spec.volumes:
-        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
-        api_client.volumes.delete(vol_name)
 
 
 @pytest.mark.p0
@@ -336,14 +348,52 @@ class TestBackupRestore:
             )
 
     @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+    def test_update_backup_by_yaml(
+        self, api_client, wait_timeout, backup_config, base_vm_with_data
+    ):
+        backup_name = base_vm_with_data[&#39;name&#39;]
+        # Get backup as yaml
+        req_yaml = dict(Accept=&#39;application/yaml&#39;)
+        resp = api_client.backups.get(backup_name, headers=req_yaml, raw=True)
+        assert 200 == resp.status_code, (resp.status_code, resp.text)
+
+        # update annotation
+        yaml_header = {&#39;Content-Type&#39;: &#39;application/yaml&#39;}
+        customized_annotations = {&#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;}
+        data = yaml.safe_load(resp.text)
+        data[&#39;metadata&#39;][&#39;annotations&#39;].update(customized_annotations)
+        yaml_data = yaml.safe_dump(data)
+        code, data = api_client.backups.update(backup_name, yaml_data,
+                                               as_json=False, headers=yaml_header)
+        assert 200 == code, (code, data)
+
+        # Verify annotation updated
+        code, data = api_client.backups.get(backup_name)
+        all_updated = all(
+            True for key, val in data[&#39;metadata&#39;][&#39;annotations&#39;].items()
+            if customized_annotations.get(key, &#34;&#34;) == val
+        )
+        assert all_updated, f&#34;Failed to update annotations: {customized_annotations!r}&#34;
+
+    @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
     def test_restore_with_new_vm(
-        self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+        self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout,
         backup_config, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
 
-        restored_vm_name = f&#34;nfs-restore-{unique_vm_name}&#34;
+        # mess up the existing data
+        with vm_shell_from_host(
+            base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+            base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+        ) as sh:
+            out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+            assert not err, (out, err)
+            sh.exec_command(&#39;sync&#39;)
+
+        # Restore VM into new
+        restored_vm_name = f&#34;{backup_config[0].lower()}-restore-{unique_vm_name}&#34;
         spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, (code, data)
@@ -373,39 +423,26 @@ class TestBackupRestore:
                        if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
 
         # Login to the new VM and check data is existing
-        with host_shell.login(host_ip, jumphost=True) as h:
-            vm_sh = vm_shell(base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key)
+        with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
             endtime = datetime.now() + timedelta(seconds=wait_timeout)
             while endtime &gt; datetime.now():
-                try:
-                    vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
-                    login_ex = e
-                    sleep(3)
-                else:
+                out, err = sh.exec_command(&#39;cloud-init status&#39;)
+                if &#39;done&#39; in out:
                     break
+                sleep(3)
             else:
-                raise AssertionError(f&#34;Unable to login to VM {restored_vm_name}&#34;) from login_ex
+                raise AssertionError(
+                    f&#34;VM {restored_vm_name} Started {wait_timeout} seconds&#34;
+                    f&#34;, but cloud-init still in {out}&#34;
+                )
 
-            with vm_sh as sh:
-                endtime = datetime.now() + timedelta(seconds=wait_timeout)
-                while endtime &gt; datetime.now():
-                    out, err = sh.exec_command(&#39;cloud-init status&#39;)
-                    if &#39;done&#39; in out:
-                        break
-                    sleep(3)
-                else:
-                    raise AssertionError(
-                        f&#34;VM {restored_vm_name} Started {wait_timeout} seconds&#34;
-                        f&#34;, but cloud-init still in {out}&#34;
-                    )
+            out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
 
-                out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
-            assert backup_data[&#39;content&#39;] in out, (
-                f&#34;cloud-init writefile failed\n&#34;
-                f&#34;Executed stdout: {out}\n&#34;
-                f&#34;Executed stderr: {err}&#34;
-            )
+        assert backup_data[&#39;content&#39;] in out, (
+            f&#34;cloud-init writefile failed\n&#34;
+            f&#34;Executed stdout: {out}\n&#34;
+            f&#34;Executed stderr: {err}&#34;
+        )
 
         # teardown: delete restored vm and volumes
         code, data = api_client.vms.get(restored_vm_name)
@@ -427,50 +464,40 @@ class TestBackupRestore:
             api_client.volumes.delete(vol_name)
 
     @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
-    def test_restore_replace_and_delete_vols(
-        self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+    def test_restore_replace_with_delete_vols(
+        self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker,
         backup_config, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
 
-        # Stop the VM
-        code, data = api_client.vms.stop(unique_vm_name)
-        assert 204 == code, &#34;`Stop` return unexpected status code&#34;
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 404 == code:
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
-                f&#34;Status({code}): {data}&#34;
-            )
+        # mess up the existing data
+        with vm_shell_from_host(
+            base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+            base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+        ) as sh:
+            out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+            assert not err, (out, err)
+            sh.exec_command(&#39;sync&#39;)
+
+        # Stop the VM then restore existing
+        vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+        assert vm_stopped, (
+            f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
 
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, f&#39;Failed to restore backup with current VM replaced, {data}&#39;
 
         # Check VM Started then get IPs (vm and host)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
-                conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
-                if (&#34;Running&#34; == phase
-                   and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;)
-                   and data[&#39;status&#39;].get(&#39;interfaces&#39;)):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
-                f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
-                f&#34;API Status({code}): {data}&#34;
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        assert vm_got_ips, (
+            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
         vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
                      if iface[&#39;name&#39;] == &#39;default&#39;)
         code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
@@ -478,39 +505,131 @@ class TestBackupRestore:
                        if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
 
         # Login to the new VM and check data is existing
-        with host_shell.login(host_ip, jumphost=True) as h:
-            vm_sh = vm_shell(base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key)
-            endtime = datetime.now() + timedelta(seconds=wait_timeout)
-            while endtime &gt; datetime.now():
-                try:
-                    vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
-                    login_ex = e
-                    sleep(3)
-                else:
-                    break
-            else:
-                raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
-
-            with vm_sh as sh:
-                endtime = datetime.now() + timedelta(seconds=wait_timeout)
-                while endtime &gt; datetime.now():
-                    out, err = sh.exec_command(&#39;cloud-init status&#39;)
-                    if &#39;done&#39; in out:
-                        break
-                    sleep(3)
-                else:
-                    raise AssertionError(
-                        f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
-                        f&#34;, but cloud-init still in {out}&#34;
-                    )
-
-                out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
-            assert backup_data[&#39;content&#39;] in out, (
-                f&#34;cloud-init writefile failed\n&#34;
-                f&#34;Executed stdout: {out}\n&#34;
-                f&#34;Executed stderr: {err}&#34;
+        with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (
+                f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                f&#34;, but cloud-init still in {out}&#34;
             )
+            out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
+
+        assert backup_data[&#39;content&#39;] in out, (
+            f&#34;cloud-init writefile failed\n&#34;
+            f&#34;Executed stdout: {out}\n&#34;
+            f&#34;Executed stderr: {err}&#34;
+        )
+
+    @pytest.mark.negative
+    @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+    def test_restore_replace_vm_not_stop(self, api_client, backup_config, base_vm_with_data):
+        spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
+        code, data = api_client.backups.restore(base_vm_with_data[&#39;name&#39;], spec)
+
+        assert 422 == code, (code, data)
+
+
+@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1473&#34;)
+@pytest.mark.p0
+@pytest.mark.backup_target
+@pytest.mark.parametrize(
+    &#34;backup_config&#34;, [
+        pytest.param(&#34;S3&#34;, marks=pytest.mark.S3),
+        pytest.param(&#34;NFS&#34;, marks=pytest.mark.NFS)
+    ],
+    indirect=True
+)
+class TestBackupRestoreOnMigration:
+    @pytest.mark.dependency(param=True)
+    def test_backup_migrated_vm(
+        self, api_client, wait_timeout, backup_config, config_backup_target,
+        base_vm_migrated, base_vm_with_data
+    ):
+        unique_vm_name = base_vm_with_data[&#39;name&#39;]
+
+        # Create backup with the name as VM&#39;s name
+        code, data = api_client.vms.backup(unique_vm_name, unique_vm_name)
+        assert 204 == code, (code, data)
+        # Check backup is ready
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, backup = api_client.backups.get(unique_vm_name)
+            if 200 == code and backup.get(&#39;status&#39;, {}).get(&#39;readyToUse&#39;):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#39;Timed-out waiting for the backup \&#39;{unique_vm_name}\&#39; to be ready.&#39;
+            )
+
+    @pytest.mark.dependency(
+        depends=[&#34;TestBackupRestoreOnMigration::test_backup_migrated_vm&#34;],
+        param=True
+    )
+    def test_restore_replace_migrated_vm(
+        self, api_client, wait_timeout, ssh_keypair, vm_shell_from_host, vm_checker, backup_config,
+        base_vm_migrated, base_vm_with_data
+    ):
+        unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
+        pub_key, pri_key = ssh_keypair
+
+        # mess up the existing data
+        with vm_shell_from_host(
+            base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+            base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+        ) as sh:
+            out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+            assert not err, (out, err)
+            sh.exec_command(&#39;sync&#39;)
+
+        # Stop the VM then restore existing
+        vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+        assert vm_stopped, (
+            f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+        spec = api_client.backups.RestoreSpec.for_existing()
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 201 == code, f&#39;Failed to restore backup with current VM replaced, {data}&#39;
+
+        # Check VM Started
+        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        assert vm_got_ips, (
+            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        # Check VM is not hosting on the migrated node
+        host = data[&#39;status&#39;][&#39;nodeName&#39;]
+        original_host, migrated_host = base_vm_migrated
+
+        assert host == migrated_host, (
+            f&#34;Restored VM is not hosted on {migrated_host} but {host},&#34;
+            f&#34; the VM was initialized hosted on {original_host}&#34;
+        )
+
+        # Get IP of VM and host
+        vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                     if iface[&#39;name&#39;] == &#39;default&#39;)
+        code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+        host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                       if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+        # Login to the new VM and check data is existing
+        with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (
+                f&#34;VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds&#34;
+                f&#34;, but cloud-init still in {out}&#34;
+            )
+            out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
+
+        assert backup_data[&#39;content&#39;] in out, (
+            f&#34;cloud-init writefile failed\n&#34;
+            f&#34;Executed stdout: {out}\n&#34;
+            f&#34;Executed stderr: {err}&#34;
+        )
 
 
 @pytest.mark.p1
@@ -996,8 +1115,8 @@ def backup_config(request):
     return request.getfixturevalue(f&#34;{request.param}_config&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data"><code class="name flex">
-<span>def <span class="ident">base_vm_with_data</span></span>(<span>api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image, backup_config)</span>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.base_vm"><code class="name flex">
+<span>def <span class="ident">base_vm</span></span>(<span>api_client, ssh_keypair, unique_name, vm_checker, image, backup_config)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1006,9 +1125,7 @@ def backup_config(request):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
-def base_vm_with_data(
-    api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, unique_name, image, backup_config
-):
+def base_vm(api_client, ssh_keypair, unique_name, vm_checker, image, backup_config):
     unique_vm_name = f&#34;{datetime.now().strftime(&#39;%m%S%f&#39;)}-{unique_name}&#34;
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
@@ -1024,63 +1141,111 @@ def base_vm_with_data(
     code, data = api_client.vms.create(unique_vm_name, vm_spec)
 
     # Check VM started and get IPs (vm and host)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 200 == code:
-            phase = data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
-            conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
-            if (&#34;Running&#34; == phase
-               and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;)
-               and data[&#39;status&#39;].get(&#39;interfaces&#39;)):
-                break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
-            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
-            f&#34;API Status({code}): {data}&#34;
-        )
+    vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
     vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
                  if iface[&#39;name&#39;] == &#39;default&#39;)
     code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
     host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
                    if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    yield {
+        &#34;name&#34;: unique_vm_name,
+        &#34;host_ip&#34;: host_ip,
+        &#34;vm_ip&#34;: vm_ip,
+        &#34;ssh_user&#34;: image[&#39;user&#39;],
+    }
+
+    # remove created VM
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_deleted, (code, data) = vm_checker.wait_deleted(unique_vm_name)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.base_vm_migrated"><code class="name flex">
+<span>def <span class="ident">base_vm_migrated</span></span>(<span>api_client, vm_checker, backup_config, base_vm)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def base_vm_migrated(api_client, vm_checker, backup_config, base_vm):
+    unique_vm_name = base_vm[&#39;name&#39;]
+
+    code, host_data = api_client.hosts.get()
+    assert 200 == code, (code, host_data)
+    code, data = api_client.vms.get_status(unique_vm_name)
+    cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+    assert cur_host, (
+        f&#34;VMI exists but `nodeName` is empty.\n&#34;
+        f&#34;{data}&#34;
+    )
+
+    new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;]
+                    if cur_host != h[&#39;id&#39;] and not h[&#39;spec&#39;].get(&#39;taint&#39;))
+
+    vm_migrated, (code, data) = vm_checker.wait_migrated(unique_vm_name, new_host)
+    assert vm_migrated, (
+        f&#34;Failed to Migrate VM({unique_vm_name}) from {cur_host} to {new_host}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # update for new IPs
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    base_vm[&#39;vm_ip&#39;] = vm_ip
+    base_vm[&#39;host_ip&#39;] = host_ip
+
+    return (cur_host, new_host)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data"><code class="name flex">
+<span>def <span class="ident">base_vm_with_data</span></span>(<span>api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker, backup_config, base_vm)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def base_vm_with_data(
+    api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker, backup_config, base_vm
+):
+    pub_key, pri_key = ssh_keypair
+    unique_vm_name = base_vm[&#39;name&#39;]
 
     # Log into VM to make some data
-    with host_shell.login(host_ip, jumphost=True) as h:
-        vm_sh = vm_shell(image[&#39;user&#39;], pkey=pri_key)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            try:
-                vm_sh.connect(vm_ip, jumphost=h.client)
-            except ChannelException as e:
-                login_ex = e
-                sleep(3)
-            else:
-                break
-        else:
-            raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
-
-        with vm_sh as sh:
-            endtime = datetime.now() + timedelta(seconds=wait_timeout)
-            while endtime &gt; datetime.now():
-                out, err = sh.exec_command(&#39;cloud-init status&#39;)
-                if &#39;done&#39; in out:
-                    break
-                sleep(3)
-            else:
-                raise AssertionError(
-                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
-                    f&#34;, but cloud-init still in {out}&#34;
-                )
-            out, err = sh.exec_command(f&#39;echo {unique_vm_name!r} &gt; ~/vmname&#39;)
-            assert not err, (out, err)
-            sh.exec_command(&#39;sync&#39;)
+    with vm_shell_from_host(
+        base_vm[&#39;host_ip&#39;], base_vm[&#39;vm_ip&#39;], base_vm[&#39;ssh_user&#39;], pkey=pri_key
+    ) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (
+            f&#34;VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds&#34;
+            f&#34;, but cloud-init still in {out}&#34;
+        )
+        out, err = sh.exec_command(f&#39;echo {unique_vm_name!r} &gt; ~/vmname&#39;)
+        assert not err, (out, err)
+        sh.exec_command(&#39;sync&#39;)
 
     yield {
         &#34;name&#34;: unique_vm_name,
-        &#34;ssh_user&#34;: image[&#39;user&#39;],
+        &#34;host_ip&#34;: base_vm[&#39;host_ip&#39;],
+        &#34;vm_ip&#34;: base_vm[&#39;vm_ip&#39;],
+        &#34;ssh_user&#34;: base_vm[&#39;ssh_user&#39;],
         &#34;data&#34;: dict(path=&#34;~/vmname&#34;, content=f&#39;{unique_vm_name}&#39;)
     }
 
@@ -1107,23 +1272,7 @@ def base_vm_with_data(
         raise AssertionError(
             f&#34;Failed to delete backups: {check_names}\n&#34;
             f&#34;Last API Status({code}): {data}&#34;
-            )
-
-    # remove created VM
-    code, data = api_client.vms.get(unique_vm_name)
-    vm_spec = api_client.vms.Spec.from_dict(data)
-
-    api_client.vms.delete(unique_vm_name)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 404 == code:
-            break
-        sleep(3)
-
-    for vol in vm_spec.volumes:
-        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
-        api_client.volumes.delete(vol_name)</code></pre>
+            )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.config_backup_target"><code class="name flex">
@@ -1290,14 +1439,52 @@ class TestBackupRestore:
             )
 
     @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+    def test_update_backup_by_yaml(
+        self, api_client, wait_timeout, backup_config, base_vm_with_data
+    ):
+        backup_name = base_vm_with_data[&#39;name&#39;]
+        # Get backup as yaml
+        req_yaml = dict(Accept=&#39;application/yaml&#39;)
+        resp = api_client.backups.get(backup_name, headers=req_yaml, raw=True)
+        assert 200 == resp.status_code, (resp.status_code, resp.text)
+
+        # update annotation
+        yaml_header = {&#39;Content-Type&#39;: &#39;application/yaml&#39;}
+        customized_annotations = {&#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;}
+        data = yaml.safe_load(resp.text)
+        data[&#39;metadata&#39;][&#39;annotations&#39;].update(customized_annotations)
+        yaml_data = yaml.safe_dump(data)
+        code, data = api_client.backups.update(backup_name, yaml_data,
+                                               as_json=False, headers=yaml_header)
+        assert 200 == code, (code, data)
+
+        # Verify annotation updated
+        code, data = api_client.backups.get(backup_name)
+        all_updated = all(
+            True for key, val in data[&#39;metadata&#39;][&#39;annotations&#39;].items()
+            if customized_annotations.get(key, &#34;&#34;) == val
+        )
+        assert all_updated, f&#34;Failed to update annotations: {customized_annotations!r}&#34;
+
+    @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
     def test_restore_with_new_vm(
-        self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+        self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout,
         backup_config, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
 
-        restored_vm_name = f&#34;nfs-restore-{unique_vm_name}&#34;
+        # mess up the existing data
+        with vm_shell_from_host(
+            base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+            base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+        ) as sh:
+            out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+            assert not err, (out, err)
+            sh.exec_command(&#39;sync&#39;)
+
+        # Restore VM into new
+        restored_vm_name = f&#34;{backup_config[0].lower()}-restore-{unique_vm_name}&#34;
         spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, (code, data)
@@ -1327,39 +1514,26 @@ class TestBackupRestore:
                        if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
 
         # Login to the new VM and check data is existing
-        with host_shell.login(host_ip, jumphost=True) as h:
-            vm_sh = vm_shell(base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key)
+        with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
             endtime = datetime.now() + timedelta(seconds=wait_timeout)
             while endtime &gt; datetime.now():
-                try:
-                    vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
-                    login_ex = e
-                    sleep(3)
-                else:
+                out, err = sh.exec_command(&#39;cloud-init status&#39;)
+                if &#39;done&#39; in out:
                     break
+                sleep(3)
             else:
-                raise AssertionError(f&#34;Unable to login to VM {restored_vm_name}&#34;) from login_ex
+                raise AssertionError(
+                    f&#34;VM {restored_vm_name} Started {wait_timeout} seconds&#34;
+                    f&#34;, but cloud-init still in {out}&#34;
+                )
 
-            with vm_sh as sh:
-                endtime = datetime.now() + timedelta(seconds=wait_timeout)
-                while endtime &gt; datetime.now():
-                    out, err = sh.exec_command(&#39;cloud-init status&#39;)
-                    if &#39;done&#39; in out:
-                        break
-                    sleep(3)
-                else:
-                    raise AssertionError(
-                        f&#34;VM {restored_vm_name} Started {wait_timeout} seconds&#34;
-                        f&#34;, but cloud-init still in {out}&#34;
-                    )
+            out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
 
-                out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
-            assert backup_data[&#39;content&#39;] in out, (
-                f&#34;cloud-init writefile failed\n&#34;
-                f&#34;Executed stdout: {out}\n&#34;
-                f&#34;Executed stderr: {err}&#34;
-            )
+        assert backup_data[&#39;content&#39;] in out, (
+            f&#34;cloud-init writefile failed\n&#34;
+            f&#34;Executed stdout: {out}\n&#34;
+            f&#34;Executed stderr: {err}&#34;
+        )
 
         # teardown: delete restored vm and volumes
         code, data = api_client.vms.get(restored_vm_name)
@@ -1381,50 +1555,40 @@ class TestBackupRestore:
             api_client.volumes.delete(vol_name)
 
     @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
-    def test_restore_replace_and_delete_vols(
-        self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+    def test_restore_replace_with_delete_vols(
+        self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker,
         backup_config, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
         pub_key, pri_key = ssh_keypair
 
-        # Stop the VM
-        code, data = api_client.vms.stop(unique_vm_name)
-        assert 204 == code, &#34;`Stop` return unexpected status code&#34;
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 404 == code:
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
-                f&#34;Status({code}): {data}&#34;
-            )
+        # mess up the existing data
+        with vm_shell_from_host(
+            base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+            base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+        ) as sh:
+            out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+            assert not err, (out, err)
+            sh.exec_command(&#39;sync&#39;)
+
+        # Stop the VM then restore existing
+        vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+        assert vm_stopped, (
+            f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
 
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, f&#39;Failed to restore backup with current VM replaced, {data}&#39;
 
         # Check VM Started then get IPs (vm and host)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
-                conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
-                if (&#34;Running&#34; == phase
-                   and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;)
-                   and data[&#39;status&#39;].get(&#39;interfaces&#39;)):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
-                f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
-                f&#34;API Status({code}): {data}&#34;
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        assert vm_got_ips, (
+            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
         vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
                      if iface[&#39;name&#39;] == &#39;default&#39;)
         code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
@@ -1432,39 +1596,27 @@ class TestBackupRestore:
                        if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
 
         # Login to the new VM and check data is existing
-        with host_shell.login(host_ip, jumphost=True) as h:
-            vm_sh = vm_shell(base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key)
-            endtime = datetime.now() + timedelta(seconds=wait_timeout)
-            while endtime &gt; datetime.now():
-                try:
-                    vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
-                    login_ex = e
-                    sleep(3)
-                else:
-                    break
-            else:
-                raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
+        with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (
+                f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                f&#34;, but cloud-init still in {out}&#34;
+            )
+            out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
 
-            with vm_sh as sh:
-                endtime = datetime.now() + timedelta(seconds=wait_timeout)
-                while endtime &gt; datetime.now():
-                    out, err = sh.exec_command(&#39;cloud-init status&#39;)
-                    if &#39;done&#39; in out:
-                        break
-                    sleep(3)
-                else:
-                    raise AssertionError(
-                        f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
-                        f&#34;, but cloud-init still in {out}&#34;
-                    )
+        assert backup_data[&#39;content&#39;] in out, (
+            f&#34;cloud-init writefile failed\n&#34;
+            f&#34;Executed stdout: {out}\n&#34;
+            f&#34;Executed stderr: {err}&#34;
+        )
 
-                out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
-            assert backup_data[&#39;content&#39;] in out, (
-                f&#34;cloud-init writefile failed\n&#34;
-                f&#34;Executed stdout: {out}\n&#34;
-                f&#34;Executed stderr: {err}&#34;
-            )</code></pre>
+    @pytest.mark.negative
+    @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+    def test_restore_replace_vm_not_stop(self, api_client, backup_config, base_vm_with_data):
+        spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
+        code, data = api_client.backups.restore(base_vm_with_data[&#39;name&#39;], spec)
+
+        assert 422 == code, (code, data)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1490,8 +1642,26 @@ def test_connection(self, api_client, backup_config, config_backup_target):
     assert 200 == code, f&#39;Failed to test backup target connection: {data}&#39;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_and_delete_vols"><code class="name flex">
-<span>def <span class="ident">test_restore_replace_and_delete_vols</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, base_vm_with_data)</span>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop"><code class="name flex">
+<span>def <span class="ident">test_restore_replace_vm_not_stop</span></span>(<span>self, api_client, backup_config, base_vm_with_data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.negative
+@pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+def test_restore_replace_vm_not_stop(self, api_client, backup_config, base_vm_with_data):
+    spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
+    code, data = api_client.backups.restore(base_vm_with_data[&#39;name&#39;], spec)
+
+    assert 422 == code, (code, data)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols"><code class="name flex">
+<span>def <span class="ident">test_restore_replace_with_delete_vols</span></span>(<span>self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker, backup_config, base_vm_with_data)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1500,50 +1670,40 @@ def test_connection(self, api_client, backup_config, config_backup_target):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
-def test_restore_replace_and_delete_vols(
-    self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+def test_restore_replace_with_delete_vols(
+    self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker,
     backup_config, base_vm_with_data
 ):
     unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
     pub_key, pri_key = ssh_keypair
 
-    # Stop the VM
-    code, data = api_client.vms.stop(unique_vm_name)
-    assert 204 == code, &#34;`Stop` return unexpected status code&#34;
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 404 == code:
-            break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
-            f&#34;Status({code}): {data}&#34;
-        )
+    # mess up the existing data
+    with vm_shell_from_host(
+        base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+        base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+    ) as sh:
+        out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+        assert not err, (out, err)
+        sh.exec_command(&#39;sync&#39;)
+
+    # Stop the VM then restore existing
+    vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+    assert vm_stopped, (
+        f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status({code}): {data}&#34;
+    )
 
     spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
     code, data = api_client.backups.restore(unique_vm_name, spec)
     assert 201 == code, f&#39;Failed to restore backup with current VM replaced, {data}&#39;
 
     # Check VM Started then get IPs (vm and host)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 200 == code:
-            phase = data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
-            conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
-            if (&#34;Running&#34; == phase
-               and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;)
-               and data[&#39;status&#39;].get(&#39;interfaces&#39;)):
-                break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
-            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
-            f&#34;API Status({code}): {data}&#34;
-        )
+    vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
     vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
                  if iface[&#39;name&#39;] == &#39;default&#39;)
     code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
@@ -1551,43 +1711,23 @@ def test_restore_replace_and_delete_vols(
                    if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
 
     # Login to the new VM and check data is existing
-    with host_shell.login(host_ip, jumphost=True) as h:
-        vm_sh = vm_shell(base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            try:
-                vm_sh.connect(vm_ip, jumphost=h.client)
-            except ChannelException as e:
-                login_ex = e
-                sleep(3)
-            else:
-                break
-        else:
-            raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
+    with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (
+            f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+            f&#34;, but cloud-init still in {out}&#34;
+        )
+        out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
 
-        with vm_sh as sh:
-            endtime = datetime.now() + timedelta(seconds=wait_timeout)
-            while endtime &gt; datetime.now():
-                out, err = sh.exec_command(&#39;cloud-init status&#39;)
-                if &#39;done&#39; in out:
-                    break
-                sleep(3)
-            else:
-                raise AssertionError(
-                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
-                    f&#34;, but cloud-init still in {out}&#34;
-                )
-
-            out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
-        assert backup_data[&#39;content&#39;] in out, (
-            f&#34;cloud-init writefile failed\n&#34;
-            f&#34;Executed stdout: {out}\n&#34;
-            f&#34;Executed stderr: {err}&#34;
-        )</code></pre>
+    assert backup_data[&#39;content&#39;] in out, (
+        f&#34;cloud-init writefile failed\n&#34;
+        f&#34;Executed stdout: {out}\n&#34;
+        f&#34;Executed stderr: {err}&#34;
+    )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm"><code class="name flex">
-<span>def <span class="ident">test_restore_with_new_vm</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, base_vm_with_data)</span>
+<span>def <span class="ident">test_restore_with_new_vm</span></span>(<span>self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, backup_config, base_vm_with_data)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1597,13 +1737,23 @@ def test_restore_replace_and_delete_vols(
 </summary>
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
 def test_restore_with_new_vm(
-    self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+    self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout,
     backup_config, base_vm_with_data
 ):
     unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
     pub_key, pri_key = ssh_keypair
 
-    restored_vm_name = f&#34;nfs-restore-{unique_vm_name}&#34;
+    # mess up the existing data
+    with vm_shell_from_host(
+        base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+        base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+    ) as sh:
+        out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+        assert not err, (out, err)
+        sh.exec_command(&#39;sync&#39;)
+
+    # Restore VM into new
+    restored_vm_name = f&#34;{backup_config[0].lower()}-restore-{unique_vm_name}&#34;
     spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
     code, data = api_client.backups.restore(unique_vm_name, spec)
     assert 201 == code, (code, data)
@@ -1633,39 +1783,26 @@ def test_restore_with_new_vm(
                    if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
 
     # Login to the new VM and check data is existing
-    with host_shell.login(host_ip, jumphost=True) as h:
-        vm_sh = vm_shell(base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key)
+    with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
-            try:
-                vm_sh.connect(vm_ip, jumphost=h.client)
-            except ChannelException as e:
-                login_ex = e
-                sleep(3)
-            else:
+            out, err = sh.exec_command(&#39;cloud-init status&#39;)
+            if &#39;done&#39; in out:
                 break
+            sleep(3)
         else:
-            raise AssertionError(f&#34;Unable to login to VM {restored_vm_name}&#34;) from login_ex
+            raise AssertionError(
+                f&#34;VM {restored_vm_name} Started {wait_timeout} seconds&#34;
+                f&#34;, but cloud-init still in {out}&#34;
+            )
 
-        with vm_sh as sh:
-            endtime = datetime.now() + timedelta(seconds=wait_timeout)
-            while endtime &gt; datetime.now():
-                out, err = sh.exec_command(&#39;cloud-init status&#39;)
-                if &#39;done&#39; in out:
-                    break
-                sleep(3)
-            else:
-                raise AssertionError(
-                    f&#34;VM {restored_vm_name} Started {wait_timeout} seconds&#34;
-                    f&#34;, but cloud-init still in {out}&#34;
-                )
+        out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
 
-            out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
-        assert backup_data[&#39;content&#39;] in out, (
-            f&#34;cloud-init writefile failed\n&#34;
-            f&#34;Executed stdout: {out}\n&#34;
-            f&#34;Executed stderr: {err}&#34;
-        )
+    assert backup_data[&#39;content&#39;] in out, (
+        f&#34;cloud-init writefile failed\n&#34;
+        f&#34;Executed stdout: {out}\n&#34;
+        f&#34;Executed stderr: {err}&#34;
+    )
 
     # teardown: delete restored vm and volumes
     code, data = api_client.vms.get(restored_vm_name)
@@ -1685,6 +1822,44 @@ def test_restore_with_new_vm(
     for vol in vm_spec.volumes:
         vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
         api_client.volumes.delete(vol_name)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_update_backup_by_yaml"><code class="name flex">
+<span>def <span class="ident">test_update_backup_by_yaml</span></span>(<span>self, api_client, wait_timeout, backup_config, base_vm_with_data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+def test_update_backup_by_yaml(
+    self, api_client, wait_timeout, backup_config, base_vm_with_data
+):
+    backup_name = base_vm_with_data[&#39;name&#39;]
+    # Get backup as yaml
+    req_yaml = dict(Accept=&#39;application/yaml&#39;)
+    resp = api_client.backups.get(backup_name, headers=req_yaml, raw=True)
+    assert 200 == resp.status_code, (resp.status_code, resp.text)
+
+    # update annotation
+    yaml_header = {&#39;Content-Type&#39;: &#39;application/yaml&#39;}
+    customized_annotations = {&#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;}
+    data = yaml.safe_load(resp.text)
+    data[&#39;metadata&#39;][&#39;annotations&#39;].update(customized_annotations)
+    yaml_data = yaml.safe_dump(data)
+    code, data = api_client.backups.update(backup_name, yaml_data,
+                                           as_json=False, headers=yaml_header)
+    assert 200 == code, (code, data)
+
+    # Verify annotation updated
+    code, data = api_client.backups.get(backup_name)
+    all_updated = all(
+        True for key, val in data[&#39;metadata&#39;][&#39;annotations&#39;].items()
+        if customized_annotations.get(key, &#34;&#34;) == val
+    )
+    assert all_updated, f&#34;Failed to update annotations: {customized_annotations!r}&#34;</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.tests_backup_vm"><code class="name flex">
@@ -1714,6 +1889,241 @@ def tests_backup_vm(self, api_client, wait_timeout, backup_config, base_vm_with_
         raise AssertionError(
             f&#39;Timed-out waiting for the backup \&#39;{unique_vm_name}\&#39; to be ready.&#39;
         )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration"><code class="flex name class">
+<span>class <span class="ident">TestBackupRestoreOnMigration</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1473&#34;)
+@pytest.mark.p0
+@pytest.mark.backup_target
+@pytest.mark.parametrize(
+    &#34;backup_config&#34;, [
+        pytest.param(&#34;S3&#34;, marks=pytest.mark.S3),
+        pytest.param(&#34;NFS&#34;, marks=pytest.mark.NFS)
+    ],
+    indirect=True
+)
+class TestBackupRestoreOnMigration:
+    @pytest.mark.dependency(param=True)
+    def test_backup_migrated_vm(
+        self, api_client, wait_timeout, backup_config, config_backup_target,
+        base_vm_migrated, base_vm_with_data
+    ):
+        unique_vm_name = base_vm_with_data[&#39;name&#39;]
+
+        # Create backup with the name as VM&#39;s name
+        code, data = api_client.vms.backup(unique_vm_name, unique_vm_name)
+        assert 204 == code, (code, data)
+        # Check backup is ready
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, backup = api_client.backups.get(unique_vm_name)
+            if 200 == code and backup.get(&#39;status&#39;, {}).get(&#39;readyToUse&#39;):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#39;Timed-out waiting for the backup \&#39;{unique_vm_name}\&#39; to be ready.&#39;
+            )
+
+    @pytest.mark.dependency(
+        depends=[&#34;TestBackupRestoreOnMigration::test_backup_migrated_vm&#34;],
+        param=True
+    )
+    def test_restore_replace_migrated_vm(
+        self, api_client, wait_timeout, ssh_keypair, vm_shell_from_host, vm_checker, backup_config,
+        base_vm_migrated, base_vm_with_data
+    ):
+        unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
+        pub_key, pri_key = ssh_keypair
+
+        # mess up the existing data
+        with vm_shell_from_host(
+            base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+            base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+        ) as sh:
+            out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+            assert not err, (out, err)
+            sh.exec_command(&#39;sync&#39;)
+
+        # Stop the VM then restore existing
+        vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+        assert vm_stopped, (
+            f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+        spec = api_client.backups.RestoreSpec.for_existing()
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 201 == code, f&#39;Failed to restore backup with current VM replaced, {data}&#39;
+
+        # Check VM Started
+        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        assert vm_got_ips, (
+            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        # Check VM is not hosting on the migrated node
+        host = data[&#39;status&#39;][&#39;nodeName&#39;]
+        original_host, migrated_host = base_vm_migrated
+
+        assert host == migrated_host, (
+            f&#34;Restored VM is not hosted on {migrated_host} but {host},&#34;
+            f&#34; the VM was initialized hosted on {original_host}&#34;
+        )
+
+        # Get IP of VM and host
+        vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                     if iface[&#39;name&#39;] == &#39;default&#39;)
+        code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+        host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                       if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+        # Login to the new VM and check data is existing
+        with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (
+                f&#34;VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds&#34;
+                f&#34;, but cloud-init still in {out}&#34;
+            )
+            out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
+
+        assert backup_data[&#39;content&#39;] in out, (
+            f&#34;cloud-init writefile failed\n&#34;
+            f&#34;Executed stdout: {out}\n&#34;
+            f&#34;Executed stderr: {err}&#34;
+        )</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm"><code class="name flex">
+<span>def <span class="ident">test_backup_migrated_vm</span></span>(<span>self, api_client, wait_timeout, backup_config, config_backup_target, base_vm_migrated, base_vm_with_data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(param=True)
+def test_backup_migrated_vm(
+    self, api_client, wait_timeout, backup_config, config_backup_target,
+    base_vm_migrated, base_vm_with_data
+):
+    unique_vm_name = base_vm_with_data[&#39;name&#39;]
+
+    # Create backup with the name as VM&#39;s name
+    code, data = api_client.vms.backup(unique_vm_name, unique_vm_name)
+    assert 204 == code, (code, data)
+    # Check backup is ready
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, backup = api_client.backups.get(unique_vm_name)
+        if 200 == code and backup.get(&#39;status&#39;, {}).get(&#39;readyToUse&#39;):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#39;Timed-out waiting for the backup \&#39;{unique_vm_name}\&#39; to be ready.&#39;
+        )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm"><code class="name flex">
+<span>def <span class="ident">test_restore_replace_migrated_vm</span></span>(<span>self, api_client, wait_timeout, ssh_keypair, vm_shell_from_host, vm_checker, backup_config, base_vm_migrated, base_vm_with_data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(
+    depends=[&#34;TestBackupRestoreOnMigration::test_backup_migrated_vm&#34;],
+    param=True
+)
+def test_restore_replace_migrated_vm(
+    self, api_client, wait_timeout, ssh_keypair, vm_shell_from_host, vm_checker, backup_config,
+    base_vm_migrated, base_vm_with_data
+):
+    unique_vm_name, backup_data = base_vm_with_data[&#39;name&#39;], base_vm_with_data[&#39;data&#39;]
+    pub_key, pri_key = ssh_keypair
+
+    # mess up the existing data
+    with vm_shell_from_host(
+        base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;],
+        base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key
+    ) as sh:
+        out, err = sh.exec_command(f&#34;echo {pub_key!r} &gt; {base_vm_with_data[&#39;data&#39;][&#39;path&#39;]}&#34;)
+        assert not err, (out, err)
+        sh.exec_command(&#39;sync&#39;)
+
+    # Stop the VM then restore existing
+    vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+    assert vm_stopped, (
+        f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status({code}): {data}&#34;
+    )
+
+    spec = api_client.backups.RestoreSpec.for_existing()
+    code, data = api_client.backups.restore(unique_vm_name, spec)
+    assert 201 == code, f&#39;Failed to restore backup with current VM replaced, {data}&#39;
+
+    # Check VM Started
+    vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Check VM is not hosting on the migrated node
+    host = data[&#39;status&#39;][&#39;nodeName&#39;]
+    original_host, migrated_host = base_vm_migrated
+
+    assert host == migrated_host, (
+        f&#34;Restored VM is not hosted on {migrated_host} but {host},&#34;
+        f&#34; the VM was initialized hosted on {original_host}&#34;
+    )
+
+    # Get IP of VM and host
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    # Login to the new VM and check data is existing
+    with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (
+            f&#34;VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds&#34;
+            f&#34;, but cloud-init still in {out}&#34;
+        )
+        out, err = sh.exec_command(f&#34;cat {backup_data[&#39;path&#39;]}&#34;)
+
+    assert backup_data[&#39;content&#39;] in out, (
+        f&#34;cloud-init writefile failed\n&#34;
+        f&#34;Executed stdout: {out}\n&#34;
+        f&#34;Executed stderr: {err}&#34;
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -2612,6 +3022,8 @@ def test_delete_middle_backup(
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.NFS_config" href="#harvester_e2e_tests.integration.test_backup_restore.NFS_config">NFS_config</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.S3_config" href="#harvester_e2e_tests.integration.test_backup_restore.S3_config">S3_config</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.backup_config" href="#harvester_e2e_tests.integration.test_backup_restore.backup_config">backup_config</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.base_vm" href="#harvester_e2e_tests.integration.test_backup_restore.base_vm">base_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.base_vm_migrated" href="#harvester_e2e_tests.integration.test_backup_restore.base_vm_migrated">base_vm_migrated</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data" href="#harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data">base_vm_with_data</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.config_backup_target" href="#harvester_e2e_tests.integration.test_backup_restore.config_backup_target">config_backup_target</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.conflict_retries" href="#harvester_e2e_tests.integration.test_backup_restore.conflict_retries">conflict_retries</a></code></li>
@@ -2625,9 +3037,19 @@ def test_delete_middle_backup(
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.pytestmark" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_connection" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_connection">test_connection</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_and_delete_vols" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_and_delete_vols">test_restore_replace_and_delete_vols</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop">test_restore_replace_vm_not_stop</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols">test_restore_replace_with_delete_vols</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm">test_restore_with_new_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_update_backup_by_yaml" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_update_backup_by_yaml">test_update_backup_by_yaml</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.tests_backup_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.tests_backup_vm">tests_backup_vm</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration">TestBackupRestoreOnMigration</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.pytestmark" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm">test_backup_migrated_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm">test_restore_replace_migrated_vm</a></code></li>
 </ul>
 </li>
 <li>
