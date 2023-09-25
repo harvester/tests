@@ -596,6 +596,165 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
     assert 404 == code, (code, data)
 
 
+class TestVMResource:
+    def test_update_cpu(
+        self, api_client, ssh_keypair, vm_shell_from_host, vm_checker,
+        stopped_vm
+    ):
+        unique_vm_name, ssh_user = stopped_vm
+        pub_key, pri_key = ssh_keypair
+
+        code, data = api_client.vms.start(unique_vm_name)
+        assert 204 == code, (code, data)
+        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+
+        # Login to VM to check current CPU counts
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+        with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (
+                f"VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds"
+                f", but cloud-init still in {out}"
+            )
+
+            out, err = sh.exec_command("lscpu -e=cpu | tail -1")
+            out = out.strip()
+        assert out.isdigit() and not err, (
+            f"Failed to list cpu amount, output: {out}\nerror: {err}"
+        )
+        new_cpus = (int(out) + 1) + 1  # (shift to 1) + 1
+
+        # Update CPUs
+        code, data = api_client.vms.get(unique_vm_name)
+        assert 200 == code, (code, data)
+        spec = api_client.vms.Spec.from_dict(data)
+        spec.cpu_cores = new_cpus
+        code, data = api_client.vms.update(unique_vm_name, spec)
+        assert 200 == code, (code, data)
+        vm_restarted, (code, data) = vm_checker.wait_restarted(unique_vm_name)
+        assert vm_restarted, (code, data)
+        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+
+        # Login to VM to check updated CPUs
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+        with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (
+                f"VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds"
+                f", but cloud-init still in {out}"
+            )
+
+            out, err = sh.exec_command("lscpu -e=cpu | tail -1")
+            out = out.strip()
+        assert out.isdigit() and not err, (
+            f"Failed to list cpu amount, output: {out}\nerror: {err}"
+        )
+        assert new_cpus == int(out) + 1, (
+            f"Failed to update CPU to {new_cpus}, it still be {out}"
+        )
+
+    def test_update_enable_usb(self, api_client, unique_vm_name, vm_checker, image):
+        cpu, mem = 1, 2
+        vm_spec = api_client.vms.Spec(cpu, mem)
+        vm_spec.add_image("disk-0", image['id'])
+        vm_spec.run_strategy = "Halted"
+        vm_spec.usbtablet = False
+
+        # Create a stopped VM without usbtablet
+        code, data = api_client.vms.create(unique_vm_name, vm_spec)
+        assert 201 == code, (code, data)
+        with vm_checker.configure(snooze=1):
+            vm_show_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
+        assert vm_show_stopped, (code, data)
+
+        # update VM to enable usbtablet and start
+        code, data = api_client.vms.get(unique_vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_spec.usbtablet = True
+        code, data = api_client.vms.update(unique_vm_name, vm_spec)
+        assert 200 == code, (code, data)
+        vm_started, (code, data) = vm_checker.wait_started(unique_vm_name)
+        assert vm_started, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+
+        devices = data['spec']['domain']['devices']
+        assert 'inputs' in devices
+        assert 'usb' in devices['inputs'][0]['bus']
+        assert 'tablet' in devices['inputs'][0]['name']
+        assert 'tablet' in devices['inputs'][0]['type']
+
+        # teardown: remove the VM
+        _ = vm_checker.wait_deleted(unique_vm_name)
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
+
+    def test_update_enable_user_data(self, api_client, unique_vm_name, vm_checker, image):
+        cpu, mem = 1, 2
+        vm_spec = api_client.vms.Spec(cpu, mem)
+        vm_spec.add_image("disk-0", image['id'])
+        vm_spec.run_strategy = "Halted"
+        vm_spec.guest_agent = False
+
+        # Create a stopped VM without user data (guest agent)
+        code, data = api_client.vms.create(unique_vm_name, vm_spec)
+        assert 201 == code, (code, data)
+        with vm_checker.configure(snooze=1):
+            vm_show_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
+        assert vm_show_stopped, (code, data)
+
+        # update VM to add guest agent and start
+        code, data = api_client.vms.get(unique_vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_spec.guest_agent = True
+        code, data = api_client.vms.update(unique_vm_name, vm_spec)
+        assert 200 == code, (code, data)
+        vm_started, (code, data) = vm_checker.wait_started(unique_vm_name)
+        assert vm_started, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+
+        cloudinit = next(d for d in data['spec']['volumes'] if 'cloudInitNoCloud' in d)
+        user_data = yaml.safe_load(cloudinit['cloudInitNoCloud']['userData'])
+
+        assert 'packages' in user_data
+        assert 'runcmd' in user_data
+        assert 'qemu-guest-agent' in user_data['packages']
+        assert 'systemctl' in user_data['runcmd'][0]
+        assert 'enable' in user_data['runcmd'][0]
+        assert '--now' in user_data['runcmd'][0]
+        assert 'qemu-guest-agent.service' in user_data['runcmd'][0]
+
+        # teardown: remove the VM
+        _ = vm_checker.wait_deleted(unique_vm_name)
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
+
+
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 class TestVMClone:
