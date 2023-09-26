@@ -103,12 +103,20 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
         data: dict
         options: dict = field(default_factory=dict, compare=False)
 
+        def __iter__(self):
+            ''' handy method be used to unpack'''
+            return iter([self.code, self.data])
+
     @dataclass
     class ShellContext:
         command: str
         stdout: str
         stderr: str
         options: dict = field(default_factory=dict, compare=False)
+
+        def __iter__(self):
+            ''' handy method be used to unpack'''
+            return iter([self.stdout, self.stderr])
 
     def default_cb(ctx):
         ''' identity callback function for adjust checking condition.
@@ -130,6 +138,7 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
 
         @contextmanager
         def configure(self, snooze=None, wait_timeout=None):
+            ''' context manager to temporarily change snooze or wait_timeout '''
             s, t = self.snooze, self.wait_timeout
             try:
                 self.snooze, self.wait_timeout = snooze or s, wait_timeout or t
@@ -140,7 +149,7 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
         def wait_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
             ctx = ResponseContext('vm.stop', *self.vms.stop(vm_name, **kws))
             if 404 == ctx.code and callback(ctx):
-                return False, (ctx.code, ctx.data)
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
@@ -149,8 +158,8 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
                     break
                 sleep(self.snooze)
             else:
-                return False, (ctx.code, ctx.data)
-            return True, (ctx.code, ctx.data)
+                return False, ctx
+            return True, ctx
 
         def wait_status_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
             def cb(ctx):
@@ -168,7 +177,7 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
         def wait_deleted(self, vm_name, endtime=None, callback=default_cb, **kws):
             ctx = ResponseContext('vm.delete', *self.vms.delete(vm_name, **kws))
             if 404 == ctx.code and callback(ctx):
-                return False, (ctx.code, ctx.data)
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
@@ -177,18 +186,18 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
                     break
                 sleep(self.snooze)
             else:
-                return False, (ctx.code, ctx.data)
-            return True, (ctx.code, ctx.data)
+                return False, ctx
+            return True, ctx
 
         def wait_restarted(self, vm_name, endtime=None, callback=default_cb, **kws):
             ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws))
             if 404 == ctx.code and callback(ctx):
-                return False, (ctx.code, ctx.data)
+                return False, ctx
 
             options = dict(old_pods=set(ctx.data['status']['activePods'].items()))
             ctx = ResponseContext('vm.restart', *self.vms.restart(vm_name, **kws), options)
             if 204 != ctx.code and callback(ctx):
-                return False, (ctx.code, ctx.data)
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
@@ -200,13 +209,13 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
                     break
                 sleep(self.snooze)
             else:
-                return False, (ctx.code, ctx.data)
+                return False, ctx
             return self.wait_started(vm_name, endtime, callback, **kws)
 
         def wait_started(self, vm_name, endtime=None, callback=default_cb, **kws):
             ctx = ResponseContext('vm.start', *self.vms.start(vm_name, **kws))
             if 404 == ctx.code and callback(ctx):
-                return False, (ctx.code, ctx.data)
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
@@ -219,8 +228,8 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
                     break
                 sleep(self.snooze)
             else:
-                return False, (ctx.code, ctx.data)
-            return True, (ctx.code, ctx.data)
+                return False, ctx
+            return True, ctx
 
         def wait_agent_connected(self, vm_name, endtime=None, callback=default_cb, **kws):
             def cb(ctx):
@@ -261,7 +270,7 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
         def wait_migrated(self, vm_name, new_host, endtime=None, callback=default_cb, **kws):
             ctx = ResponseContext('vm.migrate', *self.vms.migrate(vm_name, new_host, **kws))
             if 404 == ctx.code and callback(ctx):
-                return False, (ctx.code, ctx.data)
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
@@ -274,7 +283,7 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
                     break
                 sleep(self.snooze)
             else:
-                return False, (ctx.code, ctx.data)
-            return True, (ctx.code, ctx.data)
+                return False, ctx
+            return True, ctx
 
     return VMChecker(api_client.vms, wait_timeout, sleep_timeout)

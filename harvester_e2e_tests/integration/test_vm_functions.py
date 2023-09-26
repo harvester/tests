@@ -346,7 +346,7 @@ class TestVMOperations:
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get_status(unique_vm_name)
-            if old_pods.difference(data['status'].get('activePods', old_pods).items()):
+            if old_pods.difference(data['status'].get('activePods', {}).items() or old_pods):
                 break
             sleep(5)
         else:
@@ -640,8 +640,11 @@ class TestVMResource:
         spec.cpu_cores = new_cpus
         code, data = api_client.vms.update(unique_vm_name, spec)
         assert 200 == code, (code, data)
-        vm_restarted, (code, data) = vm_checker.wait_restarted(unique_vm_name)
-        assert vm_restarted, (code, data)
+        vm_restarted, ctx = vm_checker.wait_restarted(unique_vm_name)
+        assert vm_restarted, (
+                f"Failed to Restart VM({unique_vm_name}),"
+                f" timed out while executing {ctx.callee!r}"
+        )
         vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
         assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
@@ -670,6 +673,9 @@ class TestVMResource:
         assert new_cpus == int(out) + 1, (
             f"Failed to update CPU to {new_cpus}, it still be {out}"
         )
+
+        # stop the VM
+        vm_checker.wait_stopped(unique_vm_name)
 
     def test_update_enable_usb(self, api_client, unique_vm_name, vm_checker, image):
         cpu, mem = 1, 2
