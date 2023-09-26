@@ -400,6 +400,13 @@ class BackupManager(BaseManager):
         # Delegate to vm.backups
         return self.api.vms.backup(*args, **kwargs)
 
+    def update(
+        self, name, backup_spec, namespace=DEFAULT_NAMESPACE, *,
+        raw=False, as_json=True, **kwargs
+    ):
+        path = self.BACKUP_fmt.format(uid=f"/{name}", ns=namespace)
+        return self._update(path, backup_spec, raw=raw, as_json=as_json, **kwargs)
+
     def restore(self, name, restore_spec, namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
         code, data = self.get(name, namespace)
         try:
