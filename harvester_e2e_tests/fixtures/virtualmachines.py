@@ -287,3 +287,102 @@ def vm_checker(request, api_client, wait_timeout, sleep_timeout):
             return True, ctx
 
     return VMChecker(api_client.vms, wait_timeout, sleep_timeout)
+
+
+@pytest.fixture(scope="session")
+def vm_calc():
+    from re import match
+    from json import loads
+
+    class VMResourceCalc:
+        UNITS = ('', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+        FRACTIONAL = ('', 'm', 'u', 'n', 'p', 'f', 'a', 'z', 'y')
+
+        @classmethod
+        def node_resources(cls, node, *, res_types=('cpu', 'memory')):
+            reserved = loads(node['metadata']['annotations']["management.cattle.io/pod-requests"])
+            reserved = {k: cls.parse_unit(v) for k, v in reserved.items() if k in res_types}
+            available = node['status']['allocatable']
+            available = {k: cls.parse_unit(v) for k, v in available.items() if k in res_types}
+            schedulable = {k: v - reserved[k] for k, v in available.items()}
+            return {
+                'schedulable': schedulable,
+                'available': available,
+                'reserved': reserved
+            }
+
+        @classmethod
+        def format_unit(
+            cls, value, *, increment=1000, start_exp=0, min_exp=0, max_exp=99, max_precision=2,
+            suffix='', add_suffix=True, suffix_space=True, first_suffix=None, can_round_0=True
+        ):
+            # type: (int, int, int, int, int, int) -> str
+            # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L4
+
+            val, exp, divide = value, start_exp, max_exp >= 0
+
+            if divide:
+                while exp < min_exp or (val >= increment and exp + 1 < len(cls.UNITS)
+                                        and exp < max_exp):
+                    val = val / increment
+                    exp += 1
+            else:
+                while exp < (min_exp * -1) or (val < increment and exp + 1 < len(cls.FRACTIONAL)
+                                               and exp < (max_exp * -1)):
+                    val = val * increment
+                    exp += 1
+
+            if val < 10 and max_precision >= 1:
+                rv = f"{round(val * (10 ** max_precision) / (10 ** max_precision))}"
+            else:
+                rv = f"{round(val)}"
+
+            if rv == '0' and not can_round_0 and value != 0:
+                val, exp = value, 0
+                while val >= increment:
+                    val /= increment
+                    exp += 1
+                return cls.format_unit(
+                    val, increment=increment, start_exp=start_exp, min_exp=exp, max_exp=exp,
+                    max_precision=max_precision, suffix=suffix, add_suffix=add_suffix,
+                    suffix_space=suffix_space, first_suffix=first_suffix
+                )
+
+            if add_suffix:
+                rv = f"{rv} " if suffix_space else rv
+                if exp == 0 and first_suffix is not None:
+                    rv += f"{first_suffix}"
+                else:
+                    rv += f"{cls.UNITS[exp] if divide else cls.FRACTIONAL[exp]}{suffix}"
+
+            return rv
+
+        @classmethod
+        def parse_unit(cls, value):
+            # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L83
+            try:
+                pattern = r"^([0-9.-]+)\s*([^0-9.-]?)([^0-9.-]?)"
+                val, unit, inc = match(pattern, value).groups()
+                val = float(val)
+                assert unit != ""
+            except AttributeError:
+                raise ValueError("Could not parse the value", value)
+            except (AssertionError, ValueError):
+                return val
+
+            # µ (mu) symbol -> u
+            unit = 'u' if ord(unit[0]) == 181 else unit
+
+            divide = unit in cls.FRACTIONAL
+            multiply = unit.upper() in cls.UNITS
+            inc_base = 1024 if inc == 'i' and (divide or multiply) else 1000
+
+            if divide:
+                exp = cls.FRACTIONAL.index(unit)
+                return val / (inc_base ** exp)
+
+            if multiply:
+                exp = cls.UNITS.index(unit.upper())
+                return val * (inc_base ** exp)
+
+    return VMResourceCalc
