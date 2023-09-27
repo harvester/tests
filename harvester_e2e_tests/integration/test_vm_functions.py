@@ -156,6 +156,23 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
         api_client.volumes.delete(vol_name)
 
 
+@pytest.fixture
+def unset_cpu_memory_overcommit(api_client):
+    code, data = api_client.settings.get('overcommit-config')
+    assert 200 == code, (code, data)
+
+    origin_val = json.loads(data['value'])
+    spec = api_client.settings.Spec.from_dict(data)
+    spec.cpu = spec.memory = 100
+    code, data = api_client.settings.update('overcommit-config', spec)
+    assert 200 == code, (code, data)
+
+    yield json.loads(data['value']), origin_val
+
+    spec.val = origin_val
+    api_client.settings.update('overcommit-config', spec)
+
+
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(name="minimal_vm")
@@ -596,7 +613,123 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
     assert 404 == code, (code, data)
 
 
+@pytest.mark.p0
+@pytest.mark.virtualmachines
 class TestVMResource:
+    @pytest.mark.parametrize("res_type", ["cpu", "memory"])
+    def test_create_schedule_on_maximum(
+        self, api_client, unique_vm_name, vm_checker, vm_calc, image,
+        unset_cpu_memory_overcommit, res_type
+    ):
+        # get the node having the maximum resource
+        code, data = api_client.hosts.get()
+        nodes_res = [(n['metadata']['name'], vm_calc.node_resources(n)['schedulable'])
+                     for n in data['data']]
+        nodes_res = sorted(nodes_res, key=lambda n: n[1][res_type], reverse=True)
+        expected_host, expected_res = next((cn, nd[res_type] + (cd[res_type] - nd[res_type]) / 2)
+                                           for (cn, cd), (nn, nd) in zip(nodes_res, nodes_res[1:]))
+
+        # Calculate the maximum resource
+        vm_spec, namespace = api_client.vms.Spec(1, 2), 'default'
+        vm_spec.add_image("disk-0", image['id'])
+        data = vm_spec.to_dict(unique_vm_name, namespace)
+
+        if res_type == 'cpu':
+            exp = -2
+            data['spec']['template']['spec']['domain'][res_type]['cores'] = int(expected_res) + 1
+        else:
+            exp = 2
+
+        for k, resource in data['spec']['template']['spec']['domain']['resources'].items():
+            resource[res_type] = vm_calc.format_unit(expected_res, max_exp=exp, suffix_space=False)
+
+        try:
+            # Create VM then verify it
+            code, data = api_client.vms.create(unique_vm_name, data, namespace)
+            assert 201 == code, (code, data)
+            vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+            assert vm_started, (code, vmi)
+
+            code, hosts = api_client.hosts.get()
+            cur_res = [(n['metadata']['name'], vm_calc.node_resources(n)['schedulable'])
+                       for n in hosts['data']]
+            schedulables = [(name, res) for (name, res) in cur_res if res[res_type] > expected_res]
+            if not schedulables:
+                # General case
+                assert expected_host == vmi['status']['nodeName'], (
+                    f"VM started but not hosted on expected host: {expected_host}"
+                )
+            else:
+                # ???: node's resources released while creating VM, so the VM be hosted on others
+                assert expected_host in [name for name, _ in schedulables], (
+                    f"VM started on another host {vmi['status']['nodeName']},"
+                    f" and the resource of expected host {expected_host!r} be updated."
+                )
+        finally:
+            # We must delete the VM to release node's resources
+            _ = vm_checker.wait_deleted(unique_vm_name, namespace=namespace)
+            for vol in data['spec']['template']['spec']['volumes']:
+                if 'persistentVolumeClaim' in vol:
+                    api_client.volumes.delete(vol['persistentVolumeClaim']['claimName'])
+
+    @pytest.mark.parametrize("res_type", ["cpu", "memory"])
+    def test_update_schedule_on_maximum(
+        self, api_client, vm_checker, vm_calc, stopped_vm, unset_cpu_memory_overcommit, res_type
+    ):
+        unique_vm_name, ssh_user = stopped_vm
+
+        # make sure VM stopped and configure as minimal resource
+        vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+        assert vm_stopped, (code, data)
+        code, data = api_client.vms.get(unique_vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_spec.cpu_cores, vm_spec.memory = 1, 2
+        code, data = api_client.vms.update(unique_vm_name, vm_spec)
+        assert 200 == code, (code, data)
+
+        # get the node having the maximum resource
+        code, data = api_client.hosts.get()
+        nodes_res = [(n['metadata']['name'], vm_calc.node_resources(n)['schedulable'])
+                     for n in data['data']]
+        nodes_res = sorted(nodes_res, key=lambda n: n[1][res_type], reverse=True)
+        expected_host, expected_res = next((cn, nd[res_type] + (cd[res_type] - nd[res_type]) / 2)
+                                           for (cn, cd), (nn, nd) in zip(nodes_res, nodes_res[1:]))
+
+        # update VM to target resource and start it
+        code, data = api_client.vms.get(unique_vm_name)
+        if res_type == 'cpu':
+            exp = -2
+            data['spec']['template']['spec']['domain'][res_type]['cores'] = int(expected_res) + 1
+        else:
+            exp = 2
+
+        for k, resource in data['spec']['template']['spec']['domain']['resources'].items():
+            resource[res_type] = vm_calc.format_unit(expected_res, max_exp=exp, suffix_space=False)
+
+        code, data = api_client.vms.update(unique_vm_name, data)
+        assert 200 == code, (code, data)
+        vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+        assert vm_started, (code, vmi)
+
+        # Verify the VM be hosted expected
+        code, hosts = api_client.hosts.get()
+        cur_res = [(n['metadata']['name'], vm_calc.node_resources(n)['schedulable'])
+                   for n in hosts['data']]
+        schedulables = [(name, res) for (name, res) in cur_res if res[res_type] > expected_res]
+        if not schedulables:
+            # General case
+            assert expected_host == vmi['status']['nodeName'], (
+                f"VM started but not hosted on expected host: {expected_host}"
+            )
+        else:
+            # ???: node's resources released while creating VM, so the VM be hosted on others
+            assert expected_host in [name for name, _ in schedulables], (
+                f"VM started on another host {vmi['status']['nodeName']},"
+                f" and the resource of expected host {expected_host!r} be updated."
+            )
+        # Stop the VM
+        vm_checker.wait_stopped(unique_vm_name)
+
     def test_update_cpu(
         self, api_client, ssh_keypair, vm_shell_from_host, vm_checker,
         stopped_vm
@@ -642,8 +775,8 @@ class TestVMResource:
         assert 200 == code, (code, data)
         vm_restarted, ctx = vm_checker.wait_restarted(unique_vm_name)
         assert vm_restarted, (
-                f"Failed to Restart VM({unique_vm_name}),"
-                f" timed out while executing {ctx.callee!r}"
+            f"Failed to Restart VM({unique_vm_name}),"
+            f" timed out while executing {ctx.callee!r}"
         )
         vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
         assert vm_got_ips, (
