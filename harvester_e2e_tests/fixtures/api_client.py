@@ -43,6 +43,11 @@ def sleep_timeout(request):
 
 
 @pytest.fixture(scope="session")
+def rancher_wait_timeout(request):
+    return request.config.getoption("--rancher-cluster-wait-timeout", 1800)
+
+
+@pytest.fixture(scope="session")
 def host_state(request):
     class HostState:
         files = ("power_off.sh", "power_on.sh", "reboot.sh")  # [False, True, -1]
@@ -258,32 +263,44 @@ def host_shell(request):
 
 @pytest.fixture(scope="session")
 def polling_for(wait_timeout, sleep_timeout):
+    # TODO: Try to redesign refer to multiprocessing package (e.g. apply_async and map_async)
     def _polling_for(subject: str,
-                     tester: Callable[..., bool],
-                     testee: Callable, *testee_args, **testee_kwargs):
-        """ Polling expected confition for `wait_timeout`s every `sleep_timeout`s
+                     checker: Callable[..., bool],
+                     poller: Callable, *args,
+                     timeout=wait_timeout):
+        """ Polling expected confition for `timeout`s every `sleep_timeout`s
 
         Arguments:
-          subject: what is waiting for
-          tester: Callable which accepts `testee` output and returns bool
-          testee: Callable returns output for `tester` to validate
+          subject: str, what is waiting for
+          checker: Callable, check `poller` output and returns bool
+          args: list, [*poller_args, testee]
+          poller: Callable, poller(*poller_args, testee) for each testee
 
         Returns:
-          Any: `testee` output if qualified by `tester`
+          Any: `poller` output if qualified by `checker`
 
         Raises:
-          AssertionError: if still NOT qualified by `tester` over `wait_timeout`
+          AssertionError: if still NOT qualified within `timeout`s
         """
-        tester_args_len = len(getfullargspec(tester).args)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        *poller_args, testee = args
+        testees = testee if isinstance(testee, list) else [testee]
+        checker_args_len = len(getfullargspec(checker).args)
+
+        endtime = datetime.now() + timedelta(seconds=timeout)
         while endtime > datetime.now():
-            output = testee(*testee_args, **testee_kwargs)
-            # unpack output for tester according to its signature
-            qualified = tester(*output) if tester_args_len > 1 else tester(output)
-            if qualified:
+            for testee in testees[:]:
+                output = poller(*poller_args, testee)
+                # unpack poller output according to checker signature
+                qualified = checker(*output) if checker_args_len > 1 else checker(output)
+                if qualified:
+                    testees.remove(testee)
+            if not testees:
                 return output
             sleep(sleep_timeout)
         else:
-            raise AssertionError(f'Timeout wait for {subject}\n{output}')
+            raise AssertionError(
+                f'Timeout {timeout}s waiting for {subject}\n'
+                f'Got error: {output}'
+            )
 
     return _polling_for
