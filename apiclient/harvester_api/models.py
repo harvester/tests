@@ -392,6 +392,9 @@ class VMSpec:
 
     @classmethod
     def from_dict(cls, data):
+        if data['type'] != 'kubevirt.io.virtualmachine':
+            raise ValueError("Only support extract data comes from 'kubevirt.io.virtualmachine'")
+
         data = deepcopy(data)
         spec, metadata = data.get('spec', {}), data.get('metadata', {})
         vm_spec = spec['template']['spec']
@@ -409,8 +412,8 @@ class VMSpec:
         machine = vm_spec['domain']['machine']
         cpu = vm_spec['domain']['cpu']
         mem = vm_spec['domain']['resources']['limits']['memory']
-        features = vm_spec['domain']['features']
-        firmware = vm_spec['domain']['firmware']
+        features = vm_spec['domain'].get('features', {})
+        firmware = vm_spec['domain'].get('firmware', {})
         devices = vm_spec['domain']['devices']
 
         obj = cls(cpu['cores'], mem, desc, reserved_mem, os_type)
@@ -579,4 +582,42 @@ class StorageNetworkSpec(BaseSettingSpec):
     def to_dict(self, data):
         if self.use_default or not self.value:
             return dict(value=None)
+        return super().to_dict(data)
+
+
+class OverCommitConfigSpec(BaseSettingSpec):
+    _name = 'overcommit-config'
+
+    @property
+    def cpu(self):
+        return self.value['cpu']
+
+    @cpu.setter
+    def cpu(self, val):
+        self.value['cpu'] = val
+
+    @property
+    def memory(self):
+        return self.value['memory']
+
+    @memory.setter
+    def memory(self, val):
+        self.value['memory'] = val
+
+    @property
+    def storage(self):
+        return self.value['storage']
+
+    @storage.setter
+    def storage(self, val):
+        self.value['storage'] = val
+
+    @classmethod
+    def from_dict(cls, data):
+        value = loads(data.get('value', '{}'))
+        return cls(value)
+
+    def to_dict(self, data):
+        if self.use_default or not self.value:
+            return dict(value=data['default'])
         return super().to_dict(data)
