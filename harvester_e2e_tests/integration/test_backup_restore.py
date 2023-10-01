@@ -526,6 +526,42 @@ class TestBackupRestore:
 
         assert 422 == code, (code, data)
 
+    @pytest.mark.negative
+    @pytest.mark.skip_version_before('v1.1.2', 'v1.2.1')
+    @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
+    def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with_data):
+        # RFC1123 DNS Subdomain name rules:
+        # 1. contain no more than 253 characters
+        # 2. contain only lowercase alphanumeric characters, '-' or '.'
+        # 3. start with an alphanumeric character
+        # 4. end with an alphanumeric character
+
+        unique_vm_name = base_vm_with_data['name']
+
+        # Case 1: longer than 253 chars
+        invalid_name = 'a' * 254
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 2: having upper case
+        invalid_name = 'the.name.IS.invalid'
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 3: Not start with an alphanumeric character
+        invalid_name = '-the.name.is.invalid'
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 4: Not end with an alphanumeric character
+        invalid_name = 'the.name.is.invalid.'
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
 @pytest.mark.p0
