@@ -679,6 +679,9 @@ class ClusterNetworkManager(BaseManager):
                     "bondOptions": {
                         "mode": bond_mode or self._default_bond_mode,
                     },
+                    "linkAttributes": {
+                        "TxQLen": -1
+                    },
                     "nics": nics
                 }
             }
