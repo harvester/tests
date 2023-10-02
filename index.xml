@@ -4316,6 +4316,15 @@ Test Information Environment: qemu/KVM 3 nodes Harvester Version: master-f96827b
     </item>
     
     <item>
+      <title>Restored VM name does not support uppercases</title>
+      <link>https://harvester.github.io/tests/manual/_incoming/4544_restored_vm_name_does_not_support_uppercases/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://harvester.github.io/tests/manual/_incoming/4544_restored_vm_name_does_not_support_uppercases/</guid>
+      <description>Related issues: #4544 [BUG] Unable to restore backup into new VM when the name starts with upper case Category: Backup/Restore Verification Steps Setup backup-target in &amp;lsquo;Advanced&amp;rsquo; -&amp;gt; &amp;lsquo;Settings&amp;rsquo; Create an image for VM creation Create a VM vm1 Take a VM backup vm1b Go to &amp;lsquo;Backup &amp;amp; Snapshot&amp;rsquo;, restore vm1b to new VM Positive Cases Single lower Lowers Lowers contains &amp;lsquo;.&amp;rsquo; Lowers contains &amp;lsquo;-&amp;rsquo; Lowers contains &amp;lsquo;.&amp;rsquo; and &amp;lsquo;-&amp;rsquo; Negtive Cases Upper Upper infront of valid Upper append to valid Upper in the middle of valid Expected Results VM name should comply with following rules:</description>
+    </item>
+    
+    <item>
       <title>Restricted admin should not see cattle-monitoring-system volumes</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2116-2351-restricted-admin-no-cattle-monitoring-system-volumes/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

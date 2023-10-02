@@ -182,11 +182,12 @@ def skip_version_before(request, api_client):
     mark = request.node.get_closest_marker(&#34;skip_version_before&#34;)
     if mark:
         cluster_ver = api_client.cluster_version
-        if &#39;-head&#39; not in cluster_ver.public and parse_version(mark.args[0]) &gt; cluster_ver:
-            pytest.skip(
-                f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
-                f&#34; in the supported version (most &gt;= `{mark.args[0]}`)&#34;
-            )
+        for target_ver in mark.args:
+            if &#39;-head&#39; not in cluster_ver.public and parse_version(target_ver) &gt; cluster_ver:
+                return pytest.skip(
+                    f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
+                    f&#34; in the supported version (most &gt;= `{target_ver}`)&#34;
+                )
 
 
 @pytest.fixture(autouse=True)
@@ -194,11 +195,12 @@ def skip_version_after(request, api_client):
     mark = request.node.get_closest_marker(&#34;skip_version_after&#34;)
     if mark:
         cluster_ver = api_client.cluster_version
-        if not hasattr(cluster_ver, &#39;major&#39;) or parse_version(mark.args[0]) &lt;= cluster_ver:
-            pytest.skip(
-                f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
-                f&#34; in the supported version (most &lt; `{mark.args[0]}`)&#34;
-            )
+        for target_ver in mark.args:
+            if not hasattr(cluster_ver, &#39;major&#39;) or parse_version(target_ver) &lt;= cluster_ver:
+                return pytest.skip(
+                    f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
+                    f&#34; in the supported version (most &lt; `{target_ver}`)&#34;
+                )
 
 
 @pytest.fixture(scope=&#34;session&#34;)
@@ -595,11 +597,12 @@ def skip_version_after(request, api_client):
     mark = request.node.get_closest_marker(&#34;skip_version_after&#34;)
     if mark:
         cluster_ver = api_client.cluster_version
-        if not hasattr(cluster_ver, &#39;major&#39;) or parse_version(mark.args[0]) &lt;= cluster_ver:
-            pytest.skip(
-                f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
-                f&#34; in the supported version (most &lt; `{mark.args[0]}`)&#34;
-            )</code></pre>
+        for target_ver in mark.args:
+            if not hasattr(cluster_ver, &#39;major&#39;) or parse_version(target_ver) &lt;= cluster_ver:
+                return pytest.skip(
+                    f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
+                    f&#34; in the supported version (most &lt; `{target_ver}`)&#34;
+                )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.skip_version_before"><code class="name flex">
@@ -616,11 +619,12 @@ def skip_version_before(request, api_client):
     mark = request.node.get_closest_marker(&#34;skip_version_before&#34;)
     if mark:
         cluster_ver = api_client.cluster_version
-        if &#39;-head&#39; not in cluster_ver.public and parse_version(mark.args[0]) &gt; cluster_ver:
-            pytest.skip(
-                f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
-                f&#34; in the supported version (most &gt;= `{mark.args[0]}`)&#34;
-            )</code></pre>
+        for target_ver in mark.args:
+            if &#39;-head&#39; not in cluster_ver.public and parse_version(target_ver) &gt; cluster_ver:
+                return pytest.skip(
+                    f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
+                    f&#34; in the supported version (most &gt;= `{target_ver}`)&#34;
+                )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.sleep_timeout"><code class="name flex">

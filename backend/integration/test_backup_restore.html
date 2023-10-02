@@ -554,6 +554,42 @@ class TestBackupRestore:
 
         assert 422 == code, (code, data)
 
+    @pytest.mark.negative
+    @pytest.mark.skip_version_before(&#39;v1.1.2&#39;, &#39;v1.2.1&#39;)
+    @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+    def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with_data):
+        # RFC1123 DNS Subdomain name rules:
+        # 1. contain no more than 253 characters
+        # 2. contain only lowercase alphanumeric characters, &#39;-&#39; or &#39;.&#39;
+        # 3. start with an alphanumeric character
+        # 4. end with an alphanumeric character
+
+        unique_vm_name = base_vm_with_data[&#39;name&#39;]
+
+        # Case 1: longer than 253 chars
+        invalid_name = &#39;a&#39; * 254
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 2: having upper case
+        invalid_name = &#39;the.name.IS.invalid&#39;
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 3: Not start with an alphanumeric character
+        invalid_name = &#39;-the.name.is.invalid&#39;
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 4: Not end with an alphanumeric character
+        invalid_name = &#39;the.name.is.invalid.&#39;
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
 
 @pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1473&#34;)
 @pytest.mark.p0
@@ -1670,6 +1706,42 @@ class TestBackupRestore:
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
         code, data = api_client.backups.restore(base_vm_with_data[&#39;name&#39;], spec)
 
+        assert 422 == code, (code, data)
+
+    @pytest.mark.negative
+    @pytest.mark.skip_version_before(&#39;v1.1.2&#39;, &#39;v1.2.1&#39;)
+    @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+    def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with_data):
+        # RFC1123 DNS Subdomain name rules:
+        # 1. contain no more than 253 characters
+        # 2. contain only lowercase alphanumeric characters, &#39;-&#39; or &#39;.&#39;
+        # 3. start with an alphanumeric character
+        # 4. end with an alphanumeric character
+
+        unique_vm_name = base_vm_with_data[&#39;name&#39;]
+
+        # Case 1: longer than 253 chars
+        invalid_name = &#39;a&#39; * 254
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 2: having upper case
+        invalid_name = &#39;the.name.IS.invalid&#39;
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 3: Not start with an alphanumeric character
+        invalid_name = &#39;-the.name.is.invalid&#39;
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 422 == code, (code, data)
+
+        # Case 4: Not end with an alphanumeric character
+        invalid_name = &#39;the.name.is.invalid.&#39;
+        spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 422 == code, (code, data)</code></pre>
 </details>
 <h3>Class variables</h3>
@@ -1778,6 +1850,52 @@ def test_restore_replace_with_delete_vols(
         f&#34;Executed stdout: {out}\n&#34;
         f&#34;Executed stderr: {err}&#34;
     )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_invalid_name"><code class="name flex">
+<span>def <span class="ident">test_restore_with_invalid_name</span></span>(<span>self, api_client, backup_config, base_vm_with_data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.negative
+@pytest.mark.skip_version_before(&#39;v1.1.2&#39;, &#39;v1.2.1&#39;)
+@pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
+def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with_data):
+    # RFC1123 DNS Subdomain name rules:
+    # 1. contain no more than 253 characters
+    # 2. contain only lowercase alphanumeric characters, &#39;-&#39; or &#39;.&#39;
+    # 3. start with an alphanumeric character
+    # 4. end with an alphanumeric character
+
+    unique_vm_name = base_vm_with_data[&#39;name&#39;]
+
+    # Case 1: longer than 253 chars
+    invalid_name = &#39;a&#39; * 254
+    spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+    code, data = api_client.backups.restore(unique_vm_name, spec)
+    assert 422 == code, (code, data)
+
+    # Case 2: having upper case
+    invalid_name = &#39;the.name.IS.invalid&#39;
+    spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+    code, data = api_client.backups.restore(unique_vm_name, spec)
+    assert 422 == code, (code, data)
+
+    # Case 3: Not start with an alphanumeric character
+    invalid_name = &#39;-the.name.is.invalid&#39;
+    spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+    code, data = api_client.backups.restore(unique_vm_name, spec)
+    assert 422 == code, (code, data)
+
+    # Case 4: Not end with an alphanumeric character
+    invalid_name = &#39;the.name.is.invalid.&#39;
+    spec = api_client.backups.RestoreSpec.for_new(invalid_name)
+    code, data = api_client.backups.restore(unique_vm_name, spec)
+    assert 422 == code, (code, data)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm"><code class="name flex">
@@ -3093,6 +3211,7 @@ def test_delete_middle_backup(
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_connection" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_connection">test_connection</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop">test_restore_replace_vm_not_stop</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols">test_restore_replace_with_delete_vols</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_invalid_name" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_invalid_name">test_restore_with_invalid_name</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm">test_restore_with_new_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_update_backup_by_yaml" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_update_backup_by_yaml">test_update_backup_by_yaml</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.tests_backup_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.tests_backup_vm">tests_backup_vm</a></code></li>

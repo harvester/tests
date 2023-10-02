@@ -942,6 +942,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2968_restored_vm_can_not_be_cloned/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/_incoming/4544_restored_vm_name_does_not_support_uppercases/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2116-2351-restricted-admin-no-cattle-monitoring-system-volumes/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/run-multiple-instances-console/</loc>
