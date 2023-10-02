@@ -1,11 +1,30 @@
+import re
 from io import StringIO
 from time import sleep
 from datetime import datetime, timedelta
+from ipaddress import ip_network
 from contextlib import contextmanager
 
 import pytest
 from paramiko import SSHClient, RSAKey, MissingHostKeyPolicy
-from paramiko.ssh_exception import ChannelException
+from paramiko.ssh_exception import ChannelException, NoValidConnectionsError
+
+
+@pytest.fixture(scope="session")
+def vm_mgmt_static(api_client):
+    code, data = api_client.hosts.get()
+    assert 200 == code, (code, data)
+
+    rke2_args = data['data'][0]['metadata']['annotations']['rke2.io/node-args']
+    cluster_cidr = re.search(r'cluster-cidr[\",]+((?:\d+\.?)+\/\d+)\"', rke2_args).group(1)
+
+    mgmt_network = ip_network(cluster_cidr)
+    mgmt_route = {
+        "gateway": "10.0.2.1",
+        "netmask": f"{mgmt_network.netmask}",
+        "network": f"{mgmt_network.network_address}"
+    }
+    return dict(type="static", address="10.0.2.2/24", routes=[mgmt_route])
 
 
 @pytest.fixture(scope="session")
@@ -78,7 +97,7 @@ def vm_shell_from_host(vm_shell, host_shell, wait_timeout):
             while endtime > datetime.now():
                 try:
                     vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
+                except (ChannelException, NoValidConnectionsError) as e:
                     login_ex = e
                     sleep(3)
                 else:
@@ -86,14 +105,13 @@ def vm_shell_from_host(vm_shell, host_shell, wait_timeout):
             else:
                 raise AssertionError(f"Unable to login to VM {vm_ip}") from login_ex
 
-            with vm_sh as sh:
-                yield sh
+            yield vm_sh
 
     return vm_login_from_host
 
 
 @pytest.fixture(scope="session")
-def vm_checker(api_client, wait_timeout, sleep_timeout):
+def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
     from dataclasses import dataclass, field
 
     @dataclass
@@ -286,6 +304,24 @@ def vm_checker(api_client, wait_timeout, sleep_timeout):
             else:
                 return False, ctx
             return True, ctx
+
+        def wait_ssh_connected(
+            self, vm_ip, username, password=None, pkey=None, endtime=None, **kws
+        ):
+            vm_sh = vm_shell(username, password, pkey)
+            endtime = endtime or self._endtime()
+            while endtime > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, **kws)
+                except (ChannelException, NoValidConnectionsError) as e:
+                    login_ex = e
+                    sleep(self.snooze)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to VM {vm_ip}") from login_ex
+
+            return vm_sh
 
     return VMChecker(api_client.vms, wait_timeout, sleep_timeout)
 
