@@ -567,7 +567,11 @@ class TestBackendNetwork:
                 interfaces_data = data['status']['interfaces']
                 ip_addresses = []
                 for interface in interfaces_data:
-                    if 'ipAddress' in interface:
+                    # Check the ipAddress in digital format
+                    if (
+                        'ipAddress' in interface and
+                        interface['ipAddress'].replace('.', '').isdigit()
+                    ):
                         ip_addresses.append(interface['ipAddress'])
 
                 if len(ip_addresses) > 0:
