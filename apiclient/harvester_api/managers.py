@@ -790,9 +790,9 @@ class VirtualMachineManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._update(path, vm_spec, raw=raw, as_json=as_json, **kwargs)
 
-    def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+    def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False, **kwargs):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
-        return self._delete(path, raw=raw)
+        return self._delete(path, raw=raw, **kwargs)
 
     def clone(self, name, new_vm_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
