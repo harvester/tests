@@ -93,7 +93,7 @@ def vm_shell_from_host(vm_shell, host_shell, wait_timeout):
 
 
 @pytest.fixture(scope="session")
-def vm_checker(request, api_client, wait_timeout, sleep_timeout):
+def vm_checker(api_client, wait_timeout, sleep_timeout):
     from dataclasses import dataclass, field
 
     @dataclass
