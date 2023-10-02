@@ -203,10 +203,11 @@ def vm_checker(api_client, wait_timeout, sleep_timeout):
             while endtime > datetime.now():
                 ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws),
                                       ctx.options)
-                old_pods = ctx.options['old_pods']
-                cur_pods = ctx.data['status'].get('activePods', {}).items()
-                if old_pods.difference(cur_pods or old_pods) and callback(ctx):
-                    break
+                if 404 != ctx.code:
+                    old_pods = ctx.options['old_pods']
+                    cur_pods = ctx.data['status'].get('activePods', {}).items()
+                    if old_pods.difference(cur_pods or old_pods) and callback(ctx):
+                        break
                 sleep(self.snooze)
             else:
                 return False, ctx
