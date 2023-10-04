@@ -194,12 +194,16 @@ class VolumeManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._get(path, raw=raw)
 
-    def create(self, name, volume_spec, namespace=DEFAULT_NAMESPACE, image_id=None, *, raw=False):
+    def create(
+        self, name, volume_spec, namespace=DEFAULT_NAMESPACE, image_id=None,
+        *, raw=False, **kwargs
+    ):
         if isinstance(volume_spec, self.Spec):
             volume_spec = volume_spec.to_dict(name, namespace, image_id)
 
         path = self.PATH_fmt.format(uid="", ns=namespace)
-        return self._create(path, json=volume_spec, raw=raw)
+        kws = merge_dict(kwargs, dict(json=volume_spec))
+        return self._create(path, raw=raw, **kws)
 
     def update(self, name, volume_spec, namespace=DEFAULT_NAMESPACE, *,
                raw=False, as_json=True, **kwargs):
