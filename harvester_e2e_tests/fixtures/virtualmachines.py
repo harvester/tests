@@ -196,7 +196,7 @@ def vm_checker(api_client, wait_timeout, sleep_timeout):
 
             options = dict(old_pods=set(ctx.data['status']['activePods'].items()))
             ctx = ResponseContext('vm.restart', *self.vms.restart(vm_name, **kws), options)
-            if 204 != ctx.code and callback(ctx):
+            if 404 == ctx.code and callback(ctx):
                 return False, ctx
 
             endtime = endtime or self._endtime()
