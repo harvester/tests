@@ -121,8 +121,32 @@ def vm_shell_from_host(vm_shell, host_shell, wait_timeout):
 
 
 @pytest.fixture(scope=&#34;session&#34;)
-def vm_checker(request, api_client, wait_timeout):
-    def _cb(code, data):
+def vm_checker(api_client, wait_timeout, sleep_timeout):
+    from dataclasses import dataclass, field
+
+    @dataclass
+    class ResponseContext:
+        callee: str
+        code: int
+        data: dict
+        options: dict = field(default_factory=dict, compare=False)
+
+        def __iter__(self):
+            &#39;&#39;&#39; handy method be used to unpack&#39;&#39;&#39;
+            return iter([self.code, self.data])
+
+    @dataclass
+    class ShellContext:
+        command: str
+        stdout: str
+        stderr: str
+        options: dict = field(default_factory=dict, compare=False)
+
+        def __iter__(self):
+            &#39;&#39;&#39; handy method be used to unpack&#39;&#39;&#39;
+            return iter([self.stdout, self.stderr])
+
+    def default_cb(ctx):
         &#39;&#39;&#39; identity callback function for adjust checking condition.
 
         :rtype: boolean
@@ -140,98 +164,256 @@ def vm_checker(request, api_client, wait_timeout):
         def _endtime(self):
             return datetime.now() + timedelta(seconds=self.wait_timeout)
 
-        def wait_stopped(self, vm_name, endtime=None, callback=_cb, **kws):
-            code, data = self.vms.stop(vm_name)
-            if 204 != code:
-                return False, (code, data)
+        @contextmanager
+        def configure(self, snooze=None, wait_timeout=None):
+            &#39;&#39;&#39; context manager to temporarily change snooze or wait_timeout &#39;&#39;&#39;
+            s, t = self.snooze, self.wait_timeout
+            try:
+                self.snooze, self.wait_timeout = snooze or s, wait_timeout or t
+                yield self
+            finally:
+                self.snooze, self.wait_timeout = s, t
+
+        def wait_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.stop&#39;, *self.vms.stop(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                code, data = self.vms.get_status(vm_name)
-                if 404 == code and callback(code, data):
+                ctx = ResponseContext(&#39;get_status&#39;, *self.vms.get_status(vm_name, **kws))
+                if 404 == ctx.code and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, ctx
+            return True, ctx
 
-        def wait_deleted(self, vm_name, endtime=None, callback=_cb, **kws):
-            self.vms.delete(vm_name)
+        def wait_status_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == &#39;vm.stop&#39;:
+                    return callback(ctx)
+                ctx.code, ctx.data = self.vms.get(vm_name, **kws)
+                ctx.callee = &#39;vm.get&#39;
+                return (
+                    200 == ctx.code
+                    and &#34;Stopped&#34; == ctx.data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;)
+                    and callback(ctx)
+                )
+            return self.wait_stopped(vm_name, endtime, cb, **kws)
+
+        def wait_deleted(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.delete&#39;, *self.vms.delete(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
+
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                code, data = api_client.vms.get_status(vm_name)
-                if 404 == code:
+                ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws))
+                if 404 == ctx.code and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, ctx
+            return True, ctx
 
-        def wait_started(self, vm_name, endtime=None, callback=_cb, **kws):
+        def wait_restarted(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
+
+            options = dict(old_pods=set(ctx.data[&#39;status&#39;][&#39;activePods&#39;].items()))
+            ctx = ResponseContext(&#39;vm.restart&#39;, *self.vms.restart(vm_name, **kws), options)
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
+
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                code, data = self.vms.get_status(vm_name, **kws)
+                ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws),
+                                      ctx.options)
+                old_pods = ctx.options[&#39;old_pods&#39;]
+                cur_pods = ctx.data[&#39;status&#39;].get(&#39;activePods&#39;, {}).items()
+                if old_pods.difference(cur_pods or old_pods) and callback(ctx):
+                    break
+                sleep(self.snooze)
+            else:
+                return False, ctx
+            return self.wait_started(vm_name, endtime, callback, **kws)
+
+        def wait_started(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.start&#39;, *self.vms.start(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
+
+            endtime = endtime or self._endtime()
+            while endtime &gt; datetime.now():
+                ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws))
                 if (
-                    200 == code
-                    and &#34;Running&#34; == data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
-                    and callback(code, data)
+                    200 == ctx.code
+                    and &#34;Running&#34; == ctx.data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
+                    and callback(ctx)
                 ):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, ctx
+            return True, ctx
 
-        def wait_agent_connected(self, vm_name, endtime=None, callback=_cb, **kws):
-            def cb(code, data):
-                conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
+        def wait_agent_connected(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == &#39;vm.start&#39;:
+                    return callback(ctx)
+
+                conds = ctx.data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
                 return (
                     &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;)
-                    and callback(code, data)
+                    and callback(ctx)
                 )
 
             return self.wait_started(vm_name, endtime, cb, **kws)
 
-        def wait_interfaces(self, vm_name, endtime=None, callback=_cb, **kws):
-            def cb(code, data):
+        def wait_interfaces(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == &#39;vm.start&#39;:
+                    return callback(ctx)
+
                 return (
-                    data.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;)
-                    and callback(code, data)
+                    ctx.data.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;)
+                    and callback(ctx)
                 )
             return self.wait_agent_connected(vm_name, endtime, cb, **kws)
 
-        def wait_cloudinit_done(self, shell, endtime=None, callback=_cb, **kws):
+        def wait_cloudinit_done(self, shell, endtime=None, callback=default_cb, **kws):
+            cmd = &#39;cloud-init status&#39;
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                out, err = shell.exec_command(&#39;cloud-init status&#39;)
-                if &#39;done&#39; in out and callback(out, err):
+                ctx = ShellContext(cmd, *shell.exec_command(cmd))
+                if &#39;done&#39; in ctx.stdout and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (out, err)
-            return True, (out, err)
+                return False, (ctx.stdout, ctx.stderr)
+            return True, (ctx.stdout, ctx.stderr)
 
-        def wait_migrated(self, vm_name, new_host, endtime=None, callback=_cb, **kws):
-            code, data = self.vms.migrate(vm_name, new_host)
-            if 204 != code:
-                return False, (code, data)
+        def wait_migrated(self, vm_name, new_host, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.migrate&#39;, *self.vms.migrate(vm_name, new_host, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                code, data = self.vms.get_status(vm_name)
-                migrating = data[&#39;metadata&#39;][&#39;annotations&#39;].get(&#34;harvesterhci.io/migrationState&#34;)
+                ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws))
                 if (
-                    not migrating and new_host == data[&#39;status&#39;][&#39;nodeName&#39;]
-                    and callback(code, data)
+                    not ctx.data[&#39;metadata&#39;][&#39;annotations&#39;].get(&#34;harvesterhci.io/migrationState&#34;)
+                    and new_host == ctx.data[&#39;status&#39;][&#39;nodeName&#39;]
+                    and callback(ctx)
                 ):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, ctx
+            return True, ctx
 
-    return VMChecker(api_client.vms, wait_timeout,
-                     request.config.getoption(&#34;--sleep-timeout&#34;) or 3)</code></pre>
+    return VMChecker(api_client.vms, wait_timeout, sleep_timeout)
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def vm_calc():
+    from re import match
+    from json import loads
+
+    class VMResourceCalc:
+        UNITS = (&#39;&#39;, &#39;K&#39;, &#39;M&#39;, &#39;G&#39;, &#39;T&#39;, &#39;P&#39;, &#39;E&#39;, &#39;Z&#39;, &#39;Y&#39;)
+        FRACTIONAL = (&#39;&#39;, &#39;m&#39;, &#39;u&#39;, &#39;n&#39;, &#39;p&#39;, &#39;f&#39;, &#39;a&#39;, &#39;z&#39;, &#39;y&#39;)
+
+        @classmethod
+        def node_resources(cls, node, *, res_types=(&#39;cpu&#39;, &#39;memory&#39;)):
+            reserved = loads(node[&#39;metadata&#39;][&#39;annotations&#39;][&#34;management.cattle.io/pod-requests&#34;])
+            reserved = {k: cls.parse_unit(v) for k, v in reserved.items() if k in res_types}
+            available = node[&#39;status&#39;][&#39;allocatable&#39;]
+            available = {k: cls.parse_unit(v) for k, v in available.items() if k in res_types}
+            schedulable = {k: v - reserved[k] for k, v in available.items()}
+            return {
+                &#39;schedulable&#39;: schedulable,
+                &#39;available&#39;: available,
+                &#39;reserved&#39;: reserved
+            }
+
+        @classmethod
+        def format_unit(
+            cls, value, *, increment=1000, start_exp=0, min_exp=0, max_exp=99, max_precision=2,
+            suffix=&#39;&#39;, add_suffix=True, suffix_space=True, first_suffix=None, can_round_0=True
+        ):
+            # type: (int, int, int, int, int, int) -&gt; str
+            # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L4
+
+            val, exp, divide = value, start_exp, max_exp &gt;= 0
+
+            if divide:
+                while exp &lt; min_exp or (val &gt;= increment and exp + 1 &lt; len(cls.UNITS)
+                                        and exp &lt; max_exp):
+                    val = val / increment
+                    exp += 1
+            else:
+                while exp &lt; (min_exp * -1) or (val &lt; increment and exp + 1 &lt; len(cls.FRACTIONAL)
+                                               and exp &lt; (max_exp * -1)):
+                    val = val * increment
+                    exp += 1
+
+            if val &lt; 10 and max_precision &gt;= 1:
+                rv = f&#34;{round(val * (10 ** max_precision) / (10 ** max_precision))}&#34;
+            else:
+                rv = f&#34;{round(val)}&#34;
+
+            if rv == &#39;0&#39; and not can_round_0 and value != 0:
+                val, exp = value, 0
+                while val &gt;= increment:
+                    val /= increment
+                    exp += 1
+                return cls.format_unit(
+                    val, increment=increment, start_exp=start_exp, min_exp=exp, max_exp=exp,
+                    max_precision=max_precision, suffix=suffix, add_suffix=add_suffix,
+                    suffix_space=suffix_space, first_suffix=first_suffix
+                )
+
+            if add_suffix:
+                rv = f&#34;{rv} &#34; if suffix_space else rv
+                if exp == 0 and first_suffix is not None:
+                    rv += f&#34;{first_suffix}&#34;
+                else:
+                    rv += f&#34;{cls.UNITS[exp] if divide else cls.FRACTIONAL[exp]}{suffix}&#34;
+
+            return rv
+
+        @classmethod
+        def parse_unit(cls, value):
+            # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L83
+            try:
+                pattern = r&#34;^([0-9.-]+)\s*([^0-9.-]?)([^0-9.-]?)&#34;
+                val, unit, inc = match(pattern, value).groups()
+                val = float(val)
+                assert unit != &#34;&#34;
+            except AttributeError:
+                raise ValueError(&#34;Could not parse the value&#34;, value)
+            except (AssertionError, ValueError):
+                return val
+
+            # µ (mu) symbol -&gt; u
+            unit = &#39;u&#39; if ord(unit[0]) == 181 else unit
+
+            divide = unit in cls.FRACTIONAL
+            multiply = unit.upper() in cls.UNITS
+            inc_base = 1024 if inc == &#39;i&#39; and (divide or multiply) else 1000
+
+            if divide:
+                exp = cls.FRACTIONAL.index(unit)
+                return val / (inc_base ** exp)
+
+            if multiply:
+                exp = cls.UNITS.index(unit.upper())
+                return val * (inc_base ** exp)
+
+    return VMResourceCalc</code></pre>
 </details>
 </section>
 <section>
@@ -241,8 +423,8 @@ def vm_checker(request, api_client, wait_timeout):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.fixtures.virtualmachines.vm_checker"><code class="name flex">
-<span>def <span class="ident">vm_checker</span></span>(<span>request, api_client, wait_timeout)</span>
+<dt id="harvester_e2e_tests.fixtures.virtualmachines.vm_calc"><code class="name flex">
+<span>def <span class="ident">vm_calc</span></span>(<span>)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -251,8 +433,140 @@ def vm_checker(request, api_client, wait_timeout):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def vm_checker(request, api_client, wait_timeout):
-    def _cb(code, data):
+def vm_calc():
+    from re import match
+    from json import loads
+
+    class VMResourceCalc:
+        UNITS = (&#39;&#39;, &#39;K&#39;, &#39;M&#39;, &#39;G&#39;, &#39;T&#39;, &#39;P&#39;, &#39;E&#39;, &#39;Z&#39;, &#39;Y&#39;)
+        FRACTIONAL = (&#39;&#39;, &#39;m&#39;, &#39;u&#39;, &#39;n&#39;, &#39;p&#39;, &#39;f&#39;, &#39;a&#39;, &#39;z&#39;, &#39;y&#39;)
+
+        @classmethod
+        def node_resources(cls, node, *, res_types=(&#39;cpu&#39;, &#39;memory&#39;)):
+            reserved = loads(node[&#39;metadata&#39;][&#39;annotations&#39;][&#34;management.cattle.io/pod-requests&#34;])
+            reserved = {k: cls.parse_unit(v) for k, v in reserved.items() if k in res_types}
+            available = node[&#39;status&#39;][&#39;allocatable&#39;]
+            available = {k: cls.parse_unit(v) for k, v in available.items() if k in res_types}
+            schedulable = {k: v - reserved[k] for k, v in available.items()}
+            return {
+                &#39;schedulable&#39;: schedulable,
+                &#39;available&#39;: available,
+                &#39;reserved&#39;: reserved
+            }
+
+        @classmethod
+        def format_unit(
+            cls, value, *, increment=1000, start_exp=0, min_exp=0, max_exp=99, max_precision=2,
+            suffix=&#39;&#39;, add_suffix=True, suffix_space=True, first_suffix=None, can_round_0=True
+        ):
+            # type: (int, int, int, int, int, int) -&gt; str
+            # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L4
+
+            val, exp, divide = value, start_exp, max_exp &gt;= 0
+
+            if divide:
+                while exp &lt; min_exp or (val &gt;= increment and exp + 1 &lt; len(cls.UNITS)
+                                        and exp &lt; max_exp):
+                    val = val / increment
+                    exp += 1
+            else:
+                while exp &lt; (min_exp * -1) or (val &lt; increment and exp + 1 &lt; len(cls.FRACTIONAL)
+                                               and exp &lt; (max_exp * -1)):
+                    val = val * increment
+                    exp += 1
+
+            if val &lt; 10 and max_precision &gt;= 1:
+                rv = f&#34;{round(val * (10 ** max_precision) / (10 ** max_precision))}&#34;
+            else:
+                rv = f&#34;{round(val)}&#34;
+
+            if rv == &#39;0&#39; and not can_round_0 and value != 0:
+                val, exp = value, 0
+                while val &gt;= increment:
+                    val /= increment
+                    exp += 1
+                return cls.format_unit(
+                    val, increment=increment, start_exp=start_exp, min_exp=exp, max_exp=exp,
+                    max_precision=max_precision, suffix=suffix, add_suffix=add_suffix,
+                    suffix_space=suffix_space, first_suffix=first_suffix
+                )
+
+            if add_suffix:
+                rv = f&#34;{rv} &#34; if suffix_space else rv
+                if exp == 0 and first_suffix is not None:
+                    rv += f&#34;{first_suffix}&#34;
+                else:
+                    rv += f&#34;{cls.UNITS[exp] if divide else cls.FRACTIONAL[exp]}{suffix}&#34;
+
+            return rv
+
+        @classmethod
+        def parse_unit(cls, value):
+            # https://github.com/harvester/dashboard/blob/master/shell/utils/units.js#L83
+            try:
+                pattern = r&#34;^([0-9.-]+)\s*([^0-9.-]?)([^0-9.-]?)&#34;
+                val, unit, inc = match(pattern, value).groups()
+                val = float(val)
+                assert unit != &#34;&#34;
+            except AttributeError:
+                raise ValueError(&#34;Could not parse the value&#34;, value)
+            except (AssertionError, ValueError):
+                return val
+
+            # µ (mu) symbol -&gt; u
+            unit = &#39;u&#39; if ord(unit[0]) == 181 else unit
+
+            divide = unit in cls.FRACTIONAL
+            multiply = unit.upper() in cls.UNITS
+            inc_base = 1024 if inc == &#39;i&#39; and (divide or multiply) else 1000
+
+            if divide:
+                exp = cls.FRACTIONAL.index(unit)
+                return val / (inc_base ** exp)
+
+            if multiply:
+                exp = cls.UNITS.index(unit.upper())
+                return val * (inc_base ** exp)
+
+    return VMResourceCalc</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.virtualmachines.vm_checker"><code class="name flex">
+<span>def <span class="ident">vm_checker</span></span>(<span>api_client, wait_timeout, sleep_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def vm_checker(api_client, wait_timeout, sleep_timeout):
+    from dataclasses import dataclass, field
+
+    @dataclass
+    class ResponseContext:
+        callee: str
+        code: int
+        data: dict
+        options: dict = field(default_factory=dict, compare=False)
+
+        def __iter__(self):
+            &#39;&#39;&#39; handy method be used to unpack&#39;&#39;&#39;
+            return iter([self.code, self.data])
+
+    @dataclass
+    class ShellContext:
+        command: str
+        stdout: str
+        stderr: str
+        options: dict = field(default_factory=dict, compare=False)
+
+        def __iter__(self):
+            &#39;&#39;&#39; handy method be used to unpack&#39;&#39;&#39;
+            return iter([self.stdout, self.stderr])
+
+    def default_cb(ctx):
         &#39;&#39;&#39; identity callback function for adjust checking condition.
 
         :rtype: boolean
@@ -270,98 +584,157 @@ def vm_checker(request, api_client, wait_timeout):
         def _endtime(self):
             return datetime.now() + timedelta(seconds=self.wait_timeout)
 
-        def wait_stopped(self, vm_name, endtime=None, callback=_cb, **kws):
-            code, data = self.vms.stop(vm_name)
-            if 204 != code:
-                return False, (code, data)
+        @contextmanager
+        def configure(self, snooze=None, wait_timeout=None):
+            &#39;&#39;&#39; context manager to temporarily change snooze or wait_timeout &#39;&#39;&#39;
+            s, t = self.snooze, self.wait_timeout
+            try:
+                self.snooze, self.wait_timeout = snooze or s, wait_timeout or t
+                yield self
+            finally:
+                self.snooze, self.wait_timeout = s, t
+
+        def wait_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.stop&#39;, *self.vms.stop(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                code, data = self.vms.get_status(vm_name)
-                if 404 == code and callback(code, data):
+                ctx = ResponseContext(&#39;get_status&#39;, *self.vms.get_status(vm_name, **kws))
+                if 404 == ctx.code and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, ctx
+            return True, ctx
 
-        def wait_deleted(self, vm_name, endtime=None, callback=_cb, **kws):
-            self.vms.delete(vm_name)
+        def wait_status_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == &#39;vm.stop&#39;:
+                    return callback(ctx)
+                ctx.code, ctx.data = self.vms.get(vm_name, **kws)
+                ctx.callee = &#39;vm.get&#39;
+                return (
+                    200 == ctx.code
+                    and &#34;Stopped&#34; == ctx.data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;)
+                    and callback(ctx)
+                )
+            return self.wait_stopped(vm_name, endtime, cb, **kws)
+
+        def wait_deleted(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.delete&#39;, *self.vms.delete(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
+
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                code, data = api_client.vms.get_status(vm_name)
-                if 404 == code:
+                ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws))
+                if 404 == ctx.code and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, ctx
+            return True, ctx
 
-        def wait_started(self, vm_name, endtime=None, callback=_cb, **kws):
+        def wait_restarted(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
+
+            options = dict(old_pods=set(ctx.data[&#39;status&#39;][&#39;activePods&#39;].items()))
+            ctx = ResponseContext(&#39;vm.restart&#39;, *self.vms.restart(vm_name, **kws), options)
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
+
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                code, data = self.vms.get_status(vm_name, **kws)
+                ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws),
+                                      ctx.options)
+                old_pods = ctx.options[&#39;old_pods&#39;]
+                cur_pods = ctx.data[&#39;status&#39;].get(&#39;activePods&#39;, {}).items()
+                if old_pods.difference(cur_pods or old_pods) and callback(ctx):
+                    break
+                sleep(self.snooze)
+            else:
+                return False, ctx
+            return self.wait_started(vm_name, endtime, callback, **kws)
+
+        def wait_started(self, vm_name, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.start&#39;, *self.vms.start(vm_name, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
+
+            endtime = endtime or self._endtime()
+            while endtime &gt; datetime.now():
+                ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws))
                 if (
-                    200 == code
-                    and &#34;Running&#34; == data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
-                    and callback(code, data)
+                    200 == ctx.code
+                    and &#34;Running&#34; == ctx.data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
+                    and callback(ctx)
                 ):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, ctx
+            return True, ctx
 
-        def wait_agent_connected(self, vm_name, endtime=None, callback=_cb, **kws):
-            def cb(code, data):
-                conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
+        def wait_agent_connected(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == &#39;vm.start&#39;:
+                    return callback(ctx)
+
+                conds = ctx.data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
                 return (
                     &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;)
-                    and callback(code, data)
+                    and callback(ctx)
                 )
 
             return self.wait_started(vm_name, endtime, cb, **kws)
 
-        def wait_interfaces(self, vm_name, endtime=None, callback=_cb, **kws):
-            def cb(code, data):
+        def wait_interfaces(self, vm_name, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == &#39;vm.start&#39;:
+                    return callback(ctx)
+
                 return (
-                    data.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;)
-                    and callback(code, data)
+                    ctx.data.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;)
+                    and callback(ctx)
                 )
             return self.wait_agent_connected(vm_name, endtime, cb, **kws)
 
-        def wait_cloudinit_done(self, shell, endtime=None, callback=_cb, **kws):
+        def wait_cloudinit_done(self, shell, endtime=None, callback=default_cb, **kws):
+            cmd = &#39;cloud-init status&#39;
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                out, err = shell.exec_command(&#39;cloud-init status&#39;)
-                if &#39;done&#39; in out and callback(out, err):
+                ctx = ShellContext(cmd, *shell.exec_command(cmd))
+                if &#39;done&#39; in ctx.stdout and callback(ctx):
                     break
                 sleep(self.snooze)
             else:
-                return False, (out, err)
-            return True, (out, err)
+                return False, (ctx.stdout, ctx.stderr)
+            return True, (ctx.stdout, ctx.stderr)
 
-        def wait_migrated(self, vm_name, new_host, endtime=None, callback=_cb, **kws):
-            code, data = self.vms.migrate(vm_name, new_host)
-            if 204 != code:
-                return False, (code, data)
+        def wait_migrated(self, vm_name, new_host, endtime=None, callback=default_cb, **kws):
+            ctx = ResponseContext(&#39;vm.migrate&#39;, *self.vms.migrate(vm_name, new_host, **kws))
+            if 404 == ctx.code and callback(ctx):
+                return False, ctx
 
             endtime = endtime or self._endtime()
             while endtime &gt; datetime.now():
-                code, data = self.vms.get_status(vm_name)
-                migrating = data[&#39;metadata&#39;][&#39;annotations&#39;].get(&#34;harvesterhci.io/migrationState&#34;)
+                ctx = ResponseContext(&#39;vm.get_status&#39;, *self.vms.get_status(vm_name, **kws))
                 if (
-                    not migrating and new_host == data[&#39;status&#39;][&#39;nodeName&#39;]
-                    and callback(code, data)
+                    not ctx.data[&#39;metadata&#39;][&#39;annotations&#39;].get(&#34;harvesterhci.io/migrationState&#34;)
+                    and new_host == ctx.data[&#39;status&#39;][&#39;nodeName&#39;]
+                    and callback(ctx)
                 ):
                     break
                 sleep(self.snooze)
             else:
-                return False, (code, data)
-            return True, (code, data)
+                return False, ctx
+            return True, ctx
 
-    return VMChecker(api_client.vms, wait_timeout,
-                     request.config.getoption(&#34;--sleep-timeout&#34;) or 3)</code></pre>
+    return VMChecker(api_client.vms, wait_timeout, sleep_timeout)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.virtualmachines.vm_shell"><code class="name flex">
@@ -484,6 +857,7 @@ def vm_shell_from_host(vm_shell, host_shell, wait_timeout):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.virtualmachines.vm_calc" href="#harvester_e2e_tests.fixtures.virtualmachines.vm_calc">vm_calc</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.virtualmachines.vm_checker" href="#harvester_e2e_tests.fixtures.virtualmachines.vm_checker">vm_checker</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.virtualmachines.vm_shell" href="#harvester_e2e_tests.fixtures.virtualmachines.vm_shell">vm_shell</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.virtualmachines.vm_shell_from_host" href="#harvester_e2e_tests.fixtures.virtualmachines.vm_shell_from_host">vm_shell_from_host</a></code></li>
