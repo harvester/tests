@@ -26,17 +26,13 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import yaml
+<pre><code class="python">from urllib.parse import urljoin
+
+import yaml
 import pytest
-from harvester_e2e_tests import utils
-from urllib.parse import urljoin
 
 pytest_plugins = [
-    &#39;harvester_e2e_tests.fixtures.api_endpoints&#39;,
-    &#39;harvester_e2e_tests.fixtures.volume&#39;,
-    &#39;harvester_e2e_tests.fixtures.session&#39;,
-    &#39;harvester_e2e_tests.fixtures.image&#39;,
-    &#39;harvester_e2e_tests.fixtures.images&#39;,
+    &#39;harvester_e2e_tests.fixtures.api_client&#39;,
 ]
 
 
@@ -59,7 +55,7 @@ def focal_image(api_client, unique_name, focal_image_url, polling_for):
 
     namespace = data[&#39;metadata&#39;][&#39;namespace&#39;]
     name = data[&#39;metadata&#39;][&#39;name&#39;]
-    yield dict(ssh_user=&#34;ubuntu&#34;, id=f&#34;{namespace}/{name}&#34;)
+    yield dict(ssh_user=&#34;ubuntu&#34;, id=f&#34;{namespace}/{name}&#34;, display_name=image_name)
 
     code, data = api_client.images.get(image_name)
     if 200 == code:
@@ -107,59 +103,10 @@ def focal_vm(api_client, unique_name, focal_image, polling_for):
                     api_client.volumes.get, vol_name)
 
 
+@pytest.mark.p0
 @pytest.mark.volumes
-@pytest.mark.p1
-def test_create_volume_image_form(volume_image_form):
-    # NOTE: if the volume is successfully create that means the test is good
-    &#34;&#34;&#34;
-    Volume test with image
-    Covers:
-        vol-03-Create volume root disk VM Image Form
-    &#34;&#34;&#34;
-    pass
-
-
-@pytest.mark.volumes
-@pytest.mark.p1
-def test_create_volume_using_image_by_yaml(admin_session, harvester_api_endpoints, image,
-                                           polling_for):
-    &#34;&#34;&#34;
-    Volume test with image
-    Covers:
-        vol-04-Create volume root disk VM Image YAML
-    &#34;&#34;&#34;
-    def _validate_blank_volumes(admin_session, get_api_link):
-        resp = admin_session.get(get_api_link)
-        return resp.status_code, resp.json()
-
-    request_json = utils.get_json_object_from_template(&#39;basic_volume&#39;)
-    imageid = &#34;/&#34;.join([image[&#39;metadata&#39;][&#39;namespace&#39;],
-                       image[&#39;metadata&#39;][&#39;name&#39;]])
-    request_json[&#39;metadata&#39;][&#39;annotations&#39;][
-        &#39;harvesterhci.io/imageId&#39;] = imageid
-    resp = admin_session.post(harvester_api_endpoints.create_volume,
-                              data=yaml.dump(request_json, sort_keys=False),
-                              headers={&#39;Content-Type&#39;: &#39;application/yaml&#39;})
-    assert resp.status_code == 201, (
-        &#39;Failed to create volume with YAML request: %s&#39; % (resp.content))
-    view_endpoint = harvester_api_endpoints.get_volume % (
-        request_json[&#39;metadata&#39;][&#39;name&#39;])
-
-    polling_for(&#34;volume to be ready&#34;,
-                lambda c, d: 200 == c and &#39;status&#39; in d and d[&#39;status&#39;][&#39;phase&#39;] == &#39;Bound&#39;,
-                _validate_blank_volumes, admin_session, view_endpoint)
-
-    resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
-        request_json[&#39;metadata&#39;][&#39;name&#39;]))
-    # FIXME(gyee): we need to figure out why the API can arbitarily return
-    # 200 or 204. It should consistently returning one.
-    assert resp.status_code in [200, 204], &#39;Failed to delete volume: %s&#39; % (
-        resp.content)
-
-
-@pytest.mark.volumes
-@pytest.mark.p1
-def test_create_volume_backing_image(api_client, unique_name, image_opensuse, polling_for):
+@pytest.mark.parametrize(&#34;create_as&#34;, [&#34;json&#34;, &#34;yaml&#34;])
+def test_create_volume_backing_image(api_client, unique_name, polling_for, focal_image, create_as):
     &#34;&#34;&#34;
     1. Create a new image from URL
     2. Check that it is created succesffully.
@@ -167,42 +114,34 @@ def test_create_volume_backing_image(api_client, unique_name, image_opensuse, po
     4. Check that the new image is created
     5. Delete image and volume
     &#34;&#34;&#34;
-    def _get_image_conds(image_name):
-        code, data = api_client.images.get(image_name)
-        return data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+    image_id, display_name = focal_image[&#39;id&#39;], focal_image[&#39;display_name&#39;]
 
-    code, image_data = api_client.images.create_by_url(unique_name, image_opensuse.url)
-    assert 201 == code, (code, image_data)
-
-    image_conds = polling_for(
-        &#34;image do imported&#34;,
-        lambda image_conds: len(image_conds) &gt; 0 and image_conds[0][&#39;reason&#39;] == &#39;Imported&#39;,
-        _get_image_conds, unique_name
-    )
-    assert &#34;Initialized&#34; == image_conds[-1].get(&#34;type&#34;)
-    assert &#34;True&#34; == image_conds[-1].get(&#34;status&#34;)
-
-    spec = api_client.volumes.Spec(&#34;10Gi&#34;, f&#34;longhorn-{image_data[&#39;spec&#39;][&#39;displayName&#39;]}&#34;)
-    image_id = f&#34;{image_data[&#39;metadata&#39;][&#39;namespace&#39;]}/{image_data[&#39;metadata&#39;][&#39;name&#39;]}&#34;
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id)
+    spec = api_client.volumes.Spec(&#34;10Gi&#34;, f&#34;longhorn-{display_name}&#34;)
+    if create_as == &#39;yaml&#39;:
+        kws = dict(headers={&#39;Content-Type&#39;: &#39;application/yaml&#39;}, json=None,
+                   data=yaml.dump(spec.to_dict(unique_name, &#39;default&#39;, image_id=image_id)))
+    else:
+        kws = dict()
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
     assert 201 == code, (code, unique_name, data, image_id)
 
+    # Verify: volume created &amp; bounded &amp; based on image &amp; name is correct
     polling_for(&#34;volume do created&#34;,
                 lambda code, data: 200 == code and data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
                 api_client.volumes.get, unique_name)
-    code, volume_data = api_client.volumes.get(unique_name)
-    code, image_data = api_client.images.get(unique_name)
-    assert 200 == code, (code, volume_data)
-    assert unique_name == volume_data[&#39;metadata&#39;][&#39;name&#39;], (code, volume_data)
-    assert volume_data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (volume_data)
-    assert image_id == volume_data[&#39;id&#39;], (volume_data)
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, (code, data)
+    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (data)
+    assert image_id == data[&#39;metadata&#39;][&#39;annotations&#39;][&#39;harvesterhci.io/imageId&#39;]
+    assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
 
-    api_client.volumes.delete(unique_name)
-    api_client.images.delete(unique_name)
+    # teardown
+    polling_for(&#34;volume do deleted&#34;, lambda code, _: 404 == code,
+                api_client.volumes.delete, unique_name)
 
 
+@pytest.mark.p0
 @pytest.mark.volumes
-@pytest.mark.p1
 class TestVolumeWithVM:
     def pause_vm(self, api_client, focal_vm, polling_for):
         vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
@@ -300,7 +239,7 @@ def focal_image(api_client, unique_name, focal_image_url, polling_for):
 
     namespace = data[&#39;metadata&#39;][&#39;namespace&#39;]
     name = data[&#39;metadata&#39;][&#39;name&#39;]
-    yield dict(ssh_user=&#34;ubuntu&#34;, id=f&#34;{namespace}/{name}&#34;)
+    yield dict(ssh_user=&#34;ubuntu&#34;, id=f&#34;{namespace}/{name}&#34;, display_name=image_name)
 
     code, data = api_client.images.get(image_name)
     if 200 == code:
@@ -374,7 +313,7 @@ def focal_vm(api_client, unique_name, focal_image, polling_for):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_volumes.test_create_volume_backing_image"><code class="name flex">
-<span>def <span class="ident">test_create_volume_backing_image</span></span>(<span>api_client, unique_name, image_opensuse, polling_for)</span>
+<span>def <span class="ident">test_create_volume_backing_image</span></span>(<span>api_client, unique_name, polling_for, focal_image, create_as)</span>
 </code></dt>
 <dd>
 <div class="desc"><ol>
@@ -388,9 +327,10 @@ def focal_vm(api_client, unique_name, focal_image, polling_for):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.volumes
-@pytest.mark.p1
-def test_create_volume_backing_image(api_client, unique_name, image_opensuse, polling_for):
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.volumes
+@pytest.mark.parametrize(&#34;create_as&#34;, [&#34;json&#34;, &#34;yaml&#34;])
+def test_create_volume_backing_image(api_client, unique_name, polling_for, focal_image, create_as):
     &#34;&#34;&#34;
     1. Create a new image from URL
     2. Check that it is created succesffully.
@@ -398,110 +338,30 @@ def test_create_volume_backing_image(api_client, unique_name, image_opensuse, po
     4. Check that the new image is created
     5. Delete image and volume
     &#34;&#34;&#34;
-    def _get_image_conds(image_name):
-        code, data = api_client.images.get(image_name)
-        return data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+    image_id, display_name = focal_image[&#39;id&#39;], focal_image[&#39;display_name&#39;]
 
-    code, image_data = api_client.images.create_by_url(unique_name, image_opensuse.url)
-    assert 201 == code, (code, image_data)
-
-    image_conds = polling_for(
-        &#34;image do imported&#34;,
-        lambda image_conds: len(image_conds) &gt; 0 and image_conds[0][&#39;reason&#39;] == &#39;Imported&#39;,
-        _get_image_conds, unique_name
-    )
-    assert &#34;Initialized&#34; == image_conds[-1].get(&#34;type&#34;)
-    assert &#34;True&#34; == image_conds[-1].get(&#34;status&#34;)
-
-    spec = api_client.volumes.Spec(&#34;10Gi&#34;, f&#34;longhorn-{image_data[&#39;spec&#39;][&#39;displayName&#39;]}&#34;)
-    image_id = f&#34;{image_data[&#39;metadata&#39;][&#39;namespace&#39;]}/{image_data[&#39;metadata&#39;][&#39;name&#39;]}&#34;
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id)
+    spec = api_client.volumes.Spec(&#34;10Gi&#34;, f&#34;longhorn-{display_name}&#34;)
+    if create_as == &#39;yaml&#39;:
+        kws = dict(headers={&#39;Content-Type&#39;: &#39;application/yaml&#39;}, json=None,
+                   data=yaml.dump(spec.to_dict(unique_name, &#39;default&#39;, image_id=image_id)))
+    else:
+        kws = dict()
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
     assert 201 == code, (code, unique_name, data, image_id)
 
+    # Verify: volume created &amp; bounded &amp; based on image &amp; name is correct
     polling_for(&#34;volume do created&#34;,
                 lambda code, data: 200 == code and data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
                 api_client.volumes.get, unique_name)
-    code, volume_data = api_client.volumes.get(unique_name)
-    code, image_data = api_client.images.get(unique_name)
-    assert 200 == code, (code, volume_data)
-    assert unique_name == volume_data[&#39;metadata&#39;][&#39;name&#39;], (code, volume_data)
-    assert volume_data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (volume_data)
-    assert image_id == volume_data[&#39;id&#39;], (volume_data)
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, (code, data)
+    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (data)
+    assert image_id == data[&#39;metadata&#39;][&#39;annotations&#39;][&#39;harvesterhci.io/imageId&#39;]
+    assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
 
-    api_client.volumes.delete(unique_name)
-    api_client.images.delete(unique_name)</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.integration.test_volumes.test_create_volume_image_form"><code class="name flex">
-<span>def <span class="ident">test_create_volume_image_form</span></span>(<span>volume_image_form)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Volume test with image</p>
-<h2 id="covers">Covers</h2>
-<p>vol-03-Create volume root disk VM Image Form</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.volumes
-@pytest.mark.p1
-def test_create_volume_image_form(volume_image_form):
-    # NOTE: if the volume is successfully create that means the test is good
-    &#34;&#34;&#34;
-    Volume test with image
-    Covers:
-        vol-03-Create volume root disk VM Image Form
-    &#34;&#34;&#34;
-    pass</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.integration.test_volumes.test_create_volume_using_image_by_yaml"><code class="name flex">
-<span>def <span class="ident">test_create_volume_using_image_by_yaml</span></span>(<span>admin_session, harvester_api_endpoints, image, polling_for)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Volume test with image</p>
-<h2 id="covers">Covers</h2>
-<p>vol-04-Create volume root disk VM Image YAML</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.volumes
-@pytest.mark.p1
-def test_create_volume_using_image_by_yaml(admin_session, harvester_api_endpoints, image,
-                                           polling_for):
-    &#34;&#34;&#34;
-    Volume test with image
-    Covers:
-        vol-04-Create volume root disk VM Image YAML
-    &#34;&#34;&#34;
-    def _validate_blank_volumes(admin_session, get_api_link):
-        resp = admin_session.get(get_api_link)
-        return resp.status_code, resp.json()
-
-    request_json = utils.get_json_object_from_template(&#39;basic_volume&#39;)
-    imageid = &#34;/&#34;.join([image[&#39;metadata&#39;][&#39;namespace&#39;],
-                       image[&#39;metadata&#39;][&#39;name&#39;]])
-    request_json[&#39;metadata&#39;][&#39;annotations&#39;][
-        &#39;harvesterhci.io/imageId&#39;] = imageid
-    resp = admin_session.post(harvester_api_endpoints.create_volume,
-                              data=yaml.dump(request_json, sort_keys=False),
-                              headers={&#39;Content-Type&#39;: &#39;application/yaml&#39;})
-    assert resp.status_code == 201, (
-        &#39;Failed to create volume with YAML request: %s&#39; % (resp.content))
-    view_endpoint = harvester_api_endpoints.get_volume % (
-        request_json[&#39;metadata&#39;][&#39;name&#39;])
-
-    polling_for(&#34;volume to be ready&#34;,
-                lambda c, d: 200 == c and &#39;status&#39; in d and d[&#39;status&#39;][&#39;phase&#39;] == &#39;Bound&#39;,
-                _validate_blank_volumes, admin_session, view_endpoint)
-
-    resp = admin_session.delete(harvester_api_endpoints.delete_volume % (
-        request_json[&#39;metadata&#39;][&#39;name&#39;]))
-    # FIXME(gyee): we need to figure out why the API can arbitarily return
-    # 200 or 204. It should consistently returning one.
-    assert resp.status_code in [200, 204], &#39;Failed to delete volume: %s&#39; % (
-        resp.content)</code></pre>
+    # teardown
+    polling_for(&#34;volume do deleted&#34;, lambda code, _: 404 == code,
+                api_client.volumes.delete, unique_name)</code></pre>
 </details>
 </dd>
 </dl>
@@ -518,8 +378,8 @@ def test_create_volume_using_image_by_yaml(admin_session, harvester_api_endpoint
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.volumes
-@pytest.mark.p1
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.volumes
 class TestVolumeWithVM:
     def pause_vm(self, api_client, focal_vm, polling_for):
         vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
@@ -750,8 +610,6 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 <li><code><a title="harvester_e2e_tests.integration.test_volumes.focal_image_url" href="#harvester_e2e_tests.integration.test_volumes.focal_image_url">focal_image_url</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_volumes.focal_vm" href="#harvester_e2e_tests.integration.test_volumes.focal_vm">focal_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_volumes.test_create_volume_backing_image" href="#harvester_e2e_tests.integration.test_volumes.test_create_volume_backing_image">test_create_volume_backing_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_volumes.test_create_volume_image_form" href="#harvester_e2e_tests.integration.test_volumes.test_create_volume_image_form">test_create_volume_image_form</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_volumes.test_create_volume_using_image_by_yaml" href="#harvester_e2e_tests.integration.test_volumes.test_create_volume_using_image_by_yaml">test_create_volume_using_image_by_yaml</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
