@@ -71,6 +71,11 @@ def sleep_timeout(request):
 
 
 @pytest.fixture(scope=&#34;session&#34;)
+def rancher_wait_timeout(request):
+    return request.config.getoption(&#34;--rancher-cluster-wait-timeout&#34;, 1800)
+
+
+@pytest.fixture(scope=&#34;session&#34;)
 def host_state(request):
     class HostState:
         files = (&#34;power_off.sh&#34;, &#34;power_on.sh&#34;, &#34;reboot.sh&#34;)  # [False, True, -1]
@@ -286,33 +291,45 @@ def host_shell(request):
 
 @pytest.fixture(scope=&#34;session&#34;)
 def polling_for(wait_timeout, sleep_timeout):
+    # TODO: Try to redesign refer to multiprocessing package (e.g. apply_async and map_async)
     def _polling_for(subject: str,
-                     tester: Callable[..., bool],
-                     testee: Callable, *testee_args, **testee_kwargs):
-        &#34;&#34;&#34; Polling expected confition for `wait_timeout`s every `sleep_timeout`s
+                     checker: Callable[..., bool],
+                     poller: Callable, *args,
+                     timeout=wait_timeout):
+        &#34;&#34;&#34; Polling expected confition for `timeout`s every `sleep_timeout`s
 
         Arguments:
-          subject: what is waiting for
-          tester: Callable which accepts `testee` output and returns bool
-          testee: Callable returns output for `tester` to validate
+          subject: str, what is waiting for
+          checker: Callable, check `poller` output and returns bool
+          args: list, [*poller_args, testee]
+          poller: Callable, poller(*poller_args, testee) for each testee
 
         Returns:
-          Any: `testee` output if qualified by `tester`
+          Any: `poller` output if qualified by `checker`
 
         Raises:
-          AssertionError: if still NOT qualified by `tester` over `wait_timeout`
+          AssertionError: if still NOT qualified within `timeout`s
         &#34;&#34;&#34;
-        tester_args_len = len(getfullargspec(tester).args)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        *poller_args, testee = args
+        testees = testee if isinstance(testee, list) else [testee]
+        checker_args_len = len(getfullargspec(checker).args)
+
+        endtime = datetime.now() + timedelta(seconds=timeout)
         while endtime &gt; datetime.now():
-            output = testee(*testee_args, **testee_kwargs)
-            # unpack output for tester according to its signature
-            qualified = tester(*output) if tester_args_len &gt; 1 else tester(output)
-            if qualified:
+            for testee in testees[:]:
+                output = poller(*poller_args, testee)
+                # unpack poller output according to checker signature
+                qualified = checker(*output) if checker_args_len &gt; 1 else checker(output)
+                if qualified:
+                    testees.remove(testee)
+            if not testees:
                 return output
             sleep(sleep_timeout)
         else:
-            raise AssertionError(f&#39;Timeout wait for {subject}\n{output}&#39;)
+            raise AssertionError(
+                f&#39;Timeout {timeout}s waiting for {subject}\n&#39;
+                f&#39;Got error: {output}&#39;
+            )
 
     return _polling_for</code></pre>
 </details>
@@ -552,35 +569,61 @@ def host_state(request):
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
 def polling_for(wait_timeout, sleep_timeout):
+    # TODO: Try to redesign refer to multiprocessing package (e.g. apply_async and map_async)
     def _polling_for(subject: str,
-                     tester: Callable[..., bool],
-                     testee: Callable, *testee_args, **testee_kwargs):
-        &#34;&#34;&#34; Polling expected confition for `wait_timeout`s every `sleep_timeout`s
+                     checker: Callable[..., bool],
+                     poller: Callable, *args,
+                     timeout=wait_timeout):
+        &#34;&#34;&#34; Polling expected confition for `timeout`s every `sleep_timeout`s
 
         Arguments:
-          subject: what is waiting for
-          tester: Callable which accepts `testee` output and returns bool
-          testee: Callable returns output for `tester` to validate
+          subject: str, what is waiting for
+          checker: Callable, check `poller` output and returns bool
+          args: list, [*poller_args, testee]
+          poller: Callable, poller(*poller_args, testee) for each testee
 
         Returns:
-          Any: `testee` output if qualified by `tester`
+          Any: `poller` output if qualified by `checker`
 
         Raises:
-          AssertionError: if still NOT qualified by `tester` over `wait_timeout`
+          AssertionError: if still NOT qualified within `timeout`s
         &#34;&#34;&#34;
-        tester_args_len = len(getfullargspec(tester).args)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        *poller_args, testee = args
+        testees = testee if isinstance(testee, list) else [testee]
+        checker_args_len = len(getfullargspec(checker).args)
+
+        endtime = datetime.now() + timedelta(seconds=timeout)
         while endtime &gt; datetime.now():
-            output = testee(*testee_args, **testee_kwargs)
-            # unpack output for tester according to its signature
-            qualified = tester(*output) if tester_args_len &gt; 1 else tester(output)
-            if qualified:
+            for testee in testees[:]:
+                output = poller(*poller_args, testee)
+                # unpack poller output according to checker signature
+                qualified = checker(*output) if checker_args_len &gt; 1 else checker(output)
+                if qualified:
+                    testees.remove(testee)
+            if not testees:
                 return output
             sleep(sleep_timeout)
         else:
-            raise AssertionError(f&#39;Timeout wait for {subject}\n{output}&#39;)
+            raise AssertionError(
+                f&#39;Timeout {timeout}s waiting for {subject}\n&#39;
+                f&#39;Got error: {output}&#39;
+            )
 
     return _polling_for</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.rancher_wait_timeout"><code class="name flex">
+<span>def <span class="ident">rancher_wait_timeout</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def rancher_wait_timeout(request):
+    return request.config.getoption(&#34;--rancher-cluster-wait-timeout&#34;, 1800)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.skip_version_after"><code class="name flex">
@@ -747,6 +790,7 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_shell" href="#harvester_e2e_tests.fixtures.api_client.host_shell">host_shell</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_state" href="#harvester_e2e_tests.fixtures.api_client.host_state">host_state</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.polling_for" href="#harvester_e2e_tests.fixtures.api_client.polling_for">polling_for</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.rancher_wait_timeout" href="#harvester_e2e_tests.fixtures.api_client.rancher_wait_timeout">rancher_wait_timeout</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_after" href="#harvester_e2e_tests.fixtures.api_client.skip_version_after">skip_version_after</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_before" href="#harvester_e2e_tests.fixtures.api_client.skip_version_before">skip_version_before</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.sleep_timeout" href="#harvester_e2e_tests.fixtures.api_client.sleep_timeout">sleep_timeout</a></code></li>
