@@ -161,9 +161,10 @@ def unset_cpu_memory_overcommit(api_client):
     code, data = api_client.settings.get('overcommit-config')
     assert 200 == code, (code, data)
 
-    origin_val = json.loads(data.get('value', "{}"))
+    origin_val = json.loads(data.get('value', data['default']))
     spec = api_client.settings.Spec.from_dict(data)
     spec.cpu = spec.memory = 100
+    spec.storage = origin_val['storage']
     code, data = api_client.settings.update('overcommit-config', spec)
     assert 200 == code, (code, data)
 
