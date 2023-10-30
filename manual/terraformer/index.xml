@@ -5,70 +5,57 @@
     <link>https://harvester.github.io/tests/manual/terraformer/</link>
     <description>Recent content in Terraformer on Harvester manual test cases</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/terraformer/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <atom:link href="https://harvester.github.io/tests/manual/terraformer/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Check that you can communicate with the Harvester cluster</title>
       <link>https://harvester.github.io/tests/manual/terraformer/harvester-cluster-communicate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/terraformer/harvester-cluster-communicate/</guid>
       <description>Set the KUBECONFIG env variable with the path of your kubeconfig file Try to import any resource to test the connectivity with the Harvester cluster For instance, try to import ssh-key with: terraformer import harvester -r ssh_key Expected Results You should see:
 terraformer import harvester -r ssh_key 2021/08/04 15:18:59 harvester importing... ssh_key 2021/08/04 15:18:59 harvester done importing ssh_key ... And the generated files should appear in ./generated/harvester/ssh_key/</description>
     </item>
-    
     <item>
       <title>Import and make changes to clusternetwork resource</title>
       <link>https://harvester.github.io/tests/manual/terraformer/import-edit-clusternetwork/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/terraformer/import-edit-clusternetwork/</guid>
       <description>Import clusternetwork resource terraformer import harvester -r clusternetwork Replace the provider (already explained in the installation process above) terraform plan and apply command should print &amp;ldquo;No changes.&amp;rdquo; Alter the resource and check with terraform plan then terraform apply For instance, alter the following properties: default_physical_nic, enable in the clusternetwork.tf file Check the change through either the UI or the API Expected Results Import output terraformer import harvester -r clusternetwork 2021/08/04 15:43:25 harvester importing.</description>
     </item>
-    
     <item>
       <title>Import and make changes to image resource</title>
       <link>https://harvester.github.io/tests/manual/terraformer/import-edit-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/terraformer/import-edit-image/</guid>
       <description>Import image resource terraformer import harvester -r image Replace the provider (already explained in the installation process above) terraform plan and apply command should print &amp;ldquo;No changes.&amp;rdquo; Alter the resource and check with terraform plan then terraform apply For instance, alter the following properties: description, display_name, name, namespace and url in the image.tf file Check the change through either the UI or the API Expected Results Import output terraformer import harvester -r image 2021/08/04 16:14:52 harvester importing.</description>
     </item>
-    
     <item>
       <title>Import and make changes to network resource</title>
       <link>https://harvester.github.io/tests/manual/terraformer/import-edit-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/terraformer/import-edit-network/</guid>
       <description>Import network resource terraformer import harvester -r network Replace the provider (already explained in the installation process above) terraform plan and apply command should print &amp;ldquo;No changes.&amp;rdquo; Alter the resource and check with terraform plan then terraform apply For instance, alter the following properties: name, namespace and vlan_id in the network.tf file Check the change through either the UI or the API Expected Results Import output terraformer import harvester -r network 2021/08/04 16:14:08 harvester importing.</description>
     </item>
-    
     <item>
       <title>Import and make changes to ssh_key resource</title>
       <link>https://harvester.github.io/tests/manual/terraformer/import-edit-ssh-key/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/terraformer/import-edit-ssh-key/</guid>
       <description>Import ssh_key resource terraformer import harvester -r ssh_key Replace the provider (already explained in the installation process above) terraform plan and apply command should print &amp;ldquo;No changes.&amp;rdquo; Alter the resource and check with terraform plan then terraform apply For instance, alter the following properties: name, namespace and public_key in the ssh_key.tf file Check the change through either the UI or the API Expected Results Import output terraformer import harvester -r ssh_key 2021/08/04 16:14:36 harvester importing.</description>
     </item>
-    
     <item>
       <title>Import and make changes to virtual machine resource</title>
       <link>https://harvester.github.io/tests/manual/terraformer/import-edit-virtual-machine/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/terraformer/import-edit-virtual-machine/</guid>
       <description>Import virtual machine resource terraformer import harvester -r virtualmachine Replace the provider (already explained in the installation process above) terraform plan and apply command should print &amp;ldquo;No changes.&amp;rdquo; Alter the resource and check with terraform plan then terraform apply For instance, alter the following properties: cpu, memory, name in the virtualmachine.tf file Check the change through either the UI or the API Expected Results Import output terraformer import harvester -r virtualmachine 2021/08/04 16:15:08 harvester importing.</description>
     </item>
-    
     <item>
       <title>Import and make changes to volume resource</title>
       <link>https://harvester.github.io/tests/manual/terraformer/import-edit-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/terraformer/import-edit-volume/</guid>
       <description>Import volume resource terraformer import harvester -r volume Replace the provider (already explained in the installation process above) terraform plan and apply command should print &amp;ldquo;No changes.&amp;rdquo; Alter the resource and check with terraform plan then terraform apply For instance, alter the following properties: name, namespace in the volume.tf file Check the change through either the UI or the API Expected Results Import output terraformer import harvester -r volume 2021/08/04 16:15:29 harvester importing.</description>
     </item>
-    
   </channel>
 </rss>

@@ -5,224 +5,177 @@
     <link>https://harvester.github.io/tests/manual/network/</link>
     <description>Recent content in Network on Harvester manual test cases</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/network/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <atom:link href="https://harvester.github.io/tests/manual/network/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Add multiple Networks via form</title>
       <link>https://harvester.github.io/tests/manual/network/add-multiple-networks-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/add-multiple-networks-form/</guid>
       <description> Create a new VM via the web form Add both a management network and an external VLAN network Validate both interfaces exist in the VM ip link list Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine Expected Results The VM should create You should see three interfaces listed in VM You should get responses from pinging the VM You should get responses from pinging the VM </description>
     </item>
-    
     <item>
       <title>Add multiple Networks via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/add-multiple-networks-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/add-multiple-networks-yaml/</guid>
       <description> Create a new VM via YAML Add both a management network and an external VLAN network Validate both interfaces exist in the VM ip link list Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine Expected Results The VM should create You should see three interfaces listed in VM You should get responses from pinging the VM You should get responses from pinging the VM </description>
     </item>
-    
     <item>
       <title>Add network reachability detection from host for the VLAN network</title>
       <link>https://harvester.github.io/tests/manual/network/add-network-reachability-detection-from-host-for-vlan-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/add-network-reachability-detection-from-host-for-vlan-network/</guid>
       <description>Related issue: #1476 Add network reachability detection from host for the VLAN network Category: Network Environment Setup The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan Verification Steps Enable virtual network with harvester-mgmt in harvester Create VLAN 806 with id 806 and set to default auto mode Import harvester to rancher 1 .Create cloud credential Provision a rke2 cluster to harvester Deploy a nginx server workload Open Service Discover -&amp;gt; Services</description>
     </item>
-    
     <item>
       <title>Add VLAN network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/add-vlan-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/add-vlan-network/</guid>
       <description>Environment setup This should be done on a Harvester setup with at least 2 NICs and at least 2 nodes. This is easily tested in Vagrant
 Verification Steps Open settings on a harvester cluster Navigate to the VLAN settings page Click Enabled Check dropdown for NICs and verify that percentage is showing 100% Add the NIC Click Save Validate that it has updated in settings Expected Results You should be able to add the VLAN network device You should see in the settings list that it has your new default NIC </description>
     </item>
-    
     <item>
       <title>Create new network (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/network/create-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/create-network/</guid>
       <description> Navigate to the networks page in harvester Click Create Add a name Add a VLAN ID Click Create Expected Results You should be able to add the VLAN You should see the VLAN show up in the networks page </description>
     </item>
-    
     <item>
       <title>Delete external VLAN network via form</title>
       <link>https://harvester.github.io/tests/manual/network/delete-vlan-network-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/delete-vlan-network-form/</guid>
       <description> On a VM with both an external VLAN and a management VLAN delete the external VLAN via the web form Validate interface was removed with ip link list Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine Expected Results The VM should update and reboot You should only see one interface (and the loopback) in the list You should not be able to ping the VM on the external VLAN You should get responses from the VM </description>
     </item>
-    
     <item>
       <title>Delete external VLAN network via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/delete-vlan-network-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/delete-vlan-network-yaml/</guid>
       <description> On a VM with both an external VLAN and a management VLAN delete the external VLAN via YAML Validate interface was removed with ip link list Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine Expected Results The VM should update and reboot You should only see one interface (and the loopback) in the list You should not be able to ping the VM on the external VLAN You should get responses from the VM </description>
     </item>
-    
     <item>
       <title>Delete management network via form</title>
       <link>https://harvester.github.io/tests/manual/network/delete-management-network-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/delete-management-network-form/</guid>
       <description> On a VM with both an external VLAN and a management VLAN delete the management VLAN via the web form Validate interface was removed with ip link list Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine Expected Results The VM should update and reboot You should only see one interface (and the loopback) in the list You should not be able to ping the VM on the management VLAN You should get responses from the VM </description>
     </item>
-    
     <item>
       <title>Delete management network via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/delete-management-network-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/delete-management-network-yaml/</guid>
       <description> On a VM with both an external VLAN and a management VLAN delete the management network via YAML Validate interface was removed with ip link list Ping the VM from another VM that is only on the management VLAN Ping the VM from an external machine Expected Results The VM should update and reboot You should only see one interface (and the loopback) in the list You should not be able to ping the VM on the management network You should get responses from the VM </description>
     </item>
-    
     <item>
       <title>Disable and enable vlan cluster network</title>
       <link>https://harvester.github.io/tests/manual/network/disable-and-enable-vlan-cluster-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/disable-and-enable-vlan-cluster-network/</guid>
       <description> Related issues: #1529 Failed to enable vlan cluster network after disable and enable again, display &amp;ldquo;Network Error&amp;rdquo; Category: Network Verification Steps Open settings and config vlan network Enable network and set default harvester-mgmt Disable network Enable network again Check Host, Network and harvester dashboard Repeat above steps several times Expected Results User can disable and enable network with default harvester-mgmt. Harvester dashboard and network work as expected </description>
     </item>
-    
     <item>
       <title>Edit network via form change external VLAN to management network</title>
       <link>https://harvester.github.io/tests/manual/network/edit-network-form-change-vlan-to-management/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/edit-network-form-change-vlan-to-management/</guid>
       <description> Edit VM and change external VLAN to management network with bridge type via the web form Ping VM Attempt to SSH to VM Expected Results VM should save and reboot You should be able to ping the VM from an external network You should be able to SSH to VM </description>
     </item>
-    
     <item>
       <title>Edit network via form change management network to external VLAN</title>
       <link>https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/</guid>
       <description> Edit VM and change management network to external VLAN with bridge type via the web form Ping VM Attempt to SSH to VM Expected Results VM should save and reboot You should be able to ping the VM from an external network You should be able to SSH to VM </description>
     </item>
-    
     <item>
       <title>Edit network via YAML change external VLAN to management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/edit-network-yaml-change-vlan-to-management/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/edit-network-yaml-change-vlan-to-management/</guid>
       <description> Edit VM and change external VLAN to management network with bridge type via YAML Ping VM Attempt to SSH to VM Expected Results VM should save and reboot You should be able to ping the VM from an external network You should be able to SSH to VM </description>
     </item>
-    
     <item>
       <title>Edit network via YAML change management network to external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/edit-network-yaml-change-management-to-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/edit-network-yaml-change-management-to-vlan/</guid>
       <description> Edit VM and change management network to external VLAN with bridge type via YAML Ping VM Attempt to SSH to VM Expected Results VM should save and reboot You should be able to ping the VM from an external network You should be able to SSH to VM </description>
     </item>
-    
     <item>
       <title>Enabling vlan on a bonded NIC on vagrant install</title>
       <link>https://harvester.github.io/tests/manual/network/enabling-vlan-on-bonded-nic-vagrant-install/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/enabling-vlan-on-bonded-nic-vagrant-install/</guid>
       <description>Related issues: #1541 Enabling vlan on a bonded NIC breaks the Harvester setup Category: Network Verification Steps Pull ipxe example from https://github.com/harvester/ipxe-examples Vagrant pxe install 3 nodes harvester Access harvester settings page Open settings -&amp;gt; vlan Enable virtual network and set with bond0 Navigate to every page to check harvester is working Create a vlan based on bon0 Expected Results Enable virtual network with bond0 will not make harvester service out of work.</description>
     </item>
-    
     <item>
       <title>Negative network comes back up after reboot external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/</guid>
       <description> Start pinging the VM reboot the VM Expected Results The VM should respond The VM should reboot The pings should stop getting responses The pings should start getting responses again </description>
     </item>
-    
     <item>
       <title>Negative network comes back up after reboot management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-management-after-reboot/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/negative-management-after-reboot/</guid>
       <description> Start pinging the VM from the management network reboot the VM Expected Results The VM should respond The VM should reboot The pings should stop getting responses The pings should start getting responses again </description>
     </item>
-    
     <item>
       <title>Switch the vlan interface of harvester node</title>
       <link>https://harvester.github.io/tests/manual/network/switch-the-vlan-interface-of-harvester-node/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/switch-the-vlan-interface-of-harvester-node/</guid>
       <description>Related issues: #1464 VM pods turn to the terminating state after switching the VLAN interface Category: Network Verification Steps User ipxe-example to build up 3 nodes harvester Login harvester dashboard -&amp;gt; Access Settings Enable vlan network with harvester-mgmt NIC interface Create a VM using harvester-mgmt Disable vlan network Enable vlan network and select bond0 interface Check host and vm is working Directly switch network interface from bond0 to harvester-mgmt without disable it.</description>
     </item>
-    
     <item>
       <title>Try to add a network with no name (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-add-network-no-name/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/negative-add-network-no-name/</guid>
       <description> Navigate to the networks page in harvester Click Create Don&amp;rsquo;t add a name Add a VLAN ID Click Create Expected Results You should get an error that says you need to add a name </description>
     </item>
-    
     <item>
       <title>Validate network connectivity external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/validate-network-external-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/validate-network-external-vlan/</guid>
       <description> Create a new VM Make sure that the network is set to the external VLAN with bridge as the type Ping VM Attempt to SSH to VM Expected Results VM should be created You should be able to ping the VM from an external network You should be able to SSH to VM </description>
     </item>
-    
     <item>
       <title>Validate network connectivity invalid external VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/negative-network-connectivity-invalid-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/negative-network-connectivity-invalid-vlan/</guid>
       <description> Create a new VM Make sure that the network is set to the external VLAN with bridge as the type and a VLAN ID that isn&amp;rsquo;t valid for your network Ping VM Attempt to SSH to VM Expected Results VM should be created You should not be able to ping the VM from an external network You should not be able to SSH to VM </description>
     </item>
-    
     <item>
       <title>Validate network connectivity management network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/network/validate-network-management-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/validate-network-management-network/</guid>
       <description> Create a new VM Make sure that the network is set to the management network with masquerade as the type Ping VM Attempt to SSH to VM Expected Results VM should be created You should not be able to ping the VM from an external network You should not be able to SSH to VM </description>
     </item>
-    
     <item>
       <title>VIP configured in a VLAN network should be reached</title>
       <link>https://harvester.github.io/tests/manual/network/vip-configured-on-vlan-network-should-be-reached/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/vip-configured-on-vlan-network-should-be-reached/</guid>
       <description> Related issue: #1424 VIP configured in a VLAN network can not be reached Category: Network Environment Setup The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan Verification Steps Enable virtual network with harvester-mgmt Open Network -&amp;gt; Create a virtual network Provide network name and correct vlan id Open Route, use the default auto setting Create a VM and use the created route SSH to harvester node Ping the IP of the created VM Create a virutal network Provide network name and correct vlan id Open Route, use the manual setting Provide the CIDR and Gateway value Repeat step 5 - 7 Expected Results Check the auto route vlan can be detected with running status Check the manual route vlan can be detected with running status Check the VM can get IP based on auto or manual vlan route Check can ping VM IP from harvester node </description>
     </item>
-    
     <item>
       <title>VIP is accessibility with VLAN enabled on management port</title>
       <link>https://harvester.github.io/tests/manual/network/vip_vlan_mgmtport/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/network/vip_vlan_mgmtport/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1722
 Verify Items VIP should be accessible when VLAN enabled on management port Case: Single Node enables VLAN on management port Install Harvester with single node Login to dashboard then navigate to Settings Edit vlan to enable VLAN on harvester-mgmt reboot the node after reboot, login to console Run the command should not contain any output sudo -s kubectl get pods -A --template &#39;{{range .items}}{{.metadata.name}}{{&amp;quot;\n&amp;quot;}}{{end}}&#39; | grep harvester-network-controller-manager | xargs kubectl logs -n harvester-system | grep &amp;quot;Failed to update lock&amp;quot; Repeat step 4-6 with 10 times, should not have any error </description>
     </item>
-    
   </channel>
 </rss>

@@ -5,52 +5,43 @@
     <link>https://harvester.github.io/tests/manual/templates/</link>
     <description>Recent content in Templates on Harvester manual test cases</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/templates/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <atom:link href="https://harvester.github.io/tests/manual/templates/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>allow users to create cloud-config template on the VM creating page</title>
       <link>https://harvester.github.io/tests/manual/templates/allow-users-to-create-cloud-config-template-on-vm-creating-page/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/templates/allow-users-to-create-cloud-config-template-on-vm-creating-page/</guid>
       <description> Related issues: #1433 allow users to create cloud-config template on the VM creating page Category: Virtual Machine Verification Steps Create a new virtual machine Click advanced options Drop down user data template -&amp;gt; create new Drop down network data template -&amp;gt; create new Expected Results User can create user and network data template when create virtual machine Created cloud-init template template can be saved and auto selected to the latest one </description>
     </item>
-    
     <item>
       <title>Chain VM templates and images</title>
       <link>https://harvester.github.io/tests/manual/templates/760-chained-vm-templates/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/templates/760-chained-vm-templates/</guid>
       <description> Related issues: #760 cloud config byte limit Verification Steps Create a vm and add userData or networkData, test if it works Run VM health checks create a vm template and add userData create a new vm and use the template Run VM health checks use the existing vm to generate a template, then use the template to create a new vm Run VM health Checks Expected Results All VM&amp;rsquo;s should create All VM Health Checks should pass </description>
     </item>
-    
     <item>
       <title>Create SSH key from templates page</title>
       <link>https://harvester.github.io/tests/manual/templates/1619-create-ssh-key-from-templates-page/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/templates/1619-create-ssh-key-from-templates-page/</guid>
       <description> Related issues: #1619 User is unable to create ssh key through the templates page Verification Steps on a harvester deployment, navigate to advanced -&amp;gt; templates and click create Click create new under SSH section enter valid credentials and save Expected Results SSH key should be created and show in the SSH key section </description>
     </item>
-    
     <item>
       <title>Verify network data template</title>
       <link>https://harvester.github.io/tests/manual/templates/1655-network-data-template/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/templates/1655-network-data-template/</guid>
       <description> Related issues: #1655 When using a VM Template the Network Data in the template is not displayed Verification Steps Create new VM template with network data in advanced settings network: version: 1 config: - type: physical name: interface0 subnets: - type: static address: 10.84.99.0/24 gateway: 10.84.99.254 Create new VM and select template Verify that network data is in advanced network config Expected Results network data should show </description>
     </item>
-    
     <item>
       <title>Volume size should be editable on derived template</title>
       <link>https://harvester.github.io/tests/manual/templates/derived_template_configure/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/templates/derived_template_configure/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1711
 Verify Items Volume size can be changed when creating a derived template Case: Update volume size on new template derived from exist template Install Harvester with any Nodes Login to Dashboard Create Image for Template Creation Create Template T1 with Image Volume and additional Volume Modify Template T1 with update Volume size Volume size should be editable Click Save, then edit new version of T1 Volume size should be updated as expected </description>
     </item>
-    
   </channel>
 </rss>

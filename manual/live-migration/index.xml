@@ -5,216 +5,171 @@
     <link>https://harvester.github.io/tests/manual/live-migration/</link>
     <description>Recent content in Live Migration on Harvester manual test cases</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/live-migration/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <atom:link href="https://harvester.github.io/tests/manual/live-migration/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title></title>
       <link>https://harvester.github.io/tests/manual/live-migration/1401-support-volume-hot-unplug-live-migrate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/1401-support-volume-hot-unplug-live-migrate/</guid>
       <description> Related issues: #1401 Http proxy setting download image Environment setup Setup an airgapped harvester
 Create an 3 nodes harvester cluster with large size disks Verification Steps Scenario2: Live migrate VM not have hot-plugged volume before, do hot-plugged the unplugged. Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click Detach volume Add volume again Migrate VM from one node to another Detach volume Add unplugged volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
     </item>
-    
     <item>
       <title>Initiate multiple migrations at one time</title>
       <link>https://harvester.github.io/tests/manual/live-migration/initiate-multple-migrations-same-time/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/initiate-multple-migrations-same-time/</guid>
       <description> Initiate live migration for a vm. While the live migration is in progress, initiate another migration Expected Results Both migration should work fine. The VMs should be accessible after the migration </description>
     </item>
-    
     <item>
       <title>Migrate a turned on VM from one host to another</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-turned-on-vm-to-another-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-turned-on-vm-to-another-host/</guid>
       <description> Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM created with cloud init config data</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-with-cloud-init/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-with-cloud-init/</guid>
       <description> Create a new VM with cloud init config data Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM created with user data config</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-with-user-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-with-user-data/</guid>
       <description> Create a new VM with a password specified by user data config Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM that has multiple volumes</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-multiple-volumes/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-multiple-volumes/</guid>
       <description> Create a new VM with a root disk and a CDROM volume Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM that was created from a template</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-created-from-template/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-created-from-template/</guid>
       <description> Create a new VM from a template Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM that was created using a restore backup to new VM</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-created-from-restore-to-new/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-created-from-restore-to-new/</guid>
       <description> Take an existing backup Restore the backup to a new VM Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM with 1 backup</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-with-one-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-with-one-backup/</guid>
       <description> Create a new VM Create a backup Add a new file to the home directory Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM with a saved SSH Key</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-with-ssh/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-with-ssh/</guid>
       <description> Create a new VM with an SSH key Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM with multiple backups</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-multiple-backups/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-multiple-backups/</guid>
       <description> Create a new VM Create a backup Add a new file to the home directory Create a new backup Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate a VM with multiple networks</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-vm-multiple-networks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-vm-multiple-networks/</guid>
       <description> Create a new VM with one management network in masquerade mode one VLAN network Create a new file on the machine Migrate the VM from one host in the cluster to another Connect via console Check for the file Change the file and save it Verify that you can close and open the file again Expected Results File should create correctly VM should go into migrating status VM should go out of migrating status It should show the new node on the host column in the VM list It should have the same IP You should be able to edit and re-open the file </description>
     </item>
-    
     <item>
       <title>Migrate to Node without replicaset</title>
       <link>https://harvester.github.io/tests/manual/live-migration/migrate-to-node-without-replicaset/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/migrate-to-node-without-replicaset/</guid>
       <description> Create a new VM on a 4 node cluster Check which nodes have copies of the replica set Migrate the VM to the host that does not have the volume Expected Results VM should create correctly </description>
     </item>
-    
     <item>
       <title>Migrate VM from Restored backup</title>
       <link>https://harvester.github.io/tests/manual/live-migration/restored_vm_migration/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/restored_vm_migration/</guid>
       <description>Ref: https://github.com/harvester/harvester/issues/1086
 Verify Items VM can be migrate to any node with any times Case: Migrate a restored VM Install Harvester with at least 2 nodes setup backup-target with NFS Create image for VM creation Create VM a Add file with some data in VM a Backup VM a as a-bak Restore backup a-bak into VM b Start VM b then check added file should exist with same content Migrate VM b to another node, then check added file should exist with same content Migrate VM b again, then check added file should exist with same content </description>
     </item>
-    
     <item>
       <title>Negative migrate a turned on VM from one host to another</title>
       <link>https://harvester.github.io/tests/manual/live-migration/negative-migrate-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/negative-migrate-vm/</guid>
       <description> Migrate the VM from one host in the cluster to another Turn off/disconnect node while migrating Expected Results Migration should fail You should get an error message in the status </description>
     </item>
-    
     <item>
       <title>Negative network disconnection for a longer time while migration is in progress</title>
       <link>https://harvester.github.io/tests/manual/live-migration/negative-network-disconnect-while-migrating/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/negative-network-disconnect-while-migrating/</guid>
       <description> Initiate VM migration While migration is in progress, disconnect network for 100 sec on the node where the VM is scheduled Expected Results Migration should fail but volume data should be intact The VM should be accessible during the migration and should also be accessible once the migration fails </description>
     </item>
-    
     <item>
       <title>Negative network disconnection for a short time while migration is in progress</title>
       <link>https://harvester.github.io/tests/manual/live-migration/negative-network-disruption-while-migrating/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/negative-network-disruption-while-migrating/</guid>
       <description> Initiate VM migration. While migration is in progress, disconnect network for 5 sec on the node where the VM is scheduled Expected Results Migration should resume once the network is up again The VM should be accessible during and after the migration </description>
     </item>
-    
     <item>
       <title>Negative node down while migration is in progress</title>
       <link>https://harvester.github.io/tests/manual/live-migration/negative-node-down-while-migrating/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/negative-node-down-while-migrating/</guid>
       <description> Initiate VM migration. While migration is in progress, shut the node where the VM is scheduled. After failure, initiate the migration to another node Expected Results Migration should fail but volume data should be intact The VM should be accessible on older node The migration scheduled for another node should work fine The VM should be accessible during and after the migration </description>
     </item>
-    
     <item>
       <title>Negative node un-schedulable during live migration</title>
       <link>https://harvester.github.io/tests/manual/live-migration/negative-node-unschedulable/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/negative-node-unschedulable/</guid>
       <description>Prerequisite: Cluster is of 3 nodes. VM is running on Node-1 Node-2 and Node-3 don&amp;rsquo;t have space to migrate a VM to them. Steps: Create a vm on node-1 Migrate the VM. Expected Results Migration should not be started. Relevant error should be shown on the GUI. The existing VM should be accessible and the health check of the VM should be fine </description>
     </item>
-    
     <item>
       <title>Support volume hot plug live migrate</title>
       <link>https://harvester.github.io/tests/manual/live-migration/support-volume-hot-unplug-live-migrate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/support-volume-hot-unplug-live-migrate/</guid>
       <description> Related issues: #1401 Support volume hot-unplug Category: Storage Environment setup Setup an airgapped harvester
 Create an 3 nodes harvester cluster with large size disks Verification Steps Scenario2: Live migrate VM not have hot-plugged volume before, do hot-plugged the unplugged. Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click Detach volume Add volume again Migrate VM from one node to another Detach volume Add unplugged volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
     </item>
-    
     <item>
       <title>Test aborting live migration</title>
       <link>https://harvester.github.io/tests/manual/live-migration/abort-live-migration/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/abort-live-migration/</guid>
       <description> On a VM that is turned on select migrate Start the migration Abort the migration Expected Results You should see the status move to migrating You should see the status move to aborting migration You should see the status move to running The VM should pass health checks </description>
     </item>
-    
     <item>
       <title>Test zero downtime for live migration download test</title>
       <link>https://harvester.github.io/tests/manual/live-migration/zero-downtime-download-test/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/zero-downtime-download-test/</guid>
       <description> Connect to VM via console Start a large file download Live migrate VM to new host Verify that file download does not fail Expected Results Console should open VM should start to migrate File download should </description>
     </item>
-    
     <item>
       <title>Test zero downtime for live migration ping test</title>
       <link>https://harvester.github.io/tests/manual/live-migration/zero-downtime-ping-test/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/live-migration/zero-downtime-ping-test/</guid>
       <description> Continually ping VM Verify that ping is getting a response Live migrate VM to new host Verify that ping continues Expected Results Ping should get response VM should start to migrate Ping should not get any dropped packets </description>
     </item>
-    
   </channel>
 </rss>

@@ -189,9 +189,10 @@ def unset_cpu_memory_overcommit(api_client):
     code, data = api_client.settings.get(&#39;overcommit-config&#39;)
     assert 200 == code, (code, data)
 
-    origin_val = json.loads(data.get(&#39;value&#39;, &#34;{}&#34;))
+    origin_val = json.loads(data.get(&#39;value&#39;, data[&#39;default&#39;]))
     spec = api_client.settings.Spec.from_dict(data)
     spec.cpu = spec.memory = 100
+    spec.storage = origin_val[&#39;storage&#39;]
     code, data = api_client.settings.update(&#39;overcommit-config&#39;, spec)
     assert 200 == code, (code, data)
 
@@ -688,8 +689,14 @@ class TestVMResource:
                     f&#34;VM started but not hosted on expected host: {expected_host}&#34;
                 )
             else:
-                # ???: node&#39;s resources released while creating VM, so the VM be hosted on others
-                assert expected_host in [name for name, _ in schedulables], (
+                # ???: node&#39;s resources released while creating VM
+                expected_conditions = [
+                    # VM still be hosted on expected host
+                    expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;],
+                    # VM be hosted on others
+                    expected_host in [name for name, _ in schedulables],
+                ]
+                assert any(expected_conditions), (
                     f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
                     f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
                 )
@@ -734,29 +741,42 @@ class TestVMResource:
         for k, resource in data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;resources&#39;].items():
             resource[res_type] = vm_calc.format_unit(expected_res, max_exp=exp, suffix_space=False)
 
-        code, data = api_client.vms.update(unique_vm_name, data)
-        assert 200 == code, (code, data)
-        vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
-        assert vm_started, (code, vmi)
+        try:
+            code, data = api_client.vms.update(unique_vm_name, data)
+            assert 200 == code, (code, data)
+            vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+            assert vm_started, (code, vmi)
 
-        # Verify the VM be hosted expected
-        code, hosts = api_client.hosts.get()
-        cur_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
-                   for n in hosts[&#39;data&#39;]]
-        schedulables = [(name, res) for (name, res) in cur_res if res[res_type] &gt; expected_res]
-        if not schedulables:
-            # General case
-            assert expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;], (
-                f&#34;VM started but not hosted on expected host: {expected_host}&#34;
-            )
-        else:
-            # ???: node&#39;s resources released while creating VM, so the VM be hosted on others
-            assert expected_host in [name for name, _ in schedulables], (
-                f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
-                f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
-            )
-        # Stop the VM
-        vm_checker.wait_stopped(unique_vm_name)
+            # Verify the VM be hosted expected
+            code, hosts = api_client.hosts.get()
+            cur_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
+                       for n in hosts[&#39;data&#39;]]
+            schedulables = [(name, res) for (name, res) in cur_res if res[res_type] &gt; expected_res]
+            if not schedulables:
+                # General case
+                assert expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;], (
+                    f&#34;VM started but not hosted on expected host: {expected_host}&#34;
+                )
+            else:
+                # ???: node&#39;s resources released while creating VM
+                expected_conditions = [
+                    # VM still be hosted on expected host
+                    expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;],
+                    # VM be hosted on others
+                    expected_host in [name for name, _ in schedulables],
+                ]
+                assert any(expected_conditions), (
+                    f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
+                    f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
+                )
+        finally:
+            # Stop the VM
+            vm_checker.wait_stopped(unique_vm_name)
+            # Revert the VM to request minimal resource
+            code, data = api_client.vms.get(unique_vm_name)
+            vm_spec._data = data
+            code, data = api_client.vms.update(unique_vm_name, vm_spec)
+            assert 200 == code, (code, data)
 
     def test_update_cpu(
         self, api_client, ssh_keypair, vm_shell_from_host, vm_checker,
@@ -2932,9 +2952,10 @@ def unset_cpu_memory_overcommit(api_client):
     code, data = api_client.settings.get(&#39;overcommit-config&#39;)
     assert 200 == code, (code, data)
 
-    origin_val = json.loads(data.get(&#39;value&#39;, &#34;{}&#34;))
+    origin_val = json.loads(data.get(&#39;value&#39;, data[&#39;default&#39;]))
     spec = api_client.settings.Spec.from_dict(data)
     spec.cpu = spec.memory = 100
+    spec.storage = origin_val[&#39;storage&#39;]
     code, data = api_client.settings.update(&#39;overcommit-config&#39;, spec)
     assert 200 == code, (code, data)
 
@@ -5074,8 +5095,14 @@ class TestVMResource:
                     f&#34;VM started but not hosted on expected host: {expected_host}&#34;
                 )
             else:
-                # ???: node&#39;s resources released while creating VM, so the VM be hosted on others
-                assert expected_host in [name for name, _ in schedulables], (
+                # ???: node&#39;s resources released while creating VM
+                expected_conditions = [
+                    # VM still be hosted on expected host
+                    expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;],
+                    # VM be hosted on others
+                    expected_host in [name for name, _ in schedulables],
+                ]
+                assert any(expected_conditions), (
                     f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
                     f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
                 )
@@ -5120,29 +5147,42 @@ class TestVMResource:
         for k, resource in data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;resources&#39;].items():
             resource[res_type] = vm_calc.format_unit(expected_res, max_exp=exp, suffix_space=False)
 
-        code, data = api_client.vms.update(unique_vm_name, data)
-        assert 200 == code, (code, data)
-        vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
-        assert vm_started, (code, vmi)
+        try:
+            code, data = api_client.vms.update(unique_vm_name, data)
+            assert 200 == code, (code, data)
+            vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+            assert vm_started, (code, vmi)
 
-        # Verify the VM be hosted expected
-        code, hosts = api_client.hosts.get()
-        cur_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
-                   for n in hosts[&#39;data&#39;]]
-        schedulables = [(name, res) for (name, res) in cur_res if res[res_type] &gt; expected_res]
-        if not schedulables:
-            # General case
-            assert expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;], (
-                f&#34;VM started but not hosted on expected host: {expected_host}&#34;
-            )
-        else:
-            # ???: node&#39;s resources released while creating VM, so the VM be hosted on others
-            assert expected_host in [name for name, _ in schedulables], (
-                f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
-                f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
-            )
-        # Stop the VM
-        vm_checker.wait_stopped(unique_vm_name)
+            # Verify the VM be hosted expected
+            code, hosts = api_client.hosts.get()
+            cur_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
+                       for n in hosts[&#39;data&#39;]]
+            schedulables = [(name, res) for (name, res) in cur_res if res[res_type] &gt; expected_res]
+            if not schedulables:
+                # General case
+                assert expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;], (
+                    f&#34;VM started but not hosted on expected host: {expected_host}&#34;
+                )
+            else:
+                # ???: node&#39;s resources released while creating VM
+                expected_conditions = [
+                    # VM still be hosted on expected host
+                    expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;],
+                    # VM be hosted on others
+                    expected_host in [name for name, _ in schedulables],
+                ]
+                assert any(expected_conditions), (
+                    f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
+                    f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
+                )
+        finally:
+            # Stop the VM
+            vm_checker.wait_stopped(unique_vm_name)
+            # Revert the VM to request minimal resource
+            code, data = api_client.vms.get(unique_vm_name)
+            vm_spec._data = data
+            code, data = api_client.vms.update(unique_vm_name, vm_spec)
+            assert 200 == code, (code, data)
 
     def test_update_cpu(
         self, api_client, ssh_keypair, vm_shell_from_host, vm_checker,
@@ -5369,8 +5409,14 @@ def test_create_schedule_on_maximum(
                 f&#34;VM started but not hosted on expected host: {expected_host}&#34;
             )
         else:
-            # ???: node&#39;s resources released while creating VM, so the VM be hosted on others
-            assert expected_host in [name for name, _ in schedulables], (
+            # ???: node&#39;s resources released while creating VM
+            expected_conditions = [
+                # VM still be hosted on expected host
+                expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;],
+                # VM be hosted on others
+                expected_host in [name for name, _ in schedulables],
+            ]
+            assert any(expected_conditions), (
                 f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
                 f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
             )
@@ -5618,29 +5664,42 @@ def test_update_schedule_on_maximum(
     for k, resource in data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;resources&#39;].items():
         resource[res_type] = vm_calc.format_unit(expected_res, max_exp=exp, suffix_space=False)
 
-    code, data = api_client.vms.update(unique_vm_name, data)
-    assert 200 == code, (code, data)
-    vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
-    assert vm_started, (code, vmi)
+    try:
+        code, data = api_client.vms.update(unique_vm_name, data)
+        assert 200 == code, (code, data)
+        vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+        assert vm_started, (code, vmi)
 
-    # Verify the VM be hosted expected
-    code, hosts = api_client.hosts.get()
-    cur_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
-               for n in hosts[&#39;data&#39;]]
-    schedulables = [(name, res) for (name, res) in cur_res if res[res_type] &gt; expected_res]
-    if not schedulables:
-        # General case
-        assert expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;], (
-            f&#34;VM started but not hosted on expected host: {expected_host}&#34;
-        )
-    else:
-        # ???: node&#39;s resources released while creating VM, so the VM be hosted on others
-        assert expected_host in [name for name, _ in schedulables], (
-            f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
-            f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
-        )
-    # Stop the VM
-    vm_checker.wait_stopped(unique_vm_name)</code></pre>
+        # Verify the VM be hosted expected
+        code, hosts = api_client.hosts.get()
+        cur_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
+                   for n in hosts[&#39;data&#39;]]
+        schedulables = [(name, res) for (name, res) in cur_res if res[res_type] &gt; expected_res]
+        if not schedulables:
+            # General case
+            assert expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;], (
+                f&#34;VM started but not hosted on expected host: {expected_host}&#34;
+            )
+        else:
+            # ???: node&#39;s resources released while creating VM
+            expected_conditions = [
+                # VM still be hosted on expected host
+                expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;],
+                # VM be hosted on others
+                expected_host in [name for name, _ in schedulables],
+            ]
+            assert any(expected_conditions), (
+                f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
+                f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
+            )
+    finally:
+        # Stop the VM
+        vm_checker.wait_stopped(unique_vm_name)
+        # Revert the VM to request minimal resource
+        code, data = api_client.vms.get(unique_vm_name)
+        vm_spec._data = data
+        code, data = api_client.vms.update(unique_vm_name, vm_spec)
+        assert 200 == code, (code, data)</code></pre>
 </details>
 </dd>
 </dl>

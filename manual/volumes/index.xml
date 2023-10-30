@@ -5,197 +5,156 @@
     <link>https://harvester.github.io/tests/manual/volumes/</link>
     <description>Recent content in Volumes on Harvester manual test cases</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://harvester.github.io/tests/manual/volumes/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <atom:link href="https://harvester.github.io/tests/manual/volumes/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title></title>
       <link>https://harvester.github.io/tests/manual/volumes/1401-support-volume-hot-unplug/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/1401-support-volume-hot-unplug/</guid>
       <description> Related issues: #1401 Http proxy setting download image Environment setup Setup an airgapped harvester
 Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
     </item>
-    
     <item>
       <title>Add/remove disk to Host config</title>
       <link>https://harvester.github.io/tests/manual/volumes/1623-add-disk-to-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/1623-add-disk-to-host/</guid>
       <description> Related issues: #1623 Unable to add additional disks to host config Environment setup Add Disk that isn&amp;rsquo;t assigned to host Verification Steps Head to &amp;ldquo;Hosts&amp;rdquo; page Click &amp;ldquo;Edit Config&amp;rdquo; on a node and switch to &amp;ldquo;Disks&amp;rdquo; tab Validate: Open dropdown and see no disks Attach a disk on that node Validate: Open dropdown and see some disks Verify that host shows new disk as available storage and Longhorn is showing new schedulable space Detach a disk on that node Validate: Open dropdown and see no disks Verify that host shows new disk as available storage and Longhorn is showing new schedulable space Expected Results Disk space should show appropriately </description>
     </item>
-    
     <item>
       <title>Check Longhorn volume mount point</title>
       <link>https://harvester.github.io/tests/manual/volumes/1667-check-longhorn-volume-mount/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/1667-check-longhorn-volume-mount/</guid>
       <description> Related issues: #1667 data partition is not mounted to the LH path properly Verification Steps Install Harvester node in VM from ISO Check partitions with lsblk -f Verify mount point of /var/lib/longhorn Expected Results Mount point should show /var/lib/longhorn </description>
     </item>
-    
     <item>
       <title>Create image from Volume(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-image-from-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/create-image-from-volume/</guid>
       <description>Create new VM Add SSH key Run through iterations for 1, 2, and 3 for attached bash script Export volume to image from volumes page Create new VM from image Run md5sum -c file2.md5 file1-2.md5 file2-2.md5 file3.md5 Expected Results image should upload/complete in images page New VM should create SSH key should work on new VM file2.md5 should fail and the other three md5 checks should pass Comments #!/bin/bash # first file if [ $1 = 1 ] then dd if=/dev/urandom of=file1.</description>
     </item>
-    
     <item>
       <title>Create Volume root disk blank Form with label</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-blank-form-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-blank-form-label/</guid>
       <description> Navigate to volumes page Click Create Don&amp;rsquo;t select an image Input a size Click Create Expected Results Page should load Volume should create successfully and go to succeeded in the list The label can be seen when you edit the volume config </description>
     </item>
-    
     <item>
       <title>Create volume root disk VM Image Form with label (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form-label/</guid>
       <description> Navigate to volumes page Click Create Select an image Input a size Click Create Expected Results Page should load Volume should create successfully and go to succeeded in the list The label can be seen when you edit the volume config </description>
     </item>
-    
     <item>
       <title>Create volume root disk VM Image Form(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/create-volume-root-disk-vm-image-form/</guid>
       <description> Navigate to volumes page Click Create Select an image Input a size Click Create Expected Results VM should create VM should pass health checks </description>
     </item>
-    
     <item>
       <title>Delete volume that is not attached to a VM (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/delete-volume-that-is-not-attached-to-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/delete-volume-that-is-not-attached-to-vm/</guid>
       <description> Create volume Validate that it created Check the volume crd. Delete the volume Verify that volume is removed from list Check the volume object doesn&amp;rsquo;t exist anymore. Expected Results Volume should create It should show in volume list Volume crd should have correct info. Volume should delete. Volume should be removed from list </description>
     </item>
-    
     <item>
       <title>Delete volume that was attached to VM but now is not (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/delete-volume-that-was-attached-to-vm-but-is-not-now/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/delete-volume-that-was-attached-to-vm-but-is-not-now/</guid>
       <description> Create a VM with a root volume Write 10Gi data into it. Delete the VM but not the volume Verify Volume still exists Check disk space on node Delete the volume Verify that volume is removed from list Check disk space on node Expected Results VM should create 10Gi space should be consumed on the disk. VM should delete Volume should still show in Volume list Disk space should show 10Gi + Volume should delete Volume should be removed from list Space should be less than before </description>
     </item>
-    
     <item>
       <title>Detach volume from virtual machine (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/detach-volume-from-virtual-machine/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/detach-volume-from-virtual-machine/</guid>
       <description>Related issues: #1708 After click &amp;ldquo;Detach volume&amp;rdquo; button, nothing happend Category: Volume Verification Steps Create several new volume in volumes page Create a virtual machine Click the config button on the selected virtual machine Click Add volume and add at least two new volume Click the Detach volume button on the attached volume Repeat above steps several times Expected Results Currently when click the Detach volume button, attached volume can be detach successfully.</description>
     </item>
-    
     <item>
       <title>Edit volume decrease size via YAML</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-decrase-size-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-decrase-size-yaml/</guid>
       <description> Stop the vm Navigate to volumes page Edit Volume as YAML Decrease size Click Save Connect to VM via console Check size of root disk Expected Results VM should stop VM should reboot after saving Disk should be resized </description>
     </item>
-    
     <item>
       <title>Edit volume decrease size via YAML</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-decrease-size-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-decrease-size-form/</guid>
       <description> Stop the vm Navigate to volumes page Edit Volume as YAML Decrease size Click Save Connect to VM via console Check size of root disk Expected Results VM should stop VM should reboot after saving Disk should be resized </description>
     </item>
-    
     <item>
       <title>Edit Volume Form add label</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-form-add-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-form-add-label/</guid>
       <description> Navigate to volumes page Edit Volume with Form Click Labels Add label Click Save Open VM again and click the config tab Verify that label was saved Expected Results Volume should save Label should add Label should show when re-opened </description>
     </item>
-    
     <item>
       <title>Edit volume increase size via form (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-form/</guid>
       <description> Stop the vm Navigate to volumes page Edit Volume via form Increase size Click Save Connect to VM via console Check size of root disk Expected Results VM should stop VM should reboot after saving Disk should be resized </description>
     </item>
-    
     <item>
       <title>Edit volume increase size via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-yaml/</guid>
       <description> Stop the vm Navigate to volumes page Edit Volume as YAML Increase size Click Save Connect to VM via console Check size of root disk Expected Results VM should stop VM should reboot after saving Disk should be resized </description>
     </item>
-    
     <item>
       <title>Edit Volume YAML add label (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-yaml-add-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-yaml-add-label/</guid>
       <description> Navigate to volumes page Edit Volume as YAML Add label to config Click Save Open VM again and click the config tab Verify that label was saved Expected Results Volume should save Label should add Label should show when re-opened </description>
     </item>
-    
     <item>
       <title>Negative delete Volume that is in use (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/negative-delete-volume-that-is-in-use/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/negative-delete-volume-that-is-in-use/</guid>
       <description> Navigate to Volumes page and check for a volume in use by a VM Try to delete volume Click delete on modal Expected Results Page should load You should get an error message on the delete modal </description>
     </item>
-    
     <item>
       <title>Support Volume Hot Unplug (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</guid>
       <description> Related issues: #1401 Support volume hot-unplug Category: Storage Environment setup Setup an airgapped harvester
 Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
     </item>
-    
     <item>
       <title>Validate volume shows as in use when attached (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/volumes/validate-volume-shows-in-use-while-attached/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/validate-volume-shows-in-use-while-attached/</guid>
       <description> Navigate to Volumes and check for a volume in use by a VM Verify that the state says In Use Expected Results State should show correctly </description>
     </item>
-    
     <item>
       <title>Verify that vm-force-reset-policy works</title>
       <link>https://harvester.github.io/tests/manual/volumes/1660-volume-unit-vm-details/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/1660-volume-unit-vm-details/</guid>
       <description> Related issues: #1660 The volume unit on the vm details page is incorrect Verification Steps Create new .1G volume Create new VM Create with raw-image template Add opensuse base image Add .1G Volume Verify size in VM details on volume tab Expected Results Size should show as .1G </description>
     </item>
-    
     <item>
       <title>Verify that VMs stay up when disks are evicted</title>
       <link>https://harvester.github.io/tests/manual/volumes/1334-evict-disks-check-vms/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://harvester.github.io/tests/manual/volumes/1334-evict-disks-check-vms/</guid>
       <description>Related issues: #1334 Volumes fail with Scheduling Failure after evicting disc on multi-disc node Verification Steps Created 3 node Harvester setup with ipxe example in KVM/libvirt Added formatted disk to node0 VM Created three VMs on node0 Created large files on three VMs to see where they were located with dd if=/dev/urandom of=file1.txt count=5192 bs=1M Checked Longhorn to be sure that some VMs were on new disk Deleted disk from Harvester Checked Longhorn to be sure that disk was marked for eviction Verified that VMs were still available while evicting replicas by running commands from serial console/SSH Verified that disk was removed from Longhorn and VMS were still up.</description>
     </item>
-    
   </channel>
 </rss>
