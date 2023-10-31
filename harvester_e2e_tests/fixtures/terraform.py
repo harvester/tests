@@ -43,7 +43,7 @@ def tf_provider_version(request):
 @pytest.fixture(scope="session")
 def tf_executor(request):
     path = Path(request.config.getoption('--terraform-scripts-location'))
-    run(path / "terraform_install.sh", stdout=PIPE, stderr=PIPE)
+    run(str(path / "terraform_install.sh"), stdout=PIPE, stderr=PIPE)
     executor = path / "bin/terraform"
     assert executor.is_file()
 
@@ -66,10 +66,10 @@ def tf_harvester(request, api_client, tf_executor, tf_provider_version):
             return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
 
         def execute(self, cmd, raw=False, **kws):
-            return self.exec_command(f"{self.executor} {cmd}")
+            return self.exec_command(f"{self.executor} {cmd}", raw=raw, **kws)
 
         def initial_provider(self, kubeconfig, provider_version):
-            kubefile = self.workdir / ".kube"
+            kubefile = self.workdir / ".kubeconfig"
             with open(kubefile, "w") as f:
                 f.write(kubeconfig)
 
@@ -96,7 +96,7 @@ def tf_harvester(request, api_client, tf_executor, tf_provider_version):
     harv = TerraformHarvester(tf_executor, path / datetime.now().strftime("%Hh%Mm_%m-%d"))
     kuebconfig = api_client.generate_kubeconfig()
     out, err, exc_code = harv.initial_provider(kuebconfig, tf_provider_version)
-    assert 0 == exc_code and not err
+    assert not err and 0 == exc_code
 
     return harv
 
