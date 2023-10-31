@@ -11,7 +11,7 @@ test_result.html
 *dev.tfrc
 *.terraform.d
 *terraformharvester
-terraform_test_artifacts/bin
+terraform_test_artifacts/
 *.DS_Store
 *config
 .idea
