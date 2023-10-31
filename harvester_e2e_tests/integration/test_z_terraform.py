@@ -26,7 +26,7 @@ def test_create_ssh_key(api_client, tf_harvester, ssh_key_resource):
     tf_harvester.save_as(spec.ctx, "ssh_key")
 
     out, err, code = tf_harvester.apply_resource(spec.type, spec.name)
-    assert 0 == code and not err
+    assert not err and 0 == code
 
     code, data = api_client.keypairs.get(unique_name)
     assert 200 == code
@@ -37,7 +37,7 @@ def test_delete_ssh_key(api_client, tf_harvester, ssh_key_resource):
     spec, unique_name, _ = ssh_key_resource
 
     out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-    assert 0 == code and not err
+    assert not err and 0 == code
 
     code, data = api_client.keypairs.get(unique_name)
     assert 404 == code
@@ -49,7 +49,7 @@ def test_create_volume(api_client, tf_harvester, volume_resource):
     tf_harvester.save_as(spec.ctx, "volumes")
 
     out, err, code = tf_harvester.apply_resource(spec.type, spec.name)
-    assert 0 == code and not err
+    assert not err and 0 == code
 
     code, data = api_client.volumes.get(unique_name)
     vol_spec = api_client.volumes.Spec.from_dict(data)
@@ -63,7 +63,7 @@ def test_delete_volume(api_client, tf_harvester, volume_resource):
     tf_harvester.save_as(spec.ctx, "volumes")
 
     out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-    assert 0 == code and not err
+    assert not err and 0 == code
 
     code, data = api_client.volumes.get(unique_name)
     assert 404 == code
