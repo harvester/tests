@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>harvester_e2e_tests.fixtures.terraform API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>harvester_e2e_tests.fixtures.terraform</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import re
+import json
+from pathlib import Path
+from datetime import datetime
+from subprocess import run, PIPE
+
+import pytest
+
+TF_PROVIDER = &#39;&#39;&#39;
+terraform {{
+  required_version = &#34;{tf_version}&#34;
+  required_providers {{
+    harvester = {{
+      source  = &#34;{provider_source}&#34;
+      version = &#34;{provider_version}&#34;
+    }}
+  }}
+}}
+
+provider &#34;harvester&#34; {{
+    kubeconfig = &#34;{config_path}&#34;
+}}
+&#39;&#39;&#39;
+
+
+def remove_ansicode(ctx):
+    if isinstance(ctx, bytes):
+        ctx = ctx.decode()
+    return re.sub(r&#34;\x1b|\[\d+m&#34;, &#34;&#34;, ctx)
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def tf_provider_version(request):
+    version = request.config.getoption(&#39;--terraform-provider-harvester&#39;)
+    if not version:
+        import requests
+        return requests.get(
+            &#34;https://api.github.com/repos/harvester/terraform-provider-harvester/releases/latest&#34;
+        ).json()[&#39;name&#39;].lstrip(&#39;v&#39;)
+    return version
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def tf_executor(request):
+    path = Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
+    run(str(path / &#34;terraform_install.sh&#34;), stdout=PIPE, stderr=PIPE)
+    executor = path / &#34;bin/terraform&#34;
+    assert executor.is_file()
+
+    yield executor
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def tf_harvester(request, api_client, tf_executor, tf_provider_version):
+    class TerraformHarvester:
+        def __init__(self, executor, workdir):
+            self.executor = executor.resolve()
+            self.workdir = workdir
+            self.workdir.mkdir(exist_ok=True)
+
+        def exec_command(self, cmd, raw=False, **kws):
+            rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
+
+            if raw:
+                return rv
+            return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
+
+        def execute(self, cmd, raw=False, **kws):
+            return self.exec_command(f&#34;{self.executor} {cmd}&#34;, raw=raw, **kws)
+
+        def initial_provider(self, kubeconfig, provider_version):
+            kubefile = self.workdir / &#34;.kubeconfig&#34;
+            with open(kubefile, &#34;w&#34;) as f:
+                f.write(kubeconfig)
+
+            with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+                f.write(TF_PROVIDER.format(
+                    tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
+                    provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
+                ))
+
+            return self.execute(&#34;init&#34;)
+
+        def save_as(self, content, filename, ext=&#34;.tf&#34;):
+            filepath = self.workdir / f&#34;{filename}{ext}&#34;
+            with open(filepath, &#34;w&#34;) as f:
+                f.write(content)
+
+        def apply_resource(self, resource_type, resource_name):
+            return self.execute(f&#34;apply -auto-approve -target {resource_type}.{resource_name}&#34;)
+
+        def destroy_resource(self, resource_type, resource_name):
+            return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)
+
+    path = Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
+    harv = TerraformHarvester(tf_executor, path / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
+    kuebconfig = api_client.generate_kubeconfig()
+    out, err, exc_code = harv.initial_provider(kuebconfig, tf_provider_version)
+    assert not err and 0 == exc_code
+
+    return harv
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def tf_resource(request, tf_provider_version):
+    from dataclasses import dataclass
+
+    @dataclass
+    class ResourceContext:
+        type: str
+        name: str
+        ctx: str
+
+    class TerraformResource:
+        @classmethod
+        def _support_version(cls, version):
+            return True
+
+        @classmethod
+        def from_version(cls, version):
+            for c in cls.__subclasses__():
+                if c._support_version(version):
+                    return c()
+            return cls()
+
+        def __init__(self):
+            self.executor = Path(&#34;./terraform_test_artifacts/json2hcl&#34;).resolve()
+
+        def convert_to_hcl(self, json_spec, raw=False):
+            rv = run(f&#34;echo {json.dumps(json_spec)!r} | {self.executor!s}&#34;,
+                     shell=True, stdout=PIPE, stderr=PIPE)
+            if raw:
+                return rv
+            if rv.stderr:
+                raise TypeError(rv.stderr, rv.stdout, rv.returncode)
+            out = rv.stdout.decode()
+            out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
+            out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
+            return out
+
+        def ssh_key(self, resource_name, name, public_key, *, convert=True, **kwargs):
+            spec = {&#34;name&#34;: name, &#34;public_key&#34;: public_key}
+            spec.update(kwargs)
+            rv = dict(resource=dict(harvester_ssh_key={resource_name: spec}))
+
+            if convert:
+                return ResourceContext(&#34;harvester_ssh_key&#34;, resource_name, self.convert_to_hcl(rv))
+            return rv
+
+        def storage_class(
+            self, resource_name, name, replicas=1, stale_timeout=30, migratable=&#34;true&#34;,
+            *, convert=True, **kwargs
+        ):
+            spec = {
+                &#34;name&#34;: name,
+                &#34;parameters&#34;: {
+                    &#34;migratable&#34;: migratable,
+                    &#34;numberOfReplicas&#34;: str(replicas),
+                    &#34;staleReplicaTimeout&#34;: str(stale_timeout)
+                }
+            }
+            other_params = kwargs.pop(&#39;parameters&#39;, {})
+            spec.update(kwargs)
+            spec[&#39;parameters&#39;].update(other_params)
+            rv = dict(resource=dict(harvester_storageclass={resource_name: spec}))
+
+            if convert:
+                return ResourceContext(
+                    &#34;harvester_storageclass&#34;, resource_name, self.convert_to_hcl(rv)
+                )
+            return rv
+
+        def volume(self, resource_name, name, size, *, convert=True, **kwargs):
+            spec = {
+                &#34;name&#34;: name,
+                &#34;size&#34;: size if isinstance(size, str) else f&#34;{size}Gi&#34;
+            }
+            spec.update(kwargs)
+            rv = dict(resource=dict(harvester_volume={resource_name: spec}))
+
+            if convert:
+                return ResourceContext(&#34;harvester_volume&#34;, resource_name, self.convert_to_hcl(rv))
+            return rv
+
+    return TerraformResource.from_version(tf_provider_version)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.remove_ansicode"><code class="name flex">
+<span>def <span class="ident">remove_ansicode</span></span>(<span>ctx)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_ansicode(ctx):
+    if isinstance(ctx, bytes):
+        ctx = ctx.decode()
+    return re.sub(r&#34;\x1b|\[\d+m&#34;, &#34;&#34;, ctx)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.tf_executor"><code class="name flex">
+<span>def <span class="ident">tf_executor</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_executor(request):
+    path = Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
+    run(str(path / &#34;terraform_install.sh&#34;), stdout=PIPE, stderr=PIPE)
+    executor = path / &#34;bin/terraform&#34;
+    assert executor.is_file()
+
+    yield executor</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.tf_harvester"><code class="name flex">
+<span>def <span class="ident">tf_harvester</span></span>(<span>request, api_client, tf_executor, tf_provider_version)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_harvester(request, api_client, tf_executor, tf_provider_version):
+    class TerraformHarvester:
+        def __init__(self, executor, workdir):
+            self.executor = executor.resolve()
+            self.workdir = workdir
+            self.workdir.mkdir(exist_ok=True)
+
+        def exec_command(self, cmd, raw=False, **kws):
+            rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
+
+            if raw:
+                return rv
+            return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
+
+        def execute(self, cmd, raw=False, **kws):
+            return self.exec_command(f&#34;{self.executor} {cmd}&#34;, raw=raw, **kws)
+
+        def initial_provider(self, kubeconfig, provider_version):
+            kubefile = self.workdir / &#34;.kubeconfig&#34;
+            with open(kubefile, &#34;w&#34;) as f:
+                f.write(kubeconfig)
+
+            with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+                f.write(TF_PROVIDER.format(
+                    tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
+                    provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
+                ))
+
+            return self.execute(&#34;init&#34;)
+
+        def save_as(self, content, filename, ext=&#34;.tf&#34;):
+            filepath = self.workdir / f&#34;{filename}{ext}&#34;
+            with open(filepath, &#34;w&#34;) as f:
+                f.write(content)
+
+        def apply_resource(self, resource_type, resource_name):
+            return self.execute(f&#34;apply -auto-approve -target {resource_type}.{resource_name}&#34;)
+
+        def destroy_resource(self, resource_type, resource_name):
+            return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)
+
+    path = Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
+    harv = TerraformHarvester(tf_executor, path / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
+    kuebconfig = api_client.generate_kubeconfig()
+    out, err, exc_code = harv.initial_provider(kuebconfig, tf_provider_version)
+    assert not err and 0 == exc_code
+
+    return harv</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.tf_provider_version"><code class="name flex">
+<span>def <span class="ident">tf_provider_version</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_provider_version(request):
+    version = request.config.getoption(&#39;--terraform-provider-harvester&#39;)
+    if not version:
+        import requests
+        return requests.get(
+            &#34;https://api.github.com/repos/harvester/terraform-provider-harvester/releases/latest&#34;
+        ).json()[&#39;name&#39;].lstrip(&#39;v&#39;)
+    return version</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.tf_resource"><code class="name flex">
+<span>def <span class="ident">tf_resource</span></span>(<span>request, tf_provider_version)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_resource(request, tf_provider_version):
+    from dataclasses import dataclass
+
+    @dataclass
+    class ResourceContext:
+        type: str
+        name: str
+        ctx: str
+
+    class TerraformResource:
+        @classmethod
+        def _support_version(cls, version):
+            return True
+
+        @classmethod
+        def from_version(cls, version):
+            for c in cls.__subclasses__():
+                if c._support_version(version):
+                    return c()
+            return cls()
+
+        def __init__(self):
+            self.executor = Path(&#34;./terraform_test_artifacts/json2hcl&#34;).resolve()
+
+        def convert_to_hcl(self, json_spec, raw=False):
+            rv = run(f&#34;echo {json.dumps(json_spec)!r} | {self.executor!s}&#34;,
+                     shell=True, stdout=PIPE, stderr=PIPE)
+            if raw:
+                return rv
+            if rv.stderr:
+                raise TypeError(rv.stderr, rv.stdout, rv.returncode)
+            out = rv.stdout.decode()
+            out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
+            out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
+            return out
+
+        def ssh_key(self, resource_name, name, public_key, *, convert=True, **kwargs):
+            spec = {&#34;name&#34;: name, &#34;public_key&#34;: public_key}
+            spec.update(kwargs)
+            rv = dict(resource=dict(harvester_ssh_key={resource_name: spec}))
+
+            if convert:
+                return ResourceContext(&#34;harvester_ssh_key&#34;, resource_name, self.convert_to_hcl(rv))
+            return rv
+
+        def storage_class(
+            self, resource_name, name, replicas=1, stale_timeout=30, migratable=&#34;true&#34;,
+            *, convert=True, **kwargs
+        ):
+            spec = {
+                &#34;name&#34;: name,
+                &#34;parameters&#34;: {
+                    &#34;migratable&#34;: migratable,
+                    &#34;numberOfReplicas&#34;: str(replicas),
+                    &#34;staleReplicaTimeout&#34;: str(stale_timeout)
+                }
+            }
+            other_params = kwargs.pop(&#39;parameters&#39;, {})
+            spec.update(kwargs)
+            spec[&#39;parameters&#39;].update(other_params)
+            rv = dict(resource=dict(harvester_storageclass={resource_name: spec}))
+
+            if convert:
+                return ResourceContext(
+                    &#34;harvester_storageclass&#34;, resource_name, self.convert_to_hcl(rv)
+                )
+            return rv
+
+        def volume(self, resource_name, name, size, *, convert=True, **kwargs):
+            spec = {
+                &#34;name&#34;: name,
+                &#34;size&#34;: size if isinstance(size, str) else f&#34;{size}Gi&#34;
+            }
+            spec.update(kwargs)
+            rv = dict(resource=dict(harvester_volume={resource_name: spec}))
+
+            if convert:
+                return ResourceContext(&#34;harvester_volume&#34;, resource_name, self.convert_to_hcl(rv))
+            return rv
+
+    return TerraformResource.from_version(tf_provider_version)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="harvester_e2e_tests.fixtures" href="index.html">harvester_e2e_tests.fixtures</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.remove_ansicode" href="#harvester_e2e_tests.fixtures.terraform.remove_ansicode">remove_ansicode</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_executor" href="#harvester_e2e_tests.fixtures.terraform.tf_executor">tf_executor</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_harvester" href="#harvester_e2e_tests.fixtures.terraform.tf_harvester">tf_harvester</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_provider_version" href="#harvester_e2e_tests.fixtures.terraform.tf_provider_version">tf_provider_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_resource" href="#harvester_e2e_tests.fixtures.terraform.tf_resource">tf_resource</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

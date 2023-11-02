@@ -312,7 +312,12 @@ def pytest_addoption(parser):
         default=config_data[&#39;upgrade-wait-timeout&#39;],
         help=(&#39;Wait time for polling upgrade Harvester cluster completed status&#39;)
     )
-
+    parser.addoption(
+        &#39;--terraform-provider-harvester&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;terraform-provider-harvester&#39;),
+        help=(&#39;Version of Terraform Harvester Provider&#39;)
+    )
     # TODO(gyee): may need to add SSL options later
 
 
@@ -804,7 +809,12 @@ def pytest_collection_modifyitems(session, config, items):
         default=config_data[&#39;upgrade-wait-timeout&#39;],
         help=(&#39;Wait time for polling upgrade Harvester cluster completed status&#39;)
     )
-
+    parser.addoption(
+        &#39;--terraform-provider-harvester&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;terraform-provider-harvester&#39;),
+        help=(&#39;Version of Terraform Harvester Provider&#39;)
+    )
     # TODO(gyee): may need to add SSL options later</code></pre>
 </details>
 </dd>
