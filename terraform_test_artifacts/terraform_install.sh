@@ -10,7 +10,7 @@ Where:
 DOWNLOAD_URL=
 if [ $# -eq 0 ] ; then
 	# lookup the latest release download URL
-	VER=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest | grep '"name":' | awk '{print $2}' | sed 's/.*v//' | sed 's/".*//')
+	VER=$(curl -s https://releases.hashicorp.com/terraform/ | grep -Po "href=\"/terraform/\K(.[^-]+?)(?=/)" | head -1)
 	DOWNLOAD_URL="https://releases.hashicorp.com/terraform/${VER}/terraform_${VER}_linux_amd64.zip"
 elif [ $# -eq 1 ] ; then
 	VER=$1
