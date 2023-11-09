@@ -1,5 +1,6 @@
-from typing import Type, TypeVar, TypeAlias, Optional, NoReturn, Iterable, ClassVar, Any
+from typing import Type, TypeVar, TypeAlias, Optional, NoReturn, Iterable, ClassVar
 
+from packaging import version
 from requests import Session
 
 from .managers import (
@@ -9,7 +10,7 @@ from .managers import (
 )
 
 API_T = TypeVar('API_T', bound='HarvesterAPI')
-Version: TypeAlias = Any  # pkg_resources.extern.packaging.version.Version
+Version: TypeAlias = version._BaseVersion
 Url: TypeAlias = str
 
 

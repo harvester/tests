@@ -4,16 +4,8 @@ import requests
 from pkg_resources import parse_version
 from requests.packages.urllib3.util.retry import Retry
 
-from .managers import (
-    HostManager, KeypairManager, ImageManager, SettingManager,
-    NetworkManager, VolumeManager, VolumeSnapshotManager, TemplateManager, SupportBundlemanager,
-    ClusterNetworkManager, VirtualMachineManager, StorageClassManager,
-    BackupManager, VersionManager, UpgradeManager, LonghornReplicaManager,
-    LonghornVolumeManager, VirtualMachineSnapshotManager,
-    LonghornBackupVolumeManager
-)
-
-from .managers import DEFAULT_NAMESPACE
+from . import managers
+from .managers.base import DEFAULT_NAMESPACE
 
 
 class HarvesterAPI:
@@ -29,7 +21,7 @@ class HarvesterAPI:
     def login(cls, endpoint, user, passwd, session=None, ssl_verify=True):
         api = cls(endpoint, session=session)
         api.authenticate(user, passwd, verify=ssl_verify)
-
+        api.load_managers(api.cluster_version)
         return api
 
     def __init__(self, endpoint, token=None, session=None):
@@ -39,28 +31,8 @@ class HarvesterAPI:
             self.set_retries()
 
         self._version = None
-
         self.endpoint = endpoint
-        self.hosts = HostManager(self)
-        self.keypairs = KeypairManager(self)
-        self.images = ImageManager(self)
-        self.networks = NetworkManager(self)
-        self.volumes = VolumeManager(self)
-        self.volsnapshots = VolumeSnapshotManager(self)
-        self.templates = TemplateManager(self)
-        self.supportbundle = SupportBundlemanager(self)
-        self.settings = SettingManager(self)
-        self.clusternetworks = ClusterNetworkManager(self)
-        self.vms = VirtualMachineManager(self)
-        self.backups = BackupManager(self)
-        self.vm_snapshots = VirtualMachineSnapshotManager(self)
-        self.scs = StorageClassManager(self)
-        # not available in dashboard
-        self.versions = VersionManager(self)
-        self.upgrades = UpgradeManager(self)
-        self.lhreplicas = LonghornReplicaManager(self)
-        self.lhvolumes = LonghornVolumeManager(self)
-        self.lhbackupvolumes = LonghornBackupVolumeManager(self)
+        self.load_managers("")
 
     @property
     def cluster_version(self):
@@ -83,6 +55,28 @@ class HarvesterAPI:
 
     def __repr__(self):
         return f"HarvesterAPI({self.endpoint!r}, {self.session.headers['Authorization']!r})"
+
+    def load_managers(self, target_version=""):
+        self.hosts = managers.HostManager(self, target_version)
+        self.keypairs = managers.KeypairManager(self, target_version)
+        self.images = managers.ImageManager(self, target_version)
+        self.networks = managers.NetworkManager(self, target_version)
+        self.volumes = managers.VolumeManager(self, target_version)
+        self.volsnapshots = managers.VolumeSnapshotManager(self, target_version)
+        self.templates = managers.TemplateManager(self, target_version)
+        self.supportbundle = managers.SupportBundleManager(self, target_version)
+        self.settings = managers.SettingManager(self, target_version)
+        self.clusternetworks = managers.ClusterNetworkManager(self, target_version)
+        self.vms = managers.VirtualMachineManager(self, target_version)
+        self.backups = managers.BackupManager(self, target_version)
+        self.vm_snapshots = managers.VirtualMachineSnapshotManager(self, target_version)
+        self.scs = managers.StorageClassManager(self, target_version)
+        # not available in dashboard
+        self.versions = managers.VersionManager(self, target_version)
+        self.upgrades = managers.UpgradeManager(self, target_version)
+        self.lhreplicas = managers.LonghornReplicaManager(self, target_version)
+        self.lhvolumes = managers.LonghornVolumeManager(self, target_version)
+        self.lhbackupvolumes = managers.LonghornBackupVolumeManager(self, target_version)
 
     def _get(self, path, **kwargs):
         url = self.get_url(path)
