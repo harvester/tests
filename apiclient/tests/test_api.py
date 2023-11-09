@@ -99,14 +99,20 @@ class TestHarvesterAPI(TestCase):
 
     def test_login(self):
         endpoint, user, pwd = "https://endpoint", "testuser", "testpasswd"
+        fake_version = "8.8.8"
 
-        with mock.patch.object(HarvesterAPI, 'authenticate') as m_auth:
+        with mock.patch.object(HarvesterAPI, 'authenticate') as m_auth, \
+             mock.patch.object(HarvesterAPI, 'cluster_version') as m_cluster_version:
+            m_cluster_version.return_value = fake_version
+
             api = HarvesterAPI.login(endpoint, user, pwd)
 
             m_auth.assert_called_once_with(user, pwd, verify=True)
+            self.assertEqual(api.vms._ver, m_cluster_version)
 
         m_session, ssl_verify = mock.MagicMock(), False
-        with mock.patch.object(HarvesterAPI, 'authenticate') as m_auth:
+        with mock.patch.object(HarvesterAPI, 'authenticate') as m_auth, \
+             mock.patch.object(HarvesterAPI, 'cluster_version') as m_cluster_version:
             api = HarvesterAPI.login(endpoint, user, pwd, m_session, ssl_verify=ssl_verify)
 
             self.assertEqual(api.session, m_session)

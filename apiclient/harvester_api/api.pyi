@@ -1,13 +1,11 @@
-from typing import Type, TypeVar, TypeAlias, Optional, NoReturn, Iterable, ClassVar
+from typing import Type, TypeVar, TypeAlias, Optional, NoReturn, Iterable, ClassVar, Tuple
 
 from packaging import version
 from requests import Session
 
-from .managers import (
-    HostManager, KeypairManager, ImageManager, SettingManager,
-    NetworkManager, VolumeManager, TemplateManager, SupportBundlemanager,
-    ClusterNetworkManager, VirtualMachineManager, BackupManager
-)
+from . import managers
+from .managers.base import DEFAULT_NAMESPACE
+
 
 API_T = TypeVar('API_T', bound='HarvesterAPI')
 Version: TypeAlias = version._BaseVersion
@@ -21,17 +19,25 @@ class HarvesterAPI:
 
     session: Session
     endpoint: Url
-    hosts: Type[HostManager]
-    keypairs: Type[KeypairManager]
-    images: Type[ImageManager]
-    networks: Type[NetworkManager]
-    volumes: Type[VolumeManager]
-    templates: Type[TemplateManager]
-    supportbundle: Type[SupportBundlemanager]
-    settings: Type[SettingManager]
-    clusternetworks: Type[ClusterNetworkManager]
-    vms: Type[VirtualMachineManager]
-    backups: Type[BackupManager]
+    hosts: managers.HostManager
+    keypairs: managers.KeypairManager
+    images: managers.ImageManager
+    networks: managers.NetworkManager
+    volumes: managers.VolumeManager
+    templates: managers.TemplateManager
+    supportbundle: managers.SupportBundleManager
+    settings: managers.SettingManager
+    clusternetworks: managers.ClusterNetworkManager
+    vms: managers.VirtualMachineManager
+    backups: managers.BackupManager
+    vm_snapshots: managers.VirtualMachineSnapshotManager
+    scs: managers.StorageClassManager
+
+    versions: managers.VersionManager
+    upgrades: managers.UpgradeManager
+    lhreplicas: managers.LonghornReplicaManager
+    lhvolumes: managers.LonghornVolumeManager
+    lhbackupvolumes: managers.LonghornBackupVolumeManager
 
     @classmethod
     def login(
@@ -56,6 +62,9 @@ class HarvesterAPI:
     def cluster_version(self) -> Version:
         """
         """
+    def load_managers(self, target_version: str = "") -> NoReturn:
+        """
+        """
     def get_url(self,
                 path: str) -> Url:
         """
@@ -72,5 +81,16 @@ class HarvesterAPI:
         """
         """
     def generate_kubeconfig(self) -> str:
+        """
+        """
+    def get_pods(self, name: str = "", namespace: str = DEFAULT_NAMESPACE) -> Tuple[int, dict]:
+        """
+        """
+    def get_apps_catalog(
+        self, name: str = "", namespace: str = DEFAULT_NAMESPACE
+    ) -> Tuple[int, dict]:
+        """
+        """
+    def get_crds(self, name: str = "") -> Tuple[int, dict]:
         """
         """

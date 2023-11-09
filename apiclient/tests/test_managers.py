@@ -4,9 +4,10 @@ from json.decoder import JSONDecodeError
 
 from harvester_api.api import HarvesterAPI
 from harvester_api.managers import (
-    DEFAULT_NAMESPACE, merge_dict, BaseManager, HostManager, ImageManager,
+    DEFAULT_NAMESPACE, HostManager, ImageManager,
     KeypairManager, NetworkManager
 )
+from harvester_api.managers.base import merge_dict, BaseManager
 
 
 class BaseTestCase(TestCase):
@@ -50,7 +51,7 @@ class TestBaseManager(BaseTestCase):
         self.assertEqual(data['api'], "unknown/%s" % self.api.API_VERSION)
 
     def test__delegate(self):
-        m_resp = mock.MagicMock()
+        m_resp = mock.MagicMock(headers={"Content-Type": "json"})
         self.api._get.return_value = m_resp
 
         # Case 1: general case

@@ -1,4 +1,5 @@
 from copy import deepcopy
+from json import dumps
 
 import yaml
 
