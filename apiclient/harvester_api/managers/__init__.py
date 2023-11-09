@@ -1,3 +1,4 @@
+from .base import DEFAULT_NAMESPACE
 from .hosts import HostManager
 from .images import ImageManager
 from .volumes import VolumeManager
@@ -12,8 +13,11 @@ from .clusternetworks import ClusterNetworkManager
 from .volumesnapshots import VolumeSnapshotManager
 from .virtualmachines import VirtualMachineManager
 # Not available in dashboard
-from .internals import VersionManager, UpgradeManager
-from .longhorns import LonghornReplicaManager, LonghornVolumeManager, LonghornBackupVolumeManager
+from .internals import VersionManager, UpgradeManager, DEFAULT_HARVESTER_NAMESPACE
+from .longhorns import (
+    LonghornReplicaManager, LonghornVolumeManager, LonghornBackupVolumeManager,
+    DEFAULT_LONGHORN_NAMESPACE
+)
 
 __all__ = [
  "HostManager",
@@ -31,4 +35,7 @@ __all__ = [
  "BackupManager", "VirtualMachineSnapshotManager",
  "VersionManager", "UpgradeManager",
  "LonghornReplicaManager", "LonghornVolumeManager", "LonghornBackupVolumeManager",
+ "DEFAULT_HARVESTER_NAMESPACE",
+ "DEFAULT_NAMESPACE",
+ "DEFAULT_LONGHORN_NAMESPACE"
 ]
