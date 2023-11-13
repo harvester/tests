@@ -4,7 +4,7 @@ import requests
 from pkg_resources import parse_version
 from requests.packages.urllib3.util.retry import Retry
 
-from . import managers
+from . import managers as mgrs
 from .managers.base import DEFAULT_NAMESPACE
 
 
@@ -56,27 +56,27 @@ class HarvesterAPI:
     def __repr__(self):
         return f"HarvesterAPI({self.endpoint!r}, {self.session.headers['Authorization']!r})"
 
-    def load_managers(self, target_version=""):
-        self.hosts = managers.HostManager(self, target_version)
-        self.keypairs = managers.KeypairManager(self, target_version)
-        self.images = managers.ImageManager(self, target_version)
-        self.networks = managers.NetworkManager(self, target_version)
-        self.volumes = managers.VolumeManager(self, target_version)
-        self.volsnapshots = managers.VolumeSnapshotManager(self, target_version)
-        self.templates = managers.TemplateManager(self, target_version)
-        self.supportbundle = managers.SupportBundleManager(self, target_version)
-        self.settings = managers.SettingManager(self, target_version)
-        self.clusternetworks = managers.ClusterNetworkManager(self, target_version)
-        self.vms = managers.VirtualMachineManager(self, target_version)
-        self.backups = managers.BackupManager(self, target_version)
-        self.vm_snapshots = managers.VirtualMachineSnapshotManager(self, target_version)
-        self.scs = managers.StorageClassManager(self, target_version)
+    def load_managers(self, version=""):
+        self.hosts = mgrs.HostManager.for_version(version)(self, version)
+        self.keypairs = mgrs.KeypairManager.for_version(version)(self, version)
+        self.images = mgrs.ImageManager.for_version(version)(self, version)
+        self.networks = mgrs.NetworkManager.for_version(version)(self, version)
+        self.volumes = mgrs.VolumeManager.for_version(version)(self, version)
+        self.volsnapshots = mgrs.VolumeSnapshotManager.for_version(version)(self, version)
+        self.templates = mgrs.TemplateManager.for_version(version)(self, version)
+        self.supportbundle = mgrs.SupportBundleManager.for_version(version)(self, version)
+        self.settings = mgrs.SettingManager.for_version(version)(self, version)
+        self.clusternetworks = mgrs.ClusterNetworkManager.for_version(version)(self, version)
+        self.vms = mgrs.VirtualMachineManager.for_version(version)(self, version)
+        self.backups = mgrs.BackupManager.for_version(version)(self, version)
+        self.vm_snapshots = mgrs.VirtualMachineSnapshotManager.for_version(version)(self, version)
+        self.scs = mgrs.StorageClassManager.for_version(version)(self, version)
         # not available in dashboard
-        self.versions = managers.VersionManager(self, target_version)
-        self.upgrades = managers.UpgradeManager(self, target_version)
-        self.lhreplicas = managers.LonghornReplicaManager(self, target_version)
-        self.lhvolumes = managers.LonghornVolumeManager(self, target_version)
-        self.lhbackupvolumes = managers.LonghornBackupVolumeManager(self, target_version)
+        self.versions = mgrs.VersionManager.for_version(version)(self, version)
+        self.upgrades = mgrs.UpgradeManager.for_version(version)(self, version)
+        self.lhreplicas = mgrs.LonghornReplicaManager.for_version(version)(self, version)
+        self.lhvolumes = mgrs.LonghornVolumeManager.for_version(version)(self, version)
+        self.lhbackupvolumes = mgrs.LonghornBackupVolumeManager.for_version(version)(self, version)
 
     def _get(self, path, **kwargs):
         url = self.get_url(path)

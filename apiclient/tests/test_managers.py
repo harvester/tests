@@ -95,6 +95,35 @@ class TestBaseManager(BaseTestCase):
 
         self.assertDictEqual(dict(json=data), self.api._put.call_args[1])
 
+    def test_for_version(self):
+        class B0(BaseManager):
+            pass
+
+        class B103(B0):
+            support_to = '1.0.3'
+
+        class B110(B0):
+            support_to = '1.1.0'
+
+        class B120(B0):
+            support_to = '1.2.0'
+
+        class B113(B120):
+            support_to = '1.1.3'
+
+        class B130(B120):
+            support_to = '1.3.0'
+
+        class B114(B130):
+            support_to = '1.1.4'
+
+        self.assertEqual(B0.for_version('1.0.3'), B103)
+        self.assertEqual(B0.for_version('1.1.0'), B110)
+        self.assertEqual(B0.for_version('1.2.0'), B120)
+        self.assertEqual(B0.for_version('1.1.3'), B113)
+        self.assertEqual(B0.for_version('1.3.0'), B130)
+        self.assertEqual(B0.for_version('1.1.4'), B114)
+
 
 class TestHostManager(BaseTestCase):
     manager_cls = HostManager

@@ -70,6 +70,17 @@ class TestHarvesterAPI(TestCase):
                 with self.subTest(attr=attr, val=val):
                     self.assertEqual(getattr(retries, attr), val)
 
+    def test_load_managers(self):
+        default_ver, base_ver, new_ver = "", "0.0.0", "v1.1.0"
+        api = HarvesterAPI("https://endpoint")
+
+        self.assertEqual(api.hosts.support_to, base_ver)
+        self.assertEqual(api.hosts._ver, default_ver)
+
+        api.load_managers(new_ver)
+        self.assertTrue(api.hosts.is_support(new_ver))
+        self.assertEqual(api.hosts._ver, new_ver)
+
     def test_authenticate(self):
         user, pwd, token = "testuser", "testpasswd", "fake:token"
         post_json = dict(username=user, password=pwd)
