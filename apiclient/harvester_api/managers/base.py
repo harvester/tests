@@ -16,6 +16,7 @@ def merge_dict(src, dest):
 
 
 class BaseManager:
+    _sub_classes = dict()
     support_to = "0.0.0"
 
     @classmethod
@@ -24,11 +25,16 @@ class BaseManager:
 
     @classmethod
     def for_version(cls, version):
-        for c in sorted(cls.__subclasses__(), reverse=True,
-                        key=lambda x: parse_version(x.support_to).release):
+        for c in sorted(cls._sub_classes.get(cls, []),
+                        reverse=True, key=lambda x: parse_version(x.support_to).release):
             if c.is_support(version):
-                return c.for_version(version)
+                return c
         return cls
+
+    def __init_subclass__(cls):
+        for parent in cls.__mro__:
+            if issubclass(parent, BaseManager):
+                cls._sub_classes.setdefault(parent, []).append(cls)
 
     def __init__(self, api, target_version=""):
         self._api = ref(api)
