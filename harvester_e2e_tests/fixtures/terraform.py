@@ -1,28 +1,27 @@
 import re
 import json
-import operator
 from pathlib import Path
 from datetime import datetime
 from subprocess import run, PIPE
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pytest
 from pkg_resources import parse_version
 
 TF_PROVIDER = '''
-terraform {{
-  required_version = "{tf_version}"
-  required_providers {{
-    harvester = {{
-      source  = "{provider_source}"
-      version = "{provider_version}"
-    }}
-  }}
-}}
+terraform {
+  required_version = "%(tf_version)s"
+  required_providers {
+    harvester = {
+      source  = "%(provider_source)s"
+      version = "%(provider_version)s"
+    }
+  }
+}
 
-provider "harvester" {{
-    kubeconfig = "{config_path}"
-}}
+provider "harvester" {
+    kubeconfig = "%(config_path)s"
+}
 '''
 
 
@@ -59,51 +58,10 @@ def tf_executor(tf_script_dir):
 
 @pytest.fixture(scope="session")
 def tf_harvester(api_client, tf_script_dir, tf_provider_version, tf_executor):
-    class TerraformHarvester:
-        def __init__(self, executor, workdir):
-            self.executor = executor.resolve()
-            self.workdir = workdir
-            self.workdir.mkdir(exist_ok=True)
-
-        def exec_command(self, cmd, raw=False, **kws):
-            rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
-
-            if raw:
-                return rv
-            return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
-
-        def execute(self, cmd, raw=False, **kws):
-            return self.exec_command(f"{self.executor} {cmd}", raw=raw, **kws)
-
-        def initial_provider(self, kubeconfig, provider_version):
-            kubefile = self.workdir / ".kubeconfig"
-            with open(kubefile, "w") as f:
-                f.write(kubeconfig)
-
-            with open(self.workdir / "provider.tf", "w") as f:
-                f.write(TF_PROVIDER.format(
-                    tf_version=">=0.13", config_path=kubefile.resolve(),
-                    provider_source="harvester/harvester", provider_version=provider_version
-                ))
-
-            return self.execute("init")
-
-        def save_as(self, content, filename, ext=".tf"):
-            filepath = self.workdir / f"{filename}{ext}"
-            with open(filepath, "w") as f:
-                f.write(content)
-
-        def apply_resource(self, resource_type, resource_name):
-            return self.execute(f"apply -auto-approve -target {resource_type}.{resource_name}")
-
-        def destroy_resource(self, resource_type, resource_name):
-            return self.execute(f"destroy -auto-approve -target {resource_type}.{resource_name}")
-
     harv = TerraformHarvester(tf_executor, tf_script_dir / datetime.now().strftime("%Hh%Mm_%m-%d"))
     kuebconfig = api_client.generate_kubeconfig()
     out, err, exc_code = harv.initial_provider(kuebconfig, tf_provider_version)
     assert not err and 0 == exc_code
-
     return harv
 
 
@@ -113,31 +71,80 @@ def tf_resource(tf_provider_version):
     return BaseTerraformResource.from_version(tf_provider_version)(converter)
 
 
+class TerraformHarvester:
+    def __init__(self, executor, workdir):
+        self.executor = executor.resolve()
+        self.workdir = workdir
+        self.workdir.mkdir(exist_ok=True)
+
+    def exec_command(self, cmd, raw=False, **kws):
+        rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
+
+        if raw:
+            return rv
+        return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
+
+    def execute(self, cmd, raw=False, **kws):
+        return self.exec_command(f"{self.executor} {cmd}", raw=raw, **kws)
+
+    def initial_provider(self, kubeconfig, provider_version):
+        kubefile = self.workdir / "kubeconfig"
+        with open(kubefile, "w") as f:
+            f.write(kubeconfig)
+
+        with open(self.workdir / "provider.tf", "w") as f:
+            f.write(TF_PROVIDER % dict(
+                tf_version=">=0.13", config_path=kubefile.resolve(),
+                provider_source="harvester/harvester", provider_version=provider_version
+            ))
+
+        return self.execute("init")
+
+    def save_as(self, content, filename, ext=".tf"):
+        filepath = self.workdir / f"{filename}{ext}"
+        with open(filepath, "w") as f:
+            f.write(content)
+
+    def apply_resource(self, resource_type, resource_name):
+        return self.execute(f"apply -auto-approve -target {resource_type}.{resource_name}")
+
+    def destroy_resource(self, resource_type, resource_name):
+        return self.execute(f"destroy -auto-approve -target {resource_type}.{resource_name}")
+
+
 @dataclass
 class ResourceContext:
     type: str
     name: str
     ctx: str
+    raw: dict = field(default_factory=dict, compare=False)
 
 
 class BaseTerraformResource:
-    #: :type: Tuple[str, callable[(str, str), bool]]
-    #: Be used to adjust whether the class is support to specific version,
-    #: this would be used in cls.is_support, worked as `version op target`
-    support_to = ("0.0.0", operator.eq)
+    #: Be used to store sub classes of BaseTerraformResource
+    #: Type: Dict[Type[BaseTerraformResource], List[Type[BaseTerraformResource]]]
+    _sub_classes = dict()
+
+    #: Be used to adjust whether the class is support to specific version
+    #: Type: str
+    support_to = "0.0.0"
 
     @classmethod
     def is_support(cls, target_version):
-        version, comparator = cls.support_to
-        return comparator(parse_version(version), parse_version(target_version))
+        return parse_version(target_version) >= parse_version(cls.support_to)
 
     @classmethod
     def from_version(cls, version):
-        for c in cls.__subclasses__()[::-1]:
-            subcls = c.from_version(version)
-            if subcls.is_support(version):
-                return subcls
+        for c in sorted(cls._sub_classes.get(cls, []),
+                        reverse=True, key=lambda x: parse_version(x.support_to).release):
+            if c.is_support(version):
+                return c
         return cls
+
+    def __init_subclass__(cls):
+        for parent in cls.__mro__:
+            if issubclass(parent, BaseTerraformResource):
+                cls._sub_classes.setdefault(parent, []).append(cls)
 
     def __init__(self, converter):
         self.executor = Path(converter).resolve()
@@ -152,17 +159,19 @@ class BaseTerraformResource:
         out = rv.stdout.decode()
         out = re.sub(r'"resource"', "resource", out)  # resource should not quote
         out = re.sub(r"\"(.+?)\" =", r"\1 =", out)  # property should not quote
+        out = re.sub(r"(.[^ ]+) = {", r"\1 {", out)  # block should not have `=`
         return out
 
     def make_resource(self, resource_type, resource_name, *, convert=True, **properties):
         rv = dict(resource={resource_type: {resource_name: properties}})
         if convert:
-            return ResourceContext(resource_type, resource_name, self.convert_to_hcl(rv))
+            return ResourceContext(resource_type, resource_name, self.convert_to_hcl(rv), rv)
         return rv
 
 
 class TerraformResource(BaseTerraformResource):
-    support_to = ("0.0.0", operator.le)
+    ''' https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/ '''
+    support_to = "0.1.0"
 
     def ssh_key(self, resource_name, name, public_key, *, convert=True, **properties):
         return self.make_resource(
@@ -207,12 +216,14 @@ class TerraformResource(BaseTerraformResource):
 
     def network(self, resource_name, name, vlan_id, *, convert=True, **properties):
         return self.make_resource(
-            "harvester_network", resource_name, vlan_id=vlan_id, convert=convert, **properties
+            "harvester_network", resource_name, name=name, vlan_id=vlan_id,
+            convert=convert, **properties
         )
 
 
 class TerraformResource_060(TerraformResource):
-    support_to = ("0.6.0", operator.le)
+    ''' https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/ '''
+    support_to = "0.6.0"
 
     def storage_class(
         self, resource_name, name, replicas=1, stale_timeout=30, migratable="true",
@@ -231,7 +242,7 @@ class TerraformResource_060(TerraformResource):
 
     def cluster_network(self, resource_name, name, *, convert=True, **properties):
         return self.make_resource(
-            "harvester_clusternetwork", resource_name, convert=convert, **properties
+            "harvester_clusternetwork", resource_name, name=name, convert=convert, **properties
         )
 
     def vlanconfig(
@@ -255,7 +266,9 @@ class TerraformResource_060(TerraformResource):
 
 
 class TerraformResource_063(TerraformResource_060):
-    support_to = ("0.6.3", operator.le)
+    ''' https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/ '''
+
+    support_to = "0.6.3"
 
     def cloudinit_secret(
         self, resource_name, name, user_data="", network_data="", *, convert=True, **properties
