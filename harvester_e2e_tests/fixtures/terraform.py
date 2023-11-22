@@ -68,7 +68,7 @@ def tf_harvester(api_client, tf_script_dir, tf_provider_version, tf_executor):
 @pytest.fixture(scope="session")
 def tf_resource(tf_provider_version):
     converter = Path("./terraform_test_artifacts/json2hcl")
-    return BaseTerraformResource.from_version(tf_provider_version)(converter)
+    return BaseTerraformResource.for_version(tf_provider_version)(converter)
 
 
 class TerraformHarvester:
@@ -134,7 +134,7 @@ class BaseTerraformResource:
         return parse_version(target_version) >= parse_version(cls.support_to)
 
     @classmethod
-    def from_version(cls, version):
+    def for_version(cls, version):
         for c in sorted(cls._sub_classes.get(cls, []),
                         reverse=True, key=lambda x: parse_version(x.support_to).release):
             if c.is_support(version):
