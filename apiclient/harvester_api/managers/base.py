@@ -16,7 +16,14 @@ def merge_dict(src, dest):
 
 
 class BaseManager:
+    #: Be used to store sub classes of BaseManager,
+    #: the attribute will be automatically updated by `__init_subclass__`
+    #: Type: Dict[Type[BaseManager], List[Type[BaseManager]]]
     _sub_classes = dict()
+
+    #: Be used to adjust whether the class is support to specific version,
+    #: the value should be semantic version and re-defined in derived class
+    #: Type: str
     support_to = "0.0.0"
 
     @classmethod
@@ -25,6 +32,12 @@ class BaseManager:
 
     @classmethod
     def for_version(cls, version):
+        ''' Return a (most suitable) derived class `cls` which `cls.is_support` is True
+        Otherwise, return the class itself.
+
+        :param str version: the version string going to seek
+        :return Type[cls]: the most suitable class for version
+        '''
         for c in sorted(cls._sub_classes.get(cls, []),
                         reverse=True, key=lambda x: parse_version(x.support_to).release):
             if c.is_support(version):
