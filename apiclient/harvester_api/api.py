@@ -32,7 +32,7 @@ class HarvesterAPI:
 
         self._version = None
         self.endpoint = endpoint
-        self.load_managers("")
+        self.load_managers()
 
     @property
     def cluster_version(self):
@@ -56,7 +56,7 @@ class HarvesterAPI:
     def __repr__(self):
         return f"HarvesterAPI({self.endpoint!r}, {self.session.headers['Authorization']!r})"
 
-    def load_managers(self, version=""):
+    def load_managers(self, version="0.0.0"):
         self.hosts = mgrs.HostManager.for_version(version)(self, version)
         self.keypairs = mgrs.KeypairManager.for_version(version)(self, version)
         self.images = mgrs.ImageManager.for_version(version)(self, version)
