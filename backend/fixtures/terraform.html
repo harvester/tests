@@ -31,23 +31,25 @@ import json
 from pathlib import Path
 from datetime import datetime
 from subprocess import run, PIPE
+from dataclasses import dataclass, field
 
 import pytest
+from pkg_resources import parse_version
 
 TF_PROVIDER = &#39;&#39;&#39;
-terraform {{
-  required_version = &#34;{tf_version}&#34;
-  required_providers {{
-    harvester = {{
-      source  = &#34;{provider_source}&#34;
-      version = &#34;{provider_version}&#34;
-    }}
-  }}
-}}
+terraform {
+  required_version = &#34;%(tf_version)s&#34;
+  required_providers {
+    harvester = {
+      source  = &#34;%(provider_source)s&#34;
+      version = &#34;%(provider_version)s&#34;
+    }
+  }
+}
 
-provider &#34;harvester&#34; {{
-    kubeconfig = &#34;{config_path}&#34;
-}}
+provider &#34;harvester&#34; {
+    kubeconfig = &#34;%(config_path)s&#34;
+}
 &#39;&#39;&#39;
 
 
@@ -55,6 +57,11 @@ def remove_ansicode(ctx):
     if isinstance(ctx, bytes):
         ctx = ctx.decode()
     return re.sub(r&#34;\x1b|\[\d+m&#34;, &#34;&#34;, ctx)
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def tf_script_dir(request):
+    return Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
 
 
 @pytest.fixture(scope=&#34;session&#34;)
@@ -69,148 +76,235 @@ def tf_provider_version(request):
 
 
 @pytest.fixture(scope=&#34;session&#34;)
-def tf_executor(request):
-    path = Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
-    run(str(path / &#34;terraform_install.sh&#34;), stdout=PIPE, stderr=PIPE)
-    executor = path / &#34;bin/terraform&#34;
+def tf_executor(tf_script_dir):
+    run(str(tf_script_dir / &#34;terraform_install.sh&#34;), stdout=PIPE, stderr=PIPE)
+    executor = tf_script_dir / &#34;bin/terraform&#34;
     assert executor.is_file()
 
     yield executor
 
 
 @pytest.fixture(scope=&#34;session&#34;)
-def tf_harvester(request, api_client, tf_executor, tf_provider_version):
-    class TerraformHarvester:
-        def __init__(self, executor, workdir):
-            self.executor = executor.resolve()
-            self.workdir = workdir
-            self.workdir.mkdir(exist_ok=True)
-
-        def exec_command(self, cmd, raw=False, **kws):
-            rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
-
-            if raw:
-                return rv
-            return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
-
-        def execute(self, cmd, raw=False, **kws):
-            return self.exec_command(f&#34;{self.executor} {cmd}&#34;, raw=raw, **kws)
-
-        def initial_provider(self, kubeconfig, provider_version):
-            kubefile = self.workdir / &#34;.kubeconfig&#34;
-            with open(kubefile, &#34;w&#34;) as f:
-                f.write(kubeconfig)
-
-            with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
-                f.write(TF_PROVIDER.format(
-                    tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
-                    provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
-                ))
-
-            return self.execute(&#34;init&#34;)
-
-        def save_as(self, content, filename, ext=&#34;.tf&#34;):
-            filepath = self.workdir / f&#34;{filename}{ext}&#34;
-            with open(filepath, &#34;w&#34;) as f:
-                f.write(content)
-
-        def apply_resource(self, resource_type, resource_name):
-            return self.execute(f&#34;apply -auto-approve -target {resource_type}.{resource_name}&#34;)
-
-        def destroy_resource(self, resource_type, resource_name):
-            return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)
-
-    path = Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
-    harv = TerraformHarvester(tf_executor, path / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
+def tf_harvester(api_client, tf_script_dir, tf_provider_version, tf_executor):
+    harv = TerraformHarvester(tf_executor, tf_script_dir / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
     kuebconfig = api_client.generate_kubeconfig()
     out, err, exc_code = harv.initial_provider(kuebconfig, tf_provider_version)
     assert not err and 0 == exc_code
-
     return harv
 
 
 @pytest.fixture(scope=&#34;session&#34;)
-def tf_resource(request, tf_provider_version):
-    from dataclasses import dataclass
+def tf_resource(tf_provider_version):
+    converter = Path(&#34;./terraform_test_artifacts/json2hcl&#34;)
+    return BaseTerraformResource.for_version(tf_provider_version)(converter)
 
-    @dataclass
-    class ResourceContext:
-        type: str
-        name: str
-        ctx: str
 
-    class TerraformResource:
-        @classmethod
-        def _support_version(cls, version):
-            return True
+class TerraformHarvester:
+    def __init__(self, executor, workdir):
+        self.executor = executor.resolve()
+        self.workdir = workdir
+        self.workdir.mkdir(exist_ok=True)
 
-        @classmethod
-        def from_version(cls, version):
-            for c in cls.__subclasses__():
-                if c._support_version(version):
-                    return c()
-            return cls()
+    def exec_command(self, cmd, raw=False, **kws):
+        rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
 
-        def __init__(self):
-            self.executor = Path(&#34;./terraform_test_artifacts/json2hcl&#34;).resolve()
-
-        def convert_to_hcl(self, json_spec, raw=False):
-            rv = run(f&#34;echo {json.dumps(json_spec)!r} | {self.executor!s}&#34;,
-                     shell=True, stdout=PIPE, stderr=PIPE)
-            if raw:
-                return rv
-            if rv.stderr:
-                raise TypeError(rv.stderr, rv.stdout, rv.returncode)
-            out = rv.stdout.decode()
-            out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
-            out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
-            return out
-
-        def ssh_key(self, resource_name, name, public_key, *, convert=True, **kwargs):
-            spec = {&#34;name&#34;: name, &#34;public_key&#34;: public_key}
-            spec.update(kwargs)
-            rv = dict(resource=dict(harvester_ssh_key={resource_name: spec}))
-
-            if convert:
-                return ResourceContext(&#34;harvester_ssh_key&#34;, resource_name, self.convert_to_hcl(rv))
+        if raw:
             return rv
+        return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
 
-        def storage_class(
-            self, resource_name, name, replicas=1, stale_timeout=30, migratable=&#34;true&#34;,
-            *, convert=True, **kwargs
-        ):
-            spec = {
-                &#34;name&#34;: name,
-                &#34;parameters&#34;: {
-                    &#34;migratable&#34;: migratable,
-                    &#34;numberOfReplicas&#34;: str(replicas),
-                    &#34;staleReplicaTimeout&#34;: str(stale_timeout)
-                }
-            }
-            other_params = kwargs.pop(&#39;parameters&#39;, {})
-            spec.update(kwargs)
-            spec[&#39;parameters&#39;].update(other_params)
-            rv = dict(resource=dict(harvester_storageclass={resource_name: spec}))
+    def execute(self, cmd, raw=False, **kws):
+        return self.exec_command(f&#34;{self.executor} {cmd}&#34;, raw=raw, **kws)
 
-            if convert:
-                return ResourceContext(
-                    &#34;harvester_storageclass&#34;, resource_name, self.convert_to_hcl(rv)
-                )
+    def initial_provider(self, kubeconfig, provider_version):
+        kubefile = self.workdir / &#34;kubeconfig&#34;
+        with open(kubefile, &#34;w&#34;) as f:
+            f.write(kubeconfig)
+
+        with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+            f.write(TF_PROVIDER % dict(
+                tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
+                provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
+            ))
+
+        return self.execute(&#34;init&#34;)
+
+    def save_as(self, content, filename, ext=&#34;.tf&#34;):
+        filepath = self.workdir / f&#34;{filename}{ext}&#34;
+        with open(filepath, &#34;w&#34;) as f:
+            f.write(content)
+
+    def apply_resource(self, resource_type, resource_name):
+        return self.execute(f&#34;apply -auto-approve -target {resource_type}.{resource_name}&#34;)
+
+    def destroy_resource(self, resource_type, resource_name):
+        return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)
+
+
+@dataclass
+class ResourceContext:
+    type: str
+    name: str
+    ctx: str
+    raw: dict = field(default_factory=dict, compare=False)
+
+
+class BaseTerraformResource:
+    #: Be used to store sub classes of BaseTerraformResource
+    #: Type: Dict[Type[BaseTerraformResource], List[Type[BaseTerraformResource]]]
+    _sub_classes = dict()
+
+    #: Be used to adjust whether the class is support to specific version
+    #: Type: str
+    support_to = &#34;0.0.0&#34;
+
+    @classmethod
+    def is_support(cls, target_version):
+        return parse_version(target_version) &gt;= parse_version(cls.support_to)
+
+    @classmethod
+    def for_version(cls, version):
+        for c in sorted(cls._sub_classes.get(cls, []),
+                        reverse=True, key=lambda x: parse_version(x.support_to).release):
+            if c.is_support(version):
+                return c
+        return cls
+
+    def __init_subclass__(cls):
+        for parent in cls.__mro__:
+            if issubclass(parent, BaseTerraformResource):
+                cls._sub_classes.setdefault(parent, []).append(cls)
+
+    def __init__(self, converter):
+        self.executor = Path(converter).resolve()
+
+    def convert_to_hcl(self, json_spec, raw=False):
+        rv = run(f&#34;echo {json.dumps(json_spec)!r} | {self.executor!s}&#34;,
+                 shell=True, stdout=PIPE, stderr=PIPE)
+        if raw:
             return rv
+        if rv.stderr:
+            raise TypeError(rv.stderr, rv.stdout, rv.returncode)
+        out = rv.stdout.decode()
+        out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
+        out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
+        out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)  # block should not have `=`
+        return out
 
-        def volume(self, resource_name, name, size, *, convert=True, **kwargs):
-            spec = {
-                &#34;name&#34;: name,
-                &#34;size&#34;: size if isinstance(size, str) else f&#34;{size}Gi&#34;
-            }
-            spec.update(kwargs)
-            rv = dict(resource=dict(harvester_volume={resource_name: spec}))
+    def make_resource(self, resource_type, resource_name, *, convert=True, **properties):
+        rv = dict(resource={resource_type: {resource_name: properties}})
+        if convert:
+            return ResourceContext(resource_type, resource_name, self.convert_to_hcl(rv), rv)
+        return rv
 
-            if convert:
-                return ResourceContext(&#34;harvester_volume&#34;, resource_name, self.convert_to_hcl(rv))
-            return rv
 
-    return TerraformResource.from_version(tf_provider_version)</code></pre>
+class TerraformResource(BaseTerraformResource):
+    &#39;&#39;&#39; https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/ &#39;&#39;&#39;
+    support_to = &#34;0.1.0&#34;
+
+    def ssh_key(self, resource_name, name, public_key, *, convert=True, **properties):
+        return self.make_resource(
+            &#34;harvester_ssh_key&#34;, resource_name, name=name, public_key=public_key,
+            convert=convert, **properties
+        )
+
+    def volume(self, resource_name, name, size=1, *, convert=True, **properties):
+        size = size if isinstance(size, str) else f&#34;{size}Gi&#34;
+        return self.make_resource(
+            &#34;harvester_volume&#34;, resource_name, name=name, size=size,
+            convert=convert, **properties
+        )
+
+    def image_download(
+        self, resource_name, name, display_name, url, *, convert=True, **properties
+    ):
+        return self.make_resource(
+            &#34;harvester_image&#34;, resource_name, name=name, display_name=display_name, url=url,
+            source_type=&#34;download&#34;, convert=convert, **properties
+        )
+
+    def image_export_from_volume(
+        self, resource_name, name, display_name, pvc_name, pvc_namespace,
+        *, convert=True, **properties
+    ):
+        return self.make_resource(
+            &#34;harvester_image&#34;, resource_name, name=name, display_name=display_name,
+            pvc_name=pvc_name, pvc_namespace=pvc_namespace, source_type=&#34;export-from-volume&#34;,
+            convert=convert, **properties
+        )
+
+    def virtual_machine(self, resource_name, name, disks, nics, *, convert=True, **properties):
+        disks.extend(properties.pop(&#34;disk&#34;, []))
+        nics.extend(properties.pop(&#34;network_interface&#34;, []))
+        return self.make_resource(
+            &#34;harvester_virtualmachine&#34;, resource_name, name=name, disk=disks,
+            network_interface=nics, convert=convert, **properties
+        )
+
+    vm = virtual_machine  # alias
+
+    def network(self, resource_name, name, vlan_id, *, convert=True, **properties):
+        return self.make_resource(
+            &#34;harvester_network&#34;, resource_name, name=name, vlan_id=vlan_id,
+            convert=convert, **properties
+        )
+
+
+class TerraformResource_060(TerraformResource):
+    &#39;&#39;&#39; https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/ &#39;&#39;&#39;
+    support_to = &#34;0.6.0&#34;
+
+    def storage_class(
+        self, resource_name, name, replicas=1, stale_timeout=30, migratable=&#34;true&#34;,
+        *, convert=True, **properties
+    ):
+        params = {
+                &#34;migratable&#34;: migratable,
+                &#34;numberOfReplicas&#34;: str(replicas),
+                &#34;staleReplicaTimeout&#34;: str(stale_timeout)
+        }
+        params.update(properties.pop(&#39;parameters&#39;, {}))
+        return self.make_resource(
+            &#34;harvester_storageclass&#34;, resource_name, name=name, parameters=params,
+            convert=convert, **properties
+        )
+
+    def cluster_network(self, resource_name, name, *, convert=True, **properties):
+        return self.make_resource(
+            &#34;harvester_clusternetwork&#34;, resource_name, name=name, convert=convert, **properties
+        )
+
+    def vlanconfig(
+        self, resource_name, name, cluster_network_name, nics, *, convert=True, **properties
+    ):
+        uplink = properties.pop(&#39;uplink&#39;, dict())
+        uplink[&#39;nics&#39;] = nics
+
+        return self.make_resource(
+            &#34;harvester_vlanconfig&#34;, resource_name, name=name, uplink=uplink,
+            cluster_network_name=cluster_network_name, convert=convert, **properties
+        )
+
+    def network(
+        self, resource_name, name, vlan_id, cluster_network_name, *, convert=True, **properties
+    ):
+        return super().network(
+            resource_name, name, vlan_id, cluster_network_name=cluster_network_name,
+            convert=convert, **properties
+        )
+
+
+class TerraformResource_063(TerraformResource_060):
+    &#39;&#39;&#39; https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/ &#39;&#39;&#39;
+
+    support_to = &#34;0.6.3&#34;
+
+    def cloudinit_secret(
+        self, resource_name, name, user_data=&#34;&#34;, network_data=&#34;&#34;, *, convert=True, **properties
+    ):
+        return self.make_resource(
+            &#34;harvester_cloudinit_secret&#34;, resource_name,
+            user_data=user_data, network_data=network_data, convert=convert, **properties
+        )</code></pre>
 </details>
 </section>
 <section>
@@ -236,7 +330,7 @@ def tf_resource(request, tf_provider_version):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_executor"><code class="name flex">
-<span>def <span class="ident">tf_executor</span></span>(<span>request)</span>
+<span>def <span class="ident">tf_executor</span></span>(<span>tf_script_dir)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -245,17 +339,16 @@ def tf_resource(request, tf_provider_version):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def tf_executor(request):
-    path = Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
-    run(str(path / &#34;terraform_install.sh&#34;), stdout=PIPE, stderr=PIPE)
-    executor = path / &#34;bin/terraform&#34;
+def tf_executor(tf_script_dir):
+    run(str(tf_script_dir / &#34;terraform_install.sh&#34;), stdout=PIPE, stderr=PIPE)
+    executor = tf_script_dir / &#34;bin/terraform&#34;
     assert executor.is_file()
 
     yield executor</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_harvester"><code class="name flex">
-<span>def <span class="ident">tf_harvester</span></span>(<span>request, api_client, tf_executor, tf_provider_version)</span>
+<span>def <span class="ident">tf_harvester</span></span>(<span>api_client, tf_script_dir, tf_provider_version, tf_executor)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -264,53 +357,11 @@ def tf_executor(request):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def tf_harvester(request, api_client, tf_executor, tf_provider_version):
-    class TerraformHarvester:
-        def __init__(self, executor, workdir):
-            self.executor = executor.resolve()
-            self.workdir = workdir
-            self.workdir.mkdir(exist_ok=True)
-
-        def exec_command(self, cmd, raw=False, **kws):
-            rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
-
-            if raw:
-                return rv
-            return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
-
-        def execute(self, cmd, raw=False, **kws):
-            return self.exec_command(f&#34;{self.executor} {cmd}&#34;, raw=raw, **kws)
-
-        def initial_provider(self, kubeconfig, provider_version):
-            kubefile = self.workdir / &#34;.kubeconfig&#34;
-            with open(kubefile, &#34;w&#34;) as f:
-                f.write(kubeconfig)
-
-            with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
-                f.write(TF_PROVIDER.format(
-                    tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
-                    provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
-                ))
-
-            return self.execute(&#34;init&#34;)
-
-        def save_as(self, content, filename, ext=&#34;.tf&#34;):
-            filepath = self.workdir / f&#34;{filename}{ext}&#34;
-            with open(filepath, &#34;w&#34;) as f:
-                f.write(content)
-
-        def apply_resource(self, resource_type, resource_name):
-            return self.execute(f&#34;apply -auto-approve -target {resource_type}.{resource_name}&#34;)
-
-        def destroy_resource(self, resource_type, resource_name):
-            return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)
-
-    path = Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))
-    harv = TerraformHarvester(tf_executor, path / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
+def tf_harvester(api_client, tf_script_dir, tf_provider_version, tf_executor):
+    harv = TerraformHarvester(tf_executor, tf_script_dir / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
     kuebconfig = api_client.generate_kubeconfig()
     out, err, exc_code = harv.initial_provider(kuebconfig, tf_provider_version)
     assert not err and 0 == exc_code
-
     return harv</code></pre>
 </details>
 </dd>
@@ -335,7 +386,7 @@ def tf_provider_version(request):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_resource"><code class="name flex">
-<span>def <span class="ident">tf_resource</span></span>(<span>request, tf_provider_version)</span>
+<span>def <span class="ident">tf_resource</span></span>(<span>tf_provider_version)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -344,92 +395,780 @@ def tf_provider_version(request):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def tf_resource(request, tf_provider_version):
-    from dataclasses import dataclass
-
-    @dataclass
-    class ResourceContext:
-        type: str
-        name: str
-        ctx: str
-
-    class TerraformResource:
-        @classmethod
-        def _support_version(cls, version):
-            return True
-
-        @classmethod
-        def from_version(cls, version):
-            for c in cls.__subclasses__():
-                if c._support_version(version):
-                    return c()
-            return cls()
-
-        def __init__(self):
-            self.executor = Path(&#34;./terraform_test_artifacts/json2hcl&#34;).resolve()
-
-        def convert_to_hcl(self, json_spec, raw=False):
-            rv = run(f&#34;echo {json.dumps(json_spec)!r} | {self.executor!s}&#34;,
-                     shell=True, stdout=PIPE, stderr=PIPE)
-            if raw:
-                return rv
-            if rv.stderr:
-                raise TypeError(rv.stderr, rv.stdout, rv.returncode)
-            out = rv.stdout.decode()
-            out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
-            out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
-            return out
-
-        def ssh_key(self, resource_name, name, public_key, *, convert=True, **kwargs):
-            spec = {&#34;name&#34;: name, &#34;public_key&#34;: public_key}
-            spec.update(kwargs)
-            rv = dict(resource=dict(harvester_ssh_key={resource_name: spec}))
-
-            if convert:
-                return ResourceContext(&#34;harvester_ssh_key&#34;, resource_name, self.convert_to_hcl(rv))
-            return rv
-
-        def storage_class(
-            self, resource_name, name, replicas=1, stale_timeout=30, migratable=&#34;true&#34;,
-            *, convert=True, **kwargs
-        ):
-            spec = {
-                &#34;name&#34;: name,
-                &#34;parameters&#34;: {
-                    &#34;migratable&#34;: migratable,
-                    &#34;numberOfReplicas&#34;: str(replicas),
-                    &#34;staleReplicaTimeout&#34;: str(stale_timeout)
-                }
-            }
-            other_params = kwargs.pop(&#39;parameters&#39;, {})
-            spec.update(kwargs)
-            spec[&#39;parameters&#39;].update(other_params)
-            rv = dict(resource=dict(harvester_storageclass={resource_name: spec}))
-
-            if convert:
-                return ResourceContext(
-                    &#34;harvester_storageclass&#34;, resource_name, self.convert_to_hcl(rv)
-                )
-            return rv
-
-        def volume(self, resource_name, name, size, *, convert=True, **kwargs):
-            spec = {
-                &#34;name&#34;: name,
-                &#34;size&#34;: size if isinstance(size, str) else f&#34;{size}Gi&#34;
-            }
-            spec.update(kwargs)
-            rv = dict(resource=dict(harvester_volume={resource_name: spec}))
-
-            if convert:
-                return ResourceContext(&#34;harvester_volume&#34;, resource_name, self.convert_to_hcl(rv))
-            return rv
-
-    return TerraformResource.from_version(tf_provider_version)</code></pre>
+def tf_resource(tf_provider_version):
+    converter = Path(&#34;./terraform_test_artifacts/json2hcl&#34;)
+    return BaseTerraformResource.for_version(tf_provider_version)(converter)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.tf_script_dir"><code class="name flex">
+<span>def <span class="ident">tf_script_dir</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_script_dir(request):
+    return Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource"><code class="flex name class">
+<span>class <span class="ident">BaseTerraformResource</span></span>
+<span>(</span><span>converter)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BaseTerraformResource:
+    #: Be used to store sub classes of BaseTerraformResource
+    #: Type: Dict[Type[BaseTerraformResource], List[Type[BaseTerraformResource]]]
+    _sub_classes = dict()
+
+    #: Be used to adjust whether the class is support to specific version
+    #: Type: str
+    support_to = &#34;0.0.0&#34;
+
+    @classmethod
+    def is_support(cls, target_version):
+        return parse_version(target_version) &gt;= parse_version(cls.support_to)
+
+    @classmethod
+    def for_version(cls, version):
+        for c in sorted(cls._sub_classes.get(cls, []),
+                        reverse=True, key=lambda x: parse_version(x.support_to).release):
+            if c.is_support(version):
+                return c
+        return cls
+
+    def __init_subclass__(cls):
+        for parent in cls.__mro__:
+            if issubclass(parent, BaseTerraformResource):
+                cls._sub_classes.setdefault(parent, []).append(cls)
+
+    def __init__(self, converter):
+        self.executor = Path(converter).resolve()
+
+    def convert_to_hcl(self, json_spec, raw=False):
+        rv = run(f&#34;echo {json.dumps(json_spec)!r} | {self.executor!s}&#34;,
+                 shell=True, stdout=PIPE, stderr=PIPE)
+        if raw:
+            return rv
+        if rv.stderr:
+            raise TypeError(rv.stderr, rv.stdout, rv.returncode)
+        out = rv.stdout.decode()
+        out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
+        out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
+        out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)  # block should not have `=`
+        return out
+
+    def make_resource(self, resource_type, resource_name, *, convert=True, **properties):
+        rv = dict(resource={resource_type: {resource_name: properties}})
+        if convert:
+            return ResourceContext(resource_type, resource_name, self.convert_to_hcl(rv), rv)
+        return rv</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource">TerraformResource</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to"><code class="name">var <span class="ident">support_to</span></code></dt>
+<dd>
+<div class="desc"><p>Be used to adjust whether the class is support to specific version
+Type: str</p></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.for_version"><code class="name flex">
+<span>def <span class="ident">for_version</span></span>(<span>version)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def for_version(cls, version):
+    for c in sorted(cls._sub_classes.get(cls, []),
+                    reverse=True, key=lambda x: parse_version(x.support_to).release):
+        if c.is_support(version):
+            return c
+    return cls</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.is_support"><code class="name flex">
+<span>def <span class="ident">is_support</span></span>(<span>target_version)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def is_support(cls, target_version):
+    return parse_version(target_version) &gt;= parse_version(cls.support_to)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.convert_to_hcl"><code class="name flex">
+<span>def <span class="ident">convert_to_hcl</span></span>(<span>self, json_spec, raw=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convert_to_hcl(self, json_spec, raw=False):
+    rv = run(f&#34;echo {json.dumps(json_spec)!r} | {self.executor!s}&#34;,
+             shell=True, stdout=PIPE, stderr=PIPE)
+    if raw:
+        return rv
+    if rv.stderr:
+        raise TypeError(rv.stderr, rv.stdout, rv.returncode)
+    out = rv.stdout.decode()
+    out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
+    out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
+    out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)  # block should not have `=`
+    return out</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.make_resource"><code class="name flex">
+<span>def <span class="ident">make_resource</span></span>(<span>self, resource_type, resource_name, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_resource(self, resource_type, resource_name, *, convert=True, **properties):
+    rv = dict(resource={resource_type: {resource_name: properties}})
+    if convert:
+        return ResourceContext(resource_type, resource_name, self.convert_to_hcl(rv), rv)
+    return rv</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.ResourceContext"><code class="flex name class">
+<span>class <span class="ident">ResourceContext</span></span>
+<span>(</span><span>type: str, name: str, ctx: str, raw: dict = &lt;factory&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ResourceContext(type: str, name: str, ctx: str, raw: dict = <factory>)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass
+class ResourceContext:
+    type: str
+    name: str
+    ctx: str
+    raw: dict = field(default_factory=dict, compare=False)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.ResourceContext.ctx"><code class="name">var <span class="ident">ctx</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.ResourceContext.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.ResourceContext.raw"><code class="name">var <span class="ident">raw</span> : dict</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.ResourceContext.type"><code class="name">var <span class="ident">type</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester"><code class="flex name class">
+<span>class <span class="ident">TerraformHarvester</span></span>
+<span>(</span><span>executor, workdir)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TerraformHarvester:
+    def __init__(self, executor, workdir):
+        self.executor = executor.resolve()
+        self.workdir = workdir
+        self.workdir.mkdir(exist_ok=True)
+
+    def exec_command(self, cmd, raw=False, **kws):
+        rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
+
+        if raw:
+            return rv
+        return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode
+
+    def execute(self, cmd, raw=False, **kws):
+        return self.exec_command(f&#34;{self.executor} {cmd}&#34;, raw=raw, **kws)
+
+    def initial_provider(self, kubeconfig, provider_version):
+        kubefile = self.workdir / &#34;kubeconfig&#34;
+        with open(kubefile, &#34;w&#34;) as f:
+            f.write(kubeconfig)
+
+        with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+            f.write(TF_PROVIDER % dict(
+                tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
+                provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
+            ))
+
+        return self.execute(&#34;init&#34;)
+
+    def save_as(self, content, filename, ext=&#34;.tf&#34;):
+        filepath = self.workdir / f&#34;{filename}{ext}&#34;
+        with open(filepath, &#34;w&#34;) as f:
+            f.write(content)
+
+    def apply_resource(self, resource_type, resource_name):
+        return self.execute(f&#34;apply -auto-approve -target {resource_type}.{resource_name}&#34;)
+
+    def destroy_resource(self, resource_type, resource_name):
+        return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.apply_resource"><code class="name flex">
+<span>def <span class="ident">apply_resource</span></span>(<span>self, resource_type, resource_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def apply_resource(self, resource_type, resource_name):
+    return self.execute(f&#34;apply -auto-approve -target {resource_type}.{resource_name}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.destroy_resource"><code class="name flex">
+<span>def <span class="ident">destroy_resource</span></span>(<span>self, resource_type, resource_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def destroy_resource(self, resource_type, resource_name):
+    return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.exec_command"><code class="name flex">
+<span>def <span class="ident">exec_command</span></span>(<span>self, cmd, raw=False, **kws)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def exec_command(self, cmd, raw=False, **kws):
+    rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
+
+    if raw:
+        return rv
+    return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.execute"><code class="name flex">
+<span>def <span class="ident">execute</span></span>(<span>self, cmd, raw=False, **kws)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def execute(self, cmd, raw=False, **kws):
+    return self.exec_command(f&#34;{self.executor} {cmd}&#34;, raw=raw, **kws)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.initial_provider"><code class="name flex">
+<span>def <span class="ident">initial_provider</span></span>(<span>self, kubeconfig, provider_version)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initial_provider(self, kubeconfig, provider_version):
+    kubefile = self.workdir / &#34;kubeconfig&#34;
+    with open(kubefile, &#34;w&#34;) as f:
+        f.write(kubeconfig)
+
+    with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+        f.write(TF_PROVIDER % dict(
+            tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
+            provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
+        ))
+
+    return self.execute(&#34;init&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.save_as"><code class="name flex">
+<span>def <span class="ident">save_as</span></span>(<span>self, content, filename, ext='.tf')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_as(self, content, filename, ext=&#34;.tf&#34;):
+    filepath = self.workdir / f&#34;{filename}{ext}&#34;
+    with open(filepath, &#34;w&#34;) as f:
+        f.write(content)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource"><code class="flex name class">
+<span>class <span class="ident">TerraformResource</span></span>
+<span>(</span><span>converter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TerraformResource(BaseTerraformResource):
+    &#39;&#39;&#39; https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/ &#39;&#39;&#39;
+    support_to = &#34;0.1.0&#34;
+
+    def ssh_key(self, resource_name, name, public_key, *, convert=True, **properties):
+        return self.make_resource(
+            &#34;harvester_ssh_key&#34;, resource_name, name=name, public_key=public_key,
+            convert=convert, **properties
+        )
+
+    def volume(self, resource_name, name, size=1, *, convert=True, **properties):
+        size = size if isinstance(size, str) else f&#34;{size}Gi&#34;
+        return self.make_resource(
+            &#34;harvester_volume&#34;, resource_name, name=name, size=size,
+            convert=convert, **properties
+        )
+
+    def image_download(
+        self, resource_name, name, display_name, url, *, convert=True, **properties
+    ):
+        return self.make_resource(
+            &#34;harvester_image&#34;, resource_name, name=name, display_name=display_name, url=url,
+            source_type=&#34;download&#34;, convert=convert, **properties
+        )
+
+    def image_export_from_volume(
+        self, resource_name, name, display_name, pvc_name, pvc_namespace,
+        *, convert=True, **properties
+    ):
+        return self.make_resource(
+            &#34;harvester_image&#34;, resource_name, name=name, display_name=display_name,
+            pvc_name=pvc_name, pvc_namespace=pvc_namespace, source_type=&#34;export-from-volume&#34;,
+            convert=convert, **properties
+        )
+
+    def virtual_machine(self, resource_name, name, disks, nics, *, convert=True, **properties):
+        disks.extend(properties.pop(&#34;disk&#34;, []))
+        nics.extend(properties.pop(&#34;network_interface&#34;, []))
+        return self.make_resource(
+            &#34;harvester_virtualmachine&#34;, resource_name, name=name, disk=disks,
+            network_interface=nics, convert=convert, **properties
+        )
+
+    vm = virtual_machine  # alias
+
+    def network(self, resource_name, name, vlan_id, *, convert=True, **properties):
+        return self.make_resource(
+            &#34;harvester_network&#34;, resource_name, name=name, vlan_id=vlan_id,
+            convert=convert, **properties
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_060" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_060">TerraformResource_060</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.image_download"><code class="name flex">
+<span>def <span class="ident">image_download</span></span>(<span>self, resource_name, name, display_name, url, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def image_download(
+    self, resource_name, name, display_name, url, *, convert=True, **properties
+):
+    return self.make_resource(
+        &#34;harvester_image&#34;, resource_name, name=name, display_name=display_name, url=url,
+        source_type=&#34;download&#34;, convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.image_export_from_volume"><code class="name flex">
+<span>def <span class="ident">image_export_from_volume</span></span>(<span>self, resource_name, name, display_name, pvc_name, pvc_namespace, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def image_export_from_volume(
+    self, resource_name, name, display_name, pvc_name, pvc_namespace,
+    *, convert=True, **properties
+):
+    return self.make_resource(
+        &#34;harvester_image&#34;, resource_name, name=name, display_name=display_name,
+        pvc_name=pvc_name, pvc_namespace=pvc_namespace, source_type=&#34;export-from-volume&#34;,
+        convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.network"><code class="name flex">
+<span>def <span class="ident">network</span></span>(<span>self, resource_name, name, vlan_id, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def network(self, resource_name, name, vlan_id, *, convert=True, **properties):
+    return self.make_resource(
+        &#34;harvester_network&#34;, resource_name, name=name, vlan_id=vlan_id,
+        convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.ssh_key"><code class="name flex">
+<span>def <span class="ident">ssh_key</span></span>(<span>self, resource_name, name, public_key, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ssh_key(self, resource_name, name, public_key, *, convert=True, **properties):
+    return self.make_resource(
+        &#34;harvester_ssh_key&#34;, resource_name, name=name, public_key=public_key,
+        convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.virtual_machine"><code class="name flex">
+<span>def <span class="ident">virtual_machine</span></span>(<span>self, resource_name, name, disks, nics, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def virtual_machine(self, resource_name, name, disks, nics, *, convert=True, **properties):
+    disks.extend(properties.pop(&#34;disk&#34;, []))
+    nics.extend(properties.pop(&#34;network_interface&#34;, []))
+    return self.make_resource(
+        &#34;harvester_virtualmachine&#34;, resource_name, name=name, disk=disks,
+        network_interface=nics, convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.vm"><code class="name flex">
+<span>def <span class="ident">vm</span></span>(<span>self, resource_name, name, disks, nics, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def virtual_machine(self, resource_name, name, disks, nics, *, convert=True, **properties):
+    disks.extend(properties.pop(&#34;disk&#34;, []))
+    nics.extend(properties.pop(&#34;network_interface&#34;, []))
+    return self.make_resource(
+        &#34;harvester_virtualmachine&#34;, resource_name, name=name, disk=disks,
+        network_interface=nics, convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.volume"><code class="name flex">
+<span>def <span class="ident">volume</span></span>(<span>self, resource_name, name, size=1, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def volume(self, resource_name, name, size=1, *, convert=True, **properties):
+    size = size if isinstance(size, str) else f&#34;{size}Gi&#34;
+    return self.make_resource(
+        &#34;harvester_volume&#34;, resource_name, name=name, size=size,
+        convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></b></code>:
+<ul class="hlist">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to">support_to</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_060"><code class="flex name class">
+<span>class <span class="ident">TerraformResource_060</span></span>
+<span>(</span><span>converter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TerraformResource_060(TerraformResource):
+    &#39;&#39;&#39; https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/ &#39;&#39;&#39;
+    support_to = &#34;0.6.0&#34;
+
+    def storage_class(
+        self, resource_name, name, replicas=1, stale_timeout=30, migratable=&#34;true&#34;,
+        *, convert=True, **properties
+    ):
+        params = {
+                &#34;migratable&#34;: migratable,
+                &#34;numberOfReplicas&#34;: str(replicas),
+                &#34;staleReplicaTimeout&#34;: str(stale_timeout)
+        }
+        params.update(properties.pop(&#39;parameters&#39;, {}))
+        return self.make_resource(
+            &#34;harvester_storageclass&#34;, resource_name, name=name, parameters=params,
+            convert=convert, **properties
+        )
+
+    def cluster_network(self, resource_name, name, *, convert=True, **properties):
+        return self.make_resource(
+            &#34;harvester_clusternetwork&#34;, resource_name, name=name, convert=convert, **properties
+        )
+
+    def vlanconfig(
+        self, resource_name, name, cluster_network_name, nics, *, convert=True, **properties
+    ):
+        uplink = properties.pop(&#39;uplink&#39;, dict())
+        uplink[&#39;nics&#39;] = nics
+
+        return self.make_resource(
+            &#34;harvester_vlanconfig&#34;, resource_name, name=name, uplink=uplink,
+            cluster_network_name=cluster_network_name, convert=convert, **properties
+        )
+
+    def network(
+        self, resource_name, name, vlan_id, cluster_network_name, *, convert=True, **properties
+    ):
+        return super().network(
+            resource_name, name, vlan_id, cluster_network_name=cluster_network_name,
+            convert=convert, **properties
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource">TerraformResource</a></li>
+<li><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_063" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_063">TerraformResource_063</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.cluster_network"><code class="name flex">
+<span>def <span class="ident">cluster_network</span></span>(<span>self, resource_name, name, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cluster_network(self, resource_name, name, *, convert=True, **properties):
+    return self.make_resource(
+        &#34;harvester_clusternetwork&#34;, resource_name, name=name, convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.network"><code class="name flex">
+<span>def <span class="ident">network</span></span>(<span>self, resource_name, name, vlan_id, cluster_network_name, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def network(
+    self, resource_name, name, vlan_id, cluster_network_name, *, convert=True, **properties
+):
+    return super().network(
+        resource_name, name, vlan_id, cluster_network_name=cluster_network_name,
+        convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.storage_class"><code class="name flex">
+<span>def <span class="ident">storage_class</span></span>(<span>self, resource_name, name, replicas=1, stale_timeout=30, migratable='true', *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def storage_class(
+    self, resource_name, name, replicas=1, stale_timeout=30, migratable=&#34;true&#34;,
+    *, convert=True, **properties
+):
+    params = {
+            &#34;migratable&#34;: migratable,
+            &#34;numberOfReplicas&#34;: str(replicas),
+            &#34;staleReplicaTimeout&#34;: str(stale_timeout)
+    }
+    params.update(properties.pop(&#39;parameters&#39;, {}))
+    return self.make_resource(
+        &#34;harvester_storageclass&#34;, resource_name, name=name, parameters=params,
+        convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.vlanconfig"><code class="name flex">
+<span>def <span class="ident">vlanconfig</span></span>(<span>self, resource_name, name, cluster_network_name, nics, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def vlanconfig(
+    self, resource_name, name, cluster_network_name, nics, *, convert=True, **properties
+):
+    uplink = properties.pop(&#39;uplink&#39;, dict())
+    uplink[&#39;nics&#39;] = nics
+
+    return self.make_resource(
+        &#34;harvester_vlanconfig&#34;, resource_name, name=name, uplink=uplink,
+        cluster_network_name=cluster_network_name, convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></b></code>:
+<ul class="hlist">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to">support_to</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_063"><code class="flex name class">
+<span>class <span class="ident">TerraformResource_063</span></span>
+<span>(</span><span>converter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TerraformResource_063(TerraformResource_060):
+    &#39;&#39;&#39; https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/ &#39;&#39;&#39;
+
+    support_to = &#34;0.6.3&#34;
+
+    def cloudinit_secret(
+        self, resource_name, name, user_data=&#34;&#34;, network_data=&#34;&#34;, *, convert=True, **properties
+    ):
+        return self.make_resource(
+            &#34;harvester_cloudinit_secret&#34;, resource_name,
+            user_data=user_data, network_data=network_data, convert=convert, **properties
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_060" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_060">TerraformResource_060</a></li>
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource">TerraformResource</a></li>
+<li><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_063.cloudinit_secret"><code class="name flex">
+<span>def <span class="ident">cloudinit_secret</span></span>(<span>self, resource_name, name, user_data='', network_data='', *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cloudinit_secret(
+    self, resource_name, name, user_data=&#34;&#34;, network_data=&#34;&#34;, *, convert=True, **properties
+):
+    return self.make_resource(
+        &#34;harvester_cloudinit_secret&#34;, resource_name,
+        user_data=user_data, network_data=network_data, convert=convert, **properties
+    )</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></b></code>:
+<ul class="hlist">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to">support_to</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -444,12 +1183,74 @@ def tf_resource(request, tf_provider_version):
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.remove_ansicode" href="#harvester_e2e_tests.fixtures.terraform.remove_ansicode">remove_ansicode</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_executor" href="#harvester_e2e_tests.fixtures.terraform.tf_executor">tf_executor</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_harvester" href="#harvester_e2e_tests.fixtures.terraform.tf_harvester">tf_harvester</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_provider_version" href="#harvester_e2e_tests.fixtures.terraform.tf_provider_version">tf_provider_version</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_resource" href="#harvester_e2e_tests.fixtures.terraform.tf_resource">tf_resource</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_script_dir" href="#harvester_e2e_tests.fixtures.terraform.tf_script_dir">tf_script_dir</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.convert_to_hcl" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.convert_to_hcl">convert_to_hcl</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.for_version" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.for_version">for_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.is_support" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.is_support">is_support</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.make_resource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.make_resource">make_resource</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to">support_to</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.ResourceContext" href="#harvester_e2e_tests.fixtures.terraform.ResourceContext">ResourceContext</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.ResourceContext.ctx" href="#harvester_e2e_tests.fixtures.terraform.ResourceContext.ctx">ctx</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.ResourceContext.name" href="#harvester_e2e_tests.fixtures.terraform.ResourceContext.name">name</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.ResourceContext.raw" href="#harvester_e2e_tests.fixtures.terraform.ResourceContext.raw">raw</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.ResourceContext.type" href="#harvester_e2e_tests.fixtures.terraform.ResourceContext.type">type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester">TerraformHarvester</a></code></h4>
+<ul class="two-column">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.apply_resource" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.apply_resource">apply_resource</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.destroy_resource" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.destroy_resource">destroy_resource</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.exec_command" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.exec_command">exec_command</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.execute" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.execute">execute</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.initial_provider" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.initial_provider">initial_provider</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.save_as" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.save_as">save_as</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource">TerraformResource</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource.image_download" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource.image_download">image_download</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource.image_export_from_volume" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource.image_export_from_volume">image_export_from_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource.network" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource.network">network</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource.ssh_key" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource.ssh_key">ssh_key</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource.virtual_machine" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource.virtual_machine">virtual_machine</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource.vm" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource.vm">vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource.volume" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource.volume">volume</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_060" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_060">TerraformResource_060</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.cluster_network" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_060.cluster_network">cluster_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.network" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_060.network">network</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.storage_class" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_060.storage_class">storage_class</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.vlanconfig" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_060.vlanconfig">vlanconfig</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_063" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_063">TerraformResource_063</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_063.cloudinit_secret" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_063.cloudinit_secret">cloudinit_secret</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
