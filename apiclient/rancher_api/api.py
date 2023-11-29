@@ -8,7 +8,7 @@ from .managers import (
     CloudCredentialManager, ClusterRegistrationTokenManager, HarvesterConfigManager,
     KubeConfigManager, MgmtClusterManager, SecretManager, SettingManager,
     ClusterManager, NodeTemplateManager, NodePoolManager, UserManager,
-    ClusterDeploymentManager, ClusterServiceManager, PVCManager
+    ChartManager, ClusterDeploymentManager, ClusterServiceManager, PVCManager
 )
 
 
@@ -45,6 +45,7 @@ class RancherAPI:
         self.clusters = ClusterManager(self)
         self.node_templates = NodeTemplateManager(self)
         self.node_pools = NodePoolManager(self)
+        self.charts = ChartManager(self)
         self.cluster_deployments = ClusterDeploymentManager(self)
         self.cluster_services = ClusterServiceManager(self)
         self.pvcs = PVCManager(self)

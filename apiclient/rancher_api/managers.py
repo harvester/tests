@@ -4,7 +4,7 @@ import yaml
 from weakref import ref
 from collections.abc import Mapping
 
-from .models import UserSpec
+from .models import UserSpec, ChartSpec
 
 
 DEFAULT_NAMESPACE = "default"
@@ -346,6 +346,24 @@ class KubeConfigManager(BaseManager):
         return self._create(self.PATH_fmt.format(cluster_id=cluster_id), json=data, raw=raw)
 
 
+class ChartManager(BaseManager):
+    PATH_fmt = "k8s/clusters/{cluster_id}/v1/catalog.cattle.io.apps"
+    CREATE_fmt = "k8s/clusters/{cluster_id}/v1/catalog.cattle.io.clusterrepos/rancher-charts"
+
+    def get(self, cluster_id, namespace, name, raw=False):
+        url = self.PATH_fmt.format(cluster_id=cluster_id)
+        if namespace:
+            url = f"{url}/{namespace}"
+            if name:
+                url = f"{url}/{name}"
+        return self._get(url, raw=raw)
+
+    def create(self, cluster_id, namespace, name, raw=False):
+        url = self.CREATE_fmt.format(cluster_id=cluster_id) + "?action=install"
+        data = ChartSpec(cluster_id, namespace, name).to_dict()
+        return self._create(url, json=data, raw=raw)
+
+
 class ClusterDeploymentManager(BaseManager):
     PATH_fmt = "k8s/clusters/{cluster_id}/v1/apps.deployments"
 
@@ -657,7 +675,7 @@ class NodeTemplateManager(BaseManager):
 class ClusterManager(BaseManager):
     PATH_fmt = "v3/cluster/{uid}"
 
-    def create_data(self, name, k8s_version):
+    def create_data(self, name, k8s_version, kubeconfig):
 
         return {
             "dockerRootDir": "/var/lib/docker",
@@ -755,6 +773,13 @@ class ClusterManager(BaseManager):
                         "type": "nodeDrainInput"
                     },
                     "maxUnavailableUnit": "percentage"
+                },
+                "cloudProvider": {
+                    "type": "cloudProvider",
+                    "name": "harvester",
+                    "harvesterCloudProvider": {
+                        "cloudConfig": kubeconfig
+                    }
                 }
             },
             "localClusterAuthEndpoint": {
@@ -772,8 +797,8 @@ class ClusterManager(BaseManager):
     def get(self, name="", *, raw=False):
         return self._get(self.PATH_fmt.format(uid=name), raw=raw)
 
-    def create(self, name, k8s_version, *, raw=False):
-        data = self.create_data(name, k8s_version)
+    def create(self, name, k8s_version, kubeconfig, *, raw=False):
+        data = self.create_data(name, k8s_version, kubeconfig)
         return self._create(self.PATH_fmt.format(uid=""), json=data, raw=raw)
 
     def delete(self, name, *, raw=False):

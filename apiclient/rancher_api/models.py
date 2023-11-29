@@ -35,3 +35,43 @@ class UserSpec:
         ))
         obj._data = data
         return obj
+
+
+class ChartSpec:
+    def __init__(self, cluster_id, namespace, chart):
+        self.cluster_id = cluster_id
+        self.namespace = namespace
+        self.chart = chart
+
+    def to_dict(self):
+        data = {
+            "charts": [
+                {
+                    "chartName": self.chart,
+                    "releaseName": self.chart,
+                    "annotations": {
+                        "catalog.cattle.io/ui-source-repo-type": "cluster",
+                        "catalog.cattle.io/ui-source-repo": "rancher-charts"
+                    },
+                    "values": {
+                        "global": {
+                            "cattle": {
+                                "systemDefaultRegistry": "",
+                                "clusterId": self.cluster_id,
+                                "rkePathPrefix": "",
+                                "rkeWindowsPathPrefix": ""
+                            },
+                            "systemDefaultRegistry": ""
+                        }
+                    }
+                }
+            ],
+            "noHooks": False,
+            "timeout": "600s",
+            "wait": True,
+            "namespace": self.namespace,
+            "disableOpenAPIValidation": False,
+            "skipCRDs": False
+        }
+
+        return data
