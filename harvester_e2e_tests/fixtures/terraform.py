@@ -41,9 +41,8 @@ def tf_provider_version(request):
     version = request.config.getoption('--terraform-provider-harvester')
     if not version:
         import requests
-        return requests.get(
-            "https://api.github.com/repos/harvester/terraform-provider-harvester/releases/latest"
-        ).json()['name'].lstrip('v')
+        resp = requests.get("https://registry.terraform.io/v1/providers/harvester/harvester")
+        version = max(resp.json()['versions'], key=parse_version)
     return version
 
 
