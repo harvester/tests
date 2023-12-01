@@ -69,9 +69,8 @@ def tf_provider_version(request):
     version = request.config.getoption(&#39;--terraform-provider-harvester&#39;)
     if not version:
         import requests
-        return requests.get(
-            &#34;https://api.github.com/repos/harvester/terraform-provider-harvester/releases/latest&#34;
-        ).json()[&#39;name&#39;].lstrip(&#39;v&#39;)
+        resp = requests.get(&#34;https://registry.terraform.io/v1/providers/harvester/harvester&#34;)
+        version = max(resp.json()[&#39;versions&#39;], key=parse_version)
     return version
 
 
@@ -379,9 +378,8 @@ def tf_provider_version(request):
     version = request.config.getoption(&#39;--terraform-provider-harvester&#39;)
     if not version:
         import requests
-        return requests.get(
-            &#34;https://api.github.com/repos/harvester/terraform-provider-harvester/releases/latest&#34;
-        ).json()[&#39;name&#39;].lstrip(&#39;v&#39;)
+        resp = requests.get(&#34;https://registry.terraform.io/v1/providers/harvester/harvester&#34;)
+        version = max(resp.json()[&#39;versions&#39;], key=parse_version)
     return version</code></pre>
 </details>
 </dd>
