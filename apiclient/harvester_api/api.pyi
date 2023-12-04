@@ -62,7 +62,7 @@ class HarvesterAPI:
     def cluster_version(self) -> Version:
         """
         """
-    def load_managers(self, target_version: str = "") -> NoReturn:
+    def load_managers(self, target_version: Version | str = "0.0.0") -> NoReturn:
         """
         """
     def get_url(self,
