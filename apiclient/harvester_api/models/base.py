@@ -5,7 +5,7 @@ except ImportError:
     # ref: https://github.com/python/typing_extensions/blob/cd9faac806f991344ade6c81cb5b321242f611c3/src/typing_extensions.py#L157 # noqa
     import typing
 
-    class _Final(typing._FinalTypingBase, _root=True):
+    class _Final(typing._FinalTypingBase, _root=True):  # type: ignore
         __slots__ = ('__type__',)
 
         def __init__(self, tp=None, **kwds):

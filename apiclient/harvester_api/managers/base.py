@@ -28,7 +28,11 @@ class BaseManager:
 
     @classmethod
     def is_support(cls, target_version):
-        return parse_version(target_version) >= parse_version(cls.support_to)
+        cur_version = parse_version(cls.support_to)
+        try:
+            return parse_version(target_version) >= cur_version
+        except TypeError:
+            return target_version >= cur_version
 
     @classmethod
     def for_version(cls, version):

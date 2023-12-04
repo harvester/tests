@@ -37,8 +37,8 @@ class HarvesterAPI:
     @property
     def cluster_version(self):
         if not self._version:
-            code, data = self.settings.get('server-version')
-            ver = data['value']
+            resp = self._get("apis/{API_VERSION}/settings/server-version")
+            ver = resp.json()['value']
             try:
                 # XXX: https://github.com/harvester/harvester/issues/3137
                 # Fixed as:
