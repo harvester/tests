@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import NoReturn, Optional, Type
+from typing_extensions import override
 
 
 class BaseSettingSpec:
@@ -39,8 +40,9 @@ class BackupTargetSpec(BaseSettingSpec):
     def to_dict(self) -> dict:
         """
         """
+    @override
     @classmethod
-    def from_dict(cls: Type[BackupTargetSpec], data: dict) -> Type[BackupTargetSpec]:
+    def from_dict(cls: Type[BackupTargetSpec], data: dict) -> BackupTargetSpec:
         """
         """
     @classmethod

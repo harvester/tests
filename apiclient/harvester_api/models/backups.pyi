@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, NoReturn, Type
 
 
-class RestoreSpec:
+class _BaseBackup:
     """
     """
     new_vm: str
@@ -27,6 +27,11 @@ class RestoreSpec:
     ) -> dict:
         """
         """
+
+
+class RestoreSpec(_BaseBackup):
+    """
+    """
     @classmethod
     def for_new(
         cls,
@@ -36,6 +41,25 @@ class RestoreSpec:
         """
         """
     @classmethod
-    def for_existing(cls, delete_volumes: Optional[bool] = ...) -> Type[RestoreSpec]:
+    def for_existing(
+        cls,
+        delete_volumes: Optional[bool] = ...
+    ) -> Type[RestoreSpec]:
+        """
+        """
+
+
+class SnapshotRestoreSpec(_BaseBackup):
+    @classmethod
+    def for_new(
+        cls,
+        vm_name: str,
+    ) -> Type[SnapshotRestoreSpec]:
+        """
+        """
+    @classmethod
+    def for_existing(
+        cls,
+    ) -> Type[SnapshotRestoreSpec]:
         """
         """

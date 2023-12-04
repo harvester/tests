@@ -5,7 +5,7 @@ from requests.models import Response
 from .base import BaseManager
 
 
-class SupportBundlemanager(BaseManager):
+class SupportBundleManager(BaseManager):
     PATH_fmt: ClassVar[str]
     DL_fmt: ClassVar[str]
 
