@@ -53,8 +53,8 @@ class RestoreSpec(_BaseBackup):
 class SnapshotRestoreSpec(_BaseBackup):
     @classmethod
     def for_new(cls, vm_name):
-        return super().for_new(vm_name, None)
+        return cls(True, vm_name)
 
     @classmethod
     def for_existing(cls):
-        return super().for_existing(False)
+        return cls(False, delete_volumes=False)

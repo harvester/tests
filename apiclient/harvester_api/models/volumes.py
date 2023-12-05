@@ -53,8 +53,7 @@ class VolumeSpec:
         size = spec['resources']['requests']['storage']
         storage_cls = spec.get('storageClassName')
 
-        obj = cls(size, storage_cls, annotations.get("field.cattle.io/description"))
-        obj.annotations = annotations
+        obj = cls(size, storage_cls, annotations=annotations)
         obj._data = data
 
         return obj
