@@ -15,8 +15,14 @@ def vm_mgmt_static(api_client):
     code, data = api_client.hosts.get()
     assert 200 == code, (code, data)
 
-    rke2_args = data['data'][0]['metadata']['annotations']['rke2.io/node-args']
-    cluster_cidr = re.search(r'cluster-cidr[\",]+((?:\d+\.?)+\/\d+)\"', rke2_args).group(1)
+    for node in data['data']:
+        rke2_args = node['metadata']['annotations']['rke2.io/node-args']
+        match = re.search(r'cluster-cidr[\",]+((?:\d+\.?)+\/\d+)\"', rke2_args)
+        if match:
+            cluster_cidr = match.group(1)
+            break
+    else:
+        raise AssertionError("cluster-cidr is not available")
 
     mgmt_network = ip_network(cluster_cidr)
     mgmt_route = {
