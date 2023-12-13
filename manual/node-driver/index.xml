@@ -159,8 +159,7 @@
       <link>https://harvester.github.io/tests/manual/node-driver/deactivate-activate-deletenode-driver/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/node-driver/deactivate-activate-deletenode-driver/</guid>
-      <description>With Rancher &amp;lt; 2.6:
-Tools-&amp;gt;Driver Management→Node Driver Deactivate/activate/delete Harvester Node Driver With Rancher 2.6: Cluster Management &amp;gt; Drivers &amp;gt; Node Drivers Deactivate/activate/delete Harvester Node Driver Expected Results Harvester icon is not visible when creating a cluster / Harvester icon is visible when creating a cluster /Harvester icon is not visible when creating a cluster </description>
+      <description>With Rancher &amp;lt; 2.6:&#xA;Tools-&amp;gt;Driver Management→Node Driver Deactivate/activate/delete Harvester Node Driver With Rancher 2.6: Cluster Management &amp;gt; Drivers &amp;gt; Node Drivers Deactivate/activate/delete Harvester Node Driver Expected Results Harvester icon is not visible when creating a cluster / Harvester icon is visible when creating a cluster /Harvester icon is not visible when creating a cluster </description>
     </item>
     <item>
       <title>Delete Cluster</title>
@@ -181,8 +180,7 @@ Tools-&amp;gt;Driver Management→Node Driver Deactivate/activate/delete Harvest
       <link>https://harvester.github.io/tests/manual/node-driver/import-external-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/node-driver/import-external-harvester/</guid>
-      <description>With Rancher &amp;lt; 2.6:
-Deploy the rancher and harvester clusters separately In the rancher, add a harvester node template Select &amp;ldquo;External Harvester&amp;rdquo;, and refer to &amp;ldquo;Test Data&amp;rdquo; for other value settings. Use this template to create the corresponding cluster With Rancher 2.6: Home page / Import Existing / Generic Add cluster name and click on Create Follow the registration steps Expected Results The status of the created cluster shows active The status of the corresponding vm on harvester active The information displayed on rancher and harvester matches the template configuration Test Data Harvester Node Template HARVESTER OPTIONS Account Access External Harvester Host: Port: 443 Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo Image: openSUSE-Leap-15.</description>
+      <description>With Rancher &amp;lt; 2.6:&#xA;Deploy the rancher and harvester clusters separately In the rancher, add a harvester node template Select &amp;ldquo;External Harvester&amp;rdquo;, and refer to &amp;ldquo;Test Data&amp;rdquo; for other value settings. Use this template to create the corresponding cluster With Rancher 2.6: Home page / Import Existing / Generic Add cluster name and click on Create Follow the registration steps Expected Results The status of the created cluster shows active The status of the corresponding vm on harvester active The information displayed on rancher and harvester matches the template configuration Test Data Harvester Node Template HARVESTER OPTIONS Account Access External Harvester Host: Port: 443 Username:admin Password:admin Instance Options CPUs:2 Memorys:4 Disk:40 Bus:Virtlo Image: openSUSE-Leap-15.</description>
     </item>
     <item>
       <title>Import internal harvester</title>

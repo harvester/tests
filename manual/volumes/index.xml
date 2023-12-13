@@ -12,8 +12,7 @@
       <link>https://harvester.github.io/tests/manual/volumes/1401-support-volume-hot-unplug/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/volumes/1401-support-volume-hot-unplug/</guid>
-      <description> Related issues: #1401 Http proxy setting download image Environment setup Setup an airgapped harvester
-Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
+      <description> Related issues: #1401 Http proxy setting download image Environment setup Setup an airgapped harvester&#xA;Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
     </item>
     <item>
       <title>Add/remove disk to Host config</title>
@@ -132,8 +131,7 @@ Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrat
       <link>https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</guid>
-      <description> Related issues: #1401 Support volume hot-unplug Category: Storage Environment setup Setup an airgapped harvester
-Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
+      <description> Related issues: #1401 Support volume hot-unplug Category: Storage Environment setup Setup an airgapped harvester&#xA;Create an 3 nodes harvester cluster with large size disks Scenario1: Live migrate VM already have hot-plugged volume to new node, then detach (hot-unplug) it Verification Steps Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click de-attach volume Add volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
     </item>
     <item>
       <title>Validate volume shows as in use when attached (e2e_be)</title>

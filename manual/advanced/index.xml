@@ -47,8 +47,7 @@
       <link>https://harvester.github.io/tests/manual/advanced/tls_customize/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/advanced/tls_customize/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1046
-Verify Items Cluster&amp;rsquo;s SSL/TLS parameters could be configured in install option Cluster&amp;rsquo;s SSL/TLS parameters could be updated in dashboard Case: Configure TLS parameters in dashboard Install Harvester with any nodes Navigate to Advanced Settings, then edit ssl-parameters Select Protocols TLSv1.3, then save execute command echo QUIT | openssl s_client -connect &amp;lt;VIP&amp;gt;:443 -tls1_2 | grep &amp;quot;Cipher is&amp;quot; Output should contain error...SSL routines... and Cipher is (NONE) execute command echo QUIT | openssl s_client -connect &amp;lt;VIP&amp;gt;:443 -tls1_3 | grep &amp;quot;Cipher is&amp;quot; Output should contain Cipher is &amp;lt;one_of_TLS1_3_Ciphers&amp;gt;1 and should not contain error.</description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1046&#xA;Verify Items Cluster&amp;rsquo;s SSL/TLS parameters could be configured in install option Cluster&amp;rsquo;s SSL/TLS parameters could be updated in dashboard Case: Configure TLS parameters in dashboard Install Harvester with any nodes Navigate to Advanced Settings, then edit ssl-parameters Select Protocols TLSv1.3, then save execute command echo QUIT | openssl s_client -connect &amp;lt;VIP&amp;gt;:443 -tls1_2 | grep &amp;quot;Cipher is&amp;quot; Output should contain error...SSL routines... and Cipher is (NONE) execute command echo QUIT | openssl s_client -connect &amp;lt;VIP&amp;gt;:443 -tls1_3 | grep &amp;quot;Cipher is&amp;quot; Output should contain Cipher is &amp;lt;one_of_TLS1_3_Ciphers&amp;gt;1 and should not contain error.</description>
     </item>
     <item>
       <title>Set backup target S3	(e2e_fe)</title>
@@ -83,24 +82,21 @@ Verify Items Cluster&amp;rsquo;s SSL/TLS parameters could be configured in insta
       <link>https://harvester.github.io/tests/manual/advanced/ssl-certificate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/advanced/ssl-certificate/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/761
-Verify Items generated kubeconfig is able to access kubenetes API new node able to join the cluster using the configured Domain Name create node with ssl-certificates settings is working as expected. Case: Kubeconfig Install Harvester with at least 2 nodes Generate self-signed TLS certificates from https://www.selfsignedcertificate.com/ with specific name Navigate to advanced settings, edit ssl-certificates settings Update generated .cert file to CA and Public Certificate, .key file to Private Key Relogin with domain name Navigate to Support page, then Click Download KubeConfig, file should named local.</description>
+      <description>Ref: https://github.com/harvester/harvester/issues/761&#xA;Verify Items generated kubeconfig is able to access kubenetes API new node able to join the cluster using the configured Domain Name create node with ssl-certificates settings is working as expected. Case: Kubeconfig Install Harvester with at least 2 nodes Generate self-signed TLS certificates from https://www.selfsignedcertificate.com/ with specific name Navigate to advanced settings, edit ssl-certificates settings Update generated .cert file to CA and Public Certificate, .key file to Private Key Relogin with domain name Navigate to Support page, then Click Download KubeConfig, file should named local.</description>
     </item>
     <item>
       <title>Timeout option for support bundle</title>
       <link>https://harvester.github.io/tests/manual/advanced/support_bundle_timeout/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/advanced/support_bundle_timeout/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1585
-Verify Items An Timeout Option can be configured for support bundle Error message will display when reach timeout Case: Generate support bundle but hit timeout Install Harvester with at least 2 nodes Navigate to Advanced Settings, modify support-bundle-timeout to 2 Navigate to Support, Click Generate Support Bundle, and force shut down one of the node in the mean time. 2 mins later, the function will failed with an Error message pop up as the snapshot </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1585&#xA;Verify Items An Timeout Option can be configured for support bundle Error message will display when reach timeout Case: Generate support bundle but hit timeout Install Harvester with at least 2 nodes Navigate to Advanced Settings, modify support-bundle-timeout to 2 Navigate to Support, Click Generate Support Bundle, and force shut down one of the node in the mean time. 2 mins later, the function will failed with an Error message pop up as the snapshot </description>
     </item>
     <item>
       <title>Verify that vm-force-reset-policy works</title>
       <link>https://harvester.github.io/tests/manual/advanced/1661-vm-force-reset-policy/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/advanced/1661-vm-force-reset-policy/</guid>
-      <description> Related issues: #1661 vm-force-deletion-policy for vm-force-reset-policy Environment setup Setup an airgapped harvester
-Create a 3 node harvester cluster Verification Steps Navigate to advanced settings and edit vm-force-reset-policy Set reset policy to 60 Create VM Run health checks Shut down node that is running VM Check for when it starts to migrate to new Host Expected Results It should migrate after 60 seconds </description>
+      <description> Related issues: #1661 vm-force-deletion-policy for vm-force-reset-policy Environment setup Setup an airgapped harvester&#xA;Create a 3 node harvester cluster Verification Steps Navigate to advanced settings and edit vm-force-reset-policy Set reset policy to 60 Create VM Run health checks Shut down node that is running VM Check for when it starts to migrate to new Host Expected Results It should migrate after 60 seconds </description>
     </item>
   </channel>
 </rss>

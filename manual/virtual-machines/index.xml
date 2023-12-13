@@ -89,8 +89,7 @@
       <link>https://harvester.github.io/tests/manual/virtual-machines/cpu_overcommit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/cpu_overcommit/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1429
-Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on the host Node VM can chage allocated CPU after created Case: Update Overcommit configuration Install Harvester with any Node Login to Dashboard, then navigate to Advanced Settings Edit overcommit-config The field of CPU should be editable Created VM can allocate maximum CPU should be &amp;lt;HostCPUs&amp;gt; * [&amp;lt;overcommit-CPU&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt; Case: VM can allocate CPUs more than Host have Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostCPUs&amp;gt; * 5 CPUs VM should start successfully lscpu in VM should display allocated CPUs Page of Virtual Machines should display allocated CPUs correctly Case: Update VM allocated CPUs Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostCPUs&amp;gt; * 5 CPUs VM should start successfully Increase/Reduce VM allocated CPUs to minimum/maximum VM should start successfully lscpu in VM should display allocated CPUs Page of Virtual Machines should display allocated CPUs correctly </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1429&#xA;Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on the host Node VM can chage allocated CPU after created Case: Update Overcommit configuration Install Harvester with any Node Login to Dashboard, then navigate to Advanced Settings Edit overcommit-config The field of CPU should be editable Created VM can allocate maximum CPU should be &amp;lt;HostCPUs&amp;gt; * [&amp;lt;overcommit-CPU&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt; Case: VM can allocate CPUs more than Host have Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostCPUs&amp;gt; * 5 CPUs VM should start successfully lscpu in VM should display allocated CPUs Page of Virtual Machines should display allocated CPUs correctly Case: Update VM allocated CPUs Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostCPUs&amp;gt; * 5 CPUs VM should start successfully Increase/Reduce VM allocated CPUs to minimum/maximum VM should start successfully lscpu in VM should display allocated CPUs Page of Virtual Machines should display allocated CPUs correctly </description>
     </item>
     <item>
       <title>Create a new VM and add Enable USB tablet option	(e2e_be_fe)</title>
@@ -111,10 +110,7 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on t
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-the-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-the-form/</guid>
-      <description> Add Network Data to the VM
-Here is an example of Network Data config to add DHCP to the physical interface eth0
-network: version: 1 config: - type: physical name: eth0 subnets: - type: dhcp Save/Create the VM
-Expected Results Machine starts succesfully Network Data should show in YAML Network Datashould show in Form Machine should have DHCP for network on eth0 </description>
+      <description> Add Network Data to the VM&#xA;Here is an example of Network Data config to add DHCP to the physical interface eth0&#xA;network: version: 1 config: - type: physical name: eth0 subnets: - type: dhcp Save/Create the VM&#xA;Expected Results Machine starts succesfully Network Data should show in YAML Network Datashould show in Form Machine should have DHCP for network on eth0 </description>
     </item>
     <item>
       <title>Create a new VM with Network Data from YAML (e2e_be)</title>
@@ -464,9 +460,7 @@ Expected Results Machine starts succesfully Network Data should show in YAML Net
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-user-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-user-data/</guid>
-      <description> Add User data to the VM
-Here is an example of user data config to add a password `` #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Save/Create the VM
-Expected Results Machine starts succesfully User data should In YAML In Form Machine should have user password set </description>
+      <description> Add User data to the VM&#xA;Here is an example of user data config to add a password `` #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Save/Create the VM&#xA;Expected Results Machine starts succesfully User data should In YAML In Form Machine should have user password set </description>
     </item>
     <item>
       <title>Edit a VM from the YAML to add Network Data (e2e_be)</title>
@@ -571,8 +565,7 @@ Expected Results Machine starts succesfully User data should In YAML In Form Mac
       <link>https://harvester.github.io/tests/manual/virtual-machines/memory_overcommit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/memory_overcommit/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1537
-Verify Items Overcommit can be edit on Dashboard VM can allocate exceed Memory on the host Node VM can chage allocated Memory after created Case: Update Overcommit configuration Install Harvester with any Node Login to Dashboard, then navigate to Advanced Settings Edit overcommit-config The field of Memory should be editable Created VM can allocate maximum Memory should be &amp;lt;HostMemory&amp;gt; * [&amp;lt;overcommit-Memory&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt; Case: VM can allocate Memory more than Host have Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostMemory&amp;gt; * 1.</description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1537&#xA;Verify Items Overcommit can be edit on Dashboard VM can allocate exceed Memory on the host Node VM can chage allocated Memory after created Case: Update Overcommit configuration Install Harvester with any Node Login to Dashboard, then navigate to Advanced Settings Edit overcommit-config The field of Memory should be editable Created VM can allocate maximum Memory should be &amp;lt;HostMemory&amp;gt; * [&amp;lt;overcommit-Memory&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt; Case: VM can allocate Memory more than Host have Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostMemory&amp;gt; * 1.</description>
     </item>
     <item>
       <title>Negative vm clone tests</title>
@@ -642,24 +635,21 @@ Verify Items Overcommit can be edit on Dashboard VM can allocate exceed Memory o
       <link>https://harvester.github.io/tests/manual/virtual-machines/vm_on_error_state/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_on_error_state/</guid>
-      <description>Ref:
-https://github.com/harvester/harvester/issues/1446 https://github.com/harvester/harvester/issues/982 Verify Items Error message should displayed when VM can&amp;rsquo;t be scheduled VM&amp;rsquo;s state should be changed when host is down Case: Create a VM that no Node can host it Install Harvester with any nodes download a image to create VM create a VM with over-commit (consider to over-provisioning feature, double or triple the host resource would be more reliable.) VM should shows Starting state, and an alart icon shows aside.</description>
+      <description>Ref:&#xA;https://github.com/harvester/harvester/issues/1446 https://github.com/harvester/harvester/issues/982 Verify Items Error message should displayed when VM can&amp;rsquo;t be scheduled VM&amp;rsquo;s state should be changed when host is down Case: Create a VM that no Node can host it Install Harvester with any nodes download a image to create VM create a VM with over-commit (consider to over-provisioning feature, double or triple the host resource would be more reliable.) VM should shows Starting state, and an alart icon shows aside.</description>
     </item>
     <item>
       <title>VM scheduling on Specific node (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1350
-Verify Items Node which is not active should not be listed in Node Scheduling list Case: Schedule VM on the Node which is Enable Maintenance Mode Install Harvester with at least 2 nodes Login and Navigate to Virtual Machines Create VM and Select Run VM on specific node(s)... All Active nodes should in the list Navigate to Host and pick node(s) to Enable Maintenance Mode Make sure Node(s) state changed into Maintenance Mode Repeat step 2 and 3 Picked Node(s) should not in the list Revert picked Node(s) to back to state of Active Repeat step 2 to 4 </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1350&#xA;Verify Items Node which is not active should not be listed in Node Scheduling list Case: Schedule VM on the Node which is Enable Maintenance Mode Install Harvester with at least 2 nodes Login and Navigate to Virtual Machines Create VM and Select Run VM on specific node(s)... All Active nodes should in the list Navigate to Host and pick node(s) to Enable Maintenance Mode Make sure Node(s) state changed into Maintenance Mode Repeat step 2 and 3 Picked Node(s) should not in the list Revert picked Node(s) to back to state of Active Repeat step 2 to 4 </description>
     </item>
     <item>
       <title>VM&#39;s CPU maximum limitation</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/vm_cpu_limits/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_cpu_limits/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1565
-Verify Items VM&amp;rsquo;s maximum CPU amount should not have limitation. Case: Create VM with large CPU amount Install harvester with any nodes Create image for VM creation Create a VM with vCPU over than 100 Start VM and verify lscpu shows the same amount </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1565&#xA;Verify Items VM&amp;rsquo;s maximum CPU amount should not have limitation. Case: Create VM with large CPU amount Install harvester with any nodes Create image for VM creation Create a VM with vCPU over than 100 Start VM and verify lscpu shows the same amount </description>
     </item>
   </channel>
 </rss>

@@ -12,9 +12,7 @@
       <link>https://harvester.github.io/tests/manual/terraform-provider/install-terraform-provider/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/install-terraform-provider/</guid>
-      <description>Follow the instruction of the README
-Expected Results The provider is initialized and the terraform init command succeeds:
-Initializing provider plugins... - Finding harvester/harvester versions matching &amp;#34;~&amp;gt; 0.1.0&amp;#34;... - Installing harvester/harvester v0.1.0... - Installed harvester/harvester v0.1.0 (unauthenticated) ... Terraform has been successfully initialized! </description>
+      <description>Follow the instruction of the README&#xA;Expected Results The provider is initialized and the terraform init command succeeds:&#xA;Initializing provider plugins... - Finding harvester/harvester versions matching &amp;#34;~&amp;gt; 0.1.0&amp;#34;... - Installing harvester/harvester v0.1.0... - Installed harvester/harvester v0.1.0 (unauthenticated) ... Terraform has been successfully initialized! </description>
     </item>
     <item>
       <title>Target Harvester by setting the variable kubeconfig with your kubeconfig file in the provider.tf file (e2e_be)</title>
@@ -63,8 +61,7 @@ Initializing provider plugins... - Finding harvester/harvester versions matching
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-ssh-key-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-ssh-key-resource/</guid>
-      <description>These following steps must be done for every resources, for avoiding repetitions, look at the detailed instructions at the beginning of the page.
-Import a resource Generates a speculative execution plan with terraform plan command Create the resource with terraform apply command Use terraform plan again Use terraform apply again Destroy the resource with the command terraform destroy Expected Results The resource is well imported in the terraform.tfstate file and you can print it with the terraform show command The command should display the difference between the actual status and the configured status Plan: 1 to add, 0 to change, 0 to destroy.</description>
+      <description>These following steps must be done for every resources, for avoiding repetitions, look at the detailed instructions at the beginning of the page.&#xA;Import a resource Generates a speculative execution plan with terraform plan command Create the resource with terraform apply command Use terraform plan again Use terraform apply again Destroy the resource with the command terraform destroy Expected Results The resource is well imported in the terraform.tfstate file and you can print it with the terraform show command The command should display the difference between the actual status and the configured status Plan: 1 to add, 0 to change, 0 to destroy.</description>
     </item>
     <item>
       <title>Test the harvester_virtualmachine resource (e2e_be)</title>

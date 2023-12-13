@@ -12,8 +12,7 @@
       <link>https://harvester.github.io/tests/manual/misc/download_kubeconfig/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/misc/download_kubeconfig/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1349
-Verify Items Download KubeConfig should not exist in general views Download Kubeconfig should exist in Support page Downloaded file should be named with suffix .yaml Case: Download KubeConfig navigate to every pages to make sure download kubeconfig icon will not appear in header section navigate to support page to check Download KubeConfig is work normally </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1349&#xA;Verify Items Download KubeConfig should not exist in general views Download Kubeconfig should exist in Support page Downloaded file should be named with suffix .yaml Case: Download KubeConfig navigate to every pages to make sure download kubeconfig icon will not appear in header section navigate to support page to check Download KubeConfig is work normally </description>
     </item>
     <item>
       <title>Check favicon and title on pages</title>
@@ -34,19 +33,14 @@ Verify Items Download KubeConfig should not exist in general views Download Kube
       <link>https://harvester.github.io/tests/manual/misc/download-kubeconfig-after-shutting-down-harvester-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/misc/download-kubeconfig-after-shutting-down-harvester-cluster/</guid>
-      <description>Related issues: #1475 After shutting down the cluster the kubeconfig becomes invalid Category: Host Verification Steps Shutdown harvester node 3, wait for fully power off
-Shutdown harvester node 2, wait for fully power off
-Shutdown harvester node 1, wait for fully power off
-Wait for more than hours or over night
-Power on node 1 to console page until you see management url Power on node 2 to console page until you see management url</description>
+      <description>Related issues: #1475 After shutting down the cluster the kubeconfig becomes invalid Category: Host Verification Steps Shutdown harvester node 3, wait for fully power off&#xA;Shutdown harvester node 2, wait for fully power off&#xA;Shutdown harvester node 1, wait for fully power off&#xA;Wait for more than hours or over night&#xA;Power on node 1 to console page until you see management url Power on node 2 to console page until you see management url</description>
     </item>
     <item>
       <title>Test NTP server timesync</title>
       <link>https://harvester.github.io/tests/manual/misc/1535-test-ntp-timesync/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/misc/1535-test-ntp-timesync/</guid>
-      <description> Related issues: #1535 NTP daemon in host OS Environment setup This should be on at least a 3 node setup that has been running for several hours that had NTP servers setup during install
-Verification Steps SSH into nodes and verify times are close Verify NTP is active with sudo timedatectl status Expected Results Times should be within a minute of each other NTP should show as active </description>
+      <description> Related issues: #1535 NTP daemon in host OS Environment setup This should be on at least a 3 node setup that has been running for several hours that had NTP servers setup during install&#xA;Verification Steps SSH into nodes and verify times are close Verify NTP is active with sudo timedatectl status Expected Results Times should be within a minute of each other NTP should show as active </description>
     </item>
     <item>
       <title>Verify network data template</title>

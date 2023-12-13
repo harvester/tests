@@ -12,8 +12,7 @@
       <link>https://harvester.github.io/tests/manual/live-migration/1401-support-volume-hot-unplug-live-migrate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/live-migration/1401-support-volume-hot-unplug-live-migrate/</guid>
-      <description> Related issues: #1401 Http proxy setting download image Environment setup Setup an airgapped harvester
-Create an 3 nodes harvester cluster with large size disks Verification Steps Scenario2: Live migrate VM not have hot-plugged volume before, do hot-plugged the unplugged. Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click Detach volume Add volume again Migrate VM from one node to another Detach volume Add unplugged volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
+      <description> Related issues: #1401 Http proxy setting download image Environment setup Setup an airgapped harvester&#xA;Create an 3 nodes harvester cluster with large size disks Verification Steps Scenario2: Live migrate VM not have hot-plugged volume before, do hot-plugged the unplugged. Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click Detach volume Add volume again Migrate VM from one node to another Detach volume Add unplugged volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
     </item>
     <item>
       <title>Initiate multiple migrations at one time</title>
@@ -104,8 +103,7 @@ Create an 3 nodes harvester cluster with large size disks Verification Steps Sce
       <link>https://harvester.github.io/tests/manual/live-migration/restored_vm_migration/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/live-migration/restored_vm_migration/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1086
-Verify Items VM can be migrate to any node with any times Case: Migrate a restored VM Install Harvester with at least 2 nodes setup backup-target with NFS Create image for VM creation Create VM a Add file with some data in VM a Backup VM a as a-bak Restore backup a-bak into VM b Start VM b then check added file should exist with same content Migrate VM b to another node, then check added file should exist with same content Migrate VM b again, then check added file should exist with same content </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1086&#xA;Verify Items VM can be migrate to any node with any times Case: Migrate a restored VM Install Harvester with at least 2 nodes setup backup-target with NFS Create image for VM creation Create VM a Add file with some data in VM a Backup VM a as a-bak Restore backup a-bak into VM b Start VM b then check added file should exist with same content Migrate VM b to another node, then check added file should exist with same content Migrate VM b again, then check added file should exist with same content </description>
     </item>
     <item>
       <title>Negative migrate a turned on VM from one host to another</title>
@@ -147,8 +145,7 @@ Verify Items VM can be migrate to any node with any times Case: Migrate a restor
       <link>https://harvester.github.io/tests/manual/live-migration/support-volume-hot-unplug-live-migrate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/live-migration/support-volume-hot-unplug-live-migrate/</guid>
-      <description> Related issues: #1401 Support volume hot-unplug Category: Storage Environment setup Setup an airgapped harvester
-Create an 3 nodes harvester cluster with large size disks Verification Steps Scenario2: Live migrate VM not have hot-plugged volume before, do hot-plugged the unplugged. Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click Detach volume Add volume again Migrate VM from one node to another Detach volume Add unplugged volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
+      <description> Related issues: #1401 Support volume hot-unplug Category: Storage Environment setup Setup an airgapped harvester&#xA;Create an 3 nodes harvester cluster with large size disks Verification Steps Scenario2: Live migrate VM not have hot-plugged volume before, do hot-plugged the unplugged. Create a virtual machine Create several volumes (without image) Add volume, hot-plug volume to virtual machine Open virtual machine, find hot-plugged volume Click Detach volume Add volume again Migrate VM from one node to another Detach volume Add unplugged volume again Expected Results Can hot-plug volume without error Can hot-unplug the pluggable volumes without restarting VM The de-attached volume can also be hot-plug and mount back to VM </description>
     </item>
     <item>
       <title>Test aborting live migration</title>

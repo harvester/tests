@@ -19,8 +19,7 @@
       <link>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</guid>
-      <description>This feature have been deprecated which already enhanced and merge to setup from harvester settings Please refer to 02-Integrate to Rancher from Harvester settings to test this feature
-Login rancher dashboard Navigate to Virtual Management Page Click import existing Copy the curl command SSH to harvester master node (user: rancher) Execute the curl command to import harvester to rancher curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f - Run sudo chmod 775 /etc/rancher/rke2/rke2.</description>
+      <description>This feature have been deprecated which already enhanced and merge to setup from harvester settings Please refer to 02-Integrate to Rancher from Harvester settings to test this feature&#xA;Login rancher dashboard Navigate to Virtual Management Page Click import existing Copy the curl command SSH to harvester master node (user: rancher) Execute the curl command to import harvester to rancher curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f - Run sudo chmod 775 /etc/rancher/rke2/rke2.</description>
     </item>
     <item>
       <title>02-Integrate to Rancher from Harvester settings (e2e_be)</title>
@@ -34,32 +33,28 @@ Login rancher dashboard Navigate to Virtual Management Page Click import existin
       <link>https://harvester.github.io/tests/manual/harvester-rancher/03-manage-vm-downstream-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/03-manage-vm-downstream-harvester/</guid>
-      <description>Prerequisite: Harvester already imported to Rancher Dashboard
-Open harvester from Virtualization Management page Open Virtual Machine page Create a single instance virtual machine in Virtual Machines page Create multiple 3 instances virtual machines in Virtual Machines page Access and check virtual machine details Edit cpu, memory and network of one virtual machine Try Stop, Restart and Migrate virtual machine Try Clone virtual machine Try Delete virtual machine Expected Results Can create a single instance vm correctly Can create multiple instances vm correctly Can diaply all virtual machine information Can change cpu, memory and network and retart vm correctly Can Stop, Restart and Migrate virtual machine correctly Can Clone virtual machine correctly Can Delete virtual machine correctly </description>
+      <description>Prerequisite: Harvester already imported to Rancher Dashboard&#xA;Open harvester from Virtualization Management page Open Virtual Machine page Create a single instance virtual machine in Virtual Machines page Create multiple 3 instances virtual machines in Virtual Machines page Access and check virtual machine details Edit cpu, memory and network of one virtual machine Try Stop, Restart and Migrate virtual machine Try Clone virtual machine Try Delete virtual machine Expected Results Can create a single instance vm correctly Can create multiple instances vm correctly Can diaply all virtual machine information Can change cpu, memory and network and retart vm correctly Can Stop, Restart and Migrate virtual machine correctly Can Clone virtual machine correctly Can Delete virtual machine correctly </description>
     </item>
     <item>
       <title>04-Manage Node in Downstream Harvester</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/04-manage-host-downstream-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/04-manage-host-downstream-harvester/</guid>
-      <description>Prerequisite: Harvester already imported to Rancher Dashboard
-Open harvester from Virtualization Management page Open Host page Access and check node details Edit node config, change network and add disk Try to Cordon and decordon node Enable and disable Maintenance mode Expected Results Can diaply all node&amp;rsquo;s information Can add disk to node correctly Can change network of node correctly Can Cordon and decordon node correctly Can enable and disable Maintenance mode </description>
+      <description>Prerequisite: Harvester already imported to Rancher Dashboard&#xA;Open harvester from Virtualization Management page Open Host page Access and check node details Edit node config, change network and add disk Try to Cordon and decordon node Enable and disable Maintenance mode Expected Results Can diaply all node&amp;rsquo;s information Can add disk to node correctly Can change network of node correctly Can Cordon and decordon node correctly Can enable and disable Maintenance mode </description>
     </item>
     <item>
       <title>05-Manage Image in Downstream Harvester</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/05-manage-image-volume-downstream-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/05-manage-image-volume-downstream-harvester/</guid>
-      <description>Prerequisite: Harvester already imported to Rancher Dashboard
-Open harvester from Virtualization Management page Open Images page Create an image from URL Create an image from file Delete created images Expected Results Can create an image from URL Can create an image from file Can create an image from file Can delete created images correctly </description>
+      <description>Prerequisite: Harvester already imported to Rancher Dashboard&#xA;Open harvester from Virtualization Management page Open Images page Create an image from URL Create an image from file Delete created images Expected Results Can create an image from URL Can create an image from file Can create an image from file Can delete created images correctly </description>
     </item>
     <item>
       <title>06-Manage Network in Downstream Harvester</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/06-manage-network-in-downstream-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/06-manage-network-in-downstream-harvester/</guid>
-      <description>Prerequisite: Harvester already imported to Rancher Dashboard
-Open harvester from Virtualization Management page Open Network page Create an new virtual network Create a new virtual machine using the new virtual network Delete a virtual network Expected Results Can create an new virtual network Create create a new virtual machine using the new virtual network Virtual machine can retrieve ip address Can delete a virtual network </description>
+      <description>Prerequisite: Harvester already imported to Rancher Dashboard&#xA;Open harvester from Virtualization Management page Open Network page Create an new virtual network Create a new virtual machine using the new virtual network Delete a virtual network Expected Results Can create an new virtual network Create create a new virtual machine using the new virtual network Virtual machine can retrieve ip address Can delete a virtual network </description>
     </item>
     <item>
       <title>07-Add and grant project-owner user to harvester (e2e_be)</title>
@@ -150,18 +145,14 @@ Open harvester from Virtualization Management page Open Network page Create an n
       <link>https://harvester.github.io/tests/manual/harvester-rancher/19-enable-harvester-node-driver/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/19-enable-harvester-node-driver/</guid>
-      <description>From Rancher v2.6.3-rc1, harvester node driver has already builtin racher We don&amp;rsquo;t need manual activate it
-Open Cluster Management Click Drivers page and navigate to Node Drivers tab Search harvester Check Harvester node driver is activated and mark as builtin Expected Results Status displayed Activated </description>
+      <description>From Rancher v2.6.3-rc1, harvester node driver has already builtin racher We don&amp;rsquo;t need manual activate it&#xA;Open Cluster Management Click Drivers page and navigate to Node Drivers tab Search harvester Check Harvester node driver is activated and mark as builtin Expected Results Status displayed Activated </description>
     </item>
     <item>
       <title>20-Create RKE1 Kubernetes Cluster</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/20-create-rke1-kubernetes-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/20-create-rke1-kubernetes-cluster/</guid>
-      <description>Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imported Cluster list Click Create Expand RKE1 Configuration Add Template in Node template Select Harvester Select created cloud credential created Select default namespace Select ubuntu image Select network: vlan1 Provide SSH User: ubuntu Provide template name, click create Open Cluster page, click Create
-Toggle RKE1
-Provide cluster name
-Provide Name Prefix</description>
+      <description>Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select existing cluster in the Imported Cluster list Click Create Expand RKE1 Configuration Add Template in Node template Select Harvester Select created cloud credential created Select default namespace Select ubuntu image Select network: vlan1 Provide SSH User: ubuntu Provide template name, click create Open Cluster page, click Create&#xA;Toggle RKE1&#xA;Provide cluster name&#xA;Provide Name Prefix</description>
     </item>
     <item>
       <title>21-Delete RKE1 Kubernetes Cluster</title>
@@ -231,16 +222,14 @@ Provide Name Prefix</description>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/30-configure-harvester-loadbalancer-service/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/30-configure-harvester-loadbalancer-service/</guid>
-      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
-Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer Given service name to make the load balancer name composed of the cluster name, namespace, svc name, and suffix(8 characters) more than 63 characters Provide Listening port and Target port Click Add-on Config Select Health Check port Select dhcp as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button Create another load balancer service with the name characters.</description>
+      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case&#xA;Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer Given service name to make the load balancer name composed of the cluster name, namespace, svc name, and suffix(8 characters) more than 63 characters Provide Listening port and Target port Click Add-on Config Select Health Check port Select dhcp as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button Create another load balancer service with the name characters.</description>
     </item>
     <item>
       <title>31-Specify &#34;pool&#34; IPAM mode in LoadBalancer service</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/31-specify-pool-ipam-mode-loadbalancer-service/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/31-specify-pool-ipam-mode-loadbalancer-service/</guid>
-      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
-Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Access Harvester dashboard UI Go to Settings Create a vip-pool in Harvester settings. Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer Given service name Provide Listending port and Target port Click Add-on Config Provide Health Check port Select pool as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button Expected Results Can create load balance service correctly Can operate and route to deployed service correctly </description>
+      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case&#xA;Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Access Harvester dashboard UI Go to Settings Create a vip-pool in Harvester settings. Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer Given service name Provide Listending port and Target port Click Add-on Config Provide Health Check port Select pool as IPAM mode Provide Health Check Threshold Provide Health Check Failure Threshold Provide Health Check Period Provide Health Check Timeout Click Create button Expected Results Can create load balance service correctly Can operate and route to deployed service correctly </description>
     </item>
     <item>
       <title>32-Deploy Harvester CSI provider to RKE 1 Cluster</title>
@@ -261,26 +250,14 @@ Open Global Settings in hamburger menu Replace ui-dashboard-index to https://rel
       <link>https://harvester.github.io/tests/manual/harvester-rancher/34-hotplug-unplug-volumes-in-rke1-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/34-hotplug-unplug-volumes-in-rke1-cluster/</guid>
-      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher Environment Setup Docker install rancher v2.6.3 Create one node harvester with enough resource Verify Steps Environment preparation as above steps
-Import harvester to rancher from harvester settings
-Create cloud credential
-Create RKE1 node template Provision a RKE1 cluster, check the Harvester as cloud provider Access RKE1 cluster
-Open charts in Apps &amp;amp; Market page
-Install harvester cloud provider and CSI driver</description>
+      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher Environment Setup Docker install rancher v2.6.3 Create one node harvester with enough resource Verify Steps Environment preparation as above steps&#xA;Import harvester to rancher from harvester settings&#xA;Create cloud credential&#xA;Create RKE1 node template Provision a RKE1 cluster, check the Harvester as cloud provider Access RKE1 cluster&#xA;Open charts in Apps &amp;amp; Market page&#xA;Install harvester cloud provider and CSI driver</description>
     </item>
     <item>
       <title>35-Hot plug and unplug volumes in RKE2 cluster</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/35-hotplug-unplug-volumes-in-rke2-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/35-hotplug-unplug-volumes-in-rke2-cluster/</guid>
-      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher Environment Setup Docker install rancher v2.6.3 Create one node harvester with enough resource Verify Steps Environment preparation as above steps
-Import harvester to rancher from harvester settings
-Create cloud credential
-Create RKE2 cluster as test case #34
-Access RKE2 cluster
-Open charts in Apps &amp;amp; Market page
-Install harvester cloud provider and CSI driver
-Make sure cloud provider installed complete</description>
+      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher Environment Setup Docker install rancher v2.6.3 Create one node harvester with enough resource Verify Steps Environment preparation as above steps&#xA;Import harvester to rancher from harvester settings&#xA;Create cloud credential&#xA;Create RKE2 cluster as test case #34&#xA;Access RKE2 cluster&#xA;Open charts in Apps &amp;amp; Market page&#xA;Install harvester cloud provider and CSI driver&#xA;Make sure cloud provider installed complete</description>
     </item>
     <item>
       <title>36-Remove Harvester LoadBalancer service</title>
@@ -294,26 +271,21 @@ Make sure cloud provider installed complete</description>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher-copy/</guid>
-      <description>Environment Setup Setup the online harvester
-Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address Setup squid HTTP proxy server
-Move to vagrant pxe harvester folder Execute vagrant ssh pxe_server Run apt-get install squid Edit /etc/squid/squid.</description>
+      <description>Environment Setup Setup the online harvester&#xA;Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address Setup squid HTTP proxy server&#xA;Move to vagrant pxe harvester folder Execute vagrant ssh pxe_server Run apt-get install squid Edit /etc/squid/squid.</description>
     </item>
     <item>
       <title>37-Import Online Harvester From the Airgapped Rancher</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/37-import-online-harvester-from-airgapped-rancher/</guid>
-      <description>Environment Setup Setup the online harvester
-Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address Setup squid HTTP proxy server
-Move to vagrant pxe harvester folder Execute vagrant ssh pxe_server Run apt-get install squid Edit /etc/squid/squid.</description>
+      <description>Environment Setup Setup the online harvester&#xA;Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address Setup squid HTTP proxy server&#xA;Move to vagrant pxe harvester folder Execute vagrant ssh pxe_server Run apt-get install squid Edit /etc/squid/squid.</description>
     </item>
     <item>
       <title>38-Import Airgapped Harvester From the Airgapped Rancher</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/38-import-airgapped-harvester-from-airgapped-rancher/</guid>
-      <description>Related task: #1052 Test Air gap with Rancher integration Environment Setup Setup the airgapped harvester
-Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
+      <description>Related task: #1052 Test Air gap with Rancher integration Environment Setup Setup the airgapped harvester&#xA;Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
     </item>
     <item>
       <title>39-Standard user no Harvester Access</title>
@@ -334,48 +306,42 @@ Fetch ipxe vagrant example with new offline feature https://github.com/harvester
       <link>https://harvester.github.io/tests/manual/harvester-rancher/41-rancher-nested-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/41-rancher-nested-harvester/</guid>
-      <description>Prerequisite: External network on VLAN
-Install Rancher in a VM using Docker method on Harvester cluster using the external VLAN Login rancher dashboard Navigate to Virtual Management Page Click import existing Copy the curl command SSH to harvester master node (user: rancher) Execute the curl command to import harvester to rancher curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f - Run sudo chmod 775 /etc/rancher/rke2/rke2.yaml to solve the permission denied error Run curl command again, you should see the following successful import message namespace/cattle-system configured serviceaccount/cattle created clusterrolebinding.</description>
+      <description>Prerequisite: External network on VLAN&#xA;Install Rancher in a VM using Docker method on Harvester cluster using the external VLAN Login rancher dashboard Navigate to Virtual Management Page Click import existing Copy the curl command SSH to harvester master node (user: rancher) Execute the curl command to import harvester to rancher curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f - Run sudo chmod 775 /etc/rancher/rke2/rke2.yaml to solve the permission denied error Run curl command again, you should see the following successful import message namespace/cattle-system configured serviceaccount/cattle created clusterrolebinding.</description>
     </item>
     <item>
       <title>42-Add cloud credential KUBECONFIG</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/42-add-cloud-credential-kubeconfig/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/42-add-cloud-credential-kubeconfig/</guid>
-      <description>Prerequisite: KUBECONFIG from Harvester
-Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select external cluster Input KUBECONFIG from Harvester Click Create </description>
+      <description>Prerequisite: KUBECONFIG from Harvester&#xA;Click Cluster Management Click Cloud Credentials Click createa and select Harvester Input credential name Select external cluster Input KUBECONFIG from Harvester Click Create </description>
     </item>
     <item>
       <title>43-Scale up node driver RKE1</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/43-node-driver-scale-up-rke1/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/43-node-driver-scale-up-rke1/</guid>
-      <description>Prerequisite: RKE1 cluster in Harvester with at least 2 worker nodes
-provision a multinode cluster using harvester node driver with at least 2 worker nodes scale up a node in the cluster </description>
+      <description>Prerequisite: RKE1 cluster in Harvester with at least 2 worker nodes&#xA;provision a multinode cluster using harvester node driver with at least 2 worker nodes scale up a node in the cluster </description>
     </item>
     <item>
       <title>44-Scale up node driver RKE2</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/44-node-driver-scale-up-rke2/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/44-node-driver-scale-up-rke2/</guid>
-      <description>Prerequisite: KUBECONFIG from Harvester
-provision a multinode cluster using harvester node driver with at least 2 worker nodes scale up a node in the cluster </description>
+      <description>Prerequisite: KUBECONFIG from Harvester&#xA;provision a multinode cluster using harvester node driver with at least 2 worker nodes scale up a node in the cluster </description>
     </item>
     <item>
       <title>45-Scale down node driver RKE1</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/45-node-driver-scale-down-rke1/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/45-node-driver-scale-down-rke1/</guid>
-      <description>Prerequisite: KUBECONFIG from Harvester
-provision a multinode cluster using harvester node driver with at least 2 worker nodes scale down a node in the cluster </description>
+      <description>Prerequisite: KUBECONFIG from Harvester&#xA;provision a multinode cluster using harvester node driver with at least 2 worker nodes scale down a node in the cluster </description>
     </item>
     <item>
       <title>46-Scale down node driver RKE2</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/</guid>
-      <description>Prerequisite: KUBECONFIG from Harvester
-provision a multinode cluster using harvester node driver with at least 2 worker nodes scale down a node in the cluster </description>
+      <description>Prerequisite: KUBECONFIG from Harvester&#xA;provision a multinode cluster using harvester node driver with at least 2 worker nodes scale down a node in the cluster </description>
     </item>
     <item>
       <title>47-Verify Backup and restore on same server</title>
@@ -424,69 +390,49 @@ provision a multinode cluster using harvester node driver with at least 2 worker
       <link>https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/53-disable-harvester-flag/</guid>
-      <description>Pre-requisites: Rancher with Harvester imported
-Disable Harvester feature flag on Rancher Expected Results Harvester should show up in cluster management Virtualization management tab should be hidden. </description>
+      <description>Pre-requisites: Rancher with Harvester imported&#xA;Disable Harvester feature flag on Rancher Expected Results Harvester should show up in cluster management Virtualization management tab should be hidden. </description>
     </item>
     <item>
       <title>54-Import Airgapped Harvester From the Online Rancher</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/54-import-airgapped-harvester-from-online-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/54-import-airgapped-harvester-from-online-rancher/</guid>
-      <description>Environment Setup Setup the airgapped harvester
-Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt; Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address Setup squid HTTP proxy server</description>
+      <description>Environment Setup Setup the airgapped harvester&#xA;Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster https://github.com/harvester/ipxe-examples/tree/main/vagrant-pxe-harvester Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt; Create ubuntu cloud image from URL Create virtual machine with name vlan1 and id: 1 Create virtual machine and assign vlan network, confirm can get ip address Setup squid HTTP proxy server</description>
     </item>
     <item>
       <title>55-Import Harvester to Rancher in airgapped different subnet</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/55-import-harvester-rancher-airgapped-different-subnet/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/55-import-harvester-rancher-airgapped-different-subnet/</guid>
-      <description>Environment Setup Note: Harvester and Rancher are under different subnet, can access to each other
-Setup the airgapped harvester
-Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt; Create ubuntu cloud image from URL Create virtual machine and assign vlan network, confirm can get ip address Setup squid HTTP proxy server</description>
+      <description>Environment Setup Note: Harvester and Rancher are under different subnet, can access to each other&#xA;Setup the airgapped harvester&#xA;Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.0.0.1,0.0.0.0,10.0.0.0/8,192.168.0.0/16,cattle-system.svc,.svc,.cluster.local,&amp;lt;internal domain&amp;gt; Create ubuntu cloud image from URL Create virtual machine and assign vlan network, confirm can get ip address Setup squid HTTP proxy server</description>
     </item>
     <item>
       <title>56-Import Harvester to Rancher in airgapped different subnet</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/56-import-harvester-rancher-online-different-subnet/</guid>
-      <description>Environment Setup Note: Harvester and Rancher are under different subnet, can access to each other
-Setup the online harvester
-Iso or vagrant ipxe install harvester on network with internet connection Enable vlan on harvester-mgmt Create virtual machine with name vlan1 and id: 1 Create ubuntu cloud image from URL Create virtual machine and assign vlan network, confirm can get ip address Setup the online rancher
-Install rancher on network with internet connection throug docker command $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.</description>
+      <description>Environment Setup Note: Harvester and Rancher are under different subnet, can access to each other&#xA;Setup the online harvester&#xA;Iso or vagrant ipxe install harvester on network with internet connection Enable vlan on harvester-mgmt Create virtual machine with name vlan1 and id: 1 Create ubuntu cloud image from URL Create virtual machine and assign vlan network, confirm can get ip address Setup the online rancher&#xA;Install rancher on network with internet connection throug docker command $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.</description>
     </item>
     <item>
       <title>57-Import airgapped harvester from airgapped rancher with Proxy</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-proxy/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/57-import-airgapped-harvester-from-airgapped-rancher-proxy/</guid>
-      <description>Related task: #1052 Test Air gap with Rancher integration Environment Setup Setup the airgapped harvester
-Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
+      <description>Related task: #1052 Test Air gap with Rancher integration Environment Setup Setup the airgapped harvester&#xA;Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.xml file Set offline: true Use ipxe vagrant example to setup a 3 nodes cluster Enable vlan on harvester-mgmt Now harvester dashboard page will out of work Create virtual machine with name vlan1 and id: 1 Open Settings, edit http-proxy with the following values HTTP_PROXY=http://proxy-host:port HTTPS_PROXY=http://proxy-host:port NO_PROXY=localhost,127.</description>
     </item>
     <item>
       <title>58-Negative-Fully power cycle harvester node machine should recover RKE2 cluster</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/58-negative-fully-power-cycle-harvester-node-machine-should-recover-rke2-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/58-negative-fully-power-cycle-harvester-node-machine-should-recover-rke2-cluster/</guid>
-      <description>Related issue: #1561 Fully shutdown then power on harvester node machine can&amp;rsquo;t get provisioned RKE2 cluster back to work
-Related issue: #1428 rke2-coredns-rke2-coredns-autoscaler timeout
-Environment Setup The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan Verification Step Prepare a 3 nodes harvester cluster (provo bare machine) Enable virtual network with harvester-mgmt Create vlan1 with id 1 Import harvester from rancher and create cloud credential Provision a RKE2 cluster with vlan 1 Wait for build up ready Shutdown harvester node 3 Shutdown harvester node 2 Shutdown harvester node 1 Wait for 20 minutes Power on node 1, wait 10 seconds Power on node 2, wait 10 seconds Power on node 3 Wait for harvester startup complete Wait for RKE2 cluster back to work Check node and VIP accessibility Check the rke2-coredns pod status kubectl get pods --all-namespaces | grep rke2-coredns Expected Results RKE2 cluster on harvester can recover to Active status</description>
+      <description>Related issue: #1561 Fully shutdown then power on harvester node machine can&amp;rsquo;t get provisioned RKE2 cluster back to work&#xA;Related issue: #1428 rke2-coredns-rke2-coredns-autoscaler timeout&#xA;Environment Setup The network environment must have vlan network configured and also have DHCP server prepared on your testing vlan Verification Step Prepare a 3 nodes harvester cluster (provo bare machine) Enable virtual network with harvester-mgmt Create vlan1 with id 1 Import harvester from rancher and create cloud credential Provision a RKE2 cluster with vlan 1 Wait for build up ready Shutdown harvester node 3 Shutdown harvester node 2 Shutdown harvester node 1 Wait for 20 minutes Power on node 1, wait 10 seconds Power on node 2, wait 10 seconds Power on node 3 Wait for harvester startup complete Wait for RKE2 cluster back to work Check node and VIP accessibility Check the rke2-coredns pod status kubectl get pods --all-namespaces | grep rke2-coredns Expected Results RKE2 cluster on harvester can recover to Active status</description>
     </item>
     <item>
       <title>59-Create K3s Kubernetes Cluster</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/59-create-k3s-kubernetes-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/59-create-k3s-kubernetes-cluster/</guid>
-      <description>Click Cluster Management Click Cloud Credentials Click create and select Harvester Input credential name Select existing cluster in the Imported Cluster list Click Create Click Clusters
-Click Create
-Toggle RKE2/K3s
-Select Harvester
-Input Cluster Name
-Select default namespace
-Select ubuntu image
-Select network vlan1
-Input SSH User: ubuntu Click Show Advanced
-Add the following user data:
-password: 123456 chpasswd: { expire: false } ssh_pwauth: true Click the drop down Kubernetes version list</description>
+      <description>Click Cluster Management Click Cloud Credentials Click create and select Harvester Input credential name Select existing cluster in the Imported Cluster list Click Create Click Clusters&#xA;Click Create&#xA;Toggle RKE2/K3s&#xA;Select Harvester&#xA;Input Cluster Name&#xA;Select default namespace&#xA;Select ubuntu image&#xA;Select network vlan1&#xA;Input SSH User: ubuntu Click Show Advanced&#xA;Add the following user data:&#xA;password: 123456 chpasswd: { expire: false } ssh_pwauth: true Click the drop down Kubernetes version list</description>
     </item>
     <item>
       <title>60-Delete K3s Kubernetes Cluster</title>
@@ -500,128 +446,84 @@ password: 123456 chpasswd: { expire: false } ssh_pwauth: true Click the drop dow
       <link>https://harvester.github.io/tests/manual/harvester-rancher/61-deploy-harvester-cloud-provider-to-k3s-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/61-deploy-harvester-cloud-provider-to-k3s-cluster/</guid>
-      <description>Related task: #1812 K3s cloud provider and csi driver support Environment Setup Docker install rancher v2.6.4 Create one node harvester with enough resource Verify steps Follow step 1~13 in tets plan 59-Create K3s Kubernetes Cluster
-Click the Edit yaml button Set disable-cloud-provider: true to disable default k3s cloud provider. Add cloud-provider=external to use harvester cloud provider. Create K3s cluster Download the Generate addon configuration for cloud provider Download Harvester kubeconfig and add into your local ~/.</description>
+      <description>Related task: #1812 K3s cloud provider and csi driver support Environment Setup Docker install rancher v2.6.4 Create one node harvester with enough resource Verify steps Follow step 1~13 in tets plan 59-Create K3s Kubernetes Cluster&#xA;Click the Edit yaml button Set disable-cloud-provider: true to disable default k3s cloud provider. Add cloud-provider=external to use harvester cloud provider. Create K3s cluster Download the Generate addon configuration for cloud provider Download Harvester kubeconfig and add into your local ~/.</description>
     </item>
     <item>
       <title>62-Configure the K3s &#34;DHCP&#34; LoadBalancer service</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/62-configure-k3s-dhcp-loadbalancer/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/62-configure-k3s-dhcp-loadbalancer/</guid>
-      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan
-59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster Create Nginx workload for testing Create a test-nginx deployment with image nginx:latest. Add pod label test: test. Create a DHCP LoadBalancer Open Kubectl shell. Create test-dhcp-lb.yaml file. apiVersion: v1 kind: Service metadata: annotations: cloudprovider.harvesterhci.io/ipam: dhcp name: test-dhcp-lb namespace: default spec: ports: - name: http nodePort: 30172 port: 8080 protocol: TCP targetPort: 80 selector: test: test sessionAffinity: None type: LoadBalancer Run k apply -f test-dhcp-lb.</description>
+      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan&#xA;59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster Create Nginx workload for testing Create a test-nginx deployment with image nginx:latest. Add pod label test: test. Create a DHCP LoadBalancer Open Kubectl shell. Create test-dhcp-lb.yaml file. apiVersion: v1 kind: Service metadata: annotations: cloudprovider.harvesterhci.io/ipam: dhcp name: test-dhcp-lb namespace: default spec: ports: - name: http nodePort: 30172 port: 8080 protocol: TCP targetPort: 80 selector: test: test sessionAffinity: None type: LoadBalancer Run k apply -f test-dhcp-lb.</description>
     </item>
     <item>
       <title>62-Configure the K3s &#34;DHCP&#34; LoadBalancer service</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/64-configure-k3s-dhcp-lb-healcheck/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/64-configure-k3s-dhcp-lb-healcheck/</guid>
-      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan
-59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster 62-Configure the K3s &amp;ldquo;DHCP&amp;rdquo; LoadBalancer service A Working DHCP load balancer service created on K3s cluster Edit Load balancer config Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs Configure port, IPAM and health check related setting on Add-on Config page Expected Results Can create load balance service correctly Can route workload to nginx deployment </description>
+      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan&#xA;59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster 62-Configure the K3s &amp;ldquo;DHCP&amp;rdquo; LoadBalancer service A Working DHCP load balancer service created on K3s cluster Edit Load balancer config Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs Configure port, IPAM and health check related setting on Add-on Config page Expected Results Can create load balance service correctly Can route workload to nginx deployment </description>
     </item>
     <item>
       <title>63-Configure the K3s &#34;Pool&#34; LoadBalancer service</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/63-configure-k3s-pool-loadbalancer/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/63-configure-k3s-pool-loadbalancer/</guid>
-      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan
-59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster Create Nginx workload for testing Create a test-nginx deployment with image nginx:latest. Add pod label test: test. Create a Pool LoadBalancer Modify vip-pool in Harvester settings. Open Kubectl shell.
-Create test-pool-lb.yaml file.
-apiVersion: v1 kind: Service metadata: annotations: cloudprovider.harvesterhci.io/ipam: pool name: test-pool-lb namespace: default spec: ports: - name: http nodePort: 32155 port: 8080 protocol: TCP targetPort: 80 selector: test: test sessionAffinity: None type: LoadBalancer Run k apply -f test-pool-lb.</description>
+      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan&#xA;59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster Create Nginx workload for testing Create a test-nginx deployment with image nginx:latest. Add pod label test: test. Create a Pool LoadBalancer Modify vip-pool in Harvester settings. Open Kubectl shell.&#xA;Create test-pool-lb.yaml file.&#xA;apiVersion: v1 kind: Service metadata: annotations: cloudprovider.harvesterhci.io/ipam: pool name: test-pool-lb namespace: default spec: ports: - name: http nodePort: 32155 port: 8080 protocol: TCP targetPort: 80 selector: test: test sessionAffinity: None type: LoadBalancer Run k apply -f test-pool-lb.</description>
     </item>
     <item>
       <title>65-Configure the K3s &#34;Pool&#34; LoadBalancer health check</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/65-configure-k3s-pool-lb-healthcheck/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/65-configure-k3s-pool-lb-healthcheck/</guid>
-      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan
-59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster 63-Configure the K3s &amp;ldquo;Pool&amp;rdquo; LoadBalancer service A Working DHCP load balancer service created on K3s cluster Edit Load balancer config Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs Configure port, IPAM and health check related setting on Add-on Config page Expected Results Can create load balance service correctly Can route workload to nginx deployment </description>
+      <description>Prerequisite: Already provision K3s cluster and cloud provider on test plan&#xA;59-Create K3s Kubernetes Cluster 61-Deploy Harvester cloud provider to k3s Cluster 63-Configure the K3s &amp;ldquo;Pool&amp;rdquo; LoadBalancer service A Working DHCP load balancer service created on K3s cluster Edit Load balancer config Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs Configure port, IPAM and health check related setting on Add-on Config page Expected Results Can create load balance service correctly Can route workload to nginx deployment </description>
     </item>
     <item>
       <title>66-Deploy Harvester csi driver to k3s Cluster</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/66-deploy-harvester-csi-driver-to-k3s-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/66-deploy-harvester-csi-driver-to-k3s-cluster/</guid>
-      <description>Related task: #2755 Steps to manually install Harvester csi-driver on K3s cluster Reference Document Deploying with Harvester K3s Node Driver
-Verify steps Prepare a Harvester cluster with enough cpu, memory and disks for K3s guest cluster
-Create a Rancher instance
-Import Harvester in Rancher and create cloud credential
-ssh to Harvester management node
-Extract the kubeconfig of Harvester with cat /etc/rancher/rke2/rke2.yaml
-Change the server value from https://127.0.0.1:6443/ to your VIP</description>
+      <description>Related task: #2755 Steps to manually install Harvester csi-driver on K3s cluster Reference Document Deploying with Harvester K3s Node Driver&#xA;Verify steps Prepare a Harvester cluster with enough cpu, memory and disks for K3s guest cluster&#xA;Create a Rancher instance&#xA;Import Harvester in Rancher and create cloud credential&#xA;ssh to Harvester management node&#xA;Extract the kubeconfig of Harvester with cat /etc/rancher/rke2/rke2.yaml&#xA;Change the server value from https://127.0.0.1:6443/ to your VIP</description>
     </item>
     <item>
       <title>67-Harvester persistent volume on k3s Cluster</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/67-harvester-persistent-volume-on-k3s-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/67-harvester-persistent-volume-on-k3s-cluster/</guid>
-      <description>Related task: #2755 Steps to manually install Harvester csi-driver on K3s cluster Verify steps Follow test case 66-Deploy Harvester csi driver to k3s Cluster to manually install csi-driver on k3s cluster
-Create a nginx deployment in Workload -&amp;gt; Deployments
-Create a Persistent Volume Claims, select storage class to harvester
-Select the Single-Node Read/Write
-Open Harvester Volumes page, check the corresponding volume exists Click Execute shell to access Nginx container.</description>
+      <description>Related task: #2755 Steps to manually install Harvester csi-driver on K3s cluster Verify steps Follow test case 66-Deploy Harvester csi driver to k3s Cluster to manually install csi-driver on k3s cluster&#xA;Create a nginx deployment in Workload -&amp;gt; Deployments&#xA;Create a Persistent Volume Claims, select storage class to harvester&#xA;Select the Single-Node Read/Write&#xA;Open Harvester Volumes page, check the corresponding volume exists Click Execute shell to access Nginx container.</description>
     </item>
     <item>
       <title>68-Fully airgapped rancher integrate with harvester with no proxy</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/68-fully-airgapped-rancher-integrate-harvester-no-proxy/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/68-fully-airgapped-rancher-integrate-harvester-no-proxy/</guid>
-      <description>Related task: #1808 RKE2 provisioning fails when Rancher has no internet access (air-gapped)
-Note1: in fully air gapped environment, you have to setup private docker hub registry and pull all rancher related offline image
-Note2: Please use SUSE SLES JeOS image, it have qemu-guest-agent already installed, thus the guest VM can get IP correctly
-Environment Setup Setup the airgapped harvester
-Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.</description>
+      <description>Related task: #1808 RKE2 provisioning fails when Rancher has no internet access (air-gapped)&#xA;Note1: in fully air gapped environment, you have to setup private docker hub registry and pull all rancher related offline image&#xA;Note2: Please use SUSE SLES JeOS image, it have qemu-guest-agent already installed, thus the guest VM can get IP correctly&#xA;Environment Setup Setup the airgapped harvester&#xA;Fetch ipxe vagrant example with new offline feature https://github.com/harvester/ipxe-examples/pull/32 Edit the setting.</description>
     </item>
     <item>
       <title>69-DHCP Harvester LoadBalancer service no health check</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/69-dhcp-loadbalancer-service-no-health-check/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/69-dhcp-loadbalancer-service-no-health-check/</guid>
-      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
-Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer Given service name to make the load balancer name composed of the cluster name, namespace, svc name, and suffix(8 characters) more than 63 characters Provide Listening port and Target port Click Add-on Config</description>
+      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case&#xA;Open Global Settings in hamburger menu Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html Change ui-offline-preferred to Remote Refresh the current page (ctrl + r) Open provisioned RKE2 cluster from hamburger menu Drop down Service Discovery Click Services Click Create Select Load Balancer Given service name to make the load balancer name composed of the cluster name, namespace, svc name, and suffix(8 characters) more than 63 characters Provide Listening port and Target port Click Add-on Config</description>
     </item>
     <item>
       <title>70-Pool LoadBalancer service no health check</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/70-pool-loadbalancer-service-no-health-check/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/70-pool-loadbalancer-service-no-health-check/</guid>
-      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case
-Open Global Settings in hamburger menu
-Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html
-Change ui-offline-preferred to Remote
-Refresh the current page (ctrl + r)
-Access Harvester dashboard UI
-Go to Settings
-Create a vip-pool in Harvester settings. Open provisioned RKE2 cluster from hamburger menu
-Drop down Service Discovery
-Click Services
-Click Create
-Select Load Balancer Given service name
-Provide Listening port and Target port Click Add-on Config</description>
+      <description>Prerequisite: Already provision RKE1/RKE2 cluster in previous test case&#xA;Open Global Settings in hamburger menu&#xA;Replace ui-dashboard-index to https://releases.rancher.com/harvester-ui/dashboard/latest/index.html&#xA;Change ui-offline-preferred to Remote&#xA;Refresh the current page (ctrl + r)&#xA;Access Harvester dashboard UI&#xA;Go to Settings&#xA;Create a vip-pool in Harvester settings. Open provisioned RKE2 cluster from hamburger menu&#xA;Drop down Service Discovery&#xA;Click Services&#xA;Click Create&#xA;Select Load Balancer Given service name&#xA;Provide Listening port and Target port Click Add-on Config</description>
     </item>
     <item>
       <title>71-Manually Deploy Harvester csi driver to RKE2 Cluster</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/71-manually-deploy-csi-driver-to-rke2-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/71-manually-deploy-csi-driver-to-rke2-cluster/</guid>
-      <description>Related task: #2755 Steps to manually install Harvester csi-driver on RKE2 cluster Reference Document Deploying with Harvester RKE2 Node Driver
-Verify steps ssh to Harvester management node
-Extract the kubeconfig of Harvester with cat /etc/rancher/rke2/rke2.yaml
-Change the server value from https://127.0.0.1:6443/ to your VIP
-Copy the kubeconfig and add into your local ~/.kube/config file
-Import Harvester in Rancher
-Create cloud credential
-Provision a RKE2 cluster Provide the login credential in user data</description>
+      <description>Related task: #2755 Steps to manually install Harvester csi-driver on RKE2 cluster Reference Document Deploying with Harvester RKE2 Node Driver&#xA;Verify steps ssh to Harvester management node&#xA;Extract the kubeconfig of Harvester with cat /etc/rancher/rke2/rke2.yaml&#xA;Change the server value from https://127.0.0.1:6443/ to your VIP&#xA;Copy the kubeconfig and add into your local ~/.kube/config file&#xA;Import Harvester in Rancher&#xA;Create cloud credential&#xA;Provision a RKE2 cluster Provide the login credential in user data</description>
     </item>
     <item>
       <title>72-Use ipxe example to test fully airgapped rancher integration</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/72-ipxe-auto-airgapped-rancher-integrate-harvester-/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/72-ipxe-auto-airgapped-rancher-integrate-harvester-/</guid>
-      <description>Related task: #1808 RKE2 provisioning fails when Rancher has no internet access (air-gapped)
-Note1: In this test, we use vagrant-pxe-airgap-harvester to automatically provide the fully airgapped environment
-Note1: Compared to test case 68, we don&amp;rsquo;t need to manually create a separate VM for the Rancher instance and docker private registry, all the prerequisite environment can be done with the vagrant-pxe-airgap-harvester solution
-Environment Setup Phase 1: Create airgapped Harvester cluster, Rancher and private registry Clone the latest ipxe-example which include the vagrant-pxe-airgap-harvester Follow the Sample Host Loadout and Prerequisites in readme to prepare the prerequisite package If you use Opensuse Leap operating system, you may need to comment out the following line in Vagrantfile file # libvirt.</description>
+      <description>Related task: #1808 RKE2 provisioning fails when Rancher has no internet access (air-gapped)&#xA;Note1: In this test, we use vagrant-pxe-airgap-harvester to automatically provide the fully airgapped environment&#xA;Note1: Compared to test case 68, we don&amp;rsquo;t need to manually create a separate VM for the Rancher instance and docker private registry, all the prerequisite environment can be done with the vagrant-pxe-airgap-harvester solution&#xA;Environment Setup Phase 1: Create airgapped Harvester cluster, Rancher and private registry Clone the latest ipxe-example which include the vagrant-pxe-airgap-harvester Follow the Sample Host Loadout and Prerequisites in readme to prepare the prerequisite package If you use Opensuse Leap operating system, you may need to comment out the following line in Vagrantfile file # libvirt.</description>
     </item>
     <item>
       <title>Better Load Balancer Config of Harvester cloud provider</title>
@@ -677,10 +579,7 @@ Environment Setup Phase 1: Create airgapped Harvester cluster, Rancher and priva
       <link>https://harvester.github.io/tests/manual/harvester-rancher/provision-rke2-cluster-with-resource-quota-configured/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/provision-rke2-cluster-with-resource-quota-configured/</guid>
-      <description>Related issues: #1455 Node driver provisioning fails when resource quota configured in project
-Related issues: #1449 Incorrect naming of project resource configuration
-Category: Rancher Integration Environment setup Install the latest rancher from docker command $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Test Scenarios Scenario 1:
-Project with resource quota: CPU Limit / CPU Reservation: 6000 / 6144 Memory Limit / Memory Reservation: 6000 / 6144 Scenario 2:</description>
+      <description>Related issues: #1455 Node driver provisioning fails when resource quota configured in project&#xA;Related issues: #1449 Incorrect naming of project resource configuration&#xA;Category: Rancher Integration Environment setup Install the latest rancher from docker command $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Test Scenarios Scenario 1:&#xA;Project with resource quota: CPU Limit / CPU Reservation: 6000 / 6144 Memory Limit / Memory Reservation: 6000 / 6144 Scenario 2:</description>
     </item>
     <item>
       <title>Rancher import harvester enhancement</title>
@@ -694,8 +593,7 @@ Project with resource quota: CPU Limit / CPU Reservation: 6000 / 6144 Memory Lim
       <link>https://harvester.github.io/tests/manual/harvester-rancher/resource_quota/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/resource_quota/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1450
-Verify Items Project&amp;rsquo;s Resource quotas can be updated correctly Namespace Default Limit should be assigned as the Project configured Namespace moving between projects should work correctly Case: Create Namespace with Resource quotas Install Harvester with any nodes Install Rancher Login to Rancher, import Harvester from Virtualization Management Access Harvester dashboard via Virtualization Management Navigate to Project/Namespaces, Create Project A with Resource quotas Create Namespace N1 based on Project A The Default value of Resource Quotas should be the same as Namespace Default Limit assigned in Project A Modifying resource limit should work correctly (when increasing/decreasing, the value should increased/decreased) After N1 Created, Click Edit Config on N1 resource limit should be the same as we assigned Increase/decrease resource limit then Save Click Edit Config on N1, resource limit should be the same as we assigned Click Edit Config on N1, then increase resource limit exceeds Project A&amp;rsquo;s Limit Click Save Button, error message should shown.</description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1450&#xA;Verify Items Project&amp;rsquo;s Resource quotas can be updated correctly Namespace Default Limit should be assigned as the Project configured Namespace moving between projects should work correctly Case: Create Namespace with Resource quotas Install Harvester with any nodes Install Rancher Login to Rancher, import Harvester from Virtualization Management Access Harvester dashboard via Virtualization Management Navigate to Project/Namespaces, Create Project A with Resource quotas Create Namespace N1 based on Project A The Default value of Resource Quotas should be the same as Namespace Default Limit assigned in Project A Modifying resource limit should work correctly (when increasing/decreasing, the value should increased/decreased) After N1 Created, Click Edit Config on N1 resource limit should be the same as we assigned Increase/decrease resource limit then Save Click Edit Config on N1, resource limit should be the same as we assigned Click Edit Config on N1, then increase resource limit exceeds Project A&amp;rsquo;s Limit Click Save Button, error message should shown.</description>
     </item>
     <item>
       <title>Reboot a cluster and check VIP</title>

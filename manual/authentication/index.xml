@@ -61,8 +61,7 @@
       <link>https://harvester.github.io/tests/manual/authentication/ui_password_show_btn/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/authentication/ui_password_show_btn/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1550
-Verify Items Password field in login page can be toggle show/hide Case: Toggle of Password field install harvester with any nodes setup password logout then login with password toggled </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1550&#xA;Verify Items Password field in login page can be toggle show/hide Case: Toggle of Password field install harvester with any nodes setup password logout then login with password toggled </description>
     </item>
     <item>
       <title>Verify SSH key was added from Github during install</title>

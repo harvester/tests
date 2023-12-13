@@ -33,8 +33,7 @@
       <link>https://harvester.github.io/tests/manual/network/add-vlan-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/network/add-vlan-network/</guid>
-      <description>Environment setup This should be done on a Harvester setup with at least 2 NICs and at least 2 nodes. This is easily tested in Vagrant
-Verification Steps Open settings on a harvester cluster Navigate to the VLAN settings page Click Enabled Check dropdown for NICs and verify that percentage is showing 100% Add the NIC Click Save Validate that it has updated in settings Expected Results You should be able to add the VLAN network device You should see in the settings list that it has your new default NIC </description>
+      <description>Environment setup This should be done on a Harvester setup with at least 2 NICs and at least 2 nodes. This is easily tested in Vagrant&#xA;Verification Steps Open settings on a harvester cluster Navigate to the VLAN settings page Click Enabled Check dropdown for NICs and verify that percentage is showing 100% Add the NIC Click Save Validate that it has updated in settings Expected Results You should be able to add the VLAN network device You should see in the settings list that it has your new default NIC </description>
     </item>
     <item>
       <title>Create new network (e2e_be_fe)</title>
@@ -174,8 +173,7 @@ Verification Steps Open settings on a harvester cluster Navigate to the VLAN set
       <link>https://harvester.github.io/tests/manual/network/vip_vlan_mgmtport/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/network/vip_vlan_mgmtport/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1722
-Verify Items VIP should be accessible when VLAN enabled on management port Case: Single Node enables VLAN on management port Install Harvester with single node Login to dashboard then navigate to Settings Edit vlan to enable VLAN on harvester-mgmt reboot the node after reboot, login to console Run the command should not contain any output sudo -s kubectl get pods -A --template &#39;{{range .items}}{{.metadata.name}}{{&amp;quot;\n&amp;quot;}}{{end}}&#39; | grep harvester-network-controller-manager | xargs kubectl logs -n harvester-system | grep &amp;quot;Failed to update lock&amp;quot; Repeat step 4-6 with 10 times, should not have any error </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1722&#xA;Verify Items VIP should be accessible when VLAN enabled on management port Case: Single Node enables VLAN on management port Install Harvester with single node Login to dashboard then navigate to Settings Edit vlan to enable VLAN on harvester-mgmt reboot the node after reboot, login to console Run the command should not contain any output sudo -s kubectl get pods -A --template &#39;{{range .items}}{{.metadata.name}}{{&amp;quot;\n&amp;quot;}}{{end}}&#39; | grep harvester-network-controller-manager | xargs kubectl logs -n harvester-system | grep &amp;quot;Failed to update lock&amp;quot; Repeat step 4-6 with 10 times, should not have any error </description>
     </item>
   </channel>
 </rss>

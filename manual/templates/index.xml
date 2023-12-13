@@ -40,8 +40,7 @@
       <link>https://harvester.github.io/tests/manual/templates/derived_template_configure/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/templates/derived_template_configure/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1711
-Verify Items Volume size can be changed when creating a derived template Case: Update volume size on new template derived from exist template Install Harvester with any Nodes Login to Dashboard Create Image for Template Creation Create Template T1 with Image Volume and additional Volume Modify Template T1 with update Volume size Volume size should be editable Click Save, then edit new version of T1 Volume size should be updated as expected </description>
+      <description>Ref: https://github.com/harvester/harvester/issues/1711&#xA;Verify Items Volume size can be changed when creating a derived template Case: Update volume size on new template derived from exist template Install Harvester with any Nodes Login to Dashboard Create Image for Template Creation Create Template T1 with Image Volume and additional Volume Modify Template T1 with update Volume size Volume size should be editable Click Save, then edit new version of T1 Volume size should be updated as expected </description>
     </item>
   </channel>
 </rss>
