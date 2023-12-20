@@ -48,18 +48,12 @@ bucketName: ''
 
 # Backup Targer NFS
 nfs-endpoint: ''
-
 nfs-mount-dir: 'nfsshare'
 
 backup-scripts-location: 'backup_restore_test_artifacts'
 
-# Rancher Docker image version to use
-rancher-version: 'v2.6-head'
-
 # External Rancher endpoint
 #rancher-endpoint: 'https://127.0.0.1'
-
-# External Rancher admin user password
 #rancher-admin-password: 'rancher_password'
 
 # Kubernetes version to use for Rancher integration tests

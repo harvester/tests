@@ -189,13 +189,6 @@ def pytest_addoption(parser):
         help=('Endpoint for storing backup in nfs share')
     )
     parser.addoption(
-        '--rancher-version',
-        action='store',
-        default=config_data['rancher-version'],
-        help=('Rancher Docker image version to use when bootstrapping Rancher '
-              'VM in Harvester')
-    )
-    parser.addoption(
         '--rancher-endpoint',
         action='store',
         default=config_data.get('rancher-endpoint', None),
