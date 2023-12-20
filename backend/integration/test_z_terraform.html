@@ -27,7 +27,7 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -136,14 +136,22 @@ def test_create_volume(api_client, tf_harvester, volume_resource):
 @pytest.mark.p0
 @pytest.mark.terraform
 @pytest.mark.dependency(depends=[&#34;create_volume&#34;])
-def test_delete_volume(api_client, tf_harvester, volume_resource):
+def test_delete_volume(api_client, wait_timeout, tf_harvester, volume_resource):
     spec, unique_name, _ = volume_resource
 
-    out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-    assert not err and 0 == code
+    out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == rc
 
-    code, data = api_client.volumes.get(unique_name)
-    assert 404 == code
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.volumes.get(unique_name)
+        if 404 == code:
+            break
+    else:
+        raise AssertionError(
+            &#34;Terraform destroy volume fail\n&#34;
+            f&#34;stdout: {out}\nstderr:{err}, code: {rc}&#34;
+        )
 
 
 @pytest.mark.p0
@@ -193,14 +201,22 @@ def test_create_volume_from_image(api_client, tf_harvester, tf_resource, image_r
 @pytest.mark.p0
 @pytest.mark.terraform
 @pytest.mark.dependency(depends=[&#34;create_image&#34;])
-def test_delete_image(api_client, tf_harvester, image_resource):
+def test_delete_image(api_client, wait_timeout, tf_harvester, image_resource):
     spec, unique_name, _ = image_resource
 
-    out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-    assert not err and 0 == code
+    out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == rc
 
-    code, data = api_client.images.get(unique_name)
-    assert 404 == code
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_name)
+        if 404 == code:
+            break
+    else:
+        raise AssertionError(
+            &#34;Terraform destroy image fail\n&#34;
+            f&#34;stdout: {out}\nstderr: {err}, code: {rc}&#34;
+        )
 
 
 @pytest.mark.p0
@@ -255,24 +271,42 @@ class TestNetworking:
         assert 404 == code
 
     @pytest.mark.dependency(depends=[&#34;create_vlanconfig&#34;])
-    def test_delete_vlanconfig(self, api_client, tf_harvester, vlanconfig_resource):
+    def test_delete_vlanconfig(self, api_client, wait_timeout, tf_harvester, vlanconfig_resource):
         spec, unique_name, *_ = vlanconfig_resource
 
-        out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-        assert not err and 0 == code
+        out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+        assert not err and 0 == rc
 
-        code, data = api_client.clusternetworks.get_config(unique_name)
-        assert 404 == code
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.clusternetworks.get_config(unique_name)
+            if 404 == code:
+                break
+        else:
+            raise AssertionError(
+                &#34;Terraform destroy vlanconfig fail\n&#34;
+                f&#34;stdout: {out}\nstderr: {err}, code: {rc}&#34;
+            )
 
     @pytest.mark.dependency(depends=[&#34;create_clusternetwork&#34;])
-    def test_delete_clusternetwork(self, api_client, tf_harvester, clusternetwork_resource):
+    def test_delete_clusternetwork(
+        self, api_client, wait_timeout, tf_harvester, clusternetwork_resource
+    ):
         spec, unique_name, *_ = clusternetwork_resource
 
-        out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-        assert not err and 0 == code
+        out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+        assert not err and 0 == rc
 
-        code, data = api_client.clusternetworks.get(unique_name)
-        assert 404 == code</code></pre>
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.clusternetworks.get(unique_name)
+            if 404 == code:
+                break
+        else:
+            raise AssertionError(
+                &#34;Terraform destroy clusternetwork fail\n&#34;
+                f&#34;stdout: {out}\nstderr: {err}, code: {rc}&#34;
+            )</code></pre>
 </details>
 </section>
 <section>
@@ -442,7 +476,7 @@ def test_create_volume_from_image(api_client, tf_harvester, tf_resource, image_r
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_z_terraform.test_delete_image"><code class="name flex">
-<span>def <span class="ident">test_delete_image</span></span>(<span>api_client, tf_harvester, image_resource)</span>
+<span>def <span class="ident">test_delete_image</span></span>(<span>api_client, wait_timeout, tf_harvester, image_resource)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -453,14 +487,22 @@ def test_create_volume_from_image(api_client, tf_harvester, tf_resource, image_r
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.terraform
 @pytest.mark.dependency(depends=[&#34;create_image&#34;])
-def test_delete_image(api_client, tf_harvester, image_resource):
+def test_delete_image(api_client, wait_timeout, tf_harvester, image_resource):
     spec, unique_name, _ = image_resource
 
-    out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-    assert not err and 0 == code
+    out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == rc
 
-    code, data = api_client.images.get(unique_name)
-    assert 404 == code</code></pre>
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_name)
+        if 404 == code:
+            break
+    else:
+        raise AssertionError(
+            &#34;Terraform destroy image fail\n&#34;
+            f&#34;stdout: {out}\nstderr: {err}, code: {rc}&#34;
+        )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_z_terraform.test_delete_ssh_key"><code class="name flex">
@@ -486,7 +528,7 @@ def test_delete_ssh_key(api_client, tf_harvester, ssh_key_resource):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_z_terraform.test_delete_volume"><code class="name flex">
-<span>def <span class="ident">test_delete_volume</span></span>(<span>api_client, tf_harvester, volume_resource)</span>
+<span>def <span class="ident">test_delete_volume</span></span>(<span>api_client, wait_timeout, tf_harvester, volume_resource)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -497,14 +539,22 @@ def test_delete_ssh_key(api_client, tf_harvester, ssh_key_resource):
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.terraform
 @pytest.mark.dependency(depends=[&#34;create_volume&#34;])
-def test_delete_volume(api_client, tf_harvester, volume_resource):
+def test_delete_volume(api_client, wait_timeout, tf_harvester, volume_resource):
     spec, unique_name, _ = volume_resource
 
-    out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-    assert not err and 0 == code
+    out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == rc
 
-    code, data = api_client.volumes.get(unique_name)
-    assert 404 == code</code></pre>
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.volumes.get(unique_name)
+        if 404 == code:
+            break
+    else:
+        raise AssertionError(
+            &#34;Terraform destroy volume fail\n&#34;
+            f&#34;stdout: {out}\nstderr:{err}, code: {rc}&#34;
+        )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_z_terraform.vlanconfig_resource"><code class="name flex">
@@ -630,24 +680,42 @@ class TestNetworking:
         assert 404 == code
 
     @pytest.mark.dependency(depends=[&#34;create_vlanconfig&#34;])
-    def test_delete_vlanconfig(self, api_client, tf_harvester, vlanconfig_resource):
+    def test_delete_vlanconfig(self, api_client, wait_timeout, tf_harvester, vlanconfig_resource):
         spec, unique_name, *_ = vlanconfig_resource
 
-        out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-        assert not err and 0 == code
+        out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+        assert not err and 0 == rc
 
-        code, data = api_client.clusternetworks.get_config(unique_name)
-        assert 404 == code
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.clusternetworks.get_config(unique_name)
+            if 404 == code:
+                break
+        else:
+            raise AssertionError(
+                &#34;Terraform destroy vlanconfig fail\n&#34;
+                f&#34;stdout: {out}\nstderr: {err}, code: {rc}&#34;
+            )
 
     @pytest.mark.dependency(depends=[&#34;create_clusternetwork&#34;])
-    def test_delete_clusternetwork(self, api_client, tf_harvester, clusternetwork_resource):
+    def test_delete_clusternetwork(
+        self, api_client, wait_timeout, tf_harvester, clusternetwork_resource
+    ):
         spec, unique_name, *_ = clusternetwork_resource
 
-        out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-        assert not err and 0 == code
+        out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+        assert not err and 0 == rc
 
-        code, data = api_client.clusternetworks.get(unique_name)
-        assert 404 == code</code></pre>
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.clusternetworks.get(unique_name)
+            if 404 == code:
+                break
+        else:
+            raise AssertionError(
+                &#34;Terraform destroy clusternetwork fail\n&#34;
+                f&#34;stdout: {out}\nstderr: {err}, code: {rc}&#34;
+            )</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -727,7 +795,7 @@ def test_create_vm_network(self, api_client, tf_harvester, vmnetwork_resource):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_z_terraform.TestNetworking.test_delete_clusternetwork"><code class="name flex">
-<span>def <span class="ident">test_delete_clusternetwork</span></span>(<span>self, api_client, tf_harvester, clusternetwork_resource)</span>
+<span>def <span class="ident">test_delete_clusternetwork</span></span>(<span>self, api_client, wait_timeout, tf_harvester, clusternetwork_resource)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -736,18 +804,28 @@ def test_create_vm_network(self, api_client, tf_harvester, vmnetwork_resource):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_clusternetwork&#34;])
-def test_delete_clusternetwork(self, api_client, tf_harvester, clusternetwork_resource):
+def test_delete_clusternetwork(
+    self, api_client, wait_timeout, tf_harvester, clusternetwork_resource
+):
     spec, unique_name, *_ = clusternetwork_resource
 
-    out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-    assert not err and 0 == code
+    out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == rc
 
-    code, data = api_client.clusternetworks.get(unique_name)
-    assert 404 == code</code></pre>
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.clusternetworks.get(unique_name)
+        if 404 == code:
+            break
+    else:
+        raise AssertionError(
+            &#34;Terraform destroy clusternetwork fail\n&#34;
+            f&#34;stdout: {out}\nstderr: {err}, code: {rc}&#34;
+        )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_z_terraform.TestNetworking.test_delete_vlanconfig"><code class="name flex">
-<span>def <span class="ident">test_delete_vlanconfig</span></span>(<span>self, api_client, tf_harvester, vlanconfig_resource)</span>
+<span>def <span class="ident">test_delete_vlanconfig</span></span>(<span>self, api_client, wait_timeout, tf_harvester, vlanconfig_resource)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -756,14 +834,22 @@ def test_delete_clusternetwork(self, api_client, tf_harvester, clusternetwork_re
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_vlanconfig&#34;])
-def test_delete_vlanconfig(self, api_client, tf_harvester, vlanconfig_resource):
+def test_delete_vlanconfig(self, api_client, wait_timeout, tf_harvester, vlanconfig_resource):
     spec, unique_name, *_ = vlanconfig_resource
 
-    out, err, code = tf_harvester.destroy_resource(spec.type, spec.name)
-    assert not err and 0 == code
+    out, err, rc = tf_harvester.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == rc
 
-    code, data = api_client.clusternetworks.get_config(unique_name)
-    assert 404 == code</code></pre>
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.clusternetworks.get_config(unique_name)
+        if 404 == code:
+            break
+    else:
+        raise AssertionError(
+            &#34;Terraform destroy vlanconfig fail\n&#34;
+            f&#34;stdout: {out}\nstderr: {err}, code: {rc}&#34;
+        )</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_z_terraform.TestNetworking.test_delete_vm_network"><code class="name flex">

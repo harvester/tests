@@ -43,8 +43,14 @@ def vm_mgmt_static(api_client):
     code, data = api_client.hosts.get()
     assert 200 == code, (code, data)
 
-    rke2_args = data[&#39;data&#39;][0][&#39;metadata&#39;][&#39;annotations&#39;][&#39;rke2.io/node-args&#39;]
-    cluster_cidr = re.search(r&#39;cluster-cidr[\&#34;,]+((?:\d+\.?)+\/\d+)\&#34;&#39;, rke2_args).group(1)
+    for node in data[&#39;data&#39;]:
+        rke2_args = node[&#39;metadata&#39;][&#39;annotations&#39;][&#39;rke2.io/node-args&#39;]
+        match = re.search(r&#39;cluster-cidr[\&#34;,]+((?:\d+\.?)+\/\d+)\&#34;&#39;, rke2_args)
+        if match:
+            cluster_cidr = match.group(1)
+            break
+    else:
+        raise AssertionError(&#34;cluster-cidr is not available&#34;)
 
     mgmt_network = ip_network(cluster_cidr)
     mgmt_route = {
@@ -807,8 +813,14 @@ def vm_mgmt_static(api_client):
     code, data = api_client.hosts.get()
     assert 200 == code, (code, data)
 
-    rke2_args = data[&#39;data&#39;][0][&#39;metadata&#39;][&#39;annotations&#39;][&#39;rke2.io/node-args&#39;]
-    cluster_cidr = re.search(r&#39;cluster-cidr[\&#34;,]+((?:\d+\.?)+\/\d+)\&#34;&#39;, rke2_args).group(1)
+    for node in data[&#39;data&#39;]:
+        rke2_args = node[&#39;metadata&#39;][&#39;annotations&#39;][&#39;rke2.io/node-args&#39;]
+        match = re.search(r&#39;cluster-cidr[\&#34;,]+((?:\d+\.?)+\/\d+)\&#34;&#39;, rke2_args)
+        if match:
+            cluster_cidr = match.group(1)
+            break
+    else:
+        raise AssertionError(&#34;cluster-cidr is not available&#34;)
 
     mgmt_network = ip_network(cluster_cidr)
     mgmt_route = {

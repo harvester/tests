@@ -388,7 +388,7 @@ class TestBackupRestore:
         yaml_header = {&#39;Content-Type&#39;: &#39;application/yaml&#39;}
         customized_annotations = {&#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;}
         data = yaml.safe_load(resp.text)
-        data[&#39;metadata&#39;][&#39;annotations&#39;].update(customized_annotations)
+        data[&#39;metadata&#39;].setdefault(&#39;annotations&#39;, {}).update(customized_annotations)
         yaml_data = yaml.safe_dump(data)
         code, data = api_client.backups.update(backup_name, yaml_data,
                                                as_json=False, headers=yaml_header)
@@ -1542,7 +1542,7 @@ class TestBackupRestore:
         yaml_header = {&#39;Content-Type&#39;: &#39;application/yaml&#39;}
         customized_annotations = {&#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;}
         data = yaml.safe_load(resp.text)
-        data[&#39;metadata&#39;][&#39;annotations&#39;].update(customized_annotations)
+        data[&#39;metadata&#39;].setdefault(&#39;annotations&#39;, {}).update(customized_annotations)
         yaml_data = yaml.safe_dump(data)
         code, data = api_client.backups.update(backup_name, yaml_data,
                                                as_json=False, headers=yaml_header)
@@ -2019,7 +2019,7 @@ def test_update_backup_by_yaml(
     yaml_header = {&#39;Content-Type&#39;: &#39;application/yaml&#39;}
     customized_annotations = {&#39;test.harvesterhci.io&#39;: &#39;for-test-update&#39;}
     data = yaml.safe_load(resp.text)
-    data[&#39;metadata&#39;][&#39;annotations&#39;].update(customized_annotations)
+    data[&#39;metadata&#39;].setdefault(&#39;annotations&#39;, {}).update(customized_annotations)
     yaml_data = yaml.safe_dump(data)
     code, data = api_client.backups.update(backup_name, yaml_data,
                                            as_json=False, headers=yaml_header)
