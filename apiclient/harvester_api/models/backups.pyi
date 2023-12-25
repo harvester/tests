@@ -5,14 +5,14 @@ from typing import Optional, NoReturn, Type
 class _BaseBackup:
     """
     """
-    new_vm: str
+    new_vm: bool
     vm_name: str
     namespace: str
     delete_volumes: bool
 
     def __init__(
         self,
-        new_vm: str,
+        new_vm: bool,
         vm_name: Optional[str] = ...,
         namespace: Optional[str] = ...,
         delete_volumes: Optional[bool] = ...

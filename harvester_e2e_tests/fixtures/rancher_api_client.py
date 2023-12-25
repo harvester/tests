@@ -22,7 +22,7 @@ def rancher_api_client(request):
 
 @pytest.fixture(scope="session")
 def k8s_version(request, api_client, rancher_api_client):
-    harv_version = api_client.hosts.get()[1][0]['status']['nodeInfo']['kubeletVersion']
+    harv_version = api_client.hosts.get()[1]['data'][0]['status']['nodeInfo']['kubeletVersion']
     rke2_version = (request.config.getoption("--RKE2-version")
                     or harv_version)
 
