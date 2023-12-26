@@ -19,5 +19,4 @@ def rancher_api_client(request):
 
 @pytest.fixture(scope="session")
 def k8s_version(request):
-    return (request.config.getoption("--RKE2-version")
-            or request.config.getoption("--kubernetes-version"))
+    return request.config.getoption("--RKE2-version")
