@@ -26,9 +26,12 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import shlex
+<pre><code class="python">import json
+import shlex
 import subprocess
 from time import sleep
+from operator import add
+from functools import reduce
 from datetime import datetime, timedelta
 
 import pytest
@@ -77,28 +80,114 @@ def client():
 
 
 @pytest.fixture(scope=&#39;session&#39;)
-def vlan_network(request, api_client):
-    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+def vlan_id(request):
     vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
-    # don&#39;t create network if VLAN is not correctly specified
-    if vlan_id == -1:
-        return
+    assert 4095 &gt; vlan_id &gt; 0, f&#34;VLAN ID should in range 1-4094, not {vlan_id}&#34;
 
-    api_client.clusternetworks.create(vlan_nic)
-    api_client.clusternetworks.create_config(vlan_nic, vlan_nic, vlan_nic)
+    return vlan_id
 
-    network_name = f&#39;vlan-network-{vlan_id}&#39;
-    code, data = api_client.networks.create(network_name, vlan_id, cluster_network=vlan_nic)
-    assert 201 == code, (
-        f&#34;Failed to create network-attachment-definition {network_name} with error {code}, {data}&#34;
+
+@pytest.fixture(scope=&#34;session&#34;)
+def vlan_nic(request):
+    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+    assert vlan_nic, f&#34;VLAN NIC {vlan_nic} not configured correctly.&#34;
+
+    return vlan_nic
+
+
+@pytest.fixture(scope=&#39;module&#39;)
+def cluster_network(vlan_nic, api_client, unique_name):
+    code, data = api_client.clusternetworks.get_config()
+    assert 200 == code, (code, data)
+
+    node_key = &#39;network.harvesterhci.io/matched-nodes&#39;
+    cnet_nodes = dict()  # cluster_network: items
+    for cfg in data[&#39;items&#39;]:
+        if vlan_nic in cfg[&#39;spec&#39;][&#39;uplink&#39;][&#39;nics&#39;]:
+            nodes = json.loads(cfg[&#39;metadata&#39;][&#39;annotations&#39;][node_key])
+            cnet_nodes.setdefault(cfg[&#39;spec&#39;][&#39;clusterNetwork&#39;], []).extend(nodes)
+
+    code, data = api_client.hosts.get()
+    assert 200 == code, (code, data)
+    all_nodes = set(n[&#39;id&#39;] for n in data[&#39;data&#39;])
+    try:
+        # vlad_nic configured on specific cluster network, reuse it
+        yield next(cnet for cnet, nodes in cnet_nodes.items() if all_nodes == set(nodes))
+        return None
+    except StopIteration:
+        configured_nodes = reduce(add, cnet_nodes.values(), [])
+        if any(n in configured_nodes for n in all_nodes):
+            raise AssertionError(
+                &#34;Not all nodes&#39; VLAN NIC {vlan_nic} are available.\n&#34;
+                f&#34;VLAN NIC configured nodes: {configured_nodes}\n&#34;
+                f&#34;All nodes: {all_nodes}\n&#34;
+            )
+
+    # Create cluster network
+    cnet = f&#34;cnet-{datetime.strptime(unique_name, &#39;%Hh%Mm%Ss%f-%m-%d&#39;).strftime(&#39;%H%M%S&#39;)}&#34;
+    created = []
+    code, data = api_client.clusternetworks.create(cnet)
+    assert 201 == code, (code, data)
+    while all_nodes:
+        node = all_nodes.pop()
+        code, data = api_client.clusternetworks.create_config(node, cnet, vlan_nic, hostname=node)
+        assert 201 == code, (
+            f&#34;Failed to create cluster config for {node}\n&#34;
+            f&#34;Created: {created}\t Remaining: {all_nodes}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+        created.append(node)
+
+    yield cnet
+
+    # Teardown
+    deleted = {name: api_client.clusternetworks.delete_config(name) for name in created}
+    failed = [(name, code, data) for name, (code, data) in deleted.items() if 200 != code]
+    if failed:
+        fmt = &#34;Unable to delete VLAN Config {} with error ({}): {}&#34;
+        raise AssertionError(
+            &#34;\n&#34;.join(fmt.format(name, code, data) for (name, code, data) in failed)
+        )
+
+    code, data = api_client.clusternetworks.delete(cnet)
+    assert 200 == code, (code, data)
+
+
+@pytest.fixture(scope=&#34;module&#34;)
+def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id):
+    code, data = api_client.networks.create(
+        unique_name, vlan_id, cluster_network=cluster_network
     )
+    assert 201 == code, (code, data)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.networks.get(unique_name)
+        annotations = data[&#39;metadata&#39;].get(&#39;annotations&#39;, {})
+        if 200 == code and annotations.get(&#39;network.harvesterhci.io/route&#39;):
+            route = json.loads(annotations[&#39;network.harvesterhci.io/route&#39;])
+            if route[&#39;cidr&#39;]:
+                break
+        sleep(3)
+    else:
+        raise AssertionError(
+            &#34;VM network created but route info not available\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
 
-    data[&#39;id&#39;] = data[&#39;metadata&#39;][&#39;name&#39;]
-    yield data
+    yield dict(name=unique_name, cidr=route[&#39;cidr&#39;], namespace=data[&#39;metadata&#39;][&#39;namespace&#39;])
 
-    api_client.networks.delete(network_name)
-    api_client.clusternetworks.delete_config(vlan_nic)
-    api_client.clusternetworks.delete(vlan_nic)
+    code, data = api_client.networks.delete(unique_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.networks.get(unique_name)
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to remote VM network {unique_name} after {wait_timeout}s\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
 
 
 def create_image_url(api_client, display_name, image_url, wait_timeout):
@@ -293,7 +382,7 @@ class TestBackendNetwork:
     @pytest.mark.p0
     @pytest.mark.dependency(name=&#34;vlan_network_connection&#34;)
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vlan_network, wait_timeout):
+                                     image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/validate-network-external-vlan/
@@ -319,7 +408,7 @@ class TestBackendNetwork:
         # Create VM
         spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
-        spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         code, data = api_client.vms.create(unique_name, spec)
         assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -372,7 +461,7 @@ class TestBackendNetwork:
     @pytest.mark.dependency(name=&#34;reboot_vlan_connection&#34;,
                             depends=[&#34;vlan_network_connection&#34;])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
-                                    image_opensuse, vlan_network, wait_timeout):
+                                    image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/
@@ -403,7 +492,7 @@ class TestBackendNetwork:
         # Create VM
         spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
-        spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         code, data = api_client.vms.create(unique_name, spec)
         assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -511,7 +600,7 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vlan_network, wait_timeout):
+                                     image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -557,7 +646,7 @@ class TestBackendNetwork:
         # Switch to vlan network
         spec.mgmt_network = False
 
-        spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         # Update VM spec
         code, data = api_client.vms.update(unique_name, spec)
@@ -636,7 +725,7 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vlan_network, wait_timeout):
+                                     image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -676,7 +765,7 @@ class TestBackendNetwork:
 
         # Create VM
         spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
-        spec.add_network(&#34;default&#34;, vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;default&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         code, data = api_client.vms.create(unique_name, spec)
         assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -779,7 +868,7 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
-                                       image_opensuse, vlan_network, wait_timeout):
+                                       image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/delete-vlan-network-form/
@@ -816,7 +905,7 @@ class TestBackendNetwork:
         spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
         # Add external vlan network
-        spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         # Create VM
         code, data = api_client.vms.create(unique_name, spec)
@@ -1019,6 +1108,73 @@ def client():
     client.close()</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.integration.test_networks.cluster_network"><code class="name flex">
+<span>def <span class="ident">cluster_network</span></span>(<span>vlan_nic, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def cluster_network(vlan_nic, api_client, unique_name):
+    code, data = api_client.clusternetworks.get_config()
+    assert 200 == code, (code, data)
+
+    node_key = &#39;network.harvesterhci.io/matched-nodes&#39;
+    cnet_nodes = dict()  # cluster_network: items
+    for cfg in data[&#39;items&#39;]:
+        if vlan_nic in cfg[&#39;spec&#39;][&#39;uplink&#39;][&#39;nics&#39;]:
+            nodes = json.loads(cfg[&#39;metadata&#39;][&#39;annotations&#39;][node_key])
+            cnet_nodes.setdefault(cfg[&#39;spec&#39;][&#39;clusterNetwork&#39;], []).extend(nodes)
+
+    code, data = api_client.hosts.get()
+    assert 200 == code, (code, data)
+    all_nodes = set(n[&#39;id&#39;] for n in data[&#39;data&#39;])
+    try:
+        # vlad_nic configured on specific cluster network, reuse it
+        yield next(cnet for cnet, nodes in cnet_nodes.items() if all_nodes == set(nodes))
+        return None
+    except StopIteration:
+        configured_nodes = reduce(add, cnet_nodes.values(), [])
+        if any(n in configured_nodes for n in all_nodes):
+            raise AssertionError(
+                &#34;Not all nodes&#39; VLAN NIC {vlan_nic} are available.\n&#34;
+                f&#34;VLAN NIC configured nodes: {configured_nodes}\n&#34;
+                f&#34;All nodes: {all_nodes}\n&#34;
+            )
+
+    # Create cluster network
+    cnet = f&#34;cnet-{datetime.strptime(unique_name, &#39;%Hh%Mm%Ss%f-%m-%d&#39;).strftime(&#39;%H%M%S&#39;)}&#34;
+    created = []
+    code, data = api_client.clusternetworks.create(cnet)
+    assert 201 == code, (code, data)
+    while all_nodes:
+        node = all_nodes.pop()
+        code, data = api_client.clusternetworks.create_config(node, cnet, vlan_nic, hostname=node)
+        assert 201 == code, (
+            f&#34;Failed to create cluster config for {node}\n&#34;
+            f&#34;Created: {created}\t Remaining: {all_nodes}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+        created.append(node)
+
+    yield cnet
+
+    # Teardown
+    deleted = {name: api_client.clusternetworks.delete_config(name) for name in created}
+    failed = [(name, code, data) for name, (code, data) in deleted.items() if 200 != code]
+    if failed:
+        fmt = &#34;Unable to delete VLAN Config {} with error ({}): {}&#34;
+        raise AssertionError(
+            &#34;\n&#34;.join(fmt.format(name, code, data) for (name, code, data) in failed)
+        )
+
+    code, data = api_client.clusternetworks.delete(cnet)
+    assert 200 == code, (code, data)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.integration.test_networks.create_image_url"><code class="name flex">
 <span>def <span class="ident">create_image_url</span></span>(<span>api_client, display_name, image_url, wait_timeout)</span>
 </code></dt>
@@ -1080,8 +1236,8 @@ def client():
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_networks.vlan_network"><code class="name flex">
-<span>def <span class="ident">vlan_network</span></span>(<span>request, api_client)</span>
+<dt id="harvester_e2e_tests.integration.test_networks.vlan_id"><code class="name flex">
+<span>def <span class="ident">vlan_id</span></span>(<span>request)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1090,28 +1246,74 @@ def client():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;session&#39;)
-def vlan_network(request, api_client):
-    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+def vlan_id(request):
     vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
-    # don&#39;t create network if VLAN is not correctly specified
-    if vlan_id == -1:
-        return
+    assert 4095 &gt; vlan_id &gt; 0, f&#34;VLAN ID should in range 1-4094, not {vlan_id}&#34;
 
-    api_client.clusternetworks.create(vlan_nic)
-    api_client.clusternetworks.create_config(vlan_nic, vlan_nic, vlan_nic)
+    return vlan_id</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_networks.vlan_nic"><code class="name flex">
+<span>def <span class="ident">vlan_nic</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def vlan_nic(request):
+    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+    assert vlan_nic, f&#34;VLAN NIC {vlan_nic} not configured correctly.&#34;
 
-    network_name = f&#39;vlan-network-{vlan_id}&#39;
-    code, data = api_client.networks.create(network_name, vlan_id, cluster_network=vlan_nic)
-    assert 201 == code, (
-        f&#34;Failed to create network-attachment-definition {network_name} with error {code}, {data}&#34;
+    return vlan_nic</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integration.test_networks.vm_network"><code class="name flex">
+<span>def <span class="ident">vm_network</span></span>(<span>api_client, unique_name, wait_timeout, cluster_network, vlan_id)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id):
+    code, data = api_client.networks.create(
+        unique_name, vlan_id, cluster_network=cluster_network
     )
+    assert 201 == code, (code, data)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.networks.get(unique_name)
+        annotations = data[&#39;metadata&#39;].get(&#39;annotations&#39;, {})
+        if 200 == code and annotations.get(&#39;network.harvesterhci.io/route&#39;):
+            route = json.loads(annotations[&#39;network.harvesterhci.io/route&#39;])
+            if route[&#39;cidr&#39;]:
+                break
+        sleep(3)
+    else:
+        raise AssertionError(
+            &#34;VM network created but route info not available\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
 
-    data[&#39;id&#39;] = data[&#39;metadata&#39;][&#39;name&#39;]
-    yield data
+    yield dict(name=unique_name, cidr=route[&#39;cidr&#39;], namespace=data[&#39;metadata&#39;][&#39;namespace&#39;])
 
-    api_client.networks.delete(network_name)
-    api_client.clusternetworks.delete_config(vlan_nic)
-    api_client.clusternetworks.delete(vlan_nic)</code></pre>
+    code, data = api_client.networks.delete(unique_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.networks.get(unique_name)
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to remote VM network {unique_name} after {wait_timeout}s\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
 </details>
 </dd>
 </dl>
@@ -1243,7 +1445,7 @@ class TestBackendNetwork:
     @pytest.mark.p0
     @pytest.mark.dependency(name=&#34;vlan_network_connection&#34;)
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vlan_network, wait_timeout):
+                                     image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/validate-network-external-vlan/
@@ -1269,7 +1471,7 @@ class TestBackendNetwork:
         # Create VM
         spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
-        spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         code, data = api_client.vms.create(unique_name, spec)
         assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -1322,7 +1524,7 @@ class TestBackendNetwork:
     @pytest.mark.dependency(name=&#34;reboot_vlan_connection&#34;,
                             depends=[&#34;vlan_network_connection&#34;])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
-                                    image_opensuse, vlan_network, wait_timeout):
+                                    image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/
@@ -1353,7 +1555,7 @@ class TestBackendNetwork:
         # Create VM
         spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
-        spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         code, data = api_client.vms.create(unique_name, spec)
         assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -1461,7 +1663,7 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vlan_network, wait_timeout):
+                                     image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -1507,7 +1709,7 @@ class TestBackendNetwork:
         # Switch to vlan network
         spec.mgmt_network = False
 
-        spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         # Update VM spec
         code, data = api_client.vms.update(unique_name, spec)
@@ -1586,7 +1788,7 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vlan_network, wait_timeout):
+                                     image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -1626,7 +1828,7 @@ class TestBackendNetwork:
 
         # Create VM
         spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
-        spec.add_network(&#34;default&#34;, vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;default&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         code, data = api_client.vms.create(unique_name, spec)
         assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -1729,7 +1931,7 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
-                                       image_opensuse, vlan_network, wait_timeout):
+                                       image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/delete-vlan-network-form/
@@ -1766,7 +1968,7 @@ class TestBackendNetwork:
         spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
         # Add external vlan network
-        spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+        spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         # Create VM
         code, data = api_client.vms.create(unique_name, spec)
@@ -1948,7 +2150,7 @@ class TestBackendNetwork:
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_networks.TestBackendNetwork.test_delete_vlan_from_multiple"><code class="name flex">
-<span>def <span class="ident">test_delete_vlan_from_multiple</span></span>(<span>self, api_client, request, client, unique_name, image_opensuse, vlan_network, wait_timeout)</span>
+<span>def <span class="ident">test_delete_vlan_from_multiple</span></span>(<span>self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Manual test plan reference:
@@ -1968,7 +2170,7 @@ class TestBackendNetwork:
 </summary>
 <pre><code class="python">@pytest.mark.p0
 def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
-                                   image_opensuse, vlan_network, wait_timeout):
+                                   image_opensuse, vm_network, wait_timeout):
     &#34;&#34;&#34;
     Manual test plan reference:
     https://harvester.github.io/tests/manual/network/delete-vlan-network-form/
@@ -2005,7 +2207,7 @@ def test_delete_vlan_from_multiple(self, api_client, request, client, unique_nam
     spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
     # Add external vlan network
-    spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+    spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
     # Create VM
     code, data = api_client.vms.create(unique_name, spec)
@@ -2234,7 +2436,7 @@ def test_mgmt_network_connection(self, api_client, request, client, image_opensu
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_networks.TestBackendNetwork.test_mgmt_to_vlan_connection"><code class="name flex">
-<span>def <span class="ident">test_mgmt_to_vlan_connection</span></span>(<span>self, api_client, request, client, unique_name, image_opensuse, vlan_network, wait_timeout)</span>
+<span>def <span class="ident">test_mgmt_to_vlan_connection</span></span>(<span>self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Manual test plan reference:
@@ -2254,7 +2456,7 @@ def test_mgmt_network_connection(self, api_client, request, client, image_opensu
 </summary>
 <pre><code class="python">@pytest.mark.p0
 def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
-                                 image_opensuse, vlan_network, wait_timeout):
+                                 image_opensuse, vm_network, wait_timeout):
     &#34;&#34;&#34;
     Manual test plan reference:
     https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -2300,7 +2502,7 @@ def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
     # Switch to vlan network
     spec.mgmt_network = False
 
-    spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+    spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
     # Update VM spec
     code, data = api_client.vms.update(unique_name, spec)
@@ -2379,7 +2581,7 @@ def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_networks.TestBackendNetwork.test_reboot_vlan_connection"><code class="name flex">
-<span>def <span class="ident">test_reboot_vlan_connection</span></span>(<span>self, api_client, request, unique_name, image_opensuse, vlan_network, wait_timeout)</span>
+<span>def <span class="ident">test_reboot_vlan_connection</span></span>(<span>self, api_client, request, unique_name, image_opensuse, vm_network, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Manual test plan reference:
@@ -2402,7 +2604,7 @@ def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
 @pytest.mark.dependency(name=&#34;reboot_vlan_connection&#34;,
                         depends=[&#34;vlan_network_connection&#34;])
 def test_reboot_vlan_connection(self, api_client, request, unique_name,
-                                image_opensuse, vlan_network, wait_timeout):
+                                image_opensuse, vm_network, wait_timeout):
     &#34;&#34;&#34;
     Manual test plan reference:
     https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/
@@ -2433,7 +2635,7 @@ def test_reboot_vlan_connection(self, api_client, request, unique_name,
     # Create VM
     spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
-    spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+    spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
     code, data = api_client.vms.create(unique_name, spec)
     assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -2541,7 +2743,7 @@ def test_reboot_vlan_connection(self, api_client, request, unique_name,
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_networks.TestBackendNetwork.test_vlan_network_connection"><code class="name flex">
-<span>def <span class="ident">test_vlan_network_connection</span></span>(<span>self, api_client, request, client, unique_name, image_opensuse, vlan_network, wait_timeout)</span>
+<span>def <span class="ident">test_vlan_network_connection</span></span>(<span>self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Manual test plan reference:
@@ -2558,7 +2760,7 @@ def test_reboot_vlan_connection(self, api_client, request, unique_name,
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.dependency(name=&#34;vlan_network_connection&#34;)
 def test_vlan_network_connection(self, api_client, request, client, unique_name,
-                                 image_opensuse, vlan_network, wait_timeout):
+                                 image_opensuse, vm_network, wait_timeout):
     &#34;&#34;&#34;
     Manual test plan reference:
     https://harvester.github.io/tests/manual/network/validate-network-external-vlan/
@@ -2584,7 +2786,7 @@ def test_vlan_network_connection(self, api_client, request, client, unique_name,
     # Create VM
     spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
 
-    spec.add_network(&#34;nic-1&#34;, &#34;default/&#34; + vlan_network[&#39;id&#39;])
+    spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
     code, data = api_client.vms.create(unique_name, spec)
     assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -2635,7 +2837,7 @@ def test_vlan_network_connection(self, api_client, request, client, unique_name,
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_networks.TestBackendNetwork.test_vlan_to_mgmt_connection"><code class="name flex">
-<span>def <span class="ident">test_vlan_to_mgmt_connection</span></span>(<span>self, api_client, request, client, unique_name, image_opensuse, vlan_network, wait_timeout)</span>
+<span>def <span class="ident">test_vlan_to_mgmt_connection</span></span>(<span>self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Manual test plan reference:
@@ -2656,7 +2858,7 @@ def test_vlan_network_connection(self, api_client, request, client, unique_name,
 </summary>
 <pre><code class="python">@pytest.mark.p0
 def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
-                                 image_opensuse, vlan_network, wait_timeout):
+                                 image_opensuse, vm_network, wait_timeout):
     &#34;&#34;&#34;
     Manual test plan reference:
     https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -2696,7 +2898,7 @@ def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
 
     # Create VM
     spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
-    spec.add_network(&#34;default&#34;, vlan_network[&#39;id&#39;])
+    spec.add_network(&#34;default&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
     code, data = api_client.vms.create(unique_name, spec)
     assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -2819,9 +3021,12 @@ def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
 <li><code><a title="harvester_e2e_tests.integration.test_networks.check_vm_ip_exists" href="#harvester_e2e_tests.integration.test_networks.check_vm_ip_exists">check_vm_ip_exists</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_networks.check_vm_running" href="#harvester_e2e_tests.integration.test_networks.check_vm_running">check_vm_running</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_networks.client" href="#harvester_e2e_tests.integration.test_networks.client">client</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_networks.cluster_network" href="#harvester_e2e_tests.integration.test_networks.cluster_network">cluster_network</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_networks.create_image_url" href="#harvester_e2e_tests.integration.test_networks.create_image_url">create_image_url</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_networks.delete_vm" href="#harvester_e2e_tests.integration.test_networks.delete_vm">delete_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_networks.vlan_network" href="#harvester_e2e_tests.integration.test_networks.vlan_network">vlan_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_networks.vlan_id" href="#harvester_e2e_tests.integration.test_networks.vlan_id">vlan_id</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_networks.vlan_nic" href="#harvester_e2e_tests.integration.test_networks.vlan_nic">vlan_nic</a></code></li>
+<li><code><a title="harvester_e2e_tests.integration.test_networks.vm_network" href="#harvester_e2e_tests.integration.test_networks.vm_network">vm_network</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>

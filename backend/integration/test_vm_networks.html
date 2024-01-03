@@ -109,7 +109,7 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
 
 
 @pytest.fixture(scope=&#39;module&#39;)
-def cluster_network(request, vlan_nic, api_client, unique_name):
+def cluster_network(vlan_nic, api_client, unique_name):
     code, data = api_client.clusternetworks.get_config()
     assert 200 == code, (code, data)
 
@@ -408,7 +408,7 @@ class TestVMNetwork:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.integration.test_vm_networks.cluster_network"><code class="name flex">
-<span>def <span class="ident">cluster_network</span></span>(<span>request, vlan_nic, api_client, unique_name)</span>
+<span>def <span class="ident">cluster_network</span></span>(<span>vlan_nic, api_client, unique_name)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -417,7 +417,7 @@ class TestVMNetwork:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
-def cluster_network(request, vlan_nic, api_client, unique_name):
+def cluster_network(vlan_nic, api_client, unique_name):
     code, data = api_client.clusternetworks.get_config()
     assert 200 == code, (code, data)
 
