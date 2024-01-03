@@ -47,8 +47,7 @@ def rancher_api_client(request):
 
 @pytest.fixture(scope=&#34;session&#34;)
 def k8s_version(request):
-    return (request.config.getoption(&#34;--RKE2-version&#34;)
-            or request.config.getoption(&#34;--kubernetes-version&#34;))</code></pre>
+    return request.config.getoption(&#34;--RKE2-version&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -69,8 +68,7 @@ def k8s_version(request):
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
 def k8s_version(request):
-    return (request.config.getoption(&#34;--RKE2-version&#34;)
-            or request.config.getoption(&#34;--kubernetes-version&#34;))</code></pre>
+    return request.config.getoption(&#34;--RKE2-version&#34;)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.rancher_api_client.rancher_api_client"><code class="name flex">

@@ -154,7 +154,6 @@ def vm_force_reset_policy(api_client):
 
 @pytest.mark.hosts
 @pytest.mark.p1
-@pytest.mark.host_management
 class TestHostState:
     @pytest.mark.dependency(name=&#34;host_poweroff&#34;)
     def test_poweroff_state(self, api_client, host_state, wait_timeout, available_node_names):
@@ -1241,7 +1240,6 @@ def vm_force_reset_policy(api_client):
 </summary>
 <pre><code class="python">@pytest.mark.hosts
 @pytest.mark.p1
-@pytest.mark.host_management
 class TestHostState:
     @pytest.mark.dependency(name=&#34;host_poweroff&#34;)
     def test_poweroff_state(self, api_client, host_state, wait_timeout, available_node_names):
