@@ -161,23 +161,32 @@ def rke1_k8s_version(request, k8s_version, rancher_api_client):
     return latest
 
 
+@pytest.fixture(scope="module",
+                params=[1,
+                        pytest.param(3, marks=pytest.mark.skip(reason="Skip for low I/O env."))])
+def machine_count(request):
+    return request.param
+
+
 @pytest.fixture(scope='class')
-def rke1_cluster(unique_name, rancher_api_client):
-    name = f"rke1-{unique_name}"
+def rke1_cluster(unique_name, rancher_api_client, machine_count):
+    name = f"rke1-{unique_name}-{machine_count}"
     yield {
         "name": name,
-        "id": ""    # set in Test_RKE1::test_create_rke1
+        "id": "",    # set in Test_RKE1::test_create_rke1
+        "machine_count": machine_count
     }
 
     rancher_api_client.mgmt_clusters.delete(name)
 
 
 @pytest.fixture(scope='class')
-def rke2_cluster(unique_name, rancher_api_client):
-    name = f"rke2-{unique_name}"
+def rke2_cluster(unique_name, rancher_api_client, machine_count):
+    name = f"rke2-{unique_name}-{machine_count}"
     yield {
         "name": name,
-        "id": ""    # set in Test_RKE2::test_create_rke2
+        "id": "",    # set in Test_RKE2::test_create_rke2
+        "machine_count": machine_count
     }
 
     rancher_api_client.mgmt_clusters.delete(name)
@@ -319,6 +328,7 @@ def test_add_project_owner_user(api_client, rancher_api_client, unique_name, wai
 @pytest.mark.p0
 @pytest.mark.rancher
 @pytest.mark.rke2
+@pytest.mark.usefixtures("rke2_cluster")
 class TestRKE2:
     @pytest.mark.dependency(depends=["import_harvester"], name="create_rke2")
     def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
@@ -381,7 +391,8 @@ class TestRKE2:
             hostname_prefix=f"{rke2_cluster['name']}-",
             harvester_config_name=unique_name,
             k8s_version=k8s_version,
-            cloud_credential_id=harvester_cloud_credential['id']
+            cloud_credential_id=harvester_cloud_credential['id'],
+            quantity=rke2_cluster['machine_count']
         )
         assert 201 == code, (
             f"Failed to create RKE2 MgmtCluster {unique_name} with error: {code}, {data}"
@@ -611,6 +622,7 @@ class TestRKE2:
 @pytest.mark.p0
 @pytest.mark.rancher
 @pytest.mark.rke1
+@pytest.mark.usefixtures("rke1_cluster")
 class TestRKE1:
     @pytest.mark.dependency(depends=["import_harvester"], name="create_rke1")
     def test_create_rke1(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
@@ -671,7 +683,8 @@ class TestRKE1:
         code, data = rancher_api_client.node_pools.create(
             cluster_id=rke1_cluster['id'],
             node_template_id=node_template_id,
-            hostname_prefix=f"{rke1_cluster['name']}-"
+            hostname_prefix=f"{rke1_cluster['name']}-",
+            quantity=rke1_cluster['machine_count']
         )
         assert 201 == code, (
             f"Failed to create NodePools for cluster {rke1_cluster['name']}\n"
@@ -748,11 +761,17 @@ class TestRKE1:
     @pytest.mark.dependency(depends=["create_rke1"], name="cloud_provider_chart")
     def test_cloud_provider_chart(self, rancher_api_client, rke1_cluster, polling_for):
         chart, deployment = "harvester-cloud-provider", "harvester-cloud-provider"
-        code, data = rancher_api_client.charts.create(rke1_cluster['id'], "kube-system", chart)
-        assert 201 == code, (
-            f"Failed to install chart {chart}.\n"
-            f"API Status({code}): {data}"
+        polling_for(
+            f"chart {chart} to be create",
+            lambda code, data:
+                201 == code,
+            rancher_api_client.charts.create,
+                rke1_cluster['id'], "kube-system", chart,
+            timeout=60
         )
+        # Polling on creation for possible 500 error in Rancher Apps
+        # * https://github.com/rancher/rancher/issues/37610
+        # * https://github.com/rancher/rancher/issues/43036
 
         polling_for(
             f"chart {chart} to be ready",
@@ -834,11 +853,17 @@ class TestRKE1:
     @pytest.mark.dependency(depends=["create_rke1"], name="csi_driver_chart")
     def test_csi_driver_chart(self, rancher_api_client, rke1_cluster, polling_for):
         chart, deployment = "harvester-csi-driver", "harvester-csi-driver-controllers"
-        code, data = rancher_api_client.charts.create(rke1_cluster['id'], "kube-system", chart)
-        assert 201 == code, (
-            f"Failed to install chart {chart}.\n"
-            f"API Status({code}): {data}"
+        polling_for(
+            f"chart {chart} to be create",
+            lambda code, data:
+                201 == code,
+            rancher_api_client.charts.create,
+                rke1_cluster['id'], "kube-system", chart,
+            timeout=60
         )
+        # Polling on creation for possible 500 error in Rancher Apps
+        # * https://github.com/rancher/rancher/issues/37610
+        # * https://github.com/rancher/rancher/issues/43036
 
         polling_for(
             f"chart {chart} to be ready",

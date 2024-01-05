@@ -105,7 +105,6 @@ For example, to overwrite the `endpoint` option, we can use the `--endpoint` par
 - `do-not-cleanup`
 - `harvester_cluster_nodes`
 - `backup-scripts-location`
-- `rancher-version`
 
 ### Minimal Config Options <a name="minimal_config" />
 - `endpoint` for Harvester API endpoint
