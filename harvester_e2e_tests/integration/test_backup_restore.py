@@ -360,7 +360,7 @@ class TestBackupRestore:
         yaml_header = {'Content-Type': 'application/yaml'}
         customized_annotations = {'test.harvesterhci.io': 'for-test-update'}
         data = yaml.safe_load(resp.text)
-        data['metadata']['annotations'].update(customized_annotations)
+        data['metadata'].setdefault('annotations', {}).update(customized_annotations)
         yaml_data = yaml.safe_dump(data)
         code, data = api_client.backups.update(backup_name, yaml_data,
                                                as_json=False, headers=yaml_header)

@@ -214,22 +214,6 @@ You can check pytest's [documentation](https://docs.pytest.org/en/latest/usage.h
 
 
 ## Contribute <a name="contribute" />
-As we are restructuring e2e tests, please do **NOT** use following legacy codes:
-- `utils.py`
-- `scenarios/*`
-- `fixtures/api_endpoints.py`
-- `fixtures/api_version.py`
-- `fixtures/backuptarget.py`
-- `fixtures/image.py`
-- `fixtures/keypair.py`
-- `fixtures/network.py`
-- `fixtures/session.py`
-- `fixtures/support_bundle.py`
-- `fixtures/user.py`
-- `fixtures/vm.py`
-- `fixtures/vm_template.py`
-- `fixtures/volume.py`
-
 
 ### Test Skeletons
 A backend test skeleton looks like this:

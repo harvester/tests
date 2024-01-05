@@ -82,12 +82,6 @@ def pytest_addoption(parser):
         help='private key to access Harvester node'
     )
     parser.addoption(
-        '--do-not-cleanup',
-        action='store_true',
-        default=config_data['do-not-cleanup'],
-        help='Do not cleanup the test artifacts'
-    )
-    parser.addoption(
         '--vlan-id',
         action='store',
         type=int,
@@ -123,12 +117,6 @@ def pytest_addoption(parser):
               'Harvester node to facilitate the host-specific tests')
     )
     parser.addoption(
-        '--win-image-url',
-        action='store',
-        default=config_data['win-image-url'],
-        help=('Windows image URL ')
-    )
-    parser.addoption(
         '--opensuse-image-url',
         action='store',
         default=config_data.get('opensuse-image-url'),
@@ -139,12 +127,6 @@ def pytest_addoption(parser):
         action='store',
         default=config_data['terraform-scripts-location'],
         help=('External scripts to create resources using terraform')
-    )
-    parser.addoption(
-        '--backup-scripts-location',
-        action='store',
-        default=config_data['backup-scripts-location'],
-        help=('scripts to create files inside a VM')
     )
     parser.addoption(
         '--image-cache-url',
@@ -201,12 +183,6 @@ def pytest_addoption(parser):
         help='Rancher admin user password'
     )
     parser.addoption(
-        '--kubernetes-version',
-        action='store',
-        default=config_data.get('kubernetes-version'),
-        help='Kubernetes version to use for Rancher integration tests'
-    )
-    parser.addoption(
         '--RKE2-version',
         action='store',
         default=config_data.get('RKE2-version'),
@@ -217,16 +193,6 @@ def pytest_addoption(parser):
         action='store',
         default=config_data.get('RKE1-version'),
         help='RKE1 Kubernetes version to use for Rancher integration tests'
-    )
-    parser.addoption(
-        '--test-environment',
-        action='store',
-        default='local',
-        help=('QE test environment (e.g. chiefs, raiders, etc), for '
-              'distinguishing the test artifacts in the case where an '
-              'dependency (e.g. Rancher) is shared amongst the '
-              'test environments. If you are running local Vagrant, you '
-              'should name the environment to your username (e.g. gyee)')
     )
     parser.addoption(
         '--rancher-cluster-wait-timeout',
@@ -283,59 +249,11 @@ def pytest_addoption(parser):
         default=config_data.get('terraform-provider-harvester'),
         help=('Version of Terraform Harvester Provider')
     )
-    # TODO(gyee): may need to add SSL options later
 
 
 def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
-        ('public_network', ('mark test to run only if public networking is available')),
-        ('multi_node_scheduling', (
-            'mark test to run only if we have a multi-node cluster'
-            ' where some hosts have more resources then others in order to test VM'
-            ' scheduling behavior')),
-        ('host_management', (
-            'mark test to run only if we have '
-            'host management (power_on.sh, power_off.sh, reboot.sh) '
-            'scripts provided. These tests are designed to test '
-            'scheduling resiliency and disaster recovery scenarios. ')),
-        ('backupnfs', (
-            'mark test to run only the backup and restore'
-            'tests for NFS backup target')),
-        ('backups3', (
-            'mark test to run only the backup and restore'
-            'tests for S3 backup target')),
-        ('imageupload', ('marker to run imageupload test')),
-        ('singlevmtest', ('marker to run create single vm test')),
-        ('multivmtest', ('marker to run create multiple vms test')),
-        ('windows_vm', (
-            'marker to run only create vm test '
-            'using windows images')),
-        ('usbvmtest', ('marker to run only create vm test with usb')),
-        ('nouserdata', ('marker to run only create vm test with nouserdata')),
-        ('images_p1', ('mark test to run only to execute the P1 test for images')),
-        ('images_p2', ('mark test to run only to execute the P2 test for images')),
-        ('terraform_provider_p1', (
-            'mark test to run only to execute the P1 test for terraform provider')),
-        ('imageupload', ('mark test to run upload image')),
-        ('virtual_machines_p1', ('marker to run only P1 Virtual Machine test')),
-        ('virtual_machines_p2', ('marker to run only P2 Virtual Machine test')),
-        ('network_p1', ('marker to run only P1 Network test ')),
-        ('network_p2', ('marker to run only P2 Network test ')),
-        ('volumes_p1', ('mark test to run only P1 test for Volume')),
-        ('volumes_p2', ('mark test to run only P2 test for Volume')),
-        ('authentication_p1', ('mark test to run only P1 test for authentication')),
-        ('backup_and_restore_p1', (
-            'mark test to run only to execute the P1 test for Backup and Recovery')),
-        ('backup_and_restore_p2', (
-            'mark test to run only to execute the P2 test for Backup and Recovery')),
-        ('terraform_provider_p1', ('mark test to run only P1 test for terraform provider')),
-        ('rancher_integration_with_external_rancher', (
-            'mark Rancher integration tests with an external Rancher')),
-        ('rke1', ('marker to run rke1 integration tests ')),
-        ('rke2', ('marker to run rke2 integration tests ')),
-
-        # deprecated markers above would be removed.
         ("skip_version_before", (
             "mark test skipped when cluster version < provided version")),
         ("skip_version_after", (
@@ -358,7 +276,9 @@ def pytest_configure(config):
         ("any_nodes", ("{_r} tests which could be ran on clushter with any nodes")),
         ("single_node", ("{_r} tests which could only be ran on cluster with single node")),
         ("three_nodes", ("{_r} tests which could only be ran on cluster with three nodes")),
-        ('rancher', ("{_r} reancher integration tests")),
+        ('rancher', ("{_r} rancher integration tests")),
+        ('rke1', ("{_r} rancher RKE1 tests")),
+        ('rke2', ("{_r} rancher RKE2 tests")),
         ('terraform', ("{_r} terraform tests")),
         ('virtualmachines', ('{_r} virtualmachines tests')),
         ('backup_target', ('{_r} backup-target tests')),
@@ -379,13 +299,6 @@ def pytest_collection_modifyitems(session, config, items):
         for item in items:
             if 'public_network' in item.keywords:
                 item.add_marker(skip_public_network)
-
-    if config.getoption('--win-image-url') == '':
-        skip_windows_vm = pytest.mark.skip(reason=(
-            'Windows image not specified'))
-        for item in items:
-            if 'windows_vm' in item.keywords:
-                item.add_marker(skip_windows_vm)
 
     if (config.getoption('--nfs-endpoint') == '' and
             config.getoption('--accessKeyId') == ''):

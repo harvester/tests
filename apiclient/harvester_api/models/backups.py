@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 
-class RestoreSpec:
+class _BaseBackup:
     def __init__(self, new_vm, vm_name=None, namespace=None, delete_volumes=None):
         self.new_vm = new_vm
         self.vm_name = vm_name
@@ -39,6 +39,8 @@ class RestoreSpec:
 
         return deepcopy(data)
 
+
+class RestoreSpec(_BaseBackup):
     @classmethod
     def for_new(cls, vm_name, namespace=None):
         return cls(True, vm_name, namespace)
@@ -48,11 +50,11 @@ class RestoreSpec:
         return cls(False, delete_volumes=delete_volumes)
 
 
-class SnapshotRestoreSpec(RestoreSpec):
+class SnapshotRestoreSpec(_BaseBackup):
     @classmethod
     def for_new(cls, vm_name):
-        return super().for_new(vm_name, None)
+        return cls(True, vm_name)
 
     @classmethod
     def for_existing(cls):
-        return super().for_existing(False)
+        return cls(False, delete_volumes=False)

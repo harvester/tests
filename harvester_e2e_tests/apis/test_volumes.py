@@ -21,10 +21,6 @@ from datetime import datetime, timedelta
 import pytest
 
 pytest_plugins = [
-    'harvester_e2e_tests.fixtures.api_endpoints',
-    'harvester_e2e_tests.fixtures.volume',
-    'harvester_e2e_tests.fixtures.session',
-    'harvester_e2e_tests.fixtures.image',
     'harvester_e2e_tests.fixtures.api_client',
     'harvester_e2e_tests.fixtures.images',
 ]

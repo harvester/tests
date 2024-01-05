@@ -81,7 +81,7 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
 
 
 @pytest.fixture(scope='module')
-def cluster_network(request, vlan_nic, api_client, unique_name):
+def cluster_network(vlan_nic, api_client, unique_name):
     code, data = api_client.clusternetworks.get_config()
     assert 200 == code, (code, data)
 

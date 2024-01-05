@@ -1,42 +1,29 @@
-# Harvester API endpoint
+# Harvester Cluster
 endpoint: 'https://localhost:30443'
-
-# Harvester username
 username: 'admin'
-
-# Harvester password
 password: 'password1234'
-
-# To access Harvester node, fill in one of following is enough.
+# Be used to access Harvester node, fill in one of following is enough.
 host-password: ''
 host-private-key: ''
 
-# Do not cleanup the test artifacts
-do-not-cleanup: False
-
-# harvester_cluster_nodes
-harvester_cluster_nodes: 3
-
 # VLAN ID, will invoke the tests depended on external networking if not set to -1.
 vlan-id: 1
-
 # Physical NIC for VLAN. Default is "harvester-mgmt"
 vlan-nic: 'harvester-mgmt'
 
 # Wait time for polling operations
 wait-timeout: 600
-
 # Sleep time for polling operations
 sleep-timeout: 3
 
+# script location to manipulate node power cycle
 node-scripts-location: 'scripts/vagrant'
 
-# URL to download the Windows image
-win-image-url: ''
 opensuse-image-url: https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2
 # URL to download all images
 image-cache-url: ''
 
+# script location for terraform related test cases
 terraform-scripts-location: 'terraform_test_artifacts'
 
 # Backup Target S3
@@ -50,17 +37,13 @@ bucketName: ''
 nfs-endpoint: ''
 nfs-mount-dir: 'nfsshare'
 
-backup-scripts-location: 'backup_restore_test_artifacts'
-
-# External Rancher endpoint
-#rancher-endpoint: 'https://127.0.0.1'
-#rancher-admin-password: 'rancher_password'
-
-# Kubernetes version to use for Rancher integration tests
-kubernetes-version: 'v1.24.11+rke2r1'
+# Rancher Cluster
+# rancher-endpoint: 'https://127.0.0.1'
+# External Rancher admin user password
+# rancher-admin-password: 'rancher_password'
+# Kubernetes version for RKE
 RKE1-version: 'v1.24.11-rancher2-1'
 RKE2-version: 'v1.24.11+rke2r1'
-
 # Wait time for polling Rancher cluster status.
 rancher-cluster-wait-timeout: 7200
 
