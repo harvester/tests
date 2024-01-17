@@ -220,6 +220,13 @@ def host_shell(request):
                 cli.set_missing_host_key_policy(MissingHostKeyPolicy())
                 kws = dict(username=self.username, password=self.password, pkey=self.pkey)
                 kws.update(kwargs)
+
+                # in case we're using a password to log into the host, this
+                # prevents paramiko from getting confused by ssh keys in the ssh
+                # agent:
+                if self.password and not self.pkey:
+                    kws.update(dict(allow_agent=False, look_for_keys=False))
+
                 cli.connect(ipaddr, port, **kws)
                 self._client = cli
 
