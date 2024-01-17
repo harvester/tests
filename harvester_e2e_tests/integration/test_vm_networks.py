@@ -12,24 +12,9 @@ import pytest
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
     "harvester_e2e_tests.fixtures.images",
+    "harvester_e2e_tests.fixtures.networks",
     "harvester_e2e_tests.fixtures.virtualmachines"
 ]
-
-
-@pytest.fixture(scope='session')
-def vlan_id(request):
-    vlan_id = request.config.getoption('--vlan-id')
-    assert 4095 > vlan_id > 0, (f"VLAN ID should in range 1-4094, not {vlan_id}")
-
-    return vlan_id
-
-
-@pytest.fixture(scope="session")
-def vlan_nic(request):
-    vlan_nic = request.config.getoption('--vlan-nic')
-    assert vlan_nic, f"VLAN NIC {vlan_nic} not configured correctly."
-
-    return vlan_nic
 
 
 @pytest.fixture(scope="session")

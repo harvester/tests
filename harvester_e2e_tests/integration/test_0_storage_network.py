@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 import pytest
 
 pytest_plugins = [
-    "harvester_e2e_tests.fixtures.api_client"
+    "harvester_e2e_tests.fixtures.api_client",
+    "harvester_e2e_tests.fixtures.networks"
 ]
 
 
@@ -71,14 +72,6 @@ def cluster_network(request, api_client, unique_name):
 
     code, data = api_client.clusternetworks.delete(cnet)
     assert 200 == code, (code, data)
-
-
-@pytest.fixture(scope='module')
-def vlan_id(request):
-    vlan_id = request.config.getoption('--vlan-id')
-    assert 4095 > vlan_id > 0, (f"VLAN ID should in range 1-4094, not {vlan_id}")
-
-    return vlan_id
 
 
 @pytest.mark.p0
