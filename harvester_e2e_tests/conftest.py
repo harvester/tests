@@ -249,6 +249,12 @@ def pytest_addoption(parser):
         default=config_data.get('terraform-provider-harvester'),
         help=('Version of Terraform Harvester Provider')
     )
+    parser.addoption(
+        '--terraform-provider-rancher',
+        action='store',
+        default=config_data.get('terraform-provider-rancher'),
+        help=('Version of Terraform Rancher Provider')
+    )
 
 
 def pytest_configure(config):

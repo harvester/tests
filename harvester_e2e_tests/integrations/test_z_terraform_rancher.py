@@ -2,17 +2,12 @@ from datetime import datetime, timedelta
 
 import pytest
 
-# TODO: Drop after debug #
-##########################
-import pdb
-from pprint import pprint
-
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
     'harvester_e2e_tests.fixtures.rancher_api_client',
     "harvester_e2e_tests.fixtures.images",
-    "harvester_e2e_tests.fixtures.terraform"
+    "harvester_e2e_tests.fixtures.terraform_rancher"
 ]
 
 
@@ -65,55 +60,84 @@ def vlan_network(request, api_client):
         )
 
     yield {
-        "id": data['metadata']['name']
+        "id": f"default/{data['metadata']['name']}"
     }
 
     api_client.networks.delete(network_name)
 
 
 @pytest.fixture(scope='module')
-def harvester_cluster(api_client, rancher_api_client, unique_name, wait_timeout):
+def harvester(api_client, rancher_api_client, unique_name, wait_timeout):
     """ Rancher creates Harvester entry (Import Existing)
     """
-    rc, data = rancher_api_client.mgmt_clusters.create_harvester(unique_name)
+    name = f"hvst-{unique_name}"
+
+    rc, data = rancher_api_client.mgmt_clusters.create_harvester(name)
     assert 201 == rc, (rc, data)
 
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        rc, data = rancher_api_client.mgmt_clusters.get(unique_name)
+        rc, data = rancher_api_client.mgmt_clusters.get(name)
         if data.get('status', {}).get('clusterName'):
             break
     else:
         raise AssertionError(
-            f"Fail to get MgmtCluster with clusterName {unique_name}\n"
+            f"Fail to get MgmtCluster with clusterName {name}\n"
             f"rc: {rc}, data:\n{data}"
         )
 
     yield {
-        "name": unique_name,
-        "id": data['status']['clusterName']
+        "name": name,
+        "id": data['status']['clusterName'],
+        "kubeconfig": api_client.generate_kubeconfig()
     }
 
-    rancher_api_client.mgmt_clusters.delete(unique_name)
+    rancher_api_client.mgmt_clusters.delete(name)
     updates = dict(value="")
     api_client.settings.update("cluster-registration-url", updates)
 
 
-# Tests
+@pytest.fixture(scope="module")
+def rancher(rancher_api_client):
+    access_key, secret_key = rancher_api_client.token.split(":")
+    yield {
+        "endpoint": rancher_api_client.endpoint,
+        "token": rancher_api_client.token,
+        "access_key": access_key,
+        "secret_key": secret_key
+    }
+
+
+@pytest.fixture(scope='module')
+def rke2_cluster(unique_name, k8s_version):
+    return {
+        "name": f"rke2-{unique_name}",
+        "id": "",
+        "k8s_version": k8s_version
+    }
+
+
+@pytest.fixture(scope="module")
+def cloud_credential(unique_name):
+    return {
+        "name": f"cc-{unique_name}"
+    }
+
+
 @pytest.mark.p0
 @pytest.mark.terraform
 @pytest.mark.rancher
 @pytest.mark.dependency(name="import_harvester")
-def test_import_harvester(api_client, rancher_api_client, harvester_cluster, wait_timeout):
+def test_import_harvester(api_client, rancher_api_client, harvester, wait_timeout):
     # Get cluster registration URL in Rancher's Virtualization Management
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        rc, data = rancher_api_client.cluster_registration_tokens.get(harvester_cluster['id'])
+        rc, data = rancher_api_client.cluster_registration_tokens.get(harvester['id'])
         if 200 == rc and data.get('manifestUrl'):
             break
     else:
         raise AssertionError(
-            f"Fail to registration URL for the imported harvester {harvester_cluster['name']}\n"
+            f"Fail to registration URL for the imported harvester {harvester['name']}\n"
             f"rc: {rc}, data:\n{data}"
         )
 
@@ -128,7 +152,7 @@ def test_import_harvester(api_client, rancher_api_client, harvester_cluster, wai
     # Check Cluster becomes `active` in Rancher's Virtualization Management
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        rc, data = rancher_api_client.mgmt_clusters.get(harvester_cluster['name'])
+        rc, data = rancher_api_client.mgmt_clusters.get(harvester['name'])
         cluster_state = data['metadata']['state']
         if "active" == cluster_state['name'] and "Ready" in cluster_state['message']:
             break
@@ -142,9 +166,94 @@ def test_import_harvester(api_client, rancher_api_client, harvester_cluster, wai
 @pytest.mark.p0
 @pytest.mark.terraform
 @pytest.mark.rancher
-class TestRKE2:
-    # @pytest.mark.dependency(depends=["import_harvester"], name="create_rke2")
-    def test_create_rke2(self, ubuntu_image, vlan_network):
-        
-        assert True
+@pytest.mark.dependency(name="create_cloud_credential", depends=["import_harvester"])
+def test_create_cloud_credential(rancher_api_client, tf_resource, tf_rancher,
+                                 harvester, cloud_credential):
+    spec = tf_resource.cloud_credential(cloud_credential["name"], harvester["name"])
+    tf_rancher.save_as(spec.ctx, "cloud_credential")
 
+    out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
+    assert not err and 0 == code
+
+    code, data = rancher_api_client.cloud_credentials.get(spec.name)
+    assert 200 == code, (
+        f"Failed to get cloud credential {spec.name}: {code}, {data}"
+    )
+
+
+@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name="create_machine_config", depends=["create_cloud_credential"])
+def test_create_machine_config(tf_resource, tf_rancher, rke2_cluster, ubuntu_image, vlan_network):
+    spec = tf_resource.machine_config(rke2_cluster, ubuntu_image, vlan_network)
+    tf_rancher.save_as(spec.ctx, "machine_config")
+
+    out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
+    assert not err and 0 == code
+
+
+@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name="create_rke2_cluster", depends=["create_machine_config"])
+def test_create_rke2_cluster(tf_resource, tf_rancher, rke2_cluster, rancher_api_client,
+                             harvester, cloud_credential):
+    spec = tf_resource.cluster_config(rke2_cluster, harvester, cloud_credential)
+    tf_rancher.save_as(spec.ctx, "rke2_cluster")
+
+    out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
+    assert not err and 0 == code
+
+    rc, data = rancher_api_client.mgmt_clusters.get(rke2_cluster['name'])
+    cluster_state = data.get("metadata", {}).get("state", {})
+    assert "active" == cluster_state['name'] and \
+           "Ready" in cluster_state['message']
+
+    # check deployments
+    rke2_cluster['id'] = data["status"]["clusterName"]
+    for deployment in ["harvester-cloud-provider", "harvester-csi-driver-controllers"]:
+        rc, data = rancher_api_client.cluster_deployments.get(
+            rke2_cluster['id'], "kube-system", deployment
+        )
+        cluster_state = data.get("metadata", {}).get("state", {})
+        assert 200 == rc and \
+               "active" == cluster_state["name"]
+
+
+@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name="delete_rke2_cluster", depends=["create_rke2_cluster"])
+def test_delete_rke2_cluster(tf_resource, tf_rancher, rke2_cluster, rancher_api_client,
+                             harvester, cloud_credential):
+    spec = tf_resource.cluster_config(rke2_cluster, harvester, cloud_credential)
+
+    out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == code
+
+    rc, data = rancher_api_client.mgmt_clusters.get(rke2_cluster['name'])
+    assert 404 == rc
+
+
+@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name="delete_machine_config", depends=["create_machine_config"])
+def test_delete_machine_config(tf_resource, tf_rancher, rke2_cluster, ubuntu_image, vlan_network):
+    spec = tf_resource.machine_config(rke2_cluster, ubuntu_image, vlan_network)
+
+    out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == code
+
+
+@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name="delete_cloud_credential", depends=["create_cloud_credential"])
+def test_delete_cloud_credential(rancher_api_client, tf_resource, tf_rancher,
+                                 harvester, cloud_credential):
+    spec = tf_resource.cloud_credential(cloud_credential["name"], harvester["name"])
+
+    out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == code

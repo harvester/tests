@@ -25,6 +25,7 @@ image-cache-url: ''
 
 # script location for terraform related test cases
 terraform-scripts-location: 'terraform_test_artifacts'
+terraform-provider-rancher: '3.1.1'
 
 # Backup Target S3
 s3-endpoint: ''
@@ -38,12 +39,11 @@ nfs-endpoint: ''
 nfs-mount-dir: 'nfsshare'
 
 # Rancher Cluster
-# rancher-endpoint: 'https://127.0.0.1'
-# External Rancher admin user password
-# rancher-admin-password: 'rancher_password'
+rancher-endpoint: 'https://127.0.0.1'
+rancher-admin-password: 'rancher_password'
 # Kubernetes version for RKE
-RKE1-version: 'v1.24.11-rancher2-1'
-RKE2-version: 'v1.24.11+rke2r1'
+RKE1-version: 'v1.26.11-rancher2-1'
+RKE2-version: 'v1.26.11+rke2r1'
 # Wait time for polling Rancher cluster status.
 rancher-cluster-wait-timeout: 7200
 

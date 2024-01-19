@@ -325,7 +325,12 @@ class CloudCredentialManager(BaseManager):
     def get(self, name="", *, raw=False):
         if name == "":
             return self._get(self.PATH_fmt.format(uid=""), raw=raw)
-        return self._get(self.PATH_fmt.format(uid=f"/{name}"), raw=raw)
+
+        code, data = self._get(self.PATH_fmt.format(uid=f"/{name}"), raw=raw)
+        if 404 == code:
+            code, data = self._get(self.PATH_fmt.format(uid=f"?name={name}"), raw=raw)
+
+        return code, data
 
     def delete(self, name, *, raw=False):
         return self._delete(self.PATH_fmt.format(uid=f"/{name}"), raw=raw)

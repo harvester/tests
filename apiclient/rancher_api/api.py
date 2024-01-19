@@ -86,8 +86,8 @@ class RancherAPI:
         except AssertionError:
             pass  # TODO: Log authenticate error
         else:
-            token = "Bearer %s" % r.json()['token']
-            self.session.headers.update(Authorization=token)
+            self.token = r.json()['token']
+            self.session.headers.update(Authorization=f"Bearer {self.token}")
             self._version = None
         return r.json()
 
