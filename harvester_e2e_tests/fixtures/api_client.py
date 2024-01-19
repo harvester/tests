@@ -214,7 +214,8 @@ def host_shell(request):
                 kws.update(kwargs)
                 cli.connect(ipaddr, port, **kws)
 
-        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
+        def login(self, ipaddr, port=22, jumphost=False, allow_agent=False,
+                  look_for_keys=False, **kwargs):
             if not self.client:
                 cli = SSHClient()
                 cli.set_missing_host_key_policy(MissingHostKeyPolicy())
@@ -225,7 +226,8 @@ def host_shell(request):
                 # prevents paramiko from getting confused by ssh keys in the ssh
                 # agent:
                 if self.password and not self.pkey:
-                    kws.update(dict(allow_agent=False, look_for_keys=False))
+                    kws.update(dict(allow_agent=allow_agent,
+                                    look_for_keys=look_for_keys))
 
                 cli.connect(ipaddr, port, **kws)
                 self._client = cli
