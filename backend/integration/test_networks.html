@@ -40,6 +40,7 @@ import paramiko
 
 pytest_plugins = [
     &#34;harvester_e2e_tests.fixtures.api_client&#34;,
+    &#34;harvester_e2e_tests.fixtures.networks&#34;,
     &#34;harvester_e2e_tests.fixtures.virtualmachines&#34;
 ]
 
@@ -77,22 +78,6 @@ def client():
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     yield client
     client.close()
-
-
-@pytest.fixture(scope=&#39;session&#39;)
-def vlan_id(request):
-    vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
-    assert 4095 &gt; vlan_id &gt; 0, f&#34;VLAN ID should in range 1-4094, not {vlan_id}&#34;
-
-    return vlan_id
-
-
-@pytest.fixture(scope=&#34;session&#34;)
-def vlan_nic(request):
-    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
-    assert vlan_nic, f&#34;VLAN NIC {vlan_nic} not configured correctly.&#34;
-
-    return vlan_nic
 
 
 @pytest.fixture(scope=&#39;module&#39;)
@@ -1234,40 +1219,6 @@ def cluster_network(vlan_nic, api_client, unique_name):
             f&#34;Failed to delete VM {unique_name}, exceed given timeout\n&#34;
             f&#34;Still got {code} with {data}&#34;
         )</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.integration.test_networks.vlan_id"><code class="name flex">
-<span>def <span class="ident">vlan_id</span></span>(<span>request)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.fixture(scope=&#39;session&#39;)
-def vlan_id(request):
-    vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
-    assert 4095 &gt; vlan_id &gt; 0, f&#34;VLAN ID should in range 1-4094, not {vlan_id}&#34;
-
-    return vlan_id</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.integration.test_networks.vlan_nic"><code class="name flex">
-<span>def <span class="ident">vlan_nic</span></span>(<span>request)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def vlan_nic(request):
-    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
-    assert vlan_nic, f&#34;VLAN NIC {vlan_nic} not configured correctly.&#34;
-
-    return vlan_nic</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integration.test_networks.vm_network"><code class="name flex">
@@ -3024,8 +2975,6 @@ def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
 <li><code><a title="harvester_e2e_tests.integration.test_networks.cluster_network" href="#harvester_e2e_tests.integration.test_networks.cluster_network">cluster_network</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_networks.create_image_url" href="#harvester_e2e_tests.integration.test_networks.create_image_url">create_image_url</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_networks.delete_vm" href="#harvester_e2e_tests.integration.test_networks.delete_vm">delete_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_networks.vlan_id" href="#harvester_e2e_tests.integration.test_networks.vlan_id">vlan_id</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_networks.vlan_nic" href="#harvester_e2e_tests.integration.test_networks.vlan_nic">vlan_nic</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_networks.vm_network" href="#harvester_e2e_tests.integration.test_networks.vm_network">vm_network</a></code></li>
 </ul>
 </li>

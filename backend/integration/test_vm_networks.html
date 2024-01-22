@@ -40,24 +40,9 @@ import pytest
 pytest_plugins = [
     &#34;harvester_e2e_tests.fixtures.api_client&#34;,
     &#34;harvester_e2e_tests.fixtures.images&#34;,
+    &#34;harvester_e2e_tests.fixtures.networks&#34;,
     &#34;harvester_e2e_tests.fixtures.virtualmachines&#34;
 ]
-
-
-@pytest.fixture(scope=&#39;session&#39;)
-def vlan_id(request):
-    vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
-    assert 4095 &gt; vlan_id &gt; 0, (f&#34;VLAN ID should in range 1-4094, not {vlan_id}&#34;)
-
-    return vlan_id
-
-
-@pytest.fixture(scope=&#34;session&#34;)
-def vlan_nic(request):
-    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
-    assert vlan_nic, f&#34;VLAN NIC {vlan_nic} not configured correctly.&#34;
-
-    return vlan_nic
 
 
 @pytest.fixture(scope=&#34;session&#34;)
@@ -609,40 +594,6 @@ def two_mirror_vms(api_client, ssh_keypair, unique_name, vm_checker, image, vm_n
         vm_checker.wait_deleted(vm_name, params=params)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.vlan_id"><code class="name flex">
-<span>def <span class="ident">vlan_id</span></span>(<span>request)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.fixture(scope=&#39;session&#39;)
-def vlan_id(request):
-    vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
-    assert 4095 &gt; vlan_id &gt; 0, (f&#34;VLAN ID should in range 1-4094, not {vlan_id}&#34;)
-
-    return vlan_id</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.vlan_nic"><code class="name flex">
-<span>def <span class="ident">vlan_nic</span></span>(<span>request)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def vlan_nic(request):
-    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
-    assert vlan_nic, f&#34;VLAN NIC {vlan_nic} not configured correctly.&#34;
-
-    return vlan_nic</code></pre>
-</details>
-</dd>
 <dt id="harvester_e2e_tests.integration.test_vm_networks.vm_network"><code class="name flex">
 <span>def <span class="ident">vm_network</span></span>(<span>api_client, unique_name, wait_timeout, cluster_network, vlan_id)</span>
 </code></dt>
@@ -1051,8 +1002,6 @@ def test_ssh_connection(
 <li><code><a title="harvester_e2e_tests.integration.test_vm_networks.image" href="#harvester_e2e_tests.integration.test_vm_networks.image">image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_vm_networks.minimal_vm" href="#harvester_e2e_tests.integration.test_vm_networks.minimal_vm">minimal_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_vm_networks.two_mirror_vms" href="#harvester_e2e_tests.integration.test_vm_networks.two_mirror_vms">two_mirror_vms</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.vlan_id" href="#harvester_e2e_tests.integration.test_vm_networks.vlan_id">vlan_id</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.vlan_nic" href="#harvester_e2e_tests.integration.test_vm_networks.vlan_nic">vlan_nic</a></code></li>
 <li><code><a title="harvester_e2e_tests.integration.test_vm_networks.vm_network" href="#harvester_e2e_tests.integration.test_vm_networks.vm_network">vm_network</a></code></li>
 </ul>
 </li>
