@@ -95,9 +95,7 @@ class TemplateManager(BaseManager):
                                         "type": ""
                                     },
                                     "resources": {
-                                        "requests": {
-                                            "memory": mem
-                                        }
+                                        "limits": dict(cpu=cpu, memory=mem)
                                     }
                                 },
                                 "evictionStrategy": "LiveMigrate",
