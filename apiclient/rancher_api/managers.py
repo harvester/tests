@@ -276,8 +276,8 @@ class MgmtClusterManager(BaseManager):
             raw=raw
         )
 
-    def delete(self, name, *, raw=False):
-        return self._delete(self.PATH_fmt.format(uid=f"/{name}", ns=f"/{FLEET_DEFAULT_NAMESPACE}"))
+    def delete(self, name, namespace=FLEET_DEFAULT_NAMESPACE, *, raw=False):
+        return self._delete(self.PATH_fmt.format(uid=f"/{name}", ns=f"/{namespace}"))
 
 
 class ClusterRegistrationTokenManager(BaseManager):

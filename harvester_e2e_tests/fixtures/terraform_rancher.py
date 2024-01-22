@@ -177,7 +177,21 @@ def tf_executor(tf_script_dir):
 def tf_rancher(api_client, tf_script_dir, tf_provider_version, tf_executor, harvester, rancher):
     tf_rancher = TerraformRancher(tf_executor,
                                   tf_script_dir / datetime.now().strftime("%Hh%Mm_%m-%d"))
-    out, err, exc_code = tf_rancher.initial_provider(tf_provider_version, harvester, rancher)
+
+    # kubeconfig for rancher provider
+    # Ref. https://registry.terraform.io/providers/rancher/rancher2/3.1.1/docs/resources/cluster_v2
+    url = f'{rancher["endpoint"]}/k8s/clusters/{harvester["id"]}/v1/harvester/kubeconfig'
+    auth = (rancher["access_key"], rancher["secret_key"])
+    data = {
+        "clusterRoleName": "harvesterhci.io:cloudprovider",
+        "namespace": "default",
+        "serviceAccountName": harvester["name"]
+    }
+    res = requests.post(url, auth=auth, json=data, verify=False)
+    kubeconfig = res.text.replace("\\n", "\n").strip('"')
+
+    out, err, exc_code = \
+        tf_rancher.initial_provider(kubeconfig, tf_provider_version, harvester, rancher)
     assert not err and 0 == exc_code
     return tf_rancher
 
@@ -204,17 +218,7 @@ class TerraformRancher:
     def execute(self, cmd, raw=False, **kws):
         return self.exec_command(f"{self.executor} {cmd}", raw=raw, **kws)
 
-    def initial_provider(self, provider_version, harvester, rancher):
-        url = f'{rancher["endpoint"]}/k8s/clusters/{harvester["id"]}/v1/harvester/kubeconfig'
-        auth = (rancher["access_key"], rancher["secret_key"])
-        data = {
-            "clusterRoleName": "harvesterhci.io:cloudprovider",
-            "namespace": "default",
-            "serviceAccountName": harvester["name"]
-        }
-        res = requests.post(url, auth=auth, json=data, verify=False)
-        kubeconfig = res.text.replace("\\n", "\n").strip('"')
-
+    def initial_provider(self, kubeconfig, provider_version, harvester, rancher):
         kubefile = self.workdir / "kubeconfig"
         with open(kubefile, "w") as f:
             f.write(kubeconfig)
@@ -289,7 +293,7 @@ class BaseTerraformResource:
         out = rv.stdout.decode()
         out = re.sub(r'"resource"', "resource", out)   # resource should not quote
         out = re.sub(r"\"(.+?)\" =", r"\1 =", out)     # property should not quote
-        out = re.sub(r'"(data\.\S+?)"', r"\1", out)  # data should not quote
+        out = re.sub(r'"(data\.\S+?)"', r"\1", out)    # data should not quote
         out = re.sub(r"(.[^ ]+) = {", r"\1 {", out)    # block should not have `=`
         return out
 
@@ -316,32 +320,30 @@ class TerraformResource(BaseTerraformResource):
                                   harvester_credential_config=harvester_credential_config,
                                   convert=convert, **properties)
 
-    def machine_config(self, rke2_cluster, image, network):
+    def machine_config(self, rke_cluster_name, network_id, image_id, ssh_user):
         hcl_str = TF_MACHINE_CONFIG % {
-            "name": rke2_cluster["name"],
+            "name": rke_cluster_name,
             "harvester_config": TF_HARVESTER_CONFIG % {
-                "ssh_user": image["ssh_user"],
-                "disk_info": TF_DISK_INFO % {"image_name": image["id"]},
-                "network_info": TF_NETWORK_INFO % {"network_name": network["id"]},
+                "ssh_user": ssh_user,
+                "disk_info": TF_DISK_INFO % {"image_name": image_id},
+                "network_info": TF_NETWORK_INFO % {"network_name": network_id},
                 "user_data": TF_USER_DATA
             }
         }
+        return ResourceContext("rancher2_machine_config_v2", rke_cluster_name, hcl_str, "")
 
-        return ResourceContext("rancher2_machine_config_v2", rke2_cluster["name"], hcl_str, "")
-
-    def cluster_config(self, rke2_cluster, harvester, cloud_credential):
+    def cluster_config(self, rke_cluster_name, k8s_version, harvester_name, cloud_credential_name):
         machine_pools = TF_MACHINE_POOLS % {
-            "cloud_credential_name": cloud_credential["name"],
-            "machine_config_name": rke2_cluster["name"]
+            "cloud_credential_name": cloud_credential_name,
+            "machine_config_name": rke_cluster_name
         }
         rke_config = TF_RKE_CONFIG % {
             "machine_pools": machine_pools,
-            "harvester_name": harvester["name"]
+            "harvester_name": harvester_name
         }
         hcl_str = TF_CLUSTER_CONFIG % {
-            "name": rke2_cluster["name"],
-            "rke2_version": rke2_cluster["k8s_version"],
+            "name": rke_cluster_name,
+            "rke2_version": k8s_version,
             "rke_config": rke_config
         }
-
-        return ResourceContext("rancher2_cluster_v2", rke2_cluster["name"], hcl_str, "")
+        return ResourceContext("rancher2_cluster_v2", rke_cluster_name, hcl_str, "")
