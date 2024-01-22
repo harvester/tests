@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.integration.test_vm_snapshot API documentation</title>
+<title>harvester_e2e_tests.integrations.test_4_vm_snapshot API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.integration.test_vm_snapshot</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_4_vm_snapshot</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -612,7 +612,7 @@ class TestVMSnapshot:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.create_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.create_vm"><code class="name flex">
 <span>def <span class="ident">create_vm</span></span>(<span>name, api_client, ssh_keypair, image, timeout_secs)</span>
 </code></dt>
 <dd>
@@ -646,7 +646,7 @@ class TestVMSnapshot:
     return name, image[&#34;user&#34;]</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.delete_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.delete_vm"><code class="name flex">
 <span>def <span class="ident">delete_vm</span></span>(<span>name, api_client, timeout_secs)</span>
 </code></dt>
 <dd>
@@ -675,7 +675,7 @@ class TestVMSnapshot:
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.image"><code class="name flex">
 <span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -712,7 +712,7 @@ def image(api_client, image_opensuse, wait_timeout):
     code, data = api_client.images.delete(unique_image_id)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_name"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_name"><code class="name flex">
 <span>def <span class="ident">restored_from_snapshot_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -726,7 +726,7 @@ def restored_from_snapshot_name():
     return unique_name(&#34;vm-from-snapshot&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_name_2"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_name_2"><code class="name flex">
 <span>def <span class="ident">restored_from_snapshot_name_2</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -740,7 +740,7 @@ def restored_from_snapshot_name_2():
     return unique_name(&#34;vm-from-snapshot-2&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_vm"><code class="name flex">
 <span>def <span class="ident">restored_from_snapshot_vm</span></span>(<span>api_client, restored_from_snapshot_name, vm_snapshot_name, source_vm, host_shell, vm_shell, ssh_keypair, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -789,7 +789,7 @@ def restored_from_snapshot_vm(api_client, restored_from_snapshot_name,
     delete_vm(restored_from_snapshot_name, api_client, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.restored_vm_2"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_vm_2"><code class="name flex">
 <span>def <span class="ident">restored_vm_2</span></span>(<span>api_client, restored_from_snapshot_name_2, vm_snapshot_name, source_vm, host_shell, vm_shell, ssh_keypair, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -840,7 +840,7 @@ def restored_vm_2(api_client, restored_from_snapshot_name_2,
     delete_vm(restored_from_snapshot_name_2, api_client, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.source_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.source_vm"><code class="name flex">
 <span>def <span class="ident">source_vm</span></span>(<span>sourcevm_name, api_client, ssh_keypair, image, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -855,7 +855,7 @@ def source_vm(sourcevm_name, api_client, ssh_keypair, image, wait_timeout):
     delete_vm(sourcevm_name, api_client, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.sourcevm_name"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.sourcevm_name"><code class="name flex">
 <span>def <span class="ident">sourcevm_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -869,7 +869,7 @@ def sourcevm_name():
     return unique_name(&#34;source-vm&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.start_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.start_vm"><code class="name flex">
 <span>def <span class="ident">start_vm</span></span>(<span>name, api_client, timeout_secs)</span>
 </code></dt>
 <dd>
@@ -891,7 +891,7 @@ def sourcevm_name():
     raise AssertionError(f&#34;timed out trying to start {name}&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.stop_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.stop_vm"><code class="name flex">
 <span>def <span class="ident">stop_vm</span></span>(<span>name, api_client, timeout_secs)</span>
 </code></dt>
 <dd>
@@ -913,7 +913,7 @@ def sourcevm_name():
     raise AssertionError(f&#34;timed out trying to stop {name}&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.unique_name"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.unique_name"><code class="name flex">
 <span>def <span class="ident">unique_name</span></span>(<span>name)</span>
 </code></dt>
 <dd>
@@ -926,7 +926,7 @@ def sourcevm_name():
     return f&#34;{datetime.now().strftime(&#39;%m%S%f&#39;)}-{name}&#34;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.vm_shell_do"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_shell_do"><code class="name flex">
 <span>def <span class="ident">vm_shell_do</span></span>(<span>name, api_client, host_shell, vm_shell, user, ssh_keypair, action, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -976,7 +976,7 @@ def sourcevm_name():
                 action(sh)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.vm_snapshot_2_name"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_snapshot_2_name"><code class="name flex">
 <span>def <span class="ident">vm_snapshot_2_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -990,7 +990,7 @@ def vm_snapshot_2_name():
     return &#34;vm-snapshot-2&#34;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.vm_snapshot_name"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_snapshot_name"><code class="name flex">
 <span>def <span class="ident">vm_snapshot_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -1009,7 +1009,7 @@ def vm_snapshot_name():
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot"><code class="flex name class">
 <span>class <span class="ident">TestVMSnapshot</span></span>
 </code></dt>
 <dd>
@@ -1326,14 +1326,14 @@ class TestVMSnapshot:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_create_vm_snapshot_while_pvc_detached"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_create_vm_snapshot_while_pvc_detached"><code class="name flex">
 <span>def <span class="ident">test_create_vm_snapshot_while_pvc_detached</span></span>(<span>self, api_client, vm_snapshot_2_name, source_vm, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1381,7 +1381,7 @@ def test_create_vm_snapshot_while_pvc_detached(self, api_client,
     assert data.get(&#34;status&#34;, {}).get(&#34;readyToUse&#34;) is True</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_replace_is_rejected_when_deletepolicy_is_retain"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_replace_is_rejected_when_deletepolicy_is_retain"><code class="name flex">
 <span>def <span class="ident">test_replace_is_rejected_when_deletepolicy_is_retain</span></span>(<span>self, api_client, source_vm, vm_snapshot_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1419,7 +1419,7 @@ def test_replace_is_rejected_when_deletepolicy_is_retain(self, api_client,
     assert 422 == code</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_replace_vm_with_vm_snapshot"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_replace_vm_with_vm_snapshot"><code class="name flex">
 <span>def <span class="ident">test_replace_vm_with_vm_snapshot</span></span>(<span>self, api_client, source_vm, vm_snapshot_name, ssh_keypair, host_shell, vm_shell, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1485,7 +1485,7 @@ def test_replace_vm_with_vm_snapshot(self, api_client,
                 actassert, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_restore_from_vm_snapshot_while_pvc_detached_from_source"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_from_vm_snapshot_while_pvc_detached_from_source"><code class="name flex">
 <span>def <span class="ident">test_restore_from_vm_snapshot_while_pvc_detached_from_source</span></span>(<span>self, api_client, restored_vm_2, host_shell, vm_shell, ssh_keypair, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1532,7 +1532,7 @@ def test_restore_from_vm_snapshot_while_pvc_detached_from_source(self,
                 actassert, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot"><code class="name flex">
 <span>def <span class="ident">test_restore_into_new_vm_from_vm_snapshot</span></span>(<span>self, api_client, restored_from_snapshot_vm, ssh_keypair, host_shell, vm_shell, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1575,7 +1575,7 @@ def test_restore_into_new_vm_from_vm_snapshot(self, api_client,
                 actassert, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create"><code class="name flex">
 <span>def <span class="ident">test_vm_snapshot_create</span></span>(<span>self, api_client, source_vm, vm_snapshot_name, host_shell, vm_shell, ssh_keypair, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1629,7 +1629,7 @@ def test_vm_snapshot_create(self, api_client,
     assert data.get(&#34;status&#34;, {}).get(&#34;readyToUse&#34;) is True</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_vm_snapshots_are_cleaned_up_after_source_vm_deleted"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshots_are_cleaned_up_after_source_vm_deleted"><code class="name flex">
 <span>def <span class="ident">test_vm_snapshots_are_cleaned_up_after_source_vm_deleted</span></span>(<span>self, api_client, source_vm, vm_snapshot_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1682,7 +1682,7 @@ def test_vm_snapshots_are_cleaned_up_after_source_vm_deleted(self, api_client,
     wait_for_snapshot_to_disappear(vm_snapshot_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted"><code class="name flex">
 <span>def <span class="ident">test_volume_snapshots_are_cleaned_up_after_source_volume_deleted</span></span>(<span>self, api_client, source_vm, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1764,42 +1764,42 @@ def test_volume_snapshots_are_cleaned_up_after_source_volume_deleted(self, api_c
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.create_vm" href="#harvester_e2e_tests.integration.test_vm_snapshot.create_vm">create_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.delete_vm" href="#harvester_e2e_tests.integration.test_vm_snapshot.delete_vm">delete_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.image" href="#harvester_e2e_tests.integration.test_vm_snapshot.image">image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_name" href="#harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_name">restored_from_snapshot_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_name_2" href="#harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_name_2">restored_from_snapshot_name_2</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_vm" href="#harvester_e2e_tests.integration.test_vm_snapshot.restored_from_snapshot_vm">restored_from_snapshot_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.restored_vm_2" href="#harvester_e2e_tests.integration.test_vm_snapshot.restored_vm_2">restored_vm_2</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.source_vm" href="#harvester_e2e_tests.integration.test_vm_snapshot.source_vm">source_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.sourcevm_name" href="#harvester_e2e_tests.integration.test_vm_snapshot.sourcevm_name">sourcevm_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.start_vm" href="#harvester_e2e_tests.integration.test_vm_snapshot.start_vm">start_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.stop_vm" href="#harvester_e2e_tests.integration.test_vm_snapshot.stop_vm">stop_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.unique_name" href="#harvester_e2e_tests.integration.test_vm_snapshot.unique_name">unique_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.vm_shell_do" href="#harvester_e2e_tests.integration.test_vm_snapshot.vm_shell_do">vm_shell_do</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.vm_snapshot_2_name" href="#harvester_e2e_tests.integration.test_vm_snapshot.vm_snapshot_2_name">vm_snapshot_2_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.vm_snapshot_name" href="#harvester_e2e_tests.integration.test_vm_snapshot.vm_snapshot_name">vm_snapshot_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.create_vm" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.create_vm">create_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.delete_vm" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.delete_vm">delete_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.image" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.image">image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_name" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_name">restored_from_snapshot_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_name_2" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_name_2">restored_from_snapshot_name_2</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_vm" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_vm">restored_from_snapshot_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_vm_2" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_vm_2">restored_vm_2</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.source_vm" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.source_vm">source_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.sourcevm_name" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.sourcevm_name">sourcevm_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.start_vm" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.start_vm">start_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.stop_vm" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.stop_vm">stop_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.unique_name" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.unique_name">unique_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_shell_do" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_shell_do">vm_shell_do</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_snapshot_2_name" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_snapshot_2_name">vm_snapshot_2_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_snapshot_name" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_snapshot_name">vm_snapshot_name</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot">TestVMSnapshot</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot">TestVMSnapshot</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.pytestmark" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_create_vm_snapshot_while_pvc_detached" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_create_vm_snapshot_while_pvc_detached">test_create_vm_snapshot_while_pvc_detached</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_replace_is_rejected_when_deletepolicy_is_retain" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_replace_is_rejected_when_deletepolicy_is_retain">test_replace_is_rejected_when_deletepolicy_is_retain</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_replace_vm_with_vm_snapshot" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_replace_vm_with_vm_snapshot">test_replace_vm_with_vm_snapshot</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_restore_from_vm_snapshot_while_pvc_detached_from_source" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_restore_from_vm_snapshot_while_pvc_detached_from_source">test_restore_from_vm_snapshot_while_pvc_detached_from_source</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot">test_restore_into_new_vm_from_vm_snapshot</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create">test_vm_snapshot_create</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_vm_snapshots_are_cleaned_up_after_source_vm_deleted" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_vm_snapshots_are_cleaned_up_after_source_vm_deleted">test_vm_snapshots_are_cleaned_up_after_source_vm_deleted</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted" href="#harvester_e2e_tests.integration.test_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted">test_volume_snapshots_are_cleaned_up_after_source_volume_deleted</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.pytestmark" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_create_vm_snapshot_while_pvc_detached" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_create_vm_snapshot_while_pvc_detached">test_create_vm_snapshot_while_pvc_detached</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_replace_is_rejected_when_deletepolicy_is_retain" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_replace_is_rejected_when_deletepolicy_is_retain">test_replace_is_rejected_when_deletepolicy_is_retain</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_replace_vm_with_vm_snapshot" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_replace_vm_with_vm_snapshot">test_replace_vm_with_vm_snapshot</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_from_vm_snapshot_while_pvc_detached_from_source" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_from_vm_snapshot_while_pvc_detached_from_source">test_restore_from_vm_snapshot_while_pvc_detached_from_source</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot">test_restore_into_new_vm_from_vm_snapshot</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create">test_vm_snapshot_create</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshots_are_cleaned_up_after_source_vm_deleted" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshots_are_cleaned_up_after_source_vm_deleted">test_vm_snapshots_are_cleaned_up_after_source_vm_deleted</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted">test_volume_snapshots_are_cleaned_up_after_source_volume_deleted</a></code></li>
 </ul>
 </li>
 </ul>

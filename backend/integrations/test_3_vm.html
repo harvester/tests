@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.integration.test_vm API documentation</title>
+<title>harvester_e2e_tests.integrations.test_3_vm API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.integration.test_vm</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_3_vm</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -373,7 +373,7 @@ def test_migrate_vm_with_multiple_volumes(api_client, unique_name, focal_image, 
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm.available_node_names"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm.available_node_names"><code class="name flex">
 <span>def <span class="ident">available_node_names</span></span>(<span>api_client)</span>
 </code></dt>
 <dd>
@@ -405,7 +405,7 @@ def available_node_names(api_client):
     yield node_names</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm.focal_image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm.focal_image"><code class="name flex">
 <span>def <span class="ident">focal_image</span></span>(<span>api_client, unique_name, focal_image_url, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -459,7 +459,7 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm.focal_image_url"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm.focal_image_url"><code class="name flex">
 <span>def <span class="ident">focal_image_url</span></span>(<span>request)</span>
 </code></dt>
 <dd>
@@ -476,7 +476,7 @@ def focal_image_url(request):
     return os.path.join(base_url, &#34;focal-server-cloudimg-amd64.img&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm.test_migrate_vm_with_multiple_volumes"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_multiple_volumes"><code class="name flex">
 <span>def <span class="ident">test_migrate_vm_with_multiple_volumes</span></span>(<span>api_client, unique_name, focal_image, wait_timeout, available_node_names)</span>
 </code></dt>
 <dd>
@@ -556,7 +556,7 @@ def test_migrate_vm_with_multiple_volumes(api_client, unique_name, focal_image, 
             api_client.volumes.delete(vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm.test_migrate_vm_with_user_data"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_user_data"><code class="name flex">
 <span>def <span class="ident">test_migrate_vm_with_user_data</span></span>(<span>api_client, unique_name, focal_image, wait_timeout, available_node_names)</span>
 </code></dt>
 <dd>
@@ -641,7 +641,7 @@ def test_migrate_vm_with_user_data(api_client, unique_name, focal_image, wait_ti
             api_client.volumes.delete(vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm.test_multiple_migrations"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm.test_multiple_migrations"><code class="name flex">
 <span>def <span class="ident">test_multiple_migrations</span></span>(<span>api_client, unique_name, focal_image, wait_timeout, available_node_names)</span>
 </code></dt>
 <dd>
@@ -768,17 +768,17 @@ def test_multiple_migrations(api_client, unique_name, focal_image, wait_timeout,
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm.available_node_names" href="#harvester_e2e_tests.integration.test_vm.available_node_names">available_node_names</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm.focal_image" href="#harvester_e2e_tests.integration.test_vm.focal_image">focal_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm.focal_image_url" href="#harvester_e2e_tests.integration.test_vm.focal_image_url">focal_image_url</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm.test_migrate_vm_with_multiple_volumes" href="#harvester_e2e_tests.integration.test_vm.test_migrate_vm_with_multiple_volumes">test_migrate_vm_with_multiple_volumes</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm.test_migrate_vm_with_user_data" href="#harvester_e2e_tests.integration.test_vm.test_migrate_vm_with_user_data">test_migrate_vm_with_user_data</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm.test_multiple_migrations" href="#harvester_e2e_tests.integration.test_vm.test_multiple_migrations">test_multiple_migrations</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.available_node_names" href="#harvester_e2e_tests.integrations.test_3_vm.available_node_names">available_node_names</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.focal_image" href="#harvester_e2e_tests.integrations.test_3_vm.focal_image">focal_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.focal_image_url" href="#harvester_e2e_tests.integrations.test_3_vm.focal_image_url">focal_image_url</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_multiple_volumes" href="#harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_multiple_volumes">test_migrate_vm_with_multiple_volumes</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_user_data" href="#harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_user_data">test_migrate_vm_with_user_data</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.test_multiple_migrations" href="#harvester_e2e_tests.integrations.test_3_vm.test_multiple_migrations">test_multiple_migrations</a></code></li>
 </ul>
 </li>
 </ul>

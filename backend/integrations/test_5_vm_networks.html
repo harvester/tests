@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.integration.test_vm_networks API documentation</title>
+<title>harvester_e2e_tests.integrations.test_5_vm_networks API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.integration.test_vm_networks</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_5_vm_networks</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -392,7 +392,7 @@ class TestVMNetwork:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.cluster_network"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.cluster_network"><code class="name flex">
 <span>def <span class="ident">cluster_network</span></span>(<span>vlan_nic, api_client, unique_name)</span>
 </code></dt>
 <dd>
@@ -459,7 +459,7 @@ def cluster_network(vlan_nic, api_client, unique_name):
     assert 200 == code, (code, data)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.gen_ifconfig"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.gen_ifconfig"><code class="name flex">
 <span>def <span class="ident">gen_ifconfig</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -489,7 +489,7 @@ def gen_ifconfig():
     return generate_ifconfig</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.image"><code class="name flex">
 <span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -525,7 +525,7 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
     code, data = api_client.images.delete(unique_image_id)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.minimal_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.minimal_vm"><code class="name flex">
 <span>def <span class="ident">minimal_vm</span></span>(<span>api_client, ssh_keypair, wait_timeout, unique_name, vm_checker, image)</span>
 </code></dt>
 <dd>
@@ -560,7 +560,7 @@ def minimal_vm(api_client, ssh_keypair, wait_timeout, unique_name, vm_checker, i
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.two_mirror_vms"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.two_mirror_vms"><code class="name flex">
 <span>def <span class="ident">two_mirror_vms</span></span>(<span>api_client, ssh_keypair, unique_name, vm_checker, image, vm_network)</span>
 </code></dt>
 <dd>
@@ -594,7 +594,7 @@ def two_mirror_vms(api_client, ssh_keypair, unique_name, vm_checker, image, vm_n
         vm_checker.wait_deleted(vm_name, params=params)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.vm_network"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.vm_network"><code class="name flex">
 <span>def <span class="ident">vm_network</span></span>(<span>api_client, unique_name, wait_timeout, cluster_network, vlan_id)</span>
 </code></dt>
 <dd>
@@ -645,7 +645,7 @@ def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork"><code class="flex name class">
 <span>class <span class="ident">TestVMNetwork</span></span>
 </code></dt>
 <dd>
@@ -801,14 +801,14 @@ class TestVMNetwork:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_add_vlan"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_add_vlan"><code class="name flex">
 <span>def <span class="ident">test_add_vlan</span></span>(<span>self, api_client, ssh_keypair, vm_mgmt_static, vm_checker, vm_shell_from_host, vm_network, minimal_vm, gen_ifconfig)</span>
 </code></dt>
 <dd>
@@ -895,7 +895,7 @@ def test_add_vlan(
     assert ip_address(vm_vlan_ip) in vlan_ip_range and vm_vlan_ip in ips</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_ssh_connection"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_ssh_connection"><code class="name flex">
 <span>def <span class="ident">test_ssh_connection</span></span>(<span>self, api_client, ssh_keypair, vm_checker, vm_network, minimal_vm)</span>
 </code></dt>
 <dd>
@@ -929,7 +929,7 @@ def test_ssh_connection(
         ) from ex</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_vms_on_same_vlan"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_vms_on_same_vlan"><code class="name flex">
 <span>def <span class="ident">test_vms_on_same_vlan</span></span>(<span>self, api_client, ssh_keypair, vm_checker, vm_network, two_mirror_vms)</span>
 </code></dt>
 <dd>
@@ -992,28 +992,28 @@ def test_ssh_connection(
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.cluster_network" href="#harvester_e2e_tests.integration.test_vm_networks.cluster_network">cluster_network</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.gen_ifconfig" href="#harvester_e2e_tests.integration.test_vm_networks.gen_ifconfig">gen_ifconfig</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.image" href="#harvester_e2e_tests.integration.test_vm_networks.image">image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.minimal_vm" href="#harvester_e2e_tests.integration.test_vm_networks.minimal_vm">minimal_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.two_mirror_vms" href="#harvester_e2e_tests.integration.test_vm_networks.two_mirror_vms">two_mirror_vms</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.vm_network" href="#harvester_e2e_tests.integration.test_vm_networks.vm_network">vm_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.cluster_network" href="#harvester_e2e_tests.integrations.test_5_vm_networks.cluster_network">cluster_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.gen_ifconfig" href="#harvester_e2e_tests.integrations.test_5_vm_networks.gen_ifconfig">gen_ifconfig</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.image" href="#harvester_e2e_tests.integrations.test_5_vm_networks.image">image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.minimal_vm" href="#harvester_e2e_tests.integrations.test_5_vm_networks.minimal_vm">minimal_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.two_mirror_vms" href="#harvester_e2e_tests.integrations.test_5_vm_networks.two_mirror_vms">two_mirror_vms</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.vm_network" href="#harvester_e2e_tests.integrations.test_5_vm_networks.vm_network">vm_network</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork" href="#harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork">TestVMNetwork</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork" href="#harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork">TestVMNetwork</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.pytestmark" href="#harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_add_vlan" href="#harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_add_vlan">test_add_vlan</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_ssh_connection" href="#harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_ssh_connection">test_ssh_connection</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_vms_on_same_vlan" href="#harvester_e2e_tests.integration.test_vm_networks.TestVMNetwork.test_vms_on_same_vlan">test_vms_on_same_vlan</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.pytestmark" href="#harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_add_vlan" href="#harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_add_vlan">test_add_vlan</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_ssh_connection" href="#harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_ssh_connection">test_ssh_connection</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_vms_on_same_vlan" href="#harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_vms_on_same_vlan">test_vms_on_same_vlan</a></code></li>
 </ul>
 </li>
 </ul>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.integration.test_vm_functions API documentation</title>
+<title>harvester_e2e_tests.integrations.test_3_vm_functions API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.integration.test_vm_functions</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_3_vm_functions</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -2111,7 +2111,7 @@ class TestHotPlugVolume:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.bogus_vlan_net"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.bogus_vlan_net"><code class="name flex">
 <span>def <span class="ident">bogus_vlan_net</span></span>(<span>request, api_client)</span>
 </code></dt>
 <dd>
@@ -2186,7 +2186,7 @@ def bogus_vlan_net(request, api_client):
     api_client.networks.delete(vm_network_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.image"><code class="name flex">
 <span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -2222,7 +2222,7 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
     code, data = api_client.images.delete(unique_image_id)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.small_volume"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.small_volume"><code class="name flex">
 <span>def <span class="ident">small_volume</span></span>(<span>api_client, unique_name)</span>
 </code></dt>
 <dd>
@@ -2244,7 +2244,7 @@ def small_volume(api_client, unique_name):
     code, data = api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.stopped_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.stopped_vm"><code class="name flex">
 <span>def <span class="ident">stopped_vm</span></span>(<span>api_client, ssh_keypair, wait_timeout, image, unique_vm_name)</span>
 </code></dt>
 <dd>
@@ -2292,7 +2292,7 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.test_create_stopped_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.test_create_stopped_vm"><code class="name flex">
 <span>def <span class="ident">test_create_stopped_vm</span></span>(<span>api_client, stopped_vm, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -2347,7 +2347,7 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
     assert 404 == code, (code, data)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.test_create_vm_no_available_resources"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.test_create_vm_no_available_resources"><code class="name flex">
 <span>def <span class="ident">test_create_vm_no_available_resources</span></span>(<span>resource, api_client, image, wait_timeout, unique_vm_name, sleep_timeout)</span>
 </code></dt>
 <dd>
@@ -2513,7 +2513,7 @@ def test_create_vm_no_available_resources(resource, api_client, image,
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.test_minimal_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.test_minimal_vm"><code class="name flex">
 <span>def <span class="ident">test_minimal_vm</span></span>(<span>api_client, image, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -2570,7 +2570,7 @@ def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.test_update_vm_machine_type"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.test_update_vm_machine_type"><code class="name flex">
 <span>def <span class="ident">test_update_vm_machine_type</span></span>(<span>api_client, image, unique_vm_name, wait_timeout, machine_types, sleep_timeout)</span>
 </code></dt>
 <dd>
@@ -2767,7 +2767,7 @@ def test_update_vm_machine_type(api_client, image, unique_vm_name,
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.test_vm_with_bogus_vlan"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.test_vm_with_bogus_vlan"><code class="name flex">
 <span>def <span class="ident">test_vm_with_bogus_vlan</span></span>(<span>api_client, image, unique_vm_name, wait_timeout, bogus_vlan_net, sleep_timeout)</span>
 </code></dt>
 <dd>
@@ -2924,7 +2924,7 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.unique_vm_name"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.unique_vm_name"><code class="name flex">
 <span>def <span class="ident">unique_vm_name</span></span>(<span>unique_name)</span>
 </code></dt>
 <dd>
@@ -2938,7 +2938,7 @@ def unique_vm_name(unique_name):
     return f&#34;vm-{unique_name}&#34;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.unset_cpu_memory_overcommit"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.unset_cpu_memory_overcommit"><code class="name flex">
 <span>def <span class="ident">unset_cpu_memory_overcommit</span></span>(<span>api_client)</span>
 </code></dt>
 <dd>
@@ -2970,7 +2970,7 @@ def unset_cpu_memory_overcommit(api_client):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume"><code class="flex name class">
 <span>class <span class="ident">TestHotPlugVolume</span></span>
 </code></dt>
 <dd>
@@ -3165,18 +3165,18 @@ class TestHotPlugVolume:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.disk_name"><code class="name">var <span class="ident">disk_name</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.disk_name"><code class="name">var <span class="ident">disk_name</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.login_to_vm_from_host"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.login_to_vm_from_host"><code class="name flex">
 <span>def <span class="ident">login_to_vm_from_host</span></span>(<span>self, host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip)</span>
 </code></dt>
 <dd>
@@ -3207,7 +3207,7 @@ def login_to_vm_from_host(
             yield (vm_sh, host_sh)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.test_add"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.test_add"><code class="name flex">
 <span>def <span class="ident">test_add</span></span>(<span>self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, small_volume, stopped_vm)</span>
 </code></dt>
 <dd>
@@ -3299,7 +3299,7 @@ def test_add(
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.test_remove"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.test_remove"><code class="name flex">
 <span>def <span class="ident">test_remove</span></span>(<span>self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, small_volume, stopped_vm)</span>
 </code></dt>
 <dd>
@@ -3356,7 +3356,7 @@ def test_remove(
 </dd>
 </dl>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMClone"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone"><code class="flex name class">
 <span>class <span class="ident">TestVMClone</span></span>
 </code></dt>
 <dd>
@@ -3720,14 +3720,14 @@ class TestVMClone:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMClone.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMClone.test_clone_running_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_running_vm"><code class="name flex">
 <span>def <span class="ident">test_clone_running_vm</span></span>(<span>self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, stopped_vm)</span>
 </code></dt>
 <dd>
@@ -3909,7 +3909,7 @@ class TestVMClone:
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMClone.test_clone_stopped_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_stopped_vm"><code class="name flex">
 <span>def <span class="ident">test_clone_stopped_vm</span></span>(<span>self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, stopped_vm)</span>
 </code></dt>
 <dd>
@@ -4126,7 +4126,7 @@ class TestVMClone:
 </dd>
 </dl>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations"><code class="flex name class">
 <span>class <span class="ident">TestVMOperations</span></span>
 </code></dt>
 <dd>
@@ -4506,14 +4506,14 @@ class TestVMOperations:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_abort_migrate"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_abort_migrate"><code class="name flex">
 <span>def <span class="ident">test_abort_migrate</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -4583,7 +4583,7 @@ Exepected Result:<ul>
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_delete"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_delete"><code class="name flex">
 <span>def <span class="ident">test_delete</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -4657,7 +4657,7 @@ Exepected Result:<ul>
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_migrate"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_migrate"><code class="name flex">
 <span>def <span class="ident">test_migrate</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -4714,7 +4714,7 @@ Exepected Result:<ul>
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_pause"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_pause"><code class="name flex">
 <span>def <span class="ident">test_pause</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -4759,7 +4759,7 @@ def test_pause(self, api_client, unique_vm_name, wait_timeout):
     assert &#34;PausedByUser&#34; == conditions[-1].get(&#39;reason&#39;), conditions</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_restart"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_restart"><code class="name flex">
 <span>def <span class="ident">test_restart</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -4825,7 +4825,7 @@ Exepected Result:<ul>
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_softreboot"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_softreboot"><code class="name flex">
 <span>def <span class="ident">test_softreboot</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -4892,7 +4892,7 @@ Exepected Result:<ul>
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_start"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_start"><code class="name flex">
 <span>def <span class="ident">test_start</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -4949,7 +4949,7 @@ def test_start(self, api_client, unique_vm_name, wait_timeout):
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_stop"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_stop"><code class="name flex">
 <span>def <span class="ident">test_stop</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -4995,7 +4995,7 @@ def test_stop(self, api_client, unique_vm_name, wait_timeout):
     assert &#34;Stopped&#34; == data[&#39;status&#39;][&#39;printableStatus&#39;]</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_unpause"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_unpause"><code class="name flex">
 <span>def <span class="ident">test_unpause</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -5039,7 +5039,7 @@ def test_unpause(self, api_client, unique_vm_name, wait_timeout):
 </dd>
 </dl>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMResource"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource"><code class="flex name class">
 <span>class <span class="ident">TestVMResource</span></span>
 </code></dt>
 <dd>
@@ -5349,14 +5349,14 @@ class TestVMResource:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_create_schedule_on_maximum"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_create_schedule_on_maximum"><code class="name flex">
 <span>def <span class="ident">test_create_schedule_on_maximum</span></span>(<span>self, api_client, unique_vm_name, vm_checker, vm_calc, image, unset_cpu_memory_overcommit, res_type)</span>
 </code></dt>
 <dd>
@@ -5428,7 +5428,7 @@ def test_create_schedule_on_maximum(
                 api_client.volumes.delete(vol[&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_cpu"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_cpu"><code class="name flex">
 <span>def <span class="ident">test_update_cpu</span></span>(<span>self, api_client, ssh_keypair, vm_shell_from_host, vm_checker, stopped_vm)</span>
 </code></dt>
 <dd>
@@ -5518,7 +5518,7 @@ def test_create_schedule_on_maximum(
     vm_checker.wait_stopped(unique_vm_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_enable_usb"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_enable_usb"><code class="name flex">
 <span>def <span class="ident">test_update_enable_usb</span></span>(<span>self, api_client, unique_vm_name, vm_checker, image)</span>
 </code></dt>
 <dd>
@@ -5567,7 +5567,7 @@ def test_create_schedule_on_maximum(
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_enable_user_data"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_enable_user_data"><code class="name flex">
 <span>def <span class="ident">test_update_enable_user_data</span></span>(<span>self, api_client, unique_vm_name, vm_checker, image)</span>
 </code></dt>
 <dd>
@@ -5621,7 +5621,7 @@ def test_create_schedule_on_maximum(
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_schedule_on_maximum"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_schedule_on_maximum"><code class="name flex">
 <span>def <span class="ident">test_update_schedule_on_maximum</span></span>(<span>self, api_client, vm_checker, vm_calc, stopped_vm, unset_cpu_memory_overcommit, res_type)</span>
 </code></dt>
 <dd>
@@ -5704,7 +5704,7 @@ def test_update_schedule_on_maximum(
 </dd>
 </dl>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes"><code class="flex name class">
 <span>class <span class="ident">TestVMWithVolumes</span></span>
 </code></dt>
 <dd>
@@ -5963,14 +5963,14 @@ class TestVMWithVolumes:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.test_create_with_existing_volume"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_existing_volume"><code class="name flex">
 <span>def <span class="ident">test_create_with_existing_volume</span></span>(<span>self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, stopped_vm)</span>
 </code></dt>
 <dd>
@@ -6115,7 +6115,7 @@ class TestVMWithVolumes:
         api_client.volumes.delete(claim)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.test_create_with_two_volumes"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_two_volumes"><code class="name flex">
 <span>def <span class="ident">test_create_with_two_volumes</span></span>(<span>self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, stopped_vm)</span>
 </code></dt>
 <dd>
@@ -6271,76 +6271,76 @@ class TestVMWithVolumes:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.bogus_vlan_net" href="#harvester_e2e_tests.integration.test_vm_functions.bogus_vlan_net">bogus_vlan_net</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.image" href="#harvester_e2e_tests.integration.test_vm_functions.image">image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.small_volume" href="#harvester_e2e_tests.integration.test_vm_functions.small_volume">small_volume</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.stopped_vm" href="#harvester_e2e_tests.integration.test_vm_functions.stopped_vm">stopped_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.test_create_stopped_vm" href="#harvester_e2e_tests.integration.test_vm_functions.test_create_stopped_vm">test_create_stopped_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.test_create_vm_no_available_resources" href="#harvester_e2e_tests.integration.test_vm_functions.test_create_vm_no_available_resources">test_create_vm_no_available_resources</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.test_minimal_vm" href="#harvester_e2e_tests.integration.test_vm_functions.test_minimal_vm">test_minimal_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.test_update_vm_machine_type" href="#harvester_e2e_tests.integration.test_vm_functions.test_update_vm_machine_type">test_update_vm_machine_type</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.test_vm_with_bogus_vlan" href="#harvester_e2e_tests.integration.test_vm_functions.test_vm_with_bogus_vlan">test_vm_with_bogus_vlan</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.unique_vm_name" href="#harvester_e2e_tests.integration.test_vm_functions.unique_vm_name">unique_vm_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.unset_cpu_memory_overcommit" href="#harvester_e2e_tests.integration.test_vm_functions.unset_cpu_memory_overcommit">unset_cpu_memory_overcommit</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.bogus_vlan_net" href="#harvester_e2e_tests.integrations.test_3_vm_functions.bogus_vlan_net">bogus_vlan_net</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.image" href="#harvester_e2e_tests.integrations.test_3_vm_functions.image">image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.small_volume" href="#harvester_e2e_tests.integrations.test_3_vm_functions.small_volume">small_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.stopped_vm">stopped_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_create_stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_create_stopped_vm">test_create_stopped_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_create_vm_no_available_resources" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_create_vm_no_available_resources">test_create_vm_no_available_resources</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_minimal_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_minimal_vm">test_minimal_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_update_vm_machine_type" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_update_vm_machine_type">test_update_vm_machine_type</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_vm_with_bogus_vlan" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_vm_with_bogus_vlan">test_vm_with_bogus_vlan</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.unique_vm_name" href="#harvester_e2e_tests.integrations.test_3_vm_functions.unique_vm_name">unique_vm_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.unset_cpu_memory_overcommit" href="#harvester_e2e_tests.integrations.test_3_vm_functions.unset_cpu_memory_overcommit">unset_cpu_memory_overcommit</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume" href="#harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume">TestHotPlugVolume</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume">TestHotPlugVolume</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.disk_name" href="#harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.disk_name">disk_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.login_to_vm_from_host" href="#harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.login_to_vm_from_host">login_to_vm_from_host</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.pytestmark" href="#harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.test_add" href="#harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.test_add">test_add</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.test_remove" href="#harvester_e2e_tests.integration.test_vm_functions.TestHotPlugVolume.test_remove">test_remove</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.disk_name" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.disk_name">disk_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.login_to_vm_from_host" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.login_to_vm_from_host">login_to_vm_from_host</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.pytestmark" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.test_add" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.test_add">test_add</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.test_remove" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.test_remove">test_remove</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMClone" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMClone">TestVMClone</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone">TestVMClone</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMClone.pytestmark" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMClone.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMClone.test_clone_running_vm" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMClone.test_clone_running_vm">test_clone_running_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMClone.test_clone_stopped_vm" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMClone.test_clone_stopped_vm">test_clone_stopped_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.pytestmark" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_running_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_running_vm">test_clone_running_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_stopped_vm">test_clone_stopped_vm</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations">TestVMOperations</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations">TestVMOperations</a></code></h4>
 <ul class="two-column">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.pytestmark" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_abort_migrate" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_abort_migrate">test_abort_migrate</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_delete" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_delete">test_delete</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_migrate" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_migrate">test_migrate</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_pause" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_pause">test_pause</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_restart" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_restart">test_restart</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_softreboot" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_softreboot">test_softreboot</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_start" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_start">test_start</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_stop" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_stop">test_stop</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_unpause" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMOperations.test_unpause">test_unpause</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.pytestmark" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_abort_migrate" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_abort_migrate">test_abort_migrate</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_delete" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_delete">test_delete</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_migrate" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_migrate">test_migrate</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_pause" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_pause">test_pause</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_restart" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_restart">test_restart</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_softreboot" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_softreboot">test_softreboot</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_start" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_start">test_start</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_stop" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_stop">test_stop</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_unpause" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.test_unpause">test_unpause</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMResource" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMResource">TestVMResource</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource">TestVMResource</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.pytestmark" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMResource.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_create_schedule_on_maximum" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_create_schedule_on_maximum">test_create_schedule_on_maximum</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_cpu" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_cpu">test_update_cpu</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_enable_usb" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_enable_usb">test_update_enable_usb</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_enable_user_data" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_enable_user_data">test_update_enable_user_data</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_schedule_on_maximum" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMResource.test_update_schedule_on_maximum">test_update_schedule_on_maximum</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.pytestmark" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_create_schedule_on_maximum" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_create_schedule_on_maximum">test_create_schedule_on_maximum</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_cpu" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_cpu">test_update_cpu</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_enable_usb" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_enable_usb">test_update_enable_usb</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_enable_user_data" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_enable_user_data">test_update_enable_user_data</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_schedule_on_maximum" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_schedule_on_maximum">test_update_schedule_on_maximum</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes">TestVMWithVolumes</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes">TestVMWithVolumes</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.pytestmark" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.test_create_with_existing_volume" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.test_create_with_existing_volume">test_create_with_existing_volume</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.test_create_with_two_volumes" href="#harvester_e2e_tests.integration.test_vm_functions.TestVMWithVolumes.test_create_with_two_volumes">test_create_with_two_volumes</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.pytestmark" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_existing_volume" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_existing_volume">test_create_with_existing_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_two_volumes" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_two_volumes">test_create_with_two_volumes</a></code></li>
 </ul>
 </li>
 </ul>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.integration.test_images API documentation</title>
+<title>harvester_e2e_tests.integrations.test_1_images API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.integration.test_images</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_1_images</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -354,7 +354,7 @@ class TestBackendImages:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_images.create_image_url"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.create_image_url"><code class="name flex">
 <span>def <span class="ident">create_image_url</span></span>(<span>api_client, name, image_url, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -389,7 +389,7 @@ class TestBackendImages:
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.delete_image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.delete_image"><code class="name flex">
 <span>def <span class="ident">delete_image</span></span>(<span>api_client, image_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -417,7 +417,7 @@ class TestBackendImages:
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.delete_volume"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.delete_volume"><code class="name flex">
 <span>def <span class="ident">delete_volume</span></span>(<span>api_client, volume_name, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -444,7 +444,7 @@ class TestBackendImages:
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.export_storage_class"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.export_storage_class"><code class="name flex">
 <span>def <span class="ident">export_storage_class</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -459,7 +459,7 @@ def export_storage_class():
     return storage_class</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.fake_invalid_image_file"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.fake_invalid_image_file"><code class="name flex">
 <span>def <span class="ident">fake_invalid_image_file</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -477,7 +477,7 @@ def fake_invalid_image_file():
         yield Path(f.name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.get_image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.get_image"><code class="name flex">
 <span>def <span class="ident">get_image</span></span>(<span>api_client, image_name)</span>
 </code></dt>
 <dd>
@@ -496,7 +496,7 @@ def fake_invalid_image_file():
     assert image_name == data[&#34;metadata&#34;][&#34;name&#34;]</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.image_info"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.image_info"><code class="name flex">
 <span>def <span class="ident">image_info</span></span>(<span>request)</span>
 </code></dt>
 <dd>
@@ -515,7 +515,7 @@ def image_info(request):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_images.TestBackendImages"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_1_images.TestBackendImages"><code class="flex name class">
 <span>class <span class="ident">TestBackendImages</span></span>
 </code></dt>
 <dd>
@@ -739,14 +739,14 @@ class TestBackendImages:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_images.TestBackendImages.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_image_from_volume"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_image_from_volume"><code class="name flex">
 <span>def <span class="ident">test_create_image_from_volume</span></span>(<span>self, api_client, unique_name, export_storage_class, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -826,7 +826,7 @@ def test_create_image_from_volume(
     delete_image(api_client, image_id, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_image_url"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_image_url"><code class="name flex">
 <span>def <span class="ident">test_create_image_url</span></span>(<span>self, image_info, unique_name, api_client, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -859,7 +859,7 @@ def test_create_image_url(self, image_info, unique_name, api_client, wait_timeou
     create_image_url(api_client, image_name, image_url, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_invalid_file"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_invalid_file"><code class="name flex">
 <span>def <span class="ident">test_create_invalid_file</span></span>(<span>self, api_client, gen_unique_name, fake_invalid_image_file, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -893,7 +893,7 @@ def test_create_invalid_file(
     delete_image(api_client, unique_name, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.TestBackendImages.test_delete_image_recreate"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_delete_image_recreate"><code class="name flex">
 <span>def <span class="ident">test_delete_image_recreate</span></span>(<span>self, api_client, image_info, unique_name, fake_image_file, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -960,7 +960,7 @@ def test_delete_image_recreate(
     delete_image(api_client, unique_name, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_images.TestBackendImages.test_edit_image_in_use"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_edit_image_in_use"><code class="name flex">
 <span>def <span class="ident">test_edit_image_in_use</span></span>(<span>self, api_client, unique_name, image_info, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1051,31 +1051,31 @@ def test_edit_image_in_use(self, api_client, unique_name, image_info, wait_timeo
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_images.create_image_url" href="#harvester_e2e_tests.integration.test_images.create_image_url">create_image_url</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.delete_image" href="#harvester_e2e_tests.integration.test_images.delete_image">delete_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.delete_volume" href="#harvester_e2e_tests.integration.test_images.delete_volume">delete_volume</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.export_storage_class" href="#harvester_e2e_tests.integration.test_images.export_storage_class">export_storage_class</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.fake_invalid_image_file" href="#harvester_e2e_tests.integration.test_images.fake_invalid_image_file">fake_invalid_image_file</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.get_image" href="#harvester_e2e_tests.integration.test_images.get_image">get_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.image_info" href="#harvester_e2e_tests.integration.test_images.image_info">image_info</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.create_image_url" href="#harvester_e2e_tests.integrations.test_1_images.create_image_url">create_image_url</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.delete_image" href="#harvester_e2e_tests.integrations.test_1_images.delete_image">delete_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.delete_volume" href="#harvester_e2e_tests.integrations.test_1_images.delete_volume">delete_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.export_storage_class" href="#harvester_e2e_tests.integrations.test_1_images.export_storage_class">export_storage_class</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.fake_invalid_image_file" href="#harvester_e2e_tests.integrations.test_1_images.fake_invalid_image_file">fake_invalid_image_file</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.get_image" href="#harvester_e2e_tests.integrations.test_1_images.get_image">get_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.image_info" href="#harvester_e2e_tests.integrations.test_1_images.image_info">image_info</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_images.TestBackendImages" href="#harvester_e2e_tests.integration.test_images.TestBackendImages">TestBackendImages</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_1_images.TestBackendImages" href="#harvester_e2e_tests.integrations.test_1_images.TestBackendImages">TestBackendImages</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_images.TestBackendImages.pytestmark" href="#harvester_e2e_tests.integration.test_images.TestBackendImages.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_image_from_volume" href="#harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_image_from_volume">test_create_image_from_volume</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_image_url" href="#harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_image_url">test_create_image_url</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_invalid_file" href="#harvester_e2e_tests.integration.test_images.TestBackendImages.test_create_invalid_file">test_create_invalid_file</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.TestBackendImages.test_delete_image_recreate" href="#harvester_e2e_tests.integration.test_images.TestBackendImages.test_delete_image_recreate">test_delete_image_recreate</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_images.TestBackendImages.test_edit_image_in_use" href="#harvester_e2e_tests.integration.test_images.TestBackendImages.test_edit_image_in_use">test_edit_image_in_use</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.pytestmark" href="#harvester_e2e_tests.integrations.test_1_images.TestBackendImages.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_image_from_volume" href="#harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_image_from_volume">test_create_image_from_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_image_url" href="#harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_image_url">test_create_image_url</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_invalid_file" href="#harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_create_invalid_file">test_create_invalid_file</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_delete_image_recreate" href="#harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_delete_image_recreate">test_delete_image_recreate</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_edit_image_in_use" href="#harvester_e2e_tests.integrations.test_1_images.TestBackendImages.test_edit_image_in_use">test_edit_image_in_use</a></code></li>
 </ul>
 </li>
 </ul>

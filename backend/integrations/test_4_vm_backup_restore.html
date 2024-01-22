@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.integration.test_backup_restore API documentation</title>
+<title>harvester_e2e_tests.integrations.test_4_vm_backup_restore API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.integration.test_backup_restore</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_4_vm_backup_restore</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -1115,7 +1115,7 @@ class TestMultipleBackupRestore:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.NFS_config"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.NFS_config"><code class="name flex">
 <span>def <span class="ident">NFS_config</span></span>(<span>request)</span>
 </code></dt>
 <dd>
@@ -1136,7 +1136,7 @@ def NFS_config(request):
     return (&#34;NFS&#34;, dict(endpoint=nfs_endpoint))</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.S3_config"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.S3_config"><code class="name flex">
 <span>def <span class="ident">S3_config</span></span>(<span>request)</span>
 </code></dt>
 <dd>
@@ -1164,7 +1164,7 @@ def S3_config(request):
     return (&#34;S3&#34;, config)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.backup_config"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.backup_config"><code class="name flex">
 <span>def <span class="ident">backup_config</span></span>(<span>request)</span>
 </code></dt>
 <dd>
@@ -1178,7 +1178,7 @@ def backup_config(request):
     return request.getfixturevalue(f&#34;{request.param}_config&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.base_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm"><code class="name flex">
 <span>def <span class="ident">base_vm</span></span>(<span>api_client, ssh_keypair, unique_name, vm_checker, image, backup_config)</span>
 </code></dt>
 <dd>
@@ -1232,7 +1232,7 @@ def base_vm(api_client, ssh_keypair, unique_name, vm_checker, image, backup_conf
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.base_vm_migrated"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm_migrated"><code class="name flex">
 <span>def <span class="ident">base_vm_migrated</span></span>(<span>api_client, vm_checker, backup_config, base_vm)</span>
 </code></dt>
 <dd>
@@ -1275,7 +1275,7 @@ def base_vm_migrated(api_client, vm_checker, backup_config, base_vm):
     return (cur_host, new_host)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm_with_data"><code class="name flex">
 <span>def <span class="ident">base_vm_with_data</span></span>(<span>api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker, backup_config, base_vm)</span>
 </code></dt>
 <dd>
@@ -1338,7 +1338,7 @@ def base_vm_with_data(
             )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.config_backup_target"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.config_backup_target"><code class="name flex">
 <span>def <span class="ident">config_backup_target</span></span>(<span>api_client, conflict_retries, backup_config, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1429,7 +1429,7 @@ def config_backup_target(api_client, conflict_retries, backup_config, wait_timeo
             )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.conflict_retries"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.conflict_retries"><code class="name flex">
 <span>def <span class="ident">conflict_retries</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -1444,7 +1444,7 @@ def conflict_retries():
     return 5</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.image"><code class="name flex">
 <span>def <span class="ident">image</span></span>(<span>api_client, unique_name, wait_timeout, image_opensuse)</span>
 </code></dt>
 <dd>
@@ -1485,7 +1485,7 @@ def image(api_client, unique_name, wait_timeout, image_opensuse):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore"><code class="flex name class">
 <span>class <span class="ident">TestBackupRestore</span></span>
 </code></dt>
 <dd>
@@ -1746,14 +1746,14 @@ class TestBackupRestore:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_connection"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_connection"><code class="name flex">
 <span>def <span class="ident">test_connection</span></span>(<span>self, api_client, backup_config, config_backup_target)</span>
 </code></dt>
 <dd>
@@ -1768,7 +1768,7 @@ def test_connection(self, api_client, backup_config, config_backup_target):
     assert 200 == code, f&#39;Failed to test backup target connection: {data}&#39;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop"><code class="name flex">
 <span>def <span class="ident">test_restore_replace_vm_not_stop</span></span>(<span>self, api_client, backup_config, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -1786,7 +1786,7 @@ def test_restore_replace_vm_not_stop(self, api_client, backup_config, base_vm_wi
     assert 422 == code, (code, data)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols"><code class="name flex">
 <span>def <span class="ident">test_restore_replace_with_delete_vols</span></span>(<span>self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker, backup_config, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -1852,7 +1852,7 @@ def test_restore_replace_with_delete_vols(
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_invalid_name"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_with_invalid_name"><code class="name flex">
 <span>def <span class="ident">test_restore_with_invalid_name</span></span>(<span>self, api_client, backup_config, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -1898,7 +1898,7 @@ def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with
     assert 422 == code, (code, data)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_with_new_vm"><code class="name flex">
 <span>def <span class="ident">test_restore_with_new_vm</span></span>(<span>self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, backup_config, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -1996,7 +1996,7 @@ def test_restore_with_new_vm(
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_update_backup_by_yaml"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_update_backup_by_yaml"><code class="name flex">
 <span>def <span class="ident">test_update_backup_by_yaml</span></span>(<span>self, api_client, wait_timeout, backup_config, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -2034,7 +2034,7 @@ def test_update_backup_by_yaml(
     assert all_updated, f&#34;Failed to update annotations: {customized_annotations!r}&#34;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.tests_backup_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.tests_backup_vm"><code class="name flex">
 <span>def <span class="ident">tests_backup_vm</span></span>(<span>self, api_client, wait_timeout, backup_config, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -2065,7 +2065,7 @@ def tests_backup_vm(self, api_client, wait_timeout, backup_config, base_vm_with_
 </dd>
 </dl>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration"><code class="flex name class">
 <span>class <span class="ident">TestBackupRestoreOnMigration</span></span>
 </code></dt>
 <dd>
@@ -2179,14 +2179,14 @@ class TestBackupRestoreOnMigration:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm"><code class="name flex">
 <span>def <span class="ident">test_backup_migrated_vm</span></span>(<span>self, api_client, wait_timeout, backup_config, config_backup_target, base_vm_migrated, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -2218,7 +2218,7 @@ def test_backup_migrated_vm(
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm"><code class="name flex">
 <span>def <span class="ident">test_restore_replace_migrated_vm</span></span>(<span>self, api_client, wait_timeout, ssh_keypair, vm_shell_from_host, vm_checker, backup_config, base_vm_migrated, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -2300,7 +2300,7 @@ def test_restore_replace_migrated_vm(
 </dd>
 </dl>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore"><code class="flex name class">
 <span>class <span class="ident">TestMultipleBackupRestore</span></span>
 </code></dt>
 <dd>
@@ -2723,14 +2723,14 @@ class TestMultipleBackupRestore:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_backup_multiple"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_backup_multiple"><code class="name flex">
 <span>def <span class="ident">test_backup_multiple</span></span>(<span>self, api_client, wait_timeout, host_shell, vm_shell, ssh_keypair, backup_config, config_backup_target, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -2827,7 +2827,7 @@ def test_backup_multiple(
         base_vm_with_data[&#39;data&#39;].setdefault(&#39;backups&#39;, []).append((backup_name, content))</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_first_backup"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_first_backup"><code class="name flex">
 <span>def <span class="ident">test_delete_first_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, config_backup_target, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -2943,7 +2943,7 @@ def test_delete_first_backup(
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_last_backup"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_last_backup"><code class="name flex">
 <span>def <span class="ident">test_delete_last_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, config_backup_target, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -3058,7 +3058,7 @@ def test_delete_last_backup(
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_middle_backup"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_middle_backup"><code class="name flex">
 <span>def <span class="ident">test_delete_middle_backup</span></span>(<span>self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout, backup_config, config_backup_target, base_vm_with_data)</span>
 </code></dt>
 <dd>
@@ -3186,53 +3186,53 @@ def test_delete_middle_backup(
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.NFS_config" href="#harvester_e2e_tests.integration.test_backup_restore.NFS_config">NFS_config</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.S3_config" href="#harvester_e2e_tests.integration.test_backup_restore.S3_config">S3_config</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.backup_config" href="#harvester_e2e_tests.integration.test_backup_restore.backup_config">backup_config</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.base_vm" href="#harvester_e2e_tests.integration.test_backup_restore.base_vm">base_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.base_vm_migrated" href="#harvester_e2e_tests.integration.test_backup_restore.base_vm_migrated">base_vm_migrated</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data" href="#harvester_e2e_tests.integration.test_backup_restore.base_vm_with_data">base_vm_with_data</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.config_backup_target" href="#harvester_e2e_tests.integration.test_backup_restore.config_backup_target">config_backup_target</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.conflict_retries" href="#harvester_e2e_tests.integration.test_backup_restore.conflict_retries">conflict_retries</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.image" href="#harvester_e2e_tests.integration.test_backup_restore.image">image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.NFS_config" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.NFS_config">NFS_config</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.S3_config" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.S3_config">S3_config</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.backup_config" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.backup_config">backup_config</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm">base_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm_migrated" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm_migrated">base_vm_migrated</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm_with_data" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.base_vm_with_data">base_vm_with_data</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.config_backup_target" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.config_backup_target">config_backup_target</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.conflict_retries" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.conflict_retries">conflict_retries</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.image" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.image">image</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore">TestBackupRestore</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore">TestBackupRestore</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.pytestmark" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_connection" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_connection">test_connection</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop">test_restore_replace_vm_not_stop</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols">test_restore_replace_with_delete_vols</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_invalid_name" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_invalid_name">test_restore_with_invalid_name</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_restore_with_new_vm">test_restore_with_new_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_update_backup_by_yaml" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.test_update_backup_by_yaml">test_update_backup_by_yaml</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.tests_backup_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestore.tests_backup_vm">tests_backup_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.pytestmark" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_connection" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_connection">test_connection</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_replace_vm_not_stop">test_restore_replace_vm_not_stop</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_replace_with_delete_vols">test_restore_replace_with_delete_vols</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_with_invalid_name" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_with_invalid_name">test_restore_with_invalid_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_with_new_vm" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_restore_with_new_vm">test_restore_with_new_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_update_backup_by_yaml" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.test_update_backup_by_yaml">test_update_backup_by_yaml</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.tests_backup_vm" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestore.tests_backup_vm">tests_backup_vm</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration">TestBackupRestoreOnMigration</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration">TestBackupRestoreOnMigration</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.pytestmark" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm">test_backup_migrated_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm" href="#harvester_e2e_tests.integration.test_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm">test_restore_replace_migrated_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.pytestmark" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.test_backup_migrated_vm">test_backup_migrated_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestBackupRestoreOnMigration.test_restore_replace_migrated_vm">test_restore_replace_migrated_vm</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore" href="#harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore">TestMultipleBackupRestore</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore">TestMultipleBackupRestore</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.pytestmark" href="#harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_backup_multiple" href="#harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_backup_multiple">test_backup_multiple</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_first_backup" href="#harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_first_backup">test_delete_first_backup</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_last_backup" href="#harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_last_backup">test_delete_last_backup</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_middle_backup" href="#harvester_e2e_tests.integration.test_backup_restore.TestMultipleBackupRestore.test_delete_middle_backup">test_delete_middle_backup</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.pytestmark" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_backup_multiple" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_backup_multiple">test_backup_multiple</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_first_backup" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_first_backup">test_delete_first_backup</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_last_backup" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_last_backup">test_delete_last_backup</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_middle_backup" href="#harvester_e2e_tests.integrations.test_4_vm_backup_restore.TestMultipleBackupRestore.test_delete_middle_backup">test_delete_middle_backup</a></code></li>
 </ul>
 </li>
 </ul>

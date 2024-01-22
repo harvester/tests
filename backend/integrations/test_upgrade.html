@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.integration.test_upgrade API documentation</title>
+<title>harvester_e2e_tests.integrations.test_upgrade API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.integration.test_upgrade</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_upgrade</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -1364,7 +1364,7 @@ class TestAnyNodesUpgrade:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.base_sc"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.base_sc"><code class="name flex">
 <span>def <span class="ident">base_sc</span></span>(<span>request, api_client, cluster_state)</span>
 </code></dt>
 <dd>
@@ -1387,7 +1387,7 @@ def base_sc(request, api_client, cluster_state):
     cluster_state.base_sc = _create_default_storage_class(request, api_client, sc_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.cluster_prereq"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.cluster_prereq"><code class="name flex">
 <span>def <span class="ident">cluster_prereq</span></span>(<span>request, cluster_state, prepare_dependence, unique_id, network, base_sc, ubuntu_image, new_sc)</span>
 </code></dt>
 <dd>
@@ -1413,7 +1413,7 @@ def cluster_prereq(request, cluster_state, prepare_dependence, unique_id, networ
         cluster_state.version = f&#34;version-{cluster_state.unique_id}&#34;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.cluster_state"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.cluster_state"><code class="name flex">
 <span>def <span class="ident">cluster_state</span></span>(<span>)</span>
 </code></dt>
 <dd>
@@ -1433,7 +1433,7 @@ def cluster_state():
     return ClusterState()</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.network"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.network"><code class="name flex">
 <span>def <span class="ident">network</span></span>(<span>request, api_client, cluster_state)</span>
 </code></dt>
 <dd>
@@ -1457,7 +1457,7 @@ def network(request, api_client, cluster_state):
     raise AssertionError(&#34;Failed to find a routable vlan network&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.new_sc"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.new_sc"><code class="name flex">
 <span>def <span class="ident">new_sc</span></span>(<span>request, api_client, cluster_state)</span>
 </code></dt>
 <dd>
@@ -1480,7 +1480,7 @@ def new_sc(request, api_client, cluster_state):
     cluster_state.new_sc = _create_default_storage_class(request, api_client, sc_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.openSUSE_image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.openSUSE_image"><code class="name flex">
 <span>def <span class="ident">openSUSE_image</span></span>(<span>request, api_client, cluster_state, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1508,7 +1508,7 @@ def openSUSE_image(request, api_client, cluster_state, wait_timeout):
     return image_json</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.prepare_dependence"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.prepare_dependence"><code class="name flex">
 <span>def <span class="ident">prepare_dependence</span></span>(<span>request, api_client, host_shell, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1530,7 +1530,7 @@ def prepare_dependence(request, api_client, host_shell, wait_timeout):
     _prepare_configuration(api_client, wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.ubuntu_image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.ubuntu_image"><code class="name flex">
 <span>def <span class="ident">ubuntu_image</span></span>(<span>request, api_client, cluster_state, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1557,7 +1557,7 @@ def ubuntu_image(request, api_client, cluster_state, wait_timeout):
     return image_json</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.unique_id"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.unique_id"><code class="name flex">
 <span>def <span class="ident">unique_id</span></span>(<span>cluster_state, unique_name)</span>
 </code></dt>
 <dd>
@@ -1571,7 +1571,7 @@ def unique_id(cluster_state, unique_name):
     cluster_state.unique_id = unique_name</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.vm_prereq"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.vm_prereq"><code class="name flex">
 <span>def <span class="ident">vm_prereq</span></span>(<span>cluster_state, api_client, vm_shell, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -1683,7 +1683,7 @@ def vm_prereq(cluster_state, api_client, vm_shell, wait_timeout):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade"><code class="flex name class">
 <span>class <span class="ident">TestAnyNodesUpgrade</span></span>
 </code></dt>
 <dd>
@@ -2115,14 +2115,14 @@ class TestAnyNodesUpgrade:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade"><code class="name flex">
 <span>def <span class="ident">test_perform_upgrade</span></span>(<span>self, cluster_prereq, vm_prereq, request, api_client, cluster_state, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -2167,7 +2167,7 @@ def test_perform_upgrade(self, cluster_prereq, vm_prereq, request, api_client, c
                                timeout=wait_timeout)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted"><code class="name flex">
 <span>def <span class="ident">test_upgrade_image_deleted</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
@@ -2188,7 +2188,7 @@ def test_upgrade_image_deleted(self, api_client):
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted"><code class="name flex">
 <span>def <span class="ident">test_upgrade_vm_deleted</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
@@ -2208,7 +2208,7 @@ def test_upgrade_vm_deleted(self, api_client):
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted"><code class="name flex">
 <span>def <span class="ident">test_upgrade_volume_deleted</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
@@ -2228,7 +2228,7 @@ def test_upgrade_volume_deleted(self, api_client):
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log"><code class="name flex">
 <span>def <span class="ident">test_verify_audit_log</span></span>(<span>self, api_client, host_shell, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -2274,7 +2274,7 @@ def test_verify_audit_log(self, api_client, host_shell, wait_timeout):
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed"><code class="name flex">
 <span>def <span class="ident">test_verify_crds_existed</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
@@ -2304,7 +2304,7 @@ def test_verify_crds_existed(self, api_client):
         raise AssertionError(f&#34;CRDs {not_existed_crds} are not existed&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version"><code class="name flex">
 <span>def <span class="ident">test_verify_deployed_components_version</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
@@ -2374,7 +2374,7 @@ def test_verify_deployed_components_version(self, api_client):
     assert longhorn_manager_version_existed, &#34;longhorn manager version is not correct&#34;</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods"><code class="name flex">
 <span>def <span class="ident">test_verify_logging_pods</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
@@ -2405,7 +2405,7 @@ def test_verify_logging_pods(self, api_client):
         )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_network"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_network"><code class="name flex">
 <span>def <span class="ident">test_verify_network</span></span>(<span>self, api_client, cluster_state)</span>
 </code></dt>
 <dd>
@@ -2441,7 +2441,7 @@ def test_verify_network(self, api_client, cluster_state):
         f&#34;VLAN {used_vlan} not found&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version"><code class="name flex">
 <span>def <span class="ident">test_verify_os_version</span></span>(<span>self, request, api_client, cluster_state, host_shell)</span>
 </code></dt>
 <dd>
@@ -2472,7 +2472,7 @@ def test_verify_os_version(self, request, api_client, cluster_state, host_shell)
                 &#34;OS version is not correct&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm"><code class="name flex">
 <span>def <span class="ident">test_verify_restore_vm</span></span>(<span>self, api_client, cluster_state, vm_shell, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -2520,7 +2520,7 @@ def test_verify_restore_vm(self, api_client, cluster_state, vm_shell, wait_timeo
     assert vm1_data == vm4_data, (&#34;Data in VM is not the same as the original&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version"><code class="name flex">
 <span>def <span class="ident">test_verify_rke2_version</span></span>(<span>self, api_client, host_shell)</span>
 </code></dt>
 <dd>
@@ -2559,12 +2559,12 @@ def test_verify_rke2_version(self, api_client, host_shell):
                &#34;rke2 version is not correct&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class"><code class="name flex">
 <span>def <span class="ident">test_verify_storage_class</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Verify StorageClasses and defaults
-- <code><a title="harvester_e2e_tests.integration.test_upgrade.new_sc" href="#harvester_e2e_tests.integration.test_upgrade.new_sc">new_sc()</a></code> should be settle as default
+- <code><a title="harvester_e2e_tests.integrations.test_upgrade.new_sc" href="#harvester_e2e_tests.integrations.test_upgrade.new_sc">new_sc()</a></code> should be settle as default
 - <code>longhorn</code> should exists</p></div>
 <details class="source">
 <summary>
@@ -2601,7 +2601,7 @@ def test_verify_storage_class(self, api_client):
     assert test_default, (&#34;test StorageClass is not default&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_vms"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_vms"><code class="name flex">
 <span>def <span class="ident">test_verify_vms</span></span>(<span>self, api_client, cluster_state, vm_shell, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -2648,7 +2648,7 @@ def test_verify_vms(self, api_client, cluster_state, vm_shell, wait_timeout):
 </dd>
 </dl>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade"><code class="flex name class">
 <span>class <span class="ident">TestInvalidUpgrade</span></span>
 </code></dt>
 <dd>
@@ -2755,18 +2755,18 @@ class TestInvalidUpgrade:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.VM_PREFIX"><code class="name">var <span class="ident">VM_PREFIX</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.VM_PREFIX"><code class="name">var <span class="ident">VM_PREFIX</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.test_degraded_volume"><code class="name flex">
 <span>def <span class="ident">test_degraded_volume</span></span>(<span>self, cluster_prereq, request, api_client, cluster_state, vm_shell, wait_timeout)</span>
 </code></dt>
 <dd>
@@ -2805,7 +2805,7 @@ degraded state.
     self._clean_degraded_volume(api_client, cluster_state.version)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.test_invalid_manifest"><code class="name flex">
 <span>def <span class="ident">test_invalid_manifest</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
@@ -2853,52 +2853,52 @@ def test_invalid_manifest(self, api_client):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.base_sc" href="#harvester_e2e_tests.integration.test_upgrade.base_sc">base_sc</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.cluster_prereq" href="#harvester_e2e_tests.integration.test_upgrade.cluster_prereq">cluster_prereq</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.cluster_state" href="#harvester_e2e_tests.integration.test_upgrade.cluster_state">cluster_state</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.network" href="#harvester_e2e_tests.integration.test_upgrade.network">network</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.new_sc" href="#harvester_e2e_tests.integration.test_upgrade.new_sc">new_sc</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.openSUSE_image" href="#harvester_e2e_tests.integration.test_upgrade.openSUSE_image">openSUSE_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.prepare_dependence" href="#harvester_e2e_tests.integration.test_upgrade.prepare_dependence">prepare_dependence</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.ubuntu_image" href="#harvester_e2e_tests.integration.test_upgrade.ubuntu_image">ubuntu_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.unique_id" href="#harvester_e2e_tests.integration.test_upgrade.unique_id">unique_id</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.vm_prereq" href="#harvester_e2e_tests.integration.test_upgrade.vm_prereq">vm_prereq</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.base_sc" href="#harvester_e2e_tests.integrations.test_upgrade.base_sc">base_sc</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.cluster_prereq" href="#harvester_e2e_tests.integrations.test_upgrade.cluster_prereq">cluster_prereq</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.cluster_state" href="#harvester_e2e_tests.integrations.test_upgrade.cluster_state">cluster_state</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.network" href="#harvester_e2e_tests.integrations.test_upgrade.network">network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.new_sc" href="#harvester_e2e_tests.integrations.test_upgrade.new_sc">new_sc</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.openSUSE_image" href="#harvester_e2e_tests.integrations.test_upgrade.openSUSE_image">openSUSE_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.prepare_dependence" href="#harvester_e2e_tests.integrations.test_upgrade.prepare_dependence">prepare_dependence</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.ubuntu_image" href="#harvester_e2e_tests.integrations.test_upgrade.ubuntu_image">ubuntu_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.unique_id" href="#harvester_e2e_tests.integrations.test_upgrade.unique_id">unique_id</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.vm_prereq" href="#harvester_e2e_tests.integrations.test_upgrade.vm_prereq">vm_prereq</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade">TestAnyNodesUpgrade</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade">TestAnyNodesUpgrade</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted">test_upgrade_image_deleted</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted">test_upgrade_vm_deleted</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted">test_upgrade_volume_deleted</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log">test_verify_audit_log</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed">test_verify_crds_existed</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version">test_verify_deployed_components_version</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods">test_verify_logging_pods</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_network" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_network">test_verify_network</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version">test_verify_os_version</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm">test_verify_restore_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version">test_verify_rke2_version</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class">test_verify_storage_class</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_vms" href="#harvester_e2e_tests.integration.test_upgrade.TestAnyNodesUpgrade.test_verify_vms">test_verify_vms</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.pytestmark" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_image_deleted">test_upgrade_image_deleted</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_vm_deleted">test_upgrade_vm_deleted</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_upgrade_volume_deleted">test_upgrade_volume_deleted</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_audit_log">test_verify_audit_log</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_crds_existed">test_verify_crds_existed</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_deployed_components_version">test_verify_deployed_components_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods">test_verify_logging_pods</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_network" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_network">test_verify_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version">test_verify_os_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm">test_verify_restore_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version">test_verify_rke2_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class">test_verify_storage_class</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_vms" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_vms">test_verify_vms</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade">TestInvalidUpgrade</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade" href="#harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade">TestInvalidUpgrade</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.VM_PREFIX" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.VM_PREFIX">VM_PREFIX</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_degraded_volume">test_degraded_volume</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest" href="#harvester_e2e_tests.integration.test_upgrade.TestInvalidUpgrade.test_invalid_manifest">test_invalid_manifest</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.VM_PREFIX" href="#harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.VM_PREFIX">VM_PREFIX</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.pytestmark" href="#harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.test_degraded_volume" href="#harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.test_degraded_volume">test_degraded_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.test_invalid_manifest" href="#harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.test_invalid_manifest">test_invalid_manifest</a></code></li>
 </ul>
 </li>
 </ul>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.integration.test_rancher_integration API documentation</title>
+<title>harvester_e2e_tests.integrations.test_9_rancher_integration API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.integration.test_rancher_integration</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_9_rancher_integration</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -1000,7 +1000,7 @@ class TestRKE1:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.csi_deployment"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.csi_deployment"><code class="name flex">
 <span>def <span class="ident">csi_deployment</span></span>(<span>unique_name)</span>
 </code></dt>
 <dd>
@@ -1019,7 +1019,7 @@ def csi_deployment(unique_name):
     }</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.focal_image"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.focal_image"><code class="name flex">
 <span>def <span class="ident">focal_image</span></span>(<span>api_client, unique_name, focal_image_url, polling_for)</span>
 </code></dt>
 <dd>
@@ -1051,7 +1051,7 @@ def focal_image(api_client, unique_name, focal_image_url, polling_for):
     api_client.images.delete(name, namespace)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.focal_image_url"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.focal_image_url"><code class="name flex">
 <span>def <span class="ident">focal_image_url</span></span>(<span>request)</span>
 </code></dt>
 <dd>
@@ -1067,7 +1067,7 @@ def focal_image_url(request):
     return os.path.join(base_url, &#34;focal-server-cloudimg-amd64.img&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.harvester_cloud_credential"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.harvester_cloud_credential"><code class="name flex">
 <span>def <span class="ident">harvester_cloud_credential</span></span>(<span>api_client, rancher_api_client, harvester_mgmt_cluster, unique_name)</span>
 </code></dt>
 <dd>
@@ -1099,7 +1099,7 @@ def harvester_cloud_credential(api_client, rancher_api_client,
     rancher_api_client.cloud_credentials.delete(data[&#39;id&#39;])</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.harvester_mgmt_cluster"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.harvester_mgmt_cluster"><code class="name flex">
 <span>def <span class="ident">harvester_mgmt_cluster</span></span>(<span>api_client, rancher_api_client, unique_name, polling_for)</span>
 </code></dt>
 <dd>
@@ -1133,7 +1133,7 @@ def harvester_mgmt_cluster(api_client, rancher_api_client, unique_name, polling_
     api_client.settings.update(&#34;cluster-registration-url&#34;, updates)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.lb_service"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.lb_service"><code class="name flex">
 <span>def <span class="ident">lb_service</span></span>(<span>unique_name, nginx_deployment)</span>
 </code></dt>
 <dd>
@@ -1179,7 +1179,7 @@ def lb_service(unique_name, nginx_deployment):
     }</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.machine_count"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.machine_count"><code class="name flex">
 <span>def <span class="ident">machine_count</span></span>(<span>request)</span>
 </code></dt>
 <dd>
@@ -1195,7 +1195,7 @@ def machine_count(request):
     return request.param</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.nginx_deployment"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.nginx_deployment"><code class="name flex">
 <span>def <span class="ident">nginx_deployment</span></span>(<span>unique_name)</span>
 </code></dt>
 <dd>
@@ -1213,7 +1213,7 @@ def nginx_deployment(unique_name):
     }</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.rke1_cluster"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_cluster"><code class="name flex">
 <span>def <span class="ident">rke1_cluster</span></span>(<span>unique_name, rancher_api_client, machine_count)</span>
 </code></dt>
 <dd>
@@ -1234,7 +1234,7 @@ def rke1_cluster(unique_name, rancher_api_client, machine_count):
     rancher_api_client.mgmt_clusters.delete(name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.rke1_k8s_version"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_k8s_version"><code class="name flex">
 <span>def <span class="ident">rke1_k8s_version</span></span>(<span>request, k8s_version, rancher_api_client)</span>
 </code></dt>
 <dd>
@@ -1273,7 +1273,7 @@ def rke1_k8s_version(request, k8s_version, rancher_api_client):
     return latest</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.rke2_cluster"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.rke2_cluster"><code class="name flex">
 <span>def <span class="ident">rke2_cluster</span></span>(<span>unique_name, rancher_api_client, machine_count)</span>
 </code></dt>
 <dd>
@@ -1294,7 +1294,7 @@ def rke2_cluster(unique_name, rancher_api_client, machine_count):
     rancher_api_client.mgmt_clusters.delete(name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.test_add_project_owner_user"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.test_add_project_owner_user"><code class="name flex">
 <span>def <span class="ident">test_add_project_owner_user</span></span>(<span>api_client, rancher_api_client, unique_name, wait_timeout, harvester_mgmt_cluster)</span>
 </code></dt>
 <dd>
@@ -1351,7 +1351,7 @@ def test_add_project_owner_user(api_client, rancher_api_client, unique_name, wai
     rancher_api_client.users.delete(uid)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.test_import_harvester"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.test_import_harvester"><code class="name flex">
 <span>def <span class="ident">test_import_harvester</span></span>(<span>api_client, rancher_api_client, harvester_mgmt_cluster, polling_for)</span>
 </code></dt>
 <dd>
@@ -1389,7 +1389,7 @@ def test_import_harvester(api_client, rancher_api_client, harvester_mgmt_cluster
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.vlan_network"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.vlan_network"><code class="name flex">
 <span>def <span class="ident">vlan_network</span></span>(<span>request, api_client)</span>
 </code></dt>
 <dd>
@@ -1428,7 +1428,7 @@ def vlan_network(request, api_client):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1"><code class="flex name class">
 <span>class <span class="ident">TestRKE1</span></span>
 </code></dt>
 <dd>
@@ -1784,14 +1784,14 @@ class TestRKE1:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_cloud_provider_chart"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_cloud_provider_chart"><code class="name flex">
 <span>def <span class="ident">test_cloud_provider_chart</span></span>(<span>self, rancher_api_client, rke1_cluster, polling_for)</span>
 </code></dt>
 <dd>
@@ -1833,7 +1833,7 @@ def test_cloud_provider_chart(self, rancher_api_client, rke1_cluster, polling_fo
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_create_pvc"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_create_pvc"><code class="name flex">
 <span>def <span class="ident">test_create_pvc</span></span>(<span>self, rancher_api_client, harvester_mgmt_cluster, unique_name, polling_for)</span>
 </code></dt>
 <dd>
@@ -1902,7 +1902,7 @@ def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
     capi.pvcs.delete(unique_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_create_rke1"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_create_rke1"><code class="name flex">
 <span>def <span class="ident">test_create_rke1</span></span>(<span>self, rancher_api_client, unique_name, harvester_mgmt_cluster, rancher_wait_timeout, rke1_cluster, rke1_k8s_version, harvester_cloud_credential, focal_image, vlan_network, polling_for)</span>
 </code></dt>
 <dd>
@@ -1986,7 +1986,7 @@ def test_create_rke1(self, rancher_api_client, unique_name, harvester_mgmt_clust
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_csi_deployment"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_csi_deployment"><code class="name flex">
 <span>def <span class="ident">test_csi_deployment</span></span>(<span>self, rancher_api_client, rke1_cluster, csi_deployment, polling_for)</span>
 </code></dt>
 <dd>
@@ -2032,7 +2032,7 @@ def test_csi_deployment(self, rancher_api_client, rke1_cluster, csi_deployment, 
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_csi_driver_chart"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_csi_driver_chart"><code class="name flex">
 <span>def <span class="ident">test_csi_driver_chart</span></span>(<span>self, rancher_api_client, rke1_cluster, polling_for)</span>
 </code></dt>
 <dd>
@@ -2074,7 +2074,7 @@ def test_csi_driver_chart(self, rancher_api_client, rke1_cluster, polling_for):
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_delete_deployment"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_delete_deployment"><code class="name flex">
 <span>def <span class="ident">test_delete_deployment</span></span>(<span>self, rancher_api_client, rke1_cluster, csi_deployment, polling_for)</span>
 </code></dt>
 <dd>
@@ -2105,7 +2105,7 @@ def test_delete_deployment(self, rancher_api_client, rke1_cluster, csi_deploymen
     rancher_api_client.pvcs.delete(rke1_cluster[&#39;id&#39;], csi_deployment[&#39;pvc&#39;])</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_delete_rke1"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_delete_rke1"><code class="name flex">
 <span>def <span class="ident">test_delete_rke1</span></span>(<span>self, api_client, rancher_api_client, rke1_cluster, rancher_wait_timeout, polling_for)</span>
 </code></dt>
 <dd>
@@ -2140,7 +2140,7 @@ def test_delete_rke1(self, api_client, rancher_api_client, rke1_cluster,
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_deploy_nginx"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_deploy_nginx"><code class="name flex">
 <span>def <span class="ident">test_deploy_nginx</span></span>(<span>self, rancher_api_client, rke1_cluster, nginx_deployment, polling_for)</span>
 </code></dt>
 <dd>
@@ -2170,7 +2170,7 @@ def test_deploy_nginx(self, rancher_api_client, rke1_cluster, nginx_deployment, 
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_load_balancer_service"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_load_balancer_service"><code class="name flex">
 <span>def <span class="ident">test_load_balancer_service</span></span>(<span>self, rancher_api_client, rke1_cluster, nginx_deployment, lb_service, polling_for)</span>
 </code></dt>
 <dd>
@@ -2221,7 +2221,7 @@ def test_load_balancer_service(self, rancher_api_client, rke1_cluster, nginx_dep
 </dd>
 </dl>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2"><code class="flex name class">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2"><code class="flex name class">
 <span>class <span class="ident">TestRKE2</span></span>
 </code></dt>
 <dd>
@@ -2525,14 +2525,14 @@ class TestRKE2:
 </details>
 <h3>Class variables</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_create_pvc"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_create_pvc"><code class="name flex">
 <span>def <span class="ident">test_create_pvc</span></span>(<span>self, rancher_api_client, harvester_mgmt_cluster, unique_name, polling_for)</span>
 </code></dt>
 <dd>
@@ -2601,7 +2601,7 @@ def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
     capi.pvcs.delete(unique_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_create_rke2"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_create_rke2"><code class="name flex">
 <span>def <span class="ident">test_create_rke2</span></span>(<span>self, rancher_api_client, unique_name, harvester_mgmt_cluster, harvester_cloud_credential, rke2_cluster, focal_image, vlan_network, k8s_version, rancher_wait_timeout, polling_for)</span>
 </code></dt>
 <dd>
@@ -2702,7 +2702,7 @@ def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_clust
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_csi_deployment"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_csi_deployment"><code class="name flex">
 <span>def <span class="ident">test_csi_deployment</span></span>(<span>self, rancher_api_client, rke2_cluster, csi_deployment, polling_for)</span>
 </code></dt>
 <dd>
@@ -2748,7 +2748,7 @@ def test_csi_deployment(self, rancher_api_client, rke2_cluster, csi_deployment, 
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_delete_deployment"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_delete_deployment"><code class="name flex">
 <span>def <span class="ident">test_delete_deployment</span></span>(<span>self, rancher_api_client, rke2_cluster, csi_deployment, polling_for)</span>
 </code></dt>
 <dd>
@@ -2779,7 +2779,7 @@ def test_delete_deployment(self, rancher_api_client, rke2_cluster, csi_deploymen
     rancher_api_client.pvcs.delete(rke2_cluster[&#39;id&#39;], csi_deployment[&#39;pvc&#39;])</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_delete_rke2"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_delete_rke2"><code class="name flex">
 <span>def <span class="ident">test_delete_rke2</span></span>(<span>self, api_client, rancher_api_client, rke2_cluster, rancher_wait_timeout, polling_for)</span>
 </code></dt>
 <dd>
@@ -2812,7 +2812,7 @@ def test_delete_rke2(self, api_client, rancher_api_client, rke2_cluster,
     assert 0 == remaining_vm_cnt, (f&#34;Still have {remaining_vm_cnt} RKE2 VMs&#34;)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_deploy_nginx"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_deploy_nginx"><code class="name flex">
 <span>def <span class="ident">test_deploy_nginx</span></span>(<span>self, rancher_api_client, rke2_cluster, nginx_deployment, polling_for)</span>
 </code></dt>
 <dd>
@@ -2842,7 +2842,7 @@ def test_deploy_nginx(self, rancher_api_client, rke2_cluster, nginx_deployment, 
     )</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_load_balancer_service"><code class="name flex">
+<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_load_balancer_service"><code class="name flex">
 <span>def <span class="ident">test_load_balancer_service</span></span>(<span>self, rancher_api_client, rke2_cluster, nginx_deployment, lb_service, polling_for)</span>
 </code></dt>
 <dd>
@@ -2903,55 +2903,55 @@ def test_load_balancer_service(self, rancher_api_client, rke2_cluster, nginx_dep
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.integration" href="index.html">harvester_e2e_tests.integration</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.csi_deployment" href="#harvester_e2e_tests.integration.test_rancher_integration.csi_deployment">csi_deployment</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.focal_image" href="#harvester_e2e_tests.integration.test_rancher_integration.focal_image">focal_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.focal_image_url" href="#harvester_e2e_tests.integration.test_rancher_integration.focal_image_url">focal_image_url</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.harvester_cloud_credential" href="#harvester_e2e_tests.integration.test_rancher_integration.harvester_cloud_credential">harvester_cloud_credential</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.harvester_mgmt_cluster" href="#harvester_e2e_tests.integration.test_rancher_integration.harvester_mgmt_cluster">harvester_mgmt_cluster</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.lb_service" href="#harvester_e2e_tests.integration.test_rancher_integration.lb_service">lb_service</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.machine_count" href="#harvester_e2e_tests.integration.test_rancher_integration.machine_count">machine_count</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.nginx_deployment" href="#harvester_e2e_tests.integration.test_rancher_integration.nginx_deployment">nginx_deployment</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.rke1_cluster" href="#harvester_e2e_tests.integration.test_rancher_integration.rke1_cluster">rke1_cluster</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.rke1_k8s_version" href="#harvester_e2e_tests.integration.test_rancher_integration.rke1_k8s_version">rke1_k8s_version</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.rke2_cluster" href="#harvester_e2e_tests.integration.test_rancher_integration.rke2_cluster">rke2_cluster</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.test_add_project_owner_user" href="#harvester_e2e_tests.integration.test_rancher_integration.test_add_project_owner_user">test_add_project_owner_user</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.test_import_harvester" href="#harvester_e2e_tests.integration.test_rancher_integration.test_import_harvester">test_import_harvester</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.vlan_network" href="#harvester_e2e_tests.integration.test_rancher_integration.vlan_network">vlan_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.csi_deployment" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.csi_deployment">csi_deployment</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.focal_image" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.focal_image">focal_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.focal_image_url" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.focal_image_url">focal_image_url</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.harvester_cloud_credential" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.harvester_cloud_credential">harvester_cloud_credential</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.harvester_mgmt_cluster" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.harvester_mgmt_cluster">harvester_mgmt_cluster</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.lb_service" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.lb_service">lb_service</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.machine_count" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.machine_count">machine_count</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.nginx_deployment" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.nginx_deployment">nginx_deployment</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_cluster" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_cluster">rke1_cluster</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_k8s_version" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_k8s_version">rke1_k8s_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.rke2_cluster" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.rke2_cluster">rke2_cluster</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.test_add_project_owner_user" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.test_add_project_owner_user">test_add_project_owner_user</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.test_import_harvester" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.test_import_harvester">test_import_harvester</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.vlan_network" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.vlan_network">vlan_network</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1">TestRKE1</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1">TestRKE1</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.pytestmark" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_cloud_provider_chart" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_cloud_provider_chart">test_cloud_provider_chart</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_create_pvc" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_create_pvc">test_create_pvc</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_create_rke1" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_create_rke1">test_create_rke1</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_csi_deployment" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_csi_deployment">test_csi_deployment</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_csi_driver_chart" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_csi_driver_chart">test_csi_driver_chart</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_delete_deployment" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_delete_deployment">test_delete_deployment</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_delete_rke1" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_delete_rke1">test_delete_rke1</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_deploy_nginx" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_deploy_nginx">test_deploy_nginx</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_load_balancer_service" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE1.test_load_balancer_service">test_load_balancer_service</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.pytestmark" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_cloud_provider_chart" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_cloud_provider_chart">test_cloud_provider_chart</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_create_pvc" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_create_pvc">test_create_pvc</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_create_rke1" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_create_rke1">test_create_rke1</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_csi_deployment" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_csi_deployment">test_csi_deployment</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_csi_driver_chart" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_csi_driver_chart">test_csi_driver_chart</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_delete_deployment" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_delete_deployment">test_delete_deployment</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_delete_rke1" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_delete_rke1">test_delete_rke1</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_deploy_nginx" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_deploy_nginx">test_deploy_nginx</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_load_balancer_service" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_load_balancer_service">test_load_balancer_service</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2">TestRKE2</a></code></h4>
+<h4><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2">TestRKE2</a></code></h4>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.pytestmark" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_create_pvc" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_create_pvc">test_create_pvc</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_create_rke2" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_create_rke2">test_create_rke2</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_csi_deployment" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_csi_deployment">test_csi_deployment</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_delete_deployment" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_delete_deployment">test_delete_deployment</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_delete_rke2" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_delete_rke2">test_delete_rke2</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_deploy_nginx" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_deploy_nginx">test_deploy_nginx</a></code></li>
-<li><code><a title="harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_load_balancer_service" href="#harvester_e2e_tests.integration.test_rancher_integration.TestRKE2.test_load_balancer_service">test_load_balancer_service</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.pytestmark" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_create_pvc" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_create_pvc">test_create_pvc</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_create_rke2" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_create_rke2">test_create_rke2</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_csi_deployment" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_csi_deployment">test_csi_deployment</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_delete_deployment" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_delete_deployment">test_delete_deployment</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_delete_rke2" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_delete_rke2">test_delete_rke2</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_deploy_nginx" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_deploy_nginx">test_deploy_nginx</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_load_balancer_service" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_load_balancer_service">test_load_balancer_service</a></code></li>
 </ul>
 </li>
 </ul>
