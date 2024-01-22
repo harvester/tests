@@ -253,9 +253,11 @@ def delete_vm(api_client, unique_name, wait_timeout):
 
 
 @pytest.mark.p0
+@pytest.mark.networks
 class TestBackendNetwork:
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_mgmt_network_connection(self, api_client, request, client, image_opensuse,
                                      unique_name, wait_timeout):
         &#34;&#34;&#34;
@@ -348,10 +350,12 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding=&#34;utf-8&#34;)
 
-        assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-            f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-            f&#34;on management interface from Harvester node&#34;
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                            &#34; to VM on management interface&#34;
+                                            f&#34; {mgmt_ip} from external host&#34;)
 
         # cleanup VM
         delete_vm(api_client, unique_name, wait_timeout)
@@ -365,6 +369,7 @@ class TestBackendNetwork:
                         restart_ssh, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     @pytest.mark.dependency(name=&#34;vlan_network_connection&#34;)
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
@@ -443,6 +448,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     @pytest.mark.dependency(name=&#34;reboot_vlan_connection&#34;,
                             depends=[&#34;vlan_network_connection&#34;])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
@@ -584,6 +590,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
@@ -709,6 +716,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
@@ -835,10 +843,12 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding=&#34;utf-8&#34;)
 
-        assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-            f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-            f&#34;on management interface from Harvester node&#34;
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                            &#34; to VM on management interface&#34;
+                                            f&#34; {mgmt_ip} from external host&#34;)
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -852,6 +862,7 @@ class TestBackendNetwork:
                         restart_ssh, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
                                        image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
@@ -982,16 +993,21 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding=&#34;utf-8&#34;)
 
-        assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-            f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-            f&#34;on management interface from Harvester node&#34;
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                            &#34; to VM on management interface&#34;
+                                            f&#34; {mgmt_ip} from external host&#34;)
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
 
-    def ssh_client(self, client, dest_ip, username, password, command, timeout):
-        client.connect(dest_ip, username=username, password=password, timeout=timeout)
+    def ssh_client(self, client, dest_ip, username, password, command, timeout,
+                   allow_agent=False, look_for_keys=False):
+        client.connect(dest_ip, username=username, password=password,
+                       allow_agent=allow_agent, look_for_keys=look_for_keys,
+                       timeout=timeout)
 
         split_command = shlex.split(command)
         _stdin, _stdout, _stderr = client.exec_command(&#39; &#39;.join(
@@ -999,8 +1015,9 @@ class TestBackendNetwork:
         return _stdout, _stderr
 
     def ssh_jumpstart(self, client, dest_ip, client_ip, client_user, client_password,
-                      dest_user, dest_password, command):
-        client.connect(client_ip, username=client_user, password=client_password)
+                      dest_user, dest_password, command, allow_agent=False, look_for_keys=False):
+        client.connect(client_ip, username=client_user, password=client_password,
+                       allow_agent=allow_agent, look_for_keys=look_for_keys)
 
         client_transport = client.get_transport()
         dest_addr = (dest_ip, 22)
@@ -1282,9 +1299,11 @@ def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
 class TestBackendNetwork:
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_mgmt_network_connection(self, api_client, request, client, image_opensuse,
                                      unique_name, wait_timeout):
         &#34;&#34;&#34;
@@ -1377,10 +1396,12 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding=&#34;utf-8&#34;)
 
-        assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-            f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-            f&#34;on management interface from Harvester node&#34;
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                            &#34; to VM on management interface&#34;
+                                            f&#34; {mgmt_ip} from external host&#34;)
 
         # cleanup VM
         delete_vm(api_client, unique_name, wait_timeout)
@@ -1394,6 +1415,7 @@ class TestBackendNetwork:
                         restart_ssh, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     @pytest.mark.dependency(name=&#34;vlan_network_connection&#34;)
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
@@ -1472,6 +1494,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     @pytest.mark.dependency(name=&#34;reboot_vlan_connection&#34;,
                             depends=[&#34;vlan_network_connection&#34;])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
@@ -1613,6 +1636,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
@@ -1738,6 +1762,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
@@ -1864,10 +1889,12 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding=&#34;utf-8&#34;)
 
-        assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-            f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-            f&#34;on management interface from Harvester node&#34;
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                            &#34; to VM on management interface&#34;
+                                            f&#34; {mgmt_ip} from external host&#34;)
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -1881,6 +1908,7 @@ class TestBackendNetwork:
                         restart_ssh, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
                                        image_opensuse, vm_network, wait_timeout):
         &#34;&#34;&#34;
@@ -2011,16 +2039,21 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding=&#34;utf-8&#34;)
 
-        assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-            f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-            f&#34;on management interface from Harvester node&#34;
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                            &#34; to VM on management interface&#34;
+                                            f&#34; {mgmt_ip} from external host&#34;)
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
 
-    def ssh_client(self, client, dest_ip, username, password, command, timeout):
-        client.connect(dest_ip, username=username, password=password, timeout=timeout)
+    def ssh_client(self, client, dest_ip, username, password, command, timeout,
+                   allow_agent=False, look_for_keys=False):
+        client.connect(dest_ip, username=username, password=password,
+                       allow_agent=allow_agent, look_for_keys=look_for_keys,
+                       timeout=timeout)
 
         split_command = shlex.split(command)
         _stdin, _stdout, _stderr = client.exec_command(&#39; &#39;.join(
@@ -2028,8 +2061,9 @@ class TestBackendNetwork:
         return _stdout, _stderr
 
     def ssh_jumpstart(self, client, dest_ip, client_ip, client_user, client_password,
-                      dest_user, dest_password, command):
-        client.connect(client_ip, username=client_user, password=client_password)
+                      dest_user, dest_password, command, allow_agent=False, look_for_keys=False):
+        client.connect(client_ip, username=client_user, password=client_password,
+                       allow_agent=allow_agent, look_for_keys=look_for_keys)
 
         client_transport = client.get_transport()
         dest_addr = (dest_ip, 22)
@@ -2055,7 +2089,7 @@ class TestBackendNetwork:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks_interact.TestBackendNetwork.ssh_client"><code class="name flex">
-<span>def <span class="ident">ssh_client</span></span>(<span>self, client, dest_ip, username, password, command, timeout)</span>
+<span>def <span class="ident">ssh_client</span></span>(<span>self, client, dest_ip, username, password, command, timeout, allow_agent=False, look_for_keys=False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2063,8 +2097,11 @@ class TestBackendNetwork:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def ssh_client(self, client, dest_ip, username, password, command, timeout):
-    client.connect(dest_ip, username=username, password=password, timeout=timeout)
+<pre><code class="python">def ssh_client(self, client, dest_ip, username, password, command, timeout,
+               allow_agent=False, look_for_keys=False):
+    client.connect(dest_ip, username=username, password=password,
+                   allow_agent=allow_agent, look_for_keys=look_for_keys,
+                   timeout=timeout)
 
     split_command = shlex.split(command)
     _stdin, _stdout, _stderr = client.exec_command(&#39; &#39;.join(
@@ -2073,7 +2110,7 @@ class TestBackendNetwork:
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks_interact.TestBackendNetwork.ssh_jumpstart"><code class="name flex">
-<span>def <span class="ident">ssh_jumpstart</span></span>(<span>self, client, dest_ip, client_ip, client_user, client_password, dest_user, dest_password, command)</span>
+<span>def <span class="ident">ssh_jumpstart</span></span>(<span>self, client, dest_ip, client_ip, client_user, client_password, dest_user, dest_password, command, allow_agent=False, look_for_keys=False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2082,8 +2119,9 @@ class TestBackendNetwork:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def ssh_jumpstart(self, client, dest_ip, client_ip, client_user, client_password,
-                  dest_user, dest_password, command):
-    client.connect(client_ip, username=client_user, password=client_password)
+                  dest_user, dest_password, command, allow_agent=False, look_for_keys=False):
+    client.connect(client_ip, username=client_user, password=client_password,
+                   allow_agent=allow_agent, look_for_keys=look_for_keys)
 
     client_transport = client.get_transport()
     dest_addr = (dest_ip, 22)
@@ -2120,6 +2158,7 @@ class TestBackendNetwork:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
 def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
                                    image_opensuse, vm_network, wait_timeout):
     &#34;&#34;&#34;
@@ -2250,10 +2289,12 @@ def test_delete_vlan_from_multiple(self, api_client, request, client, unique_nam
         subprocess.check_output(command, stderr=subprocess.STDOUT,
                                 shell=False, encoding=&#34;utf-8&#34;)
 
-    assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-        f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-        f&#34;on management interface from Harvester node&#34;
-    )
+    # OpenSSH returns the return code of the program that was executed on
+    # the remote, unless there was an error for SSH itself, in which case
+    # it returns 255
+    assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                        &#34; to VM on management interface&#34;
+                                        f&#34; {mgmt_ip} from external host&#34;)
 
     # cleanup vm
     delete_vm(api_client, unique_name, wait_timeout)</code></pre>
@@ -2277,6 +2318,7 @@ def test_delete_vlan_from_multiple(self, api_client, request, client, unique_nam
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
 def test_mgmt_network_connection(self, api_client, request, client, image_opensuse,
                                  unique_name, wait_timeout):
     &#34;&#34;&#34;
@@ -2369,10 +2411,12 @@ def test_mgmt_network_connection(self, api_client, request, client, image_opensu
         subprocess.check_output(command, stderr=subprocess.STDOUT,
                                 shell=False, encoding=&#34;utf-8&#34;)
 
-    assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-        f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-        f&#34;on management interface from Harvester node&#34;
-    )
+    # OpenSSH returns the return code of the program that was executed on
+    # the remote, unless there was an error for SSH itself, in which case
+    # it returns 255
+    assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                        &#34; to VM on management interface&#34;
+                                        f&#34; {mgmt_ip} from external host&#34;)
 
     # cleanup VM
     delete_vm(api_client, unique_name, wait_timeout)
@@ -2406,6 +2450,7 @@ def test_mgmt_network_connection(self, api_client, request, client, image_opensu
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
 def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
                                  image_opensuse, vm_network, wait_timeout):
     &#34;&#34;&#34;
@@ -2552,6 +2597,7 @@ def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
 @pytest.mark.dependency(name=&#34;reboot_vlan_connection&#34;,
                         depends=[&#34;vlan_network_connection&#34;])
 def test_reboot_vlan_connection(self, api_client, request, unique_name,
@@ -2709,6 +2755,7 @@ def test_reboot_vlan_connection(self, api_client, request, unique_name,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
 @pytest.mark.dependency(name=&#34;vlan_network_connection&#34;)
 def test_vlan_network_connection(self, api_client, request, client, unique_name,
                                  image_opensuse, vm_network, wait_timeout):
@@ -2808,6 +2855,7 @@ def test_vlan_network_connection(self, api_client, request, client, unique_name,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
 def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
                                  image_opensuse, vm_network, wait_timeout):
     &#34;&#34;&#34;
@@ -2934,10 +2982,12 @@ def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
         subprocess.check_output(command, stderr=subprocess.STDOUT,
                                 shell=False, encoding=&#34;utf-8&#34;)
 
-    assert f&#34;connect to host {mgmt_ip} port 22: No route to host&#34; in ex.value.output, (
-        f&#34;Failed: Should not be able to SSH to VM management IP {mgmt_ip}&#34;
-        f&#34;on management interface from Harvester node&#34;
-    )
+    # OpenSSH returns the return code of the program that was executed on
+    # the remote, unless there was an error for SSH itself, in which case
+    # it returns 255
+    assert ex.value.returncode == 255, (&#34;Failed: should not be able to SSH&#34;
+                                        &#34; to VM on management interface&#34;
+                                        f&#34; {mgmt_ip} from external host&#34;)
 
     # cleanup vm
     delete_vm(api_client, unique_name, wait_timeout)
