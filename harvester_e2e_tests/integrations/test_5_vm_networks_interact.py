@@ -225,9 +225,11 @@ def delete_vm(api_client, unique_name, wait_timeout):
 
 
 @pytest.mark.p0
+@pytest.mark.networks
 class TestBackendNetwork:
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_mgmt_network_connection(self, api_client, request, client, image_opensuse,
                                      unique_name, wait_timeout):
         """
@@ -320,10 +322,12 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding="utf-8")
 
-        assert f"connect to host {mgmt_ip} port 22: No route to host" in ex.value.output, (
-            f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
-            f"on management interface from Harvester node"
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, ("Failed: should not be able to SSH"
+                                            " to VM on management interface"
+                                            f" {mgmt_ip} from external host")
 
         # cleanup VM
         delete_vm(api_client, unique_name, wait_timeout)
@@ -337,6 +341,7 @@ class TestBackendNetwork:
                         restart_ssh, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     @pytest.mark.dependency(name="vlan_network_connection")
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
@@ -415,6 +420,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     @pytest.mark.dependency(name="reboot_vlan_connection",
                             depends=["vlan_network_connection"])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
@@ -556,6 +562,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
         """
@@ -681,6 +688,7 @@ class TestBackendNetwork:
         delete_vm(api_client, unique_name, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout):
         """
@@ -807,10 +815,12 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding="utf-8")
 
-        assert f"connect to host {mgmt_ip} port 22: No route to host" in ex.value.output, (
-            f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
-            f"on management interface from Harvester node"
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, ("Failed: should not be able to SSH"
+                                            " to VM on management interface"
+                                            f" {mgmt_ip} from external host")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
@@ -824,6 +834,7 @@ class TestBackendNetwork:
                         restart_ssh, wait_timeout)
 
     @pytest.mark.p0
+    @pytest.mark.networks
     def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
                                        image_opensuse, vm_network, wait_timeout):
         """
@@ -954,16 +965,21 @@ class TestBackendNetwork:
             subprocess.check_output(command, stderr=subprocess.STDOUT,
                                     shell=False, encoding="utf-8")
 
-        assert f"connect to host {mgmt_ip} port 22: No route to host" in ex.value.output, (
-            f"Failed: Should not be able to SSH to VM management IP {mgmt_ip}"
-            f"on management interface from Harvester node"
-        )
+        # OpenSSH returns the return code of the program that was executed on
+        # the remote, unless there was an error for SSH itself, in which case
+        # it returns 255
+        assert ex.value.returncode == 255, ("Failed: should not be able to SSH"
+                                            " to VM on management interface"
+                                            f" {mgmt_ip} from external host")
 
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
 
-    def ssh_client(self, client, dest_ip, username, password, command, timeout):
-        client.connect(dest_ip, username=username, password=password, timeout=timeout)
+    def ssh_client(self, client, dest_ip, username, password, command, timeout,
+                   allow_agent=False, look_for_keys=False):
+        client.connect(dest_ip, username=username, password=password,
+                       allow_agent=allow_agent, look_for_keys=look_for_keys,
+                       timeout=timeout)
 
         split_command = shlex.split(command)
         _stdin, _stdout, _stderr = client.exec_command(' '.join(
@@ -971,8 +987,9 @@ class TestBackendNetwork:
         return _stdout, _stderr
 
     def ssh_jumpstart(self, client, dest_ip, client_ip, client_user, client_password,
-                      dest_user, dest_password, command):
-        client.connect(client_ip, username=client_user, password=client_password)
+                      dest_user, dest_password, command, allow_agent=False, look_for_keys=False):
+        client.connect(client_ip, username=client_user, password=client_password,
+                       allow_agent=allow_agent, look_for_keys=look_for_keys)
 
         client_transport = client.get_transport()
         dest_addr = (dest_ip, 22)
