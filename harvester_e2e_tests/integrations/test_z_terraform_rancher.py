@@ -34,8 +34,8 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, wait_timeout):
     name = data['metadata']['name']
 
     yield {
-        "ssh_user": "ubuntu",
-        "id": f"{namespace}/{name}"
+        "id": f"{namespace}/{name}",
+        "ssh_user": "ubuntu"
     }
 
     api_client.images.delete(name, namespace)
@@ -58,12 +58,14 @@ def vlan_network(request, api_client):
             f"Failed to create network-attachment-definition {network_name}\n"
             f"rc: {code}, data:\n{data}"
         )
+    namespace = data['metadata']['namespace']
+    name = data['metadata']['name']
 
     yield {
-        "id": f"default/{data['metadata']['name']}"
+        "id": f"{namespace}/{name}"
     }
 
-    api_client.networks.delete(network_name)
+    api_client.networks.delete(network_name, namespace)
 
 
 @pytest.fixture(scope='module')
@@ -85,14 +87,16 @@ def harvester(api_client, rancher_api_client, unique_name, wait_timeout):
             f"Fail to get MgmtCluster with clusterName {name}\n"
             f"rc: {rc}, data:\n{data}"
         )
+    namespace = data['metadata']['namespace']
 
     yield {
         "name": name,
+        "namespace": namespace,
         "id": data['status']['clusterName'],
         "kubeconfig": api_client.generate_kubeconfig()
     }
 
-    rancher_api_client.mgmt_clusters.delete(name)
+    rancher_api_client.mgmt_clusters.delete(name, namespace)
     updates = dict(value="")
     api_client.settings.update("cluster-registration-url", updates)
 
@@ -112,16 +116,31 @@ def rancher(rancher_api_client):
 def rke2_cluster(unique_name, k8s_version):
     return {
         "name": f"rke2-{unique_name}",
-        "id": "",
+        "id": "",                         # set in test_create_rke2_cluster
         "k8s_version": k8s_version
     }
 
 
 @pytest.fixture(scope="module")
-def cloud_credential(unique_name):
-    return {
-        "name": f"cc-{unique_name}"
-    }
+def cloud_credential_resource(unique_name, tf_resource, harvester):
+    return tf_resource.cloud_credential(
+        f"cc-{unique_name}", harvester["name"]
+    )
+
+
+@pytest.fixture(scope="module")
+def machine_config_resource(tf_resource, rke2_cluster, vlan_network, ubuntu_image):
+    return tf_resource.machine_config(
+        rke2_cluster["name"], vlan_network["id"], ubuntu_image["id"], ubuntu_image["ssh_user"]
+    )
+
+
+@pytest.fixture(scope="module")
+def cluster_config_resource(tf_resource, rke2_cluster, harvester, cloud_credential_resource):
+    return tf_resource.cluster_config(
+        rke2_cluster["name"], rke2_cluster["k8s_version"], harvester["name"],
+        cloud_credential_resource.name
+    )
 
 
 @pytest.mark.p0
@@ -167,11 +186,9 @@ def test_import_harvester(api_client, rancher_api_client, harvester, wait_timeou
 @pytest.mark.terraform
 @pytest.mark.rancher
 @pytest.mark.dependency(name="create_cloud_credential", depends=["import_harvester"])
-def test_create_cloud_credential(rancher_api_client, tf_resource, tf_rancher,
-                                 harvester, cloud_credential):
-    spec = tf_resource.cloud_credential(cloud_credential["name"], harvester["name"])
+def test_create_cloud_credential(rancher_api_client, tf_rancher, cloud_credential_resource):
+    spec = cloud_credential_resource
     tf_rancher.save_as(spec.ctx, "cloud_credential")
-
     out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
     assert not err and 0 == code
 
@@ -185,10 +202,9 @@ def test_create_cloud_credential(rancher_api_client, tf_resource, tf_rancher,
 @pytest.mark.terraform
 @pytest.mark.rancher
 @pytest.mark.dependency(name="create_machine_config", depends=["create_cloud_credential"])
-def test_create_machine_config(tf_resource, tf_rancher, rke2_cluster, ubuntu_image, vlan_network):
-    spec = tf_resource.machine_config(rke2_cluster, ubuntu_image, vlan_network)
+def test_create_machine_config(tf_rancher, machine_config_resource):
+    spec = machine_config_resource
     tf_rancher.save_as(spec.ctx, "machine_config")
-
     out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
     assert not err and 0 == code
 
@@ -197,11 +213,10 @@ def test_create_machine_config(tf_resource, tf_rancher, rke2_cluster, ubuntu_ima
 @pytest.mark.terraform
 @pytest.mark.rancher
 @pytest.mark.dependency(name="create_rke2_cluster", depends=["create_machine_config"])
-def test_create_rke2_cluster(tf_resource, tf_rancher, rke2_cluster, rancher_api_client,
-                             harvester, cloud_credential):
-    spec = tf_resource.cluster_config(rke2_cluster, harvester, cloud_credential)
+def test_create_rke2_cluster(tf_rancher, rke2_cluster, rancher_api_client,
+                             cluster_config_resource):
+    spec = cluster_config_resource
     tf_rancher.save_as(spec.ctx, "rke2_cluster")
-
     out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
     assert not err and 0 == code
 
@@ -225,10 +240,9 @@ def test_create_rke2_cluster(tf_resource, tf_rancher, rke2_cluster, rancher_api_
 @pytest.mark.terraform
 @pytest.mark.rancher
 @pytest.mark.dependency(name="delete_rke2_cluster", depends=["create_rke2_cluster"])
-def test_delete_rke2_cluster(tf_resource, tf_rancher, rke2_cluster, rancher_api_client,
-                             harvester, cloud_credential):
-    spec = tf_resource.cluster_config(rke2_cluster, harvester, cloud_credential)
-
+def test_delete_rke2_cluster(tf_rancher, rke2_cluster, rancher_api_client,
+                             cluster_config_resource):
+    spec = cluster_config_resource
     out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
     assert not err and 0 == code
 
@@ -240,9 +254,8 @@ def test_delete_rke2_cluster(tf_resource, tf_rancher, rke2_cluster, rancher_api_
 @pytest.mark.terraform
 @pytest.mark.rancher
 @pytest.mark.dependency(name="delete_machine_config", depends=["create_machine_config"])
-def test_delete_machine_config(tf_resource, tf_rancher, rke2_cluster, ubuntu_image, vlan_network):
-    spec = tf_resource.machine_config(rke2_cluster, ubuntu_image, vlan_network)
-
+def test_delete_machine_config(tf_rancher, machine_config_resource):
+    spec = machine_config_resource
     out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
     assert not err and 0 == code
 
@@ -251,9 +264,7 @@ def test_delete_machine_config(tf_resource, tf_rancher, rke2_cluster, ubuntu_ima
 @pytest.mark.terraform
 @pytest.mark.rancher
 @pytest.mark.dependency(name="delete_cloud_credential", depends=["create_cloud_credential"])
-def test_delete_cloud_credential(rancher_api_client, tf_resource, tf_rancher,
-                                 harvester, cloud_credential):
-    spec = tf_resource.cloud_credential(cloud_credential["name"], harvester["name"])
-
+def test_delete_cloud_credential(tf_rancher, cloud_credential_resource):
+    spec = cloud_credential_resource
     out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
     assert not err and 0 == code
