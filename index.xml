@@ -2185,6 +2185,13 @@
       <description> After successful installation of Harvester using Iso, on navigating to UI, user should be prompted to change the password. Verify the password rules Expected Results User should be able to login </description>
     </item>
     <item>
+      <title>Fleet support with Harvester</title>
+      <link>https://harvester.github.io/tests/manual/advanced/fleet-support-with-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/advanced/fleet-support-with-harvester/</guid>
+      <description>Prerequisite Harvester cluster is imported in Rancher. Feature flag harvester-baremetal-container-workload is enabled. Harvester cluster is avaialble in the Explore cluster section of Rancher. Test cases 1. Deploy VM image, network etc objects through GitOps using Fleet&#xA;2. Editing the fleet deployment&#xA;3. Enabling/disabling harvester-baremetal-container-workload&#xA;4. Uninstalling using Fleet&#xA;5. Having other downstream clusters (like Harvester node driver) while deploying with Fleet&#xA;6. Negative testing - Remove some deployed object in the cluster and redeploy using Fleet</description>
+    </item>
+    <item>
       <title>Function keys on web VNC interface</title>
       <link>https://harvester.github.io/tests/manual/_incoming/1461-function-keys-on-web-vnc-interface/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

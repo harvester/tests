@@ -50,6 +50,13 @@
       <description>Ref: https://github.com/harvester/harvester/issues/1046&#xA;Verify Items Cluster&amp;rsquo;s SSL/TLS parameters could be configured in install option Cluster&amp;rsquo;s SSL/TLS parameters could be updated in dashboard Case: Configure TLS parameters in dashboard Install Harvester with any nodes Navigate to Advanced Settings, then edit ssl-parameters Select Protocols TLSv1.3, then save execute command echo QUIT | openssl s_client -connect &amp;lt;VIP&amp;gt;:443 -tls1_2 | grep &amp;quot;Cipher is&amp;quot; Output should contain error...SSL routines... and Cipher is (NONE) execute command echo QUIT | openssl s_client -connect &amp;lt;VIP&amp;gt;:443 -tls1_3 | grep &amp;quot;Cipher is&amp;quot; Output should contain Cipher is &amp;lt;one_of_TLS1_3_Ciphers&amp;gt;1 and should not contain error.</description>
     </item>
     <item>
+      <title>Fleet support with Harvester</title>
+      <link>https://harvester.github.io/tests/manual/advanced/fleet-support-with-harvester/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/advanced/fleet-support-with-harvester/</guid>
+      <description>Prerequisite Harvester cluster is imported in Rancher. Feature flag harvester-baremetal-container-workload is enabled. Harvester cluster is avaialble in the Explore cluster section of Rancher. Test cases 1. Deploy VM image, network etc objects through GitOps using Fleet&#xA;2. Editing the fleet deployment&#xA;3. Enabling/disabling harvester-baremetal-container-workload&#xA;4. Uninstalling using Fleet&#xA;5. Having other downstream clusters (like Harvester node driver) while deploying with Fleet&#xA;6. Negative testing - Remove some deployed object in the cluster and redeploy using Fleet</description>
+    </item>
+    <item>
       <title>Set backup target S3	(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

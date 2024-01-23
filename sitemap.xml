@@ -634,6 +634,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/authentication/first-time-login/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/advanced/fleet-support-with-harvester/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/1461-function-keys-on-web-vnc-interface/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/1864-generate-install-support-config/</loc>
