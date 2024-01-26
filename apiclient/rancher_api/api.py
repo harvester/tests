@@ -99,3 +99,18 @@ class RancherAPI:
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
+
+    def generate_kubeconfig(self, harvester_id, harvester_name):
+        # kubeconfig for provider
+        # https://registry.terraform.io/providers/rancher/rancher2/3.1.1/docs/resources/cluster_v2
+        url = f'{self.endpoint}/k8s/clusters/{harvester_id}/v1/harvester/kubeconfig'
+        access_key, secret_key = self.token.split(":")
+        auth = (access_key, secret_key)
+        data = {
+            "clusterRoleName": "harvesterhci.io:cloudprovider",
+            "namespace": "default",
+            "serviceAccountName": harvester_name
+        }
+        res = requests.post(url, auth=auth, json=data, verify=False)
+        kubeconfig = res.text.replace("\\n", "\n").strip('"')
+        return kubeconfig
