@@ -5,10 +5,10 @@ DEFAULT_STORAGE_CLASS_ANNOTATION = "storageclass.kubernetes.io/is-default-class"
 
 class StorageClassManager(BaseManager):
     API_VERSION = "storage.k8s.io"
-
     CREATE_PATH_fmt = "v1/harvester/{SC_API}.storageclasses"
-
     PATH_fmt = "/apis/{SC_API}/v1/storageclasses/{name}"
+
+    default = "harvester-longhorn"
 
     def get(self, name="", *, raw=False, **kwargs):
         path = self.PATH_fmt.format(SC_API=self.API_VERSION, name=name)
@@ -64,7 +64,7 @@ class StorageClassManager(BaseManager):
                     break
 
         path = self.PATH_fmt.format(name=name, SC_API=self.API_VERSION)
-        return self._patch(path, json={
+        rv = self._patch(path, json={
             "metadata": {
                 "annotations": {
                     "storageclass.kubernetes.io/is-default-class": "true",
@@ -72,6 +72,15 @@ class StorageClassManager(BaseManager):
                 }
             }
         }, raw=raw)
+
+        try:
+            code, data = rv
+        except TypeError:
+            code = rv.status_code
+
+        if code == 200:
+            self.default = name
+        return rv
 
     def delete(self, name, *, raw=False):
         path = self.PATH_fmt.format(name=name, SC_API=self.API_VERSION)
