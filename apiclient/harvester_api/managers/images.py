@@ -10,12 +10,13 @@ class ImageManager(BaseManager):
     UPLOAD_fmt = "v1/harvester/harvesterhci.io.virtualmachineimages/{ns}/{uid}"
     _KIND = "VirtualMachineImage"
 
-    def create_data(self, name, url, desc, stype, namespace, display_name=None):
+    def create_data(self, name, url, desc, stype, namespace, display_name=None, storageclass=None):
         data = {
             "apiVersion": "{API_VERSION}",
             "kind": self._KIND,
             "metadata": {
                 "annotations": {
+                    "harvesterhci.io/storageClassName": storageclass or self.api.scs.default,
                     "field.cattle.io/description": desc
                 },
                 "name": name,
@@ -35,16 +36,22 @@ class ImageManager(BaseManager):
     def create(self, name, namespace=DEFAULT_NAMESPACE, **kwargs):
         return self._create(self.PATH_fmt.format(uid=name, ns=namespace), **kwargs)
 
-    def create_by_url(self, name, url, namespace=DEFAULT_NAMESPACE,
-                      description="", display_name=None):
-        data = self.create_data(name, url, description, "download", namespace, display_name)
+    def create_by_url(
+        self, name, url, namespace=DEFAULT_NAMESPACE,
+        description="", display_name=None, storageclass=None
+    ):
+        data = self.create_data(name, url, description, "download", namespace,
+                                display_name, storageclass)
         return self.create("", namespace, json=data)
 
-    def create_by_file(self, name, filepath, namespace=DEFAULT_NAMESPACE,
-                       description="", display_name=None):
+    def create_by_file(
+        self, name, filepath, namespace=DEFAULT_NAMESPACE,
+        description="", display_name=None, storageclass=None
+    ):
         file = Path(filepath).expanduser()
 
-        data = self.create_data(name, "", description, "upload", namespace, display_name)
+        data = self.create_data(name, "", description, "upload", namespace,
+                                display_name, storageclass)
         self.create("", namespace, json=data)
 
         kwargs = {
