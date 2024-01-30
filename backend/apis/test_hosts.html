@@ -181,6 +181,7 @@ def test_maintenance_mode(api_client, wait_timeout):
     status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=True)
     assert 204 == status_code, (status_code, node_stats)
 
+    maintain_stat = &#34;Unknown&#34;
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         _, stats = api_client.hosts.get(node_id)
@@ -348,6 +349,7 @@ def test_maintenance_mode(api_client, wait_timeout):
     status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=True)
     assert 204 == status_code, (status_code, node_stats)
 
+    maintain_stat = &#34;Unknown&#34;
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         _, stats = api_client.hosts.get(node_id)
