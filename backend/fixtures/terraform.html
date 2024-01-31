@@ -52,6 +52,137 @@ provider &#34;harvester&#34; {
 }
 &#39;&#39;&#39;
 
+TF_PROVIDER_RANCHER = &#39;&#39;&#39;
+terraform {
+  required_providers {
+    rancher2 = {
+      source  = &#34;%(provider_source)s&#34;
+      version = &#34;%(provider_version)s&#34;
+    }
+  }
+}
+
+provider &#34;rancher2&#34; {
+  api_url   = &#34;%(rancher_endpoint)s&#34;
+  token_key = &#34;%(rancher_token)s&#34;
+  insecure = true
+}
+
+data &#34;rancher2_cluster_v2&#34; &#34;%(harvester_name)s&#34; {
+  name = &#34;%(harvester_name)s&#34;
+}
+
+&#39;&#39;&#39;
+
+# rancher2_machine_config_v2
+TF_MACHINE_CONFIG = &#39;&#39;&#39;
+resource &#34;rancher2_machine_config_v2&#34; &#34;%(name)s&#34; {
+  generate_name = &#34;%(name)s&#34;
+  %(harvester_config)s
+}
+
+&#39;&#39;&#39;
+TF_HARVESTER_CONFIG = &#39;&#39;&#39;
+  harvester_config {
+    vm_namespace = &#34;default&#34;
+    cpu_count = &#34;2&#34;
+    memory_size = &#34;4&#34;
+    ssh_user = &#34;%(ssh_user)s&#34;
+    disk_info = %(disk_info)s
+    network_info = %(network_info)s
+    user_data = %(user_data)s
+  }
+&#39;&#39;&#39;
+TF_DISK_INFO = &#39;&#39;&#39;&lt;&lt;EOF
+    {
+      &#34;disks&#34;: [{
+        &#34;imageName&#34;: &#34;%(image_name)s&#34;,
+        &#34;size&#34;: 40,
+        &#34;bootOrder&#34;: 1
+      }]
+    }
+    EOF
+&#39;&#39;&#39;
+TF_NETWORK_INFO = &#39;&#39;&#39;&lt;&lt;EOF
+    {
+      &#34;interfaces&#34;: [{
+        &#34;networkName&#34;: &#34;%(network_name)s&#34;
+      }]
+    }
+    EOF
+&#39;&#39;&#39;
+TF_USER_DATA = &#39;&#39;&#39;&lt;&lt;EOF
+    #cloud-config
+    password: password
+    chpasswd: {expire: False}
+    ssh_pwauth: True
+    package_update: true
+    packages:
+      - qemu-guest-agent
+      - iptables
+    runcmd:
+      - - systemctl
+        - enable
+        - &#39;--now&#39;
+        - qemu-guest-agent.service
+    EOF
+&#39;&#39;&#39;
+
+
+# rancher2_cluster_v2
+TF_CLUSTER_CONFIG = &#39;&#39;&#39;
+resource &#34;rancher2_cluster_v2&#34; &#34;%(name)s&#34; {
+  name               = &#34;%(name)s&#34;
+  kubernetes_version = &#34;%(rke2_version)s&#34;
+  %(rke_config)s
+}
+
+&#39;&#39;&#39;
+
+TF_RKE_CONFIG = &#39;&#39;&#39;
+  rke_config {
+    %(machine_pools)s
+    machine_selector_config {
+      config = {
+        cloud-provider-config = file(&#34;${path.module}/kubeconfig&#34;)
+        cloud-provider-name = &#34;harvester&#34;
+      }
+    }
+    machine_global_config = &lt;&lt;EOF
+    cni: &#34;calico&#34;
+    disable-kube-proxy: false
+    etcd-expose-metrics: false
+    EOF
+    upgrade_strategy {
+      control_plane_concurrency = &#34;10%%&#34;
+      worker_concurrency        = &#34;10%%&#34;
+    }
+    etcd {
+      snapshot_schedule_cron = &#34;0 */5 * * *&#34;
+      snapshot_retention     = 5
+    }
+    chart_values = &lt;&lt;EOF
+    harvester-cloud-provider:
+      clusterName: %(harvester_name)s
+      cloudConfigPath: /var/lib/rancher/rke2/etc/config-files/cloud-provider-config
+    EOF
+}
+&#39;&#39;&#39;
+TF_MACHINE_POOLS = &#39;&#39;&#39;
+    machine_pools {
+      name                         = &#34;pool1&#34;
+      cloud_credential_secret_name = rancher2_cloud_credential.%(cloud_credential_name)s.id
+      control_plane_role           = true
+      etcd_role                    = true
+      worker_role                  = true
+      quantity                     = 1
+      machine_config {
+        kind = rancher2_machine_config_v2.%(machine_config_name)s.kind
+        name = rancher2_machine_config_v2.%(machine_config_name)s.name
+      }
+    }
+&#39;&#39;&#39;
+
 
 def remove_ansicode(ctx):
     if isinstance(ctx, bytes):
@@ -75,6 +206,16 @@ def tf_provider_version(request):
 
 
 @pytest.fixture(scope=&#34;session&#34;)
+def tf_provider_rancher_ver(request):
+    version = request.config.getoption(&#39;--terraform-provider-rancher&#39;)
+    if not version:
+        import requests
+        resp = requests.get(&#34;https://registry.terraform.io/v1/providers/rancher/rancher2&#34;)
+        version = max(resp.json()[&#39;versions&#39;], key=parse_version)
+    return version
+
+
+@pytest.fixture(scope=&#34;session&#34;)
 def tf_executor(tf_script_dir):
     run(str(tf_script_dir / &#34;terraform_install.sh&#34;), stdout=PIPE, stderr=PIPE)
     executor = tf_script_dir / &#34;bin/terraform&#34;
@@ -92,10 +233,29 @@ def tf_harvester(api_client, tf_script_dir, tf_provider_version, tf_executor):
     return harv
 
 
+@pytest.fixture(scope=&#34;module&#34;)
+def tf_rancher(rancher_api_client, tf_script_dir, tf_provider_rancher_ver, tf_executor,
+               harvester, rancher):
+    tf_rancher = TerraformRancher(tf_executor,
+                                  tf_script_dir / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
+    kubeconfig = rancher_api_client.generate_kubeconfig(harvester[&#34;id&#34;], harvester[&#34;name&#34;])
+
+    out, err, exc_code = \
+        tf_rancher.initial_provider(kubeconfig, tf_provider_rancher_ver, harvester, rancher)
+    assert not err and 0 == exc_code
+    return tf_rancher
+
+
 @pytest.fixture(scope=&#34;session&#34;)
 def tf_resource(tf_provider_version):
     converter = Path(&#34;./terraform_test_artifacts/json2hcl&#34;)
-    return BaseTerraformResource.for_version(tf_provider_version)(converter)
+    return TerraformResource.for_version(tf_provider_version)(converter)
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def tf_rancher_resource(tf_provider_rancher_ver):
+    converter = Path(&#34;./terraform_test_artifacts/json2hcl&#34;)
+    return TerraformRancherResource.for_version(tf_provider_rancher_ver)(converter)
 
 
 class TerraformHarvester:
@@ -137,6 +297,24 @@ class TerraformHarvester:
 
     def destroy_resource(self, resource_type, resource_name):
         return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)
+
+
+class TerraformRancher(TerraformHarvester):
+    def initial_provider(self, kubeconfig, provider_version, harvester, rancher):
+        kubefile = self.workdir / &#34;kubeconfig&#34;
+        with open(kubefile, &#34;w&#34;) as f:
+            f.write(kubeconfig)
+
+        with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+            f.write(TF_PROVIDER_RANCHER % {
+                &#34;provider_source&#34;: &#34;rancher/rancher2&#34;,
+                &#34;provider_version&#34;: provider_version,
+                &#34;rancher_endpoint&#34;: rancher[&#34;endpoint&#34;],
+                &#34;rancher_token&#34;: rancher[&#34;token&#34;],
+                &#34;harvester_name&#34;: harvester[&#34;name&#34;]
+            })
+
+        return self.execute(&#34;init&#34;)
 
 
 @dataclass
@@ -184,9 +362,10 @@ class BaseTerraformResource:
         if rv.stderr:
             raise TypeError(rv.stderr, rv.stdout, rv.returncode)
         out = rv.stdout.decode()
-        out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
-        out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
-        out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)  # block should not have `=`
+        out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)    # resource should not quote
+        out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)      # property should not quote
+        out = re.sub(r&#39;&#34;(data\.\S+?)&#34;&#39;, r&#34;\1&#34;, out)     # data should not quote
+        out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)     # block should not have `=`
         return out
 
     def make_resource(self, resource_type, resource_name, *, convert=True, **properties):
@@ -303,7 +482,58 @@ class TerraformResource_063(TerraformResource_060):
         return self.make_resource(
             &#34;harvester_cloudinit_secret&#34;, resource_name,
             user_data=user_data, network_data=network_data, convert=convert, **properties
-        )</code></pre>
+        )
+
+
+class TerraformRancherResource(BaseTerraformResource):
+    &#39;&#39;&#39; https://github.com/rancher/terraform-provider-rancher2/tree/v1.20.0/docs/resources
+    &#39;&#39;&#39;
+    support_to = &#34;1.20.0&#34;
+
+    def machine_config(self, rke_cluster_name, network_id, image_id, ssh_user):
+        hcl_str = TF_MACHINE_CONFIG % {
+            &#34;name&#34;: rke_cluster_name,
+            &#34;harvester_config&#34;: TF_HARVESTER_CONFIG % {
+                &#34;ssh_user&#34;: ssh_user,
+                &#34;disk_info&#34;: TF_DISK_INFO % {&#34;image_name&#34;: image_id},
+                &#34;network_info&#34;: TF_NETWORK_INFO % {&#34;network_name&#34;: network_id},
+                &#34;user_data&#34;: TF_USER_DATA
+            }
+        }
+        return ResourceContext(&#34;rancher2_machine_config_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)
+
+    def cluster_config(self, rke_cluster_name, k8s_version, harvester_name, cloud_credential_name):
+        machine_pools = TF_MACHINE_POOLS % {
+            &#34;cloud_credential_name&#34;: cloud_credential_name,
+            &#34;machine_config_name&#34;: rke_cluster_name
+        }
+        rke_config = TF_RKE_CONFIG % {
+            &#34;machine_pools&#34;: machine_pools,
+            &#34;harvester_name&#34;: harvester_name
+        }
+        hcl_str = TF_CLUSTER_CONFIG % {
+            &#34;name&#34;: rke_cluster_name,
+            &#34;rke2_version&#34;: k8s_version,
+            &#34;rke_config&#34;: rke_config
+        }
+        return ResourceContext(&#34;rancher2_cluster_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)
+
+
+class TerraformRancherResource_123(TerraformRancherResource):
+    &#39;&#39;&#39; https://github.com/rancher/terraform-provider-rancher2/tree/v1.23.0/docs/resources
+    &#39;&#39;&#39;
+    support_to = &#34;1.23.0&#34;
+
+    def cloud_credential(self, name, harvester_name, *, convert=True, **properties):
+        harvester_credential_config = {
+            &#34;cluster_id&#34;: f&#34;data.rancher2_cluster_v2.{harvester_name}.cluster_v1_id&#34;,
+            &#34;cluster_type&#34;: &#34;imported&#34;,
+            &#34;kubeconfig_content&#34;: f&#34;data.rancher2_cluster_v2.{harvester_name}.kube_config&#34;
+        }
+        return self.make_resource(&#34;rancher2_cloud_credential&#34;, name,
+                                  name=name,
+                                  harvester_credential_config=harvester_credential_config,
+                                  convert=convert, **properties)</code></pre>
 </details>
 </section>
 <section>
@@ -364,6 +594,25 @@ def tf_harvester(api_client, tf_script_dir, tf_provider_version, tf_executor):
     return harv</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.tf_provider_rancher_ver"><code class="name flex">
+<span>def <span class="ident">tf_provider_rancher_ver</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_provider_rancher_ver(request):
+    version = request.config.getoption(&#39;--terraform-provider-rancher&#39;)
+    if not version:
+        import requests
+        resp = requests.get(&#34;https://registry.terraform.io/v1/providers/rancher/rancher2&#34;)
+        version = max(resp.json()[&#39;versions&#39;], key=parse_version)
+    return version</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_provider_version"><code class="name flex">
 <span>def <span class="ident">tf_provider_version</span></span>(<span>request)</span>
 </code></dt>
@@ -383,6 +632,43 @@ def tf_provider_version(request):
     return version</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.tf_rancher"><code class="name flex">
+<span>def <span class="ident">tf_rancher</span></span>(<span>rancher_api_client, tf_script_dir, tf_provider_rancher_ver, tf_executor, harvester, rancher)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def tf_rancher(rancher_api_client, tf_script_dir, tf_provider_rancher_ver, tf_executor,
+               harvester, rancher):
+    tf_rancher = TerraformRancher(tf_executor,
+                                  tf_script_dir / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
+    kubeconfig = rancher_api_client.generate_kubeconfig(harvester[&#34;id&#34;], harvester[&#34;name&#34;])
+
+    out, err, exc_code = \
+        tf_rancher.initial_provider(kubeconfig, tf_provider_rancher_ver, harvester, rancher)
+    assert not err and 0 == exc_code
+    return tf_rancher</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.tf_rancher_resource"><code class="name flex">
+<span>def <span class="ident">tf_rancher_resource</span></span>(<span>tf_provider_rancher_ver)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_rancher_resource(tf_provider_rancher_ver):
+    converter = Path(&#34;./terraform_test_artifacts/json2hcl&#34;)
+    return TerraformRancherResource.for_version(tf_provider_rancher_ver)(converter)</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_resource"><code class="name flex">
 <span>def <span class="ident">tf_resource</span></span>(<span>tf_provider_version)</span>
 </code></dt>
@@ -395,7 +681,7 @@ def tf_provider_version(request):
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
 def tf_resource(tf_provider_version):
     converter = Path(&#34;./terraform_test_artifacts/json2hcl&#34;)
-    return BaseTerraformResource.for_version(tf_provider_version)(converter)</code></pre>
+    return TerraformResource.for_version(tf_provider_version)(converter)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_script_dir"><code class="name flex">
@@ -464,9 +750,10 @@ def tf_script_dir(request):
         if rv.stderr:
             raise TypeError(rv.stderr, rv.stdout, rv.returncode)
         out = rv.stdout.decode()
-        out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
-        out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
-        out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)  # block should not have `=`
+        out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)    # resource should not quote
+        out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)      # property should not quote
+        out = re.sub(r&#39;&#34;(data\.\S+?)&#34;&#39;, r&#34;\1&#34;, out)     # data should not quote
+        out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)     # block should not have `=`
         return out
 
     def make_resource(self, resource_type, resource_name, *, convert=True, **properties):
@@ -477,6 +764,7 @@ def tf_script_dir(request):
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource">TerraformRancherResource</a></li>
 <li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource">TerraformResource</a></li>
 </ul>
 <h3>Class variables</h3>
@@ -541,9 +829,10 @@ def is_support(cls, target_version):
     if rv.stderr:
         raise TypeError(rv.stderr, rv.stdout, rv.returncode)
     out = rv.stdout.decode()
-    out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)  # resource should not quote
-    out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)  # property should not quote
-    out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)  # block should not have `=`
+    out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)    # resource should not quote
+    out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)      # property should not quote
+    out = re.sub(r&#39;&#34;(data\.\S+?)&#34;&#39;, r&#34;\1&#34;, out)     # data should not quote
+    out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)     # block should not have `=`
     return out</code></pre>
 </details>
 </dd>
@@ -652,6 +941,10 @@ class ResourceContext:
     def destroy_resource(self, resource_type, resource_name):
         return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)</code></pre>
 </details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancher" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancher">TerraformRancher</a></li>
+</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.apply_resource"><code class="name flex">
@@ -749,6 +1042,242 @@ class ResourceContext:
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformRancher"><code class="flex name class">
+<span>class <span class="ident">TerraformRancher</span></span>
+<span>(</span><span>executor, workdir)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TerraformRancher(TerraformHarvester):
+    def initial_provider(self, kubeconfig, provider_version, harvester, rancher):
+        kubefile = self.workdir / &#34;kubeconfig&#34;
+        with open(kubefile, &#34;w&#34;) as f:
+            f.write(kubeconfig)
+
+        with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+            f.write(TF_PROVIDER_RANCHER % {
+                &#34;provider_source&#34;: &#34;rancher/rancher2&#34;,
+                &#34;provider_version&#34;: provider_version,
+                &#34;rancher_endpoint&#34;: rancher[&#34;endpoint&#34;],
+                &#34;rancher_token&#34;: rancher[&#34;token&#34;],
+                &#34;harvester_name&#34;: harvester[&#34;name&#34;]
+            })
+
+        return self.execute(&#34;init&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester">TerraformHarvester</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformRancher.initial_provider"><code class="name flex">
+<span>def <span class="ident">initial_provider</span></span>(<span>self, kubeconfig, provider_version, harvester, rancher)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initial_provider(self, kubeconfig, provider_version, harvester, rancher):
+    kubefile = self.workdir / &#34;kubeconfig&#34;
+    with open(kubefile, &#34;w&#34;) as f:
+        f.write(kubeconfig)
+
+    with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+        f.write(TF_PROVIDER_RANCHER % {
+            &#34;provider_source&#34;: &#34;rancher/rancher2&#34;,
+            &#34;provider_version&#34;: provider_version,
+            &#34;rancher_endpoint&#34;: rancher[&#34;endpoint&#34;],
+            &#34;rancher_token&#34;: rancher[&#34;token&#34;],
+            &#34;harvester_name&#34;: harvester[&#34;name&#34;]
+        })
+
+    return self.execute(&#34;init&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource"><code class="flex name class">
+<span>class <span class="ident">TerraformRancherResource</span></span>
+<span>(</span><span>converter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p><a href="https://github.com/rancher/terraform-provider-rancher2/tree/v1.20.0/docs/resources">https://github.com/rancher/terraform-provider-rancher2/tree/v1.20.0/docs/resources</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TerraformRancherResource(BaseTerraformResource):
+    &#39;&#39;&#39; https://github.com/rancher/terraform-provider-rancher2/tree/v1.20.0/docs/resources
+    &#39;&#39;&#39;
+    support_to = &#34;1.20.0&#34;
+
+    def machine_config(self, rke_cluster_name, network_id, image_id, ssh_user):
+        hcl_str = TF_MACHINE_CONFIG % {
+            &#34;name&#34;: rke_cluster_name,
+            &#34;harvester_config&#34;: TF_HARVESTER_CONFIG % {
+                &#34;ssh_user&#34;: ssh_user,
+                &#34;disk_info&#34;: TF_DISK_INFO % {&#34;image_name&#34;: image_id},
+                &#34;network_info&#34;: TF_NETWORK_INFO % {&#34;network_name&#34;: network_id},
+                &#34;user_data&#34;: TF_USER_DATA
+            }
+        }
+        return ResourceContext(&#34;rancher2_machine_config_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)
+
+    def cluster_config(self, rke_cluster_name, k8s_version, harvester_name, cloud_credential_name):
+        machine_pools = TF_MACHINE_POOLS % {
+            &#34;cloud_credential_name&#34;: cloud_credential_name,
+            &#34;machine_config_name&#34;: rke_cluster_name
+        }
+        rke_config = TF_RKE_CONFIG % {
+            &#34;machine_pools&#34;: machine_pools,
+            &#34;harvester_name&#34;: harvester_name
+        }
+        hcl_str = TF_CLUSTER_CONFIG % {
+            &#34;name&#34;: rke_cluster_name,
+            &#34;rke2_version&#34;: k8s_version,
+            &#34;rke_config&#34;: rke_config
+        }
+        return ResourceContext(&#34;rancher2_cluster_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource_123" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource_123">TerraformRancherResource_123</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource.cluster_config"><code class="name flex">
+<span>def <span class="ident">cluster_config</span></span>(<span>self, rke_cluster_name, k8s_version, harvester_name, cloud_credential_name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cluster_config(self, rke_cluster_name, k8s_version, harvester_name, cloud_credential_name):
+    machine_pools = TF_MACHINE_POOLS % {
+        &#34;cloud_credential_name&#34;: cloud_credential_name,
+        &#34;machine_config_name&#34;: rke_cluster_name
+    }
+    rke_config = TF_RKE_CONFIG % {
+        &#34;machine_pools&#34;: machine_pools,
+        &#34;harvester_name&#34;: harvester_name
+    }
+    hcl_str = TF_CLUSTER_CONFIG % {
+        &#34;name&#34;: rke_cluster_name,
+        &#34;rke2_version&#34;: k8s_version,
+        &#34;rke_config&#34;: rke_config
+    }
+    return ResourceContext(&#34;rancher2_cluster_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource.machine_config"><code class="name flex">
+<span>def <span class="ident">machine_config</span></span>(<span>self, rke_cluster_name, network_id, image_id, ssh_user)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def machine_config(self, rke_cluster_name, network_id, image_id, ssh_user):
+    hcl_str = TF_MACHINE_CONFIG % {
+        &#34;name&#34;: rke_cluster_name,
+        &#34;harvester_config&#34;: TF_HARVESTER_CONFIG % {
+            &#34;ssh_user&#34;: ssh_user,
+            &#34;disk_info&#34;: TF_DISK_INFO % {&#34;image_name&#34;: image_id},
+            &#34;network_info&#34;: TF_NETWORK_INFO % {&#34;network_name&#34;: network_id},
+            &#34;user_data&#34;: TF_USER_DATA
+        }
+    }
+    return ResourceContext(&#34;rancher2_machine_config_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></b></code>:
+<ul class="hlist">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to">support_to</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource_123"><code class="flex name class">
+<span>class <span class="ident">TerraformRancherResource_123</span></span>
+<span>(</span><span>converter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p><a href="https://github.com/rancher/terraform-provider-rancher2/tree/v1.23.0/docs/resources">https://github.com/rancher/terraform-provider-rancher2/tree/v1.23.0/docs/resources</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TerraformRancherResource_123(TerraformRancherResource):
+    &#39;&#39;&#39; https://github.com/rancher/terraform-provider-rancher2/tree/v1.23.0/docs/resources
+    &#39;&#39;&#39;
+    support_to = &#34;1.23.0&#34;
+
+    def cloud_credential(self, name, harvester_name, *, convert=True, **properties):
+        harvester_credential_config = {
+            &#34;cluster_id&#34;: f&#34;data.rancher2_cluster_v2.{harvester_name}.cluster_v1_id&#34;,
+            &#34;cluster_type&#34;: &#34;imported&#34;,
+            &#34;kubeconfig_content&#34;: f&#34;data.rancher2_cluster_v2.{harvester_name}.kube_config&#34;
+        }
+        return self.make_resource(&#34;rancher2_cloud_credential&#34;, name,
+                                  name=name,
+                                  harvester_credential_config=harvester_credential_config,
+                                  convert=convert, **properties)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource">TerraformRancherResource</a></li>
+<li><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource_123.cloud_credential"><code class="name flex">
+<span>def <span class="ident">cloud_credential</span></span>(<span>self, name, harvester_name, *, convert=True, **properties)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cloud_credential(self, name, harvester_name, *, convert=True, **properties):
+    harvester_credential_config = {
+        &#34;cluster_id&#34;: f&#34;data.rancher2_cluster_v2.{harvester_name}.cluster_v1_id&#34;,
+        &#34;cluster_type&#34;: &#34;imported&#34;,
+        &#34;kubeconfig_content&#34;: f&#34;data.rancher2_cluster_v2.{harvester_name}.kube_config&#34;
+    }
+    return self.make_resource(&#34;rancher2_cloud_credential&#34;, name,
+                              name=name,
+                              harvester_credential_config=harvester_credential_config,
+                              convert=convert, **properties)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></b></code>:
+<ul class="hlist">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.support_to">support_to</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource"><code class="flex name class">
 <span>class <span class="ident">TerraformResource</span></span>
@@ -1181,11 +1710,14 @@ class ResourceContext:
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.remove_ansicode" href="#harvester_e2e_tests.fixtures.terraform.remove_ansicode">remove_ansicode</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_executor" href="#harvester_e2e_tests.fixtures.terraform.tf_executor">tf_executor</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_harvester" href="#harvester_e2e_tests.fixtures.terraform.tf_harvester">tf_harvester</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_provider_rancher_ver" href="#harvester_e2e_tests.fixtures.terraform.tf_provider_rancher_ver">tf_provider_rancher_ver</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_provider_version" href="#harvester_e2e_tests.fixtures.terraform.tf_provider_version">tf_provider_version</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_rancher" href="#harvester_e2e_tests.fixtures.terraform.tf_rancher">tf_rancher</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_rancher_resource" href="#harvester_e2e_tests.fixtures.terraform.tf_rancher_resource">tf_rancher_resource</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_resource" href="#harvester_e2e_tests.fixtures.terraform.tf_resource">tf_resource</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.tf_script_dir" href="#harvester_e2e_tests.fixtures.terraform.tf_script_dir">tf_script_dir</a></code></li>
 </ul>
@@ -1220,6 +1752,25 @@ class ResourceContext:
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.execute" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.execute">execute</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.initial_provider" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.initial_provider">initial_provider</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.save_as" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester.save_as">save_as</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancher" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancher">TerraformRancher</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancher.initial_provider" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancher.initial_provider">initial_provider</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource">TerraformRancherResource</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource.cluster_config" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource.cluster_config">cluster_config</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource.machine_config" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource.machine_config">machine_config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource_123" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource_123">TerraformRancherResource_123</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource_123.cloud_credential" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource_123.cloud_credential">cloud_credential</a></code></li>
 </ul>
 </li>
 <li>
