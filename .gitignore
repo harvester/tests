@@ -21,3 +21,5 @@ scripts/**/*.sh
 .tox
 .report.json
 test_result.json
+
+*.hugo_build.lock
