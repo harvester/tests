@@ -13,8 +13,8 @@ Have a Harvester cluster with at least 2 nodes setup.
 
 **When** Put the host node-1 into maintenance mode.
 
-**Then** All the Vms on node-1 should be migrated to other nodes.
+**Then** All the Vms on node-1 should be migrated to other nodes or the node should show warning that the vm with node selector can't migrate.
 
-**When** Take out the node-1 from maintenance.
+**When** Take out the node-1 from maintenance and migrate all the Vms back to node-1
 
-**Then** The vm with node selector should migrate back on the node-1.
+**Then** All the vms should be migrated successfully.
