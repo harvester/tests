@@ -145,7 +145,7 @@
       <link>https://harvester.github.io/tests/manual/hosts/q-maintenance-mode-migrate-back-vms/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/hosts/q-maintenance-mode-migrate-back-vms/</guid>
-      <description>Migrate all VMs back to host that were migrated off Expected Results I&amp;rsquo;m not sure about the expected behavior on this. I&amp;rsquo;m checking.</description>
+      <description>Prerequisite: Have a Harvester cluster with at least 2 nodes setup.&#xA;Test Steps: Given Create a vm with node selector lets say node-1.&#xA;And Create a vm without node selector on node-1.&#xA;AND Write some data into both the VMs.&#xA;When Put the host node-1 into maintenance mode.&#xA;Then All the Vms on node-1 should be migrated to other nodes or the node should show warning that the vm with node selector can&amp;rsquo;t migrate.</description>
     </item>
     <item>
       <title>Move Longhorn storage to another partition</title>

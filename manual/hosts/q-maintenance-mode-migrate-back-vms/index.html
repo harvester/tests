@@ -1931,11 +1931,16 @@
   <h1 id="title">Migrate back VMs that were on host after taking host out of maintenance mode</h1>
   <div>
     <article id="content">
-       <ol>
-<li>Migrate all VMs back to host that were migrated off</li>
-</ol>
-<h2 id="expected-results">Expected Results</h2>
-<p>I&rsquo;m not sure about the expected behavior on this. I&rsquo;m checking.</p>
+       <h3 id="prerequisite">Prerequisite:</h3>
+<p>Have a Harvester cluster with at least 2 nodes setup.</p>
+<h3 id="test-steps">Test Steps:</h3>
+<p><strong>Given</strong> Create a vm with node selector lets say node-1.</p>
+<p><strong>And</strong> Create a vm without node selector on node-1.</p>
+<p><strong>AND</strong> Write some data into both the VMs.</p>
+<p><strong>When</strong> Put the host node-1 into maintenance mode.</p>
+<p><strong>Then</strong> All the Vms on node-1 should be migrated to other nodes or the node should show warning that the vm with node selector can&rsquo;t migrate.</p>
+<p><strong>When</strong> Take out the node-1 from maintenance and migrate all the Vms back to node-1</p>
+<p><strong>Then</strong> All the vms should be migrated successfully.</p>
 
     </article>
   </div>
