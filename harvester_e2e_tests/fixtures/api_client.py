@@ -18,7 +18,22 @@ from harvester_api import HarvesterAPI
 
 
 @pytest.fixture(scope="session")
-def api_client(request):
+def harvester_metadata(pytestconfig):
+    ''' be used to store harvester's metadata and expose into html report. '''
+    # ref: https://github.com/pytest-dev/pytest-html/blob/4.1.1/src/pytest_html/basereport.py#L71
+    try:
+        from pytest_metadata.plugin import metadata_key
+        metadata = pytestconfig.stash[metadata_key]
+    except ImportError:
+        metadata = pytestconfig._metadata
+
+    harv = dict()
+    metadata["Harvester"] = harv
+    return harv
+
+
+@pytest.fixture(scope="session")
+def api_client(request, harvester_metadata):
     endpoint = request.config.getoption("--endpoint")
     username = request.config.getoption("--username")
     password = request.config.getoption("--password")
@@ -28,6 +43,9 @@ def api_client(request):
     api.authenticate(username, password, verify=ssl_verify)
 
     api.session.verify = ssl_verify
+
+    harvester_metadata['Cluster Endpoint'] = endpoint
+    harvester_metadata['Cluster Version'] = api.cluster_version.raw
 
     return api
 
