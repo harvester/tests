@@ -46,7 +46,22 @@ from harvester_api import HarvesterAPI
 
 
 @pytest.fixture(scope=&#34;session&#34;)
-def api_client(request):
+def harvester_metadata(pytestconfig):
+    &#39;&#39;&#39; be used to store harvester&#39;s metadata and expose into html report. &#39;&#39;&#39;
+    # ref: https://github.com/pytest-dev/pytest-html/blob/4.1.1/src/pytest_html/basereport.py#L71
+    try:
+        from pytest_metadata.plugin import metadata_key
+        metadata = pytestconfig.stash[metadata_key]
+    except ImportError:
+        metadata = pytestconfig._metadata
+
+    harv = dict()
+    metadata[&#34;Harvester&#34;] = harv
+    return harv
+
+
+@pytest.fixture(scope=&#34;session&#34;)
+def api_client(request, harvester_metadata):
     endpoint = request.config.getoption(&#34;--endpoint&#34;)
     username = request.config.getoption(&#34;--username&#34;)
     password = request.config.getoption(&#34;--password&#34;)
@@ -56,6 +71,9 @@ def api_client(request):
     api.authenticate(username, password, verify=ssl_verify)
 
     api.session.verify = ssl_verify
+
+    harvester_metadata[&#39;Cluster Endpoint&#39;] = endpoint
+    harvester_metadata[&#39;Cluster Version&#39;] = api.cluster_version.raw
 
     return api
 
@@ -351,7 +369,7 @@ def polling_for(wait_timeout, sleep_timeout):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.fixtures.api_client.api_client"><code class="name flex">
-<span>def <span class="ident">api_client</span></span>(<span>request)</span>
+<span>def <span class="ident">api_client</span></span>(<span>request, harvester_metadata)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -360,7 +378,7 @@ def polling_for(wait_timeout, sleep_timeout):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def api_client(request):
+def api_client(request, harvester_metadata):
     endpoint = request.config.getoption(&#34;--endpoint&#34;)
     username = request.config.getoption(&#34;--username&#34;)
     password = request.config.getoption(&#34;--password&#34;)
@@ -370,6 +388,9 @@ def api_client(request):
     api.authenticate(username, password, verify=ssl_verify)
 
     api.session.verify = ssl_verify
+
+    harvester_metadata[&#39;Cluster Endpoint&#39;] = endpoint
+    harvester_metadata[&#39;Cluster Version&#39;] = api.cluster_version.raw
 
     return api</code></pre>
 </details>
@@ -443,6 +464,30 @@ def fake_image_file():
 def gen_unique_name():
     &#34;&#34;&#34;Generate unique name on-demand&#34;&#34;&#34;
     return lambda: datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.harvester_metadata"><code class="name flex">
+<span>def <span class="ident">harvester_metadata</span></span>(<span>pytestconfig)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>be used to store harvester's metadata and expose into html report.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def harvester_metadata(pytestconfig):
+    &#39;&#39;&#39; be used to store harvester&#39;s metadata and expose into html report. &#39;&#39;&#39;
+    # ref: https://github.com/pytest-dev/pytest-html/blob/4.1.1/src/pytest_html/basereport.py#L71
+    try:
+        from pytest_metadata.plugin import metadata_key
+        metadata = pytestconfig.stash[metadata_key]
+    except ImportError:
+        metadata = pytestconfig._metadata
+
+    harv = dict()
+    metadata[&#34;Harvester&#34;] = harv
+    return harv</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.host_shell"><code class="name flex">
@@ -805,6 +850,7 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.expected_settings" href="#harvester_e2e_tests.fixtures.api_client.expected_settings">expected_settings</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.fake_image_file" href="#harvester_e2e_tests.fixtures.api_client.fake_image_file">fake_image_file</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.gen_unique_name" href="#harvester_e2e_tests.fixtures.api_client.gen_unique_name">gen_unique_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.harvester_metadata" href="#harvester_e2e_tests.fixtures.api_client.harvester_metadata">harvester_metadata</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_shell" href="#harvester_e2e_tests.fixtures.api_client.host_shell">host_shell</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.host_state" href="#harvester_e2e_tests.fixtures.api_client.host_state">host_state</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.polling_for" href="#harvester_e2e_tests.fixtures.api_client.polling_for">polling_for</a></code></li>
