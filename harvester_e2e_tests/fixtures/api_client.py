@@ -198,6 +198,44 @@ def skip_version_after(request, api_client):
                 )
 
 
+@pytest.fixture(autouse=True)
+def skip_version_if(request, api_client):
+    ''' To mark test case should be skip when hit the condition string.
+
+    Args:
+        *args: Version string prefixing with one of operators: `!=`, `==`, `>=`, `<=`, `>`, `<`
+    Keyword Args:
+        reason: The reason string for `pytest.skip`, default is:
+            "Cluster Version `{cluster_version}` is not included in versions: {versions}"
+        condition: Condition callable function to check compare result(bool), default is `all`
+    '''
+    default_reason = (
+        "Cluster Version `{cluster_version}` is not included in versions: {versions}"
+    )
+    mark = request.node.get_closest_marker("skip_version_if")
+    if mark:
+        cluster_ver = api_client.cluster_version
+        checks = [version_check(vstr, cluster_ver) for vstr in mark.args]
+        reason = mark.kwargs.get('reason', default_reason)
+        if mark.kwargs.get('condition', all)(r for *_, r in checks):
+            versions = [f"{op} {v}" for op, v, _ in checks]
+            return pytest.skip(
+                reason.format(cluster_version=cluster_ver, versions=versions)
+            )
+
+
+def version_check(vstring, version):
+    from operator import le, lt, ge, gt, ne, eq
+    ops = {"<=": le, "<": lt, ">=": ge, ">": gt, "!=": ne, "==": eq}
+
+    try:
+        op = target_ver = None
+        op, target_ver = re.search(r"([<>=!]+)\s?(.+)", vstring).groups()
+        return op, target_ver, ops[op](version, parse_version(target_ver))
+    except Exception:
+        return op, target_ver, False
+
+
 @pytest.fixture(scope="session")
 def host_shell(request):
     password = request.config.getoption("--host-password") or None

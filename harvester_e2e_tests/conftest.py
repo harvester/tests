@@ -260,6 +260,7 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
+        ("skip_version_if", "Mark test skipped when cluster version hit the condition"),
         ("skip_version_before", (
             "mark test skipped when cluster version < provided version")),
         ("skip_version_after", (
