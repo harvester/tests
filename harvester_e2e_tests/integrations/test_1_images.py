@@ -186,6 +186,7 @@ class TestBackendImages:
         image_url = image_info.url
         create_image_url(api_client, image_name, image_url, wait_timeout)
 
+    @pytest.mark.skip_version_if("> v1.2.0", "<= v1.4.0", reason="Issue#4293 fix after `v1.4.0`")
     @pytest.mark.p0
     @pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
     def test_delete_image_recreate(

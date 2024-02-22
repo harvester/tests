@@ -129,6 +129,7 @@ class TestImages:
                 f"Still got {code} with {data}"
             )
 
+    @pytest.mark.skip_version_if("> v1.2.0", "<= v1.4.0", reason="Issue#4293 fix after `v1.4.0`")
     @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])
     def test_create_with_reuse_display_name(
             self, wait_timeout, api_client, unique_name, fake_image_file):
