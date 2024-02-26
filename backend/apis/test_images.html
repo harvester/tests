@@ -157,6 +157,7 @@ class TestImages:
                 f&#34;Still got {code} with {data}&#34;
             )
 
+    @pytest.mark.skip_version_if(&#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;, reason=&#34;Issue#4293 fix after `v1.4.0`&#34;)
     @pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
     def test_create_with_reuse_display_name(
             self, wait_timeout, api_client, unique_name, fake_image_file):
@@ -337,6 +338,7 @@ class TestImages:
                 f&#34;Still got {code} with {data}&#34;
             )
 
+    @pytest.mark.skip_version_if(&#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;, reason=&#34;Issue#4293 fix after `v1.4.0`&#34;)
     @pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
     def test_create_with_reuse_display_name(
             self, wait_timeout, api_client, unique_name, fake_image_file):
@@ -401,7 +403,8 @@ def test_create(self, api_client, unique_name, fake_image_file):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
+<pre><code class="python">@pytest.mark.skip_version_if(&#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;, reason=&#34;Issue#4293 fix after `v1.4.0`&#34;)
+@pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
 def test_create_with_reuse_display_name(
         self, wait_timeout, api_client, unique_name, fake_image_file):
     code, data = api_client.images.get(unique_name)

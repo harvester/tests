@@ -214,6 +214,7 @@ class TestBackendImages:
         image_url = image_info.url
         create_image_url(api_client, image_name, image_url, wait_timeout)
 
+    @pytest.mark.skip_version_if(&#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;, reason=&#34;Issue#4293 fix after `v1.4.0`&#34;)
     @pytest.mark.p0
     @pytest.mark.dependency(name=&#34;delete_image_recreate&#34;, depends=[&#34;create_image_url&#34;])
     def test_delete_image_recreate(
@@ -605,6 +606,7 @@ class TestBackendImages:
         image_url = image_info.url
         create_image_url(api_client, image_name, image_url, wait_timeout)
 
+    @pytest.mark.skip_version_if(&#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;, reason=&#34;Issue#4293 fix after `v1.4.0`&#34;)
     @pytest.mark.p0
     @pytest.mark.dependency(name=&#34;delete_image_recreate&#34;, depends=[&#34;create_image_url&#34;])
     def test_delete_image_recreate(
@@ -910,7 +912,8 @@ def test_create_invalid_file(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.p0
+<pre><code class="python">@pytest.mark.skip_version_if(&#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;, reason=&#34;Issue#4293 fix after `v1.4.0`&#34;)
+@pytest.mark.p0
 @pytest.mark.dependency(name=&#34;delete_image_recreate&#34;, depends=[&#34;create_image_url&#34;])
 def test_delete_image_recreate(
     self,
