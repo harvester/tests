@@ -226,6 +226,44 @@ def skip_version_after(request, api_client):
                 )
 
 
+@pytest.fixture(autouse=True)
+def skip_version_if(request, api_client):
+    &#39;&#39;&#39; To mark test case should be skip when hit the condition string.
+
+    Args:
+        *args: Version string prefixing with one of operators: `!=`, `==`, `&gt;=`, `&lt;=`, `&gt;`, `&lt;`
+    Keyword Args:
+        reason: The reason string for `pytest.skip`, default is:
+            &#34;Cluster Version `{cluster_version}` is not included in versions: {versions}&#34;
+        condition: Condition callable function to check compare result(bool), default is `all`
+    &#39;&#39;&#39;
+    default_reason = (
+        &#34;Cluster Version `{cluster_version}` is not included in versions: {versions}&#34;
+    )
+    mark = request.node.get_closest_marker(&#34;skip_version_if&#34;)
+    if mark:
+        cluster_ver = api_client.cluster_version
+        checks = [version_check(vstr, cluster_ver) for vstr in mark.args]
+        reason = mark.kwargs.get(&#39;reason&#39;, default_reason)
+        if mark.kwargs.get(&#39;condition&#39;, all)(r for *_, r in checks):
+            versions = [f&#34;{op} {v}&#34; for op, v, _ in checks]
+            return pytest.skip(
+                reason.format(cluster_version=cluster_ver, versions=versions)
+            )
+
+
+def version_check(vstring, version):
+    from operator import le, lt, ge, gt, ne, eq
+    ops = {&#34;&lt;=&#34;: le, &#34;&lt;&#34;: lt, &#34;&gt;=&#34;: ge, &#34;&gt;&#34;: gt, &#34;!=&#34;: ne, &#34;==&#34;: eq}
+
+    try:
+        op = target_ver = None
+        op, target_ver = re.search(r&#34;([&lt;&gt;=!]+)\s?(.+)&#34;, vstring).groups()
+        return op, target_ver, ops[op](version, parse_version(target_ver))
+    except Exception:
+        return op, target_ver, False
+
+
 @pytest.fixture(scope=&#34;session&#34;)
 def host_shell(request):
     password = request.config.getoption(&#34;--host-password&#34;) or None
@@ -733,6 +771,50 @@ def skip_version_before(request, api_client):
                 )</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.skip_version_if"><code class="name flex">
+<span>def <span class="ident">skip_version_if</span></span>(<span>request, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>To mark test case should be skip when hit the condition string.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>*args</code></strong></dt>
+<dd>Version string prefixing with one of operators: <code>!=</code>, <code>==</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&lt;</code></dd>
+</dl>
+<p>Keyword Args:
+reason: The reason string for <code>pytest.skip</code>, default is:
+"Cluster Version <code>{cluster_version}</code> is not included in versions: {versions}"
+condition: Condition callable function to check compare result(bool), default is <code>all</code></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(autouse=True)
+def skip_version_if(request, api_client):
+    &#39;&#39;&#39; To mark test case should be skip when hit the condition string.
+
+    Args:
+        *args: Version string prefixing with one of operators: `!=`, `==`, `&gt;=`, `&lt;=`, `&gt;`, `&lt;`
+    Keyword Args:
+        reason: The reason string for `pytest.skip`, default is:
+            &#34;Cluster Version `{cluster_version}` is not included in versions: {versions}&#34;
+        condition: Condition callable function to check compare result(bool), default is `all`
+    &#39;&#39;&#39;
+    default_reason = (
+        &#34;Cluster Version `{cluster_version}` is not included in versions: {versions}&#34;
+    )
+    mark = request.node.get_closest_marker(&#34;skip_version_if&#34;)
+    if mark:
+        cluster_ver = api_client.cluster_version
+        checks = [version_check(vstr, cluster_ver) for vstr in mark.args]
+        reason = mark.kwargs.get(&#39;reason&#39;, default_reason)
+        if mark.kwargs.get(&#39;condition&#39;, all)(r for *_, r in checks):
+            versions = [f&#34;{op} {v}&#34; for op, v, _ in checks]
+            return pytest.skip(
+                reason.format(cluster_version=cluster_ver, versions=versions)
+            )</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.sleep_timeout"><code class="name flex">
 <span>def <span class="ident">sleep_timeout</span></span>(<span>request)</span>
 </code></dt>
@@ -814,6 +896,27 @@ def unique_name():
     return datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.version_check"><code class="name flex">
+<span>def <span class="ident">version_check</span></span>(<span>vstring, version)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def version_check(vstring, version):
+    from operator import le, lt, ge, gt, ne, eq
+    ops = {&#34;&lt;=&#34;: le, &#34;&lt;&#34;: lt, &#34;&gt;=&#34;: ge, &#34;&gt;&#34;: gt, &#34;!=&#34;: ne, &#34;==&#34;: eq}
+
+    try:
+        op = target_ver = None
+        op, target_ver = re.search(r&#34;([&lt;&gt;=!]+)\s?(.+)&#34;, vstring).groups()
+        return op, target_ver, ops[op](version, parse_version(target_ver))
+    except Exception:
+        return op, target_ver, False</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.wait_timeout"><code class="name flex">
 <span>def <span class="ident">wait_timeout</span></span>(<span>request)</span>
 </code></dt>
@@ -857,10 +960,12 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.rancher_wait_timeout" href="#harvester_e2e_tests.fixtures.api_client.rancher_wait_timeout">rancher_wait_timeout</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_after" href="#harvester_e2e_tests.fixtures.api_client.skip_version_after">skip_version_after</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_before" href="#harvester_e2e_tests.fixtures.api_client.skip_version_before">skip_version_before</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.skip_version_if" href="#harvester_e2e_tests.fixtures.api_client.skip_version_if">skip_version_if</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.sleep_timeout" href="#harvester_e2e_tests.fixtures.api_client.sleep_timeout">sleep_timeout</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.ssh_keypair" href="#harvester_e2e_tests.fixtures.api_client.ssh_keypair">ssh_keypair</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.support_bundle_state" href="#harvester_e2e_tests.fixtures.api_client.support_bundle_state">support_bundle_state</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.unique_name" href="#harvester_e2e_tests.fixtures.api_client.unique_name">unique_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.version_check" href="#harvester_e2e_tests.fixtures.api_client.version_check">version_check</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.wait_timeout" href="#harvester_e2e_tests.fixtures.api_client.wait_timeout">wait_timeout</a></code></li>
 </ul>
 </li>
