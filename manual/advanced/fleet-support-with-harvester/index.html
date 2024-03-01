@@ -1934,19 +1934,201 @@
   <h1 id="title">Fleet support with Harvester</h1>
   <div>
     <article id="content">
-       <h3 id="prerequisite">Prerequisite</h3>
+       <h2 id="fleet-support-pathways">Fleet Support Pathways</h2>
 <ol>
-<li>Harvester cluster is imported in Rancher.</li>
-<li>Feature flag <code>harvester-baremetal-container-workload</code> is enabled.</li>
-<li>Harvester cluster is avaialble in the Explore cluster section of Rancher.</li>
+<li>Fleet Support is enabled out of the box with Harvester, no Rancher integration needed, as Fleet Support does not need any Rancher integration to function</li>
+<li>Fleet Support can be used from within Rancher w/ Harvester</li>
 </ol>
-<h2 id="test-cases">Test cases</h2>
-<p><strong>1. Deploy VM image, network etc objects through GitOps using Fleet</strong></p>
-<p><strong>2. Editing the fleet deployment</strong></p>
-<p><strong>3. Enabling/disabling <code>harvester-baremetal-container-workload</code></strong></p>
-<p><strong>4. Uninstalling using Fleet</strong></p>
-<p><strong>5. Having other downstream clusters (like Harvester node driver) while deploying with Fleet</strong></p>
-<p><strong>6. Negative testing - Remove some deployed object in the cluster and redeploy using Fleet</strong></p>
+<h3 id="fleet-support-w-rancher-prerequisites">Fleet Support w/ Rancher Prerequisites</h3>
+<ol>
+<li>Harvester cluster is imported into Rancher.</li>
+<li>Rancher Feature Flag <code>harvester-baremetal-container-workload</code> is enabled.</li>
+<li>Harvester cluster is available to view via the Explore Cluster section of Rancher.</li>
+<li>Explore the Harvester cluster:
+<ol>
+<li>Toggle &ldquo;All Namespaces&rdquo; to be selected</li>
+<li>Search for &amp; &ldquo;star&rdquo; (marking favorite for ease of navigation):
+<ul>
+<li>Git Repo</li>
+<li>Git Job</li>
+<li>Git Restrictions</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="fleet-support-wout-rancher-prerequisites">Fleet Support w/out Rancher Prerequisites</h3>
+<ol>
+<li>An active Harvester Cluster Kubeconfig</li>
+</ol>
+<h3 id="additional-prerequisites">Additional Prerequisites</h3>
+<ol>
+<li>Fork <a href="https://github.com/ibrokethecloud/harvester-fleet-demo/">ibrokethecloud&rsquo;s Harvester Fleet Demo</a> into your own personal GitHub Repository</li>
+<li>Take a look at the different <a href="https://docs.harvesterhci.io/v1.2/category/api">Harvester API Resources</a> as YAML will be scaffolded to reflect those objects respectively</li>
+</ol>
+<h3 id="additional-prerequisites-airgapped-if-desired">Additional Prerequisites Airgapped, if desired</h3>
+<ol>
+<li>Have an Airgapped GitLab Server Running somewhere with a Repo that takes the shape of <a href="https://github.com/ibrokethecloud/harvester-fleet-demo/">ibrokethecloud&rsquo;s Harvester Fleet Demo</a>
+(setting up AirGapped GitLab Server is outside of this scope)</li>
+</ol>
+<h3 id="additional-prerequisites-private-repository-testing-if-desired">Additional Prerequisites (Private Repository Testing), if desired</h3>
+<ol>
+<li><a href="https://fleet.rancher.io/gitrepo-add#adding-private-git-repository">Private Git Repo Key</a>, will need to be added to <code>-n fleet-local</code> namespace</li>
+<li>Build a private GitHub Repo</li>
+<li>Add similar content to what <a href="https://github.com/ibrokethecloud/harvester-fleet-demo/">ibrokethecloud&rsquo;s Harvester Fleet Demo</a> holds but take into consideration the following ( references: <a href="https://fleet.rancher.io/ref-gitrepo">GitRepo CRD</a> &amp; <a href="https://fleet.rancher.io/gitrepo-add#adding-private-git-repository">Rancher Fleet Private Git Repo Blurb</a> ):
+<ol>
+<li>building a &ldquo;separate&rdquo; SINGLE REPOSITORY ONLY (zero-trust based) SSH Key Via something like:</li>
+</ol>
+<pre tabindex="0"><code>    ssh-keygen -t rsa -b 4096 -m pem -C &#34;testing-test-key-for-private-repo-deploy-key@email.com&#34;
+    Generating public/private rsa key pair.
+    Enter file in which to save the key (/home/mike/.ssh/id_rsa): /home/mike/.ssh/rsa_key_for_private_rancher_fleet_repo_testing
+    Enter passphrase (empty for no passphrase):
+    Enter same passphrase again:
+    Your identification has been saved in /home/mike/.ssh/rsa_key_for_private_rancher_fleet_repo_testing
+    Your public key has been saved in /home/mike/.ssh/rsa_key_for_private_rancher_fleet_repo_testing.pub
+</code></pre><ol start="2">
+<li>adding that key to the <code>fleet-local</code> namespace as a secret <code>kubectl create secret generic ssh-key -n fleet-local --from-file=ssh-privatekey=/home/mike/.ssh/rsa_key_for_private_rancher_fleet_repo_testing --type=kubernetes.io/ssh-auth</code></li>
+<li>going into your repo&rsquo;s <code>settings -&gt; deploy keys</code> and adding that SSH Key you just built as a <code>deploy key</code></li>
+<li>you&rsquo;ll need to keep in mind that the <code>setup.yaml</code> and similar files will need to shift to reflect the fact you&rsquo;re utilizing a private GitHub Repository, those changes may look similar to (please note: <code>spec.clientSecretName</code> to reference your SSH Key that was added to the private repository&rsquo;s settings -&gt; deploy keys &amp;&amp; <code>spec.repo</code> shifts to hold your <code>git</code> based URL/URI not the <code>https</code> based one):</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">fleet.cattle.io/v1alpha1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepo</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">setup-harvester-cluster</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">fleet-local</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">branch</span>: <span style="color:#ae81ff">main</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">insecureSkipTLSVerify</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">paths</span>:
+</span></span><span style="display:flex;"><span>            - <span style="color:#e6db74">&#34;/vm-image&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">pollingInterval</span>: <span style="color:#ae81ff">15s</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">repo</span>: <span style="color:#e6db74">&#39;git@github.com:irishgordo/sample-private-fleet.git&#39;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">clientSecretName</span>: <span style="color:#ae81ff">ssh-key</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">targets</span>:
+</span></span><span style="display:flex;"><span>            - <span style="color:#f92672">clusterSelector</span>: {}
+</span></span></code></pre></div></li>
+</ol>
+<h3 id="additional-docs-to-familiarize-yourself-with">Additional Docs To Familiarize Yourself With:</h3>
+<ul>
+<li><a href="https://fleet.rancher.io/quickstart">Rancher Fleet&rsquo;s Quickstart</a> and respective Docs</li>
+</ul>
+<h2 id="non-rancher-integration-fleet-support-base-tests-public-repo">Non-Rancher-Integration Fleet Support Base Tests, Public Repo</h2>
+<h5 id="note-this-can-be-expanded-to-encompass-more-for-automation">Note: this can be expanded to encompass more for automation</h5>
+<h4 id="test-building-a-gitrepo-is-successful">Test Building A GitRepo Is Successful</h4>
+<ol>
+<li>Utilizing <a href="https://github.com/ibrokethecloud/harvester-fleet-demo/">ibrokethecloud&rsquo;s Harvester Fleet Demo</a> as a base-layer create a folder called <code>extra-vm-image</code></li>
+<li>Build a file in the root directory called <code>test-gitrepo-is-successful-public.yaml</code></li>
+<li>Have it structured similar to:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">fleet.cattle.io/v1alpha1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepo</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">test-gitrepo-success-public</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">fleet-local</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">branch</span>: <span style="color:#ae81ff">main</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">paths</span>:
+</span></span><span style="display:flex;"><span>            - <span style="color:#e6db74">&#34;/extra-vm-image&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">pollingInterval</span>: <span style="color:#ae81ff">15s</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">repo</span>: <span style="color:#ae81ff">YOUR-HTTPS-REPO-URL</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">targetNamespace</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">targets</span>:
+</span></span><span style="display:flex;"><span>            - <span style="color:#f92672">clusterSelector</span>: {}
+</span></span></code></pre></div><ol start="4">
+<li>Build a VM Image File in <code>/extra-vm-image</code> called <code>my-test-public-image.yaml</code></li>
+<li>Have that file structured similar to:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">harvesterhci.io/v1beta1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">VirtualMachineImage</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">annotations</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">harvesterhci.io/storageClassName</span>: <span style="color:#ae81ff">harvester-longhorn</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">opensuse-default-image</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">testing</span>: <span style="color:#ae81ff">testing-pub-repo-non-rancher</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">displayName</span>: <span style="color:#ae81ff">provide-a-display-name</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">retry</span>: <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sourceType</span>: <span style="color:#ae81ff">download</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">storageClassParameters</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">migratable</span>: <span style="color:#e6db74">&#34;true&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">numberOfReplicas</span>: <span style="color:#e6db74">&#34;3&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">staleReplicaTimeout</span>: <span style="color:#e6db74">&#34;30&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">url</span>: <span style="color:#ae81ff">https://-or-http://provide-a-url-of-an-image-like-qcow2-to-download-or-img</span>
+</span></span></code></pre></div><ol start="6">
+<li>Add, Commit, &amp; Push to your public fork</li>
+<li>Utilizing the <code>kubeconfig</code> from your Harvester cluster, go ahead and create the GitRepo CRD from the <code>raw.github</code> link of your <code>test-gitrepo-is-successful-public.yaml</code> something similar to: <code>kubectl create -f https://raw.githubusercontent.com/YOUR-USER-NAME/harvester-fleet-demo/main/test-gitrepo-is-successful-public.yaml</code></li>
+<li>Audit that it built the GitRepo CRD with something like <code>kubectl get GitRepo -A -o wide</code> you should see <code>test-gitrepo-success-public</code> as an available object</li>
+<li>In the Harvester UI, you should see the VirtualMachineImage being downloaded</li>
+</ol>
+<h4 id="test-updating-a-gitrepo-resource-is-successful">Test Updating A GitRepo Resource Is Successful</h4>
+<ol>
+<li>With the same <code>/extra-vm-image/my-test-public-image.yaml</code> go ahead and modify it creating a description annotation adding the line of something like:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">annotations</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">harvesterhci.io/storageClassName</span>: <span style="color:#ae81ff">harvester-longhorn</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">field.cattle.io/description</span>: <span style="color:#e6db74">&#34;my new description for this VirtualMachineImage that&#39;s already been downloaded from the URL earlier for Harvester&#34;</span>
+</span></span></code></pre></div><ol start="2">
+<li>Git Add, Git Commit, &amp; Git Push that change out to the main branch fork of the repo you&rsquo;re utilizing</li>
+<li>You should see that within a minute the VirtualMachineImage object you created through the CRD get&rsquo;s a different displayed description, that reflects what you passed in with <code>field.cattle.io/description</code></li>
+</ol>
+<h4 id="test-a-forced-rancher-fleet-sync-synchronizes-git-in-comparison-with-the-current-state-of-harvester-cluster">Test a forced Rancher Fleet Sync, Synchronizes Git in Comparison with the Current State of Harvester Cluster</h4>
+<ol>
+<li>Go ahead and delete that VirtualMachineImage from the Harvester UI</li>
+<li>Ensure it&rsquo;s deleted</li>
+<li>Hop in with your favorite editor or perhaps a patch file (take this as inspiration), run <code>kubectl edit GitRepo/test-gitrepo-success-public</code></li>
+<li>be mindful we&rsquo;re utilizing <a href="https://fleet.rancher.io/ref-gitrepo">Rancher Fleet GitRepo Object Properties</a>, but add a line in the yaml under <code>spec</code> like:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>  <span style="color:#f92672">forceSyncGeneration</span>: <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><ol start="5">
+<li>save that edited file</li>
+<li>watch over a period of time, that &ldquo;user-deleted&rdquo; VirtualMachineImage &ldquo;should&rdquo; come-back-to-life and exist once again in your Harvester cluster</li>
+</ol>
+<h4 id="test-deleting-a-gitrepo-resource-is-successful">Test Deleting A GitRepo Resource Is Successful</h4>
+<ol>
+<li>from within the root directory of the project go ahead and fire off a <code>kubectl delete -f test-gitrepo-is-successful-public.yaml</code></li>
+<li>validate that the VirtualMachineImage is deleted</li>
+<li>validate that the GitRepo does not exist eg, <code>kubectl get GitRepo -A -o wide</code></li>
+</ol>
+<h2 id="rancher-integration-fleet-support-base-tests-public-repo">Rancher Integration Fleet Support Base Tests, Public Repo</h2>
+<h5 id="note-this-can-be-expanded-to-encompass-more-for-automation-1">Note: this can be expanded to encompass more for automation</h5>
+<h4 id="test-building-a-gitrepo-is-successful-1">Test Building A GitRepo Is Successful</h4>
+<ol>
+<li>In Rancher UI under the Harvester Cluster that has been imported with the feature flag of <code>harvester-baremetal-container-workload</code> created go ahead and start building a GitRepo</li>
+<li>Link it to your https:// fork of the repo</li>
+<li>Specify the paths of <code>/vm-image</code> (<strong>NOTE: PLEASE CROSS-CHECK the image URL for the VM Image OpenSuse Image URLs &lsquo;Historically&rsquo; fall-out-of-date very fast due to the nature of new builds being rolled out frequently - you will more than likely want to change the opensuse-image.yaml spec.url beforehand and then pushing to your fork of the repo</strong>), <code>/keypair</code>, and <code>/vm-network</code> for the first iteration</li>
+<li>Be sure to make sure to Edit the YAML directly changing:
+<ol>
+<li>namespace from <code>fleet-default</code> to <code>fleet-local</code></li>
+<li>that <code>targets.clusterSelector</code> does not have that pre-baked-in-logic and is open ended with <code>targets.clusterSelector: {}</code></li>
+</ol>
+</li>
+<li>Watch it respectively in the Harvester UI build out those resources</li>
+<li>Go back into the GitRepo you created after the keypairs, vm-image, vm-network Harvester objects have been built out and edit it, adding the <code>/vm-workload</code> to the path</li>
+<li>Watch over a period of time the Harvester UI eventually spin up a VM utilizing the provided keypairs, vm-image, vm-network</li>
+<li>Audit things like GitJobs &amp; GitRestrictions in the Rancher UI</li>
+</ol>
+<h4 id="test-updates-to-harvester-objects-work">Test Updates To Harvester Objects Work</h4>
+<ol>
+<li>Modify anything in either: <code>/vm-image</code>, <code>/keypair</code>, <code>/vm-workload</code>, or <code>/vm-network</code> <a href="https://docs.harvesterhci.io/v1.2/category/api">leverage Harvester API Docs to validate modification of Harvester Object</a></li>
+<li>Git Add, Git Commit, &amp; Git Push that change out to your fork</li>
+<li>Validate the change is reflected within the Harvester Cluster</li>
+</ol>
+<h4 id="negative-test-make-sure-user-created-rancher-resources-are-not-affected">Negative Test: Make Sure User-Created Rancher Resources Are Not Affected</h4>
+<ol>
+<li>Build an RKE2 or RKE1 cluster, utilizing Harvester:
+<ol>
+<li>use a separate VirtualMachineImage</li>
+<li>use separate keypair (if desired)</li>
+<li>use a separate vm-network</li>
+</ol>
+</li>
+<li>Ensure that RKE2 / RKE1 comes up with the VMs running on Harvester</li>
+</ol>
+<h4 id="note-test-cases-can-also-be-reflected-via-either-private-github-repo--also-self-hosted-gitlab-instance-see-earlier-prerequisites-for-that-load-out">NOTE: Test Cases Can Also Be Reflected Via Either Private GitHub Repo &amp; ALSO self-hosted GitLab Instance, See Earlier Prerequisites for that load-out</h4>
 
     </article>
   </div>
