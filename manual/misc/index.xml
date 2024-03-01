@@ -22,6 +22,13 @@
       <description> Related issues: #1520 incorrect title and favicon Verification Steps Log into Harvester Check page title and favicon on each of these pages dashboard main page settings support Volumes SSH Keys Host info Expected Results Harvester favicon and title should show on each page </description>
     </item>
     <item>
+      <title>Check Harvester CloudInit CRDs within Harvester, Terraform &amp; Rancher</title>
+      <link>https://harvester.github.io/tests/manual/misc/3902-elemental-cloud-init-harvester-crds/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/misc/3902-elemental-cloud-init-harvester-crds/</guid>
+      <description>Related issues: #3902 support elemental cloud-init via harvester-node-manager Testing With Terraform TBD Testing From Harvester UI TBD Testing From Rancher Fleet UI / Harvester Fleet Controller TBD Testing w/ Harvester Kubeconfig via Kubectl &amp;amp; K9s (or similar tool) Pre-Reqs: Have an available multi-node Harvester cluster, w/out your ssh-key present on any nodes Provision cluster however is easiest K9s (or other similar kubectl tooling) kubectl audit elemental toolkit for an understanding of stages audit harvester configuration to correlate properties to elemental-toolkit based stages / functions Negative Tests: Validate Non-YAML Files Get .</description>
+    </item>
+    <item>
       <title>Create support bundle in multi-node Harvester cluster with one node off</title>
       <link>https://harvester.github.io/tests/manual/misc/1524-create-support-bundle-with-one-node-off/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
