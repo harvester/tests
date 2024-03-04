@@ -1,4 +1,4 @@
-pytest
+pytest == 7.*
 pytest-drop-dup-tests
 pytest-ordering
 pytest-html
