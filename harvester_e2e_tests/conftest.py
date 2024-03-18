@@ -123,6 +123,12 @@ def pytest_addoption(parser):
         help=('OpenSUSE image URL')
     )
     parser.addoption(
+        '--ubuntu-image-url',
+        action='store',
+        default=config_data.get('ubuntu-image-url'),
+        help=('ubuntu image URL')
+    )
+    parser.addoption(
         '--terraform-scripts-location',
         action='store',
         default=config_data['terraform-scripts-location'],
