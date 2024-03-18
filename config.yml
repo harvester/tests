@@ -20,6 +20,7 @@ sleep-timeout: 3
 node-scripts-location: 'scripts/vagrant'
 
 opensuse-image-url: https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2
+ubuntu-image-url: https://cloud-images.ubuntu.com/releases/releases/22.04/release/ubuntu-22.04-server-cloudimg-arm64.img
 # URL to download all images
 image-cache-url: ''
 

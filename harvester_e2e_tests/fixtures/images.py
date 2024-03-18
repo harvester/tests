@@ -33,7 +33,9 @@ def image_opensuse(request, api_client):
 @pytest.fixture(scope="session")
 def image_ubuntu(request):
     image_server = request.config.getoption("--image-cache-url")
-    url = urlparse(DEFAULT_UBUNTU_IMAGE_URL)
+    url = urlparse(
+        request.config.getoption("--ubuntu-image-url") or DEFAULT_UBUNTU_IMAGE_URL
+    )
 
     if image_server:
         *_, image_name = url.path.rsplit("/", 1)
