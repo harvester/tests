@@ -152,7 +152,7 @@
       <link>https://harvester.github.io/tests/manual/volumes/1334-evict-disks-check-vms/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/volumes/1334-evict-disks-check-vms/</guid>
-      <description>Related issues: #1334 Volumes fail with Scheduling Failure after evicting disc on multi-disc node Verification Steps Created 3 node Harvester setup with ipxe example in KVM/libvirt Added formatted disk to node0 VM Created three VMs on node0 Created large files on three VMs to see where they were located with dd if=/dev/urandom of=file1.txt count=5192 bs=1M Checked Longhorn to be sure that some VMs were on new disk Deleted disk from Harvester Checked Longhorn to be sure that disk was marked for eviction Verified that VMs were still available while evicting replicas by running commands from serial console/SSH Verified that disk was removed from Longhorn and VMS were still up.</description>
+      <description>Related issues #1334 Volumes fail with Scheduling Failure after evicting disc on multi-disc node #5307 Replicas should be evicted and rescheduled to other disks before removing extrak disk Verification Steps Created 3 nodes Harvester.&#xA;Added formatted disk (called disk A) to node0 VM in the harvester node page.&#xA;Added disk tag test on following disk in the longhorn page.&#xA;disk A of node0 root disk of node1 root disk of node2 Created storage class with disk tag test.</description>
     </item>
   </channel>
 </rss>
