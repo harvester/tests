@@ -12,7 +12,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.fixture(params=["image_opensuse", "image_k3s"])
+@pytest.fixture(params=["image_opensuse", "image_ubuntu"])
 def image_info(request):
     return request.getfixturevalue(request.param)
 

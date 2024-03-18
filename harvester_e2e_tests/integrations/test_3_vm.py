@@ -1,5 +1,3 @@
-import os
-
 from datetime import datetime, timedelta
 from time import sleep
 
@@ -10,17 +8,9 @@ pytest_plugins = [
 ]
 
 
-@pytest.fixture(scope="session")
-def focal_image_url(request):
-    base_url = request.config.getoption(
-        '--image-cache-url',
-        'https://cloud-images.ubuntu.com/focal/current/')
-    return os.path.join(base_url, "focal-server-cloudimg-amd64.img")
-
-
-@pytest.fixture(scope="class")
-def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
-    code, data = api_client.images.create_by_url(unique_name, focal_image_url)
+@pytest.fixture(scope="module")
+def focal_image(api_client, unique_name, image_ubuntu, wait_timeout):
+    code, data = api_client.images.create_by_url(unique_name, image_ubuntu.url)
     assert 201 == code, (
         f"Failed to upload focal image with error: {code}, {data}"
     )
@@ -41,7 +31,7 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
     namespace = data['metadata']['namespace']
     name = data['metadata']['name']
 
-    yield dict(ssh_user="ubuntu", id=f"{namespace}/{name}")
+    yield dict(ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}")
 
     is_delete = False
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
@@ -88,37 +78,31 @@ def available_node_names(api_client):
 
 @pytest.mark.p0
 @pytest.mark.virtualmachines
-def test_multiple_migrations(api_client, unique_name, focal_image, wait_timeout,
-                             available_node_names):
-    vm_names = [f"migrate-1-{unique_name}", f"migrate-2-{unique_name}"]
-
+def test_multiple_migrations(
+    api_client, unique_name, focal_image, wait_timeout, available_node_names
+):
     vm_spec = api_client.vms.Spec(1, 1)
     vm_spec.add_image('disk-0', focal_image['id'])
-    vm_data = []
+    vm_names = [f"migrate-1-{unique_name}", f"migrate-2-{unique_name}"]
+    volumes = []
     for vm_name in vm_names:
         code, data = api_client.vms.create(vm_name, vm_spec)
         assert 201 == code, (
             f"Failed to create VM {vm_name} with error: {code}, {data}"
         )
-        vm_data.append(data)
+        volumes.extend(api_client.vms.Spec.from_dict(data).volumes)
 
     vmi_data = []
-    vm_name, code, data = None, None, None
+    vm_name = code = data = None
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        all_vm_ready = True
         vmi_data.clear()
         for vm_name in vm_names:
-            code, data = api_client.vms.get(vm_name)
-            if data.get('status', {}).get('ready', False):
-                code, data = api_client.vms.get_status(vm_name)
-                if code != 200 or data['status']['conditions'][-1]['status'] != 'True':
-                    all_vm_ready = False
-                    break
-                vmi_data.append(data)
-            else:
-                all_vm_ready = False
-        if all_vm_ready:
+            code, data = api_client.vms.get_status(vm_name)
+            if not (code == 200 and "Running" == data.get('status', {}).get('phase')):
+                break
+            vmi_data.append(data)
+        else:
             break
         sleep(5)
     else:
@@ -139,29 +123,24 @@ def test_multiple_migrations(api_client, unique_name, focal_image, wait_timeout,
             f"Got error: {code}, {data}"
         )
 
-    code, data = None, None
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        all_vm_migrated = True
+        fails = []
         for vm_name, (src, dst) in vm_src_dst_hosts.items():
             code, data = api_client.vms.get_status(vm_name)
-            if code == 200 and \
-                    data.get('status', {}).get('migrationState', {}).get('completed', False):
-                assert dst == data['status']['nodeName'], (
-                    f"Failed to migrate VM {vm_name} \
-                        from {src} to {dst}"
-                )
-            else:
-                all_vm_migrated = False
+            if not data.get('status', {}).get('migrationState', {}).get('completed'):
                 break
-        if all_vm_migrated:
+            else:
+                if dst != data['status']['nodeName']:
+                    fails.append(
+                        f"Failed to migrate VM {vm_name} from {src} to {dst}\n"
+                        f"API Status({code}): {data}"
+                    )
+        else:
             break
         sleep(5)
     else:
-        raise AssertionError(
-            f"The migration of VM {vm_name} is not completed with {wait_timeout} timed out"
-            f"Got error: {code}, {data}"
-        )
+        raise AssertionError("\n".join(fails))
 
     # teardown
     for vm_name in vm_names:
@@ -170,25 +149,24 @@ def test_multiple_migrations(api_client, unique_name, focal_image, wait_timeout,
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     code, data = None, None
     while endtime > datetime.now():
-        all_shutdown = True
+        fails = []
         for vm_name in vm_names:
             code, data = api_client.vms.get_status(vm_name)
             if code != 404:
-                all_shutdown = False
-
-        if all_shutdown:
+                fails.append(
+                    f"VM {vm_name} can't be deleted with {wait_timeout} timed out\n"
+                    f"API Status({code}): {data}"
+                )
+                break
+        else:
             break
         sleep(5)
     else:
-        raise AssertionError(
-            f"VM {vm_name} can't be deleted with {wait_timeout} timed out"
-            f"Got error: {code}, {data}"
-        )
+        raise AssertionError("\n".join(fails))
 
-    for vm_datum in vm_data:
-        for vol in api_client.vms.Spec.from_dict(vm_datum).volumes:
-            if vol['volume'].get('persistentVolumeClaim', {}).get('claimName', "") != "":
-                api_client.volumes.delete(vol['volume']['persistentVolumeClaim']['claimName'])
+    for vol in volumes:
+        if vol['volume'].get('persistentVolumeClaim', {}).get('claimName'):
+            api_client.volumes.delete(vol['volume']['persistentVolumeClaim']['claimName'])
 
 
 @pytest.mark.p0

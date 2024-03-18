@@ -1,5 +1,3 @@
-from urllib.parse import urljoin
-
 import yaml
 import pytest
 
@@ -9,17 +7,10 @@ pytest_plugins = [
 
 
 @pytest.fixture(scope="module")
-def focal_image_url(request):
-    base_url = request.config.getoption("--image-cache-url").strip()
-    base_url = base_url or "https://cloud-images.ubuntu.com/focal/current/"
-    return urljoin(f"{base_url}/", "focal-server-cloudimg-amd64.img")
-
-
-@pytest.fixture(scope="module")
-def focal_image(api_client, unique_name, focal_image_url, polling_for):
+def focal_image(api_client, unique_name, image_ubuntu, polling_for):
     image_name = f"img-focal-{unique_name}"
 
-    code, data = api_client.images.create_by_url(image_name, focal_image_url)
+    code, data = api_client.images.create_by_url(image_name, image_ubuntu.url)
     assert 201 == code, f"Fail to create image\n{code}, {data}"
     code, data = polling_for("image do created",
                              lambda c, d: c == 200 and d.get('status', {}).get('progress') == 100,
@@ -27,7 +18,7 @@ def focal_image(api_client, unique_name, focal_image_url, polling_for):
 
     namespace = data['metadata']['namespace']
     name = data['metadata']['name']
-    yield dict(ssh_user="ubuntu", id=f"{namespace}/{name}", display_name=image_name)
+    yield dict(ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}", display_name=image_name)
 
     code, data = api_client.images.get(image_name)
     if 200 == code:
