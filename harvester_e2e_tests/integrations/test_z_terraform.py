@@ -45,7 +45,7 @@ def vlanconfig_resource(request, unique_name, tf_resource, clusternetwork_resour
     assert vlan_nic, f"VLAN NIC {vlan_nic} not configured correctly."
 
     _, clusternetwork_name = clusternetwork_resource
-    name, nics = f"{clusternetwork_name}-{vlan_nic}", [vlan_nic]
+    name, nics = f"{clusternetwork_name}-{vlan_nic}".lower(), [vlan_nic]
     spec = tf_resource.vlanconfig(f"tf_{unique_name}", name, clusternetwork_name, nics)
 
     return spec, name, clusternetwork_name, nics

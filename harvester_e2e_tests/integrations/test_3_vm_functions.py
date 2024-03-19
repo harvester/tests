@@ -512,6 +512,9 @@ class TestVMOperations:
                     assert 204 == code, (code, err)
                 else:
                     break
+            elif len(states) == 1 and not m_state:
+                # we did abort migration, and the anootation removed
+                break
             sleep(3)
         else:
             raise AssertionError(
