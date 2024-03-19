@@ -110,26 +110,27 @@ vcsim   clusterReady
 ```
 
 ### Verify OpenstackSource
-* Create a vm instance 
+
 1. Access the Openstack dashboard
 1. Create some images 
-![image](https://github.com/harvester/harvester/assets/29251855/dce72e41-7047-40dd-b549-2f479e173eee)
+![image](/docs/static/images/addons/2274-openstack-create-image.png)
 
 1. Create key pairs
 1. Create an empty volume to ensure the microstack.cinder services works well (if failed, check the OpenStack troubleshooting section)
-![image](https://github.com/harvester/harvester/assets/29251855/9e1a069b-968d-4953-b891-e4733452ee86)
-![image](https://github.com/harvester/harvester/assets/29251855/1a4e3d99-05d7-4ef3-9a6c-81d74aeba392)
+![image](/docs/static/images/addons/2274-openstack-empty-volume.png)
+![image](/docs/static/images/addons/2274-openstack-empty-volume-display.png)
 
 1. Launch a vm instance, ensure the vm can be created without error message
-![image](https://github.com/harvester/harvester/assets/29251855/56bdd300-599d-4f29-b4ea-845b3b9df7ed)
+![image](/docs/static/images/addons/2274-openstack-create-vm.png)
 
 1. Enable the vm-import-controller addon on Harvester
-![image](https://github.com/harvester/harvester/assets/29251855/c20563f0-fa32-458d-9475-8411b03cb5d8)
+![image](/docs/static/images/addons/2274-enable-vm-importer.png)
+
 1. Open Compute -> System -> System Information page, find the `Services` tab
 1. Check the `Region` in the page (eg. `microstack`)
-![image](https://github.com/harvester/harvester/assets/29251855/67aa627f-2c4a-42b8-a306-059052741b98)
+![image](/docs/static/images/addons/2274-openstack-region.png)
 1. Check the endpoint of the identity item
-![image](https://github.com/harvester/harvester/assets/29251855/8b33b155-2ce3-4abf-8e40-71d29e332d18)
+![image](/docs/static/images/addons/2274-openstack-endpoint.png)
 
 1. Access the Harvester node machine
 1. Define a secret for your Openstack cluster in yaml file and use `kubectl` to create the crd
@@ -264,10 +265,10 @@ Once the VM object is created, the VirtualMachine is powered on, and the control
     ```
 
 1. After the `VirtualMachineImport` created, you can find Harvester create a new image from the OpenStack
-![image](https://github.com/harvester/harvester/assets/29251855/42e16485-accc-482b-8c16-06e14579a710)
+![image](/docs/static/images/addons/2274-harvester-import-openstack-image.png)
 
 1. The OpenStack vm would be imported to Harvester
-![image](https://github.com/harvester/harvester/assets/29251855/7660012a-2312-459b-896f-612a3cf8f38f)
+![image](/docs/static/images/addons/2274-harvester-import-openstack-vm.png)
 
 The controller will check that the source is ready, before the virtualmachine import is initiated.
 
