@@ -146,24 +146,23 @@ vcsim   clusterReady
       "password": "password" #dashboard password
       "project_name": "admin"
       "domain_name": "default"
-      "ca_cert": "pem-encoded-ca-cert"
     ```
 
 1. Define an OpenstackSource Object in yaml file and use `kubectl` to create the crd
 
-```
-apiVersion: migration.harvesterhci.io/v1beta1
-kind: OpenstackSource
-metadata:
-  name: devstack
-  namespace: default
-spec:
-  endpoint: "https://<dashboard ipv4>:5000/v3"  
-  region: "microstack" # value found in OpenStack dashboard
-  credentials:
-    name: devstack-credentials
-    namespace: default
-```
+    ```
+    apiVersion: migration.harvesterhci.io/v1beta1
+    kind: OpenstackSource
+    metadata:
+      name: devstack
+      namespace: default
+    spec:
+      endpoint: "https://<dashboard ipv4>:5000/v3"  
+      region: "microstack" # value found in OpenStack dashboard
+      credentials:
+        name: devstack-credentials
+        namespace: default
+    ```
 
 The controller will try and list the VM's in the OpenstackSource project in the specified region, using the information from the credentials.
 
