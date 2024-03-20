@@ -40,7 +40,7 @@ pytest_plugins = [
 ]
 
 
-@pytest.fixture(params=[&#34;image_opensuse&#34;, &#34;image_k3s&#34;])
+@pytest.fixture(params=[&#34;image_opensuse&#34;, &#34;image_ubuntu&#34;])
 def image_info(request):
     return request.getfixturevalue(request.param)
 
@@ -506,7 +506,7 @@ def fake_invalid_image_file():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.fixture(params=[&#34;image_opensuse&#34;, &#34;image_k3s&#34;])
+<pre><code class="python">@pytest.fixture(params=[&#34;image_opensuse&#34;, &#34;image_ubuntu&#34;])
 def image_info(request):
     return request.getfixturevalue(request.param)</code></pre>
 </details>

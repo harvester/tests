@@ -29,7 +29,6 @@
 <pre><code class="python">import json
 from time import sleep
 from datetime import datetime, timedelta
-from urllib.parse import urljoin
 
 import pytest
 
@@ -38,16 +37,9 @@ pytest_plugins = [
 ]
 
 
-@pytest.fixture(scope=&#34;session&#34;)
-def focal_image_url(request):
-    base_url = request.config.getoption(&#34;--image-cache-url&#34;).strip()
-    base_url = base_url or &#34;http://cloud-images.ubuntu.com/releases/focal/release&#34;
-    return urljoin(f&#34;{base_url}/&#34;, &#34;ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img&#34;)
-
-
 @pytest.fixture(scope=&#34;module&#34;)
-def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
-    code, data = api_client.images.create_by_url(unique_name, focal_image_url)
+def focal_image(api_client, unique_name, image_ubuntu, wait_timeout):
+    code, data = api_client.images.create_by_url(unique_name, image_ubuntu.url)
     assert 201 == code, (
         f&#34;Failed to upload focal image with error: {code}, {data}&#34;
     )
@@ -68,7 +60,7 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
     namespace = data[&#39;metadata&#39;][&#39;namespace&#39;]
     name = data[&#39;metadata&#39;][&#39;name&#39;]
 
-    yield dict(ssh_user=&#34;ubuntu&#34;, id=f&#34;{namespace}/{name}&#34;)
+    yield dict(ssh_user=image_ubuntu.ssh_user, id=f&#34;{namespace}/{name}&#34;)
 
     api_client.images.delete(name, namespace)
 
@@ -631,7 +623,7 @@ def available_node_names(api_client):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image"><code class="name flex">
-<span>def <span class="ident">focal_image</span></span>(<span>api_client, unique_name, focal_image_url, wait_timeout)</span>
+<span>def <span class="ident">focal_image</span></span>(<span>api_client, unique_name, image_ubuntu, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -640,8 +632,8 @@ def available_node_names(api_client):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
-def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
-    code, data = api_client.images.create_by_url(unique_name, focal_image_url)
+def focal_image(api_client, unique_name, image_ubuntu, wait_timeout):
+    code, data = api_client.images.create_by_url(unique_name, image_ubuntu.url)
     assert 201 == code, (
         f&#34;Failed to upload focal image with error: {code}, {data}&#34;
     )
@@ -662,25 +654,9 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
     namespace = data[&#39;metadata&#39;][&#39;namespace&#39;]
     name = data[&#39;metadata&#39;][&#39;name&#39;]
 
-    yield dict(ssh_user=&#34;ubuntu&#34;, id=f&#34;{namespace}/{name}&#34;)
+    yield dict(ssh_user=image_ubuntu.ssh_user, id=f&#34;{namespace}/{name}&#34;)
 
     api_client.images.delete(name, namespace)</code></pre>
-</details>
-</dd>
-<dt id="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image_url"><code class="name flex">
-<span>def <span class="ident">focal_image_url</span></span>(<span>request)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
-def focal_image_url(request):
-    base_url = request.config.getoption(&#34;--image-cache-url&#34;).strip()
-    base_url = base_url or &#34;http://cloud-images.ubuntu.com/releases/focal/release&#34;
-    return urljoin(f&#34;{base_url}/&#34;, &#34;ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img&#34;)</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_vm"><code class="name flex">
@@ -1434,7 +1410,6 @@ def test_poweron_state(self, api_client, host_state, wait_timeout, available_nod
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.available_node_names" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.available_node_names">available_node_names</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image">focal_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image_url" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image_url">focal_image_url</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_vm" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_vm">focal_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.test_delete_vm_after_host_shutdown" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.test_delete_vm_after_host_shutdown">test_delete_vm_after_host_shutdown</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.test_maintenance_mode_trigger_vm_migrate" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.test_maintenance_mode_trigger_vm_migrate">test_maintenance_mode_trigger_vm_migrate</a></code></li>

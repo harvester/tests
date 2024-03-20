@@ -151,6 +151,12 @@ def pytest_addoption(parser):
         help=(&#39;OpenSUSE image URL&#39;)
     )
     parser.addoption(
+        &#39;--ubuntu-image-url&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;ubuntu-image-url&#39;),
+        help=(&#39;ubuntu image URL&#39;)
+    )
+    parser.addoption(
         &#39;--terraform-scripts-location&#39;,
         action=&#39;store&#39;,
         default=config_data[&#39;terraform-scripts-location&#39;],
@@ -559,6 +565,12 @@ def pytest_collection_modifyitems(session, config, items):
         action=&#39;store&#39;,
         default=config_data.get(&#39;opensuse-image-url&#39;),
         help=(&#39;OpenSUSE image URL&#39;)
+    )
+    parser.addoption(
+        &#39;--ubuntu-image-url&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;ubuntu-image-url&#39;),
+        help=(&#39;ubuntu image URL&#39;)
     )
     parser.addoption(
         &#39;--terraform-scripts-location&#39;,
