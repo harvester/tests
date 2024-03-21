@@ -230,8 +230,10 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     @pytest.mark.networks
-    def test_mgmt_network_connection(self, api_client, request, client, image_opensuse,
-                                     unique_name, wait_timeout):
+    def test_mgmt_network_connection(
+        self, api_client, request, client, image_opensuse, unique_name, wait_timeout,
+        host_shell, vm_shell_from_host
+    ):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/validate-network-management-network/
@@ -246,8 +248,7 @@ class TestBackendNetwork:
         6. Check can't SSH to VM with management network from external host
         """
         vip = request.config.getoption('--endpoint').strip('https://')
-
-        node_password = request.config.getoption("--host-password")
+        vm_user, vm_passwd = vm_credential['user'], vm_credential['password']
 
         # Check image exists
         code, data = api_client.images.get(image_opensuse.name)
@@ -257,15 +258,9 @@ class TestBackendNetwork:
 
         # Update AllowTcpForwarding for ssh jumpstart
 
-        self.ssh_client(client, vip, node_user, node_password,
-                        tcp, wait_timeout)
-
-        self.ssh_client(client, vip, node_user, node_password,
-                        restart_ssh, wait_timeout)
-
         spec = api_client.vms.Spec(1, 2)
 
-        spec.user_data += cloud_user_data.format(password=vm_credential["password"])
+        spec.user_data += cloud_user_data.format(password=vm_passwd)
 
         unique_name = unique_name + "-mgmt"
         # Create VM
@@ -293,23 +288,16 @@ class TestBackendNetwork:
         mgmt_ip = interfaces_data[0]['ipAddress']
 
         # Ping management ip address from Harvester node
-        ping_command = "ping -c 50 {0}".format(mgmt_ip)
-
-        _stdout, _stderr = self.ssh_client(
-            client, vip, node_user, node_password, ping_command, wait_timeout)
-
-        stdout = _stdout.read().decode('ascii').strip("\n")
+        with host_shell.login(vip) as sh:
+            stdout, stderr = sh.exec_command(f"ping -c 50 {mgmt_ip}")
 
         assert stdout.find(f"64 bytes from {mgmt_ip}") > 0, (
             f"Failed to ping VM management IP {mgmt_ip} "
             f"on management interface from Harvester node")
 
         # SSH to management ip address and execute command from Harvester node
-        _stdout, _stderr = self.ssh_jumpstart(
-            client, mgmt_ip, vip, node_user, node_password,
-            vm_credential["user"], vm_credential["password"], "ls")
-
-        stdout = _stdout.read().decode('ascii').strip("\n")
+        with vm_shell_from_host(vip, mgmt_ip, vm_user, vm_passwd) as sh:
+            stdout, stderr = sh.exec_command("ls")
 
         assert stdout.find("bin") == 0, (
             f"Failed to ssh to VM management IP {mgmt_ip} "
@@ -331,14 +319,6 @@ class TestBackendNetwork:
 
         # cleanup VM
         delete_vm(api_client, unique_name, wait_timeout)
-
-        # Revert AllowTcpForwarding for ssh jumpstart
-
-        self.ssh_client(client, vip, node_user, node_password,
-                        restore_tcp, wait_timeout)
-
-        self.ssh_client(client, vip, node_user, node_password,
-                        restart_ssh, wait_timeout)
 
     @pytest.mark.p0
     @pytest.mark.networks
@@ -689,8 +669,10 @@ class TestBackendNetwork:
 
     @pytest.mark.p0
     @pytest.mark.networks
-    def test_vlan_to_mgmt_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vm_network, wait_timeout):
+    def test_vlan_to_mgmt_connection(
+        self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout,
+        host_shell, vm_shell_from_host
+    ):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -709,8 +691,7 @@ class TestBackendNetwork:
         """
 
         vip = request.config.getoption('--endpoint').strip('https://')
-
-        node_password = request.config.getoption("--host-password")
+        vm_user, vm_passwd = vm_credential['user'], vm_credential['password']
 
         # Check image exists
         code, data = api_client.images.get(image_opensuse.name)
@@ -718,14 +699,8 @@ class TestBackendNetwork:
         if code == 404:
             create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
 
-        self.ssh_client(client, vip, node_user, node_password,
-                        tcp, wait_timeout)
-
-        self.ssh_client(client, vip, node_user, node_password,
-                        restart_ssh, wait_timeout)
-
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
-        spec.user_data += cloud_user_data.format(password=vm_credential["password"])
+        spec.user_data += cloud_user_data.format(password=vm_passwd)
         unique_name = unique_name + "-vlan-mgmt"
 
         # Create VM
@@ -786,23 +761,16 @@ class TestBackendNetwork:
         # Check can ping management ip address from Harvester node
         mgmt_ip = ip_addresses[0]
 
-        ping_command = "ping -c 50 {0}".format(mgmt_ip)
-
-        _stdout, _stderr = self.ssh_client(
-            client, vip, node_user, node_password, ping_command, wait_timeout)
-
-        stdout = _stdout.read().decode('ascii').strip("\n")
+        with host_shell.login(vip) as sh:
+            stdout, stderr = sh.exec_command(f"ping -c 50 {mgmt_ip}")
 
         assert stdout.find(f"64 bytes from {mgmt_ip}") > 0, (
             f"Failed to ping VM management IP {mgmt_ip} "
             f"on management interface from Harvester node")
 
         # Check can ssh to host and execute command from Harvester node
-        _stdout, _stderr = self.ssh_jumpstart(
-            client, mgmt_ip, vip, node_user, node_password,
-            vm_credential["user"], vm_credential["password"], "ls")
-
-        stdout = _stdout.read().decode('ascii').strip("\n")
+        with vm_shell_from_host(vip, mgmt_ip, vm_user, vm_passwd) as sh:
+            stdout, stderr = sh.exec_command("ls")
 
         assert stdout.find("bin") == 0, (
             f"Failed to ssh to VM management IP {mgmt_ip} "
@@ -825,18 +793,12 @@ class TestBackendNetwork:
         # cleanup vm
         delete_vm(api_client, unique_name, wait_timeout)
 
-        # Revert AllowTcpForwarding for ssh jumpstart
-
-        self.ssh_client(client, vip, node_user, node_password,
-                        restore_tcp, wait_timeout)
-
-        self.ssh_client(client, vip, node_user, node_password,
-                        restart_ssh, wait_timeout)
-
     @pytest.mark.p0
     @pytest.mark.networks
-    def test_delete_vlan_from_multiple(self, api_client, request, client, unique_name,
-                                       image_opensuse, vm_network, wait_timeout):
+    def test_delete_vlan_from_multiple(
+        self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout,
+        host_shell
+    ):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/delete-vlan-network-form/
@@ -853,7 +815,6 @@ class TestBackendNetwork:
         """
 
         vip = request.config.getoption('--endpoint').strip('https://')
-        node_password = request.config.getoption("--host-password")
 
         # Check image exists
         code, data = api_client.images.get(image_opensuse.name)
@@ -949,10 +910,8 @@ class TestBackendNetwork:
 
         ping_command = "ping -c 50 {0}".format(mgmt_ip)
 
-        _stdout, _stderr = self.ssh_client(
-            client, vip, node_user, node_password, ping_command, wait_timeout)
-
-        stdout = _stdout.read().decode('ascii').strip("\n")
+        with host_shell.login(vip) as sh:
+            stdout, stderr = sh.exec_command(ping_command)
 
         assert stdout.find(f"64 bytes from {mgmt_ip}") > 0, (
             f"Failed to ping VM management IP {mgmt_ip} "
