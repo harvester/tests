@@ -69,6 +69,8 @@ def test_update_node(api_client):
 
     status_code, node_stats = api_client.hosts.update(node['id'], test_data)
 
+    assert 200 == status_code, (status_code, node_stats)
+
     not_updated_fields = list()
     for k, v in test_annotations.items():
         if node_stats['metadata']['annotations'].get(k) != v:
