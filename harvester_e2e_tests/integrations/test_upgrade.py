@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import yaml
 import socket
 from time import sleep
 from datetime import datetime, timedelta
@@ -447,6 +448,90 @@ def _is_installed_version(api_client, target_version):
     return False
 
 
+@pytest.fixture(scope="session")
+def upgrade_target(request):
+    version = request.config.getoption('--upgrade-target-version')
+    assert version, "Target Version should not be empty"
+    iso_url = request.config.getoption('--upgrade-iso-url')
+    assert iso_url, "Target ISO URL should not be empty"
+    checksum = request.config.getoption("--upgrade-iso-checksum")
+    assert checksum, "Checksum for Target ISO should not be empty"
+
+    return version, iso_url, checksum
+
+
+@pytest.fixture(scope="session")
+def upgrade_timeout(request):
+    return request.config.getoption('--upgrade-wait-timeout') or 7200
+
+
+@pytest.fixture(scope="module")
+def image(api_client, image_ubuntu, unique_name, wait_timeout):
+    unique_image_id = f'image-{unique_name}'
+    code, data = api_client.images.create_by_url(
+        unique_image_id, image_ubuntu.url, display_name=f"{unique_name}-{image_ubuntu.name}"
+    )
+
+    assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.images.get(unique_image_id)
+        if 100 == data.get('status', {}).get('progress', 0):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            "Failed to create Image with error:\n"
+            f"Status({code}): {data}"
+        )
+
+    yield dict(id=f"{data['metadata']['namespace']}/{unique_image_id}",
+               user=image_ubuntu.ssh_user)
+
+    code, data = api_client.images.delete(unique_image_id)
+
+
+@pytest.fixture
+def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, image):
+    unique_vm_name = f"{request.node.name.lstrip('test_').replace('_', '-')}-{unique_name}"
+    cpu, mem = 1, 2
+    pub_key, pri_key = ssh_keypair
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image("disk-0", image['id'])
+    vm_spec.run_strategy = "Halted"
+
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata['ssh_authorized_keys'] = [pub_key]
+    vm_spec.user_data = yaml.dump(userdata)
+
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    assert 201 == code, (code, data)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if "Stopped" == data.get('status', {}).get('printableStatus'):
+            break
+        sleep(1)
+
+    yield unique_vm_name, image['user'], pri_key
+
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+
+    api_client.vms.delete(unique_vm_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(3)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+        api_client.volumes.delete(vol_name)
+
+
 @pytest.fixture(scope="class")
 def network(request, api_client, cluster_state):
     code, data = api_client.networks.get()
@@ -510,25 +595,6 @@ def ubuntu_image(request, api_client, cluster_state, wait_timeout):
                                wait_timeout=wait_timeout)
     cluster_state.ubuntu_image = image_json
     cluster_state.image_ssh_user = "ubuntu"
-    return image_json
-
-
-@pytest.fixture(scope="class")
-def openSUSE_image(request, api_client, cluster_state, wait_timeout):
-    image_name = "opensuse-leap-15-4"
-
-    base_url = ('https://repo.opensuse.id//repositories/Cloud:/Images:'
-                '/Leap_15.4/images')
-
-    cache_url = request.config.getoption('--image-cache-url')
-    if cache_url:
-        base_url = cache_url
-    url = os.path.join(base_url, 'openSUSE-Leap-15.4.x86_64-NoCloud.qcow2')
-
-    image_json = _create_image(api_client, url, name=image_name,
-                               timeout=wait_timeout)
-    cluster_state.openSUSE_image = image_json
-    cluster_state.image_ssh_user = "root"
     return image_json
 
 
@@ -812,57 +878,11 @@ def vm_prereq(cluster_state, api_client, vm_shell, wait_timeout):
 
 @pytest.mark.upgrade
 @pytest.mark.negative
+@pytest.mark.any_nodes
 class TestInvalidUpgrade:
-    VM_PREFIX = "vm-degraded-volume"
-
-    def _create_vm(self, api_client, cluster_state, vm_shell, wait_timeout):
-        return _create_basic_vm(api_client, cluster_state, vm_shell, self.VM_PREFIX,
-                                sc=DEFAULT_STORAGE_CLS,
-                                timeout=wait_timeout)
-
-    def _degrad_volume(self, api_client, pvc_name):
-        code, data = api_client.volumes.get(name=pvc_name)
-        assert code == 200, (
-            f"Failed to get volume {pvc_name}: {data}")
-
-        volume = data
-        volume_name = volume["spec"]["volumeName"]
-
-        code, data = api_client.lhreplicas.get()
-        assert code == 200 and len(data), (
-            f"Failed to get longhorn replicas or have no replicas: {data}")
-
-        replicas = data["items"]
-        for replica in replicas:
-            if replica["spec"]["volumeName"] == volume_name:
-                api_client.lhreplicas.delete(name=replica["metadata"]["name"])
-                break
-
-        # wait for volume be degraded status
-        sleep(10)
-
-    def _upgrade(self, request, api_client, version):
-        code, data = _create_version(request, api_client, version)
-        assert code == 201, (
-            f"Failed to create version {version}: {data}")
-
-        code, data = api_client.upgrades.create(version)
-        assert code == 400, (
-            f"Failed to verify degraded volume: {code}, {data}")
-
-        return data
-
-    def _clean_degraded_volume(self, api_client, version):
-        code, data = api_client.vms.delete(self.vm["metadata"]["name"])
-        assert code == 200, (
-            f"Failed to delete vm {self.vm['metadata']['name']}: {data}")
-
-        code, data = api_client.versions.delete(version)
-        assert code == 204, (
-            f"Failed to delete version {version}: {data}")
-
-    def test_degraded_volume(self, cluster_prereq, request, api_client, cluster_state, vm_shell,
-                             wait_timeout):
+    def test_degraded_volume(
+        self, api_client, wait_timeout, vm_shell_from_host, vm_checker, upgrade_target, stopped_vm
+    ):
         """
         Criteria: create upgrade should fails if there are any degraded volumes
         Steps:
@@ -872,39 +892,148 @@ class TestInvalidUpgrade:
         3. Immediately upgrade Harvester.
         4. Upgrade should fail.
         """
-        self.vm = self._create_vm(api_client, cluster_state, vm_shell, wait_timeout)
+        vm_name, ssh_user, pri_key = stopped_vm
+        vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
+        assert vm_started, (code, vmi)
 
-        claim_name = self.vm["spec"]["volumes"][0]["persistentVolumeClaim"]["claimName"]
-        self._degrad_volume(api_client, claim_name)
+        # Write date into VM
+        vm_ip = next(iface['ipAddress'] for iface in vmi['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(vmi['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+        with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+            stdout, stderr = sh.exec_command(
+                "dd if=/dev/urandom of=./generate_file bs=1M count=1024; sync"
+            )
+            assert not stderr, (stdout, stderr)
 
-        if cluster_state.version_verify:
-            assert not _is_installed_version(api_client, cluster_state.version), (
-                f"The current version is already {cluster_state.version}")
-        self._upgrade(request, api_client, cluster_state.version)
+        # Get pv name of the volume
+        claim_name = vmi["spec"]["volumes"][0]["persistentVolumeClaim"]["claimName"]
+        code, data = api_client.volumes.get(name=claim_name)
+        assert code == 200, f"Failed to get volume {claim_name}: {data}"
+        pv_name = data["spec"]["volumeName"]
 
-        self._clean_degraded_volume(api_client, cluster_state.version)
+        # Make the volume becomes degraded
+        code, data = api_client.lhreplicas.get()
+        assert code == 200 and data['items'], f"Failed to get longhorn replicas ({code}): {data}"
+        replica = next(r for r in data["items"] if pv_name == r['spec']['volumeName'])
+        api_client.lhreplicas.delete(name=replica['metadata']['name'])
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.lhvolumes.get(pv_name)
+            if 200 == code and "degraded" == data['status']['robustness']:
+                break
+        else:
+            raise AssertionError(
+                f"Unable to make the Volume {pv_name} degraded\n"
+                f"API Status({code}): {data}"
+            )
 
-    # TODO: waiting for https://github.com/harvester/harvester/issues/3310 to be fixed
-    @pytest.mark.skip("known issue #3310")
-    def test_invalid_manifest(self, api_client):
+        # create upgrade and verify it is not allowed
+        version, url, checksum = upgrade_target
+        code, data = api_client.versions.create(version, url, checksum)
+        assert code == 201, f"Failed to create version {version}: {data}"
+        code, data = api_client.upgrades.create(version)
+        assert code == 400, f"Failed to verify degraded volume: {code}, {data}"
+
+        # Teardown invalid upgrade
+        api_client.upgrades.delete(data['metadata']['name'])
+        api_client.versions.delete(version)
+
+    def test_iso_url(self, api_client, unique_name, upgrade_timeout):
         """
-        Criteria: https://github.com/harvester/tests/issues/518
         Steps:
         1. Create an invalid manifest.
         2. Try to upgrade with the invalid manifest.
         3. Upgrade should not start and fail.
         """
-        # version_name = "v0.0.0"
+        version, url, checksum = unique_name, "https://invalid_iso_url", 'not_a_valid_checksum'
 
-        # code, data = api_client.versions.get(version_name)
-        # if code != 200:
-        #     code, data = api_client.versions.create(version_name, "https://invalid_version_url")
-        #     assert code == 201, (
-        #         "Failed to create invalid version: %s", data)
+        code, data = api_client.versions.get(version)
+        if code != 200:
+            code, data = api_client.versions.create(version, url, checksum)
+            assert code == 201, f"Failed to create invalid version: {data}"
 
-        # code, data = api_client.upgrades.create(version_name)
-        # assert code == 201, (
-        #     "Failed to create invalid upgrade: %s", data)
+        code, data = api_client.upgrades.create(version)
+        assert code == 201, f"Failed to create invalid upgrade: {data}"
+
+        endtime = datetime.now() + timedelta(seconds=upgrade_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.upgrades.get(data['metadata']['name'])
+            conds = dict((c['type'], c) for c in data.get('status', {}).get('conditions', []))
+            verified = [
+                "False" == conds.get('Completed', {}).get('status'),
+                "False" == conds.get('ImageReady', {}).get('status'),
+                "retry limit" in conds.get('ImageReady', {}).get('message', "")
+            ]
+            if all(verified):
+                break
+        else:
+            raise AssertionError(f"Upgrade NOT failed in expected conditions: {conds}")
+
+        # teardown
+        api_client.upgrades.delete(data['metadata']['name'])
+        api_client.versions.delete(version)
+
+    @pytest.mark.parametrize(
+        "resort", [slice(None, None, -1), slice(None, None, 2)], ids=("mismatched", "invalid")
+    )
+    def test_checksum(self, api_client, unique_name, upgrade_target, upgrade_timeout, resort):
+        if resort.step == 2:
+            pytest.skip("issue: https://github.com/harvester/harvester/issues/5480")
+
+        version, url, checksum = upgrade_target
+        version = f"{version}-{unique_name}"
+
+        code, data = api_client.versions.create(version, url, checksum[resort])
+        assert 201 == code, f"Failed to create upgrade for {version}"
+        code, data = api_client.upgrades.create(version)
+        assert 201 == code, f"Failed to start upgrade for {version}"
+
+        endtime = datetime.now() + timedelta(seconds=upgrade_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.upgrades.get(data['metadata']['name'])
+            conds = dict((c['type'], c) for c in data.get('status', {}).get('conditions', []))
+            verified = [
+                "False" == conds.get('Completed', {}).get('status'),
+                "False" == conds.get('ImageReady', {}).get('status'),
+                "n't match the file actual check" in conds.get('ImageReady', {}).get('message', "")
+            ]
+            if all(verified):
+                break
+        else:
+            raise AssertionError(f"Upgrade NOT failed in expected conditions: {conds}")
+
+        # teardown
+        api_client.upgrades.delete(data['metadata']['name'])
+        api_client.versions.delete(version)
+
+    @pytest.mark.skip("https://github.com/harvester/harvester/issues/5494")
+    def test_version_compatibility(
+        self, api_client, unique_name, upgrade_target, upgrade_timeout
+    ):
+        version, url, checksum = upgrade_target
+        version = f"{version}-{unique_name}"
+
+        code, data = api_client.versions.create(version, url, checksum)
+        assert 201 == code, f"Failed to create upgrade for {version}"
+        code, data = api_client.upgrades.create(version)
+        assert 201 == code, f"Failed to start upgrade for {version}"
+
+        endtime = datetime.now() + timedelta(seconds=upgrade_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.upgrades.get(data['metadata']['name'])
+            conds = dict((c['type'], c) for c in data.get('status', {}).get('conditions', []))
+            verified = []  # TODO
+            if all(verified):
+                break
+        else:
+            raise AssertionError(f"Upgrade NOT failed in expected conditions: {conds}")
+
+        # teardown
+        api_client.upgrades.delete(data['metadata']['name'])
+        api_client.versions.delete(version)
 
 
 @pytest.mark.upgrade
