@@ -59,7 +59,7 @@ export default class CruResourcePo extends PagePo {
   }
 
   public create(value: any, urlWithNamespace?: boolean) {
-    cy.visit(`/harvester/c/local/${this.type}/create`)
+    cy.visit(`/harvester/c/${Cypress.config('clusterId')}/${this.type}/create`)
 
     this.setValue(value)
     
@@ -89,9 +89,9 @@ export default class CruResourcePo extends PagePo {
     edit?: boolean;
   } = {}) {
     if (namespace) {
-      cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}`).as('create');
+      cy.intercept('POST', `**/v1/harvester/${this.realType}s/${namespace}`).as('create');
     } else {
-      cy.intercept('POST', `/v1/harvester/${this.realType}s`).as('create');
+      cy.intercept('POST', `**/v1/harvester/${this.realType}s`).as('create');
     }
     
     this.clickFooterBtn(buttonText)
@@ -101,7 +101,7 @@ export default class CruResourcePo extends PagePo {
   }
 
   public delete(namespace:any, name:string, displayName?: string) {
-    cy.visit(`/harvester/c/local/${this.type}`)
+    cy.visit(`/harvester/c/${Cypress.config('clusterId')}/${this.type}`)
 
     this.clickAction(displayName || name, 'Delete')
 
@@ -113,7 +113,7 @@ export default class CruResourcePo extends PagePo {
       id = `${namespace}/${name}`;
     }
 
-    cy.intercept('DELETE', `/v1/harvester/${this.realType}s/${id}*`).as('delete');
+    cy.intercept('DELETE', `**/v1/harvester/${this.realType}s/${id}*`).as('delete');
     cy.get(this.confirmRemove).contains('Delete').click();
     cy.wait('@delete').then(res => {
       cy.window().then((win) => {
@@ -258,8 +258,9 @@ export default class CruResourcePo extends PagePo {
   }
 
   public goToList() {
-    cy.intercept('GET', `/v1/harvester/${this.realType}s`).as('goToList');
-    cy.visit(`/harvester/c/local/${this.type}`)
+    cy.intercept('GET', `**/v1/harvester/${this.realType}s`).as('goToList');
+    
+    cy.visit(`/harvester/c/${Cypress.config('clusterId')}/${this.type}`)
     cy.wait('@goToList');
   }
 

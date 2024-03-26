@@ -26,4 +26,8 @@ export default class CheckboxPo extends ComponentPo {
   expectUnchecked() {
     return this.self().find('[role="checkbox"]').invoke('attr', 'aria-checked').should('eq', undefined)
   }
+
+  click() {
+    return this.self().click()
+  }
 }
