@@ -97,6 +97,8 @@ def test_update_node(api_client):
 
     status_code, node_stats = api_client.hosts.update(node[&#39;id&#39;], test_data)
 
+    assert 200 == status_code, (status_code, node_stats)
+
     not_updated_fields = list()
     for k, v in test_annotations.items():
         if node_stats[&#39;metadata&#39;][&#39;annotations&#39;].get(k) != v:
@@ -415,6 +417,8 @@ def test_update_node(api_client):
     test_data = dict(metadata=dict(annotations=test_annotations))
 
     status_code, node_stats = api_client.hosts.update(node[&#39;id&#39;], test_data)
+
+    assert 200 == status_code, (status_code, node_stats)
 
     not_updated_fields = list()
     for k, v in test_annotations.items():

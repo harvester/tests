@@ -202,6 +202,15 @@ def unset_cpu_memory_overcommit(api_client):
     api_client.settings.update(&#39;overcommit-config&#39;, spec)
 
 
+@pytest.fixture
+def machine_types(request, api_client):
+    major, minor, micro = api_client.cluster_version.release
+    if major &gt; 1 or minor &gt; 2 or (minor == 2 and micro &gt; 1):
+        # &gt; 1.y.z || &gt; 1.3.z || &gt; 1.2.1
+        return &#34;_&#34;.join(request.param).replace(&#34;pc&#34;, &#34;pc-q35&#34;).split(&#34;_&#34;)
+    return request.param
+
+
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(name=&#34;minimal_vm&#34;)
@@ -1670,10 +1679,12 @@ def test_create_vm_no_available_resources(resource, api_client, image,
 
 @pytest.mark.p0
 @pytest.mark.virtualmachines
-@pytest.mark.parametrize(&#34;machine_types&#34;, [(&#34;pc&#34;, &#34;q35&#34;), (&#34;q35&#34;, &#34;pc&#34;)],
-                         ids=[&#39;pc_to_q35&#39;, &#39;q35_to_pc&#39;])
-def test_update_vm_machine_type(api_client, image, unique_vm_name,
-                                wait_timeout, machine_types, sleep_timeout):
+@pytest.mark.parametrize(
+    &#34;machine_types&#34;, [(&#34;q35&#34;, &#34;pc&#34;), (&#34;pc&#34;, &#34;q35&#34;)], ids=[&#39;q35_to_pc&#39;, &#39;pc_to_q35&#39;], indirect=True
+)
+def test_update_vm_machine_type(
+    api_client, image, unique_vm_name, wait_timeout, machine_types, sleep_timeout
+):
     &#34;&#34;&#34;Create a VM with machine type then update to another
 
     Prerequisite:
@@ -2225,6 +2236,24 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
     code, data = api_client.images.delete(unique_image_id)</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.machine_types"><code class="name flex">
+<span>def <span class="ident">machine_types</span></span>(<span>request, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture
+def machine_types(request, api_client):
+    major, minor, micro = api_client.cluster_version.release
+    if major &gt; 1 or minor &gt; 2 or (minor == 2 and micro &gt; 1):
+        # &gt; 1.y.z || &gt; 1.3.z || &gt; 1.2.1
+        return &#34;_&#34;.join(request.param).replace(&#34;pc&#34;, &#34;pc-q35&#34;).split(&#34;_&#34;)
+    return request.param</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.small_volume"><code class="name flex">
 <span>def <span class="ident">small_volume</span></span>(<span>api_client, unique_name)</span>
 </code></dt>
@@ -2619,10 +2648,12 @@ an opensuse image.</p>
 </summary>
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.virtualmachines
-@pytest.mark.parametrize(&#34;machine_types&#34;, [(&#34;pc&#34;, &#34;q35&#34;), (&#34;q35&#34;, &#34;pc&#34;)],
-                         ids=[&#39;pc_to_q35&#39;, &#39;q35_to_pc&#39;])
-def test_update_vm_machine_type(api_client, image, unique_vm_name,
-                                wait_timeout, machine_types, sleep_timeout):
+@pytest.mark.parametrize(
+    &#34;machine_types&#34;, [(&#34;q35&#34;, &#34;pc&#34;), (&#34;pc&#34;, &#34;q35&#34;)], ids=[&#39;q35_to_pc&#39;, &#39;pc_to_q35&#39;], indirect=True
+)
+def test_update_vm_machine_type(
+    api_client, image, unique_vm_name, wait_timeout, machine_types, sleep_timeout
+):
     &#34;&#34;&#34;Create a VM with machine type then update to another
 
     Prerequisite:
@@ -6287,6 +6318,7 @@ class TestVMWithVolumes:
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.bogus_vlan_net" href="#harvester_e2e_tests.integrations.test_3_vm_functions.bogus_vlan_net">bogus_vlan_net</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.image" href="#harvester_e2e_tests.integrations.test_3_vm_functions.image">image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.machine_types" href="#harvester_e2e_tests.integrations.test_3_vm_functions.machine_types">machine_types</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.small_volume" href="#harvester_e2e_tests.integrations.test_3_vm_functions.small_volume">small_volume</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.stopped_vm">stopped_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_create_stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_create_stopped_vm">test_create_stopped_vm</a></code></li>
