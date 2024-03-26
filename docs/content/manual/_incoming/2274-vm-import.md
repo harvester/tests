@@ -113,24 +113,24 @@ vcsim   clusterReady
 
 1. Access the Openstack dashboard
 1. Create some images 
-![image](/docs/static/images/addons/2274-openstack-create-image.png)
+{{< image "images/addons/2274-openstack-create-image.png" >}}
 
 1. Create key pairs
 1. Create an empty volume to ensure the microstack.cinder services works well (if failed, check the OpenStack troubleshooting section)
-![image](/docs/static/images/addons/2274-openstack-empty-volume.png)
-![image](/docs/static/images/addons/2274-openstack-empty-volume-display.png)
+{{< image "images/addons/2274-openstack-empty-volume.png" >}}
+{{< image "images/addons/2274-openstack-empty-volume-display.png" >}}
 
 1. Launch a vm instance, ensure the vm can be created without error message
-![image](/docs/static/images/addons/2274-openstack-create-vm.png)
+{{< image "images/addons/2274-openstack-create-vm.png" >}}
 
 1. Enable the vm-import-controller addon on Harvester
-![image](/docs/static/images/addons/2274-enable-vm-importer.png)
+{{< image "images/addons/2274-enable-vm-importer.png" >}}
 
 1. Open Compute -> System -> System Information page, find the `Services` tab
 1. Check the `Region` in the page (eg. `microstack`)
-![image](/docs/static/images/addons/2274-openstack-region.png)
+{{< image "images/addons/2274-openstack-region.png" >}}
 1. Check the endpoint of the identity item
-![image](/docs/static/images/addons/2274-openstack-endpoint.png)
+{{< image "images/addons/2274-openstack-endpoint.png" >}}
 
 1. Access the Harvester node machine
 1. Define a secret for your Openstack cluster in yaml file and use `kubectl` to create the crd
@@ -264,10 +264,10 @@ Once the VM object is created, the VirtualMachine is powered on, and the control
     ```
 
 1. After the `VirtualMachineImport` created, you can find Harvester create a new image from the OpenStack
-![image](/docs/static/images/addons/2274-harvester-import-openstack-image.png)
+{{< image "images/addons/2274-harvester-import-openstack-image.png" >}}
 
 1. The OpenStack vm would be imported to Harvester
-![image](/docs/static/images/addons/2274-harvester-import-openstack-vm.png)
+{{< image "images/addons/2274-harvester-import-openstack-vm.png" >}}
 
 The controller will check that the source is ready, before the virtualmachine import is initiated.
 
