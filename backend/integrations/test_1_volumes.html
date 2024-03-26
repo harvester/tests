@@ -31,12 +31,13 @@ import pytest
 
 pytest_plugins = [
     &#39;harvester_e2e_tests.fixtures.api_client&#39;,
+    &#34;harvester_e2e_tests.fixtures.images&#34;
 ]
 
 
 @pytest.fixture(scope=&#34;module&#34;)
-def focal_image(api_client, unique_name, image_ubuntu, polling_for):
-    image_name = f&#34;img-focal-{unique_name}&#34;
+def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
+    image_name = f&#34;img-{unique_name}&#34;
 
     code, data = api_client.images.create_by_url(image_name, image_ubuntu.url)
     assert 201 == code, f&#34;Fail to create image\n{code}, {data}&#34;
@@ -58,11 +59,11 @@ def focal_image(api_client, unique_name, image_ubuntu, polling_for):
 
 
 @pytest.fixture(scope=&#34;class&#34;)
-def focal_vm(api_client, unique_name, focal_image, polling_for):
-    vm_name = f&#34;vm-focal-{unique_name}&#34;
+def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
+    vm_name = f&#34;vm-{unique_name}&#34;
 
     vm_spec = api_client.vms.Spec(1, 2)
-    vm_spec.add_image(vm_name, focal_image[&#34;id&#34;])
+    vm_spec.add_image(vm_name, ubuntu_image[&#34;id&#34;])
     code, data = api_client.vms.create(vm_name, vm_spec)
     assert 201 == code, f&#34;Fail to create VM\n{code}, {data}&#34;
     code, data = polling_for(
@@ -97,17 +98,13 @@ def focal_vm(api_client, unique_name, focal_image, polling_for):
 @pytest.mark.p0
 @pytest.mark.volumes
 @pytest.mark.parametrize(&#34;create_as&#34;, [&#34;json&#34;, &#34;yaml&#34;])
-def test_create_volume_backing_image(api_client, unique_name, polling_for, focal_image, create_as):
-    &#34;&#34;&#34;
-    1. Create a new image from URL
-    2. Check that it is created succesffully.
-    3. Create a new volume with the image_id of the previous image
-    4. Check that the new image is created
-    5. Delete image and volume
-    &#34;&#34;&#34;
-    image_id, display_name = focal_image[&#39;id&#39;], focal_image[&#39;display_name&#39;]
+@pytest.mark.parametrize(&#34;source_type&#34;, [&#34;New&#34;, &#34;VM Image&#34;])
+def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_type, polling_for):
+    image_id, storage_cls = None, None
+    if source_type == &#34;VM Image&#34;:
+        image_id, storage_cls = ubuntu_image[&#39;id&#39;], f&#34;longhorn-{ubuntu_image[&#39;display_name&#39;]}&#34;
 
-    spec = api_client.volumes.Spec(&#34;10Gi&#34;, f&#34;longhorn-{display_name}&#34;)
+    spec = api_client.volumes.Spec(&#34;10Gi&#34;, storage_cls)
     if create_as == &#39;yaml&#39;:
         kws = dict(headers={&#39;Content-Type&#39;: &#39;application/yaml&#39;}, json=None,
                    data=yaml.dump(spec.to_dict(unique_name, &#39;default&#39;, image_id=image_id)))
@@ -116,15 +113,25 @@ def test_create_volume_backing_image(api_client, unique_name, polling_for, focal
     code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
     assert 201 == code, (code, unique_name, data, image_id)
 
-    # Verify: volume created &amp; bounded &amp; based on image &amp; name is correct
     polling_for(&#34;volume do created&#34;,
                 lambda code, data: 200 == code and data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
                 api_client.volumes.get, unique_name)
+
     code, data = api_client.volumes.get(unique_name)
+    mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
     assert 200 == code, (code, data)
-    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (data)
-    assert image_id == data[&#39;metadata&#39;][&#39;annotations&#39;][&#39;harvesterhci.io/imageId&#39;]
-    assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
+    assert unique_name == mdata[&#39;name&#39;], (code, data)
+    # status
+    assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
+    assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
+    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
+    # source
+    if source_type == &#34;VM Image&#34;:
+        assert image_id == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
+    else:
+        assert not annotations.get(&#39;harvesterhci.io/imageId&#39;), (code, data)
+    # attachment
+    assert not annotations.get(&#34;harvesterhci.io/owned-by&#34;), (code, data)
 
     # teardown
     polling_for(&#34;volume do deleted&#34;, lambda code, _: 404 == code,
@@ -134,31 +141,31 @@ def test_create_volume_backing_image(api_client, unique_name, polling_for, focal
 @pytest.mark.p0
 @pytest.mark.volumes
 class TestVolumeWithVM:
-    def pause_vm(self, api_client, focal_vm, polling_for):
-        vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+    def pause_vm(self, api_client, ubuntu_vm, polling_for):
+        vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
         code, data = api_client.vms.pause(vm_name)
         assert 204 == code, f&#34;Fail to pause VM\n{code}, {data}&#34;
         polling_for(&#34;VM do paused&#34;,
                     lambda c, d: d.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;) == &#34;Paused&#34;,
                     api_client.vms.get, vm_name)
 
-    def stop_vm(self, api_client, focal_vm, polling_for):
-        vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+    def stop_vm(self, api_client, ubuntu_vm, polling_for):
+        vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
         code, data = api_client.vms.stop(vm_name)
         assert 204 == code, f&#34;Fail to stop VM\n{code}, {data}&#34;
         polling_for(&#34;VM do stopped&#34;,
                     lambda c, d: 404 == c,
                     api_client.vms.get_status, vm_name)
 
-    def delete_vm(self, api_client, focal_vm, polling_for):
-        vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+    def delete_vm(self, api_client, ubuntu_vm, polling_for):
+        vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
         code, data = api_client.vms.delete(vm_name)
         assert 200 == code, f&#34;Fail to delete VM\n{code}, {data}&#34;
         polling_for(&#34;VM do deleted&#34;,
                     lambda c, d: 404 == c,
                     api_client.vms.get, vm_name)
 
-    def test_delete_volume_bounded_on_existing_vm(self, api_client, focal_vm, polling_for):
+    def test_delete_volume_on_existing_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         &#34;&#34;&#34;
         1. Create a VM with volume
         2. Delete volume should reply 422
@@ -168,21 +175,35 @@ class TestVolumeWithVM:
         6. Delete volume should reply 422 too
         Ref. https://github.com/harvester/tests/issues/905
         &#34;&#34;&#34;
-        vol_name = (focal_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
-                            [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
+        vol_name = (ubuntu_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
+                             [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
 
         code, data = api_client.volumes.delete(vol_name)
         assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-        self.pause_vm(api_client, focal_vm, polling_for)
+        self.pause_vm(api_client, ubuntu_vm, polling_for)
         code, data = api_client.volumes.delete(vol_name)
         assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-        self.stop_vm(api_client, focal_vm, polling_for)
+        self.stop_vm(api_client, ubuntu_vm, polling_for)
         code, data = api_client.volumes.delete(vol_name)
         assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-    def test_delete_volume_bounded_on_deleted_vm(self, api_client, focal_vm, polling_for):
+        # Check Volume
+        code, data = api_client.volumes.get(vol_name)
+        mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
+        assert 200 == code, (code, data)
+        assert mdata[&#39;name&#39;] == vol_name, (code, data)
+        # status
+        assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
+        assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
+        assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
+        # source
+        assert ubuntu_image[&#34;id&#34;] == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
+        # attachment
+        assert ubuntu_vm[&#39;id&#39;] in annotations.get(&#34;harvesterhci.io/owned-by&#34;), data
+
+    def test_delete_volume_on_deleted_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         &#34;&#34;&#34;
         1. Create a VM with volume
         2. Delete volume should reply 422
@@ -190,16 +211,30 @@ class TestVolumeWithVM:
         4. Delete volume should reply 200
         Ref. https://github.com/harvester/tests/issues/652
         &#34;&#34;&#34;
-        vol_name = (focal_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
-                            [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
+        vol_name = (ubuntu_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
+                             [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
 
         code, data = api_client.volumes.delete(vol_name)
         assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-        self.delete_vm(api_client, focal_vm, polling_for)
+        self.delete_vm(api_client, ubuntu_vm, polling_for)
 
         code, data = api_client.volumes.delete(vol_name)
-        assert 200 == code, f&#34;Fail to delete volume\n{code}, {data}&#34;</code></pre>
+        assert 200 == code, f&#34;Fail to delete volume\n{code}, {data}&#34;
+
+        # Check Volume
+        code, data = api_client.volumes.get(vol_name)
+        mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
+        assert 200 == code, (code, data)
+        assert mdata[&#39;name&#39;] == vol_name, (code, data)
+        # status
+        assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
+        assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
+        assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
+        # source
+        assert ubuntu_image[&#34;id&#34;] == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
+        # attachment
+        assert not annotations.get(&#34;harvesterhci.io/owned-by&#34;), (code, data)</code></pre>
 </details>
 </section>
 <section>
@@ -209,8 +244,60 @@ class TestVolumeWithVM:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.focal_image"><code class="name flex">
-<span>def <span class="ident">focal_image</span></span>(<span>api_client, unique_name, image_ubuntu, polling_for)</span>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume"><code class="name flex">
+<span>def <span class="ident">test_create_volume</span></span>(<span>api_client, unique_name, ubuntu_image, create_as, source_type, polling_for)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.volumes
+@pytest.mark.parametrize(&#34;create_as&#34;, [&#34;json&#34;, &#34;yaml&#34;])
+@pytest.mark.parametrize(&#34;source_type&#34;, [&#34;New&#34;, &#34;VM Image&#34;])
+def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_type, polling_for):
+    image_id, storage_cls = None, None
+    if source_type == &#34;VM Image&#34;:
+        image_id, storage_cls = ubuntu_image[&#39;id&#39;], f&#34;longhorn-{ubuntu_image[&#39;display_name&#39;]}&#34;
+
+    spec = api_client.volumes.Spec(&#34;10Gi&#34;, storage_cls)
+    if create_as == &#39;yaml&#39;:
+        kws = dict(headers={&#39;Content-Type&#39;: &#39;application/yaml&#39;}, json=None,
+                   data=yaml.dump(spec.to_dict(unique_name, &#39;default&#39;, image_id=image_id)))
+    else:
+        kws = dict()
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
+    assert 201 == code, (code, unique_name, data, image_id)
+
+    polling_for(&#34;volume do created&#34;,
+                lambda code, data: 200 == code and data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
+                api_client.volumes.get, unique_name)
+
+    code, data = api_client.volumes.get(unique_name)
+    mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
+    assert 200 == code, (code, data)
+    assert unique_name == mdata[&#39;name&#39;], (code, data)
+    # status
+    assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
+    assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
+    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
+    # source
+    if source_type == &#34;VM Image&#34;:
+        assert image_id == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
+    else:
+        assert not annotations.get(&#39;harvesterhci.io/imageId&#39;), (code, data)
+    # attachment
+    assert not annotations.get(&#34;harvesterhci.io/owned-by&#34;), (code, data)
+
+    # teardown
+    polling_for(&#34;volume do deleted&#34;, lambda code, _: 404 == code,
+                api_client.volumes.delete, unique_name)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image"><code class="name flex">
+<span>def <span class="ident">ubuntu_image</span></span>(<span>api_client, unique_name, image_ubuntu, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -219,8 +306,8 @@ class TestVolumeWithVM:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
-def focal_image(api_client, unique_name, image_ubuntu, polling_for):
-    image_name = f&#34;img-focal-{unique_name}&#34;
+def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
+    image_name = f&#34;img-{unique_name}&#34;
 
     code, data = api_client.images.create_by_url(image_name, image_ubuntu.url)
     assert 201 == code, f&#34;Fail to create image\n{code}, {data}&#34;
@@ -241,8 +328,8 @@ def focal_image(api_client, unique_name, image_ubuntu, polling_for):
                     api_client.images.get, image_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.focal_vm"><code class="name flex">
-<span>def <span class="ident">focal_vm</span></span>(<span>api_client, unique_name, focal_image, polling_for)</span>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm"><code class="name flex">
+<span>def <span class="ident">ubuntu_vm</span></span>(<span>api_client, unique_name, ubuntu_image, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -251,11 +338,11 @@ def focal_image(api_client, unique_name, image_ubuntu, polling_for):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
-def focal_vm(api_client, unique_name, focal_image, polling_for):
-    vm_name = f&#34;vm-focal-{unique_name}&#34;
+def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
+    vm_name = f&#34;vm-{unique_name}&#34;
 
     vm_spec = api_client.vms.Spec(1, 2)
-    vm_spec.add_image(vm_name, focal_image[&#34;id&#34;])
+    vm_spec.add_image(vm_name, ubuntu_image[&#34;id&#34;])
     code, data = api_client.vms.create(vm_name, vm_spec)
     assert 201 == code, f&#34;Fail to create VM\n{code}, {data}&#34;
     code, data = polling_for(
@@ -287,58 +374,6 @@ def focal_vm(api_client, unique_name, focal_image, polling_for):
                     api_client.volumes.get, vol_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_backing_image"><code class="name flex">
-<span>def <span class="ident">test_create_volume_backing_image</span></span>(<span>api_client, unique_name, polling_for, focal_image, create_as)</span>
-</code></dt>
-<dd>
-<div class="desc"><ol>
-<li>Create a new image from URL</li>
-<li>Check that it is created succesffully.</li>
-<li>Create a new volume with the image_id of the previous image</li>
-<li>Check that the new image is created</li>
-<li>Delete image and volume</li>
-</ol></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.p0
-@pytest.mark.volumes
-@pytest.mark.parametrize(&#34;create_as&#34;, [&#34;json&#34;, &#34;yaml&#34;])
-def test_create_volume_backing_image(api_client, unique_name, polling_for, focal_image, create_as):
-    &#34;&#34;&#34;
-    1. Create a new image from URL
-    2. Check that it is created succesffully.
-    3. Create a new volume with the image_id of the previous image
-    4. Check that the new image is created
-    5. Delete image and volume
-    &#34;&#34;&#34;
-    image_id, display_name = focal_image[&#39;id&#39;], focal_image[&#39;display_name&#39;]
-
-    spec = api_client.volumes.Spec(&#34;10Gi&#34;, f&#34;longhorn-{display_name}&#34;)
-    if create_as == &#39;yaml&#39;:
-        kws = dict(headers={&#39;Content-Type&#39;: &#39;application/yaml&#39;}, json=None,
-                   data=yaml.dump(spec.to_dict(unique_name, &#39;default&#39;, image_id=image_id)))
-    else:
-        kws = dict()
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-    assert 201 == code, (code, unique_name, data, image_id)
-
-    # Verify: volume created &amp; bounded &amp; based on image &amp; name is correct
-    polling_for(&#34;volume do created&#34;,
-                lambda code, data: 200 == code and data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
-                api_client.volumes.get, unique_name)
-    code, data = api_client.volumes.get(unique_name)
-    assert 200 == code, (code, data)
-    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (data)
-    assert image_id == data[&#39;metadata&#39;][&#39;annotations&#39;][&#39;harvesterhci.io/imageId&#39;]
-    assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
-
-    # teardown
-    polling_for(&#34;volume do deleted&#34;, lambda code, _: 404 == code,
-                api_client.volumes.delete, unique_name)</code></pre>
-</details>
-</dd>
 </dl>
 </section>
 <section>
@@ -356,31 +391,31 @@ def test_create_volume_backing_image(api_client, unique_name, polling_for, focal
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.volumes
 class TestVolumeWithVM:
-    def pause_vm(self, api_client, focal_vm, polling_for):
-        vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+    def pause_vm(self, api_client, ubuntu_vm, polling_for):
+        vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
         code, data = api_client.vms.pause(vm_name)
         assert 204 == code, f&#34;Fail to pause VM\n{code}, {data}&#34;
         polling_for(&#34;VM do paused&#34;,
                     lambda c, d: d.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;) == &#34;Paused&#34;,
                     api_client.vms.get, vm_name)
 
-    def stop_vm(self, api_client, focal_vm, polling_for):
-        vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+    def stop_vm(self, api_client, ubuntu_vm, polling_for):
+        vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
         code, data = api_client.vms.stop(vm_name)
         assert 204 == code, f&#34;Fail to stop VM\n{code}, {data}&#34;
         polling_for(&#34;VM do stopped&#34;,
                     lambda c, d: 404 == c,
                     api_client.vms.get_status, vm_name)
 
-    def delete_vm(self, api_client, focal_vm, polling_for):
-        vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+    def delete_vm(self, api_client, ubuntu_vm, polling_for):
+        vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
         code, data = api_client.vms.delete(vm_name)
         assert 200 == code, f&#34;Fail to delete VM\n{code}, {data}&#34;
         polling_for(&#34;VM do deleted&#34;,
                     lambda c, d: 404 == c,
                     api_client.vms.get, vm_name)
 
-    def test_delete_volume_bounded_on_existing_vm(self, api_client, focal_vm, polling_for):
+    def test_delete_volume_on_existing_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         &#34;&#34;&#34;
         1. Create a VM with volume
         2. Delete volume should reply 422
@@ -390,21 +425,35 @@ class TestVolumeWithVM:
         6. Delete volume should reply 422 too
         Ref. https://github.com/harvester/tests/issues/905
         &#34;&#34;&#34;
-        vol_name = (focal_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
-                            [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
+        vol_name = (ubuntu_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
+                             [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
 
         code, data = api_client.volumes.delete(vol_name)
         assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-        self.pause_vm(api_client, focal_vm, polling_for)
+        self.pause_vm(api_client, ubuntu_vm, polling_for)
         code, data = api_client.volumes.delete(vol_name)
         assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-        self.stop_vm(api_client, focal_vm, polling_for)
+        self.stop_vm(api_client, ubuntu_vm, polling_for)
         code, data = api_client.volumes.delete(vol_name)
         assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-    def test_delete_volume_bounded_on_deleted_vm(self, api_client, focal_vm, polling_for):
+        # Check Volume
+        code, data = api_client.volumes.get(vol_name)
+        mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
+        assert 200 == code, (code, data)
+        assert mdata[&#39;name&#39;] == vol_name, (code, data)
+        # status
+        assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
+        assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
+        assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
+        # source
+        assert ubuntu_image[&#34;id&#34;] == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
+        # attachment
+        assert ubuntu_vm[&#39;id&#39;] in annotations.get(&#34;harvesterhci.io/owned-by&#34;), data
+
+    def test_delete_volume_on_deleted_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         &#34;&#34;&#34;
         1. Create a VM with volume
         2. Delete volume should reply 422
@@ -412,16 +461,30 @@ class TestVolumeWithVM:
         4. Delete volume should reply 200
         Ref. https://github.com/harvester/tests/issues/652
         &#34;&#34;&#34;
-        vol_name = (focal_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
-                            [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
+        vol_name = (ubuntu_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
+                             [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
 
         code, data = api_client.volumes.delete(vol_name)
         assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-        self.delete_vm(api_client, focal_vm, polling_for)
+        self.delete_vm(api_client, ubuntu_vm, polling_for)
 
         code, data = api_client.volumes.delete(vol_name)
-        assert 200 == code, f&#34;Fail to delete volume\n{code}, {data}&#34;</code></pre>
+        assert 200 == code, f&#34;Fail to delete volume\n{code}, {data}&#34;
+
+        # Check Volume
+        code, data = api_client.volumes.get(vol_name)
+        mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
+        assert 200 == code, (code, data)
+        assert mdata[&#39;name&#39;] == vol_name, (code, data)
+        # status
+        assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
+        assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
+        assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
+        # source
+        assert ubuntu_image[&#34;id&#34;] == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
+        # attachment
+        assert not annotations.get(&#34;harvesterhci.io/owned-by&#34;), (code, data)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -433,7 +496,7 @@ class TestVolumeWithVM:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.delete_vm"><code class="name flex">
-<span>def <span class="ident">delete_vm</span></span>(<span>self, api_client, focal_vm, polling_for)</span>
+<span>def <span class="ident">delete_vm</span></span>(<span>self, api_client, ubuntu_vm, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -441,8 +504,8 @@ class TestVolumeWithVM:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def delete_vm(self, api_client, focal_vm, polling_for):
-    vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+<pre><code class="python">def delete_vm(self, api_client, ubuntu_vm, polling_for):
+    vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
     code, data = api_client.vms.delete(vm_name)
     assert 200 == code, f&#34;Fail to delete VM\n{code}, {data}&#34;
     polling_for(&#34;VM do deleted&#34;,
@@ -451,7 +514,7 @@ class TestVolumeWithVM:
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.pause_vm"><code class="name flex">
-<span>def <span class="ident">pause_vm</span></span>(<span>self, api_client, focal_vm, polling_for)</span>
+<span>def <span class="ident">pause_vm</span></span>(<span>self, api_client, ubuntu_vm, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -459,8 +522,8 @@ class TestVolumeWithVM:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def pause_vm(self, api_client, focal_vm, polling_for):
-    vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+<pre><code class="python">def pause_vm(self, api_client, ubuntu_vm, polling_for):
+    vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
     code, data = api_client.vms.pause(vm_name)
     assert 204 == code, f&#34;Fail to pause VM\n{code}, {data}&#34;
     polling_for(&#34;VM do paused&#34;,
@@ -469,7 +532,7 @@ class TestVolumeWithVM:
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.stop_vm"><code class="name flex">
-<span>def <span class="ident">stop_vm</span></span>(<span>self, api_client, focal_vm, polling_for)</span>
+<span>def <span class="ident">stop_vm</span></span>(<span>self, api_client, ubuntu_vm, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -477,8 +540,8 @@ class TestVolumeWithVM:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def stop_vm(self, api_client, focal_vm, polling_for):
-    vm_name = focal_vm[&#39;metadata&#39;][&#39;name&#39;]
+<pre><code class="python">def stop_vm(self, api_client, ubuntu_vm, polling_for):
+    vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]
     code, data = api_client.vms.stop(vm_name)
     assert 204 == code, f&#34;Fail to stop VM\n{code}, {data}&#34;
     polling_for(&#34;VM do stopped&#34;,
@@ -486,8 +549,8 @@ class TestVolumeWithVM:
                 api_client.vms.get_status, vm_name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_bounded_on_deleted_vm"><code class="name flex">
-<span>def <span class="ident">test_delete_volume_bounded_on_deleted_vm</span></span>(<span>self, api_client, focal_vm, polling_for)</span>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_on_deleted_vm"><code class="name flex">
+<span>def <span class="ident">test_delete_volume_on_deleted_vm</span></span>(<span>self, api_client, ubuntu_image, ubuntu_vm, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"><ol>
@@ -501,7 +564,7 @@ Ref. <a href="https://github.com/harvester/tests/issues/652">https://github.com/
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_delete_volume_bounded_on_deleted_vm(self, api_client, focal_vm, polling_for):
+<pre><code class="python">def test_delete_volume_on_deleted_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
     &#34;&#34;&#34;
     1. Create a VM with volume
     2. Delete volume should reply 422
@@ -509,20 +572,34 @@ Ref. <a href="https://github.com/harvester/tests/issues/652">https://github.com/
     4. Delete volume should reply 200
     Ref. https://github.com/harvester/tests/issues/652
     &#34;&#34;&#34;
-    vol_name = (focal_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
-                        [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
+    vol_name = (ubuntu_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
+                         [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
 
     code, data = api_client.volumes.delete(vol_name)
     assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-    self.delete_vm(api_client, focal_vm, polling_for)
+    self.delete_vm(api_client, ubuntu_vm, polling_for)
 
     code, data = api_client.volumes.delete(vol_name)
-    assert 200 == code, f&#34;Fail to delete volume\n{code}, {data}&#34;</code></pre>
+    assert 200 == code, f&#34;Fail to delete volume\n{code}, {data}&#34;
+
+    # Check Volume
+    code, data = api_client.volumes.get(vol_name)
+    mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
+    assert 200 == code, (code, data)
+    assert mdata[&#39;name&#39;] == vol_name, (code, data)
+    # status
+    assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
+    assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
+    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
+    # source
+    assert ubuntu_image[&#34;id&#34;] == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
+    # attachment
+    assert not annotations.get(&#34;harvesterhci.io/owned-by&#34;), (code, data)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_bounded_on_existing_vm"><code class="name flex">
-<span>def <span class="ident">test_delete_volume_bounded_on_existing_vm</span></span>(<span>self, api_client, focal_vm, polling_for)</span>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_on_existing_vm"><code class="name flex">
+<span>def <span class="ident">test_delete_volume_on_existing_vm</span></span>(<span>self, api_client, ubuntu_image, ubuntu_vm, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"><ol>
@@ -538,7 +615,7 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_delete_volume_bounded_on_existing_vm(self, api_client, focal_vm, polling_for):
+<pre><code class="python">def test_delete_volume_on_existing_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
     &#34;&#34;&#34;
     1. Create a VM with volume
     2. Delete volume should reply 422
@@ -548,19 +625,33 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
     6. Delete volume should reply 422 too
     Ref. https://github.com/harvester/tests/issues/905
     &#34;&#34;&#34;
-    vol_name = (focal_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
-                        [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
+    vol_name = (ubuntu_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
+                         [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
 
     code, data = api_client.volumes.delete(vol_name)
     assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-    self.pause_vm(api_client, focal_vm, polling_for)
+    self.pause_vm(api_client, ubuntu_vm, polling_for)
     code, data = api_client.volumes.delete(vol_name)
     assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
-    self.stop_vm(api_client, focal_vm, polling_for)
+    self.stop_vm(api_client, ubuntu_vm, polling_for)
     code, data = api_client.volumes.delete(vol_name)
-    assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;</code></pre>
+    assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
+
+    # Check Volume
+    code, data = api_client.volumes.get(vol_name)
+    mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
+    assert 200 == code, (code, data)
+    assert mdata[&#39;name&#39;] == vol_name, (code, data)
+    # status
+    assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
+    assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
+    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
+    # source
+    assert ubuntu_image[&#34;id&#34;] == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
+    # attachment
+    assert ubuntu_vm[&#39;id&#39;] in annotations.get(&#34;harvesterhci.io/owned-by&#34;), data</code></pre>
 </details>
 </dd>
 </dl>
@@ -581,9 +672,9 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.focal_image" href="#harvester_e2e_tests.integrations.test_1_volumes.focal_image">focal_image</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.focal_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.focal_vm">focal_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_backing_image" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_backing_image">test_create_volume_backing_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume">test_create_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image">ubuntu_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm">ubuntu_vm</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -595,8 +686,8 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.pause_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.pause_vm">pause_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.pytestmark" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.stop_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.stop_vm">stop_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_bounded_on_deleted_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_bounded_on_deleted_vm">test_delete_volume_bounded_on_deleted_vm</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_bounded_on_existing_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_bounded_on_existing_vm">test_delete_volume_bounded_on_existing_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_on_deleted_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_on_deleted_vm">test_delete_volume_on_deleted_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_on_existing_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM.test_delete_volume_on_existing_vm">test_delete_volume_on_existing_vm</a></code></li>
 </ul>
 </li>
 </ul>
