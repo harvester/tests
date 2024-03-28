@@ -16,7 +16,6 @@
 # you may find current contact information at www.suse.com
 
 import re
-import os
 import warnings
 
 import pytest
@@ -25,6 +24,7 @@ import pytest
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.api_client',
     'harvester_e2e_tests.fixtures.rancher_api_client',
+    "harvester_e2e_tests.fixtures.images",
 ]
 
 
@@ -45,26 +45,22 @@ def vlan_network(request, api_client):
             f"Failed to create network-attachment-definition {network_name} \
                 with error {code}, {data}"
         )
+    namespace = data['metadata']['namespace']
+    name = data['metadata']['name']
 
     yield {
-        "id": data['metadata']['name']
+        "name": name,
+        "id": f"{namespace}/{name}"
     }
 
     api_client.networks.delete(network_name)
 
 
 @pytest.fixture(scope="module")
-def focal_image_url(request):
-    external = 'https://cloud-images.ubuntu.com/focal/current/'
-    base_url = request.config.getoption('--image-cache-url') or external
-    return os.path.join(base_url, "focal-server-cloudimg-amd64.img")
-
-
-@pytest.fixture(scope="module")
-def focal_image(api_client, unique_name, focal_image_url, polling_for):
-    code, data = api_client.images.create_by_url(unique_name, focal_image_url)
+def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
+    code, data = api_client.images.create_by_url(unique_name, image_ubuntu.url)
     assert 201 == code, (
-        f"Failed to upload focal image with error: {code}, {data}"
+        f"Failed to upload ubuntu image with error: {code}, {data}"
     )
 
     code, data = polling_for(
@@ -99,8 +95,8 @@ def harvester_mgmt_cluster(api_client, rancher_api_client, unique_name, polling_
     )
 
     yield {
-        "name": cluster_name,                   # e.g. myrke2 or myhvst ...
-        "id": data['status']['clusterName']    # e.g. c-m-n6bsktxb
+        "name": cluster_name,
+        "id": data['status']['clusterName']     # e.g. c-m-n6bsktxb
     }
 
     rancher_api_client.mgmt_clusters.delete(cluster_name)
@@ -185,7 +181,7 @@ def rke2_cluster(unique_name, rancher_api_client, machine_count):
     name = f"rke2-{unique_name}-{machine_count}"
     yield {
         "name": name,
-        "id": "",    # set in Test_RKE2::test_create_rke2
+        "id": "",    # set in Test_RKE2::test_create_rke2, e.g. c-m-n6bsktxb
         "machine_count": machine_count
     }
 
@@ -211,17 +207,29 @@ def nginx_deployment(unique_name):
     }
 
 
-@pytest.fixture(scope='class')
-def lb_service(unique_name, nginx_deployment):
+@pytest.fixture(scope="class")
+def ip_pool(api_client, unique_name, vlan_network):
+    code, data = api_client.ippools.create(unique_name, vlan_network["id"])
+    assert 201 == code, (
+        f"Failed to create ip pool {unique_name} with error {code}, {data}"
+    )
+
+    yield
+
+    api_client.ippools.delete(unique_name)
+
+
+@pytest.fixture(scope='class', params=["dhcp", "pool"])
+def lb_service(request, unique_name, nginx_deployment, ip_pool):
     namespace = "default"
-    name = f"lb-{unique_name}"
+    name = f"lb-{request.param}-{unique_name}"
     data = {
         "type": "service",
         "metadata": {
             "namespace": namespace,
             "name": name,
             "annotations": {
-                "cloudprovider.harvesterhci.io/ipam": "dhcp"
+                "cloudprovider.harvesterhci.io/ipam": request.param
             }
         },
         "spec": {
@@ -241,7 +249,7 @@ def lb_service(unique_name, nginx_deployment):
         }
     }
 
-    return {
+    yield {
         "namespace": namespace,
         "name": name,
         "data": data
@@ -332,7 +340,7 @@ def test_add_project_owner_user(api_client, rancher_api_client, unique_name, wai
 class TestRKE2:
     @pytest.mark.dependency(depends=["import_harvester"], name="create_rke2")
     def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
-                         harvester_cloud_credential, rke2_cluster, focal_image, vlan_network,
+                         harvester_cloud_credential, rke2_cluster, ubuntu_image, vlan_network,
                          k8s_version, rancher_wait_timeout, polling_for):
         # Create Harvester kubeconfig for this RKE2 cluster
         code, data = rancher_api_client.kube_configs.create(
@@ -369,9 +377,9 @@ class TestRKE2:
             cpus="2",
             mems="4",
             disks="40",
-            image_id=focal_image['id'],
-            network_id=vlan_network['id'],
-            ssh_user=focal_image['ssh_user'],
+            image_id=ubuntu_image['id'],
+            network_id=vlan_network['name'],
+            ssh_user=ubuntu_image['ssh_user'],
             user_data=(
                 "#cloud-config\n"
                 "password: test\n"
@@ -595,6 +603,9 @@ class TestRKE2:
             f"Service data: {data}"
         )
 
+        # teardown
+        rancher_api_client.cluster_services.delete(rke2_cluster['id'], lb_service["name"])
+
     @pytest.mark.dependency(depends=["create_rke2"])
     def test_delete_rke2(self, api_client, rancher_api_client, rke2_cluster,
                          rancher_wait_timeout, polling_for):
@@ -628,7 +639,7 @@ class TestRKE1:
     def test_create_rke1(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                          rancher_wait_timeout,
                          rke1_cluster, rke1_k8s_version, harvester_cloud_credential,
-                         focal_image, vlan_network, polling_for):
+                         ubuntu_image, vlan_network, polling_for):
         code, data = rancher_api_client.kube_configs.create(
             rke1_cluster['name'],
             harvester_mgmt_cluster['id']
@@ -642,9 +653,9 @@ class TestRKE1:
             cpus=2,
             mems=4,
             disks=40,
-            image_id=focal_image['id'],
-            network_id=vlan_network['id'],
-            ssh_user=focal_image['ssh_user'],
+            image_id=ubuntu_image['id'],
+            network_id=vlan_network['name'],
+            ssh_user=ubuntu_image['ssh_user'],
             cloud_credential_id=harvester_cloud_credential['id'],
             user_data=(
                 "#cloud-config\n"
@@ -848,6 +859,9 @@ class TestRKE1:
             f"Got error: {resp.status_code}, {resp.text}\n"
             f"Service data: {data}"
         )
+
+        # teardown
+        rancher_api_client.cluster_services.delete(rke1_cluster['id'], lb_service["name"])
 
     # harvester-csi-driver
     @pytest.mark.dependency(depends=["create_rke1"], name="csi_driver_chart")
