@@ -96,6 +96,12 @@ def pytest_addoption(parser):
         help='Physical NIC for VLAN. Default is "eth0"'
     )
     parser.addoption(
+        '--ip-pool-subnet',
+        action='store',
+        default=config_data['ip-pool-subnet'],
+        help='IP pool range for load balancer'
+    )
+    parser.addoption(
         '--wait-timeout',
         action='store',
         type=int,
