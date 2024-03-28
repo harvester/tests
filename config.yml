@@ -10,6 +10,7 @@ host-private-key: ''
 vlan-id: 1
 # Physical NIC for VLAN. Default is "harvester-mgmt"
 vlan-nic: 'harvester-mgmt'
+ip-pool-subnet: '192.168.0.0/24'
 
 # Wait time for polling operations
 wait-timeout: 600
