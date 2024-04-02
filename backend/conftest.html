@@ -124,6 +124,12 @@ def pytest_addoption(parser):
         help=&#39;Physical NIC for VLAN. Default is &#34;eth0&#34;&#39;
     )
     parser.addoption(
+        &#39;--ip-pool-subnet&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;ip-pool-subnet&#39;],
+        help=&#39;IP pool range for load balancer&#39;
+    )
+    parser.addoption(
         &#39;--wait-timeout&#39;,
         action=&#39;store&#39;,
         type=int,
@@ -538,6 +544,12 @@ def pytest_collection_modifyitems(session, config, items):
         action=&#39;store&#39;,
         default=config_data[&#39;vlan-nic&#39;],
         help=&#39;Physical NIC for VLAN. Default is &#34;eth0&#34;&#39;
+    )
+    parser.addoption(
+        &#39;--ip-pool-subnet&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;ip-pool-subnet&#39;],
+        help=&#39;IP pool range for load balancer&#39;
     )
     parser.addoption(
         &#39;--wait-timeout&#39;,
