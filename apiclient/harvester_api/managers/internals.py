@@ -41,9 +41,11 @@ class UpgradeManager(BaseManager):
     CREATE_PATH = "v1/harvester/harvesterhci.io.upgrades"
     API_PATH_fmt = "v1/harvester/harvesterhci.io.upgrades/{namespace}{name}"
 
-    def create_data(self, version_name, namespace=DEFAULT_HARVESTER_NAMESPACE):
+    def create_data(self, version_name, namespace=DEFAULT_HARVESTER_NAMESPACE, annotations=None):
+        annotations = annotations or dict()
         data = {
             "type": "harvesterhci.io.upgrade",
+            "annotations": annotations,
             "metadata": {
                 "generateName": "hvst-upgrade-",
                 "namespace": namespace
@@ -54,8 +56,10 @@ class UpgradeManager(BaseManager):
         }
         return data
 
-    def create(self, version_name, namespace=DEFAULT_HARVESTER_NAMESPACE, *, raw=False):
-        data = self.create_data(version_name)
+    def create(
+        self, version_name, namespace=DEFAULT_HARVESTER_NAMESPACE, *, raw=False, annotations=None
+    ):
+        data = self.create_data(version_name, annotations=annotations)
         path = self.API_PATH_fmt.format(name="", namespace=namespace)
         return self._create(path, json=data, raw=raw)
 
