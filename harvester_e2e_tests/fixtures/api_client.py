@@ -61,6 +61,11 @@ def sleep_timeout(request):
 
 
 @pytest.fixture(scope="session")
+def upgrade_timeout(request):
+    return request.config.getoption('--upgrade-wait-timeout') or 7200
+
+
+@pytest.fixture(scope="session")
 def rancher_wait_timeout(request):
     return request.config.getoption("--rancher-cluster-wait-timeout", 1800)
 

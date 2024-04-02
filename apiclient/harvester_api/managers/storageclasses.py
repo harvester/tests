@@ -14,6 +14,14 @@ class StorageClassManager(BaseManager):
         path = self.PATH_fmt.format(SC_API=self.API_VERSION, name=name)
         return self._get(path, raw=raw, **kwargs)
 
+    def get_default(self):
+        code, data = self.get()
+        for sc in data['items']:
+            if 'true' == sc['metadata']['annotations'].get(DEFAULT_STORAGE_CLASS_ANNOTATION):
+                return code, sc
+        else:
+            return code, data
+
     def create_data(self, name, replicas):
         data = {
             "type": f"{self.API_VERSION}",
