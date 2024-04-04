@@ -23,3 +23,4 @@ scripts/**/*.sh
 test_result.json
 public
 *.hugo_build.lock
+*.package-lock.json
