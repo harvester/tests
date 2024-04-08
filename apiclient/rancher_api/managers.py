@@ -3,6 +3,7 @@ import json
 import yaml
 from weakref import ref
 from collections.abc import Mapping
+from urllib.parse import urlencode
 
 from .models import UserSpec, ChartSpec
 
@@ -276,8 +277,8 @@ class MgmtClusterManager(BaseManager):
             raw=raw
         )
 
-    def delete(self, name, *, raw=False):
-        return self._delete(self.PATH_fmt.format(uid=f"/{name}", ns=f"/{FLEET_DEFAULT_NAMESPACE}"))
+    def delete(self, name, namespace=FLEET_DEFAULT_NAMESPACE, *, raw=False):
+        return self._delete(self.PATH_fmt.format(uid=f"/{name}", ns=f"/{namespace}"))
 
 
 class ClusterRegistrationTokenManager(BaseManager):
@@ -322,10 +323,13 @@ class CloudCredentialManager(BaseManager):
         data = self.create_data(name, kubeconfig, cluster_id)
         return self._create(self.PATH_fmt.format(uid="", ns=""), json=data, raw=raw)
 
-    def get(self, name="", *, raw=False):
-        if name == "":
-            return self._get(self.PATH_fmt.format(uid=""), raw=raw)
-        return self._get(self.PATH_fmt.format(uid=f"/{name}"), raw=raw)
+    def get(self, name="", *, raw=False, **kwargs):
+        uid = f"/{name}" if name else ""
+
+        if not kwargs:
+            return self._get(self.PATH_fmt.format(uid=uid), raw=raw)
+
+        return self._get(self.PATH_fmt.format(uid=f"{uid}?{urlencode(kwargs)}"), raw=raw)
 
     def delete(self, name, *, raw=False):
         return self._delete(self.PATH_fmt.format(uid=f"/{name}"), raw=raw)

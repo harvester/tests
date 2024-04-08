@@ -174,6 +174,15 @@ def unset_cpu_memory_overcommit(api_client):
     api_client.settings.update('overcommit-config', spec)
 
 
+@pytest.fixture
+def machine_types(request, api_client):
+    major, minor, micro = api_client.cluster_version.release
+    if major > 1 or minor > 2 or (minor == 2 and micro > 1):
+        # > 1.y.z || > 1.3.z || > 1.2.1
+        return "_".join(request.param).replace("pc", "pc-q35").split("_")
+    return request.param
+
+
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(name="minimal_vm")
@@ -512,6 +521,9 @@ class TestVMOperations:
                     assert 204 == code, (code, err)
                 else:
                     break
+            elif len(states) == 1 and not m_state:
+                # we did abort migration, and the anootation removed
+                break
             sleep(3)
         else:
             raise AssertionError(
@@ -1639,10 +1651,12 @@ def test_create_vm_no_available_resources(resource, api_client, image,
 
 @pytest.mark.p0
 @pytest.mark.virtualmachines
-@pytest.mark.parametrize("machine_types", [("pc", "q35"), ("q35", "pc")],
-                         ids=['pc_to_q35', 'q35_to_pc'])
-def test_update_vm_machine_type(api_client, image, unique_vm_name,
-                                wait_timeout, machine_types, sleep_timeout):
+@pytest.mark.parametrize(
+    "machine_types", [("q35", "pc"), ("pc", "q35")], ids=['q35_to_pc', 'pc_to_q35'], indirect=True
+)
+def test_update_vm_machine_type(
+    api_client, image, unique_vm_name, wait_timeout, machine_types, sleep_timeout
+):
     """Create a VM with machine type then update to another
 
     Prerequisite:

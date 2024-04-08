@@ -96,6 +96,12 @@ def pytest_addoption(parser):
         help='Physical NIC for VLAN. Default is "eth0"'
     )
     parser.addoption(
+        '--ip-pool-subnet',
+        action='store',
+        default=config_data['ip-pool-subnet'],
+        help='IP pool range for load balancer'
+    )
+    parser.addoption(
         '--wait-timeout',
         action='store',
         type=int,
@@ -121,6 +127,12 @@ def pytest_addoption(parser):
         action='store',
         default=config_data.get('opensuse-image-url'),
         help=('OpenSUSE image URL')
+    )
+    parser.addoption(
+        '--ubuntu-image-url',
+        action='store',
+        default=config_data.get('ubuntu-image-url'),
+        help=('ubuntu image URL')
     )
     parser.addoption(
         '--terraform-scripts-location',
@@ -249,11 +261,18 @@ def pytest_addoption(parser):
         default=config_data.get('terraform-provider-harvester'),
         help=('Version of Terraform Harvester Provider')
     )
+    parser.addoption(
+        '--terraform-provider-rancher',
+        action='store',
+        default=config_data.get('terraform-provider-rancher'),
+        help=('Version of Terraform Rancher Provider')
+    )
 
 
 def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
+        ("skip_version_if", "Mark test skipped when cluster version hit the condition"),
         ("skip_version_before", (
             "mark test skipped when cluster version < provided version")),
         ("skip_version_after", (

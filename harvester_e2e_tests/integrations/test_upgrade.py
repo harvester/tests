@@ -736,8 +736,8 @@ def vm_prereq(cluster_state, api_client, vm_shell, wait_timeout):
     if vm2_name is None:
         vm2_name = f"vm2-{cluster_state.unique_id}"
         restore_spec = api_client.backups.RestoreSpec(True, vm_name=vm2_name)
-        code, data = api_client.backups.create(cluster_state.backup['metadata']['name'],
-                                               restore_spec)
+        code, data = api_client.backups.restore(cluster_state.backup['metadata']['name'],
+                                                restore_spec)
         assert code == 201, (
             f"Failed to restore to vm2: {data}")
 

@@ -1,0 +1,3 @@
+{{ $baseURL := .Page.Site.BaseURL }}
+{{ $image := .Get 0 }}
+<img src="{{ $baseURL }}{{ $image }}" alt="{{ $image }}">

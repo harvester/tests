@@ -66,3 +66,44 @@ class NetworkManager(BaseManager):
     def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
         path = self.PATH_fmt.format(uid=name, ns=namespace, NETWORK_API=self.API_VERSION)
         return self._delete(path, raw=raw)
+
+
+class IPPoolManager(BaseManager):
+    PATH_fmt = "{API_VERSION}/harvester/loadbalancer.harvesterhci.io.ippools{name}"
+    API_VERSION = "v1"
+
+    def create_data(self, name, ip_pool_subnet, network_id):
+        return {
+            "type": "loadbalancer.harvesterhci.io.ippool",
+            "metadata": {
+                "name": name
+            },
+            "spec": {
+                "ranges": [{
+                    "subnet": ip_pool_subnet,
+                    "gateway": "",
+                    "type": "cidr"
+                }],
+                "selector": {
+                    "network": network_id,
+                    "scope": [{
+                        "namespace": "*",
+                        "project": "*",
+                        "guestCluster": "*"
+                    }]
+                }
+            }
+        }
+
+    def create(self, name, ip_pool_subnet, network_id, *, raw=False):
+        data = self.create_data(name, ip_pool_subnet, network_id)
+        path = self.PATH_fmt.format(name="", API_VERSION=self.API_VERSION)
+        return self._create(path, json=data, raw=raw)
+
+    def get(self, name="", *, raw=False):
+        path = self.PATH_fmt.format(name=f"/{name}", API_VERSION=self.API_VERSION)
+        return self._get(path, raw=raw)
+
+    def delete(self, name, *, raw=False):
+        path = self.PATH_fmt.format(name=f"/{name}", API_VERSION=self.API_VERSION)
+        return self._delete(path, raw=raw)

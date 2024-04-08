@@ -10,6 +10,7 @@ host-private-key: ''
 vlan-id: 1
 # Physical NIC for VLAN. Default is "harvester-mgmt"
 vlan-nic: 'harvester-mgmt'
+ip-pool-subnet: '192.168.0.0/24'
 
 # Wait time for polling operations
 wait-timeout: 600
@@ -20,11 +21,13 @@ sleep-timeout: 3
 node-scripts-location: 'scripts/vagrant'
 
 opensuse-image-url: https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2
+ubuntu-image-url: https://cloud-images.ubuntu.com/releases/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img
 # URL to download all images
 image-cache-url: ''
 
 # script location for terraform related test cases
 terraform-scripts-location: 'terraform_test_artifacts'
+terraform-provider-rancher: '3.1.1'
 
 # Backup Target S3
 s3-endpoint: ''
@@ -38,12 +41,11 @@ nfs-endpoint: ''
 nfs-mount-dir: 'nfsshare'
 
 # Rancher Cluster
-# rancher-endpoint: 'https://127.0.0.1'
-# External Rancher admin user password
-# rancher-admin-password: 'rancher_password'
+rancher-endpoint: 'https://127.0.0.1'
+rancher-admin-password: 'rancher_password'
 # Kubernetes version for RKE
-RKE1-version: 'v1.24.11-rancher2-1'
-RKE2-version: 'v1.24.11+rke2r1'
+RKE1-version: 'v1.26.11-rancher2-1'
+RKE2-version: 'v1.26.11+rke2r1'
 # Wait time for polling Rancher cluster status.
 rancher-cluster-wait-timeout: 7200
 

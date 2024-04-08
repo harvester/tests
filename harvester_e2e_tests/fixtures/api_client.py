@@ -18,7 +18,22 @@ from harvester_api import HarvesterAPI
 
 
 @pytest.fixture(scope="session")
-def api_client(request):
+def harvester_metadata(pytestconfig):
+    ''' be used to store harvester's metadata and expose into html report. '''
+    # ref: https://github.com/pytest-dev/pytest-html/blob/4.1.1/src/pytest_html/basereport.py#L71
+    try:
+        from pytest_metadata.plugin import metadata_key
+        metadata = pytestconfig.stash[metadata_key]
+    except ImportError:
+        metadata = pytestconfig._metadata
+
+    harv = dict()
+    metadata["Harvester"] = harv
+    return harv
+
+
+@pytest.fixture(scope="session")
+def api_client(request, harvester_metadata):
     endpoint = request.config.getoption("--endpoint")
     username = request.config.getoption("--username")
     password = request.config.getoption("--password")
@@ -28,6 +43,9 @@ def api_client(request):
     api.authenticate(username, password, verify=ssl_verify)
 
     api.session.verify = ssl_verify
+
+    harvester_metadata['Cluster Endpoint'] = endpoint
+    harvester_metadata['Cluster Version'] = api.cluster_version.raw
 
     return api
 
@@ -180,6 +198,44 @@ def skip_version_after(request, api_client):
                 )
 
 
+@pytest.fixture(autouse=True)
+def skip_version_if(request, api_client):
+    ''' To mark test case should be skip when hit the condition string.
+
+    Args:
+        *args: Version string prefixing with one of operators: `!=`, `==`, `>=`, `<=`, `>`, `<`
+    Keyword Args:
+        reason: The reason string for `pytest.skip`, default is:
+            "Cluster Version `{cluster_version}` is not included in versions: {versions}"
+        condition: Condition callable function to check compare result(bool), default is `all`
+    '''
+    default_reason = (
+        "Cluster Version `{cluster_version}` is not included in versions: {versions}"
+    )
+    mark = request.node.get_closest_marker("skip_version_if")
+    if mark:
+        cluster_ver = api_client.cluster_version
+        checks = [version_check(vstr, cluster_ver) for vstr in mark.args]
+        reason = mark.kwargs.get('reason', default_reason)
+        if mark.kwargs.get('condition', all)(r for *_, r in checks):
+            versions = [f"{op} {v}" for op, v, _ in checks]
+            return pytest.skip(
+                reason.format(cluster_version=cluster_ver, versions=versions)
+            )
+
+
+def version_check(vstring, version):
+    from operator import le, lt, ge, gt, ne, eq
+    ops = {"<=": le, "<": lt, ">=": ge, ">": gt, "!=": ne, "==": eq}
+
+    try:
+        op = target_ver = None
+        op, target_ver = re.search(r"([<>=!]+)\s?(.+)", vstring).groups()
+        return op, target_ver, ops[op](version, parse_version(target_ver))
+    except Exception:
+        return op, target_ver, False
+
+
 @pytest.fixture(scope="session")
 def host_shell(request):
     password = request.config.getoption("--host-password") or None
@@ -214,12 +270,21 @@ def host_shell(request):
                 kws.update(kwargs)
                 cli.connect(ipaddr, port, **kws)
 
-        def login(self, ipaddr, port=22, jumphost=False, **kwargs):
+        def login(self, ipaddr, port=22, jumphost=False, allow_agent=False,
+                  look_for_keys=False, **kwargs):
             if not self.client:
                 cli = SSHClient()
                 cli.set_missing_host_key_policy(MissingHostKeyPolicy())
                 kws = dict(username=self.username, password=self.password, pkey=self.pkey)
                 kws.update(kwargs)
+
+                # in case we're using a password to log into the host, this
+                # prevents paramiko from getting confused by ssh keys in the ssh
+                # agent:
+                if self.password and not self.pkey:
+                    kws.update(dict(allow_agent=allow_agent,
+                                    look_for_keys=look_for_keys))
+
                 cli.connect(ipaddr, port, **kws)
                 self._client = cli
 

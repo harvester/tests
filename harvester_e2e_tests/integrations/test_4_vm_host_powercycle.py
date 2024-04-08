@@ -1,7 +1,6 @@
 import json
 from time import sleep
 from datetime import datetime, timedelta
-from urllib.parse import urljoin
 
 import pytest
 
@@ -10,16 +9,9 @@ pytest_plugins = [
 ]
 
 
-@pytest.fixture(scope="session")
-def focal_image_url(request):
-    base_url = request.config.getoption("--image-cache-url").strip()
-    base_url = base_url or "http://cloud-images.ubuntu.com/releases/focal/release"
-    return urljoin(f"{base_url}/", "ubuntu-20.04-server-cloudimg-amd64-disk-kvm.img")
-
-
 @pytest.fixture(scope="module")
-def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
-    code, data = api_client.images.create_by_url(unique_name, focal_image_url)
+def focal_image(api_client, unique_name, image_ubuntu, wait_timeout):
+    code, data = api_client.images.create_by_url(unique_name, image_ubuntu.url)
     assert 201 == code, (
         f"Failed to upload focal image with error: {code}, {data}"
     )
@@ -40,7 +32,7 @@ def focal_image(api_client, unique_name, focal_image_url, wait_timeout):
     namespace = data['metadata']['namespace']
     name = data['metadata']['name']
 
-    yield dict(ssh_user="ubuntu", id=f"{namespace}/{name}")
+    yield dict(ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}")
 
     api_client.images.delete(name, namespace)
 

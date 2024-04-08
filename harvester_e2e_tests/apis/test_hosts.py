@@ -69,6 +69,8 @@ def test_update_node(api_client):
 
     status_code, node_stats = api_client.hosts.update(node['id'], test_data)
 
+    assert 200 == status_code, (status_code, node_stats)
+
     not_updated_fields = list()
     for k, v in test_annotations.items():
         if node_stats['metadata']['annotations'].get(k) != v:
@@ -153,6 +155,7 @@ def test_maintenance_mode(api_client, wait_timeout):
     status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=True)
     assert 204 == status_code, (status_code, node_stats)
 
+    maintain_stat = "Unknown"
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         _, stats = api_client.hosts.get(node_id)

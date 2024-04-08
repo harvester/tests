@@ -5,7 +5,7 @@ from .volumes import VolumeManager
 from .backups import BackupManager, VirtualMachineSnapshotManager
 from .keypairs import KeypairManager
 from .settings import SettingManager
-from .networks import NetworkManager
+from .networks import NetworkManager, IPPoolManager
 from .templates import TemplateManager
 from .supportbundles import SupportBundleManager
 from .storageclasses import StorageClassManager
@@ -25,7 +25,7 @@ __all__ = [
  "VolumeManager",
  "KeypairManager",
  "SettingManager",
- "NetworkManager",
+ "NetworkManager", "IPPoolManager",
  "TemplateManager",
  "SupportBundleManager",
  "VolumeSnapshotManager",

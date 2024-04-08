@@ -21,6 +21,55 @@ Test Environment:
 2. Prepare vsphere setup (or use existing setup)
 3. Prepare a devstack cluster (Openstack 16.2) (stable/train)
 
+### OpenStack Setup
+1. Prepare a baremetal or virtual machine to host the OpenStack service
+1. For automated installation on virtual machine, please refer to the `cloud init user data` in 
+https://github.com/harvester/tests/issues/522#issuecomment-1654646620
+1. For manual installation, we can also follow the command in the `cloud init user data`
+
+
+### OpenStack troubleshooting
+If you failed create volume with the following error message
+    ```
+    Error: Failed to perform requested operation on instance "opensuse", the instance has an error status: Please try again later [Error: Build of instance 289d8c95-fd99-42a4-8eab-3a522e891463 aborted: Invalid input received: Invalid image identifier or unable to access requested image. (HTTP 400) (Request-ID: req-248baac7-a2de-4c51-9817-de653a548e3b)].
+    ```
+
+You can use these steps to configure OpenStack service
+
+1. Check the certificate file exists
+    ```
+    sudo cat /var/snap/microstack/common/etc/ssl/certs/cacert.pem
+    ```
+1. Run the following command to configure microstack service
+    ```
+    1. microstack init --auto --control --setup-loop-based-cinder-lvm-backend
+        --loop-device-file-size 100
+    2. snap restart microstack.cinder-{uwsgi,scheduler,volume}
+    3. sed -i 's/client_max_body_size 0/client_max_body_size 4G/g' /var/snap/microstack/common/etc/nginx/snap/nginx.conf
+    4. snap restart microstack.nginx
+    ```
+1. Check the cinder volume state
+      ```
+      $ journalctl -xef -u snap.microstack.cinder-volume shows
+      ```
+      ```
+      $ lvextend -r -l +100%FREE /dev/cinder-volumes/cinder-volumes-pool
+      ```
+1. Set the ca certificate file
+    ```
+    $ sudo tee /var/snap/microstack/common/etc/cinder/cinder.conf.d/glance.conf <<EOF
+    [DEFAULT]
+    glance_ca_certificates_file = /var/snap/microstack/common/etc/ssl/certs/cacert.pem
+    EOF
+    ```
+1. Restart the cinder service 
+    ```
+    sudo snap restart microstack.cinder-{uwsgi,scheduler,volume}
+    ```
+
+    ```
+    sudo cat /var/snap/microstack/common/etc/cinder/cinder.conf.d/glance.conf
+    ```
 
 ## Verification Steps
 
@@ -61,37 +110,59 @@ vcsim   clusterReady
 ```
 
 ### Verify OpenstackSource
-* Define a secret for your Openstack cluster
 
-```
-apiVersion: v1
-kind: Secret
-metadata: 
-  name: devstack-credentials
-  namespace: default
-stringData:
-  "username": "user"
-  "password": "password"
-  "project_name": "admin"
-  "domain_name": "default"
-  "ca_cert": "pem-encoded-ca-cert"
-```
+1. Access the Openstack dashboard
+1. Create some images 
+{{< image "images/addons/2274-openstack-create-image.png" >}}
 
-* Define an OpenstackSource Object
+1. Create key pairs
+1. Create an empty volume to ensure the microstack.cinder services works well (if failed, check the OpenStack troubleshooting section)
+{{< image "images/addons/2274-openstack-empty-volume.png" >}}
+{{< image "images/addons/2274-openstack-empty-volume-display.png" >}}
 
-```
-apiVersion: migration.harvesterhci.io/v1beta1
-kind: OpenstackSource
-metadata:
-  name: devstack
-  namespace: default
-spec:
-  endpoint: "https://devstack/identity"
-  region: "RegionOne"
-  credentials:
-    name: devstack-credentials
-    namespace: default
-```
+1. Launch a vm instance, ensure the vm can be created without error message
+{{< image "images/addons/2274-openstack-create-vm.png" >}}
+
+1. Enable the vm-import-controller addon on Harvester
+{{< image "images/addons/2274-enable-vm-importer.png" >}}
+
+1. Open Compute -> System -> System Information page, find the `Services` tab
+1. Check the `Region` in the page (eg. `microstack`)
+{{< image "images/addons/2274-openstack-region.png" >}}
+1. Check the endpoint of the identity item
+{{< image "images/addons/2274-openstack-endpoint.png" >}}
+
+1. Access the Harvester node machine
+1. Define a secret for your Openstack cluster in yaml file and use `kubectl` to create the crd
+
+    ```
+    apiVersion: v1
+    kind: Secret
+    metadata: 
+      name: devstack-credentials
+      namespace: default
+    stringData:
+      "username": "user" #dashboard username
+      "password": "password" #dashboard password
+      "project_name": "admin"
+      "domain_name": "default"
+    ```
+
+1. Define an OpenstackSource Object in yaml file and use `kubectl` to create the crd
+
+    ```
+    apiVersion: migration.harvesterhci.io/v1beta1
+    kind: OpenstackSource
+    metadata:
+      name: devstack
+      namespace: default
+    spec:
+      endpoint: "https://<dashboard ipv4>:5000/v3"  
+      region: "microstack" # value found in OpenStack dashboard
+      credentials:
+        name: devstack-credentials
+        namespace: default
+    ```
 
 The controller will try and list the VM's in the OpenstackSource project in the specified region, using the information from the credentials.
 
@@ -151,27 +222,52 @@ If there is no networkMapping defined, or no matching sourceNetwork is found the
 Once the VM object is created, the VirtualMachine is powered on, and the controller waits for the VirtualMachine to be `running`
 
 ### VirtualMachine Import using OpenstackSource
-* A VM import can be triggered by the creation of a VirtualMachineImport object as follows:
+1. Create the `vlan1` network on Harvester and ensure can reach the OpenStack dashboard 
+1. A VM import can be triggered by the creation of a VirtualMachineImport object as follows:
 
-```
-apiVersion: migration.harvesterhci.io/v1beta1
-kind: VirtualMachineImport
-metadata:
-  name: openstack-demo
-  namespace: default
-spec: 
-  virtualMachineName: "openstack-demo" #Name or UUID for instance
-  networkMapping:
-  - sourceNetwork: "shared"
-    destinationNetwork: "default/vlan1"
-  - sourceNetwork: "public"
-    destinationNetwork: "default/vlan2"
-  sourceCluster: 
-    name: devstack
-    namespace: default
-    kind: OpenstackSource
+    ```
     apiVersion: migration.harvesterhci.io/v1beta1
-```
+    kind: VirtualMachineImport
+    metadata:
+      name: openstack-demo
+      namespace: default
+    spec: 
+      virtualMachineName: "openstack-demo" #Name or UUID for instance
+      networkMapping:
+      - sourceNetwork: "shared"
+        destinationNetwork: "default/vlan1"
+      - sourceNetwork: "public"
+        destinationNetwork: "default/vlan2"
+      sourceCluster: 
+        name: devstack
+        namespace: default
+        kind: OpenstackSource
+        apiVersion: migration.harvesterhci.io/v1beta1
+    ```
+    Here is the example:
+    ```
+    apiVersion: migration.harvesterhci.io/v1beta1                              
+    kind: VirtualMachineImport
+    metadata:
+      name: openstack-demo
+      namespace: default
+    spec: 
+      virtualMachineName: "opensuse" #Name or UUID for instance
+      networkMapping:
+      - sourceNetwork: "external"
+        destinationNetwork: "default/vlan1"
+      sourceCluster: 
+        name: microstack
+        namespace: default
+        kind: OpenstackSource
+        apiVersion: migration.harvesterhci.io/v1beta1
+    ```
+
+1. After the `VirtualMachineImport` created, you can find Harvester create a new image from the OpenStack
+{{< image "images/addons/2274-harvester-import-openstack-image.png" >}}
+
+1. The OpenStack vm would be imported to Harvester
+{{< image "images/addons/2274-harvester-import-openstack-vm.png" >}}
 
 The controller will check that the source is ready, before the virtualmachine import is initiated.
 
