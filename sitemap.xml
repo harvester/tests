@@ -202,6 +202,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/deployment/additional-trusted-ca/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/advanced/addons/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/agent_node_connectivity/</loc>
@@ -859,6 +861,8 @@
     <loc>https://harvester.github.io/tests/manual/_incoming/2325-node-promotion-for-topology-label/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/nodes-with-cordoned-status-should-not-be-in-vm-migration-list/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/advanced/addons/pci-devices-controller/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2598-polish-harvester-machine-config-in-rancher/</loc>
   </url><url>

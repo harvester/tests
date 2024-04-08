@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Addons on Harvester manual test cases</title>
+    <link>https://harvester.github.io/tests/manual/advanced/addons/</link>
+    <description>Recent content in Addons on Harvester manual test cases</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="https://harvester.github.io/tests/manual/advanced/addons/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PCI Devices Controller</title>
+      <link>https://harvester.github.io/tests/manual/advanced/addons/pci-devices-controller/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/advanced/addons/pci-devices-controller/</guid>
+      <description>Pre-requisite Enable PCI devices Create a harvester cluster in bare metal mode. Ensure one of the nodes has NIC separate from the management NIC Go to the management interface of the new cluster Go to Advanced -&amp;gt; PCI Devices Validate that the PCI devices aren&amp;rsquo;t enabled Click the link to enable PCI devices Enable PCI devices in the linked addon page Wait for the status to change to Deploy successful Navigate to the PCI devices page Validate that the PCI devices page is populated/populating with PCI devices Case 1 (PCI NIC passthrough) Create a harvester cluster in bare metal mode.</description>
+    </item>
+  </channel>
+</rss>

@@ -2913,6 +2913,13 @@
       <description>Related issues: #1501 Nodes with cordoned status should not be in the selection list for VM migration Category: Host Verification Steps Create multiple VMs on two of the nodes Set the idle node to cordoned state Edit any config of VM, click migrate Check the available node in the migration list Expected Results Node set in cordoned state will not show up in the available migration list</description>
     </item>
     <item>
+      <title>PCI Devices Controller</title>
+      <link>https://harvester.github.io/tests/manual/advanced/addons/pci-devices-controller/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/advanced/addons/pci-devices-controller/</guid>
+      <description>Pre-requisite Enable PCI devices Create a harvester cluster in bare metal mode. Ensure one of the nodes has NIC separate from the management NIC Go to the management interface of the new cluster Go to Advanced -&amp;gt; PCI Devices Validate that the PCI devices aren&amp;rsquo;t enabled Click the link to enable PCI devices Enable PCI devices in the linked addon page Wait for the status to change to Deploy successful Navigate to the PCI devices page Validate that the PCI devices page is populated/populating with PCI devices Case 1 (PCI NIC passthrough) Create a harvester cluster in bare metal mode.</description>
+    </item>
+    <item>
       <title>Polish harvester machine config in Rancher</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2598-polish-harvester-machine-config-in-rancher/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
