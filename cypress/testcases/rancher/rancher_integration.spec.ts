@@ -8,6 +8,7 @@ import { Constants } from '../../constants/constants'
 import cypress from 'cypress';
 import { LoginPage } from "@/pageobjects/login.po";
 import { onlyOn } from "@cypress/skip-test";
+import VirtualizationDashboard from "~/pageobjects/virtualizationDashboard.po";
 
 const constants = new Constants();
 const rancher = new rancherPage();
@@ -15,7 +16,7 @@ const rke_guest_cluster = new rke_guest_clusterPage();
 const image = new ImagePage();
 const settings = new SettingsPagePo();
 const network = new NetworkPage();
-
+const virtualizationDashboard = new VirtualizationDashboard();
 let rData = {
     name: '',
     harvester_cluster_name: '',
@@ -138,7 +139,7 @@ describe('Harvester import Rancher', function () {
     it('Check Harvester Cluster Status', { baseUrl: constants.rancherUrl }, () => {
         // cy.login();
         cy.visit('/');
-        cy.wait(5000);
+        cy.wait(constants.timeout.timeout);
 
         rancher.rancherLogin();
 
@@ -146,4 +147,22 @@ describe('Harvester import Rancher', function () {
 
         rancher.checkState(rData.harvester_cluster_name);
     });
+
+    it('Check Rancher Harvester dashboard', { baseUrl: constants.rancherUrl }, () => {
+        // cy.login();
+        cy.visit('/');
+        cy.wait(constants.timeout.timeout);
+
+        rancher.rancherLogin();
+
+        rancher.visit_virtualizationManagement();
+
+        rancher.checkState(rData.harvester_cluster_name);
+
+        rancher.open_virtualizationDashboard();
+
+        virtualizationDashboard.validateClusterName();
+        
+    });
+
 })

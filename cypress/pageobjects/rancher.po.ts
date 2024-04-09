@@ -56,6 +56,7 @@ export class rancherPage {
 
     private clusterManagement_page_create = '[href="/dashboard/c/local/manager/provisioning.cattle.io.cluster/create"]';
     private clusterManagement_rke_selector = '.slider';
+    private clusterLink = '.cluster-link a';
 
     private clusterCreation_page_harvester = ':nth-child(4) > .name';
 
@@ -178,6 +179,15 @@ export class rancherPage {
         cy.visit(constants.rancher_virtualizationManagement);
     }
 
+    public open_virtualizationDashboard() {
+        cy.visit(constants.rancher_virtualizationManagement).then(() => {
+            cy.log('visit virtualizationManagement');
+        });
+        cy.get(this.clusterLink).click().then(() => {
+            cy.log('Open virtualization dashboard');
+        });
+}
+
     public visit_clusterManagement() {
         cy.visit(constants.rancher_clusterManagmentPage);
     }
@@ -200,7 +210,7 @@ export class rancherPage {
         cy.get(this.virtual_page_createCluster).should('contain', 'Create').click();
         cy.visit(constants.virtualManagePage + '/create#memberRoles');
 
-        cy.contains(constants.rancherUrl, { timeout: 5000 });
+        cy.contains(constants.rancherUrl, { timeout: constants.timeout.timeout });
 
         return cy.get('.copy');
 

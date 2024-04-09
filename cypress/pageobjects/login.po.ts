@@ -13,7 +13,7 @@ export class LoginPage {
     private checkboxTelemetry = '[for="checkbox-telemetry"]';
     private allRadios = '.radio-container';
     private checkbox = '.checkbox-custom';
-    private mainPageHeader = 'main .outlet header h1 span'
+    private mainPageHeader = 'main .outlet header h1 span';
 
     public username: string;
     public password: string;
@@ -69,9 +69,9 @@ export class LoginPage {
     public login(username:string = this.username, password:string = this.password) {
         cy.visit(constants.loginUrl);
         cy.get(this.usernameInput).type(username);
-        cy.get(this.passwordInput).type(password)
-        cy.get(this.loginButton).click()
-        this.validateLogin()
+        cy.get(this.passwordInput).type(password);
+        cy.get(this.loginButton).click();
+        this.validateLogin();
     }
     /**
     * Parameters may be declared in a variety of syntactic forms
@@ -99,9 +99,9 @@ export class LoginPage {
     public checkEula(checked:boolean = true) {
         cy.get(`${this.checkboxEula} ${this.checkbox}`).then($el => {
             if(!!$el.attr("aria-checked") === checked) {
-                cy.get(this.checkboxEula)
+                cy.get(this.checkboxEula);
             } else {
-                cy.get(this.checkboxEula).click("left")
+                cy.get(this.checkboxEula).click("left");
             }
         })
         return this
@@ -110,9 +110,9 @@ export class LoginPage {
     public checkTelemetry(checked:boolean = true) {
         cy.get(`${this.checkboxTelemetry} ${this.checkbox}`).then($el => {
             if (!!$el.attr("aria-checked") === checked) {
-                cy.get(this.checkboxTelemetry)
+                cy.get(this.checkboxTelemetry);
             } else {
-                cy.get(this.checkboxTelemetry).click("left")
+                cy.get(this.checkboxTelemetry).click("left");
             }
         })
         return this
