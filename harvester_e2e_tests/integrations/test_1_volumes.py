@@ -192,7 +192,7 @@ class TestVolumeWithVM:
         self.delete_vm(api_client, ubuntu_vm, polling_for)
 
         code, data = api_client.volumes.delete(vol_name)
-        assert 200 == code, f"Fail to delete volume\n{code}, {data}"
+        assert code in (200, 204), f"Fail to delete volume\n{code}, {data}"
 
         # Check Volume
         code, data = api_client.volumes.get(vol_name)

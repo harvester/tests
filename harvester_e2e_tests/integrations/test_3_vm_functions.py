@@ -572,7 +572,7 @@ class TestVMOperations:
         while endtime > datetime.now():
             l_check = dict()
             for vol_name, (code, data) in check.items():
-                if 200 != code:
+                if code not in (200, 204):
                     fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
                 else:
                     code, data = api_client.volumes.get(vol_name)
@@ -1628,7 +1628,7 @@ def test_create_vm_no_available_resources(resource, api_client, image,
     while endtime > datetime.now():
         l_check = dict()
         for vol_name, (code, data) in check.items():
-            if 200 != code:
+            if code not in (200, 204):
                 fails.append(
                     (vol_name, f"Failed to delete\nStatus({code}): {data}"))
             else:
