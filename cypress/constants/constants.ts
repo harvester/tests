@@ -4,8 +4,8 @@ export class Constants {
     public password = Cypress.env("password");
     public mockPassword = Cypress.env("mockPassword");
     public rancherUrl = Cypress.env("rancherUrl");
-    public rancher_user = Cypress.env("rancherUser");
-    public rancher_password = Cypress.env("rancherPassword");
+    public rancherUser = Cypress.env("rancherUser");
+    public rancherPassword = Cypress.env("rancherPassword");
     public rancher_vm_user = Cypress.env("rancher_vm_user");
     public rancher_vm_password = Cypress.env("rancher_vm_password");
     public vagrant_pxe_path = Cypress.env("vagrant_pxe_path");
@@ -17,7 +17,7 @@ export class Constants {
     public uiSourceUrl = '/harvester/c/local/harvesterhci.io.setting/ui-source?mode=edit';
     public hostsPage = '/harvester/c/local/harvesterhci.io.host';
     public supportPage = '/harvester/c/local/support';
-    public vmPage = '/harvester/c/local/kubevirt.io.virtualmachine';
+    public vmPage = `/harvester/c/${Cypress.config('clusterId')}/kubevirt.io.virtualmachine`;
     public settingUrl = '/harvester/c/local/harvesterhci.io.setting';
     public volumePage = '/harvester/c/local/harvesterhci.io.volume';
     public imagePage = '/harvester/c/local/harvesterhci.io.virtualmachineimage';
@@ -36,7 +36,13 @@ export const PageUrl = {
     virtualMachine:   '/harvester/c/local/kubevirt.io.virtualmachine',
     vmNetwork:        '/harvester/c/local/harvesterhci.io.networkattachmentdefinition',
     namespace:        '/harvester/c/local/namespace',
-    volumeSnapshot:   '/harvester/c/local/harvesterhci.io.volumesnapshot'
+    volumeSnapshot:   '/harvester/c/local/harvesterhci.io.volumesnapshot',
+    clusterMember:    `/harvester/c/${Cypress.config('clusterId')}/management.cattle.io.clusterroletemplatebinding`,
+    project:          `/harvester/c/${Cypress.config('clusterId')}/projectsnamespaces`,
+}
+
+export const RancherPageUrl = {
+  user: `/c/local/auth/management.cattle.io.user`,
 }
 
 export const MenuNav = {

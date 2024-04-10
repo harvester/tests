@@ -12,6 +12,48 @@ const constants = new Constants();
 const namespaces = new NamespacePage();
 const imagePO = new ImagePage();
 
+const roles = Cypress.env('roles');
+
+roles.map(role => {
+  describe(`${role}: VM Form Validation`, () => {
+    beforeEach(() => {
+      cy.login({
+        username: role,
+        url: PageUrl.virtualMachine
+      });
+    });
+
+    /**
+     * 1. Login
+     * 2. Navigate to the VM create page
+     * 3. Input required values
+     * 4. Validate the create request
+     * 5. Validate the config and yaml should show
+    */
+    it.only('Create a vm with all the default values', () => {
+      const VM_NAME = generateName('test-vm-create');
+      const namespace = role === 'admin' ? 'default' : `${role}-namespace`
+      const imageEnv =Cypress.env('image'); 
+
+      const value = {
+        name: VM_NAME,
+        cpu: '1',
+        memory: '1',
+        image: Cypress._.toLower(imageEnv.name),
+        namespace,
+      }
+
+      vms.create(value)
+
+      vms.goToConfigDetail(VM_NAME);
+
+      vms.goToYamlEdit(VM_NAME);
+
+      vms.delete(namespace, VM_NAME)
+    });
+  })
+})
+
 describe('VM Form Validation', () => {
   beforeEach(() => {
     cy.login({url: PageUrl.virtualMachine});
