@@ -1142,6 +1142,13 @@
       <description>Ref: https://github.com/harvester/harvester/issues/1046&#xA;Verify Items Cluster&amp;rsquo;s SSL/TLS parameters could be configured in install option Cluster&amp;rsquo;s SSL/TLS parameters could be updated in dashboard Case: Configure TLS parameters in dashboard Install Harvester with any nodes Navigate to Advanced Settings, then edit ssl-parameters Select Protocols TLSv1.3, then save execute command echo QUIT | openssl s_client -connect &amp;lt;VIP&amp;gt;:443 -tls1_2 | grep &amp;quot;Cipher is&amp;quot; Output should contain error...SSL routines... and Cipher is (NONE) execute command echo QUIT | openssl s_client -connect &amp;lt;VIP&amp;gt;:443 -tls1_3 | grep &amp;quot;Cipher is&amp;quot; Output should contain Cipher is &amp;lt;one_of_TLS1_3_Ciphers&amp;gt;1 and should not contain error.</description>
     </item>
     <item>
+      <title>Cluster with Witness Node</title>
+      <link>https://harvester.github.io/tests/manual/hosts/3266-witness-node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/hosts/3266-witness-node/</guid>
+      <description>Witness node is a lightweight node only runs etcd which is not schedulable and also not for workloads. The main use case is to form a quorum with the other 2 nodes.&#xA;Kubernetes need at least 3 etcd nodes to form a quorum, so Harvester also suggests using at least 3 nodes with similar hardware spec. This witness node feature aims for the edge case that user only have 2 powerful + 1 lightweight nodes thus helping benefit both cost and high availability.</description>
+    </item>
+    <item>
       <title>collect Fleet logs and YAMLs in support bundles</title>
       <link>https://harvester.github.io/tests/manual/_incoming/2297_collect_fleet_logs_and_yamls_in_support_bundles/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

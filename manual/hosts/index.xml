@@ -64,6 +64,13 @@
       <description> Related issues: #1489 Edit Advanced Setting option server-url will redirect to inappropriate page Verification Steps Install harvester Access harvester Edit server-url form settings Check server-url save, cancel, and back. Additional context: Expected Results URL should stay the same when navigating </description>
     </item>
     <item>
+      <title>Cluster with Witness Node</title>
+      <link>https://harvester.github.io/tests/manual/hosts/3266-witness-node/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/hosts/3266-witness-node/</guid>
+      <description>Witness node is a lightweight node only runs etcd which is not schedulable and also not for workloads. The main use case is to form a quorum with the other 2 nodes.&#xA;Kubernetes need at least 3 etcd nodes to form a quorum, so Harvester also suggests using at least 3 nodes with similar hardware spec. This witness node feature aims for the edge case that user only have 2 powerful + 1 lightweight nodes thus helping benefit both cost and high availability.</description>
+    </item>
+    <item>
       <title>Delete Host (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/delete-host/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
