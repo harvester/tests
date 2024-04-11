@@ -42,9 +42,9 @@ Case 5: restore a backup from detached volumes can work:
 * Case 1: snapshot can work on a stopped VM 
    - VM volumes are detached after we stop VM.
       ```
-          node1:~ # kubectl get volume -A
-          NAMESPACE         NAME                                       STATE      ROBUSTNESS   SCHEDULED   SIZE          NODE   AGE
-          longhorn-system   pvc-5a861225-920d-4059-b501-f02b2fd0ff27   detached   unknown                  10737418240          19m
+      node1:~ # kubectl get volume -A
+      NAMESPACE         NAME                                       STATE      ROBUSTNESS   SCHEDULED   SIZE          NODE   AGE
+      longhorn-system   pvc-5a861225-920d-4059-b501-f02b2fd0ff27   detached   unknown                  10737418240          19m
       ```
    - Take the vm snapshot, The snapshot of vm in off state can be ready.
 * Case 2: restore a snapshot from detached volumes can work. 
@@ -54,8 +54,8 @@ Case 5: restore a backup from detached volumes can work:
 * Case 3: backup can work on a stopped VM. 
    - VM volumes are detached after we stop VM.
       ```
-          NAMESPACE         NAME                                       STATE      ROBUSTNESS   SCHEDULED   SIZE          NODE   AGE
-          longhorn-system   pvc-d1226d97-ab90-4d40-92f9-960b668093c2   detached   unknown                  10737418240          5m12s
+      NAMESPACE         NAME                                       STATE      ROBUSTNESS   SCHEDULED   SIZE          NODE   AGE
+      longhorn-system   pvc-d1226d97-ab90-4d40-92f9-960b668093c2   detached   unknown                  10737418240          5m12s
       ```
    -  Take the vm backup, The backup of vm in off state can be ready.
 

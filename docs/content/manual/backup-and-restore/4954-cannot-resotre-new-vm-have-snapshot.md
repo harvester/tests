@@ -16,10 +16,10 @@ title: VM have snapshot can't be restored to new VM
 1. Create a snapshot for the vm1
 1. Restore the backup of vm1 to create a new VM
 1. Check can restore vm correctly
-1. Shutdown vm1,
+1. Shutdown vm1
 1. Restore the backup of vm to replace the existing vm
 1. Select Retain volume
-1. Check can restore vm correctly.
+1. Check can restore vm correctly
 
 ## Expected Results
 *  Can restore vm backup to create a new vm when already setup vm backup and snapshot on it.

@@ -9,7 +9,7 @@ title: Config sftp dynamically
 * Deployment
 
 ## Verification Steps
-1. Use ipex-example to provision Harvester
+1. Use ipxe-example to provision Harvester
 1. Add the following sshd config to the config-create.yaml and config-join.yaml of Harvester configuration file
     ```
     os:

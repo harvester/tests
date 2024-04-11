@@ -24,7 +24,7 @@ title: Node pool anti-affinity rules
 1. Each VM launched will have an additional label added.
 1. The anti-affinity rule on the VM will leverage this label to ensure VM's are spread across in the cluster
 
-1. Corden one of the node on Harvester host page
+1. Cordon one of the node on Harvester host page
 1. Repeat step 7 - 12
 
 ## Expected Results
@@ -35,7 +35,7 @@ title: Node pool anti-affinity rules
 * The anti-affinity rule set on the label of vm in the yaml content 
 {{< image "images/virtual-machines/4588-yaml-anti-affinity.png" >}}
 
-* If Node 2 cordened, none of the VM would be scheduled on that node
+* If Node 2 cordoned, none of the VM would be scheduled on that node
 {{< image "images/virtual-machines/4588-vm-cannot-schedule-specific-node.png" >}}
 
 * The anti-affinity rule set on the label of vm in the yaml content
