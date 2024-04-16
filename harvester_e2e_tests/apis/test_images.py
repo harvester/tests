@@ -20,7 +20,7 @@ from time import sleep
 from datetime import datetime, timedelta
 
 import pytest
-
+from pytest_cases import parametrize_with_cases, case
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
@@ -29,22 +29,77 @@ pytest_plugins = [
 ]
 
 
+class CasesImages:
+    @case(tags='unique-name')
+    def case_unique_name_long(self, unique_name):
+        """basic unique_name_long
+
+        Args:
+            unique_name (_type_): fixture
+
+        Returns:
+            _type_: default setup with unique_name long
+        """
+        return (unique_name*6)[:43]
+
+    @case(tags='unique-name')
+    def case_unique_name_regular(self, unique_name):
+        """basic unique_name_regular
+
+        Args:
+            unique_name (_type_): fixture
+
+        Returns:
+            _type_: default setup with unique_name regular
+        """
+        return unique_name
+
+    @case(tags='gen-unique-name')
+    def case_gen_unique_name_regular(self, gen_unique_name):
+        """generate unique name regular
+
+        Args:
+            gen_unique_name (_type_): regular returns default fixture
+
+        Returns:
+            _type_: default setup with gen_unique_name lambda
+        """
+        return gen_unique_name
+
+    @case(tags='gen-unique-name')
+    def case_gen_unique_name_long(self, gen_unique_name):
+        """generate unique name, but long version
+
+        Args:
+            gen_unique_name (_type_): long gen_unique_name is returned
+
+        Returns:
+            _type_: long gen_unique_name on demand but long
+        """
+        current = datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")
+        current_long = (current*6)[:43]
+        return lambda: current_long
+
+
 @pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.images
 class TestImagesNegative:
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_get_not_exist(self, api_client, unique_name):
         code, data = api_client.images.get(unique_name)
 
         assert 404 == code, (code, data)
         assert "NotFound" == data.get('reason'), (code, data)
 
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_delete_not_exist(self, api_client, unique_name):
         code, data = api_client.images.delete(unique_name)
 
         assert 404 == code, (code, data)
         assert "NotFound" == data.get("reason"), (code, data)
 
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_create_with_empty_data(self, api_client, unique_name):
         # name, url, description, sourcetype, namespace
         image_json = api_client.images.create_data(unique_name, "", "", "", "")
@@ -53,6 +108,7 @@ class TestImagesNegative:
         assert 422 == code, (code, data)
         assert "Invalid" == data.get("reason"), (code, data)
 
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_create_with_empty_url(self, api_client, unique_name):
         code, data = api_client.images.create_by_url(unique_name, "")
 
@@ -63,7 +119,9 @@ class TestImagesNegative:
 @pytest.mark.p0
 @pytest.mark.images
 class TestImages:
+
     @pytest.mark.dependency(name="create_image")
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_create(self, api_client, unique_name, fake_image_file):
         resp = api_client.images.create_by_file(unique_name, fake_image_file)
 
@@ -72,6 +130,7 @@ class TestImages:
         )
 
     @pytest.mark.dependency(name="get_image")
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_get(self, api_client, unique_name):
         # Case 1: get all images
         code, data = api_client.images.get()
@@ -83,6 +142,7 @@ class TestImages:
         assert 200 == code, (code, data)
         assert unique_name == data['metadata']['name']
 
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_update(self, api_client, unique_name):
         updates = {
             "labels": {
@@ -111,6 +171,7 @@ class TestImages:
         )
 
     @pytest.mark.dependency(name="delete_image")
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_delete(self, api_client, unique_name, wait_timeout):
         code, data = api_client.images.delete(unique_name)
 
@@ -131,6 +192,7 @@ class TestImages:
 
     @pytest.mark.skip_version_if("> v1.2.0", "<= v1.4.0", reason="Issue#4293 fix after `v1.4.0`")
     @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])
+    @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')
     def test_create_with_reuse_display_name(
             self, wait_timeout, api_client, unique_name, fake_image_file):
         code, data = api_client.images.get(unique_name)
@@ -163,6 +225,7 @@ class TestImages:
 @pytest.mark.p0
 @pytest.mark.negative
 @pytest.mark.images
+@parametrize_with_cases("gen_unique_name", cases=CasesImages, has_tag='gen-unique-name')
 def test_create_with_invalid_url(api_client, gen_unique_name, wait_timeout):
     unique_name = gen_unique_name()
     code, data = api_client.images.create_by_url(unique_name, f"https://{unique_name}.img")
