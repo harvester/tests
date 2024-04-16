@@ -43,9 +43,8 @@ nfs-mount-dir: 'nfsshare'
 # Rancher Cluster
 rancher-endpoint: 'https://127.0.0.1'
 rancher-admin-password: 'rancher_password'
-# Kubernetes version for RKE
-RKE1-version: 'v1.26.11-rancher2-1'
-RKE2-version: 'v1.26.11+rke2r1'
+# Prefix of K8s version for to create downstream cluster
+k8s-version: 'v1.27'
 # Wait time for polling Rancher cluster status.
 rancher-cluster-wait-timeout: 7200
 

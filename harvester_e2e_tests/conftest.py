@@ -195,16 +195,10 @@ def pytest_addoption(parser):
         help='Rancher admin user password'
     )
     parser.addoption(
-        '--RKE2-version',
+        '--k8s-version',
         action='store',
-        default=config_data.get('RKE2-version'),
-        help='RKE2 Kubernetes version to use for Rancher integration tests'
-    )
-    parser.addoption(
-        '--RKE1-version',
-        action='store',
-        default=config_data.get('RKE1-version'),
-        help='RKE1 Kubernetes version to use for Rancher integration tests'
+        default=config_data.get('k8s-version'),
+        help='K8s version to use for downstream cluster in Rancher integration tests'
     )
     parser.addoption(
         '--rancher-cluster-wait-timeout',

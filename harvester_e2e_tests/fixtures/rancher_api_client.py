@@ -20,28 +20,59 @@ def rancher_api_client(request):
     return api
 
 
+def _pickup_k8s_version(versions: [str], target_version: str):
+    """
+    versions:       e.g. ['v1.26.16-rancher2-3', 'v1.25.15-rancher1-1', ...]
+    target_version: e.g. v1.26, v1.26.16...
+    """
+    # e.g. v1.26.16-rancher2-3 / v1.26.16+rke2r1 will be sort as v1.26.16
+    sorted_vers = sorted(versions,
+                         key=lambda v: parse_version(v.split("+")[0].split("-")[0]),
+                         reverse=True)
+
+    for ver in sorted_vers:
+        if ver.startswith(target_version):
+            warnings.warn(UserWarning(f"Adopt {ver} for target k8s-version {target_version}"))
+            return ver
+
+    assert False, (
+        f"No supported version fits target k8s-version {target_version}\n"
+        f"Rancher endpoint supports {versions}"
+    )
+
+
+@pytest.fixture(scope='session')
+def rke1_version(request, rancher_api_client):
+    target_ver = request.config.getoption("--k8s-version")
+
+    code, data = rancher_api_client.settings.get("k8s-versions-current")
+    assert 200 == code, (code, data)
+    supported_vers = data["value"].split(",")
+    assert supported_vers
+
+    return _pickup_k8s_version(supported_vers, target_ver)
+
+
 @pytest.fixture(scope="session")
-def k8s_version(request, api_client, rancher_api_client):
-    harv_version = api_client.hosts.get()[1]['data'][0]['status']['nodeInfo']['kubeletVersion']
-    rke2_version = (request.config.getoption("--RKE2-version")
-                    or harv_version)
+def rke2_version(request, api_client, rancher_api_client):
+    target_ver = request.config.getoption("--k8s-version")
 
-    # Ref: https://github.com/rancher/dashboard/blob/master/shell/edit/provisioning.cattle.io.cluster/rke2.vue  # noqa
-    releases = rancher_api_client._get("v1-rke2-release/releases").json()['data']
-    supports = sorted([r['id'] for r in releases], key=parse_version)
+    # Ref. https://github.com/rancher/dashboard/blob/master/shell/edit/provisioning.cattle.io.cluster/rke2.vue  # noqa
+    resp = rancher_api_client._get("v1-rke2-release/releases")
+    assert resp.ok
+    supported_vers = [r['id'] for r in resp.json()['data']]
+    assert supported_vers
 
-    if parse_version(rke2_version) > parse_version(supports[-1]):
-        warnings.warn(UserWarning(
-            f"The RKE version is not support by the Rancher (too new), use latest `{supports[-1]}`"
-            ))
-        return supports[-1]
-    elif parse_version(rke2_version) < parse_version(supports[0]):
-        warnings.warn(UserWarning(
-            f"The RKE version is not support by the Rancher (too old), use latest `{supports[0]}`"
-            ))
-        return supports[0]
-    elif parse_version(harv_version) > parse_version(rke2_version):
-        warnings.warn(UserWarning("Target RKE version is old than current Harvester using"))
-        return rke2_version
-    else:
-        return rke2_version
+    return _pickup_k8s_version(supported_vers, target_ver)
+
+
+@pytest.fixture(scope="session")
+def k3s_version(request, api_client, rancher_api_client):
+    target_ver = request.config.getoption("--k8s-version")
+
+    resp = rancher_api_client._get("v1-k3s-release/releases")
+    assert resp.ok
+    supported_vers = [r['id'] for r in resp.json()['data']]
+    assert supported_vers
+
+    return _pickup_k8s_version(supported_vers, target_ver)
