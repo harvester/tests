@@ -15,7 +15,6 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import warnings
 import pytest
 
 
@@ -52,6 +51,24 @@ def vlan_network(request, api_client):
     }
 
     api_client.networks.delete(network_name)
+
+
+@pytest.fixture(scope="module")
+def ip_pool(request, api_client, unique_name, vlan_network):
+    name = f"ippool-{unique_name}"
+    ip_pool_subnet = request.config.getoption('--ip-pool-subnet')
+
+    code, data = api_client.ippools.create(name, ip_pool_subnet, vlan_network["id"])
+    assert 201 == code, (
+        f"Failed to create ip pool {name} with error: {code}, {data}"
+    )
+
+    yield {
+        "name": name,
+        "subnet": ip_pool_subnet
+    }
+
+    api_client.ippools.delete(name)
 
 
 @pytest.fixture(scope="module")
@@ -129,24 +146,6 @@ def harvester_cloud_credential(api_client, rancher_api_client,
     rancher_api_client.cloud_credentials.delete(data['id'])
 
 
-@pytest.fixture(scope='module')
-def rke1_k8s_version(request, rancher_api_client):
-    configured = request.config.getoption("--RKE1-version")
-    if configured:
-        return configured
-
-    code, data = rancher_api_client.settings.get('k8s-versions-current')
-    assert 200 == code, (
-        f"Failed to get k8s-versions-current setting with error: {code}, {data}"
-    )
-    latest = data['value'].split(',')[-1]
-
-    warnings.warn(UserWarning(
-        f"RKE1-version is not configured, use latest Rancher supported version {latest}."
-    ))
-    return latest
-
-
 @pytest.fixture(scope="module",
                 params=[1,
                         pytest.param(3, marks=pytest.mark.skip(reason="Skip for low I/O env."))])
@@ -155,24 +154,26 @@ def machine_count(request):
 
 
 @pytest.fixture(scope='class')
-def rke1_cluster(unique_name, rancher_api_client, machine_count):
+def rke1_cluster(unique_name, rancher_api_client, machine_count, rke1_version):
     name = f"rke1-{unique_name}-{machine_count}"
     yield {
         "name": name,
         "id": "",    # set in Test_RKE1::test_create_rke1, e.g. c-m-n6bsktxb
-        "machine_count": machine_count
+        "machine_count": machine_count,
+        "k8s_version": rke1_version
     }
 
     rancher_api_client.mgmt_clusters.delete(name)
 
 
 @pytest.fixture(scope='class')
-def rke2_cluster(unique_name, rancher_api_client, machine_count):
+def rke2_cluster(unique_name, rancher_api_client, machine_count, rke2_version):
     name = f"rke2-{unique_name}-{machine_count}"
     yield {
         "name": name,
         "id": "",    # set in Test_RKE2::test_create_rke2, e.g. c-m-n6bsktxb
-        "machine_count": machine_count
+        "machine_count": machine_count,
+        "k8s_version": rke2_version
     }
 
     rancher_api_client.mgmt_clusters.delete(name)
@@ -197,26 +198,8 @@ def nginx_deployment(unique_name):
     }
 
 
-@pytest.fixture(scope="class")
-def ip_pool(request, api_client, unique_name, vlan_network):
-    name = f"ippool-{unique_name}"
-    ip_pool_subnet = request.config.getoption('--ip-pool-subnet')
-
-    code, data = api_client.ippools.create(name, ip_pool_subnet, vlan_network["id"])
-    assert 201 == code, (
-        f"Failed to create ip pool {name} with error: {code}, {data}"
-    )
-
-    yield {
-        "name": name,
-        "subnet": ip_pool_subnet
-    }
-
-    api_client.ippools.delete(name)
-
-
-@pytest.fixture(scope='class', params=["dhcp", "pool"])
-def lb_service(request, unique_name, nginx_deployment, ip_pool):
+@pytest.fixture(scope='function', params=["dhcp", "pool"])
+def lb_service(request, api_client, unique_name, nginx_deployment, ip_pool):
     namespace = "default"
     name = f"lb-{unique_name}-{request.param}"
     data = {
@@ -250,6 +233,14 @@ def lb_service(request, unique_name, nginx_deployment, ip_pool):
         "name": name,
         "data": data
     }
+
+    code, data = api_client.loadbalancers.get()
+    assert 200 == code, (code, data)
+    lbs = data["data"]
+    for lb in lbs:
+        if name in lb["id"]:
+            api_client.loadbalancers.delete(lb["id"])
+            break
 
 
 @pytest.mark.p0
@@ -337,7 +328,7 @@ class TestRKE2:
     @pytest.mark.dependency(depends=["import_harvester"], name="create_rke2")
     def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                          harvester_cloud_credential, rke2_cluster, ubuntu_image, vlan_network,
-                         k8s_version, rancher_wait_timeout, polling_for):
+                         rancher_wait_timeout, polling_for):
         # Create Harvester kubeconfig for this RKE2 cluster
         code, data = rancher_api_client.kube_configs.create(
             rke2_cluster['name'],
@@ -394,7 +385,7 @@ class TestRKE2:
             cloud_provider_config_id=cloud_provider_config_id,
             hostname_prefix=f"{rke2_cluster['name']}-",
             harvester_config_name=unique_name,
-            k8s_version=k8s_version,
+            k8s_version=rke2_cluster['k8s_version'],
             cloud_credential_id=harvester_cloud_credential['id'],
             quantity=rke2_cluster['machine_count']
         )
@@ -634,7 +625,7 @@ class TestRKE1:
     @pytest.mark.dependency(depends=["import_harvester"], name="create_rke1")
     def test_create_rke1(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                          rancher_wait_timeout,
-                         rke1_cluster, rke1_k8s_version, harvester_cloud_credential,
+                         rke1_cluster, harvester_cloud_credential,
                          ubuntu_image, vlan_network, polling_for):
         code, data = rancher_api_client.kube_configs.create(
             rke1_cluster['name'],
@@ -668,7 +659,7 @@ class TestRKE1:
         node_template_id = data['id']
 
         code, data = rancher_api_client.clusters.create(
-            rke1_cluster['name'], rke1_k8s_version, kubeconfig
+            rke1_cluster['name'], rke1_cluster['k8s_version'], kubeconfig
         )
         assert 201 == code, (
             f"Failed to create cluster {rke1_cluster['name']} with error: {code}, {data}"
