@@ -1,4 +1,5 @@
 pytest == 7.*
+pytest-cases == 3.8.5
 pytest-drop-dup-tests
 pytest-ordering
 pytest-html
