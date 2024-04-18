@@ -89,6 +89,11 @@ def sleep_timeout(request):
 
 
 @pytest.fixture(scope=&#34;session&#34;)
+def upgrade_timeout(request):
+    return request.config.getoption(&#39;--upgrade-wait-timeout&#39;) or 7200
+
+
+@pytest.fixture(scope=&#34;session&#34;)
 def rancher_wait_timeout(request):
     return request.config.getoption(&#34;--rancher-cluster-wait-timeout&#34;, 1800)
 
@@ -896,6 +901,20 @@ def unique_name():
     return datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.fixtures.api_client.upgrade_timeout"><code class="name flex">
+<span>def <span class="ident">upgrade_timeout</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def upgrade_timeout(request):
+    return request.config.getoption(&#39;--upgrade-wait-timeout&#39;) or 7200</code></pre>
+</details>
+</dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.version_check"><code class="name flex">
 <span>def <span class="ident">version_check</span></span>(<span>vstring, version)</span>
 </code></dt>
@@ -965,6 +984,7 @@ def wait_timeout(request):
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.ssh_keypair" href="#harvester_e2e_tests.fixtures.api_client.ssh_keypair">ssh_keypair</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.support_bundle_state" href="#harvester_e2e_tests.fixtures.api_client.support_bundle_state">support_bundle_state</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.unique_name" href="#harvester_e2e_tests.fixtures.api_client.unique_name">unique_name</a></code></li>
+<li><code><a title="harvester_e2e_tests.fixtures.api_client.upgrade_timeout" href="#harvester_e2e_tests.fixtures.api_client.upgrade_timeout">upgrade_timeout</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.version_check" href="#harvester_e2e_tests.fixtures.api_client.version_check">version_check</a></code></li>
 <li><code><a title="harvester_e2e_tests.fixtures.api_client.wait_timeout" href="#harvester_e2e_tests.fixtures.api_client.wait_timeout">wait_timeout</a></code></li>
 </ul>
