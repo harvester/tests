@@ -22,6 +22,7 @@ title: View log function on virtual machine
 
 ## Expected Results
 * Should display the detailed log entries on the vm log panel including timestamp and content
+{{< image "images/virtual-machines/5266-view-vm-log.png" >}}
 * All existing logs would be cleaned up 
 * Ensure new logs will display on the panel
 * Check can correctly download the log to the `.log` file and contain all the details

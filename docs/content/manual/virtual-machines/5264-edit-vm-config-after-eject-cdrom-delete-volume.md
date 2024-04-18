@@ -2,8 +2,7 @@
 title: Edit vm config after Eject CDROM and delete volume
 ---
 
-* Related issues: [#5264](https://github.com/harvester/harvester/issues/5264) 
-[BUG] After EjectCD from vm and edit config of vm displays empty page: "Cannot read properties of null"
+* Related issues: [#5264](https://github.com/harvester/harvester/issues/5264) [BUG] After EjectCD from vm and edit config of vm displays empty page: "Cannot read properties of null"
 
 ## Category: 
 * Virtual Machines
@@ -21,4 +20,5 @@ title: Edit vm config after Eject CDROM and delete volume
 
 ## Expected Results
 * Check can edit vm config of `vm1` to display all settings correctly
+{{< image "images/virtual-machines/5264-edit-vm-cofig-after-delete-volume.png" >}}
 * Check can display the current `vm1` settings correctly 
