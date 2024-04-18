@@ -191,19 +191,11 @@ class TestVolumeWithVM:
 
         self.delete_vm(api_client, ubuntu_vm, polling_for)
 
-        code, data = api_client.volumes.delete(vol_name)
-        assert code in (200, 204), f"Fail to delete volume\n{code}, {data}"
-
-        # Check Volume
         code, data = api_client.volumes.get(vol_name)
-        mdata, annotations = data['metadata'], data['metadata']['annotations']
-        assert 200 == code, (code, data)
-        assert mdata['name'] == vol_name, (code, data)
-        # status
-        assert not mdata['state']['error'], (code, data)
-        assert not mdata['state']['transitioning'], (code, data)
-        assert data['status']['phase'] == "Bound", (code, data)
-        # source
-        assert ubuntu_image["id"] == annotations['harvesterhci.io/imageId'], (code, data)
-        # attachment
-        assert not annotations.get("harvesterhci.io/owned-by"), (code, data)
+        assert code == 200, f"Volume should still there if not delete with VM\n{code}, {data}"
+
+        code, data = api_client.volumes.delete(vol_name)
+        assert code == 200, f"Should be able to delete volume once VM deleted\n{code}, {data}"
+        polling_for("Volume do deleted",
+                    lambda c, d: 404 == c,
+                    api_client.volumes.get, vol_name)
