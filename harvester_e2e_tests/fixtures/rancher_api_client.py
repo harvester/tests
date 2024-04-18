@@ -20,10 +20,10 @@ def rancher_api_client(request):
     return api
 
 
-def _pickup_k8s_version(versions: [str], target_version: str):
+def _pickup_k8s_version(versions, target_version):
     """
-    versions:       e.g. ['v1.26.16-rancher2-3', 'v1.25.15-rancher1-1', ...]
-    target_version: e.g. v1.26, v1.26.16...
+    versions: list of str, e.g. ['v1.26.16-rancher2-3', 'v1.25.15-rancher1-1', ...]
+    target_version: str, e.g. 'v1.26', 'v1.26.16', ...
     """
     # e.g. v1.26.16-rancher2-3 / v1.26.16+rke2r1 will be sort as v1.26.16
     sorted_vers = sorted(versions,
@@ -35,7 +35,7 @@ def _pickup_k8s_version(versions: [str], target_version: str):
             warnings.warn(UserWarning(f"Adopt {ver} for target k8s-version {target_version}"))
             return ver
 
-    assert False, (
+    raise AssertionError(
         f"No supported version fits target k8s-version {target_version}\n"
         f"Rancher endpoint supports {versions}"
     )
@@ -48,7 +48,6 @@ def rke1_version(request, rancher_api_client):
     code, data = rancher_api_client.settings.get("k8s-versions-current")
     assert 200 == code, (code, data)
     supported_vers = data["value"].split(",")
-    assert supported_vers
 
     return _pickup_k8s_version(supported_vers, target_ver)
 
@@ -61,7 +60,6 @@ def rke2_version(request, api_client, rancher_api_client):
     resp = rancher_api_client._get("v1-rke2-release/releases")
     assert resp.ok
     supported_vers = [r['id'] for r in resp.json()['data']]
-    assert supported_vers
 
     return _pickup_k8s_version(supported_vers, target_ver)
 
@@ -73,6 +71,5 @@ def k3s_version(request, api_client, rancher_api_client):
     resp = rancher_api_client._get("v1-k3s-release/releases")
     assert resp.ok
     supported_vers = [r['id'] for r in resp.json()['data']]
-    assert supported_vers
 
     return _pickup_k8s_version(supported_vers, target_ver)

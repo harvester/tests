@@ -110,13 +110,13 @@ class IPPoolManager(BaseManager):
 
 
 class LoadBalancerManager(BaseManager):
-    PATH_fmt = "{API_VERSION}/harvester/loadbalancer.harvesterhci.io.loadbalancers{lb_id}"
+    PATH_fmt = "{API_VERSION}/harvester/loadbalancer.harvesterhci.io.loadbalancers{uid}"
     API_VERSION = "v1"
 
-    def get(self, lb_id="", *, raw=False):
-        path = self.PATH_fmt.format(lb_id=f"/{lb_id}", API_VERSION=self.API_VERSION)
+    def get(self, uid="", *, raw=False):
+        path = self.PATH_fmt.format(uid=f"/{uid}", API_VERSION=self.API_VERSION)
         return self._get(path, raw=raw)
 
-    def delete(self, lb_id, *, raw=False):
-        path = self.PATH_fmt.format(lb_id=f"/{lb_id}", API_VERSION=self.API_VERSION)
+    def delete(self, uid, *, raw=False):
+        path = self.PATH_fmt.format(uid=f"/{uid}", API_VERSION=self.API_VERSION)
         return self._delete(path, raw=raw)
