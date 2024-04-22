@@ -4,7 +4,7 @@
     <title>Harvester Test Cases on Harvester manual test cases</title>
     <link>https://harvester.github.io/tests/</link>
     <description>Recent content in Harvester Test Cases on Harvester manual test cases</description>
-    <generator>Hugo 0.125.0</generator>
+    <generator>Hugo 0.125.2</generator>
     <language>en-us</language>
     <atom:link href="https://harvester.github.io/tests/index.xml" rel="self" type="application/rss+xml" />
     <item>
@@ -3926,6 +3926,13 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/hosts/negative-verify-state-powered-down-node/</guid>
       <description> Power down the node and check the state of the node in the cluster Expected Results The node state should show unavilable </description>
+    </item>
+    <item>
+      <title>vGPU/SR-IOV GPU</title>
+      <link>https://harvester.github.io/tests/manual/advanced/addons/2764-vgpu/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/advanced/addons/2764-vgpu/</guid>
+      <description>Related issues: #1661 vGPU Support Pre-requisite Enable PCI devices Create a harvester cluster in bare metal mode. Ensure one of the nodes has NIC separate from the management NIC Go to the management interface of the new cluster Go to Advanced -&amp;gt; PCI Devices Validate that the PCI devices aren&amp;rsquo;t enabled Click the link to enable PCI devices Enable PCI devices in the linked addon page Wait for the status to change to Deploy Successful Navigate to the PCI devices page Validate that the PCI devices page is populated/populating with PCI devices Pre-requisite Enable vGPU This can only be ran on a bare metal Harvester cluster that has an Nvidia card that support vGPU.</description>
     </item>
     <item>
       <title>VIP configured in a VLAN network should be reached</title>
