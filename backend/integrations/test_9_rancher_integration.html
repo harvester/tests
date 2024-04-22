@@ -43,7 +43,6 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
-import warnings
 import pytest
 
 
@@ -80,6 +79,24 @@ def vlan_network(request, api_client):
     }
 
     api_client.networks.delete(network_name)
+
+
+@pytest.fixture(scope=&#34;module&#34;)
+def ip_pool(request, api_client, unique_name, vlan_network):
+    name = f&#34;ippool-{unique_name}&#34;
+    ip_pool_subnet = request.config.getoption(&#39;--ip-pool-subnet&#39;)
+
+    code, data = api_client.ippools.create(name, ip_pool_subnet, vlan_network[&#34;id&#34;])
+    assert 201 == code, (
+        f&#34;Failed to create ip pool {name} with error: {code}, {data}&#34;
+    )
+
+    yield {
+        &#34;name&#34;: name,
+        &#34;subnet&#34;: ip_pool_subnet
+    }
+
+    api_client.ippools.delete(name)
 
 
 @pytest.fixture(scope=&#34;module&#34;)
@@ -157,24 +174,6 @@ def harvester_cloud_credential(api_client, rancher_api_client,
     rancher_api_client.cloud_credentials.delete(data[&#39;id&#39;])
 
 
-@pytest.fixture(scope=&#39;module&#39;)
-def rke1_k8s_version(request, rancher_api_client):
-    configured = request.config.getoption(&#34;--RKE1-version&#34;)
-    if configured:
-        return configured
-
-    code, data = rancher_api_client.settings.get(&#39;k8s-versions-current&#39;)
-    assert 200 == code, (
-        f&#34;Failed to get k8s-versions-current setting with error: {code}, {data}&#34;
-    )
-    latest = data[&#39;value&#39;].split(&#39;,&#39;)[-1]
-
-    warnings.warn(UserWarning(
-        f&#34;RKE1-version is not configured, use latest Rancher supported version {latest}.&#34;
-    ))
-    return latest
-
-
 @pytest.fixture(scope=&#34;module&#34;,
                 params=[1,
                         pytest.param(3, marks=pytest.mark.skip(reason=&#34;Skip for low I/O env.&#34;))])
@@ -183,24 +182,26 @@ def machine_count(request):
 
 
 @pytest.fixture(scope=&#39;class&#39;)
-def rke1_cluster(unique_name, rancher_api_client, machine_count):
+def rke1_cluster(unique_name, rancher_api_client, machine_count, rke1_version):
     name = f&#34;rke1-{unique_name}-{machine_count}&#34;
     yield {
         &#34;name&#34;: name,
         &#34;id&#34;: &#34;&#34;,    # set in Test_RKE1::test_create_rke1, e.g. c-m-n6bsktxb
-        &#34;machine_count&#34;: machine_count
+        &#34;machine_count&#34;: machine_count,
+        &#34;k8s_version&#34;: rke1_version
     }
 
     rancher_api_client.mgmt_clusters.delete(name)
 
 
 @pytest.fixture(scope=&#39;class&#39;)
-def rke2_cluster(unique_name, rancher_api_client, machine_count):
+def rke2_cluster(unique_name, rancher_api_client, machine_count, rke2_version):
     name = f&#34;rke2-{unique_name}-{machine_count}&#34;
     yield {
         &#34;name&#34;: name,
         &#34;id&#34;: &#34;&#34;,    # set in Test_RKE2::test_create_rke2, e.g. c-m-n6bsktxb
-        &#34;machine_count&#34;: machine_count
+        &#34;machine_count&#34;: machine_count,
+        &#34;k8s_version&#34;: rke2_version
     }
 
     rancher_api_client.mgmt_clusters.delete(name)
@@ -225,26 +226,8 @@ def nginx_deployment(unique_name):
     }
 
 
-@pytest.fixture(scope=&#34;class&#34;)
-def ip_pool(request, api_client, unique_name, vlan_network):
-    name = f&#34;ippool-{unique_name}&#34;
-    ip_pool_subnet = request.config.getoption(&#39;--ip-pool-subnet&#39;)
-
-    code, data = api_client.ippools.create(name, ip_pool_subnet, vlan_network[&#34;id&#34;])
-    assert 201 == code, (
-        f&#34;Failed to create ip pool {name} with error: {code}, {data}&#34;
-    )
-
-    yield {
-        &#34;name&#34;: name,
-        &#34;subnet&#34;: ip_pool_subnet
-    }
-
-    api_client.ippools.delete(name)
-
-
-@pytest.fixture(scope=&#39;class&#39;, params=[&#34;dhcp&#34;, &#34;pool&#34;])
-def lb_service(request, unique_name, nginx_deployment, ip_pool):
+@pytest.fixture(scope=&#39;function&#39;, params=[&#34;dhcp&#34;, &#34;pool&#34;])
+def lb_service(request, api_client, unique_name, nginx_deployment, ip_pool):
     namespace = &#34;default&#34;
     name = f&#34;lb-{unique_name}-{request.param}&#34;
     data = {
@@ -278,6 +261,14 @@ def lb_service(request, unique_name, nginx_deployment, ip_pool):
         &#34;name&#34;: name,
         &#34;data&#34;: data
     }
+
+    code, data = api_client.loadbalancers.get()
+    assert 200 == code, (code, data)
+    lbs = data[&#34;data&#34;]
+    for lb in lbs:
+        if name in lb[&#34;id&#34;]:
+            api_client.loadbalancers.delete(lb[&#34;id&#34;])
+            break
 
 
 @pytest.mark.p0
@@ -365,7 +356,7 @@ class TestRKE2:
     @pytest.mark.dependency(depends=[&#34;import_harvester&#34;], name=&#34;create_rke2&#34;)
     def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                          harvester_cloud_credential, rke2_cluster, ubuntu_image, vlan_network,
-                         k8s_version, rancher_wait_timeout, polling_for):
+                         rancher_wait_timeout, polling_for):
         # Create Harvester kubeconfig for this RKE2 cluster
         code, data = rancher_api_client.kube_configs.create(
             rke2_cluster[&#39;name&#39;],
@@ -422,7 +413,7 @@ class TestRKE2:
             cloud_provider_config_id=cloud_provider_config_id,
             hostname_prefix=f&#34;{rke2_cluster[&#39;name&#39;]}-&#34;,
             harvester_config_name=unique_name,
-            k8s_version=k8s_version,
+            k8s_version=rke2_cluster[&#39;k8s_version&#39;],
             cloud_credential_id=harvester_cloud_credential[&#39;id&#39;],
             quantity=rke2_cluster[&#39;machine_count&#39;]
         )
@@ -662,7 +653,7 @@ class TestRKE1:
     @pytest.mark.dependency(depends=[&#34;import_harvester&#34;], name=&#34;create_rke1&#34;)
     def test_create_rke1(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                          rancher_wait_timeout,
-                         rke1_cluster, rke1_k8s_version, harvester_cloud_credential,
+                         rke1_cluster, harvester_cloud_credential,
                          ubuntu_image, vlan_network, polling_for):
         code, data = rancher_api_client.kube_configs.create(
             rke1_cluster[&#39;name&#39;],
@@ -696,7 +687,7 @@ class TestRKE1:
         node_template_id = data[&#39;id&#39;]
 
         code, data = rancher_api_client.clusters.create(
-            rke1_cluster[&#39;name&#39;], rke1_k8s_version, kubeconfig
+            rke1_cluster[&#39;name&#39;], rke1_cluster[&#39;k8s_version&#39;], kubeconfig
         )
         assert 201 == code, (
             f&#34;Failed to create cluster {rke1_cluster[&#39;name&#39;]} with error: {code}, {data}&#34;
@@ -1106,7 +1097,7 @@ def harvester_mgmt_cluster(api_client, rancher_api_client, unique_name, polling_
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
 def ip_pool(request, api_client, unique_name, vlan_network):
     name = f&#34;ippool-{unique_name}&#34;
     ip_pool_subnet = request.config.getoption(&#39;--ip-pool-subnet&#39;)
@@ -1125,7 +1116,7 @@ def ip_pool(request, api_client, unique_name, vlan_network):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.lb_service"><code class="name flex">
-<span>def <span class="ident">lb_service</span></span>(<span>request, unique_name, nginx_deployment, ip_pool)</span>
+<span>def <span class="ident">lb_service</span></span>(<span>request, api_client, unique_name, nginx_deployment, ip_pool)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1133,8 +1124,8 @@ def ip_pool(request, api_client, unique_name, vlan_network):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.fixture(scope=&#39;class&#39;, params=[&#34;dhcp&#34;, &#34;pool&#34;])
-def lb_service(request, unique_name, nginx_deployment, ip_pool):
+<pre><code class="python">@pytest.fixture(scope=&#39;function&#39;, params=[&#34;dhcp&#34;, &#34;pool&#34;])
+def lb_service(request, api_client, unique_name, nginx_deployment, ip_pool):
     namespace = &#34;default&#34;
     name = f&#34;lb-{unique_name}-{request.param}&#34;
     data = {
@@ -1167,7 +1158,15 @@ def lb_service(request, unique_name, nginx_deployment, ip_pool):
         &#34;namespace&#34;: namespace,
         &#34;name&#34;: name,
         &#34;data&#34;: data
-    }</code></pre>
+    }
+
+    code, data = api_client.loadbalancers.get()
+    assert 200 == code, (code, data)
+    lbs = data[&#34;data&#34;]
+    for lb in lbs:
+        if name in lb[&#34;id&#34;]:
+            api_client.loadbalancers.delete(lb[&#34;id&#34;])
+            break</code></pre>
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.machine_count"><code class="name flex">
@@ -1205,7 +1204,7 @@ def nginx_deployment(unique_name):
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_cluster"><code class="name flex">
-<span>def <span class="ident">rke1_cluster</span></span>(<span>unique_name, rancher_api_client, machine_count)</span>
+<span>def <span class="ident">rke1_cluster</span></span>(<span>unique_name, rancher_api_client, machine_count, rke1_version)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1214,46 +1213,20 @@ def nginx_deployment(unique_name):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
-def rke1_cluster(unique_name, rancher_api_client, machine_count):
+def rke1_cluster(unique_name, rancher_api_client, machine_count, rke1_version):
     name = f&#34;rke1-{unique_name}-{machine_count}&#34;
     yield {
         &#34;name&#34;: name,
         &#34;id&#34;: &#34;&#34;,    # set in Test_RKE1::test_create_rke1, e.g. c-m-n6bsktxb
-        &#34;machine_count&#34;: machine_count
+        &#34;machine_count&#34;: machine_count,
+        &#34;k8s_version&#34;: rke1_version
     }
 
     rancher_api_client.mgmt_clusters.delete(name)</code></pre>
 </details>
 </dd>
-<dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_k8s_version"><code class="name flex">
-<span>def <span class="ident">rke1_k8s_version</span></span>(<span>request, rancher_api_client)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
-def rke1_k8s_version(request, rancher_api_client):
-    configured = request.config.getoption(&#34;--RKE1-version&#34;)
-    if configured:
-        return configured
-
-    code, data = rancher_api_client.settings.get(&#39;k8s-versions-current&#39;)
-    assert 200 == code, (
-        f&#34;Failed to get k8s-versions-current setting with error: {code}, {data}&#34;
-    )
-    latest = data[&#39;value&#39;].split(&#39;,&#39;)[-1]
-
-    warnings.warn(UserWarning(
-        f&#34;RKE1-version is not configured, use latest Rancher supported version {latest}.&#34;
-    ))
-    return latest</code></pre>
-</details>
-</dd>
 <dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.rke2_cluster"><code class="name flex">
-<span>def <span class="ident">rke2_cluster</span></span>(<span>unique_name, rancher_api_client, machine_count)</span>
+<span>def <span class="ident">rke2_cluster</span></span>(<span>unique_name, rancher_api_client, machine_count, rke2_version)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1262,12 +1235,13 @@ def rke1_k8s_version(request, rancher_api_client):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;class&#39;)
-def rke2_cluster(unique_name, rancher_api_client, machine_count):
+def rke2_cluster(unique_name, rancher_api_client, machine_count, rke2_version):
     name = f&#34;rke2-{unique_name}-{machine_count}&#34;
     yield {
         &#34;name&#34;: name,
         &#34;id&#34;: &#34;&#34;,    # set in Test_RKE2::test_create_rke2, e.g. c-m-n6bsktxb
-        &#34;machine_count&#34;: machine_count
+        &#34;machine_count&#34;: machine_count,
+        &#34;k8s_version&#34;: rke2_version
     }
 
     rancher_api_client.mgmt_clusters.delete(name)</code></pre>
@@ -1461,7 +1435,7 @@ class TestRKE1:
     @pytest.mark.dependency(depends=[&#34;import_harvester&#34;], name=&#34;create_rke1&#34;)
     def test_create_rke1(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                          rancher_wait_timeout,
-                         rke1_cluster, rke1_k8s_version, harvester_cloud_credential,
+                         rke1_cluster, harvester_cloud_credential,
                          ubuntu_image, vlan_network, polling_for):
         code, data = rancher_api_client.kube_configs.create(
             rke1_cluster[&#39;name&#39;],
@@ -1495,7 +1469,7 @@ class TestRKE1:
         node_template_id = data[&#39;id&#39;]
 
         code, data = rancher_api_client.clusters.create(
-            rke1_cluster[&#39;name&#39;], rke1_k8s_version, kubeconfig
+            rke1_cluster[&#39;name&#39;], rke1_cluster[&#39;k8s_version&#39;], kubeconfig
         )
         assert 201 == code, (
             f&#34;Failed to create cluster {rke1_cluster[&#39;name&#39;]} with error: {code}, {data}&#34;
@@ -1922,7 +1896,7 @@ def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE1.test_create_rke1"><code class="name flex">
-<span>def <span class="ident">test_create_rke1</span></span>(<span>self, rancher_api_client, unique_name, harvester_mgmt_cluster, rancher_wait_timeout, rke1_cluster, rke1_k8s_version, harvester_cloud_credential, ubuntu_image, vlan_network, polling_for)</span>
+<span>def <span class="ident">test_create_rke1</span></span>(<span>self, rancher_api_client, unique_name, harvester_mgmt_cluster, rancher_wait_timeout, rke1_cluster, harvester_cloud_credential, ubuntu_image, vlan_network, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1933,7 +1907,7 @@ def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;import_harvester&#34;], name=&#34;create_rke1&#34;)
 def test_create_rke1(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                      rancher_wait_timeout,
-                     rke1_cluster, rke1_k8s_version, harvester_cloud_credential,
+                     rke1_cluster, harvester_cloud_credential,
                      ubuntu_image, vlan_network, polling_for):
     code, data = rancher_api_client.kube_configs.create(
         rke1_cluster[&#39;name&#39;],
@@ -1967,7 +1941,7 @@ def test_create_rke1(self, rancher_api_client, unique_name, harvester_mgmt_clust
     node_template_id = data[&#39;id&#39;]
 
     code, data = rancher_api_client.clusters.create(
-        rke1_cluster[&#39;name&#39;], rke1_k8s_version, kubeconfig
+        rke1_cluster[&#39;name&#39;], rke1_cluster[&#39;k8s_version&#39;], kubeconfig
     )
     assert 201 == code, (
         f&#34;Failed to create cluster {rke1_cluster[&#39;name&#39;]} with error: {code}, {data}&#34;
@@ -2260,7 +2234,7 @@ class TestRKE2:
     @pytest.mark.dependency(depends=[&#34;import_harvester&#34;], name=&#34;create_rke2&#34;)
     def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                          harvester_cloud_credential, rke2_cluster, ubuntu_image, vlan_network,
-                         k8s_version, rancher_wait_timeout, polling_for):
+                         rancher_wait_timeout, polling_for):
         # Create Harvester kubeconfig for this RKE2 cluster
         code, data = rancher_api_client.kube_configs.create(
             rke2_cluster[&#39;name&#39;],
@@ -2317,7 +2291,7 @@ class TestRKE2:
             cloud_provider_config_id=cloud_provider_config_id,
             hostname_prefix=f&#34;{rke2_cluster[&#39;name&#39;]}-&#34;,
             harvester_config_name=unique_name,
-            k8s_version=k8s_version,
+            k8s_version=rke2_cluster[&#39;k8s_version&#39;],
             cloud_credential_id=harvester_cloud_credential[&#39;id&#39;],
             quantity=rke2_cluster[&#39;machine_count&#39;]
         )
@@ -2627,7 +2601,7 @@ def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
 </details>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestRKE2.test_create_rke2"><code class="name flex">
-<span>def <span class="ident">test_create_rke2</span></span>(<span>self, rancher_api_client, unique_name, harvester_mgmt_cluster, harvester_cloud_credential, rke2_cluster, ubuntu_image, vlan_network, k8s_version, rancher_wait_timeout, polling_for)</span>
+<span>def <span class="ident">test_create_rke2</span></span>(<span>self, rancher_api_client, unique_name, harvester_mgmt_cluster, harvester_cloud_credential, rke2_cluster, ubuntu_image, vlan_network, rancher_wait_timeout, polling_for)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2638,7 +2612,7 @@ def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;import_harvester&#34;], name=&#34;create_rke2&#34;)
 def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_cluster,
                      harvester_cloud_credential, rke2_cluster, ubuntu_image, vlan_network,
-                     k8s_version, rancher_wait_timeout, polling_for):
+                     rancher_wait_timeout, polling_for):
     # Create Harvester kubeconfig for this RKE2 cluster
     code, data = rancher_api_client.kube_configs.create(
         rke2_cluster[&#39;name&#39;],
@@ -2695,7 +2669,7 @@ def test_create_rke2(self, rancher_api_client, unique_name, harvester_mgmt_clust
         cloud_provider_config_id=cloud_provider_config_id,
         hostname_prefix=f&#34;{rke2_cluster[&#39;name&#39;]}-&#34;,
         harvester_config_name=unique_name,
-        k8s_version=k8s_version,
+        k8s_version=rke2_cluster[&#39;k8s_version&#39;],
         cloud_credential_id=harvester_cloud_credential[&#39;id&#39;],
         quantity=rke2_cluster[&#39;machine_count&#39;]
     )
@@ -2944,7 +2918,6 @@ def test_load_balancer_service(self, rancher_api_client, rke2_cluster, nginx_dep
 <li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.machine_count" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.machine_count">machine_count</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.nginx_deployment" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.nginx_deployment">nginx_deployment</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_cluster" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_cluster">rke1_cluster</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_k8s_version" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.rke1_k8s_version">rke1_k8s_version</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.rke2_cluster" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.rke2_cluster">rke2_cluster</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.test_add_project_owner_user" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.test_add_project_owner_user">test_add_project_owner_user</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_9_rancher_integration.test_import_harvester" href="#harvester_e2e_tests.integrations.test_9_rancher_integration.test_import_harvester">test_import_harvester</a></code></li>

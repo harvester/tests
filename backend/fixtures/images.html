@@ -32,12 +32,6 @@ import pytest
 
 pytest_plugins = [&#34;harvester_e2e_tests.fixtures.api_client&#34;]
 
-# TODO: remove it after update CI&#39;s config.yml
-DEFAULT_OPENSUSE_IMAGE_URL = (
-    &#34;https://download.opensuse.org/repositories/Cloud:/Images:&#34;
-    &#34;/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2&#34;
-)
-
 DEFAULT_UBUNTU_IMAGE_URL = (
     &#34;https://cloud-images.ubuntu.com&#34;
     &#34;/focal/current/focal-server-cloudimg-amd64.img&#34;
@@ -48,7 +42,7 @@ DEFAULT_UBUNTU_IMAGE_URL = (
 def image_opensuse(request, api_client):
     image_server = request.config.getoption(&#34;--image-cache-url&#34;)
     url = urlparse(
-        request.config.getoption(&#34;--opensuse-image-url&#34;) or DEFAULT_OPENSUSE_IMAGE_URL
+        request.config.getoption(&#34;--opensuse-image-url&#34;)
     )
 
     if image_server:
@@ -142,7 +136,7 @@ def image_k3s(request):
 def image_opensuse(request, api_client):
     image_server = request.config.getoption(&#34;--image-cache-url&#34;)
     url = urlparse(
-        request.config.getoption(&#34;--opensuse-image-url&#34;) or DEFAULT_OPENSUSE_IMAGE_URL
+        request.config.getoption(&#34;--opensuse-image-url&#34;)
     )
 
     if image_server:
