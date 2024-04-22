@@ -562,6 +562,70 @@ class TestBackupRestore:
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 422 == code, (code, data)
 
+    @pytest.mark.skip_version_before('v1.1.2', 'v1.2.1')
+    @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
+    def test_restore_replace_with_vm_shutdown_command(
+        self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker,
+        backup_config, base_vm_with_data
+    ):
+        unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
+        pub_key, pri_key = ssh_keypair
+
+        # mess up the existing data then shutdown it
+        with vm_shell_from_host(
+            base_vm_with_data['host_ip'], base_vm_with_data['vm_ip'],
+            base_vm_with_data['ssh_user'], pkey=pri_key
+        ) as sh:
+            out, err = sh.exec_command(f"echo {pub_key!r} > {base_vm_with_data['data']['path']}")
+            assert not err, (out, err)
+            sh.exec_command('sync')
+            sh.exec_command('sudo shutdown now')
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get(unique_vm_name)
+            if 200 == code and "Stopped" == data.get('status', {}).get('printableStatus'):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Failed to shut down VM({unique_vm_name}) with errors:\n"
+                f"Status({code}): {data}"
+            )
+
+        # restore VM to existing
+        spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
+        code, data = api_client.backups.restore(unique_vm_name, spec)
+        assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
+
+        # Check VM Started then get IPs (vm and host)
+        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+        vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
+                     if iface['name'] == 'default')
+        code, data = api_client.hosts.get(data['status']['nodeName'])
+        host_ip = next(addr['address'] for addr in data['status']['addresses']
+                       if addr['type'] == 'InternalIP')
+
+        # Login to the new VM and check data is existing
+        with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data['ssh_user'], pkey=pri_key) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (
+                f"VM {unique_vm_name} Started {wait_timeout} seconds"
+                f", but cloud-init still in {out}"
+            )
+            out, err = sh.exec_command(f"cat {backup_data['path']}")
+
+        assert backup_data['content'] in out, (
+            f"cloud-init writefile failed\n"
+            f"Executed stdout: {out}\n"
+            f"Executed stderr: {err}"
+        )
+
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
 @pytest.mark.p0
