@@ -4,7 +4,7 @@
     <title>Harvester Test Cases on Harvester manual test cases</title>
     <link>https://harvester.github.io/tests/</link>
     <description>Recent content in Harvester Test Cases on Harvester manual test cases</description>
-    <generator>Hugo 0.125.2</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <atom:link href="https://harvester.github.io/tests/index.xml" rel="self" type="application/rss+xml" />
     <item>
@@ -2038,6 +2038,13 @@
       <description> Edit VM and add SSH Key Save VM Expected Results You should be able to ssh in with correct SSH private key You should not be able to SSH in with incorrect SSH private key </description>
     </item>
     <item>
+      <title>Edit vm config after Eject CDROM and delete volume</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/5264-edit-vm-config-after-eject-cdrom-delete-volume/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/5264-edit-vm-config-after-eject-cdrom-delete-volume/</guid>
+      <description> Related issues: #5264 [BUG] After EjectCD from vm and edit config of vm displays empty page: &amp;ldquo;Cannot read properties of null&amp;rdquo; Category: Virtual Machines Verification Steps Upload the ISO type desktop image (e.g ubuntu-20.04.4-desktop-amd64.iso) Create a vm named vm1 with the iso image Open the web console to check content Click EjectCD after vm running Select the delete volume option Wait until vm restart to running Click the edit config Back to the virtual machine page Click the vm1 name Expected Results Check can edit vm config of vm1 to display all settings correctly Check can display the current vm1 settings correctly </description>
+    </item>
+    <item>
       <title>Edit VM Form Negative</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-edit-vm-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -2148,6 +2155,13 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-yaml-add-label/</guid>
       <description> Navigate to volumes page Edit Volume as YAML Add label to config Click Save Open VM again and click the config tab Verify that label was saved Expected Results Volume should save Label should add Label should show when re-opened </description>
+    </item>
+    <item>
+      <title>Enable Harvester addons and check deployment state</title>
+      <link>https://harvester.github.io/tests/manual/advanced/addons/5337-enable-addons-check-deployment/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/advanced/addons/5337-enable-addons-check-deployment/</guid>
+      <description> Related issues: #5337 [BUG] Failed to enable vm-importer, pcidevices and harvester-seeder controller addons, keep stuck in &amp;ldquo;Enabling&amp;rdquo; state Category: Addons Verification Steps Prepare three nodes Harvester cluster Open Advanced -&amp;gt; Addons page Access to harvester node machine Switch to root user and open k9s Enable the vm-importer, pci-devices and harvester-seeder addons Check the corresponding jobs and logs Enable rest of the addons nvidia-driver-toolkit, rancher-monitoring and rancher-logging Expected Results Check the vm-importer, pci-devices and harvester-seeder display in Deployment Successful Check the vm-importer-controller, pci-devices-controller and harvester-seeder jobs and the related helm-install chart job all running well on the K9s Check the nvidia-driver-toolkit, rancher-monitoring and rancher-logging display in Deployment Successful Check the nvidia-driver-toolkit, rancher-monitoring and rancher-logging jobs and the related helm-install chart job all running well on the K9s </description>
     </item>
     <item>
       <title>enable/disable alertmanager on demand</title>
@@ -3933,6 +3947,13 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/advanced/addons/2764-vgpu/</guid>
       <description>Related issues: #1661 vGPU Support Pre-requisite Enable PCI devices Create a harvester cluster in bare metal mode. Ensure one of the nodes has NIC separate from the management NIC Go to the management interface of the new cluster Go to Advanced -&amp;gt; PCI Devices Validate that the PCI devices aren&amp;rsquo;t enabled Click the link to enable PCI devices Enable PCI devices in the linked addon page Wait for the status to change to Deploy Successful Navigate to the PCI devices page Validate that the PCI devices page is populated/populating with PCI devices Pre-requisite Enable vGPU This can only be ran on a bare metal Harvester cluster that has an Nvidia card that support vGPU.</description>
+    </item>
+    <item>
+      <title>View log function on virtual machine</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/5266-view-log-function/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/5266-view-log-function/</guid>
+      <description>Related issues: #5266 [BUG] Click View Logs option on virtual machine dashboard can&amp;rsquo;t display any log entry Category: Virtual Machines Verification Steps Create one virtual machines named vm1 in the Harvester virtual machine page Wait until the vm1 in running state Click the View Logs in the side option menu Check the log panel content of vm Click the Clear button Click the Download button Enter some query sting in the Filter field Click settings, change the Show the latest to different options Uncheck/Check the Wrap Lines Uncheck/Check the Show Timestamps Expected Results Should display the detailed log entries on the vm log panel including timestamp and content All existing logs would be cleaned up Ensure new logs will display on the panel Check can correctly download the log to the .</description>
     </item>
     <item>
       <title>VIP configured in a VLAN network should be reached</title>

@@ -4,7 +4,7 @@
     <title>Virtual Machines on Harvester manual test cases</title>
     <link>https://harvester.github.io/tests/manual/virtual-machines/</link>
     <description>Recent content in Virtual Machines on Harvester manual test cases</description>
-    <generator>Hugo 0.125.2</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <atom:link href="https://harvester.github.io/tests/manual/virtual-machines/index.xml" rel="self" type="application/rss+xml" />
     <item>
@@ -491,6 +491,13 @@
       <description> Edit VM and add SSH Key Save VM Expected Results You should be able to ssh in with correct SSH private key You should not be able to SSH in with incorrect SSH private key </description>
     </item>
     <item>
+      <title>Edit vm config after Eject CDROM and delete volume</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/5264-edit-vm-config-after-eject-cdrom-delete-volume/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/5264-edit-vm-config-after-eject-cdrom-delete-volume/</guid>
+      <description> Related issues: #5264 [BUG] After EjectCD from vm and edit config of vm displays empty page: &amp;ldquo;Cannot read properties of null&amp;rdquo; Category: Virtual Machines Verification Steps Upload the ISO type desktop image (e.g ubuntu-20.04.4-desktop-amd64.iso) Create a vm named vm1 with the iso image Open the web console to check content Click EjectCD after vm running Select the delete volume option Wait until vm restart to running Click the edit config Back to the virtual machine page Click the vm1 name Expected Results Check can edit vm config of vm1 to display all settings correctly Check can display the current vm1 settings correctly </description>
+    </item>
+    <item>
       <title>Edit VM Form Negative</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-edit-vm-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -629,6 +636,13 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/1660-volume-unit-vm-details/</guid>
       <description> Related issues: #1660 The volume unit on the vm details page is incorrect Verification Steps Create new .1G volume Create new VM Create with raw-image template Add opensuse base image Add .1G Volume Verify size in VM details on volume tab Expected Results Size should show as .1G </description>
+    </item>
+    <item>
+      <title>View log function on virtual machine</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/5266-view-log-function/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/5266-view-log-function/</guid>
+      <description>Related issues: #5266 [BUG] Click View Logs option on virtual machine dashboard can&amp;rsquo;t display any log entry Category: Virtual Machines Verification Steps Create one virtual machines named vm1 in the Harvester virtual machine page Wait until the vm1 in running state Click the View Logs in the side option menu Check the log panel content of vm Click the Clear button Click the Download button Enter some query sting in the Filter field Click settings, change the Show the latest to different options Uncheck/Check the Wrap Lines Uncheck/Check the Show Timestamps Expected Results Should display the detailed log entries on the vm log panel including timestamp and content All existing logs would be cleaned up Ensure new logs will display on the panel Check can correctly download the log to the .</description>
     </item>
     <item>
       <title>VM on error state</title>

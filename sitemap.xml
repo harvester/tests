@@ -594,6 +594,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-and-insert-ssh-and-check-the-ssh-key-is-accepted-for-the-login/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/virtual-machines/5264-edit-vm-config-after-eject-cdrom-delete-volume/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/negative-edit-vm-form/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-network-and-verify-the-network-is-working-as-per-configuration-/</loc>
@@ -625,6 +627,8 @@
     <loc>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-yaml/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/edit-volume-yaml-add-label/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/advanced/addons/5337-enable-addons-check-deployment/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2518_enabledisable_alertmanager_on_demand/</loc>
   </url><url>
@@ -1165,6 +1169,8 @@
     <loc>https://harvester.github.io/tests/manual/hosts/negative-verify-state-powered-down-node/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/addons/2764-vgpu/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/virtual-machines/5266-view-log-function/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/network/vip-configured-on-vlan-network-should-be-reached/</loc>
   </url><url>

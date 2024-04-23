@@ -4,9 +4,16 @@
     <title>Addons on Harvester manual test cases</title>
     <link>https://harvester.github.io/tests/manual/advanced/addons/</link>
     <description>Recent content in Addons on Harvester manual test cases</description>
-    <generator>Hugo 0.125.2</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <atom:link href="https://harvester.github.io/tests/manual/advanced/addons/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Enable Harvester addons and check deployment state</title>
+      <link>https://harvester.github.io/tests/manual/advanced/addons/5337-enable-addons-check-deployment/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/advanced/addons/5337-enable-addons-check-deployment/</guid>
+      <description> Related issues: #5337 [BUG] Failed to enable vm-importer, pcidevices and harvester-seeder controller addons, keep stuck in &amp;ldquo;Enabling&amp;rdquo; state Category: Addons Verification Steps Prepare three nodes Harvester cluster Open Advanced -&amp;gt; Addons page Access to harvester node machine Switch to root user and open k9s Enable the vm-importer, pci-devices and harvester-seeder addons Check the corresponding jobs and logs Enable rest of the addons nvidia-driver-toolkit, rancher-monitoring and rancher-logging Expected Results Check the vm-importer, pci-devices and harvester-seeder display in Deployment Successful Check the vm-importer-controller, pci-devices-controller and harvester-seeder jobs and the related helm-install chart job all running well on the K9s Check the nvidia-driver-toolkit, rancher-monitoring and rancher-logging display in Deployment Successful Check the nvidia-driver-toolkit, rancher-monitoring and rancher-logging jobs and the related helm-install chart job all running well on the K9s </description>
+    </item>
     <item>
       <title>PCI Devices Controller</title>
       <link>https://harvester.github.io/tests/manual/advanced/addons/pci-devices-controller/</link>
