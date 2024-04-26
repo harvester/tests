@@ -45,6 +45,7 @@
 
 import pytest
 import yaml
+from datetime import datetime
 from pytest_dependency import DependencyManager as DepMgr
 
 
@@ -439,7 +440,15 @@ def pytest_collection_modifyitems(session, config, items):
     # deselected.extend(t for ts in named_items.values() for i, t in ts if t not in items)
     deselected = [t for t in all_items if t not in items]
     # update to let the report shows correct counts
-    config.pluginmanager.get_plugin(&#39;terminalreporter&#39;).stats[&#39;deselected&#39;] = deselected</code></pre>
+    config.pluginmanager.get_plugin(&#39;terminalreporter&#39;).stats[&#39;deselected&#39;] = deselected
+
+
+def pytest_html_results_table_header(cells):
+    cells.insert(1, &#39;&lt;th class=&#34;sortable time&#34; data-column-type=&#34;time&#34;&gt;EndTime&lt;/th&gt;&#39;)
+
+
+def pytest_html_results_table_row(report, cells):
+    cells.insert(1, f&#39;&lt;td class=&#34;col-time&#34;&gt;{datetime.utcnow()}&lt;/td&gt;&#39;)</code></pre>
 </details>
 </section>
 <section>
@@ -876,6 +885,32 @@ def pytest_collection_modifyitems(session, config, items):
         config.addinivalue_line(&#34;markers&#34;, f&#34;{m}:{msg.format(_r=related)}&#34;)</code></pre>
 </details>
 </dd>
+<dt id="harvester_e2e_tests.conftest.pytest_html_results_table_header"><code class="name flex">
+<span>def <span class="ident">pytest_html_results_table_header</span></span>(<span>cells)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pytest_html_results_table_header(cells):
+    cells.insert(1, &#39;&lt;th class=&#34;sortable time&#34; data-column-type=&#34;time&#34;&gt;EndTime&lt;/th&gt;&#39;)</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.conftest.pytest_html_results_table_row"><code class="name flex">
+<span>def <span class="ident">pytest_html_results_table_row</span></span>(<span>report, cells)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pytest_html_results_table_row(report, cells):
+    cells.insert(1, f&#39;&lt;td class=&#34;col-time&#34;&gt;{datetime.utcnow()}&lt;/td&gt;&#39;)</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -898,6 +933,8 @@ def pytest_collection_modifyitems(session, config, items):
 <li><code><a title="harvester_e2e_tests.conftest.pytest_addoption" href="#harvester_e2e_tests.conftest.pytest_addoption">pytest_addoption</a></code></li>
 <li><code><a title="harvester_e2e_tests.conftest.pytest_collection_modifyitems" href="#harvester_e2e_tests.conftest.pytest_collection_modifyitems">pytest_collection_modifyitems</a></code></li>
 <li><code><a title="harvester_e2e_tests.conftest.pytest_configure" href="#harvester_e2e_tests.conftest.pytest_configure">pytest_configure</a></code></li>
+<li><code><a title="harvester_e2e_tests.conftest.pytest_html_results_table_header" href="#harvester_e2e_tests.conftest.pytest_html_results_table_header">pytest_html_results_table_header</a></code></li>
+<li><code><a title="harvester_e2e_tests.conftest.pytest_html_results_table_row" href="#harvester_e2e_tests.conftest.pytest_html_results_table_row">pytest_html_results_table_row</a></code></li>
 </ul>
 </li>
 </ul>
