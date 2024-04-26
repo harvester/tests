@@ -17,6 +17,7 @@
 
 import pytest
 import yaml
+from datetime import datetime
 from pytest_dependency import DependencyManager as DepMgr
 
 
@@ -412,3 +413,11 @@ def pytest_collection_modifyitems(session, config, items):
     deselected = [t for t in all_items if t not in items]
     # update to let the report shows correct counts
     config.pluginmanager.get_plugin('terminalreporter').stats['deselected'] = deselected
+
+
+def pytest_html_results_table_header(cells):
+    cells.insert(1, '<th class="sortable time" data-column-type="time">EndTime</th>')
+
+
+def pytest_html_results_table_row(report, cells):
+    cells.insert(1, f'<td class="col-time">{datetime.utcnow()}</td>')
