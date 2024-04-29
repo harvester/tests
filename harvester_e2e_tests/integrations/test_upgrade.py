@@ -1,7 +1,6 @@
 import re
 import json
 import yaml
-import socket
 from time import sleep
 from operator import add
 from functools import reduce
@@ -239,22 +238,6 @@ def interceptor(api_client):
         def check(self, data):
             for func in self.intercepts():
                 func(data)
-
-        def intercept_v121_vm(self, data):
-            if "v1.2.1" != api_client.cluster_version.raw:
-                return
-            if self._v121_vm:
-                code, data = api_client.vms.get()
-                for vm in data.get('data', []):
-                    api_client.vms.stop(vm['metadata']['name'])
-                self._v121_vm = False
-            else:
-                conds = dict((c['type'], c) for c in data.get('status', {}).get('conditions', []))
-                st = data.get('metadata', {}).get('labels', {}).get('harvesterhci.io/upgradeState')
-                if "Succeeded" == st and "True" == conds.get('Completed', {}).get('status'):
-                    code, data = api_client.vms.get()
-                    for vm in data.get('data', []):
-                        api_client.vms.start(vm['metadata']['name'])
 
     return Interceptor()
 
@@ -612,7 +595,7 @@ class TestAnyNodesUpgrade:
                     )
                     assert not err, (vm1_md5, err)
                     break
-            except (SSHException, NoValidConnectionsError):
+            except (SSHException, NoValidConnectionsError, TimeoutError):
                 sleep(5)
         else:
             raise AssertionError("Timed out while writing data into VM")
@@ -635,6 +618,17 @@ class TestAnyNodesUpgrade:
         spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, (code, data)
+        # Check restore VM is created
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get(restored_vm_name)
+            if 200 == code:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"restored VM {restored_vm_name} is not created"
+            )
         vm_got_ips, (code, data) = vm_checker.wait_interfaces(restored_vm_name)
         assert vm_got_ips, (
             f"Failed to Start VM({restored_vm_name}) with errors:\n"
@@ -660,7 +654,7 @@ class TestAnyNodesUpgrade:
                     )
                     assert "success" == out and not err
                     break
-            except (SSHException, NoValidConnectionsError):
+            except (SSHException, NoValidConnectionsError, TimeoutError):
                 sleep(5)
         else:
             raise AssertionError("Unable to login to restored VM to check data consistency")
@@ -771,7 +765,7 @@ class TestAnyNodesUpgrade:
                             continue
                         if not err and cmp[ip] < timestamp:
                             done.add(ip)
-                except (SSHException, NoValidConnectionsError, socket.timeout):
+                except (SSHException, NoValidConnectionsError, TimeoutError):
                     continue
 
             if not done.symmetric_difference(node_ips):
@@ -851,7 +845,7 @@ class TestAnyNodesUpgrade:
                         assert not err, (md5, err)
                         assert md5 == cluster_state.vms['md5']
                         break
-                except (SSHException, NoValidConnectionsError):
+                except (SSHException, NoValidConnectionsError, TimeoutError):
                     sleep(5)
             else:
                 fails.append(f"Data in VM({name}, {vm_ip}) is inconsistent.")
@@ -907,7 +901,7 @@ class TestAnyNodesUpgrade:
                     assert not err, (md5, err)
                     assert md5 == cluster_state.vms['md5']
                     break
-            except (SSHException, NoValidConnectionsError):
+            except (SSHException, NoValidConnectionsError, TimeoutError):
                 sleep(5)
         else:
             raise AssertionError("Unable to login to restored VM to check data consistency")

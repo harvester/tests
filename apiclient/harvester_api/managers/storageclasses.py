@@ -17,7 +17,8 @@ class StorageClassManager(BaseManager):
     def get_default(self):
         code, data = self.get()
         for sc in data['items']:
-            if 'true' == sc['metadata']['annotations'].get(DEFAULT_STORAGE_CLASS_ANNOTATION):
+            if 'true' == sc['metadata'].get('annotations', {}).get(
+              DEFAULT_STORAGE_CLASS_ANNOTATION):
                 return code, sc
         else:
             return code, data
