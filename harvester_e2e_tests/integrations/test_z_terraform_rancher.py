@@ -113,11 +113,11 @@ def rancher(rancher_api_client):
 
 
 @pytest.fixture(scope='module')
-def rke2_cluster(unique_name, k8s_version):
+def rke2_cluster(unique_name, rke2_version):
     return {
         "name": f"rke2-{unique_name}",
         "id": "",                         # set in test_create_rke2_cluster
-        "k8s_version": k8s_version
+        "k8s_version": rke2_version
     }
 
 
