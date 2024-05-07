@@ -43,7 +43,7 @@ describe('Validation volume snapshot', () => {
     createVolumeSnapshotSuccess = true
   })
 
-  it('Resotre New volume from volume snapshot', () => {
+  it('Restore New volume from volume snapshot', () => {
     onlyOn(createVolumeSnapshotSuccess);
     
     const newName = 'create-new-from-snapshot';
