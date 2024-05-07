@@ -20,7 +20,7 @@ class TestVMNegative:
         assert "NotFound" == data.get('code'), (code, data)
 
     def test_delete_not_exist(self, api_client, unique_name):
-        """
+        """ ref: https://github.com/harvester/tests/issues/1215
         1. Tries to delete a VM that doesn't exist
         2. Checks that it gets a 404
         """
