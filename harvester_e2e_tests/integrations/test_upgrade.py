@@ -40,8 +40,8 @@ def cluster_state(request, unique_name, api_client):
 
 
 @pytest.fixture(scope="module")
-def harvester_crds():
-    return {
+def harvester_crds(api_client):
+    crds = {
         "addons.harvesterhci.io": False,
         "blockdevices.harvesterhci.io": False,
         "keypairs.harvesterhci.io": False,
@@ -63,9 +63,15 @@ def harvester_crds():
         "vlanstatuses.network.harvesterhci.io": False,
 
         "ksmtuneds.node.harvesterhci.io": False,
-
         "loadbalancers.loadbalancer.harvesterhci.io": False,
     }
+
+    if api_client.cluster_version.release >= (1, 2, 0):
+        # removed after `v1.2.0` (network-controller v0.3.3)
+        # ref: https://github.com/harvester/network-controller-harvester/pull/85
+        crds.pop("nodenetworks.network.harvesterhci.io")
+
+    return crds
 
 
 @pytest.fixture(scope="module")
@@ -229,7 +235,6 @@ def interceptor(api_client):
     from inspect import getmembers, ismethod
 
     class Interceptor:
-        _v121_vm = True
 
         def intercepts(self):
             meths = getmembers(self, predicate=ismethod)
@@ -415,11 +420,16 @@ class TestInvalidUpgrade:
         "resort", [slice(None, None, -1), slice(None, None, 2)], ids=("mismatched", "invalid")
     )
     def test_checksum(self, api_client, unique_name, upgrade_target, upgrade_timeout, resort):
-        if resort.step == 2:
-            pytest.skip("issue: https://github.com/harvester/harvester/issues/5480")
-
         version, url, checksum = upgrade_target
         version = f"{version}-{unique_name}"
+
+        if resort.step == 2:
+            # ref: https://github.com/harvester/harvester/issues/5480
+            code, data = api_client.versions.create(version, url, checksum[resort])
+            try:
+                assert 400 == code, (code, data)
+            finally:
+                return api_client.versions.delete(version)
 
         code, data = api_client.versions.create(version, url, checksum[resort])
         assert 201 == code, f"Failed to create upgrade for {version}"
@@ -878,6 +888,17 @@ class TestAnyNodesUpgrade:
         restore_spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
         code, data = api_client.backups.restore(backup_name, restore_spec)
         assert code == 201, "Unable to restore backup {backup_name} after upgrade"
+        # Check restore VM is created
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get(restored_vm_name)
+            if 200 == code:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"restored VM {restored_vm_name} is not created"
+            )
         vm_got_ips, (code, data) = vm_checker.wait_interfaces(restored_vm_name)
         assert vm_got_ips, (
             f"Failed to Start VM({restored_vm_name}) with errors:\n"
