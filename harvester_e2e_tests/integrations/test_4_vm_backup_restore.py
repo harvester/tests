@@ -527,7 +527,7 @@ class TestBackupRestore:
         assert 422 == code, (code, data)
 
     @pytest.mark.negative
-    @pytest.mark.skip_version_before('v1.1.2', 'v1.2.1')
+    @pytest.mark.skip_version_if('< v1.1.2', '< v1.2.1')
     @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
     def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with_data):
         # RFC1123 DNS Subdomain name rules:
@@ -562,12 +562,22 @@ class TestBackupRestore:
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 422 == code, (code, data)
 
-    @pytest.mark.skip_version_before('v1.1.2', 'v1.2.1')
+    @pytest.mark.skip_version_if('< v1.2.2')
     @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
     def test_restore_replace_with_vm_shutdown_command(
         self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker,
         backup_config, base_vm_with_data
     ):
+        ''' ref: https://github.com/harvester/tests/issues/943
+        1. Create VM and write some data
+        2. Take backup for the VM
+        3. Mess up existing data
+        3. Shutdown the VM by executing `shutdown` command in OS
+        4. Restore backup to replace existing VM
+        5. VM should be restored successfully
+        6. Data in VM should be the same as backed up
+        '''
+
         unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
         pub_key, pri_key = ssh_keypair
 
