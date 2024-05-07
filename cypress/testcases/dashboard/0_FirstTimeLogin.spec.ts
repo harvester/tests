@@ -37,7 +37,7 @@ describe("First Time Login Page", () => {
   });
 
   context("Set Password", () => {
-    specify("Password inconsistant", () => {
+    specify("Password inconsistent", () => {
       onlyOn(isFirstTimeLogin);
       const page = new LoginPage();
       page.visit();
@@ -52,7 +52,7 @@ describe("First Time Login Page", () => {
 
     });
 
-    specify("Password consistant", () => {
+    specify("Password consistent", () => {
       onlyOn(isFirstTimeLogin);
       const page = new LoginPage();
       page.visit();

@@ -49,7 +49,7 @@ describe('VM Backup Validation', () => {
     createVMBackupSuccess = true
   })
 
-  it('Resotre New VM from vm backup', () => {
+  it('Restore new VM from vm backup', () => {
     onlyOn(createVMBackupSuccess);
     
     const newVMName = 'create-new-from-backup';
@@ -63,7 +63,7 @@ describe('VM Backup Validation', () => {
     vms.deleteVMFromStore(`default/${newVMName}`);
   })
 
-  it('Resotre New VM in another namespace from vm backup', () => {
+  it('Restore New VM in another namespace from vm backup', () => {
     onlyOn(createVMBackupSuccess);
     
     const newVMName = 'create-new-from-backup';
@@ -77,7 +77,7 @@ describe('VM Backup Validation', () => {
     vms.deleteVMFromStore(`default/${newVMName}`);
   })
 
-  it('Resotre Existing VM from vm backup', () => {
+  it('Restore Existing VM from vm backup', () => {
     onlyOn(createVMBackupSuccess);
     
     vms.goToList();
@@ -91,7 +91,7 @@ describe('VM Backup Validation', () => {
     vms.deleteVMFromStore(`default/test`);
   })
 
-  it('delete backup', () => {
+  it('Delete backup', () => {
     onlyOn(createVMBackupSuccess);
     
     vmBackups.goToList();

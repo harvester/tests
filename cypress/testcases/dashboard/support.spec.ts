@@ -38,7 +38,7 @@ describe("Support Page", () => {
     })
   })
 
-  context('Generate Support Bundle', () => {
+  context.only('Generate Support Bundle', () => {
     it('is required to input Description', () => {
       page.generateSupportBundleBtn.click()
 

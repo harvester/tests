@@ -166,7 +166,7 @@ describe('VM runStategy Validation (Halted)', () => {
 
   const namespace = 'default'
 
-  it('Craete VM use Halted (Run Strategy)', () => {
+  it('Create VM use Halted (Run Strategy)', () => {
     vms.goToCreate();
 
     const imageEnv = Cypress.env('image');
