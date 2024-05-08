@@ -38,7 +38,7 @@ describe("Support Page", () => {
     })
   })
 
-  context.only('Generate Support Bundle', () => {
+  context('Generate Support Bundle', () => {
     it('is required to input Description', () => {
       page.generateSupportBundleBtn.click()
 
@@ -62,60 +62,67 @@ describe("Support Page", () => {
         .should($el => expect($el).to.have.length(0))
     })
 
-    it('is should download', () => {
+    it('should download successfully', () => {
       let filename: string | undefined = undefined
       page.generateSupportBundleBtn.click()
+
       page.inputSupportBundle('this is a test bundle')
           .get("@generateBtn").click()
           .intercept("/v1/harvester/*supportbundles/**/bundle*", req => 
             req.continue(res => {
-              cy.log(res.body.status)
-              filename = res.body.status?.filename || undefined
+              filename = res.body?.metadata?.name
             })
           )
-
+ 
       cy.window().then(win => {
-        let timeout = {timeout: constants.timeout.downloadTimeout}
-        return cy.get("@generateView").then(timeout, $el => {
+        const timeout = {timeout: constants.timeout.downloadTimeout}
+        cy.log(`Wait for ${timeout.timeout} ms to generate and download support bundle`)
+        return cy.get("@generateView").then(timeout, ($el) => {
           return new Promise((resolve, reject) => {
-            // delay 3s to refresh page, this will fix page reload bug
-            // `DOMNodeRemoved` is deprecated, we probably need to use `MutationObserver`
-            // in the future
-            $el.one("DOMNodeRemoved", () => setTimeout(() => resolve(win.history.go(0)), 3000))
+            const modalObserver = new MutationObserver((mutationList) => {
+              if(mutationList.length && mutationList[0]?.type === "childList") {
+                  // page needs to reload after downloaded support bundle, delay 3s to refresh page
+                  setTimeout(() => resolve(win.history.go(0)), 3000)
+              }else{
+                reject('Error: monitoring generate modal closed, no childList mutation found');
+              }
+            });
+            modalObserver.observe($el[0], { childList: true, characterData: true });
           })
         })
       })
       .then(() => { // the scope will execute after page reloaded
         new Promise((resolve, reject) => {
-          if (filename !== undefined) {
-            cy.task("findFiles", {path: Cypress.config("downloadsFolder"), fileName: "supportbundle"})
-              .then((files: any) => files.length == 1 ? resolve(files[0]) : reject(files))
+          if(filename === undefined) {
+            reject('filename is undefined')
           }
-          resolve(filename)
+          const supportBundle = {path: Cypress.config("downloadsFolder"), fileName: "supportbundle"}
+          // resolve real bundle filename
+          cy.task("findFiles", supportBundle)
+            .then((files: any) => files.length === 1 ? resolve(files[0]) : reject(files))
         })
         .then(filename => {
           cy.log("Downloaded SupportBundle: ", filename)
-          let zipfilename = `${Cypress.config("downloadsFolder")}/${filename}`
-          return new Promise((resolve, reject) => {
-            cy.task("readZipFile", zipfilename)
-              .then(entries => resolve(entries))
+          const zipFileName = `${Cypress.config("downloadsFolder")}/${filename}`
+          // resolve file entries in zip
+          return new Promise((resolve) => {
+            cy.task("readZipFile", zipFileName).then(entries => resolve(entries))
           })
         })
         .then((items: any) => {
-          cy.log(`ZipFile entries: ${items.length}`)
-          let {dirs, files} = items.reduce((groups: any, e: any) => {
+          cy.log(`Total file entries in zip : ${items.length}`)
+
+          const {dirs, files} = items.reduce((groups: any, e: any) => {
             e.isDirectory ? groups.dirs.push(e) : groups.files.push(e)
             return groups
           }, {dirs:[], files:[]})
 
-          cy.log("Total Dirs:", dirs)
-          cy.log("Total Files:", files)
-          return {dirs, files}
+          cy.log("Total Dirs count :", dirs.length)
+          cy.log("Total Files count:", files.length)
+          expect(dirs.length).to.greaterThan(0)  
+          expect(files.length).to.greaterThan(0)  
         })
-        // .then(({dirs, files}) => {}) // new verfiers here
-
       })
     })
-
   })
 })
