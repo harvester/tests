@@ -1,5 +1,5 @@
 export class Constants {
-    public timeout = { timeout: 10000, maxTimeout: 60000, uploadTimeout: 600000, downloadTimeout: 120000, provisionTimeout: 1500000};
+    public timeout = { timeout: 10000, maxTimeout: 60000, uploadTimeout: 600000, downloadTimeout: 240000, provisionTimeout: 1500000};
     public username = Cypress.env("username");
     public password = Cypress.env("password");
     public mockPassword = Cypress.env("mockPassword");
