@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>harvester_e2e_tests.apis API documentation</title>
+<title>harvester_e2e_tests.apis.test_vms API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,77 +19,153 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.apis</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.apis.test_vms</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># Copyright (c) 2021 SUSE LLC
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of version 3 of the GNU General Public License as
-# published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, contact SUSE LLC.
-#
-# To contact SUSE about this file by physical or electronic mail,
-# you may find current contact information at www.suse.com</code></pre>
+<pre><code class="python">import pytest
+
+pytest_plugins = [
+   &#34;harvester_e2e_tests.fixtures.api_client&#34;
+  ]
+
+
+@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.virtualmachines
+class TestVMNegative:
+    def test_get_not_exist(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Tries to get a VM that doesn&#39;t exist
+        2. Checks that the get command gets a 404
+        &#34;&#34;&#34;
+        code, data = api_client.vms.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;code&#39;), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        &#34;&#34;&#34; ref: https://github.com/harvester/tests/issues/1215
+        1. Tries to delete a VM that doesn&#39;t exist
+        2. Checks that it gets a 404
+        &#34;&#34;&#34;
+        try:
+            api_client.set_retries(1)
+            code, data = api_client.vms.delete(unique_name)
+            assert 404 == code, (code, data)
+            assert &#34;NotFound&#34; in data.get(&#39;code&#39;), (code, data)
+        finally:
+            api_client.set_retries()</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_hosts" href="test_hosts.html">harvester_e2e_tests.apis.test_hosts</a></code></dt>
+<dt id="harvester_e2e_tests.apis.test_vms.TestVMNegative"><code class="flex name class">
+<span>class <span class="ident">TestVMNegative</span></span>
+</code></dt>
 <dd>
 <div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_images" href="test_images.html">harvester_e2e_tests.apis.test_images</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_keypairs" href="test_keypairs.html">harvester_e2e_tests.apis.test_keypairs</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_networks" href="test_networks.html">harvester_e2e_tests.apis.test_networks</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_settings" href="test_settings.html">harvester_e2e_tests.apis.test_settings</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_support_bundle" href="test_support_bundle.html">harvester_e2e_tests.apis.test_support_bundle</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_vm_templates" href="test_vm_templates.html">harvester_e2e_tests.apis.test_vm_templates</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_vms" href="test_vms.html">harvester_e2e_tests.apis.test_vms</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_volumes" href="test_volumes.html">harvester_e2e_tests.apis.test_volumes</a></code></dt>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.virtualmachines
+class TestVMNegative:
+    def test_get_not_exist(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Tries to get a VM that doesn&#39;t exist
+        2. Checks that the get command gets a 404
+        &#34;&#34;&#34;
+        code, data = api_client.vms.get(unique_name)
+
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; == data.get(&#39;code&#39;), (code, data)
+
+    def test_delete_not_exist(self, api_client, unique_name):
+        &#34;&#34;&#34; ref: https://github.com/harvester/tests/issues/1215
+        1. Tries to delete a VM that doesn&#39;t exist
+        2. Checks that it gets a 404
+        &#34;&#34;&#34;
+        try:
+            api_client.set_retries(1)
+            code, data = api_client.vms.delete(unique_name)
+            assert 404 == code, (code, data)
+            assert &#34;NotFound&#34; in data.get(&#39;code&#39;), (code, data)
+        finally:
+            api_client.set_retries()</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_vms.TestVMNegative.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_vms.TestVMNegative.test_delete_not_exist"><code class="name flex">
+<span>def <span class="ident">test_delete_not_exist</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/1215">https://github.com/harvester/tests/issues/1215</a>
+1. Tries to delete a VM that doesn't exist
+2. Checks that it gets a 404</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_delete_not_exist(self, api_client, unique_name):
+    &#34;&#34;&#34; ref: https://github.com/harvester/tests/issues/1215
+    1. Tries to delete a VM that doesn&#39;t exist
+    2. Checks that it gets a 404
+    &#34;&#34;&#34;
+    try:
+        api_client.set_retries(1)
+        code, data = api_client.vms.delete(unique_name)
+        assert 404 == code, (code, data)
+        assert &#34;NotFound&#34; in data.get(&#39;code&#39;), (code, data)
+    finally:
+        api_client.set_retries()</code></pre>
+</details>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_vms.TestVMNegative.test_get_not_exist"><code class="name flex">
+<span>def <span class="ident">test_get_not_exist</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<div class="desc"><ol>
+<li>Tries to get a VM that doesn't exist</li>
+<li>Checks that the get command gets a 404</li>
+</ol></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_get_not_exist(self, api_client, unique_name):
+    &#34;&#34;&#34;
+    1. Tries to get a VM that doesn&#39;t exist
+    2. Checks that the get command gets a 404
+    &#34;&#34;&#34;
+    code, data = api_client.vms.get(unique_name)
+
+    assert 404 == code, (code, data)
+    assert &#34;NotFound&#34; == data.get(&#39;code&#39;), (code, data)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -100,20 +176,19 @@
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests" href="../index.html">harvester_e2e_tests</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis" href="index.html">harvester_e2e_tests.apis</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.apis.test_hosts" href="test_hosts.html">harvester_e2e_tests.apis.test_hosts</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images" href="test_images.html">harvester_e2e_tests.apis.test_images</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_keypairs" href="test_keypairs.html">harvester_e2e_tests.apis.test_keypairs</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_networks" href="test_networks.html">harvester_e2e_tests.apis.test_networks</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_settings" href="test_settings.html">harvester_e2e_tests.apis.test_settings</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_support_bundle" href="test_support_bundle.html">harvester_e2e_tests.apis.test_support_bundle</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_vm_templates" href="test_vm_templates.html">harvester_e2e_tests.apis.test_vm_templates</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_vms" href="test_vms.html">harvester_e2e_tests.apis.test_vms</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_volumes" href="test_volumes.html">harvester_e2e_tests.apis.test_volumes</a></code></li>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_vms.TestVMNegative" href="#harvester_e2e_tests.apis.test_vms.TestVMNegative">TestVMNegative</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_vms.TestVMNegative.pytestmark" href="#harvester_e2e_tests.apis.test_vms.TestVMNegative.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_vms.TestVMNegative.test_delete_not_exist" href="#harvester_e2e_tests.apis.test_vms.TestVMNegative.test_delete_not_exist">test_delete_not_exist</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_vms.TestVMNegative.test_get_not_exist" href="#harvester_e2e_tests.apis.test_vms.TestVMNegative.test_get_not_exist">test_get_not_exist</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
