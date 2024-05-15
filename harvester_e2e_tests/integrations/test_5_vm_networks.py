@@ -222,8 +222,8 @@ class TestVMNetwork:
     ):
         # clean cloud-init for rerun, and get the correct ifname
         (unique_vm_name, ssh_user), (_, pri_key) = minimal_vm, ssh_keypair
-        vm_started, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
-        assert vm_started, (
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
             f"API Status({code}): {data}"
@@ -262,7 +262,7 @@ class TestVMNetwork:
             f"Failed to Restart VM({unique_vm_name}),"
             f" timed out while executing {ctx.callee!r}"
         )
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
         assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
