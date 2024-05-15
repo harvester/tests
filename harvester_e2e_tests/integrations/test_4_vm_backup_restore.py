@@ -196,7 +196,7 @@ def base_vm(api_client, ssh_keypair, unique_name, vm_checker, image, backup_conf
     code, data = api_client.vms.create(unique_vm_name, vm_spec)
 
     # Check VM started and get IPs (vm and host)
-    vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
     assert vm_got_ips, (
         f"Failed to Start VM({unique_vm_name}) with errors:\n"
         f"Status: {data.get('status')}\n"
@@ -376,7 +376,7 @@ class TestBackupRestore:
 
     @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
     def test_restore_with_new_vm(
-        self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout,
+        self, api_client, vm_shell_from_host, vm_checker, ssh_keypair, wait_timeout,
         backup_config, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
@@ -398,23 +398,12 @@ class TestBackupRestore:
         assert 201 == code, (code, data)
 
         # Check VM Started then get IPs (vm and host)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(restored_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({restored_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(restored_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({restored_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])
@@ -491,7 +480,7 @@ class TestBackupRestore:
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
 
         # Check VM Started then get IPs (vm and host)
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
         assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
@@ -609,7 +598,7 @@ class TestBackupRestore:
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
 
         # Check VM Started then get IPs (vm and host)
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
         assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
@@ -702,7 +691,7 @@ class TestBackupRestoreOnMigration:
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
 
         # Check VM Started
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
         assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
@@ -752,7 +741,7 @@ class TestBackupRestoreOnMigration:
 class TestMultipleBackupRestore:
     @pytest.mark.dependency()
     def test_backup_multiple(
-        self, api_client, wait_timeout, host_shell, vm_shell, ssh_keypair,
+        self, api_client, wait_timeout, host_shell, vm_shell, vm_checker, ssh_keypair,
         backup_config, config_backup_target, base_vm_with_data
     ):
         def write_data(content):
@@ -805,23 +794,12 @@ class TestMultipleBackupRestore:
 
         unique_vm_name = base_vm_with_data['name']
         # Check VM started and get IPs (vm and host)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])
@@ -841,7 +819,7 @@ class TestMultipleBackupRestore:
         depends=["TestMultipleBackupRestore::test_backup_multiple"], param=True
     )
     def test_delete_first_backup(
-        self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+        self, api_client, host_shell, vm_shell, vm_checker, ssh_keypair, wait_timeout,
         backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
@@ -885,23 +863,12 @@ class TestMultipleBackupRestore:
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
 
         # Check VM Started then get IPs (vm and host)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])
@@ -947,7 +914,7 @@ class TestMultipleBackupRestore:
         depends=["TestMultipleBackupRestore::test_backup_multiple"], param=True
     )
     def test_delete_last_backup(
-        self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+        self, api_client, host_shell, vm_shell, vm_checker, ssh_keypair, wait_timeout,
         backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
@@ -990,23 +957,12 @@ class TestMultipleBackupRestore:
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
 
         # Check VM Started then get IPs (vm and host)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])
@@ -1052,7 +1008,7 @@ class TestMultipleBackupRestore:
         depends=["TestMultipleBackupRestore::test_backup_multiple"], param=True
     )
     def test_delete_middle_backup(
-        self, api_client, host_shell, vm_shell, ssh_keypair, wait_timeout,
+        self, api_client, host_shell, vm_shell, vm_checker, ssh_keypair, wait_timeout,
         backup_config, config_backup_target, base_vm_with_data
     ):
         unique_vm_name, backup_data = base_vm_with_data['name'], base_vm_with_data['data']
@@ -1095,23 +1051,12 @@ class TestMultipleBackupRestore:
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
 
         # Check VM Started then get IPs (vm and host)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])

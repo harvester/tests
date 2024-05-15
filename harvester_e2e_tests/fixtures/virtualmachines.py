@@ -280,6 +280,19 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
                 )
             return self.wait_agent_connected(vm_name, endtime, cb, **kws)
 
+        def wait_ip_addresses(self, vm_name, ifnames, endtime=None, callback=default_cb, **kws):
+            def cb(ctx):
+                if ctx.callee == 'vm.start':
+                    return callback(ctx)
+                ifaces = {d['name']: d for d in ctx.data.get('status', {}).get('interfaces', {})}
+                return (
+                    all(ifaces.get(name, {}).get('ipAddress') for name in ifnames)
+                    and callback(ctx)
+                )
+
+            ifnames = list(ifnames)
+            return self.wait_interfaces(vm_name, endtime, cb, **kws)
+
         def wait_cloudinit_done(self, shell, endtime=None, callback=default_cb, **kws):
             cmd = 'cloud-init status'
             endtime = endtime or self._endtime()

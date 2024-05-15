@@ -771,7 +771,7 @@ class TestVMResource:
 
         code, data = api_client.vms.start(unique_vm_name)
         assert 204 == code, (code, data)
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ["default"])
         assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
@@ -810,7 +810,7 @@ class TestVMResource:
             f"Failed to Restart VM({unique_vm_name}),"
             f" timed out while executing {ctx.callee!r}"
         )
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ["default"])
         assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
@@ -929,8 +929,9 @@ class TestVMResource:
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 class TestVMClone:
-    def test_clone_running_vm(self, api_client, ssh_keypair, wait_timeout,
-                              host_shell, vm_shell, stopped_vm):
+    def test_clone_running_vm(
+        self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm
+    ):
         """
         To cover test:
         - (legacy) https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/ # noqa
@@ -951,23 +952,13 @@ class TestVMClone:
         pub_key, pri_key = ssh_keypair
         code, data = api_client.vms.start(unique_vm_name)
 
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])
@@ -1010,24 +1001,24 @@ class TestVMClone:
         code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
         assert 204 == code, f"Failed to clone VM {unique_vm_name} into new VM {cloned_name}"
 
-        # Check VM started
+        # Check cloned VM is created
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
-            code, data = api_client.vms.get_status(cloned_name)
+            code, data = api_client.vms.get(cloned_name)
             if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
+                break
             sleep(3)
         else:
             raise AssertionError(
-                f"Failed to Start VM({cloned_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
+                f"restored VM {cloned_name} is not created"
             )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(cloned_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({cloned_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])
@@ -1088,8 +1079,9 @@ class TestVMClone:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
 
-    def test_clone_stopped_vm(self, api_client, ssh_keypair, wait_timeout,
-                              host_shell, vm_shell, stopped_vm):
+    def test_clone_stopped_vm(
+        self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm
+    ):
         """
         To cover test:
         - (legacy) https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-off/ # noqa
@@ -1110,24 +1102,13 @@ class TestVMClone:
         unique_vm_name, ssh_user = stopped_vm
         pub_key, pri_key = ssh_keypair
         code, data = api_client.vms.start(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
 
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])
@@ -1202,23 +1183,12 @@ class TestVMClone:
 
         # Check cloned VM started
         api_client.vms.start(cloned_name)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(cloned_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({cloned_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(cloned_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({cloned_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
         code, data = api_client.hosts.get(data['status']['nodeName'])
@@ -1283,8 +1253,9 @@ class TestVMClone:
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 class TestVMWithVolumes:
-    def test_create_with_two_volumes(self, api_client, ssh_keypair, wait_timeout,
-                                     host_shell, vm_shell, stopped_vm):
+    def test_create_with_two_volumes(
+        self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm
+    ):
         """
         To cover test:
         - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/ # noqa
@@ -1311,23 +1282,12 @@ class TestVMWithVolumes:
         # Start VM with 2 additional volumes
         code, data = api_client.vms.update(unique_vm_name, vm_spec)
         assert 200 == code, (code, data)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
 
         # Log into VM to verify added volumes
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
@@ -1405,8 +1365,9 @@ class TestVMWithVolumes:
         for vol_name in claims:
             api_client.volumes.delete(vol_name)
 
-    def test_create_with_existing_volume(self, api_client, ssh_keypair, wait_timeout,
-                                         host_shell, vm_shell, stopped_vm):
+    def test_create_with_existing_volume(
+        self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm
+    ):
         """
         To cover test:
         - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/ # noqa
@@ -1438,23 +1399,12 @@ class TestVMWithVolumes:
 
         # Start VM with added existing volume
         code, data = api_client.vms.update(unique_vm_name, vm_spec)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
 
         # Log into VM to verify added volumes
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
@@ -1964,30 +1914,20 @@ class TestHotPlugVolume:
 
     @pytest.mark.dependency(name="hot_plug_volume")
     def test_add(
-        self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, small_volume, stopped_vm
+        self, api_client, ssh_keypair, wait_timeout, vm_checker,
+        host_shell, vm_shell, small_volume, stopped_vm
     ):
         unique_vm_name, ssh_user = stopped_vm
         pub_key, pri_key = ssh_keypair
 
         # Start VM
         code, data = api_client.vms.start(unique_vm_name)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 200 == code:
-                phase = data.get('status', {}).get('phase')
-                conds = data.get('status', {}).get('conditions', [{}])
-                if ("Running" == phase
-                   and "AgentConnected" == conds[-1].get('type')
-                   and data['status'].get('interfaces')):
-                    break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Start VM({unique_vm_name}) with errors:\n"
-                f"Status: {data.get('status')}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
         # Log into VM to verify OS is ready
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
