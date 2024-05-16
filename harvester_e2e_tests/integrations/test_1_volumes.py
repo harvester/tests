@@ -178,32 +178,26 @@ class TestVolumeWithVM:
     def test_delete_volume_on_deleted_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         """
         1. Create a VM with volume
-        2. Delete volume should reply 422
-        3. Delete VM but not volume
-        4. Delete volume should reply 200
+        2. Delete VM but not volume
+        3. Delete volume concurrently with VM
+        4. VM should be deleted
+        5. Volume should be deleted
         Ref. https://github.com/harvester/tests/issues/652
         """
+        vm_name = ubuntu_vm['metadata']['name']
         vol_name = (ubuntu_vm["spec"]["template"]["spec"]["volumes"][0]
                              ['persistentVolumeClaim']['claimName'])
 
-        code, data = api_client.volumes.delete(vol_name)
-        assert 422 == code, f"Should fail to delete volume\n{code}, {data}"
+        api_client.vms.delete(vm_name)
 
-        self.delete_vm(api_client, ubuntu_vm, polling_for)
+        polling_for("Delete volume",
+                    lambda c, d: 200 == c,
+                    api_client.volumes.delete, vol_name)
 
-        code, data = api_client.volumes.delete(vol_name)
-        assert code in (200, 204), f"Fail to delete volume\n{code}, {data}"
-
-        # Check Volume
-        code, data = api_client.volumes.get(vol_name)
-        mdata, annotations = data['metadata'], data['metadata']['annotations']
-        assert 200 == code, (code, data)
-        assert mdata['name'] == vol_name, (code, data)
-        # status
-        assert not mdata['state']['error'], (code, data)
-        assert not mdata['state']['transitioning'], (code, data)
-        assert data['status']['phase'] == "Bound", (code, data)
-        # source
-        assert ubuntu_image["id"] == annotations['harvesterhci.io/imageId'], (code, data)
-        # attachment
-        assert not annotations.get("harvesterhci.io/owned-by"), (code, data)
+        # Retry since VM is deleting
+        polling_for("VM do deleted",
+                    lambda c, d: 404 == c,
+                    api_client.vms.get, vm_name)
+        polling_for("Volume do deleted",
+                    lambda c, d: 404 == c,
+                    api_client.volumes.get, vol_name)
