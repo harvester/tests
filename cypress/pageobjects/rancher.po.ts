@@ -41,7 +41,8 @@ export class rancherPage {
     private boostrap_page_newPWRepeat = '[style=""] > .labeled-input > input';
     // private boostrap_page_checkAgreeEULA = '#checkbox-eula > .checkbox-container > .checkbox-custom';
     private boostrap_page_checkAgreeEULA = '[data-testid="setup-agreement"] > .checkbox-container > .checkbox-custom';
-    private boostrap_page_confirmLogin = '.btn > span';
+    // private boostrap_page_confirmLogin = '.btn > span';
+    private boostrap_page_confirmLogin = 'button[data-testid="setup-submit"]';
     private home_page_mainMenu = '.menu';
     private home_page_virtualManagement = ':nth-child(7) > .option > div';
 
@@ -111,9 +112,9 @@ export class rancherPage {
             cy.intercept('GET', '/v1/management.cattle.io.setting?exclude=metadata.managedFields').as('getFirstLogin')
                 .visit("/")
                 .wait('@getFirstLogin').then(login => {
-                const data: any[] = login.response?.body.data;
-                const firstLogin = data.find(v => v?.id === "first-login");
-                resolve(firstLogin.value === 'true');
+                    const data: any[] = login.response?.body.data;
+                    const firstLogin = data.find(v => v?.id === "first-login");
+                    resolve(firstLogin.value === 'true');
                 })
                 .end();
         });
@@ -123,23 +124,23 @@ export class rancherPage {
      * First time login using ssh 
      */
     public firstTimeLogin() {
-      cy.get(this.boostrap_page_boostrapPWInput).type(Cypress.env('rancherBootstrapPassword')).log('Input bootstrap secret');
-      cy.get(this.boostrap_page_boostrapPWSubmit).click();
+        cy.get(this.boostrap_page_boostrapPWInput).type(Cypress.env('rancherBootstrapPassword')).log('Input bootstrap secret');
+        cy.get(this.boostrap_page_boostrapPWSubmit).click();
 
-      // cy.log('Select a specific password to use')
-      cy.get(this.boostrap_page_radioSelectPW).click().log('Select a specific password to use');
+        //   // cy.log('Select a specific password to use')
+        //   cy.get(this.boostrap_page_radioSelectPW).click().log('Select a specific password to use');
 
-      // cy.log('Input new password')
-      cy.get(this.boostrap_page_newPWInput).type(constants.rancher_password).log('Input new password');
-      // cy.log('Confirm password again')
-      cy.get(this.boostrap_page_newPWRepeat).type(constants.rancher_password).log('Confirm password again');
+        //   // cy.log('Input new password')
+        //   cy.get(this.boostrap_page_newPWInput).type(constants.rancher_password).log('Input new password');
+        //   // cy.log('Confirm password again')
+        //   cy.get(this.boostrap_page_newPWRepeat).type(constants.rancher_password).log('Confirm password again');
 
-      // cy.log('Agree EULA')
-      cy.get(this.boostrap_page_checkAgreeEULA).click().log('Agree EULA');
+        // cy.log('Agree EULA')
+        cy.get(this.boostrap_page_checkAgreeEULA).click().log('Agree EULA');
 
-      cy.get(this.boostrap_page_confirmLogin).click().log('Continue to access rancher');
+        cy.get(this.boostrap_page_confirmLogin).click().log('Continue to access rancher');
 
-      cy.url().should('include', 'dashboard/home').log('Login Success');
+        cy.url().should('include', 'dashboard/home').log('Login Success');
     }
 
     /**
@@ -186,7 +187,7 @@ export class rancherPage {
         cy.get(this.clusterLink).click().then(() => {
             cy.log('Open virtualization dashboard');
         });
-}
+    }
 
     public visit_clusterManagement() {
         cy.visit(constants.rancher_clusterManagmentPage);
@@ -202,8 +203,8 @@ export class rancherPage {
 
     public importHarvester() {
         cy.visit('/home')
-        cy.get(this.home_page_mainMenu).click();
-        cy.get(this.home_page_virtualManagement).should('contain', 'Virtualization Management').click();
+        // cy.get(this.home_page_mainMenu).click();
+        // cy.get(this.home_page_virtualManagement).should('contain', 'Virtualization Management').click();
         cy.visit(constants.virtualManagePage)
         cy.get(this.virtual_page_importButton).should('contain', 'Import Existing').click();
         cy.get(this.virtual_page_clusterName).type('harvester')
