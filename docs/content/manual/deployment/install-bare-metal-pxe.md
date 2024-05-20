@@ -1,8 +1,7 @@
 ---
 title: Install Harvester on a bare Metal node using PXE boot (e2e_be)		
 ---
-Install Harvester using PXE boot
-https://docs.harvesterhci.io/v0.3/install/pxe-boot-install/
+[Install Harvester using PXE boot](https://docs.harvesterhci.io/v1.3/install/pxe-boot-install)
 
 ## Expected Results
 1. On completion of the installation, Harvester should provide the management url and show status.
