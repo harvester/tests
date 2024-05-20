@@ -43,6 +43,13 @@
       <description>Related issues: #1590 Harvester installer can&amp;rsquo;t resolve hostnames Known Issues When supplying multiple ip=&amp;hellip; kernel cmdline arguments, only one of them will be configured by dracut, therefore only the configured interface would have ifcfg generated. So for now, we can&amp;rsquo;t support multiple ip=&amp;hellip; kernel cmdline arguments&#xA;Verification Steps Because configuring the network of the installation environment only works with PXE installation, you could use ipxe-examples/vagrant-pxe-harvester/ to set it up. Be sure you can run setup_harvester.</description>
     </item>
     <item>
+      <title>Change DNS settings on vagrant-pxe-harvester install</title>
+      <link>https://harvester.github.io/tests/manual/deployment/ipxe-dns-change/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/deployment/ipxe-dns-change/</guid>
+      <description>Install using ipxe-examples Also change harvester_network_config.dns_servers in the settings.yml for the vagrant environment before deploy. This will change the DNS in the harvester OS config. If you also want to change the DNS for everything in the DHCP scope change harvester_network_config.dhcp_server.dns_server. Expected Results On completion of the installation, Harvester should provide the management url and show status. SSH into one of the nodes. If you use the default configuration you can use ssh rancher@192.</description>
+    </item>
+    <item>
       <title>Http proxy setting on harvester</title>
       <link>https://harvester.github.io/tests/manual/deployment/http-proxy-setting-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
