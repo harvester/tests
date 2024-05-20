@@ -3,9 +3,12 @@ title: Verify the Installer Options
 ---
 1. Verify the following options available while installing the Harvester is working
     - Installation target
+    - Node IP
     - Cluster token
     - Password
+    - DNS Server
     - VIP
+    - HTTP Proxy
     - NTP Address
 
 ## Expected Results

@@ -1,8 +1,7 @@
 ---
 title: Install Harvester on a bare Metal node using ISO image	
 ---
-Install using ISO image
-https://docs.harvesterhci.io/v0.3/install/iso-install/
+[Install using ISO image](https://docs.harvesterhci.io/v1.3/install/index/)
 
 ## Expected Results
 1. On completion of the installation, Harvester should provide the management url and show status.
