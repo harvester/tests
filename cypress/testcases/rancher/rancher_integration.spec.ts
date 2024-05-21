@@ -131,10 +131,39 @@ describe('Harvester import Rancher', function () {
         });
     })
 
+    let isHarvFirstTimeLogin: boolean = false;
+    before(async () => {
+        isHarvFirstTimeLogin = await LoginPage.isFirstTimeLogin();
+
+    })
+
     it('Harvester import Rancher', () => {
-        cy.login();
+        // cy.login();
+        if (isHarvFirstTimeLogin) {
+            const page = new LoginPage();
+            page.visit()
+                .selectSpecificPassword()
+                .checkTelemetry(false)
+                .checkEula(true)
+                .inputPassword()
+                .submitBtn.click();
+
+            page.validateLogin();
+        } else {
+            cy.login();
+        }
         rancher.registerRancher();
     });
+
+})
+
+describe('Rancher integration', function () {
+    beforeEach(() => {
+        cy.fixture('rancher').then((data) => {
+            rData = data;
+        });
+    })
+
 
     it('Check Harvester Cluster Status', { baseUrl: constants.rancherUrl }, () => {
         // cy.login();
@@ -162,7 +191,8 @@ describe('Harvester import Rancher', function () {
         rancher.open_virtualizationDashboard();
 
         virtualizationDashboard.validateClusterName();
-        
+
     });
 
 })
+
