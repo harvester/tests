@@ -619,10 +619,10 @@
   <li><a href="https://harvester.github.io/tests/manual/deployment/install-bare-metal-iso/">Install Harvester on a bare Metal node using ISO image</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/deployment/install-nested-virtualization/">Install Harvester on a bare Metal node using ISO image</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/deployment/install-bare-metal-pxe/">Install Harvester on a bare Metal node using PXE boot (e2e_be)</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/deployment/install-bare-metal-pxe/">Install Harvester on a bare Metal node using PXE boot (e2e_be)</a></li>
+  <li><a href="https://harvester.github.io/tests/manual/deployment/install-nested-virtualization/">Install Harvester on a virtual nested node using ISO image</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/deployment/install_on_nvme/">Install Harvester on NVMe SSD</a></li>
@@ -1963,11 +1963,29 @@
   <h1 id="title">VIP Load balancer verification (e2e_be)</h1>
   <div>
     <article id="content">
-       <ol>
+       <h2 id="case-dhcp">Case DHCP</h2>
+<ol>
 <li>Install Harvester on one Node
 <ul>
 <li>Install with VIP pulling from DHCP</li>
 <li>Verify that IP is assigned via DHCP </li>
+</ul>
+</li>
+<li>Add at least one additional node
+<ul>
+<li>Use VIP address as management address for adding node</li>
+</ul>
+</li>
+<li>Finish install of additional nodes</li>
+<li>Create new VM</li>
+<li>Connect to VM via web console</li>
+</ol>
+<h2 id="case-static-ip">Case Static IP</h2>
+<ol>
+<li>Install Harvester on one Node
+<ul>
+<li>Install with VIP set statically</li>
+<li>Verify that IP is assigned correctly</li>
 </ul>
 </li>
 <li>Add at least one additional node

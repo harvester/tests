@@ -2427,21 +2427,21 @@
       <link>https://harvester.github.io/tests/manual/deployment/install-bare-metal-iso/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/deployment/install-bare-metal-iso/</guid>
-      <description>Install using ISO image https://docs.harvesterhci.io/v0.3/install/iso-install/&#xA;Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
-    </item>
-    <item>
-      <title>Install Harvester on a bare Metal node using ISO image</title>
-      <link>https://harvester.github.io/tests/manual/deployment/install-nested-virtualization/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/deployment/install-nested-virtualization/</guid>
-      <description>Install using ISO image https://docs.harvesterhci.io/v0.3/install/iso-install/&#xA;Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
+      <description>Install using ISO image&#xA;Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
     </item>
     <item>
       <title>Install Harvester on a bare Metal node using PXE boot (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/deployment/install-bare-metal-pxe/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/deployment/install-bare-metal-pxe/</guid>
-      <description>Install Harvester using PXE boot https://docs.harvesterhci.io/v0.3/install/pxe-boot-install/&#xA;Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
+      <description>Install Harvester using PXE boot&#xA;Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
+    </item>
+    <item>
+      <title>Install Harvester on a virtual nested node using ISO image</title>
+      <link>https://harvester.github.io/tests/manual/deployment/install-nested-virtualization/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/deployment/install-nested-virtualization/</guid>
+      <description>Install using ISO image&#xA;Expected Results On completion of the installation, Harvester should provide the management url and show status. Harvester and Longhorn components should be up and running in the cluster. Verify the memory, cpu and storage size shown on the Harvester UI </description>
     </item>
     <item>
       <title>Install Harvester on NVMe SSD</title>
@@ -3911,7 +3911,7 @@
       <link>https://harvester.github.io/tests/manual/deployment/verify-installer-options/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/deployment/verify-installer-options/</guid>
-      <description> Verify the following options available while installing the Harvester is working Installation target Cluster token Password VIP NTP Address Expected Results Should show all the disks available. Verify the min and max length acceptable for cluster token. Verify the password rule </description>
+      <description> Verify the following options available while installing the Harvester is working Installation target Node IP Cluster token Password DNS Server VIP HTTP Proxy NTP Address Expected Results Should show all the disks available. Verify the min and max length acceptable for cluster token. Verify the password rule </description>
     </item>
     <item>
       <title>Verify the left side menu (e2e_fe)</title>
@@ -3981,7 +3981,7 @@
       <link>https://harvester.github.io/tests/manual/deployment/verify-vip-load-balancer/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/deployment/verify-vip-load-balancer/</guid>
-      <description> Install Harvester on one Node Install with VIP pulling from DHCP Verify that IP is assigned via DHCP Add at least one additional node Use VIP address as management address for adding node Finish install of additional nodes Create new VM Connect to VM via web console Expected Results Install of all nodes should complete New nodes should show up in hosts list via web UI at VIP VMs should create Console should open </description>
+      <description>Case DHCP Install Harvester on one Node Install with VIP pulling from DHCP Verify that IP is assigned via DHCP Add at least one additional node Use VIP address as management address for adding node Finish install of additional nodes Create new VM Connect to VM via web console Case Static IP Install Harvester on one Node Install with VIP set statically Verify that IP is assigned correctly Add at least one additional node Use VIP address as management address for adding node Finish install of additional nodes Create new VM Connect to VM via web console Expected Results Install of all nodes should complete New nodes should show up in hosts list via web UI at VIP VMs should create Console should open </description>
     </item>
     <item>
       <title>virtualmachineimages.harvesterhci.io</title>
