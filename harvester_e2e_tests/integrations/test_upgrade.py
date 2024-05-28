@@ -581,7 +581,7 @@ class TestAnyNodesUpgrade:
 
         code, data = api_client.vms.create(unique_vm_name, vm_spec)
         assert 201 == code, (code, data)
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ["nic-1"])
         assert vm_got_ips, (
             f"Failed to Start VM({unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
@@ -639,7 +639,7 @@ class TestAnyNodesUpgrade:
             raise AssertionError(
                 f"restored VM {restored_vm_name} is not created"
             )
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(restored_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(restored_vm_name, ["nic-1"])
         assert vm_got_ips, (
             f"Failed to Start VM({restored_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
@@ -673,7 +673,7 @@ class TestAnyNodesUpgrade:
         vm_spec.add_volume("vol-1", 5, storage_cls=new_sc['metadata']['name'])
         code, data = api_client.vms.create(f"sc-{unique_vm_name}", vm_spec)
         assert 201 == code, (code, data)
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(f"sc-{unique_vm_name}")
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(f"sc-{unique_vm_name}", ["nic-1"])
         assert vm_got_ips, (
             f"Failed to Start VM(sc-{unique_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
@@ -899,7 +899,7 @@ class TestAnyNodesUpgrade:
             raise AssertionError(
                 f"restored VM {restored_vm_name} is not created"
             )
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(restored_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(restored_vm_name, ["nic-1"])
         assert vm_got_ips, (
             f"Failed to Start VM({restored_vm_name}) with errors:\n"
             f"Status: {data.get('status')}\n"
