@@ -9,7 +9,7 @@ Please refer to [02-Integrate to Rancher from Harvester settings](https://harves
 3. Click import existing
 4. Copy the curl command 
 ![image.png](https://images.zenhubusercontent.com/61519853321ea20d65443929/08e70d37-e573-47b1-a3d6-0f3615116d48)
-1. SSH to harvester master node (user: rancher)
+1. SSH to harvester master node
 1. Execute the curl command to import harvester to rancher
 `curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f -`
 1. Run `sudo chmod 775 /etc/rancher/rke2/rke2.yaml` to solve the permission denied error
@@ -23,7 +23,8 @@ Please refer to [02-Integrate to Rancher from Harvester settings](https://harves
     deployment.apps/cattle-cluster-agent created
     service/cattle-cluster-agent created
     ```
-1. Check import status in Virtualization Management page on Rancher 
+1. Check import status in Virtualization Management page on Rancher.
+2. Check Harvester node driver is activated and mark as `builtin`
 
 ## Expected Results
 1. Harvester successfully imported on virtualization management page 
