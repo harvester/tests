@@ -250,8 +250,8 @@ class TestVMNetwork:
     ):
         # clean cloud-init for rerun, and get the correct ifname
         (unique_vm_name, ssh_user), (_, pri_key) = minimal_vm, ssh_keypair
-        vm_started, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
-        assert vm_started, (
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+        assert vm_got_ips, (
             f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
             f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
             f&#34;API Status({code}): {data}&#34;
@@ -290,7 +290,7 @@ class TestVMNetwork:
             f&#34;Failed to Restart VM({unique_vm_name}),&#34;
             f&#34; timed out while executing {ctx.callee!r}&#34;
         )
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
         assert vm_got_ips, (
             f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
             f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
@@ -665,8 +665,8 @@ class TestVMNetwork:
     ):
         # clean cloud-init for rerun, and get the correct ifname
         (unique_vm_name, ssh_user), (_, pri_key) = minimal_vm, ssh_keypair
-        vm_started, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
-        assert vm_started, (
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+        assert vm_got_ips, (
             f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
             f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
             f&#34;API Status({code}): {data}&#34;
@@ -705,7 +705,7 @@ class TestVMNetwork:
             f&#34;Failed to Restart VM({unique_vm_name}),&#34;
             f&#34; timed out while executing {ctx.callee!r}&#34;
         )
-        vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
         assert vm_got_ips, (
             f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
             f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
@@ -824,8 +824,8 @@ def test_add_vlan(
 ):
     # clean cloud-init for rerun, and get the correct ifname
     (unique_vm_name, ssh_user), (_, pri_key) = minimal_vm, ssh_keypair
-    vm_started, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
-    assert vm_started, (
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+    assert vm_got_ips, (
         f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
         f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
         f&#34;API Status({code}): {data}&#34;
@@ -864,7 +864,7 @@ def test_add_vlan(
         f&#34;Failed to Restart VM({unique_vm_name}),&#34;
         f&#34; timed out while executing {ctx.callee!r}&#34;
     )
-    vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
     assert vm_got_ips, (
         f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
         f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
