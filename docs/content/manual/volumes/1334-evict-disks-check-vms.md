@@ -4,7 +4,7 @@ title: Verify that VMs stay up when disks are evicted
 
 * Related issues
     - [#1334](https://github.com/harvester/harvester/issues/1334) Volumes fail with Scheduling Failure after evicting disc on multi-disc node
-    - [#5307](https://github.com/harvester/harvester/issues/5307) Replicas should be evicted and rescheduled to other disks before removing extrak disk
+    - [#5307](https://github.com/harvester/harvester/issues/5307) Replicas should be evicted and rescheduled to other disks before removing extra disk
 
 ## Verification Steps
 
