@@ -152,7 +152,7 @@
       <link>https://harvester.github.io/tests/manual/volumes/1334-evict-disks-check-vms/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/volumes/1334-evict-disks-check-vms/</guid>
-      <description>Related issues #1334 Volumes fail with Scheduling Failure after evicting disc on multi-disc node #5307 Replicas should be evicted and rescheduled to other disks before removing extrak disk Verification Steps Created 3 nodes Harvester.&#xA;Added formatted disk (called disk A) to node0 VM in the harvester node page.&#xA;Added disk tag test on following disk in the longhorn page.&#xA;disk A of node0 root disk of node1 root disk of node2 Created storage class with disk tag test.</description>
+      <description>Related issues #1334 Volumes fail with Scheduling Failure after evicting disc on multi-disc node #5307 Replicas should be evicted and rescheduled to other disks before removing extra disk Verification Steps Created 3 nodes Harvester.&#xA;Added formatted disk (called disk A) to node0 VM in the harvester node page.&#xA;Added disk tag test on following disk in the longhorn page.&#xA;disk A of node0 root disk of node1 root disk of node2 Created storage class with disk tag test and replica 3.</description>
     </item>
   </channel>
 </rss>

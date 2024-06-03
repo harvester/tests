@@ -173,7 +173,7 @@
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring-replace/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring-replace/</guid>
-      <description> Initiate a restore with existing VM. While the restore is in progress and VM is starting on a node, shut down the node Expected Results You should get an error </description>
+      <description>Related issues tests#1263 [ReleaseTesting] Negative Power down the node where the VM is getting replaced by the restore Verification Steps Setup a 3 nodes harvester&#xA;Create a VM w/ extra disk and some data&#xA;Backup and shutdown VM&#xA;Start to observe pod/virt-launcher-VMNAME to get the node VM restoring on for next step.&#xA;Initiate a restore with existing VM, get node info from pod/virt-launcher-VMNAME. While the restore is in progress and VM is starting on a node, shut down the node</description>
     </item>
     <item>
       <title>Negative power down the node where the VM is getting restored</title>

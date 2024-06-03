@@ -1967,7 +1967,7 @@
 <li>Related issues
 <ul>
 <li><a href="https://github.com/harvester/harvester/issues/1334">#1334</a> Volumes fail with Scheduling Failure after evicting disc on multi-disc node</li>
-<li><a href="https://github.com/harvester/harvester/issues/5307">#5307</a> Replicas should be evicted and rescheduled to other disks before removing extrak disk</li>
+<li><a href="https://github.com/harvester/harvester/issues/5307">#5307</a> Replicas should be evicted and rescheduled to other disks before removing extra disk</li>
 </ul>
 </li>
 </ul>
@@ -1988,7 +1988,7 @@
 </ol>
 </li>
 <li>
-<p>Created storage class with disk tag <code>test</code>.</p>
+<p>Created storage class with disk tag <code>test</code> and replica <code>3</code>.</p>
 </li>
 <li>
 <p>Created volume (called B) with previous storage class. You should check scheduling status in the longhorn page.</p>
@@ -1997,29 +1997,28 @@
 <p>Created VM with volume B as extra volume (not boot volume).</p>
 </li>
 <li>
-<p>The node scheduling status should look like this. 
+<p>The node scheduling status should look like this.
 
-<img src="https://harvester.github.io/tests/images/volumes/1334-image-01.png" alt="images/volumes/1334-image-01.png"></p>
+   
+   <img src="https://harvester.github.io/tests/images/volumes/1334-image-01.png" alt="images/volumes/1334-image-01.png"></p>
 </li>
 <li>
-<p>Deleted disk A in the harvester node page, error message should be displayed.</p>
+<p>Delete disk A in the harvester node page and revisit it, error message should be displayed.</p>
 </li>
 <li>
-<p>Added disk tag <code>test</code> to <strong>root disk of node0</strong>.</p>
-</li>
-<li>
-<p>Requested eviction and disabled scheduling on disk A in the longhorn dashboard.
-Before:
+<p>Check <strong>Eviction Requested</strong> is <code>True</code> and <strong>Scheduling</strong> is <code>Disable</code> on disk A in the longhorn dashboard.
 
-    
-    <img src="https://harvester.github.io/tests/images/volumes/1334-image-02.png" alt="images/volumes/1334-image-02.png"></p>
-<p>After:
-
-    
-    <img src="https://harvester.github.io/tests/images/volumes/1334-image-03.png" alt="images/volumes/1334-image-03.png"></p>
+   
+   <img src="https://harvester.github.io/tests/images/volumes/1334-image-02.png" alt="images/volumes/1334-image-02.png"></p>
 </li>
 <li>
-<p>Removed disk A in the harvester node page, and it should be removed.</p>
+<p>Add disk tag <code>test</code> to <strong>root disk of node0</strong>.</p>
+</li>
+<li>
+<p>Now disk A should be removed since replica condition is satisfied again.
+
+   
+   <img src="https://harvester.github.io/tests/images/volumes/1334-image-03.png" alt="images/volumes/1334-image-03.png"></p>
 </li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>
