@@ -15,6 +15,7 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import os
 import pytest
 import yaml
 from datetime import datetime
@@ -49,9 +50,42 @@ def check_depends(self, depends, item):
 DepMgr.checkDepend, DepMgr._check_depend = check_depends, DepMgr.checkDepend
 
 
+def merge_config(user_config_path, default_config_path):
+    """
+    Merge two config files. The user config takes precedence over the default
+    config.
+    """
+
+    try:
+        with open(user_config_path, 'r') as ucnf:
+            user_data = yaml.safe_load(ucnf)
+    except FileNotFoundError:
+        user_data = {}
+
+    try:
+        with open(default_config_path, 'r') as dcnf:
+            default_data = yaml.safe_load(dcnf)
+    except FileNotFoundError:
+        default_data = {}
+
+    config = {}
+    for key in default_data:
+        config[key] = user_data.get(key, default_data[key])
+
+    for key in user_data:
+        if not key in default_data.keys():
+            config[key] = user_data[key]
+
+    return config
+
+
 def pytest_addoption(parser):
-    with open('config.yml') as f:
-        config_data = yaml.safe_load(f)
+    user_home = os.getenv('HOME')
+    user_config_path= os.path.join(user_home, '.config', 'harvester', 'tests',
+                                   'config.yml')
+    default_config_path = os.path.join(os.getcwd(), 'config.yml')
+    config_data = merge_config(user_config_path, default_config_path)
+
     parser.addoption(
         '--endpoint',
         action='store',
@@ -421,3 +455,18 @@ def pytest_html_results_table_header(cells):
 
 def pytest_html_results_table_row(report, cells):
     cells.insert(1, f'<td class="col-time">{datetime.utcnow()}</td>')
+
+
+def pytest_report_header(config):
+    if config.getoption("verbose") > 0:
+        return [
+            f"Harvester Endpoint:          {config.getoption('endpoint')}",
+            f"Harvester Username:          {config.getoption('username')}",
+            f"Harvester Password:          {config.getoption('password')}",
+            f"Host Password:     {config.getoption('host_password')}",
+            f"Host Private Key:  {config.getoption('host_private_key')}",
+            f"VLAN ID:           {config.getoption('vlan_id')}",
+            f"VLAN NIC:          {config.getoption('vlan_nic')}",
+            f"Rancher Endpoint: {config.getoption('rancher_endpoint')}",
+            f"Rancher Password: {config.getoption('rancher_admin_password')}",
+        ]
