@@ -48,7 +48,7 @@ export function base64Decode(string: string) {
 }
 
 export const nodes = {
-  filterWitnessNode: (hosts: any[]) => {
+  filterWitnessNode: (hosts: {name: string, witnessNode: boolean}[]) => {
     const ret = hosts.filter((host) => !host.witnessNode);
 
     if (!ret.length) {

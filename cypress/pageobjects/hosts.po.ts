@@ -12,6 +12,11 @@ interface ValueInterface {
   consoleUrl?: string,
 }
 
+export interface Node {
+  name: string;
+  customName: string;
+}
+
 export class HostsPage extends CruResourcePo {
   private hostList = '.host-list';
   private actionsDropdown = '.role-multi-action';
@@ -69,13 +74,13 @@ export class HostsPage extends CruResourcePo {
     }
   }
 
-  enableMaintenance(name:string) {
-    cy.intercept('POST', `/v1/harvester/${this.realType}s/${name}?action=enableMaintenanceMode`).as('enable');
-    this.clickAction(name, 'Enable Maintenance Mode');
+  enableMaintenance(node: Node) {
+    cy.intercept('POST', `/v1/harvester/${this.realType}s/${node.name}?action=enableMaintenanceMode`).as('enable');
+    this.clickAction(node.customName || node.name, 'Enable Maintenance Mode');
     // Maintenance
     cy.get('.card-container').contains('Apply').click();
     cy.wait('@enable').then(res => {
-      expect(res.response?.statusCode, `Enable maintenance ${name}`).to.equal(204);
+      expect(res.response?.statusCode, `Enable maintenance ${node.name}`).to.equal(204);
     })
   }
 
