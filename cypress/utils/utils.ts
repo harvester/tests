@@ -46,3 +46,15 @@ export function base64DecodeToBuffer(string: string) {
 export function base64Decode(string: string) {
   return !string ? string : base64DecodeToBuffer(string.replace(/[-_]/g, char => char === '-' ? '+' : '/')).toString();
 }
+
+export const nodes = {
+  filterWitnessNode: (hosts: any[]) => {
+    const ret = hosts.filter((host) => !host.witnessNode);
+
+    if (!ret.length) {
+      throw new Error("No eligible hosts found for testing");
+    }
+
+    return ret;
+  }
+}

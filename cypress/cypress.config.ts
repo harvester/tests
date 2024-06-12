@@ -22,12 +22,14 @@ export default defineConfig({
     baseUrl: 'https://online-server',
     host: [{
       name: 'harvester-node-1',
+      customName: '',
       disks: [
         {
           name: '',
           devPath: '',
         },
       ],
+      witnessNode: false
     }],
     image: {
       name: 'openSUSE-Leap-15.3-3-NET-x86_64.qcow2',
