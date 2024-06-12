@@ -27,11 +27,12 @@ describe('Stop VM Negative', () => {
     vmPO.setBasics('1', '1');
     vmPO.setVolumes(volume);
 
-    const host = Cypress.env('host');
+    const hostList = Cypress.env('host');
+    const host = hostList[0];
 
     vmPO.setNodeScheduling({
       radio: 'specific',
-      nodeName: host.name, 
+      nodeName: host.customName || host.name, 
     });
 
     vmPO.save(); 
