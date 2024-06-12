@@ -474,16 +474,17 @@ export class VmsPage extends CruResourcePo {
   }) {
     this.clickTab('nodeScheduling');
 
+    const rulesRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on node(s) matching scheduling rules")')
+    const specificRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on specific node")')
+    const nodeNameSelector = new LabeledSelectPo('.labeled-select', `:contains("Node Name")`)
+
     switch (radio) {
       case 'rules':
-        const rulesRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on node(s) matching scheduling rules")')
         rulesRadio.input('Run VM on node(s) matching scheduling rules')
         break;
       case 'specific':
-        const specificRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on specific node")') 
         specificRadio.input('Run VM on specific node')
 
-        const nodeNameSelector = new LabeledSelectPo('.labeled-select', `:contains("Node Name")`)
         nodeNameSelector.select({
           selector: '.vs__dropdown-menu',
           option: nodeName,

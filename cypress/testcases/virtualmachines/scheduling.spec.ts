@@ -1,5 +1,5 @@
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
-import { HostsPage } from "@/pageobjects/hosts.po";
+import { HostsPage, Node } from "@/pageobjects/hosts.po";
 
 const vms = new VmsPage();
 const hosts = new HostsPage();
@@ -14,9 +14,11 @@ describe('VM scheduling on Specific node', () => {
 
   it('Schedule VM on the Node which is Enable Maintenance Mode', () => {
     const hostList = Cypress.env('host');
-    const hostNames: string[] = hostList.map((host: any) => host.name);
-    const maintenanceNode = hostNames[0]
-    const filterMaintenanceNames = hostNames.filter(name => name !== maintenanceNode);
+
+    const hostNames: string[] = hostList.map((node: Node) => node.customName || node.name);
+
+    const maintenanceNodeName = hostNames[0]
+    const filterMaintenanceNodeNames = hostNames.filter(name => name !== maintenanceNodeName);
 
     // Check whether all nodes can be selected
     vms.goToCreate();
@@ -24,15 +26,15 @@ describe('VM scheduling on Specific node', () => {
     vms.checkSpecificNodes({includeNodes: hostNames});
     
     hosts.goToList();
-    hosts.enableMaintenance(hostNames[0]);
+    hosts.enableMaintenance(hostList[0]);
     
     // Maintenance nodes should not be selected
     vms.goToCreate();
     vms.selectSchedulingType({type: 'specific'});
-    vms.checkSpecificNodes({includeNodes: filterMaintenanceNames, excludeNodes: [maintenanceNode]});
+    vms.checkSpecificNodes({includeNodes: filterMaintenanceNodeNames, excludeNodes: [maintenanceNodeName]});
 
     hosts.goToList();
-    hosts.clickAction(hostList[0].name, 'Disable Maintenance Mode');
+    hosts.clickAction(hostNames[0], 'Disable Maintenance Mode');
 
     // Check whether all nodes can be selected
     vms.goToCreate();
