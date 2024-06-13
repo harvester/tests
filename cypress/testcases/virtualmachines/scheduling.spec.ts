@@ -1,5 +1,7 @@
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
-import { HostsPage, Node } from "@/pageobjects/hosts.po";
+import { HostsPage } from "@/pageobjects/hosts.po";
+import { host as hostsUtil } from '@/utils/utils';
+import { Node } from '@/models/host'
 
 const vms = new VmsPage();
 const hosts = new HostsPage();
@@ -13,7 +15,7 @@ describe('VM scheduling on Specific node', () => {
   });
 
   it('Schedule VM on the Node which is Enable Maintenance Mode', () => {
-    const hostList = Cypress.env('host');
+    const hostList = hostsUtil.list();
 
     const hostNames: string[] = hostList.map((node: Node) => node.customName || node.name);
 
