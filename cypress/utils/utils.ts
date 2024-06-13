@@ -1,5 +1,6 @@
 
 import AdmZip from 'adm-zip';
+import { Node } from '@/models/host'
 /**
  * This will validate the zip file by checking the contents. Assumes that this is in 
  * the downloads folder
@@ -47,7 +48,16 @@ export function base64Decode(string: string) {
   return !string ? string : base64DecodeToBuffer(string.replace(/[-_]/g, char => char === '-' ? '+' : '/')).toString();
 }
 
-export const nodes = {
+export const host = {
+  list(): Node[] {
+    const hosts = Cypress.env('host');
+  
+    if (!hosts || hosts.length < 1) {
+      throw new Error("No hosts defined in cypress env");
+    }
+  
+    return hosts;
+  },
   filterWitnessNode: (hosts: {name: string, witnessNode: boolean}[]) => {
     const ret = hosts.filter((host) => !host.witnessNode);
 

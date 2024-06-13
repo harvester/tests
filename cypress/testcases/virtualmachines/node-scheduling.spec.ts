@@ -1,6 +1,6 @@
 import { VmsPage } from "@/pageobjects/virtualmachine.po";
 
-import { generateName } from '@/utils/utils';
+import { generateName, host as hostUtil } from '@/utils/utils';
 import { Constants } from "@/constants/constants";
 
 const vmPO = new VmsPage();
@@ -27,7 +27,7 @@ describe('Stop VM Negative', () => {
     vmPO.setBasics('1', '1');
     vmPO.setVolumes(volume);
 
-    const hostList = Cypress.env('host');
+    const hostList = hostUtil.list();
     const host = hostList[0];
 
     vmPO.setNodeScheduling({

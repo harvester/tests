@@ -3,6 +3,7 @@ const constants = new Constants();
 import CruResourcePo from '@/utils/components/cru-resource.po';
 import { HCI } from '@/constants/types'
 import LabeledInputPo from '@/utils/components/labeled-input.po';
+import { Node } from '@/models/host'
 
 interface ValueInterface {
   namespace?: string,
@@ -10,11 +11,6 @@ interface ValueInterface {
   description?: string,
   customName?: string,
   consoleUrl?: string,
-}
-
-export interface Node {
-  name: string;
-  customName: string;
 }
 
 export class HostsPage extends CruResourcePo {
