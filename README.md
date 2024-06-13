@@ -101,6 +101,12 @@ The section is targeting to explain configure options and test cases depends on.
 Notice that configuration options in [config.yml](config.yml) can be overwritten by command line parameters.
 For example, to overwrite the `endpoint` option, we can use the `--endpoint` parameter while running the tests. 
 
+To avoid dirtying the repository, place the customized version of the
+`config.yml` in any one of the places:
+
+- `$HARVESTER_TESTS_CONFIG`
+- `$HOME/.config/harvester/tests/config.yml`
+
 ### Deprecated Config Options <a name="deprecated_config" />
 - `do-not-cleanup`
 - `harvester_cluster_nodes`

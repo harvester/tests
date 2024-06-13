@@ -50,41 +50,35 @@ def check_depends(self, depends, item):
 DepMgr.checkDepend, DepMgr._check_depend = check_depends, DepMgr.checkDepend
 
 
-def merge_config(user_config_path, default_config_path):
+def merge_config():
     """
     Merge two config files. The user config takes precedence over the default
     config.
     """
 
-    try:
-        with open(user_config_path, 'r') as ucnf:
-            user_data = yaml.safe_load(ucnf)
-    except FileNotFoundError:
-        user_data = {}
-
-    try:
-        with open(default_config_path, 'r') as dcnf:
-            default_data = yaml.safe_load(dcnf)
-    except FileNotFoundError:
-        default_data = {}
+    paths = [
+        os.path.join(os.getcwd(), 'config.yml'),
+        os.getenv('HARVESTER_TESTS_CONFIG', None),
+        os.path.join(os.getenv('HOME'), '.config', 'harvester', 'tests',
+                     'config.yml')
+    ]
 
     config = {}
-    for key in default_data:
-        config[key] = user_data.get(key, default_data[key])
+    for path in paths:
+        if path:
+            try:
+                with open(path, 'r') as cnf:
+                    data = yaml.safe_load(cnf)
+            except FileNotFoundError:
+                data = {}
 
-    for key in user_data:
-        if not key in default_data.keys():
-            config[key] = user_data[key]
+            config.update(data)
 
     return config
 
 
 def pytest_addoption(parser):
-    user_home = os.getenv('HOME')
-    user_config_path= os.path.join(user_home, '.config', 'harvester', 'tests',
-                                   'config.yml')
-    default_config_path = os.path.join(os.getcwd(), 'config.yml')
-    config_data = merge_config(user_config_path, default_config_path)
+    config_data = merge_config()
 
     parser.addoption(
         '--endpoint',
