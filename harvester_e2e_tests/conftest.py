@@ -100,7 +100,19 @@ def pytest_addoption(parser):
         '--ip-pool-subnet',
         action='store',
         default=config_data['ip-pool-subnet'],
-        help='IP pool range for load balancer'
+        help='Subnet of IP pool for load balancer'
+    )
+    parser.addoption(
+        '--ip-pool-start',
+        action='store',
+        default=config_data['ip-pool-start'],
+        help='Start IP of IP pool for load balancer'
+    )
+    parser.addoption(
+        '--ip-pool-end',
+        action='store',
+        default=config_data['ip-pool-end'],
+        help='End IP of IP pool for load balancer'
     )
     parser.addoption(
         '--wait-timeout',

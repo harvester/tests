@@ -72,7 +72,7 @@ class IPPoolManager(BaseManager):
     PATH_fmt = "{API_VERSION}/harvester/loadbalancer.harvesterhci.io.ippools{name}"
     API_VERSION = "v1"
 
-    def create_data(self, name, ip_pool_subnet, network_id):
+    def create_data(self, name, ip_pool_subnet, ip_pool_start, ip_pool_end, network_id):
         return {
             "type": "loadbalancer.harvesterhci.io.ippool",
             "metadata": {
@@ -81,8 +81,10 @@ class IPPoolManager(BaseManager):
             "spec": {
                 "ranges": [{
                     "subnet": ip_pool_subnet,
+                    "rangeStart": ip_pool_start,
+                    "rangeEnd": ip_pool_end,
                     "gateway": "",
-                    "type": "cidr"
+                    "type": "range" if ip_pool_start or ip_pool_end else "cidr"
                 }],
                 "selector": {
                     "network": network_id,
@@ -95,8 +97,8 @@ class IPPoolManager(BaseManager):
             }
         }
 
-    def create(self, name, ip_pool_subnet, network_id, *, raw=False):
-        data = self.create_data(name, ip_pool_subnet, network_id)
+    def create(self, name, ip_pool_subnet, ip_pool_start, ip_pool_end, network_id, *, raw=False):
+        data = self.create_data(name, ip_pool_subnet, ip_pool_start, ip_pool_end, network_id)
         path = self.PATH_fmt.format(name="", API_VERSION=self.API_VERSION)
         return self._create(path, json=data, raw=raw)
 
