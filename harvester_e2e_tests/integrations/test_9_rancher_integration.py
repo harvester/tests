@@ -57,8 +57,12 @@ def vlan_network(request, api_client):
 def ip_pool(request, api_client, unique_name, vlan_network):
     name = f"ippool-{unique_name}"
     ip_pool_subnet = request.config.getoption('--ip-pool-subnet')
+    ip_pool_start = request.config.getoption('--ip-pool-start')
+    ip_pool_end = request.config.getoption('--ip-pool-end')
 
-    code, data = api_client.ippools.create(name, ip_pool_subnet, vlan_network["id"])
+    code, data = api_client.ippools.create(
+        name, ip_pool_subnet, ip_pool_start, ip_pool_end, vlan_network["id"]
+    )
     assert 201 == code, (
         f"Failed to create ip pool {name} with error: {code}, {data}"
     )
