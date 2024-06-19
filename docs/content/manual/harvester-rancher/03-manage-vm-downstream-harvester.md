@@ -12,6 +12,7 @@ Prerequisite: Harvester already imported to Rancher Dashboard
 1. Try `Stop`, `Restart` and `Migrate` virtual machine
 1. Try `Clone` virtual machine
 1. Try `Delete` virtual machine
+1. `Use VM Template` to create VM
 
 ## Expected Results
 1. Can create a single instance vm correctly
@@ -21,3 +22,4 @@ Prerequisite: Harvester already imported to Rancher Dashboard
 1. Can `Stop`, `Restart` and `Migrate` virtual machine correctly
 1. Can `Clone` virtual machine correctly
 1. Can `Delete` virtual machine correctly
+1. Vm should be successfully created.
