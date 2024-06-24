@@ -80,7 +80,7 @@ export class VolumePage extends CruResourcePo {
     cy.wrap('async').then(() => {
       this.table.find(name, 3, ns, 4).then((index: any) => {
         if (typeof index === 'number') {
-          cy.get(`[data-testid="sortable-table-${index}-row"]`).find('td').eq(5).should(($el: any) => {
+          cy.get(`[data-testid="sortable-table-${index}-row"]`).find('td').eq(6).should(($el: any) => {
             expect($el).to.contain(vmName)
           })
         }
