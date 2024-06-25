@@ -329,6 +329,7 @@ class VMSpec:
         if self._data:
             self._data['metadata'].update(data['metadata'])
             self._data['spec'].update(data['spec'])
+            self._data['metadata'].pop('resourceVersion')  # remove for create new ones
             return deepcopy(self._data)
 
         return deepcopy(data)
@@ -339,7 +340,6 @@ class VMSpec:
             raise ValueError("Only support extract data comes from 'kubevirt.io.virtualmachine'")
 
         data = deepcopy(data)
-        data['metadata'].pop('resourceVersion')  # remove for create new ones
         spec, metadata = data.get('spec', {}), data.get('metadata', {})
         vm_spec = spec['template']['spec']
 

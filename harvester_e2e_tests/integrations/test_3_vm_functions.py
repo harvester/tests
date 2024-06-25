@@ -1,9 +1,9 @@
 from time import sleep
 from datetime import datetime, timedelta
 from contextlib import contextmanager
-
 import json
 import re
+
 import pytest
 import yaml
 from paramiko.ssh_exception import ChannelException
