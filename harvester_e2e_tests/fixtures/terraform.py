@@ -115,10 +115,10 @@ TF_RKE_CONFIG = '''
   rke_config {
     %(machine_pools)s
     machine_selector_config {
-      config = {
+      config = jsonencode({
         cloud-provider-config = file("${path.module}/kubeconfig")
         cloud-provider-name = "harvester"
-      }
+      })
     }
     machine_global_config = <<EOF
     cni: "calico"

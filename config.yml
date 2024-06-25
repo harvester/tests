@@ -29,7 +29,8 @@ image-cache-url: ''
 
 # script location for terraform related test cases
 terraform-scripts-location: 'terraform_test_artifacts'
-terraform-provider-rancher: '3.1.1'
+# Rancher provider version, leave empty for the latest version. e.g. '' or '3.1.1'.
+terraform-provider-rancher: ''
 
 # Backup Target S3
 s3-endpoint: ''
