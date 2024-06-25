@@ -75,11 +75,9 @@ class TestVMTemplate:
         assert unique_name == data['metadata']['name']
 
     def test_update(self, api_client, unique_name):
-        config = {
-            "cpu": 1,
-            "memory": "2Gi",
-        }
-        code, data = api_client.templates.update(unique_name, **config)
+        spec = api_client.templates.Spec(1, 2)
+
+        code, data = api_client.templates.create_version(unique_name, spec)
 
         assert 201 == code, (code, data)
         assert data['metadata']['name'].startswith(unique_name), (code, data)
