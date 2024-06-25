@@ -2,6 +2,7 @@ import re
 import json
 import yaml
 from time import sleep
+from hashlib import sha512
 from operator import add
 from functools import reduce
 from datetime import datetime, timedelta
@@ -388,7 +389,8 @@ class TestInvalidUpgrade:
         2. Try to upgrade with the invalid manifest.
         3. Upgrade should not start and fail.
         """
-        version, url, checksum = unique_name, "https://invalid_iso_url", 'not_a_valid_checksum'
+        version, url = unique_name, "https://invalid_iso_url"
+        checksum = sha512(b'not_a_valid_checksum').hexdigest()
 
         code, data = api_client.versions.get(version)
         if code != 200:
