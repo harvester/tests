@@ -1,5 +1,5 @@
 from copy import deepcopy
-from json import dumps
+from json import dumps, loads
 
 import yaml
 
@@ -339,14 +339,16 @@ class VMSpec:
             raise ValueError("Only support extract data comes from 'kubevirt.io.virtualmachine'")
 
         data = deepcopy(data)
+        data['metadata'].pop('resourceVersion')  # remove for create new ones
         spec, metadata = data.get('spec', {}), data.get('metadata', {})
         vm_spec = spec['template']['spec']
 
+        run_strategy = spec['runStrategy']
         os_type = metadata.get('labels', {}).get("harvesterhci.io/os", "")
         desc = metadata['annotations'].get("field.cattle.io/description", "")
         reserved_mem = metadata['annotations'].get("harvesterhci.io/reservedMemory", "")
-        run_strategy = spec['runStrategy']
-        # ???: volume template claims not load
+        vol_claims = {v['metadata']['name']: VolumeSpec.from_dict(v) for v in loads(
+                        metadata['annotations'].get("harvesterhci.io/volumeClaimTemplates", "[]"))}
 
         hostname = vm_spec['hostname']
         eviction_strategy = vm_spec['evictionStrategy']
@@ -369,8 +371,12 @@ class VMSpec:
 
         obj._features = features
         obj._firmwares = firmware
+        obj._cloudinit_vol = dict(disk=devices['disks'][-1], volume=volumes[-1])
         obj.networks = [dict(iface=i, network=n) for i, n in zip(devices['interfaces'], networks)]
         obj.volumes = [dict(disk=d, volume=v) for d, v in zip(devices['disks'][:-1], volumes[:-1])]
-        obj._cloudinit_vol = dict(disk=devices['disks'][-1], volume=volumes[-1])
+        for v in obj.volumes:
+            if "persistentVolumeClaim" in v['volume']:
+                v['claim'] = vol_claims[v['volume']['persistentVolumeClaim']['claimName']]
+
         obj._data = data
         return obj
