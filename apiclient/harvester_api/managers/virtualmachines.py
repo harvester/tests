@@ -34,14 +34,14 @@ class VirtualMachineManager(BaseManager):
 
     def create(self, name, vm_spec, namespace=DEFAULT_NAMESPACE, *, raw=False):
         if isinstance(vm_spec, self.Spec):
-            vm_spec = vm_spec.to_dict(name, namespace)
+            vm_spec = self.Spec.to_dict(vm_spec, name, namespace)
         path = self.PATH_fmt.format(uid="", ns=namespace)
         return self._create(path, json=vm_spec, raw=raw)
 
     def update(self, name, vm_spec, namespace=DEFAULT_NAMESPACE, *,
                raw=False, as_json=True, **kwargs):
         if isinstance(vm_spec, self.Spec):
-            vm_spec = vm_spec.to_dict(name, namespace)
+            vm_spec = self.Spec.to_dict(vm_spec, name, namespace)
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         return self._update(path, vm_spec, raw=raw, as_json=as_json, **kwargs)
 
@@ -113,4 +113,13 @@ class VirtualMachineManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         json = dict(diskName=disk_name)
         params = dict(action="removeVolume")
+        return self._create(path, params=params, json=json, raw=raw)
+
+    def create_template(
+        self, name, template_name, keep_data=False, description="", namespace=DEFAULT_NAMESPACE,
+        *, raw=False
+    ):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        json = dict(description=description, name=template_name, withData=keep_data)
+        params = dict(action="createTemplate")
         return self._create(path, params=params, json=json, raw=raw)
