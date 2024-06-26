@@ -844,7 +844,8 @@ class TestInvalidUpgrade:
         2. Try to upgrade with the invalid manifest.
         3. Upgrade should not start and fail.
         &#34;&#34;&#34;
-        version, url, checksum = unique_name, &#34;https://invalid_iso_url&#34;, &#39;not_a_valid_checksum&#39;
+        version, url = unique_name, &#34;https://invalid_iso_url&#34;
+        checksum = sha512(b&#39;not_a_valid_checksum&#39;).hexdigest()
 
         code, data = api_client.versions.get(version)
         if code != 200:
