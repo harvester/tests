@@ -17,7 +17,7 @@ class BaseAddonSpec:
     """ Base class for instance check and create """
     _name = ""  # to point out the name of addon
     _id = ""
-    _enable = False  # the addon is enable or not 
+    _enable = False  # the addon is enable or not
 
     def __init__(self, value=None, enabled=False):
         self.value = value or dict()
