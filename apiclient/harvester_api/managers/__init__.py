@@ -12,6 +12,7 @@ from .storageclasses import StorageClassManager
 from .clusternetworks import ClusterNetworkManager
 from .volumesnapshots import VolumeSnapshotManager
 from .virtualmachines import VirtualMachineManager
+from .addons import AddonManager
 # Not available in dashboard
 from .internals import VersionManager, UpgradeManager, DEFAULT_HARVESTER_NAMESPACE
 from .longhorns import (
@@ -32,6 +33,7 @@ __all__ = [
  "ClusterNetworkManager",
  "VirtualMachineManager",
  "StorageClassManager",
+ "AddonManager",
  "BackupManager", "VirtualMachineSnapshotManager",
  "VersionManager", "UpgradeManager",
  "LonghornReplicaManager", "LonghornVolumeManager", "LonghornBackupVolumeManager",
