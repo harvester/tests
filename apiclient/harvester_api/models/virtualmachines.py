@@ -376,7 +376,9 @@ class VMSpec:
         obj.volumes = [dict(disk=d, volume=v) for d, v in zip(devices['disks'][:-1], volumes[:-1])]
         for v in obj.volumes:
             if "persistentVolumeClaim" in v['volume']:
-                v['claim'] = vol_claims[v['volume']['persistentVolumeClaim']['claimName']]
+                claim = v['volume']['persistentVolumeClaim']['claimName']
+                if vol_claims.get(claim):
+                    v['claim'] = vol_claims[claim]
 
         obj._data = data
         return obj
