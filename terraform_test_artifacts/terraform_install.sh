@@ -31,9 +31,9 @@ if [ -x "$TERDIR/bin/terraform" ] ; then
 fi
 
 pushd "$TERDIR"
-`wget ${DOWNLOAD_URL} -O terraform_bin.zip`
+`wget -q ${DOWNLOAD_URL} -O terraform_bin.zip`
 ## extract archive
-unzip terraform_bin.zip 
+unzip -o terraform_bin.zip 
 terraform_bin=${TERDIR}/bin
 
 mkdir -p "${terraform_bin}"
