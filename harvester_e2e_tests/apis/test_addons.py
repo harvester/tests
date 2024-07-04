@@ -23,7 +23,7 @@ class TestDefaultAddons:
 
     @pytest.mark.dependency(name="enable_addon")
     def test_enable(self, api_client, wait_timeout, addon):
-        code, data = api_client.addons.enable(addon, True)
+        code, data = api_client.addons.enable(addon)
 
         assert 200 == code, (code, data)
         assert data.get('spec', {}).get('enabled', False), (code, data)
@@ -42,7 +42,7 @@ class TestDefaultAddons:
 
     @pytest.mark.dependency(depends=["enable_addon"])
     def test_disable(self, api_client, addon, wait_timeout):
-        code, data = api_client.addons.enable(addon, False)
+        code, data = api_client.addons.disable(addon)
 
         assert 200 == code, (code, data)
         assert not data.get('spec', {}).get('enabled', True), (code, data)

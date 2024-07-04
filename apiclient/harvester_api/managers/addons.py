@@ -28,3 +28,6 @@ class AddonManager(BaseManager):
             data['spec']['enabled'] = enable
             code, data = self._update(path, data, as_json=True)
         return code, data
+
+    def disable(self, uid):
+        return self.enable(uid, False)
