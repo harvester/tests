@@ -35,7 +35,7 @@ class BaseAddonSpec:
         self._enable = val
 
     def to_dict(self, data):
-        return dict(spec=dict(enabled=self.enable, valuesConetne=safe_dump(self.value)))
+        return dict(spec=dict(enabled=self.enable, valuesContent=safe_dump(self.value)))
 
     @classmethod
     def from_dict(cls, data):
@@ -123,7 +123,7 @@ class VMImportControllerAddonSpec(BaseAddonSpec):
         self.requests = value.get('resources', {}).get('requests', {})
 
     def to_dict(self, data):
-        return dict(spec=dict(enabled=self.enable, valuesConetne=dumps(self.value)))
+        return dict(spec=dict(enabled=self.enable, valuesContent=dumps(self.value)))
 
     @classmethod
     def from_dict(cls, data):
