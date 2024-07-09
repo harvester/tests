@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.1">
-<title>harvester_e2e_tests.apis API documentation</title>
+<title>harvester_e2e_tests.apis.test_addons API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -22,60 +22,113 @@ hljs.highlightAll();
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>harvester_e2e_tests.apis</code></h1>
+<h1 class="title">Module <code>harvester_e2e_tests.apis.test_addons</code></h1>
 </header>
 <section id="section-intro">
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_addons" href="test_addons.html">harvester_e2e_tests.apis.test_addons</a></code></dt>
+<dt id="harvester_e2e_tests.apis.test_addons.TestDefaultAddons"><code class="flex name class">
+<span>class <span class="ident">TestDefaultAddons</span></span>
+</code></dt>
 <dd>
 <div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_hosts" href="test_hosts.html">harvester_e2e_tests.apis.test_hosts</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_images" href="test_images.html">harvester_e2e_tests.apis.test_images</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_keypairs" href="test_keypairs.html">harvester_e2e_tests.apis.test_keypairs</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_networks" href="test_networks.html">harvester_e2e_tests.apis.test_networks</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_settings" href="test_settings.html">harvester_e2e_tests.apis.test_settings</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_support_bundle" href="test_support_bundle.html">harvester_e2e_tests.apis.test_support_bundle</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_vm_templates" href="test_vm_templates.html">harvester_e2e_tests.apis.test_vm_templates</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_vms" href="test_vms.html">harvester_e2e_tests.apis.test_vms</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="harvester_e2e_tests.apis.test_volumes" href="test_volumes.html">harvester_e2e_tests.apis.test_volumes</a></code></dt>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.parametrize(&#34;addon&#34;, [
+    &#39;cattle-logging-system/rancher-logging&#39;,
+    &#39;cattle-monitoring-system/rancher-monitoring&#39;,
+    &#39;harvester-system/harvester-seeder&#39;,
+    &#39;harvester-system/nvidia-driver-toolkit&#39;,
+    &#39;harvester-system/pcidevices-controller&#39;,
+    &#39;harvester-system/vm-import-controller&#39;,
+])
+class TestDefaultAddons:
+    def test_get(self, api_client, addon):
+        code, data = api_client.addons.get(addon)
+
+        assert 200 == code, (code, data)
+        assert not data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, True), (code, data)
+        assert &#34;AddonDisabled&#34; == data.get(&#39;status&#39;, {}).get(&#39;status&#39;)
+
+    @pytest.mark.dependency(name=&#34;enable_addon&#34;)
+    def test_enable(self, api_client, wait_timeout, addon):
+        code, data = api_client.addons.enable(addon)
+
+        assert 200 == code, (code, data)
+        assert data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, False), (code, data)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.addons.get(addon)
+            if data.get(&#39;status&#39;, {}).get(&#39;status&#39;, &#34;&#34;) in (&#34;deployed&#34;, &#34;AddonDeploySuccessful&#34;):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;Failed to enable addon {addon} with {wait_timeout} timed out\n&#34;
+                f&#34;API Status({code}): {data}&#34;
+            )
+
+    @pytest.mark.dependency(depends=[&#34;enable_addon&#34;])
+    def test_disable(self, api_client, addon, wait_timeout):
+        code, data = api_client.addons.disable(addon)
+
+        assert 200 == code, (code, data)
+        assert not data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, True), (code, data)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.addons.get(addon)
+            if &#34;Disabled&#34; in data.get(&#39;status&#39;, {}).get(&#39;status&#39;, &#34;&#34;):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;Failed to disable addon {addon} with {wait_timeout} timed out\n&#34;
+                f&#34;API Status({code}): {data}&#34;
+            )</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_addons.TestDefaultAddons.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_disable"><code class="name flex">
+<span>def <span class="ident">test_disable</span></span>(<span>self, api_client, addon, wait_timeout)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_enable"><code class="name flex">
+<span>def <span class="ident">test_enable</span></span>(<span>self, api_client, wait_timeout, addon)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_get"><code class="name flex">
+<span>def <span class="ident">test_get</span></span>(<span>self, api_client, addon)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -85,21 +138,20 @@ hljs.highlightAll();
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="harvester_e2e_tests" href="../index.html">harvester_e2e_tests</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis" href="index.html">harvester_e2e_tests.apis</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li><code><a title="harvester_e2e_tests.apis.test_addons" href="test_addons.html">harvester_e2e_tests.apis.test_addons</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_hosts" href="test_hosts.html">harvester_e2e_tests.apis.test_hosts</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_images" href="test_images.html">harvester_e2e_tests.apis.test_images</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_keypairs" href="test_keypairs.html">harvester_e2e_tests.apis.test_keypairs</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_networks" href="test_networks.html">harvester_e2e_tests.apis.test_networks</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_settings" href="test_settings.html">harvester_e2e_tests.apis.test_settings</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_support_bundle" href="test_support_bundle.html">harvester_e2e_tests.apis.test_support_bundle</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_vm_templates" href="test_vm_templates.html">harvester_e2e_tests.apis.test_vm_templates</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_vms" href="test_vms.html">harvester_e2e_tests.apis.test_vms</a></code></li>
-<li><code><a title="harvester_e2e_tests.apis.test_volumes" href="test_volumes.html">harvester_e2e_tests.apis.test_volumes</a></code></li>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_addons.TestDefaultAddons" href="#harvester_e2e_tests.apis.test_addons.TestDefaultAddons">TestDefaultAddons</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_addons.TestDefaultAddons.pytestmark" href="#harvester_e2e_tests.apis.test_addons.TestDefaultAddons.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_disable" href="#harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_disable">test_disable</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_enable" href="#harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_enable">test_enable</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_get" href="#harvester_e2e_tests.apis.test_addons.TestDefaultAddons.test_get">test_get</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
