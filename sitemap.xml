@@ -618,10 +618,6 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/q-negative-edit-vm-yaml/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/volumes/edit-volume-decrase-size-yaml/</loc>
-  </url><url>
-    <loc>https://harvester.github.io/tests/manual/volumes/edit-volume-decrease-size-form/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/edit-volume-form-add-label/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-form/</loc>

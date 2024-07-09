@@ -2122,20 +2122,6 @@
       <description> In a multi-node setup disconnect/shutdown the node where the VM is running Edit the VM via YAML Save the VM Expected Results SSH to the node and check the nodes has components deleted. </description>
     </item>
     <item>
-      <title>Edit volume decrease size via YAML</title>
-      <link>https://harvester.github.io/tests/manual/volumes/edit-volume-decrase-size-yaml/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-decrase-size-yaml/</guid>
-      <description> Stop the vm Navigate to volumes page Edit Volume as YAML Decrease size Click Save Connect to VM via console Check size of root disk Expected Results VM should stop VM should reboot after saving Disk should be resized </description>
-    </item>
-    <item>
-      <title>Edit volume decrease size via YAML</title>
-      <link>https://harvester.github.io/tests/manual/volumes/edit-volume-decrease-size-form/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-decrease-size-form/</guid>
-      <description> Stop the vm Navigate to volumes page Edit Volume as YAML Decrease size Click Save Connect to VM via console Check size of root disk Expected Results VM should stop VM should reboot after saving Disk should be resized </description>
-    </item>
-    <item>
       <title>Edit Volume Form add label</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-form-add-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

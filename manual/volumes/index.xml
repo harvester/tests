@@ -78,20 +78,6 @@
       <description>Related issues: #1708 After click &amp;ldquo;Detach volume&amp;rdquo; button, nothing happend Category: Volume Verification Steps Create several new volume in volumes page Create a virtual machine Click the config button on the selected virtual machine Click Add volume and add at least two new volume Click the Detach volume button on the attached volume Repeat above steps several times Expected Results Currently when click the Detach volume button, attached volume can be detach successfully.</description>
     </item>
     <item>
-      <title>Edit volume decrease size via YAML</title>
-      <link>https://harvester.github.io/tests/manual/volumes/edit-volume-decrase-size-yaml/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-decrase-size-yaml/</guid>
-      <description> Stop the vm Navigate to volumes page Edit Volume as YAML Decrease size Click Save Connect to VM via console Check size of root disk Expected Results VM should stop VM should reboot after saving Disk should be resized </description>
-    </item>
-    <item>
-      <title>Edit volume decrease size via YAML</title>
-      <link>https://harvester.github.io/tests/manual/volumes/edit-volume-decrease-size-form/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/volumes/edit-volume-decrease-size-form/</guid>
-      <description> Stop the vm Navigate to volumes page Edit Volume as YAML Decrease size Click Save Connect to VM via console Check size of root disk Expected Results VM should stop VM should reboot after saving Disk should be resized </description>
-    </item>
-    <item>
       <title>Edit Volume Form add label</title>
       <link>https://harvester.github.io/tests/manual/volumes/edit-volume-form-add-label/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
