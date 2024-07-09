@@ -21,6 +21,7 @@ class RancherAPI:
     def login(cls, endpoint, user, passwd, session=None, ssl_verify=True):
         api = cls(endpoint, session=session)
         api.authenticate(user, passwd, verify=ssl_verify)
+        api.session.verify = ssl_verify
 
         return api
 

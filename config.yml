@@ -51,7 +51,7 @@ rancher-admin-password: 'password1234'
 # Prefix of K8s version for to create downstream cluster
 k8s-version: 'v1.28'
 # Wait time for polling Rancher cluster status.
-rancher-cluster-wait-timeout: 7200
+rancher-cluster-wait-timeout: 1800
 
 # Upgrade parameters
 upgrade-prepare-dependence: False
