@@ -31,7 +31,11 @@ image-cache-url: ''
 terraform-scripts-location: 'terraform_test_artifacts'
 # Rancher provider version, leave empty for the latest version. e.g. '' or '3.1.1'.
 terraform-provider-rancher: ''
-# Harvester provider version, leave empty for the latest version. e.g. '' or '0.6.3'.
+# Harvester provider version:
+# '' for the latest released version.
+# '0.0.0-dev' for the latest version from master branch.
+# '0.0.0-dev' requires Docker, because we will get plugin executable file from the container.
+# '0.6.3' for the specific version.
 terraform-provider-harvester: ''
 
 # Backup Target S3
