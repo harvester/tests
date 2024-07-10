@@ -257,6 +257,27 @@ class TerraformHarvester:
                 provider_source="harvester/harvester", provider_version=provider_version
             ))
 
+        # cleanup terraform plugin cache
+        local_plugin_path = "~/.terraform.d/plugins/registry.terraform.io"
+        local_plugin_tf = "harvester/harvester/0.0.0-dev/linux_amd64"
+        rv = run(
+            f"rm -rf ~/.terraform.d/plugins/registry.terraform.io/harvester/harvester &&"
+            f" mkdir -p {local_plugin_path}/{local_plugin_tf}",
+            shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir)
+        assert not remove_ansicode(rv.stderr) and 0 == rv.returncode
+
+        if provider_version == "0.0.0-dev":
+            docker_plugin_path = "/root/.terraform.d/plugins/terraform.local/local"
+            docker_plugin_tf = "harvester/0.0.0-dev/linux_amd64/terraform-provider-harvester_v0.0.0-dev"  # noqa: E501
+            rv = run(
+                f"docker run --pull=always -q --rm --name harv-tf-master-head"
+                f" -v {local_plugin_path}/{local_plugin_tf}:/_tf"
+                f" rancher/terraform-provider-harvester:master-head-amd64"
+                f' bash -c "cp {docker_plugin_path}/{docker_plugin_tf} /_tf/"',
+                shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir
+            )
+            assert not remove_ansicode(rv.stderr) and 0 == rv.returncode
+
         return self.execute("init")
 
     def save_as(self, content, filename, ext=".tf"):
