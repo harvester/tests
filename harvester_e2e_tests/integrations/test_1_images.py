@@ -1,7 +1,12 @@
-from tempfile import NamedTemporaryFile
-from pathlib import Path
-from time import sleep
+import filecmp
+import json
+import re
+import zlib
 from datetime import datetime, timedelta
+from ipaddress import ip_address, ip_network
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from time import sleep
 
 import pytest
 
@@ -9,6 +14,7 @@ import pytest
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
     "harvester_e2e_tests.fixtures.images",
+    "harvester_e2e_tests.fixtures.networks"
 ]
 
 
@@ -103,6 +109,119 @@ def get_image(api_client, image_name):
     code, data = api_client.images.get(image_name)
     assert 200 == code, (code, data)
     assert image_name == data["metadata"]["name"]
+
+
+@pytest.fixture(scope="class")
+def cluster_network(api_client, vlan_nic):
+    cnet = f"cnet-{vlan_nic}"
+    code, data = api_client.clusternetworks.get(cnet)
+    if code != 200:
+        code, data = api_client.clusternetworks.create(cnet)
+        assert 201 == code, (code, data)
+
+    code, data = api_client.clusternetworks.get_config(cnet)
+    if code != 200:
+        code, data = api_client.clusternetworks.create_config(cnet, cnet, vlan_nic)
+        assert 201 == code, (code, data)
+
+    yield cnet
+
+    # Teardown
+    code, data = api_client.clusternetworks.delete_config(cnet)
+    assert 200 == code, (code, data)
+    code, data = api_client.clusternetworks.delete(cnet)
+    assert 200 == code, (code, data)
+
+
+@pytest.fixture(scope="class")
+def vlan_cidr(api_client, cluster_network, vlan_id, wait_timeout, sleep_timeout):
+    vnet = f'{cluster_network}-vlan{vlan_id}'
+    code, data = api_client.networks.get(vnet)
+    if code != 200:
+        code, data = api_client.networks.create(vnet, vlan_id, cluster_network=cluster_network)
+        assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.networks.get(vnet)
+        annotations = data['metadata'].get('annotations', {})
+        if 200 == code and annotations.get('network.harvesterhci.io/route'):
+            route = json.loads(annotations['network.harvesterhci.io/route'])
+            if route['cidr']:
+                break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f"Fail to get route info of VM network {vnet} with error: {code}, {data}"
+        )
+
+    yield route['cidr']
+
+    # Teardown
+    code, data = api_client.networks.delete(vnet)
+    assert 200 == code, (code, data)
+
+
+@pytest.fixture(scope="class")
+def storage_network(api_client, cluster_network, vlan_id, vlan_cidr, wait_timeout, sleep_timeout):
+    code, data = api_client.settings.get('storage-network')
+    assert 200 == code, (code, data)
+
+    # Enable from Harvester side
+    spec_orig = api_client.settings.Spec.from_dict(data)
+    spec = api_client.settings.StorageNetworkSpec.enable_with(vlan_id, cluster_network, vlan_cidr)
+    code, data = api_client.settings.update('storage-network', spec)
+    assert 200 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.settings.get('storage-network')
+        conds = data.get('status', {}).get('conditions', [])
+        if conds and 'True' == conds[-1].get('status') and 'Completed' == conds[-1].get('reason'):
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f"Fail to enable storage-network with error: {code}, {data}"
+        )
+
+    # Check on Longhorn side
+    done, ip_range = [], ip_network(vlan_cidr)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.get_pods(namespace='longhorn-system')
+        lh_instance_mgrs = [d for d in data['data']
+                            if 'instance-manager' in d['id'] and d['id'] not in done]
+        retries = []
+        for im in lh_instance_mgrs:
+            if 'Running' != im['status']['phase']:
+                retries.append(im)
+                continue
+            nets = json.loads(im['metadata']['annotations']['k8s.v1.cni.cncf.io/network-status'])
+            try:
+                dedicated = next(n for n in nets if 'lhnet1' == n.get('interface'))
+            except StopIteration:
+                retries.append(im)
+                continue
+
+            if not all(ip_address(ip) in ip_range for ip in dedicated.get('ips', ['::1'])):
+                retries.append(im)
+                continue
+
+        if not retries:
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f"{len(retries)} Longhorn's instance manager not be updated after {wait_timeout}s\n"
+            f"Not completed: {retries}"
+        )
+
+    yield
+
+    # Teardown
+    code, data = api_client.settings.update('storage-network', spec_orig)
+    assert 200 == code, (code, data)
 
 
 @pytest.mark.p0
@@ -318,3 +437,50 @@ class TestBackendImages:
 
         delete_volume(api_client, volume_name, wait_timeout)
         delete_image(api_client, image_name, wait_timeout)
+
+
+@pytest.mark.p0
+@pytest.mark.skip_version_if("< v1.0.3")
+@pytest.mark.usefixtures("storage_network")
+class TestImageWithStorageNetwork:
+    @pytest.mark.dependency(name="create_image_by_file")
+    def test_create_image_by_file(self, api_client, fake_image_file, unique_name):
+        resp = api_client.images.create_by_file(unique_name, fake_image_file)
+        assert resp.ok, f"Fail to upload fake image with error: {resp.status_code}, {resp.text}"
+
+        code, data = api_client.images.get(unique_name)
+        assert 200 == code, (code, data)
+        assert unique_name == data["metadata"]["name"], (code, data)
+
+    @pytest.mark.dependency(depends=["create_image_by_file"])
+    def test_download_image(self, api_client, fake_image_file, tmp_path, unique_name):
+        resp = api_client.images.download(unique_name)
+        assert resp.ok, f"Fail to download fake image with error: {resp.status_code}, {resp.text}"
+
+        filename = re.search(r'filename=(\S+)', resp.headers.get("Content-Disposition"))
+        assert filename, f"No filename info in the response header: {resp.headers}"
+        filename = filename.groups()[0]
+
+        tmp_image_file = tmp_path / filename
+        tmp_image_file.write_bytes(
+            zlib.decompress(resp.content, 32+15) if ".gz" in filename else resp.content
+        )
+        assert filecmp.cmp(fake_image_file, tmp_image_file), (
+            "Contents of downloaded image is NOT identical to the fake image"
+        )
+
+    @pytest.mark.dependency(depends=["create_image_by_file"])
+    def test_delete_image(self, api_client, unique_name, wait_timeout, sleep_timeout):
+        code, data = api_client.images.delete(unique_name)
+        assert 200 == code, (code, data)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.images.get(unique_name)
+            if code == 404:
+                break
+            sleep(sleep_timeout)
+        else:
+            raise AssertionError(
+                f"Fail to delete image {unique_name} with error: {code}, {data}"
+            )
