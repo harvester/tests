@@ -8,6 +8,7 @@ class ImageManager(BaseManager):
     # get, create, update, delete
     PATH_fmt = "apis/{{API_VERSION}}/namespaces/{ns}/virtualmachineimages/{uid}"
     UPLOAD_fmt = "v1/harvester/harvesterhci.io.virtualmachineimages/{ns}/{uid}"
+    DOWNLOAD_fmt = "v1/harvester/harvesterhci.io.virtualmachineimages/{ns}/{uid}/download"
     _KIND = "VirtualMachineImage"
 
     def create_data(self, name, url, desc, stype, namespace, display_name=None, storageclass=None):
@@ -71,3 +72,6 @@ class ImageManager(BaseManager):
 
     def delete(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
         return self._delete(self.PATH_fmt.format(uid=name, ns=namespace))
+
+    def download(self, name, namespace=DEFAULT_NAMESPACE):
+        return self._get(self.DOWNLOAD_fmt.format(uid=name, ns=namespace), raw=True)

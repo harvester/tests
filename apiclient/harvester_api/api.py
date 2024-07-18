@@ -122,7 +122,8 @@ class HarvesterAPI:
     def set_retries(self, times=5, status_forcelist=(500, 502, 504), **kwargs):
         kwargs.update(backoff_factor=kwargs.get('backoff_factor', 10.0),
                       total=kwargs.get('total', times),
-                      status_forcelist=status_forcelist)
+                      status_forcelist=status_forcelist,
+                      raise_on_status=False)
         retry_strategy = Retry(**kwargs)
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
