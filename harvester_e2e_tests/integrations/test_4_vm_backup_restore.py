@@ -653,20 +653,20 @@ class TestBackupRestoreWithSnapshot:
     @pytest.mark.dependency(depends=["TestBackupRestoreWithSnapshot::test_connection"], param=True)
     def tests_backup_vm(self, api_client, wait_timeout, backup_config, base_vm_with_data):
         unique_vm_name = base_vm_with_data['name']
-
+        unique_backup_name = f"{unique_vm_name}-backup-with-snapshot"
         # Create backup with the name as VM's name
-        code, data = api_client.vms.backup(unique_vm_name, unique_vm_name)
+        code, data = api_client.vms.backup(unique_vm_name, unique_backup_name)
         assert 204 == code, (code, data)
         # Check backup is ready
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
-            code, backup = api_client.backups.get(unique_vm_name)
+            code, backup = api_client.backups.get(unique_backup_name)
             if 200 == code and backup.get('status', {}).get('readyToUse'):
                 break
             sleep(3)
         else:
             raise AssertionError(
-                f'Timed-out waiting for the backup \'{unique_vm_name}\' to be ready.'
+                f'Timed-out waiting for the backup \'{unique_backup_name}\' to be ready.'
             )
 
     @pytest.mark.dependency(depends=["TestBackupRestoreWithSnapshot::tests_backup_vm"], param=True)
@@ -678,6 +678,7 @@ class TestBackupRestoreWithSnapshot:
         pub_key, pri_key = ssh_keypair
 
         vm_snapshot_name = unique_vm_name + '-snapshot'
+        unique_backup_name = f"{unique_vm_name}-backup-with-snapshot"
         # take vm snapshot
         code, data = api_client.vm_snapshots.create(unique_vm_name, vm_snapshot_name)
         assert 201 == code
@@ -705,9 +706,9 @@ class TestBackupRestoreWithSnapshot:
             sh.exec_command('sync')
 
         # Restore VM into new
-        restored_vm_name = f"{backup_config[0].lower()}-restore-{unique_vm_name}"
+        restored_vm_name = f"{backup_config[0].lower()}-restore-{unique_vm_name}-with-snapshot"
         spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
-        code, data = api_client.backups.restore(unique_vm_name, spec)
+        code, data = api_client.backups.restore(unique_backup_name, spec)
         assert 201 == code, (code, data)
 
         # Check VM Started then get IPs (vm and host)
@@ -773,6 +774,7 @@ class TestBackupRestoreWithSnapshot:
         pub_key, pri_key = ssh_keypair
 
         vm_snapshot_name = unique_vm_name + '-snapshot-retain'
+        unique_backup_name = f"{unique_vm_name}-backup-with-snapshot"
         # take vm snapshot
         code, data = api_client.vm_snapshots.create(unique_vm_name, vm_snapshot_name)
         assert 201 == code
@@ -807,7 +809,7 @@ class TestBackupRestoreWithSnapshot:
         )
 
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=False)
-        code, data = api_client.backups.restore(unique_vm_name, spec)
+        code, data = api_client.backups.restore(unique_backup_name, spec)
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
 
         # Check VM Started then get IPs (vm and host)
