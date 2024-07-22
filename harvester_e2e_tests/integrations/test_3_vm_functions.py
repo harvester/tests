@@ -1469,6 +1469,45 @@ class TestVMWithVolumes:
         for claim in claims:
             api_client.volumes.delete(claim)
 
+    def test_create_with_volume_image(
+        self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, unique_name,
+        image
+    ):
+        # Create the volume from image
+        vol_name, size = f"vm-image-vol-{unique_name}", 10
+        vol_spec = api_client.volumes.Spec(size)
+        code, data = api_client.volumes.create(vol_name, vol_spec, image_id=image['id'])
+        assert 201 == code, (code, data)
+
+        # Create VM using the image volume
+        cpu, mem, unique_vm_name = 1, 2, vol_name
+        pub_key, pri_key = ssh_keypair
+        vm_spec = api_client.vms.Spec(cpu, mem)
+        vm_spec.add_existing_volume("disk-0", vol_name)
+        userdata = yaml.safe_load(vm_spec.user_data)
+        userdata['ssh_authorized_keys'] = [pub_key]
+        vm_spec.user_data = yaml.dump(userdata)
+
+        code, data = api_client.vms.create(unique_vm_name, vm_spec)
+        # Verify the VM will got IP address
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ["default"])
+        assert vm_got_ips, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+
+        # Teardown: delete the VM and volume
+        api_client.vms.delete(unique_vm_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vms.get_status(unique_vm_name)
+            if 404 == code:
+                break
+            sleep(3)
+
+        api_client.volumes.delete(vol_name)
+
 
 @pytest.mark.p0
 @pytest.mark.virtualmachines
