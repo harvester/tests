@@ -1946,7 +1946,46 @@ class TestVMWithVolumes:
             sleep(3)
 
         for claim in claims:
-            api_client.volumes.delete(claim)</code></pre>
+            api_client.volumes.delete(claim)
+
+    def test_create_with_volume_image(
+        self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, unique_name,
+        image
+    ):
+        # Create the volume from image
+        vol_name, size = f&#34;vm-image-vol-{unique_name}&#34;, 10
+        vol_spec = api_client.volumes.Spec(size)
+        code, data = api_client.volumes.create(vol_name, vol_spec, image_id=image[&#39;id&#39;])
+        assert 201 == code, (code, data)
+
+        # Create VM using the image volume
+        cpu, mem, unique_vm_name = 1, 2, vol_name
+        pub_key, pri_key = ssh_keypair
+        vm_spec = api_client.vms.Spec(cpu, mem)
+        vm_spec.add_existing_volume(&#34;disk-0&#34;, vol_name)
+        userdata = yaml.safe_load(vm_spec.user_data)
+        userdata[&#39;ssh_authorized_keys&#39;] = [pub_key]
+        vm_spec.user_data = yaml.dump(userdata)
+
+        code, data = api_client.vms.create(unique_vm_name, vm_spec)
+        # Verify the VM will got IP address
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#34;default&#34;])
+        assert vm_got_ips, (
+            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        # Teardown: delete the VM and volume
+        api_client.vms.delete(unique_vm_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.vms.get_status(unique_vm_name)
+            if 404 == code:
+                break
+            sleep(3)
+
+        api_client.volumes.delete(vol_name)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1991,6 +2030,12 @@ class TestVMWithVolumes:
 - VM should able to start and becomes <code>Running</code>
 - 2 disk volumes should be available in the VM
 - Disk size in VM should be the same as its volume configured</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_volume_image"><code class="name flex">
+<span>def <span class="ident">test_create_with_volume_image</span></span>(<span>self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, unique_name, image)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -2074,6 +2119,7 @@ class TestVMWithVolumes:
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.pytestmark" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_existing_volume" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_existing_volume">test_create_with_existing_volume</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_two_volumes" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_two_volumes">test_create_with_two_volumes</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_volume_image" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_volume_image">test_create_with_volume_image</a></code></li>
 </ul>
 </li>
 </ul>
