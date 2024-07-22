@@ -916,6 +916,9 @@ class TestBackupRestoreWithSnapshot:
             f"Executed stderr: {err}"
         )
 
+        # TODO: try to find the suitable solution to delete the retain volume
+        # without making the deleting VM stuck in Terminating
+
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
 @pytest.mark.p0
