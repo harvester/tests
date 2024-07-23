@@ -15,13 +15,6 @@
       <description> Related issues: #1330 Http proxy setting download image Environment setup Install the latest rancher from docker command $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6-head Create an one node harvester cluster Both harvester and rancher have internet connection Verification Steps Access rancher dashboard Open Virtualization Management page Import existing harvester Copy the registration url Create image from URL (change folder date to latest) https://cloud-images.ubuntu.com/focal/20211122/focal-server-cloudimg-amd64.img Access harvester dashboard Edit cluster-registration-url in settings Paste the registration url and save Back to rancher and wait for harvester imported in Rancher Expected Results Harvester can be imported in rancher dashboard with running status Can access harvester in virtual machine page Can create harvester cloud credential Can load harvester cloud credential while creating harvester </description>
     </item>
     <item>
-      <title>01-Import existing Harvester clusters in Rancher</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/</guid>
-      <description>This feature have been deprecated which already enhanced and merge to setup from harvester settings Please refer to 02-Integrate to Rancher from Harvester settings to test this feature&#xA;Login rancher dashboard Navigate to Virtual Management Page Click import existing Copy the curl command SSH to harvester master node (user: rancher) Execute the curl command to import harvester to rancher curl --insecure -sfL https://192.168.50.82/v3/import/{identifier}.yaml | kubectl apply -f - Run sudo chmod 775 /etc/rancher/rke2/rke2.</description>
-    </item>
-    <item>
       <title>02-Integrate to Rancher from Harvester settings (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -33,7 +26,7 @@
       <link>https://harvester.github.io/tests/manual/harvester-rancher/03-manage-vm-downstream-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/03-manage-vm-downstream-harvester/</guid>
-      <description>Prerequisite: Harvester already imported to Rancher Dashboard&#xA;Open harvester from Virtualization Management page Open Virtual Machine page Create a single instance virtual machine in Virtual Machines page Create multiple 3 instances virtual machines in Virtual Machines page Access and check virtual machine details Edit cpu, memory and network of one virtual machine Try Stop, Restart and Migrate virtual machine Try Clone virtual machine Try Delete virtual machine Expected Results Can create a single instance vm correctly Can create multiple instances vm correctly Can diaply all virtual machine information Can change cpu, memory and network and retart vm correctly Can Stop, Restart and Migrate virtual machine correctly Can Clone virtual machine correctly Can Delete virtual machine correctly </description>
+      <description>Prerequisite: Harvester already imported to Rancher Dashboard&#xA;Open harvester from Virtualization Management page Open Virtual Machine page Create a single instance virtual machine in Virtual Machines page Create multiple 3 instances virtual machines in Virtual Machines page Access and check virtual machine details Edit cpu, memory and network of one virtual machine Try Stop, Restart and Migrate virtual machine Try Clone virtual machine Try Delete virtual machine Use VM Template to create VM Expected Results Can create a single instance vm correctly Can create multiple instances vm correctly Can display all virtual machine information Can change cpu, memory and network and restart vm correctly Can Stop, Restart and Migrate virtual machine correctly Can Clone virtual machine correctly Can Delete virtual machine correctly </description>
     </item>
     <item>
       <title>04-Manage Node in Downstream Harvester</title>
@@ -92,13 +85,6 @@
       <description> Open harvester from Virtualization Management page Click Projects/Namespaces Click Create Project Set CPU and Memory limit in Resource Quotas Change view to testProject only Create some images Create some volumes Create a virtual machine Expected Results Can creat project correctly in Projects/Namespaces page Can create images correctly Can create volumes correctly Can create virtual machine correctly </description>
     </item>
     <item>
-      <title>12-Create New Namespace in Harvester</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/12-create-namespace-harvester/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/12-create-namespace-harvester/</guid>
-      <description> Open harvester from Virtualization Management page Click Projects/Namespaces Select the new project created in previous test case Click Create Namespace Set CPU and Memory limit in Container Resource Limit Expected Results Can creat new namepasce in correctly in create new project </description>
-    </item>
-    <item>
       <title>13-Add and grant project-owner user to custom project</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/13-rbac-add-grant-project-owner-user-custom/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -139,13 +125,6 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/18-delete-failed-imported-harvester-cluster/</guid>
       <description> Make failure in 01-Import existing Harvester clusters in Rancher Open Virtualization Management page Delete already imported harvester Expected Results Can delete imported harvester correctly </description>
-    </item>
-    <item>
-      <title>19-Enable Harvester Node Driver</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/19-enable-harvester-node-driver/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/19-enable-harvester-node-driver/</guid>
-      <description>From Rancher v2.6.3-rc1, harvester node driver has already builtin racher We don&amp;rsquo;t need manual activate it&#xA;Open Cluster Management Click Drivers page and navigate to Node Drivers tab Search harvester Check Harvester node driver is activated and mark as builtin Expected Results Status displayed Activated </description>
     </item>
     <item>
       <title>20-Create RKE1 Kubernetes Cluster</title>
@@ -202,20 +181,6 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/27-delete-rke2-kubernetes-cluster-failure/</guid>
       <description> Provision RKE2 Cluster Management When RKE2 cluster displayed in Failure Click Delete from menu Expected Results Can remove RKE2 Cluster and disapper on Cluster page RKE2 Cluster will be removed from rancher menu under explore cluster RKE2 virtual machine should be also be removed from Harvester </description>
-    </item>
-    <item>
-      <title>28-Deploy Harvester cloud provider to RKE1 Cluster</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/28-deploy-harvester-cloud-provider-to-rke1-cluster/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/28-deploy-harvester-cloud-provider-to-rke1-cluster/</guid>
-      <description>Related task: #1396 Integration Cloud Provider for RKE1 with Rancher Environment Setup Docker install rancher v2.6.3 Create one node harvester with enough resource Verify steps Environment preparation as above steps Import harvester to rancher from harvester settings Create cloud credential Create RKE1 node template Provision a RKE1 cluster, check the Harvester as cloud provider Access RKE1 cluster Open charts in Apps &amp;amp; Market page Install harvester cloud provider Make sure cloud provider installed complete NAME: harvester-cloud-provider LAST DEPLOYED: Thu Dec 16 03:57:26 2021 NAMESPACE: kube-system STATUS: deployed REVISION: 1 TEST SUITE: None --------------------------------------------------------------------- SUCCESS: helm install --namespace=kube-system --timeout=10m0s --values=/home/shell/helm/values-harvester-cloud-provider-100.</description>
-    </item>
-    <item>
-      <title>29-Deploy Harvester cloud provider to RKE2 Cluster</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/29-deploy-harvester-cloud-provider-to-rke2-cluster/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/29-deploy-harvester-cloud-provider-to-rke2-cluster/</guid>
-      <description> Click Clusters Click Create Toggle RKE2/K3s Select Harvester Input Cluster Name Select default namespace Select ubuntu image Select network vlan1 Input SSH User: ubuntu Check alread set Harvester as cloud provider Click Create Wait for RKE2 cluster provisioning complete (~20min) Expected Results Provision RKE2 cluster successfully with Running status Can acccess RKE2 cluster to check all resources and services Check cloud provider installed and configured on RKE2 cluster </description>
     </item>
     <item>
       <title>30-Configure Harvester LoadBalancer service</title>
@@ -344,20 +309,6 @@
       <description>Prerequisite: KUBECONFIG from Harvester&#xA;provision a multinode cluster using harvester node driver with at least 2 worker nodes scale down a node in the cluster </description>
     </item>
     <item>
-      <title>47-Verify Backup and restore on same server</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>48-Verify Backup and restore on server migration</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/</guid>
-      <description> Create a harvester cluster Deploy a harvester node driver cluster preupgrade checks on both Take a backup Restore on a new rancher server from backup taken ins step 4 Run post-upgrade checks for both clusters Verify virtualization management → harvester is accessible Run p0 use case </description>
-    </item>
-    <item>
       <title>49-Overprovision Harvester</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -376,14 +327,14 @@
       <link>https://harvester.github.io/tests/manual/harvester-rancher/51-harvester-cloud-provider-loadbalancer-rke1/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/51-harvester-cloud-provider-loadbalancer-rke1/</guid>
-      <description> Provision cluster using rke1 with harvester as the node driver enable the cloud driver for harvester while provisioning the cluster run jenkins v3 validation checks once cluster comes to active </description>
+      <description> Related ticket: #1396 Integration Cloud Provider for RKE1 with Rancher Provision cluster using rke1 with harvester as the node driver Deploy cloud provider from App. Create a deployment with nginx:latest image. Create a Harvester load balancer to the pod of above deployment. Verify by clicking the service, if the load balancer is redirecting to the nginx home page. </description>
     </item>
     <item>
       <title>52-Use harvester cloud provider to provision an LB - rke2</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/52-harvester-cloud-provider-loadbalancer-rke2/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/52-harvester-cloud-provider-loadbalancer-rke2/</guid>
-      <description> Provision cluster using rke1 with harvester as the node driver enable the cloud driver for harvester while provisioning the cluster run jenkins v3 validation checks once cluster comes to active </description>
+      <description> Provision cluster using rke2 with harvester as the node driver Enable the cloud driver for harvester while provisioning the cluster Create a deployment with nginx:latest image. Create a Harvester load balancer to the pod of above deployment. Verify by clicking the service, if the load balancer is redirecting to the nginx home page. </description>
     </item>
     <item>
       <title>53-Disable Harvester flag with Harvester cluster added</title>
@@ -526,13 +477,6 @@
       <description>Related task: #1808 RKE2 provisioning fails when Rancher has no internet access (air-gapped)&#xA;Note1: In this test, we use vagrant-pxe-airgap-harvester to automatically provide the fully airgapped environment&#xA;Note1: Compared to test case 68, we don&amp;rsquo;t need to manually create a separate VM for the Rancher instance and docker private registry, all the prerequisite environment can be done with the vagrant-pxe-airgap-harvester solution&#xA;Environment Setup Phase 1: Create airgapped Harvester cluster, Rancher and private registry Clone the latest ipxe-example which include the vagrant-pxe-airgap-harvester Follow the Sample Host Loadout and Prerequisites in readme to prepare the prerequisite package If you use Opensuse Leap operating system, you may need to comment out the following line in Vagrantfile file # libvirt.</description>
     </item>
     <item>
-      <title>Better Load Balancer Config of Harvester cloud provider</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/better-load-balancer-config-rke2-cloud-provider/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/better-load-balancer-config-rke2-cloud-provider/</guid>
-      <description>Related issue: #1435 better loadblancer config of Harvester cloud provider Category: Rancher Integration Environment setup Install rancher 2.6.3 by docker docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps Import harvester to rancher virtualization management Create a harvester cluster by harvester driver Access the new harvester cluster from rancher cluster management Create a load balancer from service discovery -&amp;gt; services Re login rancher Open create load-balance page Click ctrl+R to refresh page Check the &amp;ldquo;Add-on Config&amp;rdquo; tabs Expected Results User can configure port, IPAM and health check related setting on Add-on Config page Can create load balancer correctly with health check setting</description>
-    </item>
-    <item>
       <title>Check can apply the resource quota limit to project and namespace</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/check-can-apply-the-resource-quota-limit-to-project-and-namespace-/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -568,25 +512,11 @@
       <description> Related issues: #1311 Deleting a cluster in rancher dashboard doesn&amp;rsquo;t fully remove Verification Steps Create 3 node RKE2 cluster on Harvester through node driver with Rancher Wait fo the nodes to create, but not fully provision Delete the cluster Wait for them to be removed from Harvester Check Rancher cluster management Expected Results Cluster should be removed from Rancher VMs should be removed from Harvester </description>
     </item>
     <item>
-      <title>Mark some features as experimental</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/1671-mark-experimental-features/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/1671-mark-experimental-features/</guid>
-      <description> Related issues: #1671 Mark external Harvester cluster provisioning support as experimental Verification Steps Verify that external Harvester is marked as experiemental Verify that Cloud Credentials is marked as experimental Verify that external is marked as experimental in add node template Expected Results All external Harvester fields should be marked as experimental </description>
-    </item>
-    <item>
       <title>Provision RKE2 cluster with resource quota configured</title>
       <link>https://harvester.github.io/tests/manual/harvester-rancher/provision-rke2-cluster-with-resource-quota-configured/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/provision-rke2-cluster-with-resource-quota-configured/</guid>
       <description>Related issues: #1455 Node driver provisioning fails when resource quota configured in project&#xA;Related issues: #1449 Incorrect naming of project resource configuration&#xA;Category: Rancher Integration Environment setup Install the latest rancher from docker command $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Test Scenarios Scenario 1:&#xA;Project with resource quota: CPU Limit / CPU Reservation: 6000 / 6144 Memory Limit / Memory Reservation: 6000 / 6144 Scenario 2:</description>
-    </item>
-    <item>
-      <title>Rancher import harvester enhancement</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/rancher-import-harvester-enhacement/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/rancher-import-harvester-enhacement/</guid>
-      <description>Related issues: #1330 Http proxy setting download image Category: Rancher Integration Environment setup Install the latest rancher from docker command $ sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps Installed a 3 nodes harvester cluster Import harvester to rancher in virtualization management Enable node driver and create cloud credential Provision a RKE2 cluster in rancher Confirm RKE2 cluster is fully operated, can explore it Shutdown all 3 nodes server machine Wait for 10 minutes Power on all harvester nodes server machines Confirm harvester is fully operated Confirm RKE2 vm is back to running Check the RKE2 cluster status in rancher Expected Results The RKE2 cluster in rancher should turn back to Running with no error after harvester server node machine is fully power off and power on.</description>
     </item>
     <item>
       <title>Rancher Resource quota management</title>
@@ -601,20 +531,6 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/harvester-rancher/1669-reboot-cluster-check-vip/</guid>
       <description> Related issues: #1669 Unable to access harvester VIP nor node IP after reboot or fully power cycle node machines (Intermittent) Verification Steps Enable VLAN with NIC harvester-mgmt Create VLAN 1 Disable VLAN Enable VLAN again shutdown node 3, 2, 1 server machine Wait for 15 minutes Power on node 1 server machine, wait for 20 seconds Power on node 2 server machine, wait for 20 seconds Power on node 3 server machine Check if you can access VIP and each node IP Expected Results VIP should load the page and show on every node in the terminal </description>
-    </item>
-    <item>
-      <title>toggle harvester node driver with the harvester global flag</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/toggle-harvester-node-driver-with-harvester-global-flag/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/toggle-harvester-node-driver-with-harvester-global-flag/</guid>
-      <description>Related issue: #1465 toggle harvester node driver with the harvester global flag Category: Rancher Integration Environment setup Install rancher 2.6.3 by docker docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps Environment preparation as above steps Open global setting -&amp;gt; feature flag in rancher Check harvester feature flag Open cluster management -&amp;gt; Driver page Check harvester node driver Deactivate harvester feature flag Activate harvester feature flag Deactivate harvester node driver Activate harvester node driver Deactivate both harvester flag and node driver Activate harvester feature flag Expected Results Harvester feature flag will be enabled by default and turned on harvester node driver accordingly If the feature flag was turned off, nothing will change to the Harvester node driver.</description>
-    </item>
-    <item>
-      <title>Use template to create cluster through virtualization management</title>
-      <link>https://harvester.github.io/tests/manual/harvester-rancher/use-template-to-create-cluster-through-virtualization-management/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/harvester-rancher/use-template-to-create-cluster-through-virtualization-management/</guid>
-      <description>Related issue: #1620 User is unable to use template to create cluster through virtualization management Category: Rancher Integration Environment setup Install rancher 2.6.3 by docker docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged rancher/rancher:v2.6.3 Verification Steps Import harvester from rancher through harvester settings Access harvester from rancher virtualization management page Open Virtual Machine page Click create Check Use VM Template Select one of the template Create VM according to the template Expected Results Access harvester from Rancher, on virtual machine page can load default three template to create VM.</description>
     </item>
   </channel>
 </rss>

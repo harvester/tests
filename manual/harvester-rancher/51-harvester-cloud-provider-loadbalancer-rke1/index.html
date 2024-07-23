@@ -684,9 +684,6 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/1330-rancher-import-harvester-enhacement/"></a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/01-import-existing-harvester-in-rancher/">01-Import existing Harvester clusters in Rancher</a></li>
-  
-
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/02-integrate-rancher-from-harvester-settings/">02-Integrate to Rancher from Harvester settings (e2e_be)</a></li>
   
 
@@ -717,9 +714,6 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/11-create-project-harvester/">11-Create New Project in Harvester</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/12-create-namespace-harvester/">12-Create New Namespace in Harvester</a></li>
-  
-
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/13-rbac-add-grant-project-owner-user-custom/">13-Add and grant project-owner user to custom project</a></li>
   
 
@@ -736,9 +730,6 @@
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/18-delete-failed-imported-harvester-cluster/">18-Delete Failed Imported Harvester Cluster</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/19-enable-harvester-node-driver/">19-Enable Harvester Node Driver</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/20-create-rke1-kubernetes-cluster/">20-Create RKE1 Kubernetes Cluster</a></li>
@@ -763,12 +754,6 @@
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/27-delete-rke2-kubernetes-cluster-failure/">27-Delete RKE2 Kubernetes Cluster in Failure</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/28-deploy-harvester-cloud-provider-to-rke1-cluster/">28-Deploy Harvester cloud provider to RKE1 Cluster</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/29-deploy-harvester-cloud-provider-to-rke2-cluster/">29-Deploy Harvester cloud provider to RKE2 Cluster</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/30-configure-harvester-loadbalancer-service/">30-Configure Harvester LoadBalancer service</a></li>
@@ -823,12 +808,6 @@
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/46-node-driver-scale-down-rke2/">46-Scale down node driver RKE2</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/47-verify-backup-restore-same-server/">47-Verify Backup and restore on same server</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/48-verify-backup-restore-server-migration/">48-Verify Backup and restore on server migration</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/49-overprovision-harvester/">49-Overprovision Harvester</a></li>
@@ -903,9 +882,6 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/72-ipxe-auto-airgapped-rancher-integrate-harvester-/">72-Use ipxe example to test fully airgapped rancher integration</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/better-load-balancer-config-rke2-cloud-provider/">Better Load Balancer Config of Harvester cloud provider</a></li>
-  
-
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/check-can-apply-the-resource-quota-limit-to-project-and-namespace-/">Check can apply the resource quota limit to project and namespace</a></li>
   
 
@@ -921,25 +897,13 @@
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/1311-delete-3-node-rke2-cluster/">Delete 3 node RKE2 cluster</a></li>
   
 
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/1671-mark-experimental-features/">Mark some features as experimental</a></li>
-  
-
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/provision-rke2-cluster-with-resource-quota-configured/">Provision RKE2 cluster with resource quota configured</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/rancher-import-harvester-enhacement/">Rancher import harvester enhancement</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/resource_quota/">Rancher Resource quota management</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/1669-reboot-cluster-check-vip/">Reboot a cluster and check VIP</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/toggle-harvester-node-driver-with-harvester-global-flag/">toggle harvester node driver with the harvester global flag</a></li>
-  
-
-  <li><a href="https://harvester.github.io/tests/manual/harvester-rancher/use-template-to-create-cluster-through-virtualization-management/">Use template to create cluster through virtualization management</a></li>
   
 
 </ul>
@@ -1957,10 +1921,15 @@
   <h1 id="title">51-Use harvester cloud provider to provision an LB - rke1</h1>
   <div>
     <article id="content">
-       <ol>
+       <ul>
+<li>Related ticket: <a href="https://github.com/harvester/harvester/issues/1396">#1396</a> Integration Cloud Provider for RKE1 with Rancher</li>
+</ul>
+<ol>
 <li>Provision cluster using rke1 with harvester as the node driver</li>
-<li>enable the cloud driver for <code>harvester</code> while provisioning the cluster</li>
-<li>run jenkins v3 validation checks once cluster comes to active</li>
+<li>Deploy cloud provider from App.</li>
+<li>Create a deployment with <code>nginx:latest</code> image.</li>
+<li>Create a Harvester load balancer to the pod of above deployment.</li>
+<li>Verify by clicking the service, if the load balancer is redirecting to the nginx home page.</li>
 </ol>
 
     </article>
