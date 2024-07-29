@@ -16,6 +16,7 @@
 # you may find current contact information at www.suse.com
 
 import re
+import tarfile
 from io import BytesIO
 from time import sleep
 from zipfile import ZipFile
@@ -128,6 +129,78 @@ class TestSupportBundle:
             )
         finally:
             support_bundle_state.fio.seek(0)
+
+    @pytest.mark.dependency(depends=["donwnload support bundle"])
+    def test_secret_file_exists(self, support_bundle_state):
+        ''' ref: https://github.com/harvester/tests/issues/603 '''
+        pattern = r"^.*/yamls/namespaced/fleet-local/v1/secrets\.yaml"
+        for fname in support_bundle_state.files:
+            if re.match(pattern, fname):
+                break
+        else:
+            raise AssertionError("secret file is not available in namespaced/fleet-local")
+
+        with ZipFile(support_bundle_state.fio, 'r') as zf:
+            ctx = zf.read(fname)
+        support_bundle_state.fio.seek(0)
+
+        secret = yaml.safe_load(ctx)
+        assert secret.get('items')
+
+        fails = []
+        for it in secret['items']:
+            if it.get('type') != "rke.cattle.io/machine-plan" or not it.get('data'):
+                fails.append(it)
+
+        assert not fails, (
+            f"Got {len(fails)} incorrect item(s) from secret file,"
+            " expected type should be 'rke.cattle.io/machine-plan'"
+            " and `data` field should not be empty but got:\n"
+            f"{fails}"
+        )
+
+    @pytest.mark.dependency(depends=["donwnload support bundle"])
+    def test_hardware_info_exists(self, support_bundle_state):
+        ''' ref: https://github.com/harvester/tests/issues/569 '''
+        nodes, pattern = [], r"^.*/nodes/.*.zip"
+
+        for fname in support_bundle_state.files:
+            if re.match(pattern, fname):
+                nodes.append(fname)
+        assert nodes, "Host information is not generated"
+
+        with ZipFile(support_bundle_state.fio, 'r') as zf:
+            b_nodes = [zf.read(n) for n in nodes]
+        support_bundle_state.fio.seek(0)
+
+        fails, txz_pattern = [], r"^.*/scc_supportconfig.*.txz"
+        for npath, node_byte in zip(nodes, b_nodes):
+            node_name = npath.rsplit("/", 1)[-1]
+            with ZipFile(BytesIO(node_byte), 'r') as zf:
+                try:
+                    txz_file = next(i for i in zf.namelist() if re.match(txz_pattern, i))
+                    txz_byte = zf.read(txz_file)
+                except StopIteration:
+                    fails.append(f"`.txz` file is not available in {node_name}")
+                    continue
+                try:
+                    with tarfile.open(mode="r:xz", fileobj=BytesIO(txz_byte)) as xz:
+                        txt_m = next(m for m in xz.getmembers() if m.name.endswith("hardware.txt"))
+                        hardware_ctx = xz.extractfile(txt_m).read().decode()
+                except StopIteration:
+                    fails.append(f"`hardware.txt` file is not available in {node_name}")
+                    continue
+
+            if "lsusb" not in hardware_ctx or "hwinfo" not in hardware_ctx:
+                fails.append(
+                    f"Node {node_name}'s Hardware info not contains lsusb/hwinfo command ouput\n"
+                    f"got: {hardware_ctx}"
+                )
+
+        assert not fails, (
+            f"Got {len(fails)} incorrect item(s):\n"
+            "\n".join(fails)
+        )
 
     @pytest.mark.dependency(depends=["get support bundle"])
     def test_delete(self, api_client, support_bundle_state):
