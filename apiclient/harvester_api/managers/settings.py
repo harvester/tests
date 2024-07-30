@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 
-from harvester_api.models.settings import BaseSettingSpec, BackupTargetSpec, StorageNetworkSpec
+from harvester_api.models.settings import BaseSettingSpec, BackupTargetSpec, \
+    StorageNetworkSpec, KubeconfigDefaultTokenTTLSpec
 from .base import BaseManager, merge_dict
 
 
@@ -13,6 +14,7 @@ class SettingManager(BaseManager):
     Spec = BaseSettingSpec
     BackupTargetSpec = BackupTargetSpec
     StorageNetworkSpec = StorageNetworkSpec
+    KubeconfigDefaultTokenTTLSpec = KubeconfigDefaultTokenTTLSpec
 
     def get(self, name="", *, raw=False):
         return self._get(self.PATH_fmt.format(name=name))

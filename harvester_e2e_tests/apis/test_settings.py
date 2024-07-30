@@ -162,3 +162,27 @@ class TestUpdateInvalidBackupTarget:
             f"S3 backup-target should check key/secret/bucket/region"
             f"API Status({code}): {data}"
         )
+
+
+@pytest.mark.p0
+@pytest.mark.settings
+class TestUpdateKubeconfigDefaultToken:
+    @pytest.mark.skip_version_before("v1.3.2", reason="Issue#5891 fixed after v1.3.2")
+    def test_invalid_kubeconfig_ttl_min(self, api_client):
+        KubeconfigTTLMinSpec = api_client.settings.KubeconfigDefaultTokenTTLSpec.TTL
+        spec = KubeconfigTTLMinSpec(99999999999999)
+        code, data = api_client.settings.update('kubeconfig-default-token-ttl-minutes', spec)
+        assert 422 == code, (
+            f"Kubeconfig Default Token TTL Minutes should not exceed 100yrs\n"
+            f"API Status({code}): {data}"
+        )
+
+    @pytest.mark.skip_version_before('v1.3.1')
+    def test_valid_kubeconfig_ttl_min(self, api_client):
+        KubeconfigTTLMinSpec = api_client.settings.KubeconfigDefaultTokenTTLSpec.TTL
+        spec = KubeconfigTTLMinSpec(172800)
+        code, data = api_client.settings.update('kubeconfig-default-token-ttl-minutes', spec)
+        assert 200 == code, (
+            f"Kubeconfig Default Token TTL Minutes be allowed to be set for 120 days\n"
+            f"API Status({code}): {data}"
+        )
