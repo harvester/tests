@@ -65,6 +65,27 @@ class BackupTargetSpec(BaseSettingSpec):
         return cls(dict(type="nfs", endpoint=endpoint))
 
 
+class KubeconfigDefaultTokenTTLSpec(BaseSettingSpec):
+    _name = "kubeconfig-default-token-ttl-minutes"
+    _default = 0
+
+    @property
+    def type(self):
+        return self.value.get('type')
+
+    def clear(self):
+        self.value = self._default
+
+    @classmethod
+    def from_dict(cls, data):
+        value = loads(data.get('value', "{}"))
+        return cls(value)
+
+    @classmethod
+    def TTL(cls, minutes):
+        return cls(minutes)
+
+
 class StorageNetworkSpec(BaseSettingSpec):
     _name = "storage-network"
 
