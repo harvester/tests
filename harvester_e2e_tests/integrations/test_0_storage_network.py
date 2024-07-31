@@ -9,7 +9,8 @@ import pytest
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
-    "harvester_e2e_tests.fixtures.networks"
+    "harvester_e2e_tests.fixtures.networks",
+    "harvester_e2e_tests.fixtures.settings"
 ]
 
 
@@ -78,7 +79,9 @@ def cluster_network(request, api_client, unique_name):
 @pytest.mark.settings
 @pytest.mark.networks
 @pytest.mark.skip_version_before('v1.0.3')
-def test_storage_network(api_client, cluster_network, vlan_id, unique_name, wait_timeout):
+def test_storage_network(
+    api_client, cluster_network, vlan_id, unique_name, wait_timeout, setting_checker
+):
     '''
     To cover test:
     - https://harvester.github.io/tests/manual/_incoming/1055_dedicated_storage_network/
@@ -129,12 +132,7 @@ def test_storage_network(api_client, cluster_network, vlan_id, unique_name, wait
     cidr = route['cidr']
 
     # Create storage-network
-    code, data = api_client.settings.get('storage-network')
-    assert 200 == code, (code, data)
-    origin_spec = api_client.settings.Spec.from_dict(data)
-    spec = api_client.settings.StorageNetworkSpec.enable_with(
-        vlan_id, cluster_network, cidr
-    )
+    spec = api_client.settings.StorageNetworkSpec.enable_with(vlan_id, cluster_network, cidr)
     code, data = api_client.settings.update('storage-network', spec)
     assert 200 == code, (code, data)
 
@@ -184,6 +182,11 @@ def test_storage_network(api_client, cluster_network, vlan_id, unique_name, wait
             f"Not completed: {retries}"
         )
 
-    # Teardown
-    code, data = api_client.settings.update('storage-network', origin_spec)
+    # teardown
+    disable_spec = api_client.settings.StorageNetworkSpec.disable()
+    code, data = api_client.settings.update('storage-network', disable_spec)
     assert 200 == code, (code, data)
+    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_harvester()
+    assert snet_disabled, (code, data)
+    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_longhorn()
+    assert snet_disabled, (code, data)
