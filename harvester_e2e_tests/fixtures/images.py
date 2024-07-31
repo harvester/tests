@@ -1,6 +1,7 @@
 from urllib.parse import urlparse, urljoin
 
 import pytest
+from .base import wait_until
 
 pytest_plugins = ["harvester_e2e_tests.fixtures.api_client"]
 
@@ -68,3 +69,26 @@ class ImageInfo:
         if self.is_file:
             return self.url_result.geturl().split("file://", 1)[-1]
         return self.url_result.geturl()
+
+
+@pytest.fixture(scope="session")
+def image_checker(api_client, wait_timeout, sleep_timeout):
+    class ImageChecker:
+        def __init__(self):
+            self.images = api_client.images
+
+        @wait_until(wait_timeout, sleep_timeout)
+        def wait_downloaded(self, image_name):
+            code, data = self.images.get(image_name)
+            if data.get('status', {}).get('progress') == 100:
+                return True, (code, data)
+            return False, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
+        def wait_deleted(self, image_name):
+            code, data = self.images.get(image_name)
+            if code == 404:
+                return True, (code, data)
+            return False, (code, data)
+
+    return ImageChecker()
