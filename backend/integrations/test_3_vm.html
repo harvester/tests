@@ -39,26 +39,50 @@ hljs.highlightAll();
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="harvester_e2e_tests.integrations.test_3_vm.focal_image"><code class="name flex">
-<span>def <span class="ident">focal_image</span></span>(<span>api_client, unique_name, image_ubuntu, wait_timeout)</span>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.cluster_network"><code class="name flex">
+<span>def <span class="ident">cluster_network</span></span>(<span>api_client, vlan_nic)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.minimal_vm"><code class="name flex">
+<span>def <span class="ident">minimal_vm</span></span>(<span>api_client, unique_name, ubuntu_image, ssh_keypair, vm_checker)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.storage_network"><code class="name flex">
+<span>def <span class="ident">storage_network</span></span>(<span>api_client, cluster_network, vm_network, setting_checker)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Ref. <a href="https://docs.harvesterhci.io/v1.3/advanced/storagenetwork/#configuration-example">https://docs.harvesterhci.io/v1.3/advanced/storagenetwork/#configuration-example</a></p></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_multiple_volumes"><code class="name flex">
-<span>def <span class="ident">test_migrate_vm_with_multiple_volumes</span></span>(<span>api_client, unique_name, focal_image, wait_timeout, available_node_names)</span>
+<span>def <span class="ident">test_migrate_vm_with_multiple_volumes</span></span>(<span>api_client, unique_name, ubuntu_image, wait_timeout, available_node_names, vm_checker)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_user_data"><code class="name flex">
-<span>def <span class="ident">test_migrate_vm_with_user_data</span></span>(<span>api_client, unique_name, focal_image, wait_timeout, available_node_names)</span>
+<span>def <span class="ident">test_migrate_vm_with_user_data</span></span>(<span>api_client, unique_name, ubuntu_image, wait_timeout, available_node_names, vm_checker)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm.test_multiple_migrations"><code class="name flex">
-<span>def <span class="ident">test_multiple_migrations</span></span>(<span>api_client, unique_name, focal_image, wait_timeout, available_node_names)</span>
+<span>def <span class="ident">test_multiple_migrations</span></span>(<span>api_client, unique_name, ubuntu_image, wait_timeout, available_node_names)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.ubuntu_image"><code class="name flex">
+<span>def <span class="ident">ubuntu_image</span></span>(<span>api_client, unique_name, image_ubuntu, image_checker)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.vm_network"><code class="name flex">
+<span>def <span class="ident">vm_network</span></span>(<span>api_client, unique_name, cluster_network, vlan_id, network_checker)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -66,6 +90,144 @@ hljs.highlightAll();
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork"><code class="flex name class">
+<span>class <span class="ident">TestVMWithStorageNetwork</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.networks
+@pytest.mark.settings
+@pytest.mark.virtualmachines
+@pytest.mark.skip_version_if(&#34;&lt; v1.0.3&#34;)
+class TestVMWithStorageNetwork:
+    def test_enable_storage_network_with_api_stopped_vm(
+        self, api_client, minimal_vm, storage_network, setting_checker, vm_checker, volume_checker
+    ):
+        &#39;&#39;&#39;
+        Steps:
+          1. Have at least one Running VM
+          2. Enable storage-network (should fail)
+          3. Stop all VMs via API
+          4. Enable storage-network
+        &#39;&#39;&#39;
+        code, data = api_client.settings.update(&#39;storage-network&#39;, storage_network.enable_spec)
+        assert 422 == code, (
+            f&#34;storage-network should NOT be enabled with running VM: {code}, {data}&#34;
+        )
+
+        # stop VM by API
+        vm_stopped, (code, data) = vm_checker.wait_status_stopped(minimal_vm.name)
+        assert vm_stopped, (code, data)
+
+        code, data = api_client.vms.get(minimal_vm.name)
+        spec = api_client.vms.Spec.from_dict(data)
+        vol_names = [vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;] for vol in spec.volumes]
+        vm_volumes_detached, (code, data) = volume_checker.wait_volumes_detached(vol_names)
+        assert vm_volumes_detached, (code, data)
+
+        # enable storage-network
+        code, data = api_client.settings.update(&#39;storage-network&#39;, storage_network.enable_spec)
+        assert 200 == code, (code, data)
+        snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_harvester()
+        assert snet_enabled, (code, data)
+        snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_longhorn(
+            storage_network.cidr
+        )
+        assert snet_enabled, (code, data)
+
+    def test_enable_storage_network_with_cli_stopped_vm(
+        self, api_client, ssh_keypair, minimal_vm, storage_network, setting_checker,
+        vm_shell_from_host, wait_timeout, volume_checker
+    ):
+        &#39;&#39;&#39; Refer to https://github.com/harvester/tests/issues/1022
+        Steps:
+          1. Have at least one Running VM
+          2. Enable storage-network (should fail)
+          3. Stop all VMs via VM CLI
+          4. Enable storage-network
+        &#39;&#39;&#39;
+        code, data = api_client.settings.update(&#39;storage-network&#39;, storage_network.enable_spec)
+        assert 422 == code, (
+            f&#34;storage-network should NOT be enabled with running VM: {code}, {data}&#34;
+        )
+
+        # stop VM by CLI
+        with vm_shell_from_host(
+            minimal_vm.host_ip, minimal_vm.vm_ip, minimal_vm.ssh_user, pkey=ssh_keypair[1]
+        ) as sh:
+            sh.exec_command(&#39;sudo shutdown now&#39;)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.vms.get(minimal_vm.name)
+            if 200 == code and &#34;Stopped&#34; == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;Fail to shutdown VM {minimal_vm.name} with error: {code}, {data}&#34;
+            )
+
+        code, data = api_client.vms.get(minimal_vm.name)
+        spec = api_client.vms.Spec.from_dict(data)
+        vol_names = [vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;] for vol in spec.volumes]
+        vm_volumes_detached, (code, data) = volume_checker.wait_volumes_detached(vol_names)
+        assert vm_volumes_detached, (code, data)
+
+        # enable storage-network
+        code, data = api_client.settings.update(&#39;storage-network&#39;, storage_network.enable_spec)
+        assert 200 == code, (code, data)
+        snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_harvester()
+        assert snet_enabled, (code, data)
+        snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_longhorn(
+            storage_network.cidr
+        )
+        assert snet_enabled, (code, data)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.test_enable_storage_network_with_api_stopped_vm"><code class="name flex">
+<span>def <span class="ident">test_enable_storage_network_with_api_stopped_vm</span></span>(<span>self, api_client, minimal_vm, storage_network, setting_checker, vm_checker, volume_checker)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="steps">Steps</h2>
+<ol>
+<li>Have at least one Running VM</li>
+<li>Enable storage-network (should fail)</li>
+<li>Stop all VMs via API</li>
+<li>Enable storage-network</li>
+</ol></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.test_enable_storage_network_with_cli_stopped_vm"><code class="name flex">
+<span>def <span class="ident">test_enable_storage_network_with_cli_stopped_vm</span></span>(<span>self, api_client, ssh_keypair, minimal_vm, storage_network, setting_checker, vm_shell_from_host, wait_timeout, volume_checker)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Refer to <a href="https://github.com/harvester/tests/issues/1022">https://github.com/harvester/tests/issues/1022</a></p>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>Have at least one Running VM</li>
+<li>Enable storage-network (should fail)</li>
+<li>Stop all VMs via VM CLI</li>
+<li>Enable storage-network</li>
+</ol></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -81,10 +243,26 @@ hljs.highlightAll();
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm.available_node_names" href="#harvester_e2e_tests.integrations.test_3_vm.available_node_names">available_node_names</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.focal_image" href="#harvester_e2e_tests.integrations.test_3_vm.focal_image">focal_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.cluster_network" href="#harvester_e2e_tests.integrations.test_3_vm.cluster_network">cluster_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.minimal_vm" href="#harvester_e2e_tests.integrations.test_3_vm.minimal_vm">minimal_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.storage_network" href="#harvester_e2e_tests.integrations.test_3_vm.storage_network">storage_network</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_multiple_volumes" href="#harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_multiple_volumes">test_migrate_vm_with_multiple_volumes</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_user_data" href="#harvester_e2e_tests.integrations.test_3_vm.test_migrate_vm_with_user_data">test_migrate_vm_with_user_data</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm.test_multiple_migrations" href="#harvester_e2e_tests.integrations.test_3_vm.test_multiple_migrations">test_multiple_migrations</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.ubuntu_image" href="#harvester_e2e_tests.integrations.test_3_vm.ubuntu_image">ubuntu_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.vm_network" href="#harvester_e2e_tests.integrations.test_3_vm.vm_network">vm_network</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork" href="#harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork">TestVMWithStorageNetwork</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.pytestmark" href="#harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.test_enable_storage_network_with_api_stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.test_enable_storage_network_with_api_stopped_vm">test_enable_storage_network_with_api_stopped_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.test_enable_storage_network_with_cli_stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm.TestVMWithStorageNetwork.test_enable_storage_network_with_cli_stopped_vm">test_enable_storage_network_with_cli_stopped_vm</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
