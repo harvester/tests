@@ -170,6 +170,17 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
             finally:
                 self.snooze, self.wait_timeout = s, t
 
+        def wait_getable(self, vm_name, endtime=None, callback=default_cb, **kws):
+            endtime = endtime or self._endtime()
+            while endtime > datetime.now():
+                ctx = ResponseContext('vm.get', *self.vms.get(vm_name, **kws))
+                if 200 == ctx.code and callback(ctx):
+                    break
+                sleep(self.snooze)
+            else:
+                return False, ctx
+            return True, ctx
+
         def wait_stopped(self, vm_name, endtime=None, callback=default_cb, **kws):
             ctx = ResponseContext('vm.stop', *self.vms.stop(vm_name, **kws))
             if 404 == ctx.code and callback(ctx):
