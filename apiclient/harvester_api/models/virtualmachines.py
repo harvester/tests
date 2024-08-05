@@ -329,7 +329,6 @@ class VMSpec:
         if self._data:
             self._data['metadata'].update(data['metadata'])
             self._data['spec'].update(data['spec'])
-            self._data['metadata'].pop('resourceVersion')  # remove for create new ones
             return deepcopy(self._data)
 
         return deepcopy(data)
