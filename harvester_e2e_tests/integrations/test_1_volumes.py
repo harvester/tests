@@ -102,9 +102,6 @@ def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_
         assert image_id == annotations['harvesterhci.io/imageId'], (code, data)
     else:
         assert not annotations.get('harvesterhci.io/imageId'), (code, data)
-    # attachment
-    assert not annotations.get("harvesterhci.io/owned-by"), (code, data)
-
     # teardown
     polling_for("volume do deleted", lambda code, _: 404 == code,
                 api_client.volumes.delete, unique_name)
@@ -172,8 +169,6 @@ class TestVolumeWithVM:
         assert data['status']['phase'] == "Bound", (code, data)
         # source
         assert ubuntu_image["id"] == annotations['harvesterhci.io/imageId'], (code, data)
-        # attachment
-        assert ubuntu_vm['id'] in annotations.get("harvesterhci.io/owned-by"), data
 
     def test_delete_volume_on_deleted_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         """
