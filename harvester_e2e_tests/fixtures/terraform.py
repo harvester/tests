@@ -168,22 +168,24 @@ def tf_script_dir(request):
 
 
 @pytest.fixture(scope="session")
-def tf_provider_version(request):
+def tf_provider_version(request, harvester_metadata):
     version = request.config.getoption('--terraform-provider-harvester')
-    if not version:
-        import requests
-        resp = requests.get("https://registry.terraform.io/v1/providers/harvester/harvester")
-        version = max(resp.json()['versions'], key=parse_version)
-    return version
+    import requests
+    resp = requests.get("https://registry.terraform.io/v1/providers/harvester/harvester")
+    latest = max(resp.json()['versions'], key=parse_version)
+    version = None if version == '0.0.0-dev' else version
+    harvester_metadata['Terraform Harvester Provider Version'] = f"{version} || {latest}"
+    return version or latest
 
 
 @pytest.fixture(scope="session")
-def tf_provider_rancher_ver(request):
+def tf_provider_rancher_ver(request, harvester_metadata):
     version = request.config.getoption('--terraform-provider-rancher')
     if not version:
         import requests
         resp = requests.get("https://registry.terraform.io/v1/providers/rancher/rancher2")
         version = max(resp.json()['versions'], key=parse_version)
+    harvester_metadata['Terraform Rancher Provider Version'] = version
     return version
 
 
