@@ -316,6 +316,14 @@ class TestVMSnapshot:
         assert data.get("status", {}).get("readyToUse") is True
 
     @pytest.mark.dependency(depends=["source_vm_snapshot"])
+    def test_volume_snapshot_not_exist(self, api_client):
+        ''' ref: https://github.com/harvester/tests/issues/524 '''
+        code, data = api_client.vol_snapshots.get()
+
+        assert 200 == code, (code, data)
+        assert not data['data'], (code, data)
+
+    @pytest.mark.dependency(depends=["source_vm_snapshot"])
     def test_restore_into_new_vm_from_vm_snapshot(self, api_client,
                                                   restored_from_snapshot_vm,
                                                   ssh_keypair, host_shell,
@@ -548,7 +556,7 @@ class TestVMSnapshot:
         # And assert that it has a volume snapshot associated with it.
         volumesnapshotname = f"vm-snapshot-volume-{volumename}"
 
-        code, data = api_client.volsnapshots.get(volumesnapshotname)
+        code, data = api_client.vol_snapshots.get(volumesnapshotname)
         assert 200 == code
 
         ownerpvc = data.get("spec", {}).get("source", {}).get("persistentVolumeClaimName")
@@ -567,9 +575,9 @@ class TestVMSnapshot:
 
         # Finally, wait for the volume snapshot to be cleaned up
         # automatically.
-        code, _ = api_client.volsnapshots.get(volumesnapshotname)
+        code, _ = api_client.vol_snapshots.get(volumesnapshotname)
         while deadline > datetime.now():
-            code, _ = api_client.volsnapshots.get(volumesnapshotname)
+            code, _ = api_client.vol_snapshots.get(volumesnapshotname)
             if code == 404:
                 break
             sleep(1)

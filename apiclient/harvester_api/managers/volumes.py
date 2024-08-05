@@ -41,3 +41,9 @@ class VolumeManager(BaseManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         params = dict(action="export")
         return self._create(path, params=params, json=export_spec, raw=raw)
+
+    def clone(self, name, cloned_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="clone")
+        spec = dict(name=cloned_name)
+        return self._create(path, params=params, json=spec, raw=raw)
