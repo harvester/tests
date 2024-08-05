@@ -35,6 +35,7 @@ class VirtualMachineManager(BaseManager):
     def create(self, name, vm_spec, namespace=DEFAULT_NAMESPACE, *, raw=False):
         if isinstance(vm_spec, self.Spec):
             vm_spec = self.Spec.to_dict(vm_spec, name, namespace)
+            vm_spec['metadata'].pop('resourceVersion')  # remove for create new ones
         path = self.PATH_fmt.format(uid="", ns=namespace)
         return self._create(path, json=vm_spec, raw=raw)
 

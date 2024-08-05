@@ -34,7 +34,10 @@ class VolumeSpec:
 
         if image_id is not None:
             annotations.update({"harvesterhci.io/imageId": image_id})
-            self.storage_cls = f"longhorn-{image_id.split('/')[1]}"
+            try:
+                self.storage_cls = f"longhorn-{image_id.split('/')[1]}"
+            except IndexError:
+                self.storage_cls = f"longhorn-{image_id}"
         if self.description is not None:
             annotations.update({"field.cattle.io/description": self.description})
         if self.storage_cls is not None:
