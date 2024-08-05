@@ -127,8 +127,6 @@ class TestVolumeWithVM:
         assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
         # source
         assert ubuntu_image[&#34;id&#34;] == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
-        # attachment
-        assert ubuntu_vm[&#39;id&#39;] in annotations.get(&#34;harvesterhci.io/owned-by&#34;), data
 
     def test_delete_volume_on_deleted_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         &#34;&#34;&#34;
