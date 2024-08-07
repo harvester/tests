@@ -4,7 +4,7 @@ title: A volume can't be attached to another VM (Yaml)
 
 * Related issues: [#5383](https://github.com/harvester/harvester/issues/5383) [ENHANCEMENT] Refactor harvesterhci.io/owned-by annotation on PVC
 
-## Category: 
+## Category
 * Volume
 
 ## Verification Steps
