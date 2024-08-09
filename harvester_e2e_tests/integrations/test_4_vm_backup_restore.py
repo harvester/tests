@@ -711,6 +711,9 @@ class TestBackupRestoreWithSnapshot:
         code, data = api_client.backups.restore(unique_backup_name, spec)
         assert 201 == code, (code, data)
 
+        vm_getable, (code, data) = vm_checker.wait_getable(restored_vm_name)
+        assert vm_getable, (code, data)
+
         # Check VM Started then get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(restored_vm_name, ['default'])
         assert vm_got_ips, (
@@ -811,6 +814,8 @@ class TestBackupRestoreWithSnapshot:
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=False)
         code, data = api_client.backups.restore(unique_backup_name, spec)
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
+        vm_getable, (code, data) = vm_checker.wait_getable(unique_vm_name)
+        assert vm_getable, (code, data)
 
         # Check VM Started then get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
