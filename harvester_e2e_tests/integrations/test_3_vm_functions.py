@@ -1698,7 +1698,7 @@ def test_update_vm_machine_type(
     else:
         raise AssertionError(
             f"Failed to create VM({cpu} core, {mem} RAM) with errors:\n"
-            f"Phase: {data.get('status', {}).get('phase','')}\t"
+            f"Phase: {data.get('status', {}).get('phase', '')}\t"
             f"Status: {data.get('status', {})}\n"
             f"API Status({code}): {data}"
         )
