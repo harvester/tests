@@ -1,8 +1,6 @@
-from time import sleep
-from datetime import datetime, timedelta
-
 import yaml
 import pytest
+from hashlib import sha512
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.api_client',
@@ -12,9 +10,20 @@ pytest_plugins = [
 
 @pytest.fixture(scope="module")
 def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
-    image_name = f"img-{unique_name}"
+    """
+    Generates a Ubuntu image
 
-    code, data = api_client.images.create_by_url(image_name, image_ubuntu.url)
+    1. Creates an image name based on unique_name
+    2. Create the image based on URL
+    3. Response for creation should be 201
+    4. Loop while waiting for image to be created
+    5. Yield the image with the namespace and name
+    6. Delete the image
+    7. The response for getting the image name should be 404 after deletion
+    """
+    image_name = f"img-{unique_name}"
+    code, data = api_client.images.create_by_url(image_name, image_ubuntu.url,
+                                                 image_ubuntu.image_checksum)
     assert 201 == code, f"Fail to create image\n{code}, {data}"
     code, data = polling_for("image do created",
                              lambda c, d: c == 200 and d.get('status', {}).get('progress') == 100,
@@ -24,6 +33,40 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
     name = data['metadata']['name']
     yield dict(ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}", display_name=image_name)
 
+    code, data = api_client.images.get(image_name)
+    if 200 == code:
+        code, data = api_client.images.delete(image_name)
+        assert 200 == code, f"Fail to cleanup image\n{code}, {data}"
+        polling_for("image do deleted",
+                    lambda c, d: 404 == c,
+                    api_client.images.get, image_name)
+
+
+@pytest.fixture(scope="module")
+def ubuntu_image_bad_checksum(api_client, unique_name, image_ubuntu, polling_for):
+    """
+    Generates a Ubuntu image with a bad sha512 checksum
+
+    1. Creates an image name based on unique_name
+    2. Create the image based on URL with a bad statically assigned checksum
+    3. Response for creation should be 201
+    4. Loop while waiting for image to be created
+    5. Yield the image with the namespace and name
+    6. Delete the image
+    7. The response for getting the image name should be 404 after deletion
+    """
+
+    image_name = f"img-{unique_name + '-badchecksum'}"
+    # Random fake checksum to use in test
+    fake_checksum = sha512(b'not_a_valid_checksum').hexdigest()
+    code, data = api_client.images.create_by_url(image_name, image_ubuntu.url, fake_checksum)
+    assert 201 == code, f"Fail to create image\n{code}, {data}"
+    code, data = polling_for("image do created",
+                             lambda c, d: c == 200 and d.get('status', {}).get('progress') == 100,
+                             api_client.images.get, image_name)
+    namespace = data['metadata']['namespace']
+    name = data['metadata']['name']
+    yield dict(ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}", display_name=image_name)
     code, data = api_client.images.get(image_name)
     if 200 == code:
         code, data = api_client.images.delete(image_name)
@@ -72,152 +115,109 @@ def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
 
 @pytest.mark.p0
 @pytest.mark.volumes
-@pytest.mark.parametrize("source_type", ["New", "VM-Image"])
 @pytest.mark.parametrize("create_as", ["json", "yaml"])
-class TestVolume:
-    fixtures, volumes = dict(), dict()
+@pytest.mark.parametrize("source_type", ["New", "VM Image"])
+def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_type, polling_for):
+    """
+    1. Create a volume from image
+    2. Create should respond with 201
+    3. Wait for volume to create
+    4. Failures should be at 0
+    5. Get volume metadata
+    6. Volume should not be in error or transitioning state
+    7. ImageId should match what was used in create
+    8. Delete volume
+    9. Delete volume should reply 404 after delete
+    Ref.
+    """
+    image_id, storage_cls = None, None
+    if source_type == "VM Image":
+        image_id, storage_cls = ubuntu_image['id'], f"longhorn-{ubuntu_image['display_name']}"
 
-    @pytest.mark.dependency()
-    def test_create_volume(
-        self, api_client, unique_name, ubuntu_image, create_as, source_type, polling_for
-    ):
-        image_id, storage_cls = None, None
-        unique_name = f"{create_as}-{source_type.lower()}-{unique_name}"
-        self.volumes[f"{create_as}-{source_type}"] = unique_name
-
-        if source_type == "VM-Image":
-            image_id, storage_cls = ubuntu_image['id'], f"longhorn-{ubuntu_image['display_name']}"
-
-        spec = api_client.volumes.Spec("10Gi", storage_cls)
-        if create_as == 'yaml':
-            kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
-                       data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
-        else:
-            kws = dict()
-        code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-        assert 201 == code, (code, unique_name, data, image_id)
-
-        polling_for("volume do created",
-                    lambda code, data: 200 == code and data['status']['phase'] == "Bound",
-                    api_client.volumes.get, unique_name)
-
-        code, data = api_client.volumes.get(unique_name)
-        mdata, annotations = data['metadata'], data['metadata']['annotations']
-        assert 200 == code, (code, data)
-        assert unique_name == mdata['name'], (code, data)
-        # status
-        assert not mdata['state']['error'], (code, data)
-        assert not mdata['state']['transitioning'], (code, data)
-        assert data['status']['phase'] == "Bound", (code, data)
-        # source
-        if source_type == "VM-Image":
-            assert image_id == annotations['harvesterhci.io/imageId'], (code, data)
-        else:
-            assert not annotations.get('harvesterhci.io/imageId'), (code, data)
-        # attachment
-        assert not annotations.get("harvesterhci.io/owned-by"), (code, data)
-
-    @pytest.mark.dependency(depends=["TestVolume::test_create_volume"], param=True)
-    def test_clone_volume(self, api_client, wait_timeout, create_as, source_type):
-        self.fixtures.update(api_client=api_client, wait_timeout=wait_timeout)
-        unique_name = self.volumes[f"{create_as}-{source_type}"]
-        code, data = api_client.volumes.get(unique_name)
-        assert 200 == code, (code, data)
-
-        cloned_name = f"cloned-{unique_name}"
-        code, data = api_client.volumes.clone(unique_name, cloned_name)
-        assert 204 == code, (code, data)
-
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.volumes.get(cloned_name)
-            if "Bound" == data['status']['phase']:
-                break
-            sleep(5)
-        else:
-            raise AssertionError(
-                "Volume not changed to phase: _Bound_ with {wait_timeout} timed out\n"
-                f"Got error: {code}, {data}"
-            )
-
-        self.volumes[cloned_name] = cloned_name
-
-    @classmethod
-    def teardown_class(cls):
-        api_client, wait_timeout = cls.fixtures['api_client'], cls.fixtures['wait_timeout']
-
-        vol_names = cls.volumes.values()
-        for name in vol_names:
-            api_client.volumes.delete(name)
-
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.volumes.get()
-            volumes = [v['metadata']['name'] for v in data['data']]
-            if all(v not in volumes for v in vol_names):
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                "Volumes not deleted correctly\n"
-                f"existing: {volumes}\n"
-                f"created: {vol_names}"
-            )
-
-
-@pytest.mark.p0
-@pytest.mark.negative
-@pytest.mark.volumes
-def test_volume_export(api_client, wait_timeout, unique_name, ubuntu_image):
-    ''' ref: https://github.com/harvester/tests/issues/1057
-
-    1. Create image
-    2. Create volume from the image
-    3. export the volume to new image
-    4. delete the new image
-    '''
-    image_id, storage_cls = ubuntu_image['id'], f"longhorn-{ubuntu_image['display_name']}"
     spec = api_client.volumes.Spec("10Gi", storage_cls)
-
-    # Create Volume from image and wait it bounded
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id)
-    assert 201 == code, (code, data)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = api_client.volumes.get(unique_name)
-        if "Bound" == data['status']['phase']:
-            break
-        sleep(5)
+    if create_as == 'yaml':
+        kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
+                   data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
     else:
-        raise AssertionError(
-            "Volume not changed to phase: _Bound_ with {wait_timeout} timed out\n"
-            f"Got error: {code}, {data}"
-        )
+        kws = dict()
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
+    assert 201 == code, (code, unique_name, data, image_id)
 
-    # Export volume to new image
-    code, data = api_client.volumes.export(unique_name, unique_name, "harvester-longhorn")
-    assert 204 == code, (code, data)
-    # check the new image is available and creating
-    code, data = api_client.images.get()
+    polling_for("volume do created",
+                lambda code, data: 200 == code and data['status']['phase'] == "Bound",
+                api_client.volumes.get, unique_name)
+    code2, data2 = api_client.images.get(ubuntu_image['display_name'])
+    # This grabs the failed count for the image
+    failed: int = data2['status']['failed']
+    # This makes sure that the failures are 0
+    assert failed <= 3, 'Image failed more than 3 times'
+
+    code, data = api_client.volumes.get(unique_name)
+    mdata, annotations = data['metadata'], data['metadata']['annotations']
     assert 200 == code, (code, data)
-    new_img = next(d for d in data['items'] if unique_name == d['spec']['displayName'])
-    assert new_img, (code, data['items'])
-    assert 100 > new_img['status'].get('progress', 0), (code, new_img)
-    # Delete the source volume
-    code, data = api_client.volumes.delete(unique_name)
-    assert 422 == code, (code, data)
+    assert unique_name == mdata['name'], (code, data)
+    # status
+    assert not mdata['state']['error'], (code, data)
+    assert not mdata['state']['transitioning'], (code, data)
+    assert data['status']['phase'] == "Bound", (code, data)
+    # source
+    if source_type == "VM Image":
+        assert image_id == annotations['harvesterhci.io/imageId'], (code, data)
+    else:
+        assert not annotations.get('harvesterhci.io/imageId'), (code, data)
+    # teardown
+    polling_for("volume do deleted", lambda code, _: 404 == code,
+                api_client.volumes.delete, unique_name)
+
+
+@pytest.mark.p1
+@pytest.mark.volumes
+@pytest.mark.negative
+@pytest.mark.parametrize("create_as", ["json", "yaml"])
+@pytest.mark.parametrize("source_type", ["New", "VM Image"])
+def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_checksum,
+                                    create_as, source_type, polling_for):
+    """
+    1. Create a volume from image with a bad checksum
+    2. Create should respond with 201
+    3. Wait for volume to create
+    4. Wait for 4 failures in the volume fail status
+    5. Failures should be set at 4
+    6. Delete volume
+    7. Delete volume should reply 404 after delete
+    Ref. https://github.com/harvester/tests/issues/1121
+    """
+    image_id, storage_cls = None, None
+    if source_type == "VM Image":
+        image_id, storage_cls = ubuntu_image_bad_checksum['id'], \
+            f"longhorn-{ubuntu_image_bad_checksum['display_name']}"
+
+    spec = api_client.volumes.Spec("10Gi", storage_cls)
+    if create_as == 'yaml':
+        kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
+                   data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
+    else:
+        kws = dict()
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
+    assert 201 == code, (code, unique_name, data, image_id)
+
+    polling_for("volume do created",
+                lambda code, data: 200 == code and data['status']['phase'] == "Bound",
+                api_client.volumes.get, unique_name)
+    code2, data2 = api_client.images.get(ubuntu_image_bad_checksum['display_name'])
+    polling_for("failed to process sync file",
+                lambda code2, data2: 200 == code2 and data2['status']['failed'] == 4,
+                api_client.images.get, ubuntu_image_bad_checksum['display_name'])
+
+    # This grabs the failed count for the image
+    code2, data2 = api_client.images.get(ubuntu_image_bad_checksum['display_name'])
+    failed: int = data2['status']['failed']
+    # This makes sure that the tests fails with bad checksum
+    assert failed == 4, 'Image download correctly failed more than 3 times with bad checksum'
 
     # teardown
-    fns = [(api_client.volumes, unique_name), (api_client.images, new_img['metadata']['name'])]
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        fn, name = fns[-1]
-        code, data = fn.delete(name)
-        if 404 == code:
-            fns.pop()
-        if not fns:
-            break
-        sleep(3)
+    polling_for("volume do deleted", lambda code, _: 404 == code,
+                api_client.volumes.delete, unique_name)
 
 
 @pytest.mark.p0

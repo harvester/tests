@@ -71,6 +71,18 @@ def rancher_wait_timeout(request):
 
 
 @pytest.fixture(scope="session")
+def ubuntu_checksum(request):
+    """Returns Ubuntu checksum from config"""
+    return request.config.getoption("--ubuntu-checksum")
+
+
+@pytest.fixture(scope="session")
+def opensuse_checksum(request):
+    """Returns openSUSE checksum from config"""
+    return request.config.getoption("--opensuse-checksum")
+
+
+@pytest.fixture(scope="session")
 def host_state(request):
     class HostState:
         files = ("power_off.sh", "power_on.sh", "reboot.sh")  # [False, True, -1]

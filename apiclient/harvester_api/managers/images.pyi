@@ -18,6 +18,7 @@ class ImageManager(BaseManager):
         desc: str,
         stype: str,
         namespace: str,
+        imageChecksum=str,
         display_name: str = ...
     ) -> dict:
         """
@@ -43,6 +44,7 @@ class ImageManager(BaseManager):
         self,
         name: str,
         url: str,
+        imageChecksum: str,
         namespace: str = ...,
         description: str = ...,
         display_name: str = ...
