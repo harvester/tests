@@ -209,6 +209,18 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
                 )
             return self.wait_stopped(vm_name, endtime, cb, **kws)
 
+        def wait_status_running(self, vm_name, endtime=None, callback=default_cb, **kws):
+            endtime = endtime or self._endtime()
+            while endtime > datetime.now():
+                ctx = ResponseContext('vm.get', *self.vms.get(vm_name, **kws))
+                status = ctx.data.get('status', {}).get('printableStatus')
+                if 200 == ctx.code and "Running" == status and callback(ctx):
+                    break
+                sleep(self.snooze)
+            else:
+                return False, ctx
+            return True, ctx
+
         def wait_deleted(self, vm_name, endtime=None, callback=default_cb, **kws):
             ctx = ResponseContext('vm.delete', *self.vms.delete(vm_name, **kws))
             if 404 == ctx.code and callback(ctx):

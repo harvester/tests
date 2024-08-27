@@ -481,17 +481,11 @@ class TestBackupRestore:
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
 
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get(unique_vm_name)
-            if 200 == code and "Running" == data.get('status', {}).get('printableStatus'):
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to restore VM({unique_vm_name}) with errors:\n"
-                f"Status({code}): {data}"
-            )
+        vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
+        assert vm_running, (
+            f"Failed to restore VM({unique_vm_name}) with errors:\n"
+            f"Status({code}): {data}"
+        )
 
         # Check VM Started then get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
