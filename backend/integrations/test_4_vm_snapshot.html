@@ -183,6 +183,14 @@ class TestVMSnapshot:
         assert data.get(&#34;status&#34;, {}).get(&#34;readyToUse&#34;) is True
 
     @pytest.mark.dependency(depends=[&#34;source_vm_snapshot&#34;])
+    def test_volume_snapshot_not_exist(self, api_client):
+        &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/524 &#39;&#39;&#39;
+        code, data = api_client.vol_snapshots.get()
+
+        assert 200 == code, (code, data)
+        assert not data[&#39;data&#39;], (code, data)
+
+    @pytest.mark.dependency(depends=[&#34;source_vm_snapshot&#34;])
     def test_restore_into_new_vm_from_vm_snapshot(self, api_client,
                                                   restored_from_snapshot_vm,
                                                   ssh_keypair, host_shell,
@@ -415,7 +423,7 @@ class TestVMSnapshot:
         # And assert that it has a volume snapshot associated with it.
         volumesnapshotname = f&#34;vm-snapshot-volume-{volumename}&#34;
 
-        code, data = api_client.volsnapshots.get(volumesnapshotname)
+        code, data = api_client.vol_snapshots.get(volumesnapshotname)
         assert 200 == code
 
         ownerpvc = data.get(&#34;spec&#34;, {}).get(&#34;source&#34;, {}).get(&#34;persistentVolumeClaimName&#34;)
@@ -434,9 +442,9 @@ class TestVMSnapshot:
 
         # Finally, wait for the volume snapshot to be cleaned up
         # automatically.
-        code, _ = api_client.volsnapshots.get(volumesnapshotname)
+        code, _ = api_client.vol_snapshots.get(volumesnapshotname)
         while deadline &gt; datetime.now():
-            code, _ = api_client.volsnapshots.get(volumesnapshotname)
+            code, _ = api_client.vol_snapshots.get(volumesnapshotname)
             if code == 404:
                 break
             sleep(1)
@@ -523,6 +531,12 @@ snapshot (<code>vm-snapshot</code>).</p>
 <p>Assert that the snapshot exists, then delete the VM
 and assert that the snapshot has been removed.</p></div>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshot_not_exist"><code class="name flex">
+<span>def <span class="ident">test_volume_snapshot_not_exist</span></span>(<span>self, api_client)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/524">https://github.com/harvester/tests/issues/524</a></p></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted"><code class="name flex">
 <span>def <span class="ident">test_volume_snapshots_are_cleaned_up_after_source_volume_deleted</span></span>(<span>self, api_client, source_vm, wait_timeout)</span>
 </code></dt>
@@ -582,6 +596,7 @@ and the deletePolicy was <code>retain</code>.</p></div>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot">test_restore_into_new_vm_from_vm_snapshot</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create">test_vm_snapshot_create</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshots_are_cleaned_up_after_source_vm_deleted" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshots_are_cleaned_up_after_source_vm_deleted">test_vm_snapshots_are_cleaned_up_after_source_vm_deleted</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshot_not_exist" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshot_not_exist">test_volume_snapshot_not_exist</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted" href="#harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted">test_volume_snapshots_are_cleaned_up_after_source_volume_deleted</a></code></li>
 </ul>
 </li>
