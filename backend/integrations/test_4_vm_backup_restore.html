@@ -269,8 +269,12 @@ class TestBackupRestore:
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, f&#39;Failed to restore backup with current VM replaced, {data}&#39;
-        vm_getable, (code, data) = vm_checker.wait_getable(unique_vm_name)
-        assert vm_getable, (code, data)
+
+        vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
+        assert vm_running, (
+            f&#34;Failed to restore VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
 
         # Check VM Started then get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
@@ -284,6 +288,7 @@ class TestBackupRestore:
         code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
         host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
                        if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+        base_vm_with_data[&#39;host_ip&#39;], base_vm_with_data[&#39;vm_ip&#39;] = host_ip, vm_ip
 
         # Login to the new VM and check data is existing
         with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data[&#39;ssh_user&#39;], pkey=pri_key) as sh:
