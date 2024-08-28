@@ -30,12 +30,18 @@ def cluster_state(request, unique_name, api_client):
 
     state = ClusterState()
 
+    # target version
     if request.config.getoption('--upgrade-target-version'):
         state.version_verify = True
         state.version = request.config.getoption('--upgrade-target-version')
     else:
         state.version_verify = False
         state.version = f"version-{unique_name}"
+
+    # cluster size
+    code, data = api_client.hosts.get()
+    assert 200 == code, (code, data)
+    state.size = len(data['data'])
 
     return state
 
@@ -205,7 +211,7 @@ def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id, 
         sleep(3)
     else:
         raise AssertionError(
-            f"Failed to remote VM network {unique_name} after {wait_timeout}s\n"
+            f"Failed to remove VM network {unique_name} after {wait_timeout}s\n"
             f"API Status({code}): {data}"
         )
 
@@ -482,9 +488,8 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(data['metadata']['name'])
         api_client.versions.delete(version)
 
-    def test_degraded_volume(
-        self, api_client, wait_timeout, vm_shell_from_host, vm_checker, upgrade_target, stopped_vm
-    ):
+    def test_degraded_volume(self, api_client, cluster_state, wait_timeout, vm_shell_from_host,
+                             vm_checker, upgrade_target, stopped_vm):
         """
         Criteria: create upgrade should fails if there are any degraded volumes
         Steps:
@@ -494,6 +499,9 @@ class TestInvalidUpgrade:
         3. Immediately upgrade Harvester.
         4. Upgrade should fail.
         """
+        if cluster_state.size < 3:
+            pytest.skip(f"Degraded only checked when nodes >= 3, skip for {cluster_state.size}.")
+
         vm_name, ssh_user, pri_key = stopped_vm
         vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
         assert vm_started, (code, vmi)
