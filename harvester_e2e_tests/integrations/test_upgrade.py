@@ -499,6 +499,7 @@ class TestInvalidUpgrade:
         3. Immediately upgrade Harvester.
         4. Upgrade should fail.
         """
+        # https://github.com/harvester/harvester/issues/6425
         if cluster_state.size < 3:
             pytest.skip(f"Degraded only checked when nodes >= 3, skip for {cluster_state.size}.")
 
