@@ -207,23 +207,6 @@ def check_vm_ip_exists(api_client, vm_name, wait_timeout):
         )
 
 
-def delete_vm(api_client, vm_name, wait_timeout):
-    api_client.vms.delete(vm_name)
-
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-    while endtime > datetime.now():
-        code, data = api_client.vms.get_status(vm_name)
-        if code == 404:
-            break
-        sleep(5)
-    else:
-        raise AssertionError(
-            f"Failed to delete VM {vm_name}, exceed given timeout\n"
-            f"Still got {code} with {data}"
-        )
-
-
 @pytest.mark.p0
 @pytest.mark.networks
 class TestBackendNetwork:
@@ -232,7 +215,7 @@ class TestBackendNetwork:
     @pytest.mark.networks
     def test_mgmt_network_connection(
         self, api_client, request, client, image_opensuse, unique_name, wait_timeout,
-        host_shell, vm_shell_from_host
+        host_shell, vm_shell_from_host, vm_checker
     ):
         """
         Manual test plan reference:
@@ -317,14 +300,19 @@ class TestBackendNetwork:
                                             " to VM on management interface"
                                             f" {mgmt_ip} from external host")
 
-        # cleanup VM
-        delete_vm(api_client, vm_name, wait_timeout)
+        # teardown
+        code, data = api_client.vms.get(vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_checker.wait_deleted(vm_name)
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
 
     @pytest.mark.p0
     @pytest.mark.networks
     @pytest.mark.dependency(name="vlan_network_connection")
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vm_network, wait_timeout):
+                                     image_opensuse, vm_network, wait_timeout, vm_checker):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/validate-network-external-vlan/
@@ -396,15 +384,20 @@ class TestBackendNetwork:
             f"Failed to ssh to VM external vlan IP {vlan_ip}"
             f"on vlan interface from external host")
 
-        # cleanup vm
-        delete_vm(api_client, vm_name, wait_timeout)
+        # teardown
+        code, data = api_client.vms.get(vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_checker.wait_deleted(vm_name)
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
 
     @pytest.mark.p0
     @pytest.mark.networks
     @pytest.mark.dependency(name="reboot_vlan_connection",
                             depends=["vlan_network_connection"])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
-                                    image_opensuse, vm_network, wait_timeout):
+                                    image_opensuse, vm_network, wait_timeout, vm_checker):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/negative-vlan-after-reboot/
@@ -538,13 +531,18 @@ class TestBackendNetwork:
             f"Failed to ping VM external vlan IP {vlan_ip} "
             f"on vlan interface from external host")
 
-        # cleanup vm
-        delete_vm(api_client, vm_name, wait_timeout)
+        # teardown
+        code, data = api_client.vms.get(vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_checker.wait_deleted(vm_name)
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
 
     @pytest.mark.p0
     @pytest.mark.networks
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
-                                     image_opensuse, vm_network, wait_timeout):
+                                     image_opensuse, vm_network, wait_timeout, vm_checker):
         """
         Manual test plan reference:
         https://harvester.github.io/tests/manual/network/edit-network-form-change-management-to-vlan/
@@ -664,14 +662,19 @@ class TestBackendNetwork:
             f"Failed to ssh to VM external vlan IP {vlan_ip}"
             f"on vlan interface from external host")
 
-        # cleanup vm
-        delete_vm(api_client, vm_name, wait_timeout)
+        # teardown
+        code, data = api_client.vms.get(vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_checker.wait_deleted(vm_name)
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
 
     @pytest.mark.p0
     @pytest.mark.networks
     def test_vlan_to_mgmt_connection(
         self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout,
-        host_shell, vm_shell_from_host
+        host_shell, vm_shell_from_host, vm_checker
     ):
         """
         Manual test plan reference:
@@ -790,14 +793,19 @@ class TestBackendNetwork:
                                             " to VM on management interface"
                                             f" {mgmt_ip} from external host")
 
-        # cleanup vm
-        delete_vm(api_client, vm_name, wait_timeout)
+        # teardown
+        code, data = api_client.vms.get(vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_checker.wait_deleted(vm_name)
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
 
     @pytest.mark.p0
     @pytest.mark.networks
     def test_delete_vlan_from_multiple(
         self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout,
-        host_shell
+        host_shell, vm_checker
     ):
         """
         Manual test plan reference:
@@ -931,8 +939,13 @@ class TestBackendNetwork:
                                             " to VM on management interface"
                                             f" {mgmt_ip} from external host")
 
-        # cleanup vm
-        delete_vm(api_client, vm_name, wait_timeout)
+        # teardown
+        code, data = api_client.vms.get(vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_checker.wait_deleted(vm_name)
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
 
     def ssh_client(self, client, dest_ip, username, password, command, timeout,
                    allow_agent=False, look_for_keys=False):
