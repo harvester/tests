@@ -173,11 +173,11 @@ def create_image_url(api_client, display_name, image_url, wait_timeout):
         )
 
 
-def check_vm_running(api_client, unique_name, wait_timeout):
+def check_vm_running(api_client, vm_name, wait_timeout):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
     while endtime > datetime.now():
-        code, data = api_client.vms.get(unique_name)
+        code, data = api_client.vms.get(vm_name)
         vm_fields = data['metadata']['fields']
 
         assert 200 == code, (code, data)
@@ -186,40 +186,40 @@ def check_vm_running(api_client, unique_name, wait_timeout):
         sleep(5)
     else:
         raise AssertionError(
-            f"Failed to create VM {unique_name} in Running status, exceed given timeout\n"
+            f"Failed to create VM {vm_name} in Running status, exceed given timeout\n"
             f"Still got {code} with {data}"
         )
 
 
-def check_vm_ip_exists(api_client, unique_name, wait_timeout):
+def check_vm_ip_exists(api_client, vm_name, wait_timeout):
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
     while endtime > datetime.now():
-        code, data = api_client.vms.get_status(unique_name)
+        code, data = api_client.vms.get_status(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
         if 'ipAddress' in data['status']['interfaces'][0]:
             break
         sleep(5)
     else:
         raise AssertionError(
-            f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
+            f"Failed to get VM {vm_name} IP address, exceed the given timed out\n"
             f"Still got {code} with {data}"
         )
 
 
-def delete_vm(api_client, unique_name, wait_timeout):
-    api_client.vms.delete(unique_name)
+def delete_vm(api_client, vm_name, wait_timeout):
+    api_client.vms.delete(vm_name)
 
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
     while endtime > datetime.now():
-        code, data = api_client.vms.get_status(unique_name)
+        code, data = api_client.vms.get_status(vm_name)
         if code == 404:
             break
         sleep(5)
     else:
         raise AssertionError(
-            f"Failed to delete VM {unique_name}, exceed given timeout\n"
+            f"Failed to delete VM {vm_name}, exceed given timeout\n"
             f"Still got {code} with {data}"
         )
 
@@ -262,21 +262,21 @@ class TestBackendNetwork:
 
         spec.user_data += cloud_user_data.format(password=vm_passwd)
 
-        unique_name = unique_name + "-mgmt"
+        vm_name = unique_name + "-mgmt"
         # Create VM
         spec.add_image(image_opensuse.name, "default/" + image_opensuse.name)
 
-        code, data = api_client.vms.create(unique_name, spec)
+        code, data = api_client.vms.create(vm_name, spec)
         assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.get_status(unique_name)
+        code, data = api_client.vms.get_status(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
@@ -318,7 +318,7 @@ class TestBackendNetwork:
                                             f" {mgmt_ip} from external host")
 
         # cleanup VM
-        delete_vm(api_client, unique_name, wait_timeout)
+        delete_vm(api_client, vm_name, wait_timeout)
 
     @pytest.mark.p0
     @pytest.mark.networks
@@ -336,7 +336,7 @@ class TestBackendNetwork:
         3. Check can ping external VLAN IP from external host
         4. Check can SSH to VM from external IP from external host
         """
-        unique_name = unique_name + "-vlan"
+        vm_name = unique_name + "-vlan"
 
         # Check image exists
         code, data = api_client.images.get(image_opensuse.name)
@@ -352,17 +352,17 @@ class TestBackendNetwork:
 
         spec.add_network("nic-1", f"{vm_network['namespace']}/{vm_network['name']}")
 
-        code, data = api_client.vms.create(unique_name, spec)
+        code, data = api_client.vms.create(vm_name, spec)
         assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.get_status(unique_name)
+        code, data = api_client.vms.get_status(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
@@ -397,7 +397,7 @@ class TestBackendNetwork:
             f"on vlan interface from external host")
 
         # cleanup vm
-        delete_vm(api_client, unique_name, wait_timeout)
+        delete_vm(api_client, vm_name, wait_timeout)
 
     @pytest.mark.p0
     @pytest.mark.networks
@@ -421,7 +421,7 @@ class TestBackendNetwork:
         8. Ping VM after reboot
         9. Check can ping VM
         """
-        unique_name = unique_name + "-reboot-vlan"
+        vm_name = unique_name + "-reboot-vlan"
 
         # Check image exists
         code, data = api_client.images.get(image_opensuse.name)
@@ -437,17 +437,17 @@ class TestBackendNetwork:
 
         spec.add_network("nic-1", f"{vm_network['namespace']}/{vm_network['name']}")
 
-        code, data = api_client.vms.create(unique_name, spec)
+        code, data = api_client.vms.create(vm_name, spec)
         assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.get_status(unique_name)
+        code, data = api_client.vms.get_status(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
@@ -473,14 +473,14 @@ class TestBackendNetwork:
             f"on vlan interface from external host")
 
         # Restart VM
-        code, data = api_client.vms.restart(unique_name)
+        code, data = api_client.vms.restart(vm_name)
         assert 204 == code, (f"Failed to reboot vm with error: {code}, {data}")
 
         # Check VM start in Starting state
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
         while endtime > datetime.now():
-            code, data = api_client.vms.get(unique_name)
+            code, data = api_client.vms.get(vm_name)
             assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
             vm_fields = data['metadata']['fields']
 
@@ -489,7 +489,7 @@ class TestBackendNetwork:
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to restart VM {unique_name} in Starting status, exceed given timeout\n"
+                f"Failed to restart VM {vm_name} in Starting status, exceed given timeout\n"
                 f"Still got {code} with {data}"
             )
 
@@ -507,13 +507,13 @@ class TestBackendNetwork:
             f"on vlan interface from external host during reboot")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.get_status(unique_name)
+        code, data = api_client.vms.get_status(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
@@ -539,7 +539,7 @@ class TestBackendNetwork:
             f"on vlan interface from external host")
 
         # cleanup vm
-        delete_vm(api_client, unique_name, wait_timeout)
+        delete_vm(api_client, vm_name, wait_timeout)
 
     @pytest.mark.p0
     @pytest.mark.networks
@@ -569,20 +569,20 @@ class TestBackendNetwork:
 
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential["password"])
-        unique_name = unique_name + "-mgmt-vlan"
+        vm_name = unique_name + "-mgmt-vlan"
         # Create VM
         spec.add_image(image_opensuse.name, "default/" + image_opensuse.name)
-        code, data = api_client.vms.create(unique_name, spec)
+        code, data = api_client.vms.create(vm_name, spec)
         assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # get data from running VM and transfer to spec
-        code, data = api_client.vms.get(unique_name)
+        code, data = api_client.vms.get(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         spec = spec.from_dict(data)
@@ -593,20 +593,20 @@ class TestBackendNetwork:
         spec.add_network("nic-1", f"{vm_network['namespace']}/{vm_network['name']}")
 
         # Update VM spec
-        code, data = api_client.vms.update(unique_name, spec)
+        code, data = api_client.vms.update(vm_name, spec)
         assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
 
-        code, data = api_client.vms.restart(unique_name)
+        code, data = api_client.vms.restart(vm_name)
         assert 204 == code, (f"Failed to restart specific vm: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # Get VM interface ipAddresses
-        code, data = api_client.vms.get_status(unique_name)
+        code, data = api_client.vms.get_status(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 
         interfaces_data = data['status']['interfaces']
@@ -620,7 +620,7 @@ class TestBackendNetwork:
         ip_addresses = []
 
         while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_name)
+            code, data = api_client.vms.get_status(vm_name)
             assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
@@ -639,7 +639,7 @@ class TestBackendNetwork:
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed given timeout\n"
+                f"Failed to get VM {vm_name} IP address, exceed given timeout\n"
                 f"Still got {code} with {data}"
             )
 
@@ -665,7 +665,7 @@ class TestBackendNetwork:
             f"on vlan interface from external host")
 
         # cleanup vm
-        delete_vm(api_client, unique_name, wait_timeout)
+        delete_vm(api_client, vm_name, wait_timeout)
 
     @pytest.mark.p0
     @pytest.mark.networks
@@ -701,45 +701,45 @@ class TestBackendNetwork:
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
         spec.user_data += cloud_user_data.format(password=vm_passwd)
-        unique_name = unique_name + "-vlan-mgmt"
+        vm_name = unique_name + "-vlan-mgmt"
 
         # Create VM
         spec.add_image(image_opensuse.name, "default/" + image_opensuse.name)
         spec.add_network("default", f"{vm_network['namespace']}/{vm_network['name']}")
 
-        code, data = api_client.vms.create(unique_name, spec)
+        code, data = api_client.vms.create(vm_name, spec)
         assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # get data from running VM and transfer to spec
-        code, data = api_client.vms.get(unique_name)
+        code, data = api_client.vms.get(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
         spec = spec.from_dict(data)
 
         spec.networks = []
         spec.mgmt_network = True
 
-        code, data = api_client.vms.update(unique_name, spec)
+        code, data = api_client.vms.update(vm_name, spec)
         assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
 
-        code, data = api_client.vms.restart(unique_name)
+        code, data = api_client.vms.restart(vm_name)
         assert 204 == code, (f"Failed to restart specific vm: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
         while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_name)
+            code, data = api_client.vms.get_status(vm_name)
             assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
 
             if 'interfaces' in data['status']:
@@ -754,7 +754,7 @@ class TestBackendNetwork:
                 sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
+                f"Failed to get VM {vm_name} IP address, exceed the given timed out\n"
                 f"Still got {code} with {data}"
             )
 
@@ -791,7 +791,7 @@ class TestBackendNetwork:
                                             f" {mgmt_ip} from external host")
 
         # cleanup vm
-        delete_vm(api_client, unique_name, wait_timeout)
+        delete_vm(api_client, vm_name, wait_timeout)
 
     @pytest.mark.p0
     @pytest.mark.networks
@@ -828,7 +828,7 @@ class TestBackendNetwork:
         # Add network data to trigger DHCP on multiple NICs
         spec.network_data += cloud_network_data
 
-        unique_name = unique_name + "-delete-vlan"
+        vm_name = unique_name + "-delete-vlan"
 
         # Add image
         spec.add_image(image_opensuse.name, "default/" + image_opensuse.name)
@@ -837,17 +837,17 @@ class TestBackendNetwork:
         spec.add_network("nic-1", f"{vm_network['namespace']}/{vm_network['name']}")
 
         # Create VM
-        code, data = api_client.vms.create(unique_name, spec)
+        code, data = api_client.vms.create(vm_name, spec)
         assert 201 == code, (f"Failed to create vm with error: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check have 2 NICs and wait until all ip address exists
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
 
         while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_name)
+            code, data = api_client.vms.get_status(vm_name)
             assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
             if len(data['status']['interfaces']) == 2:
                 if 'ipAddress' in data['status']['interfaces'][0]:
@@ -857,35 +857,35 @@ class TestBackendNetwork:
 
         else:
             raise AssertionError(
-                f"Failed to get multiple IPs on VM: {unique_name}, exceed the given timed out\n"
+                f"Failed to get multiple IPs on VM: {vm_name}, exceed the given timed out\n"
                 f"Still got {code} with {data}"
             )
 
         # get data from running VM and transfer to spec
-        code, data = api_client.vms.get(unique_name)
+        code, data = api_client.vms.get(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
         spec = spec.from_dict(data)
 
         spec.networks = []
         spec.mgmt_network = True
 
-        code, data = api_client.vms.update(unique_name, spec)
+        code, data = api_client.vms.update(vm_name, spec)
         assert 200 == code, (f"Failed to update specific vm with spec: {code}, {data}")
 
-        code, data = api_client.vms.restart(unique_name)
+        code, data = api_client.vms.restart(vm_name)
         assert 204 == code, (f"Failed to restart specific vm: {code}, {data}")
 
         # Check VM start in running state
-        check_vm_running(api_client, unique_name, wait_timeout)
+        check_vm_running(api_client, vm_name, wait_timeout)
 
         # Check until VM ip address exists
-        check_vm_ip_exists(api_client, unique_name, wait_timeout)
+        check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         ip_addresses = []
 
         while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_name)
+            code, data = api_client.vms.get_status(vm_name)
             assert 200 == code, (f"Failed to get specific vm status: {code}, {data}")
             if 'interfaces' in data['status']:
                 interfaces_data = data['status']['interfaces']
@@ -901,7 +901,7 @@ class TestBackendNetwork:
             sleep(5)
         else:
             raise AssertionError(
-                f"Failed to get VM {unique_name} IP address, exceed the given timed out\n"
+                f"Failed to get VM {vm_name} IP address, exceed the given timed out\n"
                 f"Still got {code} with {data}"
             )
 
@@ -932,7 +932,7 @@ class TestBackendNetwork:
                                             f" {mgmt_ip} from external host")
 
         # cleanup vm
-        delete_vm(api_client, unique_name, wait_timeout)
+        delete_vm(api_client, vm_name, wait_timeout)
 
     def ssh_client(self, client, dest_ip, username, password, command, timeout,
                    allow_agent=False, look_for_keys=False):
