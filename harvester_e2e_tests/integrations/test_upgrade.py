@@ -557,10 +557,31 @@ class TestInvalidUpgrade:
 @pytest.mark.upgrade
 @pytest.mark.any_nodes
 class TestAnyNodesUpgrade:
+    @pytest.mark.skip_version_if("< v1.2.0", reason="logging is implemented as addon since v1.2.0")
     @pytest.mark.dependency(name="preq_setup_logging")
-    def test_preq_setup_logging(self, api_client):
-        # TODO: enable addon if > v1.2.0
-        return
+    def test_preq_setup_logging(self, api_client, wait_timeout, sleep_timeout):
+        addon = "cattle-logging-system/rancher-logging"
+
+        code, data = api_client.addons.get(addon)
+        assert 200 == code, (code, data)
+        assert not data.get('spec', {}).get('enabled', True), (code, data)
+        assert "AddonDisabled" == data.get('status', {}).get('status')
+
+        code, data = api_client.addons.enable(addon)
+        assert 200 == code, (code, data)
+        assert data.get('spec', {}).get('enabled', False), (code, data)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.addons.get(addon)
+            if data.get('status', {}).get('status', "") in ("deployed", "AddonDeploySuccessful"):
+                break
+            sleep(sleep_timeout)
+        else:
+            raise AssertionError(
+                f"Failed to enable addon {addon} with {wait_timeout} timed out\n"
+                f"API Status({code}): {data}"
+            )
 
     @pytest.mark.dependency(name="preq_setup_vmnetwork")
     def test_preq_setup_vmnetwork(self, vm_network):
@@ -746,6 +767,8 @@ class TestAnyNodesUpgrade:
         """ Verify logging pods and logs
         Criteria: https://github.com/harvester/tests/issues/535
         """
+        code, data = api_client.addons.get("cattle-logging-system/rancher-logging")
+        assert data.get('status', {}).get('status') in ("deployed", "AddonDeploySuccessful")
 
         code, pods = api_client.get_pods(namespace="cattle-logging-system")
         assert code == 200 and len(pods['data']) > 0, "No logging pods found"
