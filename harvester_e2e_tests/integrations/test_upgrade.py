@@ -501,7 +501,9 @@ class TestInvalidUpgrade:
         """
         # https://github.com/harvester/harvester/issues/6425
         if cluster_state.size < 3:
-            pytest.skip(f"Degraded only checked when nodes >= 3, skip for {cluster_state.size}.")
+            pytest.skip(
+                f"Degraded volumes only checked on 3+ nodes cluster, skip on {cluster_state.size}."
+            )
 
         vm_name, ssh_user, pri_key = stopped_vm
         vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
