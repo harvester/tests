@@ -236,7 +236,7 @@ def test_create_with_invalid_url(api_client, gen_unique_name, wait_timeout):
     while endtime > datetime.now():
         code, data = api_client.images.get(unique_name)
         image_conds = data.get('status', {}).get('conditions', [])
-        if "Initialized" == image_conds[-1].get("type"):
+        if len(image_conds) > 0 and "Initialized" == image_conds[-1].get("type"):
             break
         sleep(3)
 
