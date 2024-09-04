@@ -12,70 +12,70 @@
       <link>https://harvester.github.io/tests/manual/terraform-provider/install-terraform-provider/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/install-terraform-provider/</guid>
-      <description>Follow the instruction of the README&#xA;Expected Results The provider is initialized and the terraform init command succeeds:&#xA;Initializing provider plugins... - Finding harvester/harvester versions matching &amp;#34;~&amp;gt; 0.1.0&amp;#34;... - Installing harvester/harvester v0.1.0... - Installed harvester/harvester v0.1.0 (unauthenticated) ... Terraform has been successfully initialized! </description>
+      <description>&lt;p&gt;Follow the instruction of the &lt;a href=&#34;https://github.com/harvester/terraform-provider-harvester#install-the-provider&#34;&gt;README&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;p&gt;The provider is initialized and the terraform init command succeeds:&lt;/p&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;Initializing provider plugins...&#xA;- Finding harvester/harvester versions matching &amp;#34;~&amp;gt; 0.1.0&amp;#34;...&#xA;- Installing harvester/harvester v0.1.0...&#xA;- Installed harvester/harvester v0.1.0 (unauthenticated)&#xA; &#xA;...&#xA; &#xA;Terraform has been successfully initialized!&#xA;&lt;/code&gt;&lt;/pre&gt;</description>
     </item>
     <item>
       <title>Target Harvester by setting the variable kubeconfig with your kubeconfig file in the provider.tf file (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-variasble/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-variasble/</guid>
-      <description> Define the kubeconfig variable in the provider.tf file terraform { required_providers { harvester = { source = &amp;#34;registry.terraform.io/harvester/harvester&amp;#34; version = &amp;#34;~&amp;gt; 0.1.0&amp;#34; } } } provider &amp;#34;harvester&amp;#34; { kubeconfig = &amp;#34;/path/of/my/kubeconfig&amp;#34; } Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command Expected Results The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed. Check if you can see your resource in the Harvester WebUI </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Define the kubeconfig variable in the provider.tf file&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;terraform {&#xA;  required_providers {&#xA;    harvester = {&#xA;      source  = &amp;#34;registry.terraform.io/harvester/harvester&amp;#34;&#xA;      version = &amp;#34;~&amp;gt; 0.1.0&amp;#34;&#xA;    }&#xA;  }&#xA;}&#xA; &#xA;provider &amp;#34;harvester&amp;#34; {&#xA;  kubeconfig = &amp;#34;/path/of/my/kubeconfig&amp;#34;&#xA;}&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Check if you can interact with the Harvester by creating resource like a SSH key&lt;/li&gt;&#xA;&lt;li&gt;Execute the &lt;code&gt;terraform apply&lt;/code&gt; command&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The resource should be created&#xA;&lt;code&gt;Apply complete! Resources: 1 added, 0 changed, 0 destroyed.&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Check if you can see your resource in the Harvester WebUI&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Target Harvester with the default kubeconfig located in $HOME/.kube/config (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-home/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-kubeconfig-home/</guid>
-      <description> Make sure the kubeconfig is defined in the file $HOME/.kube/config Check if you can interact with the Harvester by creating resource like a SSH key Execute the terraform apply command Expected Results The resource should be created Apply complete! Resources: 1 added, 0 changed, 0 destroyed. Check if you can see your resource in the Harvester WebUI </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Make sure the kubeconfig is defined in the file &lt;code&gt;$HOME/.kube/config&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Check if you can interact with the Harvester by creating resource like a SSH key&lt;/li&gt;&#xA;&lt;li&gt;Execute the &lt;code&gt;terraform apply&lt;/code&gt; command&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The resource should be created&#xA;&lt;code&gt;Apply complete! Resources: 1 added, 0 changed, 0 destroyed.&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Check if you can see your resource in the Harvester WebUI&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Test a deployment with ALL resources at the same time (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/deployment-all-resources/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/deployment-all-resources/</guid>
-      <description>Re-use the previous generated TF files and group them all either in one directory or in the same file Generates a speculative execution plan with terraform plan command Create the resources with terraform apply command Check that all resources are correctly created/running on the Harvester cluster Destroy the resources with the command terraform destroy Expected Results Refer to the harvester_ssh_key resource expected results</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Re-use the previous generated TF files and group them all either in one directory or in the same file&lt;/li&gt;&#xA;&lt;li&gt;Generates a speculative execution plan with terraform plan command&lt;/li&gt;&#xA;&lt;li&gt;Create the resources with terraform apply command&lt;/li&gt;&#xA;&lt;li&gt;Check that all resources are correctly created/running on the Harvester cluster&lt;/li&gt;&#xA;&lt;li&gt;Destroy the resources with the command terraform destroy&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;p&gt;Refer to the harvester_ssh_key resource expected results&lt;/p&gt;</description>
     </item>
     <item>
       <title>Test the harvester_clusternetwork resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-clusternetwork-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-clusternetwork-resource/</guid>
-      <description>Refer to the harvester_ssh_key resource test steps</description>
+      <description>&lt;p&gt;Refer to the harvester_ssh_key resource test steps&lt;/p&gt;</description>
     </item>
     <item>
       <title>Test the harvester_image resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-image-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-image-resource/</guid>
-      <description>Refer to the harvester_ssh_key resource test steps</description>
+      <description>&lt;p&gt;Refer to the harvester_ssh_key resource test steps&lt;/p&gt;</description>
     </item>
     <item>
       <title>Test the harvester_network resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-network-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-network-resource/</guid>
-      <description>Refer to the harvester_ssh_key resource test steps</description>
+      <description>&lt;p&gt;Refer to the harvester_ssh_key resource test steps&lt;/p&gt;</description>
     </item>
     <item>
       <title>Test the harvester_ssh_key resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-ssh-key-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-ssh-key-resource/</guid>
-      <description>These following steps must be done for every resources, for avoiding repetitions, look at the detailed instructions at the beginning of the page.&#xA;Import a resource Generates a speculative execution plan with terraform plan command Create the resource with terraform apply command Use terraform plan again Use terraform apply again Destroy the resource with the command terraform destroy Expected Results The resource is well imported in the terraform.tfstate file and you can print it with the terraform show command The command should display the difference between the actual status and the configured status Plan: 1 to add, 0 to change, 0 to destroy.</description>
+      <description>&lt;p&gt;These following steps must be done for every resources, for avoiding repetitions, look at the detailed instructions at the beginning of the page.&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Import a resource&lt;/li&gt;&#xA;&lt;li&gt;Generates a speculative execution plan with terraform plan command&lt;/li&gt;&#xA;&lt;li&gt;Create the resource with terraform apply command&lt;/li&gt;&#xA;&lt;li&gt;Use terraform plan again&lt;/li&gt;&#xA;&lt;li&gt;Use terraform apply again&lt;/li&gt;&#xA;&lt;li&gt;Destroy the resource with the command terraform destroy&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The resource is well imported in the terraform.tfstate file and you can print it with the terraform show command&lt;/li&gt;&#xA;&lt;li&gt;The command should display the difference between the actual status and the configured status&#xA;&lt;code&gt;Plan: 1 to add, 0 to change, 0 to destroy.&lt;/code&gt;&#xA;&lt;code&gt;Apply complete! Resources: 1 added, 0 changed, 0 destroyed.&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;You must see the new resource(s) on the Harvester dashboard`&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;No changes. Your infrastructure matches the configuration.&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;Apply complete! Resources: 0 added, 0 changed, 0 destroyed.&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;Destroy complete! Resources: 1 destroyed.&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Test the harvester_virtualmachine resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-virtualmachine-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-virtualmachine-resource/</guid>
-      <description>Refer to the harvester_ssh_key resource test steps</description>
+      <description>&lt;p&gt;Refer to the harvester_ssh_key resource test steps&lt;/p&gt;</description>
     </item>
     <item>
       <title>Test the harvester_volume resource (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/terraform-provider/harvester-volume-resource/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/terraform-provider/harvester-volume-resource/</guid>
-      <description>Refer to the harvester_ssh_key resource test steps</description>
+      <description>&lt;p&gt;Refer to the harvester_ssh_key resource test steps&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>

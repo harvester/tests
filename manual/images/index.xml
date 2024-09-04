@@ -12,77 +12,77 @@
       <link>https://harvester.github.io/tests/manual/images/add-labels/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/add-labels/</guid>
-      <description> Add multiple labels to the images. Click save Expected Results Labels should be added successfully </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add multiple labels to the images.&lt;/li&gt;&#xA;&lt;li&gt;Click save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Labels should be added successfully&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create Images with valid image URL (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/create-images-with-valid-image-url/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/create-images-with-valid-image-url/</guid>
-      <description>Create image with cloud image available for openSUSE. http://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2 Expected Results Image should show state as Active. Check the backing image in Longhorn Known Bugs https://github.com/harvester/harvester/issues/1269</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create image with cloud image available for openSUSE.&#xA;&lt;a href=&#34;http://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2&#34;&gt;http://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Image should show state as Active.&lt;/li&gt;&#xA;&lt;li&gt;Check the backing image in Longhorn&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;known-bugs&#34;&gt;Known Bugs&lt;/h3&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://github.com/harvester/harvester/issues/1269&#34;&gt;https://github.com/harvester/harvester/issues/1269&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     <item>
       <title>Create with invalid image (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/negative-create-with-invalid-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/negative-create-with-invalid-image/</guid>
-      <description> Create image with invalid URL. e.g. - https://test.img Expected Results Image state show as Failed </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create image with invalid URL.&#xA;e.g. - &lt;a href=&#34;https://test.img&#34;&gt;https://test.img&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Image state show as Failed&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete the image	(e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/delete-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/delete-image/</guid>
-      <description> Select an image with state active. Delete the image. Create another image with same name. Delete the newly created image. Delete an image with failed state Expected Results The image should be deleted successfully. Check the CRDS VirtualMachineImage. User should be able to create a new image with same name. Check the backing image in Longhorn. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Select an image with state active.&lt;/li&gt;&#xA;&lt;li&gt;Delete the image.&lt;/li&gt;&#xA;&lt;li&gt;Create another image with same name.&lt;/li&gt;&#xA;&lt;li&gt;Delete the newly created image.&lt;/li&gt;&#xA;&lt;li&gt;Delete an image with failed state&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The image should be deleted successfully. Check the CRDS VirtualMachineImage.&lt;/li&gt;&#xA;&lt;li&gt;User should be able to create a new image with same name.&lt;/li&gt;&#xA;&lt;li&gt;Check the backing image in Longhorn.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete VM with exported image(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/1602-delete-vm-with-exported-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/1602-delete-vm-with-exported-image/</guid>
-      <description> Related issues: #1602 exported image can&amp;rsquo;t be deleted after vm removed Verification Steps create vm &amp;ldquo;vm-1&amp;rdquo; create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo; delete vm &amp;ldquo;vm-1&amp;rdquo; delete image &amp;ldquo;img-1&amp;rdquo; Expected Results image &amp;ldquo;img-1&amp;rdquo; will be deleted </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1602&#34;&gt;#1602&lt;/a&gt; exported image can&amp;rsquo;t be deleted after vm removed&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;create vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;delete vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;delete image &amp;ldquo;img-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;image &amp;ldquo;img-1&amp;rdquo; will be deleted&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit images (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/edit-images/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/edit-images/</guid>
-      <description> Edit image. Try to edit the description Try to edit the URL Try to edit the Labels Expected Results User should be able to edit the description and Labels User should not be able to edit the URL </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit image.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Try to edit the description&lt;/li&gt;&#xA;&lt;li&gt;Try to edit the URL&lt;/li&gt;&#xA;&lt;li&gt;Try to edit the Labels&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;User should be able to edit the description and Labels&lt;/li&gt;&#xA;&lt;li&gt;User should not be able to edit the URL&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Update image labels after deleting source VM(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/1602-update-labels-on-image-after-vm-delete/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/1602-update-labels-on-image-after-vm-delete/</guid>
-      <description> Related issues: #1602 exported image can&amp;rsquo;t be deleted after vm removed Verification Steps create vm &amp;ldquo;vm-1&amp;rdquo; create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo; delete vm &amp;ldquo;vm-1&amp;rdquo; update image &amp;ldquo;img-1&amp;rdquo; labels Expected Results image &amp;ldquo;img-1&amp;rdquo; will be updated </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1602&#34;&gt;#1602&lt;/a&gt; exported image can&amp;rsquo;t be deleted after vm removed&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;create vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;delete vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;update image &amp;ldquo;img-1&amp;rdquo; labels&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;image &amp;ldquo;img-1&amp;rdquo; will be updated&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Upload Cloud Image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/images/upload-cloud-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/upload-cloud-image/</guid>
-      <description> Upload image to images page Create new vm with image using appropriate template Run VM health checks Expected Results Image should upload Health checks should pass </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Upload image to images page&lt;/li&gt;&#xA;&lt;li&gt;Create new vm with image using appropriate template&lt;/li&gt;&#xA;&lt;li&gt;Run VM health checks&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Image should upload&lt;/li&gt;&#xA;&lt;li&gt;Health checks should pass&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Upload image that is invalid</title>
       <link>https://harvester.github.io/tests/manual/images/negative-upload-invalid-image-file/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/negative-upload-invalid-image-file/</guid>
-      <description>steTry to upload invalid image file to images page Something like dmg, or tar.gzps Expected Results You should get an error Known Bugs https://github.com/harvester/harvester/issues/1425</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;steTry to upload invalid image file to images page&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Something like dmg, or tar.gzps&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;known-bugs&#34;&gt;Known Bugs&lt;/h3&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://github.com/harvester/harvester/issues/1425&#34;&gt;https://github.com/harvester/harvester/issues/1425&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     <item>
       <title>Upload ISO Image(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/upload-iso-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/upload-iso-image/</guid>
-      <description> Upload image to images page Create new vm with image using appropriate template Run VM health checks Expected Results Image should upload Health checks should pass </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Upload image to images page&lt;/li&gt;&#xA;&lt;li&gt;Create new vm with image using appropriate template&lt;/li&gt;&#xA;&lt;li&gt;Run VM health checks&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Image should upload&lt;/li&gt;&#xA;&lt;li&gt;Health checks should pass&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Verify the options available for image</title>
       <link>https://harvester.github.io/tests/manual/images/verify-options-available-for-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/verify-options-available-for-image/</guid>
-      <description> Create vm with YAML using the menu option. Download Yaml Verify the downloaded Yaml file. Clone the Image Expected Results All user-specified fields must match what show on GUI: Namespace Name Description URL Labels </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm with YAML using the menu option.&lt;/li&gt;&#xA;&lt;li&gt;Download Yaml&lt;/li&gt;&#xA;&lt;li&gt;Verify the downloaded Yaml file.&lt;/li&gt;&#xA;&lt;li&gt;Clone the Image&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;All user-specified fields must match what show on GUI:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Namespace&lt;/li&gt;&#xA;&lt;li&gt;Name&lt;/li&gt;&#xA;&lt;li&gt;Description&lt;/li&gt;&#xA;&lt;li&gt;URL&lt;/li&gt;&#xA;&lt;li&gt;Labels&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
   </channel>
 </rss>

@@ -12,658 +12,658 @@
       <link>https://harvester.github.io/tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-only-1-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-only-1-network/</guid>
-      <description> Add a network to the VM Save the VM Wait for it to start/restart Expected Results the VM should start successfully The already existing network connectivity should still work The new connectivity should also work </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add a network to the VM&lt;/li&gt;&#xA;&lt;li&gt;Save the VM&lt;/li&gt;&#xA;&lt;li&gt;Wait for it to start/restart&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;the VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;The already existing network connectivity should still work&lt;/li&gt;&#xA;&lt;li&gt;The new connectivity should also work&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Add a network to an existing VM with two networks</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-two-networks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/add-a-network-to-an-existing-vm-with-two-networks/</guid>
-      <description> Add a network to the VM Save the VM Wait for it to start/restart Expected Results the VM should start successfully The already existing network connectivity should still work The new connectivity should also work </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add a network to the VM&lt;/li&gt;&#xA;&lt;li&gt;Save the VM&lt;/li&gt;&#xA;&lt;li&gt;Wait for it to start/restart&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;the VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;The already existing network connectivity should still work&lt;/li&gt;&#xA;&lt;li&gt;The new connectivity should also work&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Chain VM templates and images</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/760-chained-vm-templates/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/760-chained-vm-templates/</guid>
-      <description> Related issues: #760 cloud config byte limit Verification Steps Create a vm and add userData or networkData, test if it works Run VM health checks create a vm template and add userData create a new vm and use the template Run VM health checks use the existing vm to generate a template, then use the template to create a new vm Run VM health Checks Expected Results All VM&amp;rsquo;s should create All VM Health Checks should pass </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/760&#34;&gt;#760&lt;/a&gt; cloud config byte limit&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Create a vm and add userData or networkData, test if it works&lt;/li&gt;&#xA;&lt;li&gt;Run VM health checks&lt;/li&gt;&#xA;&lt;li&gt;create a vm template and add userData create a new vm and use the template&lt;/li&gt;&#xA;&lt;li&gt;Run VM health checks&lt;/li&gt;&#xA;&lt;li&gt;use the existing vm to generate a template, then use the template to create a new vm&lt;/li&gt;&#xA;&lt;li&gt;Run VM health Checks&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;All VM&amp;rsquo;s should create&lt;/li&gt;&#xA;&lt;li&gt;All VM Health Checks should pass&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Check VM creation required-fields</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/1283-vm-creation-required-fields/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/1283-vm-creation-required-fields/</guid>
-      <description> Related issues: #1283 Fix required fields on VM creation page Verification Steps Create VM without image name and size Create VM without size Create VM wihout image name Create VM without hostname Expected Results You should get an error trying to create VM without image name and size You should get an error trying to create VM without image name You should get an error trying to create VM without size You should not get an error trying to create a VM without hostname </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1283&#34;&gt;#1283&lt;/a&gt; Fix required fields on VM creation page&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Create VM without image name and size&lt;/li&gt;&#xA;&lt;li&gt;Create VM without size&lt;/li&gt;&#xA;&lt;li&gt;Create VM wihout image name&lt;/li&gt;&#xA;&lt;li&gt;Create VM without hostname&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error trying to create VM without image name and size&lt;/li&gt;&#xA;&lt;li&gt;You should get an error trying to create VM without image name&lt;/li&gt;&#xA;&lt;li&gt;You should get an error trying to create VM without size&lt;/li&gt;&#xA;&lt;li&gt;You should not get an error trying to create a VM without hostname&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Clone VM and don&#39;t select start after creation</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-and-dont-select-start-after-creation/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-and-dont-select-start-after-creation/</guid>
-      <description>Case 1 Clone VM from Virtual Machine list and don&amp;rsquo;t select start after creation Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list and don&amp;rsquo;t select start after creation Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
+      <description>&lt;h2 id=&#34;case-1&#34;&gt;Case 1&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM from Virtual Machine list and don&amp;rsquo;t select start after creation&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&lt;/li&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-2&#34;&gt;Case 2&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM with volume from Virtual Machine list and don&amp;rsquo;t select start after creation&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results-1&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Before cloning machine create file run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&lt;/li&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;li&gt;file &lt;code&gt;test.txt&lt;/code&gt; should exist&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Clone VM that is turned off</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-off/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-off/</guid>
-      <description>Case 1 Clone VM from Virtual Machine list that is turned off Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that is turned off Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
+      <description>&lt;h2 id=&#34;case-1&#34;&gt;Case 1&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM from Virtual Machine list that is turned off&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-2&#34;&gt;Case 2&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM with volume from Virtual Machine list that is turned off&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results-1&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Before cloning machine create file run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;li&gt;file &lt;code&gt;test.txt&lt;/code&gt; should exist&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Clone VM that is turned on</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/</guid>
-      <description>Case 1 Clone VM from Virtual Machine list that is turned on Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that is turned on Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
+      <description>&lt;h2 id=&#34;case-1&#34;&gt;Case 1&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM from Virtual Machine list that is turned on&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-2&#34;&gt;Case 2&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM with volume from Virtual Machine list that is turned on&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results-1&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Before cloning machine create file run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;li&gt;file &lt;code&gt;test.txt&lt;/code&gt; should exist&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Clone VM that was created from existing volume</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-existing-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-existing-volume/</guid>
-      <description>Case 1 Clone VM from Virtual Machine list that was created from existing volume Expected Results When completing the clone you should get an error that the volume is already in use Case 2 Clone VM with volume from Virtual Machine list that was created from existing volume Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console file test.</description>
+      <description>&lt;h2 id=&#34;case-1&#34;&gt;Case 1&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM from Virtual Machine list that was created from existing volume&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;When completing the clone you should get an error that the volume is already in use&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-2&#34;&gt;Case 2&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM with volume from Virtual Machine list that was created from existing volume&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results-1&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Before cloning machine create file run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;li&gt;file &lt;code&gt;test.txt&lt;/code&gt; should exist&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Clone VM that was created from image</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-created-from-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-created-from-image/</guid>
-      <description>Case 1 Clone VM from Virtual Machine list that was created from image Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that was created from image Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
+      <description>&lt;h2 id=&#34;case-1&#34;&gt;Case 1&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM from Virtual Machine list that was created from image&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-2&#34;&gt;Case 2&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM with volume from Virtual Machine list that was created from image&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results-1&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Before cloning machine create file run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;li&gt;file &lt;code&gt;test.txt&lt;/code&gt; should exist&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Clone VM that was created from template</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-created-from-template/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-created-from-template/</guid>
-      <description>Case 1 Clone VM from Virtual Machine list that was created from template Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that was created from template Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
+      <description>&lt;h2 id=&#34;case-1&#34;&gt;Case 1&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM from Virtual Machine list that was created from template&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-2&#34;&gt;Case 2&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM with volume from Virtual Machine list that was created from template&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results-1&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Before cloning machine create file run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;li&gt;file &lt;code&gt;test.txt&lt;/code&gt; should exist&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Clone VM that was not created from image</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-not-created-from-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-was-not-created-from-image/</guid>
-      <description>Case 1 Clone VM from Virtual Machine list that was not created from image Expected Results Machine should start if start VM after creation was checked Machine should match the origin machine in Config In YAML You should be able to connect to new VM via console Case 2 Clone VM with volume from Virtual Machine list that was not created from image Expected Results Before cloning machine create file run command echo &amp;quot;123&amp;quot; &amp;gt; test.</description>
+      <description>&lt;h2 id=&#34;case-1&#34;&gt;Case 1&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM from Virtual Machine list that was not created from image&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-2&#34;&gt;Case 2&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Clone VM with volume from Virtual Machine list that was not created from image&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;expected-results-1&#34;&gt;Expected Results&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Before cloning machine create file run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Machine should start if start VM after creation was checked&lt;/li&gt;&#xA;&lt;li&gt;Machine should match the origin machine&#xA;&lt;ul&gt;&#xA;&lt;li&gt;in Config&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;You should be able to connect to new VM via console&lt;/li&gt;&#xA;&lt;li&gt;file &lt;code&gt;test.txt&lt;/code&gt; should exist&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>CPU overcommit on VM (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/cpu_overcommit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/cpu_overcommit/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1429&#xA;Verify Items Overcommit can be edit on Dashboard VM can allocate exceed CPU on the host Node VM can chage allocated CPU after created Case: Update Overcommit configuration Install Harvester with any Node Login to Dashboard, then navigate to Advanced Settings Edit overcommit-config The field of CPU should be editable Created VM can allocate maximum CPU should be &amp;lt;HostCPUs&amp;gt; * [&amp;lt;overcommit-CPU&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt; Case: VM can allocate CPUs more than Host have Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostCPUs&amp;gt; * 5 CPUs VM should start successfully lscpu in VM should display allocated CPUs Page of Virtual Machines should display allocated CPUs correctly Case: Update VM allocated CPUs Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostCPUs&amp;gt; * 5 CPUs VM should start successfully Increase/Reduce VM allocated CPUs to minimum/maximum VM should start successfully lscpu in VM should display allocated CPUs Page of Virtual Machines should display allocated CPUs correctly </description>
+      <description>&lt;p&gt;Ref: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1429&#34;&gt;https://github.com/harvester/harvester/issues/1429&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Overcommit can be edit on Dashboard&lt;/li&gt;&#xA;&lt;li&gt;VM can allocate exceed CPU on the host Node&lt;/li&gt;&#xA;&lt;li&gt;VM can chage allocated CPU after created&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-update-overcommit-configuration&#34;&gt;Case: Update Overcommit configuration&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Login to Dashboard, then navigate to &lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Edit &lt;code&gt;overcommit-config&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;The field of &lt;strong&gt;CPU&lt;/strong&gt; should be editable&lt;/li&gt;&#xA;&lt;li&gt;Created VM can allocate maximum CPU should be &lt;code&gt;&amp;lt;HostCPUs&amp;gt; * [&amp;lt;overcommit-CPU&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt;&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-vm-can-allocate-cpus-more-than-host-have&#34;&gt;Case: VM can allocate CPUs more than Host have&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Create a cloud image for VM Creation&lt;/li&gt;&#xA;&lt;li&gt;Create a VM with &lt;code&gt;&amp;lt;HostCPUs&amp;gt; * 5&lt;/code&gt; CPUs&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;lscpu&lt;/code&gt; in VM should display allocated CPUs&lt;/li&gt;&#xA;&lt;li&gt;Page of Virtual Machines should display allocated CPUs correctly&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-update-vm-allocated-cpus&#34;&gt;Case: Update VM allocated CPUs&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Create a cloud image for VM Creation&lt;/li&gt;&#xA;&lt;li&gt;Create a VM with &lt;code&gt;&amp;lt;HostCPUs&amp;gt; * 5&lt;/code&gt; CPUs&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;Increase/Reduce VM allocated CPUs to minimum/maximum&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;lscpu&lt;/code&gt; in VM should display allocated CPUs&lt;/li&gt;&#xA;&lt;li&gt;Page of Virtual Machines should display allocated CPUs correctly&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a new VM and add Enable USB tablet option	(e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/</guid>
-      <description> Add Enable usb tablet Option Save/Create VM Expected Results Machine starts successfully Enable usb tablet shows In YAML In Form </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add Enable usb tablet Option&lt;/li&gt;&#xA;&lt;li&gt;Save/Create VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts successfully&lt;/li&gt;&#xA;&lt;li&gt;Enable usb tablet shows&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a new VM and add Install guest agent option (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-install-guest-agent-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-install-guest-agent-option/</guid>
-      <description> Add install Guest Agent Option Save/Create VM Validate that qemu-guest-agent was installed You can do this on ubuntu with the command dpkg -l | grep qemu Expected Results Machine starts successfully Guest Agent Option shows In YAML In Form Guest Agent is installed </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add install Guest Agent Option&lt;/li&gt;&#xA;&lt;li&gt;Save/Create VM&lt;/li&gt;&#xA;&lt;li&gt;Validate that qemu-guest-agent was installed&#xA;&lt;ul&gt;&#xA;&lt;li&gt;You can do this on ubuntu with the command &lt;code&gt;dpkg -l | grep qemu&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts successfully&lt;/li&gt;&#xA;&lt;li&gt;Guest Agent Option shows&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Guest Agent is installed&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a new VM with Network Data from the form (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-the-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-the-form/</guid>
-      <description> Add Network Data to the VM&#xA;Here is an example of Network Data config to add DHCP to the physical interface eth0&#xA;network: version: 1 config: - type: physical name: eth0 subnets: - type: dhcp Save/Create the VM&#xA;Expected Results Machine starts succesfully Network Data should show in YAML Network Datashould show in Form Machine should have DHCP for network on eth0 </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Add Network Data to the VM&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Here is an example of Network Data config to add DHCP to the physical interface eth0&lt;/p&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;network:&#xA;version: 1&#xA;config:&#xA;- type: physical&#xA;    name: eth0&#xA;    subnets:&#xA;    - type: dhcp&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Save/Create the VM&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts succesfully&lt;/li&gt;&#xA;&lt;li&gt;Network Data should show in YAML&lt;/li&gt;&#xA;&lt;li&gt;Network Datashould show in Form&lt;/li&gt;&#xA;&lt;li&gt;Machine should have DHCP for network on eth0&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a new VM with Network Data from YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-network-data-from-yaml/</guid>
-      <description> Add Network Data to the VM via YAML Here is an example of Network Data config to add DHCP to the physical interface eth0 network: version: 1 config: - type: physical name: eth0 subnets: - type: dhcp Save/Create the VM Expected Results Machine starts succesfully Network Data should show in YAML Network Datashould show in Form Machine should have DHCP for network on eth0 </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add Network Data to the VM via YAML&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Here is an example of Network Data config to add DHCP to the physical interface eth0&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;network:&#xA;version: 1&#xA;config:&#xA;- type: physical&#xA;    name: eth0&#xA;    subnets:&#xA;    - type: dhcp&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Save/Create the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts succesfully&lt;/li&gt;&#xA;&lt;li&gt;Network Data should show in YAML&lt;/li&gt;&#xA;&lt;li&gt;Network Datashould show in Form&lt;/li&gt;&#xA;&lt;li&gt;Machine should have DHCP for network on eth0&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a new VM with User Data from the form</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-user-data-from-the-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-with-user-data-from-the-form/</guid>
-      <description> Add User data to the VM Here is an example of user data config to add a password #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Save/Create the VM Expected Results Machine starts succesfully User data should exist In YAML In Form Machine should have user password set </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add User data to the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Here is an example of user data config to add a password&#xA;&lt;code&gt;#cloud-config password: password chpasswd: {expire: False} sshpwauth: True Save/Create the VM&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts succesfully&lt;/li&gt;&#xA;&lt;li&gt;User data should exist&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Machine should have user password set&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a VM on a VLAN with an existing machine and then change the existing machine&#39;s VLAN</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-on-a-vlan-with-an-existing-machine-and-then-change-the-existing-machines-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-on-a-vlan-with-an-existing-machine-and-then-change-the-existing-machines-vlan/</guid>
-      <description> Create/edit VM/VMs with the appropriate VLAN Change VLAN for VM if appropriate Expected Results VM should create successfully Appropriate VLAN should show In config in YAML VMs should NOT be able to connect on network verify with ping/ICMP verify with SSH verify with telnet over port 80 if there&amp;rsquo;s a web server </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create/edit VM/VMs with the appropriate VLAN&lt;/li&gt;&#xA;&lt;li&gt;Change VLAN for VM if appropriate&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create successfully&lt;/li&gt;&#xA;&lt;li&gt;Appropriate VLAN should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In config&lt;/li&gt;&#xA;&lt;li&gt;in YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;VMs should NOT be able to connect on network&#xA;&lt;ul&gt;&#xA;&lt;li&gt;verify with ping/ICMP&lt;/li&gt;&#xA;&lt;li&gt;verify with SSH&lt;/li&gt;&#xA;&lt;li&gt;verify with telnet over port 80 if there&amp;rsquo;s a web server&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a VM with 2 networks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-2-networks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-2-networks/</guid>
-      <description>Add a network to the VM Save the VM Wait for it to start/restart Expected Results the VM should start successfully The already existing network connectivity should still work The new connectivity should also work Comments one default management network and one VLAN</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add a network to the VM&lt;/li&gt;&#xA;&lt;li&gt;Save the VM&lt;/li&gt;&#xA;&lt;li&gt;Wait for it to start/restart&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;the VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;The already existing network connectivity should still work&lt;/li&gt;&#xA;&lt;li&gt;The new connectivity should also work&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;comments&#34;&gt;Comments&lt;/h3&gt;&#xA;&lt;p&gt;one default management network and one VLAN&lt;/p&gt;</description>
     </item>
     <item>
       <title>Create a vm with all the default values (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/</guid>
-      <description> Create a VM with all default values Save Expected Results VM should save VM should start if start after creation checkbox is checked Config should show In Form In YAML </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a VM with all default values&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should start if start after creation checkbox is checked&lt;/li&gt;&#xA;&lt;li&gt;Config should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a VM with Start VM on Creation checked (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-checked/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-checked/</guid>
-      <description> Create VM Expected Results VM should start Checkbox for start virtual machine on creation should show as appropriate while editing machine after creation </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should start&lt;/li&gt;&#xA;&lt;li&gt;Checkbox for start virtual machine on creation should show as appropriate while editing machine after creation&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create a VM with start VM on creation unchecked (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/</guid>
-      <description> Create VM Expected Results VM should start or not start as appropriate Checkbox for start virtual machine on creation should show as appropriate while editing machine after creation </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should start or not start as appropriate&lt;/li&gt;&#xA;&lt;li&gt;Checkbox for start virtual machine on creation should show as appropriate while editing machine after creation&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create multiple instances of the vm with ISO image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-iso-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-iso-image/</guid>
-      <description>Create images using the external path for ISO image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the 3 vms and wait for vm to start Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create images using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;li&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the 3 vms and wait for vm to start&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;3 vm should come up and start with same config.&lt;/li&gt;&#xA;&lt;li&gt;Observe the time taken for the system to start the vms.&lt;/li&gt;&#xA;&lt;li&gt;Observe the pattern of the vms get allocated on the nodes. Like how many vm on each nodes are created. Is there a pattern?&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create multiple instances of the vm with raw image (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-raw-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-raw-image/</guid>
-      <description>Create images using the external path for cloud image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the 3 vms and wait for vm to start. Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create images using the external path for cloud image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;li&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the 3 vms and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;3 vm should come up and start with same config.&lt;/li&gt;&#xA;&lt;li&gt;Observe the time taken for the system to start the vms.&lt;/li&gt;&#xA;&lt;li&gt;Observe the pattern of the vms get allocated on the nodes. Like how many vm on each nodes are created. Is there a pattern?&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create multiple instances of the vm with Windows Image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-windows-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-windows-image/</guid>
-      <description>Create images using the external path for ISO image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the 3 vms and wait for vm to start. Expected Results 3 vm should come up and start with same config. Observe the time taken for the system to start the vms. Observe the pattern of the vms get allocated on the nodes.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create images using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;li&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the 3 vms and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;3 vm should come up and start with same config.&lt;/li&gt;&#xA;&lt;li&gt;Observe the time taken for the system to start the vms.&lt;/li&gt;&#xA;&lt;li&gt;Observe the pattern of the vms get allocated on the nodes. Like how many vm on each nodes are created. Is there a pattern?&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create new VM with a machine type of PC (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-pc/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-pc/</guid>
-      <description> Set up the VM with the appropriate machine type Save/create Expected Results Machine should start sucessfully Machine should show the new machine type in the config and in the YAML </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Set up the VM with the appropriate machine type&lt;/li&gt;&#xA;&lt;li&gt;Save/create&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start sucessfully&lt;/li&gt;&#xA;&lt;li&gt;Machine should show the new machine type in the config and in the YAML&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create new VM with a machine type of q35 (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-q35/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-q35/</guid>
-      <description> Set up the VM with the appropriate machine type Save/create Expected Results Machine should start sucessfully Machine should show the new machine type in the config and in the YAML </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Set up the VM with the appropriate machine type&lt;/li&gt;&#xA;&lt;li&gt;Save/create&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start sucessfully&lt;/li&gt;&#xA;&lt;li&gt;Machine should show the new machine type in the config and in the YAML&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create one VM on a VLAN and then move another VM to that VLAN</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-one-vm-on-a-vlan-and-then-move-another-vm-to-that-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-one-vm-on-a-vlan-and-then-move-another-vm-to-that-vlan/</guid>
-      <description> Create/edit VM/VMs with the appropriate VLAN Expected Results VM should create successfully Appropriate VLAN should show In config in YAML VMs should be able to connect on network This can be verified with a ping over the IP, or via other options if ICMP is disabled </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create/edit VM/VMs with the appropriate VLAN&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create successfully&lt;/li&gt;&#xA;&lt;li&gt;Appropriate VLAN should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In config&lt;/li&gt;&#xA;&lt;li&gt;in YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;VMs should be able to connect on network&#xA;&lt;ul&gt;&#xA;&lt;li&gt;This can be verified with a ping over the IP, or via other options if ICMP is disabled&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create one VM on a VLAN that has other VMs then change it to a different VLAN</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-one-vm-on-a-vlan-that-has-other-vms-then-change-it-to-a-different-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-one-vm-on-a-vlan-that-has-other-vms-then-change-it-to-a-different-vlan/</guid>
-      <description> Create/edit VM/VMs with the appropriate VLAN Change VLAN for VM if appropriate Expected Results VM should create successfully Appropriate VLAN should show In config in YAML VMs should NOT be able to connect on network verify with ping/ICMP verify with SSH verify with telnet over port 80 if there&amp;rsquo;s a web server </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create/edit VM/VMs with the appropriate VLAN&lt;/li&gt;&#xA;&lt;li&gt;Change VLAN for VM if appropriate&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create successfully&lt;/li&gt;&#xA;&lt;li&gt;Appropriate VLAN should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In config&lt;/li&gt;&#xA;&lt;li&gt;in YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;VMs should NOT be able to connect on network&#xA;&lt;ul&gt;&#xA;&lt;li&gt;verify with ping/ICMP&lt;/li&gt;&#xA;&lt;li&gt;verify with SSH&lt;/li&gt;&#xA;&lt;li&gt;verify with telnet over port 80 if there&amp;rsquo;s a web server&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create Single instances of the vm with ISO image</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-pc/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-pc/</guid>
-      <description> Create vm using the external path for ISO image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the vm and wait for vm to start. Expected Results VM should come up and start with same config. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create Single instances of the vm with ISO image	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</guid>
-      <description> Create vm using the external path for ISO image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the vm and wait for vm to start. Expected Results VM should come up and start with same config. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create Single instances of the vm with ISO image with machine type pc</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-q35/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-q35/</guid>
-      <description> Create vm using the external path for ISO image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the vm and wait for vm to start. Expected Results VM should come up and start with same config. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create Single instances of the vm with raw image	(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/</guid>
-      <description> Create vm using the external path for cloud image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the vm and wait for vm to start. Expected Results VM should come up and start with same config. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for cloud image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create Single instances of the vm with Windows Image (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-windows-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-windows-image/</guid>
-      <description> Create vm using the external path for ISO image. In user data mention the below to access the vm. #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Create the vm and wait for vm to start. Expected Results VM should come up and start with same config. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create two VMs in the same VLAN (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-in-the-same-vlan/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-in-the-same-vlan/</guid>
-      <description> Create/edit VM/VMs with the appropriate VLAN Expected Results VM should create successfully Appropriate VLAN should show In config in YAML VMs should be able to connect on network This can be verified with a ping over the IP, or via other options if ICMP is disabled </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create/edit VM/VMs with the appropriate VLAN&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create successfully&lt;/li&gt;&#xA;&lt;li&gt;Appropriate VLAN should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In config&lt;/li&gt;&#xA;&lt;li&gt;in YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;VMs should be able to connect on network&#xA;&lt;ul&gt;&#xA;&lt;li&gt;This can be verified with a ping over the IP, or via other options if ICMP is disabled&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create two VMs on separate VLANs</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-on-separate-vlans/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-on-separate-vlans/</guid>
-      <description> Create/edit VM/VMs with the appropriate VLAN Change VLAN for VM if appropriate Expected Results VM should create successfully Appropriate VLAN should show In config in YAML VMs should NOT be able to connect on network verify with ping/ICMP verify with SSH verify with telnet over port 80 if there&amp;rsquo;s a web server </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create/edit VM/VMs with the appropriate VLAN&lt;/li&gt;&#xA;&lt;li&gt;Change VLAN for VM if appropriate&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create successfully&lt;/li&gt;&#xA;&lt;li&gt;Appropriate VLAN should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In config&lt;/li&gt;&#xA;&lt;li&gt;in YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;VMs should NOT be able to connect on network&#xA;&lt;ul&gt;&#xA;&lt;li&gt;verify with ping/ICMP&lt;/li&gt;&#xA;&lt;li&gt;verify with SSH&lt;/li&gt;&#xA;&lt;li&gt;verify with telnet over port 80 if there&amp;rsquo;s a web server&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create two VMs on the same VLAN and change one</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-on-the-same-vlan-and-change-one/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-two-vms-on-the-same-vlan-and-change-one/</guid>
-      <description> Create/edit VM/VMs with the appropriate VLAN Change VLAN for VM if appropriate Expected Results VM should create successfully Appropriate VLAN should show In config in YAML VMs should NOT be able to connect on network verify with ping/ICMP verify with SSH verify with telnet over port 80 if there&amp;rsquo;s a web server </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create/edit VM/VMs with the appropriate VLAN&lt;/li&gt;&#xA;&lt;li&gt;Change VLAN for VM if appropriate&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create successfully&lt;/li&gt;&#xA;&lt;li&gt;Appropriate VLAN should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In config&lt;/li&gt;&#xA;&lt;li&gt;in YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;VMs should NOT be able to connect on network&#xA;&lt;ul&gt;&#xA;&lt;li&gt;verify with ping/ICMP&lt;/li&gt;&#xA;&lt;li&gt;verify with SSH&lt;/li&gt;&#xA;&lt;li&gt;verify with telnet over port 80 if there&amp;rsquo;s a web server&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM and add SSH key (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-and-add-ssh-key/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-and-add-ssh-key/</guid>
-      <description> Create VM Add SSH key if not already in VM Logon with SSH Expected Results You should be prompted for SSH key passphrase if appropriate You should connect You should be able to execute shell commands The SSH Key should show in the SSH key list </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create VM&lt;/li&gt;&#xA;&lt;li&gt;Add SSH key if not already in VM&lt;/li&gt;&#xA;&lt;li&gt;Logon with SSH&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should be prompted for SSH key passphrase if appropriate&lt;/li&gt;&#xA;&lt;li&gt;You should connect&lt;/li&gt;&#xA;&lt;li&gt;You should be able to execute shell commands&lt;/li&gt;&#xA;&lt;li&gt;The SSH Key should show in the SSH key list&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create vm using a template of default version</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-of-default-version/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-of-default-version/</guid>
-      <description> Create a new VM with a template of default version Expected Results After selecting appropriate template and/or version it should populate other fields CPU, Memory, Image, and SSH key should match saved template info VM should start after creation if Start Virtual Machine is selected </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM with a template of default version&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;After selecting appropriate template and/or version it should populate other fields&lt;/li&gt;&#xA;&lt;li&gt;CPU, Memory, Image, and SSH key should match saved template info&lt;/li&gt;&#xA;&lt;li&gt;VM should start after creation if &lt;code&gt;Start Virtual Machine&lt;/code&gt; is selected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create vm using a template of default version with machine type pc</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-of-default-version-with-machine-type-pc/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-of-default-version-with-machine-type-pc/</guid>
-      <description> Create a new VM with a template of default version Expected Results After selecting appropriate template and/or version it should populate other fields CPU, Memory, Image, and SSH key should match saved template info VM should start after creation if Start Virtual Machine is selected </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM with a template of default version&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;After selecting appropriate template and/or version it should populate other fields&lt;/li&gt;&#xA;&lt;li&gt;CPU, Memory, Image, and SSH key should match saved template info&lt;/li&gt;&#xA;&lt;li&gt;VM should start after creation if &lt;code&gt;Start Virtual Machine&lt;/code&gt; is selected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create vm using a template of default version with machine type q35</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-of-default-version-with-machine-type-q35/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-of-default-version-with-machine-type-q35/</guid>
-      <description> Create a new VM with a template of default version Expected Results After selecting appropriate template and/or version it should populate other fields CPU, Memory, Image, and SSH key should match saved template info VM should start after creation if Start Virtual Machine is selected </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM with a template of default version&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;After selecting appropriate template and/or version it should populate other fields&lt;/li&gt;&#xA;&lt;li&gt;CPU, Memory, Image, and SSH key should match saved template info&lt;/li&gt;&#xA;&lt;li&gt;VM should start after creation if &lt;code&gt;Start Virtual Machine&lt;/code&gt; is selected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create vm using a template of non-default version (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-non-default-version/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-using-a-template-non-default-version/</guid>
-      <description> Create a new VM with a template of non-default version Expected Results After selecting appropriate template and/or version it should populate other fields CPU, Memory, Image, and SSH key should match saved template info </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM with a template of non-default version&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;After selecting appropriate template and/or version it should populate other fields&lt;/li&gt;&#xA;&lt;li&gt;CPU, Memory, Image, and SSH key should match saved template info&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create vm with both CPU and Memory not in cluster (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-both-cpu-and-memory-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-both-cpu-and-memory-not-in-cluster/</guid>
-      <description> Attempt to create a VM with the appropriate resources Expected Results You should get errors for each resource you over provisioned The VM should not create until errors are resolved </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Attempt to create a VM with the appropriate resources&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get errors for each resource you over provisioned&#xA;The VM should not create until errors are resolved&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create vm with CPU not in cluster. (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-cpu-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-cpu-not-in-cluster/</guid>
-      <description> Attempt to create a VM with the appropriate resources Expected Results You should get errors for each resource you over provisioned The VM should not create until errors are resolved </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Attempt to create a VM with the appropriate resources&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get errors for each resource you over provisioned&#xA;The VM should not create until errors are resolved&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with existing Volume (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/</guid>
-      <description> Create VM with an existing volume Expected Results VM should create and start You should be able to open the console for the VM and see it boot Volume should show in volumes list VM should appear to the &amp;ldquo;Attached VM&amp;rdquo; column of the existing volume </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create VM with an existing volume&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create and start&lt;/li&gt;&#xA;&lt;li&gt;You should be able to open the console for the VM and see it boot&lt;/li&gt;&#xA;&lt;li&gt;Volume should show in volumes list&lt;/li&gt;&#xA;&lt;li&gt;VM should appear to the &amp;ldquo;Attached VM&amp;rdquo; column of the existing volume&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create vm with Memory not in cluster. (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-memory-not-in-cluster/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-memory-not-in-cluster/</guid>
-      <description> Attempt to create a VM with the appropriate resources Expected Results You should get errors for each resource you over provisioned The VM should not create until errors are resolved </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Attempt to create a VM with the appropriate resources&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get errors for each resource you over provisioned&lt;/li&gt;&#xA;&lt;li&gt;The VM should not create until errors are resolved&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with resources that are only on one node in cluster CPU</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</guid>
-      <description> Edit a VM with resources that are only available on one node in cluster. Expected Results VM should save VM should be reassigned to node that has available resources VM should boot VM should pass health checks </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit a VM with resources that are only available on one node in cluster.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should be reassigned to node that has available resources&lt;/li&gt;&#xA;&lt;li&gt;VM should boot&lt;/li&gt;&#xA;&lt;li&gt;VM should pass health checks&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with resources that are only on one node in cluster CPU (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu/</guid>
-      <description> Create a VM with resources that are only available on one node in cluster Expected Results VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a VM with resources that are only available on one node in cluster&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create&lt;/li&gt;&#xA;&lt;li&gt;VM should be assigned to node that has available resources&lt;/li&gt;&#xA;&lt;li&gt;VM should boot&lt;/li&gt;&#xA;&lt;li&gt;VM should pass health checks&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with resources that are only on one node in cluster CPU and Memory (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</guid>
-      <description> Create a VM with resources that are only available on one node in cluster Expected Results VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a VM with resources that are only available on one node in cluster&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create&lt;/li&gt;&#xA;&lt;li&gt;VM should be assigned to node that has available resources&lt;/li&gt;&#xA;&lt;li&gt;VM should boot&lt;/li&gt;&#xA;&lt;li&gt;VM should pass health checks&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with resources that are only on one node in cluster Memory</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</guid>
-      <description> Edit a VM with resources that are only available on one node in cluster. Expected Results VM should save VM should be reassigned to node that has available resources VM should boot VM should pass health checks </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit a VM with resources that are only available on one node in cluster.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should be reassigned to node that has available resources&lt;/li&gt;&#xA;&lt;li&gt;VM should boot&lt;/li&gt;&#xA;&lt;li&gt;VM should pass health checks&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with resources that are only on one node in cluster Memory (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-resources-that-are-only-on-one-node-in-cluster-memory/</guid>
-      <description> Create a VM with resources that are only available on one node in cluster Expected Results VM should create VM should be assigned to node that has available resources VM should boot VM should pass health checks </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a VM with resources that are only available on one node in cluster&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should create&lt;/li&gt;&#xA;&lt;li&gt;VM should be assigned to node that has available resources&lt;/li&gt;&#xA;&lt;li&gt;VM should boot&lt;/li&gt;&#xA;&lt;li&gt;VM should pass health checks&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with saved SSH key (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-saved-ssh-key/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-saved-ssh-key/</guid>
-      <description> Create VM Add SSH key if not already in VM Logon with SSH Expected Results You should be prompted for SSH key passphrase if appropriate You should connect You should be able to execute shell commands The SSH Key should show in the SSH key list </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create VM&lt;/li&gt;&#xA;&lt;li&gt;Add SSH key if not already in VM&lt;/li&gt;&#xA;&lt;li&gt;Logon with SSH&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should be prompted for SSH key passphrase if appropriate&lt;/li&gt;&#xA;&lt;li&gt;You should connect&lt;/li&gt;&#xA;&lt;li&gt;You should be able to execute shell commands&lt;/li&gt;&#xA;&lt;li&gt;The SSH Key should show in the SSH key list&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with the default network (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-the-default-network/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-the-default-network/</guid>
-      <description> Create a VM with the default network Let VM boot up after creation Expected Results VM should start VM should be able to ping other machines in the VLAN VM should be able to ping servers on the internet if the VLAN has external access </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a VM with the default network&lt;/li&gt;&#xA;&lt;li&gt;Let VM boot up after creation&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should start&lt;/li&gt;&#xA;&lt;li&gt;VM should be able to ping other machines in the VLAN&lt;/li&gt;&#xA;&lt;li&gt;VM should be able to ping servers on the internet if the VLAN has external access&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM with two disk volumes (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/</guid>
-      <description> Create a VM with the appropriate number of volumes Expected Results Verify after creation that the appropriate volumes are in the config for the VM Verify that the volumes are created and listed in the volumes section </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a VM with the appropriate number of volumes&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Verify after creation that the appropriate volumes are in the config for the VM&lt;/li&gt;&#xA;&lt;li&gt;Verify that the volumes are created and listed in the volumes section&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create VM without memory provided (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-vm-without-memory-provided/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-vm-without-memory-provided/</guid>
-      <description>Related issues: #1477 intimidating error message when missing mandatory field Category Virtual Machine Verification Steps Create some image and volume Create virtual machine Fill out all mandatory field but leave memory blank. Click create Expected Results Leave empty memory field empty when create virtual machine will show &amp;ldquo;Memory is required&amp;rdquo; error message</description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1477&#34;&gt;#1477&lt;/a&gt; intimidating error message when missing mandatory field&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;category&#34;&gt;Category&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Virtual Machine&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Create some image and volume&lt;/li&gt;&#xA;&lt;li&gt;Create virtual machine&lt;/li&gt;&#xA;&lt;li&gt;Fill out all mandatory field but leave memory blank.&lt;/li&gt;&#xA;&lt;li&gt;Click create&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;p&gt;Leave empty memory field empty when create virtual machine will show &amp;ldquo;Memory is required&amp;rdquo; error message&lt;/p&gt;&#xA;&lt;p&gt;&lt;img src=&#34;https://user-images.githubusercontent.com/29251855/140006054-92b12a07-af8b-4087-9fc8-4cf76c6500ea.png&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;</description>
     </item>
     <item>
       <title>Create Windows VM</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-windows-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-windows-vm/</guid>
-      <description>Create a VM with the VM template with windows-iso-image-base-temp Config the CPU and Memory to 4 and 8 respectively Select the windows ISO image Click the Volumes tab and update the root disk size to 50GB Click create to launch the windows VM Optional: you can increase the second disk size or add an additional one. Click create to launch the VM (this will take a couple of minutes upon your network speed of download the ISO image) Click the Console to launch a VNC console of the windows server, and you will need to find an evaluation key of the windows server 2012 installation.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a VM with the VM template with windows-iso-image-base-temp&lt;/li&gt;&#xA;&lt;li&gt;Config the CPU and Memory to 4 and 8 respectively&lt;/li&gt;&#xA;&lt;li&gt;Select the windows ISO image&lt;/li&gt;&#xA;&lt;li&gt;Click the Volumes tab and update the root disk size to 50GB&lt;/li&gt;&#xA;&lt;li&gt;Click create to launch the windows VM&lt;/li&gt;&#xA;&lt;li&gt;Optional: you can increase the second disk size or add an additional one.&lt;/li&gt;&#xA;&lt;li&gt;Click create to launch the VM (this will take a couple of minutes upon your network speed of download the ISO image)&lt;/li&gt;&#xA;&lt;li&gt;Click the Console to launch a VNC console of the windows server, and you will need to find an evaluation key of the windows server 2012 installation.&lt;/li&gt;&#xA;&lt;li&gt;Optional: you may continue to create other VMs as described in the below doc to skip the image downloading and installation times.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete multiple VMs with disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-with-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-with-disks/</guid>
-      <description> Delete VM Select whether you want to delete disks Expected Results You should check amount of used space on Server before you delete the VM Machine should delete It should not show up in the Virtual Machine list Disks should be listed/or not in Volumes list as appropriate Verify the cleaned up the space on the disk on the node. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Delete VM&lt;/li&gt;&#xA;&lt;li&gt;Select whether you want to delete disks&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should check amount of used space on Server before you delete the VM&lt;/li&gt;&#xA;&lt;li&gt;Machine should delete&lt;/li&gt;&#xA;&lt;li&gt;It should not show up in the Virtual Machine list&lt;/li&gt;&#xA;&lt;li&gt;Disks should be listed/or not in Volumes list as appropriate&lt;/li&gt;&#xA;&lt;li&gt;Verify the cleaned up the space on the disk on the node.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete multiple VMs without disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-without-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/delete-multiple-vms-without-disks/</guid>
-      <description> Delete VM Select whether you want to delete disks Expected Results You should check amount of used space on Server before you delete the VM Machine should delete It should not show up in the Virtual Machine list Disks should be listed/or not in Volumes list as appropriate Verify the cleaned up the space on the disk on the node. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Delete VM&lt;/li&gt;&#xA;&lt;li&gt;Select whether you want to delete disks&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should check amount of used space on Server before you delete the VM&lt;/li&gt;&#xA;&lt;li&gt;Machine should delete&lt;/li&gt;&#xA;&lt;li&gt;It should not show up in the Virtual Machine list&lt;/li&gt;&#xA;&lt;li&gt;Disks should be listed/or not in Volumes list as appropriate&lt;/li&gt;&#xA;&lt;li&gt;Verify the cleaned up the space on the disk on the node.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete single vm all disks (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/delete-single-vm-all-disks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/delete-single-vm-all-disks/</guid>
-      <description> Delete VM Select whether you want to delete disks Expected Results You should check amount of used space on Server before you delete the VM Machine should delete It should not show up in the Virtual Machine list Disks should be listed/or not in Volumes list as appropriate Verify the cleaned up the space on the disk on the node. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Delete VM&lt;/li&gt;&#xA;&lt;li&gt;Select whether you want to delete disks&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should check amount of used space on Server before you delete the VM&lt;/li&gt;&#xA;&lt;li&gt;Machine should delete&lt;/li&gt;&#xA;&lt;li&gt;It should not show up in the Virtual Machine list&lt;/li&gt;&#xA;&lt;li&gt;Disks should be listed/or not in Volumes list as appropriate&lt;/li&gt;&#xA;&lt;li&gt;Verify the cleaned up the space on the disk on the node.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete VM Negative (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-delete-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/negative-delete-vm/</guid>
-      <description> In a multi-node setup disconnect/shutdown the node where the VM is running Delete VM and all disks Expected Results You should not be able to delete the VM </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;In a multi-node setup disconnect/shutdown the node where the VM is running&lt;/li&gt;&#xA;&lt;li&gt;Delete VM and all disks&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should not be able to delete the VM&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete VM with exported image (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/1602-delete-vm-with-exported-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/1602-delete-vm-with-exported-image/</guid>
-      <description> Related issues: #1602 exported image can&amp;rsquo;t be deleted after vm removed Verification Steps create vm &amp;ldquo;vm-1&amp;rdquo; create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo; delete vm &amp;ldquo;vm-1&amp;rdquo; delete image &amp;ldquo;img-1&amp;rdquo; Expected Results image &amp;ldquo;img-1&amp;rdquo; will be deleted </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1602&#34;&gt;#1602&lt;/a&gt; exported image can&amp;rsquo;t be deleted after vm removed&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;create vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;delete vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;delete image &amp;ldquo;img-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;image &amp;ldquo;img-1&amp;rdquo; will be deleted&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit a VM and add install Enable usb tablet option (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-and-add-install-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-and-add-install-enable-usb-tablet-option/</guid>
-      <description> Add Enable usb tablet Option Save/Create VM Expected Results Machine starts successfully Enable usb tablet shows In YAML In Form </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add Enable usb tablet Option&lt;/li&gt;&#xA;&lt;li&gt;Save/Create VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts successfully&lt;/li&gt;&#xA;&lt;li&gt;Enable usb tablet shows&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit a VM and add install guest agent option (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-and-add-install-guest-agent-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-and-add-install-guest-agent-option/</guid>
-      <description> Add install Guest Agent Option Save/Create VM Expected Results Machine starts successfully Guest Agent Option shows In YAML In Form Guest Agent is installed </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add install Guest Agent Option&lt;/li&gt;&#xA;&lt;li&gt;Save/Create VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts successfully&lt;/li&gt;&#xA;&lt;li&gt;Guest Agent Option shows&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Guest Agent is installed&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit a VM from the form to add Network Data</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-network-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-network-data/</guid>
-      <description> Add Network Data to the VM Here is an example of Network Data config to add DHCP to the physical interface eth0 network: version: 1 config: - type: physical name: eth0 subnets: - type: dhcp Save/Create the VM Expected Results Machine starts succesfully Network Data should show in YAML Network Datashould show in Form Machine should have DHCP for network on eth0 </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add Network Data to the VM&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Here is an example of Network Data config to add DHCP to the physical interface eth0&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;network:&#xA;version: 1&#xA;config:&#xA;- type: physical&#xA;    name: eth0&#xA;    subnets:&#xA;    - type: dhcp&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;li&gt;Save/Create the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts succesfully&lt;/li&gt;&#xA;&lt;li&gt;Network Data should show in YAML&lt;/li&gt;&#xA;&lt;li&gt;Network Datashould show in Form&lt;/li&gt;&#xA;&lt;li&gt;Machine should have DHCP for network on eth0&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit a VM from the form to add user data (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-user-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-form-to-add-user-data/</guid>
-      <description> Add User data to the VM&#xA;Here is an example of user data config to add a password `` #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Save/Create the VM&#xA;Expected Results Machine starts succesfully User data should In YAML In Form Machine should have user password set </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Add User data to the VM&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Here is an example of user data config to add a password&#xA;``&#xA;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Save/Create the VM&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts succesfully&lt;/li&gt;&#xA;&lt;li&gt;User data should&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Machine should have user password set&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit a VM from the YAML to add Network Data (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-network-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-network-data/</guid>
-      <description> Add Network Data to the VM Here is an example of Network Data config to add DHCP to the physical interface eth0 network: version: 1 config: - type: physical name: eth0 subnets: - type: dhcp Save/Create the VM Expected Results Machine starts succesfully Network Data should show in YAML Network Datashould show in Form Machine should have DHCP for network on eth0 </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add Network Data to the VM&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Here is an example of Network Data config to add DHCP to the physical interface eth0&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;network:&#xA;version: 1&#xA;config:&#xA;- type: physical&#xA;    name: eth0&#xA;    subnets:&#xA;    - type: dhcp&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;li&gt;Save/Create the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts succesfully&lt;/li&gt;&#xA;&lt;li&gt;Network Data should show in YAML&lt;/li&gt;&#xA;&lt;li&gt;Network Datashould show in Form&lt;/li&gt;&#xA;&lt;li&gt;Machine should have DHCP for network on eth0&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit a VM from the YAML to add user data (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-user-data/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-from-the-yaml-to-add-user-data/</guid>
-      <description> Add User data to the VM Here is an example of user data config to add a password `` #cloud-config password: password chpasswd: {expire: False} sshpwauth: True Save/Create the VM Expected Results Machine starts succesfully User data should In YAML In Form Machine should have user password set </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Add User data to the VM&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Here is an example of user data config to add a password&#xA;``&#xA;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;li&gt;Save/Create the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine starts succesfully&lt;/li&gt;&#xA;&lt;li&gt;User data should&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Machine should have user password set&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit an existing VM to another machine type (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-an-existing-vm-to-another-machine-type/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-an-existing-vm-to-another-machine-type/</guid>
-      <description> Set up the VM with the appropriate machine type Save/create Expected Results Machine should start sucessfully Machine should show the new machine type in the config and in the YAML </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Set up the VM with the appropriate machine type&lt;/li&gt;&#xA;&lt;li&gt;Save/create&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Machine should start sucessfully&lt;/li&gt;&#xA;&lt;li&gt;Machine should show the new machine type in the config and in the YAML&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit vm and insert ssh and check the ssh key is accepted for the login (e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-and-insert-ssh-and-check-the-ssh-key-is-accepted-for-the-login/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-and-insert-ssh-and-check-the-ssh-key-is-accepted-for-the-login/</guid>
-      <description> Edit VM and add SSH Key Save VM Expected Results You should be able to ssh in with correct SSH private key You should not be able to SSH in with incorrect SSH private key </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit VM and add SSH Key&lt;/li&gt;&#xA;&lt;li&gt;Save VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should be able to ssh in with correct SSH private key&lt;/li&gt;&#xA;&lt;li&gt;You should not be able to SSH in with incorrect SSH private key&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit vm config after Eject CDROM and delete volume</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/5264-edit-vm-config-after-eject-cdrom-delete-volume/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/5264-edit-vm-config-after-eject-cdrom-delete-volume/</guid>
-      <description> Related issues: #5264 [BUG] After EjectCD from vm and edit config of vm displays empty page: &amp;ldquo;Cannot read properties of null&amp;rdquo; Category: Virtual Machines Verification Steps Upload the ISO type desktop image (e.g ubuntu-20.04.4-desktop-amd64.iso) Create a vm named vm1 with the iso image Open the web console to check content Click EjectCD after vm running Select the delete volume option Wait until vm restart to running Click the edit config Back to the virtual machine page Click the vm1 name Expected Results Check can edit vm config of vm1 to display all settings correctly Check can display the current vm1 settings correctly </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/5264&#34;&gt;#5264&lt;/a&gt; [BUG] After EjectCD from vm and edit config of vm displays empty page: &amp;ldquo;Cannot read properties of null&amp;rdquo;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;category&#34;&gt;Category:&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Virtual Machines&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Upload the ISO type desktop image (e.g ubuntu-20.04.4-desktop-amd64.iso)&lt;/li&gt;&#xA;&lt;li&gt;Create a vm named &lt;code&gt;vm1&lt;/code&gt; with the iso image&lt;/li&gt;&#xA;&lt;li&gt;Open the web console to check content&lt;/li&gt;&#xA;&lt;li&gt;Click EjectCD after vm running&lt;/li&gt;&#xA;&lt;li&gt;Select the &lt;code&gt;delete volume&lt;/code&gt; option&lt;/li&gt;&#xA;&lt;li&gt;Wait until vm restart to running&lt;/li&gt;&#xA;&lt;li&gt;Click the edit config&lt;/li&gt;&#xA;&lt;li&gt;Back to the virtual machine page&lt;/li&gt;&#xA;&lt;li&gt;Click the &lt;code&gt;vm1&lt;/code&gt; name&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Check can edit vm config of &lt;code&gt;vm1&lt;/code&gt; to display all settings correctly&#xA;&#xA;&#xA;&lt;img src=&#34;https://harvester.github.io/tests/images/virtual-machines/5264-edit-vm-cofig-after-delete-volume.png&#34; alt=&#34;images/virtual-machines/5264-edit-vm-cofig-after-delete-volume.png&#34;&gt;&lt;/li&gt;&#xA;&lt;li&gt;Check can display the current &lt;code&gt;vm1&lt;/code&gt; settings correctly&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
     </item>
     <item>
       <title>Edit VM Form Negative</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-edit-vm-form/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/negative-edit-vm-form/</guid>
-      <description> In a multi-node setup disconnect/shutdown the node where the VM is running Edit the VM via form Save the VM Expected Results You should not be able to save the edited Form You should get an error </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;In a multi-node setup disconnect/shutdown the node where the VM is running&lt;/li&gt;&#xA;&lt;li&gt;Edit the VM via form&lt;/li&gt;&#xA;&lt;li&gt;Save the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should not be able to save the edited Form&lt;/li&gt;&#xA;&lt;li&gt;You should get an error&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit vm network and verify the network is working as per configuration (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-network-and-verify-the-network-is-working-as-per-configuration-/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-network-and-verify-the-network-is-working-as-per-configuration-/</guid>
-      <description> Edit VM network Save Expected Results VM should save VM should restart if restart checkbox is checked Changes should show In Form In YAML Network should function as desired </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit VM network&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should restart if restart checkbox is checked&lt;/li&gt;&#xA;&lt;li&gt;Changes should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Network should function as desired&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit VM via form with CPU</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-form-with-cpu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-form-with-cpu/</guid>
-      <description> Edit VM Save Expected Results VM should save VM should restart if restart checkbox is checked Changes should show In Form In YAML In VM list </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit VM&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should restart if restart checkbox is checked&lt;/li&gt;&#xA;&lt;li&gt;Changes should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In VM list&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit VM via form with CPU and Memory</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-form-with-cpu-and-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-form-with-cpu-and-memory/</guid>
-      <description> Edit VM Save Expected Results VM should save VM should restart if restart checkbox is checked Changes should show In Form In YAML In VM list </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit VM&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should restart if restart checkbox is checked&lt;/li&gt;&#xA;&lt;li&gt;Changes should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In VM list&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit VM via form with Memory</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-form-with-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-form-with-memory/</guid>
-      <description> Edit VM Save Expected Results VM should save VM should restart if restart checkbox is checked Changes should show In Form In YAML In VM list </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit VM&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should restart if restart checkbox is checked&lt;/li&gt;&#xA;&lt;li&gt;Changes should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In VM list&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit VM via YAML with CPU (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu/</guid>
-      <description> Edit VM Save Expected Results VM should save VM should restart if restart checkbox is checked Changes should show In Form In YAML In VM list </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit VM&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should restart if restart checkbox is checked&lt;/li&gt;&#xA;&lt;li&gt;Changes should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In VM list&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit VM via YAML with CPU and Memory (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu-and-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-cpu-and-memory/</guid>
-      <description> Edit VM Save Expected Results VM should save VM should restart if restart checkbox is checked Changes should show In Form In YAML In VM list </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit VM&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should restart if restart checkbox is checked&lt;/li&gt;&#xA;&lt;li&gt;Changes should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In VM list&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit VM via YAML with Memory (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-vm-via-yaml-with-memory/</guid>
-      <description> Edit VM Save Expected Results VM should save VM should restart if restart checkbox is checked Changes should show In Form In YAML In VM list </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit VM&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should restart if restart checkbox is checked&lt;/li&gt;&#xA;&lt;li&gt;Changes should show&#xA;&lt;ul&gt;&#xA;&lt;li&gt;In Form&lt;/li&gt;&#xA;&lt;li&gt;In YAML&lt;/li&gt;&#xA;&lt;li&gt;In VM list&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit VM with resources that are only on one node in cluster CPU and Memory</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/edit-a-vm-with-resources-that-are-only-on-one-node-in-cluster-cpu-and-memory/</guid>
-      <description> Edit a VM with resources that are only available on one node in cluster. Expected Results VM should save VM should be reassigned to node that has available resources VM should boot VM should pass health checks </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit a VM with resources that are only available on one node in cluster.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should save&lt;/li&gt;&#xA;&lt;li&gt;VM should be reassigned to node that has available resources&lt;/li&gt;&#xA;&lt;li&gt;VM should boot&lt;/li&gt;&#xA;&lt;li&gt;VM should pass health checks&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit VM YAML Negative</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/q-negative-edit-vm-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/q-negative-edit-vm-yaml/</guid>
-      <description> In a multi-node setup disconnect/shutdown the node where the VM is running Edit the VM via YAML Save the VM Expected Results SSH to the node and check the nodes has components deleted. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;In a multi-node setup disconnect/shutdown the node where the VM is running&lt;/li&gt;&#xA;&lt;li&gt;Edit the VM via YAML&lt;/li&gt;&#xA;&lt;li&gt;Save the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;SSH to the node and check the nodes has components deleted.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Memory overcommit on VM</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/memory_overcommit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/memory_overcommit/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1537&#xA;Verify Items Overcommit can be edit on Dashboard VM can allocate exceed Memory on the host Node VM can chage allocated Memory after created Case: Update Overcommit configuration Install Harvester with any Node Login to Dashboard, then navigate to Advanced Settings Edit overcommit-config The field of Memory should be editable Created VM can allocate maximum Memory should be &amp;lt;HostMemory&amp;gt; * [&amp;lt;overcommit-Memory&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt; Case: VM can allocate Memory more than Host have Install Harvester with any Node Create a cloud image for VM Creation Create a VM with &amp;lt;HostMemory&amp;gt; * 1.</description>
+      <description>&lt;p&gt;Ref: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1537&#34;&gt;https://github.com/harvester/harvester/issues/1537&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Overcommit can be edit on Dashboard&lt;/li&gt;&#xA;&lt;li&gt;VM can allocate exceed Memory on the host Node&lt;/li&gt;&#xA;&lt;li&gt;VM can chage allocated Memory after created&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-update-overcommit-configuration&#34;&gt;Case: Update Overcommit configuration&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Login to Dashboard, then navigate to &lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Edit &lt;code&gt;overcommit-config&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;The field of &lt;strong&gt;Memory&lt;/strong&gt; should be editable&lt;/li&gt;&#xA;&lt;li&gt;Created VM can allocate maximum Memory should be &lt;code&gt;&amp;lt;HostMemory&amp;gt; * [&amp;lt;overcommit-Memory&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt;&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-vm-can-allocate-memory-more-than-host-have&#34;&gt;Case: VM can allocate Memory more than Host have&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Create a cloud image for VM Creation&lt;/li&gt;&#xA;&lt;li&gt;Create a VM with &lt;code&gt;&amp;lt;HostMemory&amp;gt; * 1.2&lt;/code&gt; Memory&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;lscpu&lt;/code&gt; in VM should display allocated Memory&lt;/li&gt;&#xA;&lt;li&gt;Page of Virtual Machines should display allocated Memory correctly&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-update-vm-allocated-memory&#34;&gt;Case: Update VM allocated Memory&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Create a cloud image for VM Creation&lt;/li&gt;&#xA;&lt;li&gt;Create a VM with &lt;code&gt;&amp;lt;HostMemory&amp;gt; * 1.2&lt;/code&gt; Memory&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;Increase/Reduce VM allocated Memory to minimum/maximum&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;lscpu&lt;/code&gt; in VM should display allocated Memory&lt;/li&gt;&#xA;&lt;li&gt;Page of Virtual Machines should display allocated Memory correctly&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative vm clone tests</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-vm-clone/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/negative-vm-clone/</guid>
-      <description>Case 1 Create a harvester cluster. Create a VM source-vm with 3 volumes: Image Volume Volume Container Volume After VM starts, run command echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync. Click clone button on the source-vm and input new VM name target-vm. Delete source-vm while still cloning Expected Results target-vm should finish cloning After cloning run command cat ~/test.txt in the target-vm. The result should be 123. Case 2 Create a harvester cluster.</description>
+      <description>&lt;h3 id=&#34;case-1&#34;&gt;Case 1&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Create a harvester cluster.&lt;/li&gt;&#xA;&lt;li&gt;Create a VM &lt;code&gt;source-vm&lt;/code&gt; with 3 volumes:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Image Volume&lt;/li&gt;&#xA;&lt;li&gt;Volume&lt;/li&gt;&#xA;&lt;li&gt;Container Volume&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;After VM starts, run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Click &lt;code&gt;clone&lt;/code&gt; button on the &lt;code&gt;source-vm&lt;/code&gt; and input new VM name &lt;code&gt;target-vm&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Delete &lt;code&gt;source-vm&lt;/code&gt; while still cloning&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h4 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h4&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;target-vm&lt;/code&gt; should finish cloning&lt;/li&gt;&#xA;&lt;li&gt;After cloning run command &lt;code&gt;cat ~/test.txt&lt;/code&gt; in the &lt;code&gt;target-vm&lt;/code&gt;. The result should be &lt;code&gt;123&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;case-2&#34;&gt;Case 2&lt;/h3&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Create a harvester cluster.&lt;/li&gt;&#xA;&lt;li&gt;Create a VM &lt;code&gt;source-vm&lt;/code&gt; with 3 volumes:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Image Volume&lt;/li&gt;&#xA;&lt;li&gt;Volume&lt;/li&gt;&#xA;&lt;li&gt;Container Volume&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;After VM starts, run command &lt;code&gt;echo &amp;quot;123&amp;quot; &amp;gt; test.txt &amp;amp;&amp;amp; sync&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Click &lt;code&gt;clone&lt;/code&gt; button on the &lt;code&gt;source-vm&lt;/code&gt; and input new VM name &lt;code&gt;target-vm&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Turn off node that has &lt;code&gt;source-vm&lt;/code&gt; while cloning&lt;/li&gt;&#xA;&lt;li&gt;Wait for clone to finish&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h4 id=&#34;expected-results-1&#34;&gt;Expected Results&lt;/h4&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;target-vm&lt;/code&gt; should finish cloning on node&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;source-vm&lt;/code&gt; should have migrated to new node&lt;/li&gt;&#xA;&lt;li&gt;After cloning run command &lt;code&gt;cat ~/test.txt&lt;/code&gt; in the &lt;code&gt;target-vm&lt;/code&gt;. The result should be &lt;code&gt;123&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
     </item>
     <item>
       <title>Run multiple instances of the console</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/run-multiple-instances-console/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/run-multiple-instances-console/</guid>
-      <description> Open up the console on two browsers to simulate multiple connections Login with both browsers create a new file on both instances Edit the file from the other instance and save Verify that you can see the changes from the other instance Expected Results You should be able to login from multiple browsers File should create File should update You should be able to see changes from all instances </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Open up the console on two browsers to simulate multiple connections&lt;/li&gt;&#xA;&lt;li&gt;Login with both browsers&lt;/li&gt;&#xA;&lt;li&gt;create a new file on both instances&lt;/li&gt;&#xA;&lt;li&gt;Edit the file from the other instance and save&lt;/li&gt;&#xA;&lt;li&gt;Verify that you can see the changes from the other instance&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should be able to login from multiple browsers&lt;/li&gt;&#xA;&lt;li&gt;File should create&lt;/li&gt;&#xA;&lt;li&gt;File should update&lt;/li&gt;&#xA;&lt;li&gt;You should be able to see changes from all instances&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Start VM and stop node Negative</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-start-vm-and-stop-node/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/negative-start-vm-and-stop-node/</guid>
-      <description> Start the VM In a multi-node setup disconnect/shutdown the node where the VM is running Expected Results You should not be able to start the VM </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Start the VM&lt;/li&gt;&#xA;&lt;li&gt;In a multi-node setup disconnect/shutdown the node where the VM is running&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should not be able to start the VM&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Start VM Negative (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-start-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/negative-start-vm/</guid>
-      <description> In a multi-node setup disconnect/shutdown the node where the VM is running Start the VM Expected Results You should not be able to start the VM </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;In a multi-node setup disconnect/shutdown the node where the VM is running&lt;/li&gt;&#xA;&lt;li&gt;Start the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should not be able to start the VM&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Stop VM Negative (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/negative-stop-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/negative-stop-vm/</guid>
-      <description> In a multi-node setup disconnect/shutdown the node where the VM is running Stop the VM Expected Results The VM list should quickly update to not running, or some other error state </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;In a multi-node setup disconnect/shutdown the node where the VM is running&lt;/li&gt;&#xA;&lt;li&gt;Stop the VM&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The VM list should quickly update to not running, or some other error state&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Update image labels after deleting source VM</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/1602-update-labels-on-image-after-vm-delete/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/1602-update-labels-on-image-after-vm-delete/</guid>
-      <description> Related issues: #1602 exported image can&amp;rsquo;t be deleted after vm removed Verification Steps create vm &amp;ldquo;vm-1&amp;rdquo; create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo; delete vm &amp;ldquo;vm-1&amp;rdquo; update image &amp;ldquo;img-1&amp;rdquo; labels Expected Results image &amp;ldquo;img-1&amp;rdquo; will be updated </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1602&#34;&gt;#1602&lt;/a&gt; exported image can&amp;rsquo;t be deleted after vm removed&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;create vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;create a image &amp;ldquo;img-1&amp;rdquo; by export the volume used by vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;delete vm &amp;ldquo;vm-1&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;update image &amp;ldquo;img-1&amp;rdquo; labels&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;image &amp;ldquo;img-1&amp;rdquo; will be updated&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Validate QEMU agent installation</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/1235-check-qemu-installation/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/1235-check-qemu-installation/</guid>
-      <description> Related issues: #1235 QEMU agent is not installed by default when creating VMs Verification Steps Creat openSUSE VM Start VM check for qemu-ga package Create Ubuntu VM Start VM Check for qemu-ga package Expected Results VMs should start Packages should be present </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1235&#34;&gt;#1235&lt;/a&gt; QEMU agent is not installed by default when creating VMs&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Creat openSUSE VM&lt;/li&gt;&#xA;&lt;li&gt;Start VM&lt;/li&gt;&#xA;&lt;li&gt;check for qemu-ga package&lt;/li&gt;&#xA;&lt;li&gt;Create Ubuntu VM&lt;/li&gt;&#xA;&lt;li&gt;Start VM&lt;/li&gt;&#xA;&lt;li&gt;Check for qemu-ga package&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VMs should start&lt;/li&gt;&#xA;&lt;li&gt;Packages should be present&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Verify operations like Stop, restart, pause, download YAML, generate template (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</guid>
-      <description> Take an existing VM and Press the appropriate buttons for the associated operations Stop Restart Pause Download YAML Generate Template Expected Results All operations should complete successfully </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Take an existing VM and Press the appropriate buttons for the associated operations&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Stop&lt;/li&gt;&#xA;&lt;li&gt;Restart&lt;/li&gt;&#xA;&lt;li&gt;Pause&lt;/li&gt;&#xA;&lt;li&gt;Download YAML&lt;/li&gt;&#xA;&lt;li&gt;Generate Template&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;All operations should complete successfully&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Verify that vm-force-reset-policy works</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/1660-volume-unit-vm-details/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/1660-volume-unit-vm-details/</guid>
-      <description> Related issues: #1660 The volume unit on the vm details page is incorrect Verification Steps Create new .1G volume Create new VM Create with raw-image template Add opensuse base image Add .1G Volume Verify size in VM details on volume tab Expected Results Size should show as .1G </description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1660&#34;&gt;#1660&lt;/a&gt; The volume unit on the vm details page is incorrect&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Create new .1G volume&lt;/li&gt;&#xA;&lt;li&gt;Create new VM&lt;/li&gt;&#xA;&lt;li&gt;Create with raw-image template&lt;/li&gt;&#xA;&lt;li&gt;Add opensuse base image&lt;/li&gt;&#xA;&lt;li&gt;Add .1G Volume&lt;/li&gt;&#xA;&lt;li&gt;Verify size in VM details on volume tab&#xA;&lt;img src=&#34;https://user-images.githubusercontent.com/83787952/145658516-73f5c72c-2543-46cd-9f90-8bc47f5ce2d4.png&#34; alt=&#34;image&#34;&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Size should show as .1G&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>View log function on virtual machine</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/5266-view-log-function/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/5266-view-log-function/</guid>
-      <description>Related issues: #5266 [BUG] Click View Logs option on virtual machine dashboard can&amp;rsquo;t display any log entry Category: Virtual Machines Verification Steps Create one virtual machines named vm1 in the Harvester virtual machine page Wait until the vm1 in running state Click the View Logs in the side option menu Check the log panel content of vm Click the Clear button Click the Download button Enter some query sting in the Filter field Click settings, change the Show the latest to different options Uncheck/Check the Wrap Lines Uncheck/Check the Show Timestamps Expected Results Should display the detailed log entries on the vm log panel including timestamp and content All existing logs would be cleaned up Ensure new logs will display on the panel Check can correctly download the log to the .</description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/5266&#34;&gt;#5266&lt;/a&gt; [BUG] Click View Logs option on virtual machine dashboard can&amp;rsquo;t display any log entry&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;category&#34;&gt;Category:&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Virtual Machines&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Create one virtual machines named &lt;code&gt;vm1&lt;/code&gt; in the Harvester virtual machine page&lt;/li&gt;&#xA;&lt;li&gt;Wait until the &lt;code&gt;vm1&lt;/code&gt; in running state&lt;/li&gt;&#xA;&lt;li&gt;Click the View Logs in the side option menu&lt;/li&gt;&#xA;&lt;li&gt;Check the log panel content of vm&lt;/li&gt;&#xA;&lt;li&gt;Click the &lt;code&gt;Clear&lt;/code&gt; button&lt;/li&gt;&#xA;&lt;li&gt;Click the &lt;code&gt;Download&lt;/code&gt; button&lt;/li&gt;&#xA;&lt;li&gt;Enter some query sting in the &lt;code&gt;Filter&lt;/code&gt; field&lt;/li&gt;&#xA;&lt;li&gt;Click settings, change the &lt;code&gt;Show the latest&lt;/code&gt; to different options&lt;/li&gt;&#xA;&lt;li&gt;Uncheck/Check the &lt;code&gt;Wrap Lines&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Uncheck/Check the &lt;code&gt;Show Timestamps&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Should display the detailed log entries on the vm log panel including timestamp and content&#xA;&#xA;&#xA;&lt;img src=&#34;https://harvester.github.io/tests/images/virtual-machines/5266-view-vm-log.png&#34; alt=&#34;images/virtual-machines/5266-view-vm-log.png&#34;&gt;&lt;/li&gt;&#xA;&lt;li&gt;All existing logs would be cleaned up&lt;/li&gt;&#xA;&lt;li&gt;Ensure new logs will display on the panel&lt;/li&gt;&#xA;&lt;li&gt;Check can correctly download the log to the &lt;code&gt;.log&lt;/code&gt; file and contain all the details&lt;/li&gt;&#xA;&lt;li&gt;Check the log entries contains the filter string can display correctly&lt;/li&gt;&#xA;&lt;li&gt;Check each different options of &lt;code&gt;Show the latest&lt;/code&gt; log option can display log according to the settings&lt;/li&gt;&#xA;&lt;li&gt;Check the log entries can be wrapped or unwrapped&lt;/li&gt;&#xA;&lt;li&gt;Check the log entries can display with/without timestamp&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
     </item>
     <item>
       <title>VM on error state</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/vm_on_error_state/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_on_error_state/</guid>
-      <description>Ref:&#xA;https://github.com/harvester/harvester/issues/1446 https://github.com/harvester/harvester/issues/982 Verify Items Error message should displayed when VM can&amp;rsquo;t be scheduled VM&amp;rsquo;s state should be changed when host is down Case: Create a VM that no Node can host it Install Harvester with any nodes download a image to create VM create a VM with over-commit (consider to over-provisioning feature, double or triple the host resource would be more reliable.) VM should shows Starting state, and an alart icon shows aside.</description>
+      <description>&lt;p&gt;Ref:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://github.com/harvester/harvester/issues/1446&#34;&gt;https://github.com/harvester/harvester/issues/1446&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://github.com/harvester/harvester/issues/982&#34;&gt;https://github.com/harvester/harvester/issues/982&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Error message should displayed when VM can&amp;rsquo;t be scheduled&lt;/li&gt;&#xA;&lt;li&gt;VM&amp;rsquo;s &lt;strong&gt;state&lt;/strong&gt; should be changed when host is down&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-create-a-vm-that-no-node-can-host-it&#34;&gt;Case: Create a VM that no Node can host it&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any nodes&lt;/li&gt;&#xA;&lt;li&gt;download a image to create VM&lt;/li&gt;&#xA;&lt;li&gt;create a VM with over-commit (consider to over-provisioning feature, double or triple the host resource would be more reliable.)&lt;/li&gt;&#xA;&lt;li&gt;VM should shows &lt;strong&gt;Starting&lt;/strong&gt; state, and an alart icon shows aside.&lt;/li&gt;&#xA;&lt;li&gt;hover to the icon, pop-up message should display messages like &lt;code&gt;0/N nodes are available: n insufficient ...&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-vms-state-changed-to-not-ready-when-the-host-is-down&#34;&gt;Case: VM&amp;rsquo;s state changed to &lt;strong&gt;Not Ready&lt;/strong&gt; when the host is down&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with 2+ nodes&lt;/li&gt;&#xA;&lt;li&gt;Create an Image for VM creation&lt;/li&gt;&#xA;&lt;li&gt;Create a VM and wait until state becomes &lt;strong&gt;Running&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Reboot the node which hosting the VM&lt;/li&gt;&#xA;&lt;li&gt;Node&amp;rsquo;s &lt;em&gt;State&lt;/em&gt; should be &lt;code&gt;In Progress&lt;/code&gt; in &lt;em&gt;&lt;strong&gt;Hosts&lt;/strong&gt;&lt;/em&gt; page&lt;/li&gt;&#xA;&lt;li&gt;VM&amp;rsquo;s &lt;em&gt;State&lt;/em&gt; should be &lt;code&gt;Not Ready&lt;/code&gt; in &lt;em&gt;&lt;strong&gt;Virtual Machines&lt;/strong&gt;&lt;/em&gt; page&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>VM scheduling on Specific node (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_schedule_on_node/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1350&#xA;Verify Items Node which is not active should not be listed in Node Scheduling list Case: Schedule VM on the Node which is Enable Maintenance Mode Install Harvester with at least 2 nodes Login and Navigate to Virtual Machines Create VM and Select Run VM on specific node(s)... All Active nodes should in the list Navigate to Host and pick node(s) to Enable Maintenance Mode Make sure Node(s) state changed into Maintenance Mode Repeat step 2 and 3 Picked Node(s) should not in the list Revert picked Node(s) to back to state of Active Repeat step 2 to 4 </description>
+      <description>&lt;p&gt;Ref: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1350&#34;&gt;https://github.com/harvester/harvester/issues/1350&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Node which is not active should not be listed in &lt;strong&gt;Node Scheduling&lt;/strong&gt; list&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-schedule-vm-on-the-node-which-is-enable-maintenance-mode&#34;&gt;Case: Schedule VM on the Node which is &lt;strong&gt;Enable Maintenance Mode&lt;/strong&gt;&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with at least 2 nodes&lt;/li&gt;&#xA;&lt;li&gt;Login and Navigate to &lt;em&gt;Virtual Machines&lt;/em&gt;&lt;/li&gt;&#xA;&lt;li&gt;Create VM and Select &lt;code&gt;Run VM on specific node(s)...&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;All &lt;em&gt;&lt;strong&gt;Active&lt;/strong&gt;&lt;/em&gt; nodes should in the list&lt;/li&gt;&#xA;&lt;li&gt;Navigate to &lt;em&gt;Host&lt;/em&gt; and pick node(s) to &lt;strong&gt;Enable Maintenance Mode&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Make sure Node(s) state changed into &lt;em&gt;&lt;strong&gt;Maintenance Mode&lt;/strong&gt;&lt;/em&gt;&lt;/li&gt;&#xA;&lt;li&gt;Repeat step 2 and 3&lt;/li&gt;&#xA;&lt;li&gt;Picked Node(s) should not in the list&lt;/li&gt;&#xA;&lt;li&gt;Revert picked Node(s) to back to state of &lt;em&gt;&lt;strong&gt;Active&lt;/strong&gt;&lt;/em&gt;&lt;/li&gt;&#xA;&lt;li&gt;Repeat step 2 to 4&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>VM&#39;s CPU maximum limitation</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/vm_cpu_limits/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/vm_cpu_limits/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1565&#xA;Verify Items VM&amp;rsquo;s maximum CPU amount should not have limitation. Case: Create VM with large CPU amount Install harvester with any nodes Create image for VM creation Create a VM with vCPU over than 100 Start VM and verify lscpu shows the same amount </description>
+      <description>&lt;p&gt;Ref: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1565&#34;&gt;https://github.com/harvester/harvester/issues/1565&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;VM&amp;rsquo;s maximum CPU amount should not have limitation.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-create-vm-with-large-cpu-amount&#34;&gt;Case: Create VM with large CPU amount&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install harvester with any nodes&lt;/li&gt;&#xA;&lt;li&gt;Create image for VM creation&lt;/li&gt;&#xA;&lt;li&gt;Create a VM with vCPU over than 100&lt;/li&gt;&#xA;&lt;li&gt;Start VM and verify &lt;code&gt;lscpu&lt;/code&gt; shows the same amount&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
   </channel>
 </rss>

@@ -12,252 +12,252 @@
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup_s3_permission/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup_s3_permission/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1339&#xA;Verify Items Backup target connect to S3 should only require the permission to access the specific bucket Case: S3 Backup with single-bucket-user Install Harvester with any nodes Setup Minio then follow the instruction to create a single-bucket-user. Create specific bucket for the user Create other buckets setup backup-target with the single-bucket-user permission When assign the dedicated bucket (for the user), connection should success. When assign other buckets, connection should failed with AccessDenied error message </description>
+      <description>&lt;p&gt;Ref: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1339&#34;&gt;https://github.com/harvester/harvester/issues/1339&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Backup target connect to S3 should only require the permission to access the specific bucket&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-s3-backup-with-single-bucket-user&#34;&gt;Case: S3 Backup with &lt;code&gt;single-bucket-user&lt;/code&gt;&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any nodes&lt;/li&gt;&#xA;&lt;li&gt;Setup Minio&#xA;&lt;ol&gt;&#xA;&lt;li&gt;then follow the &lt;a href=&#34;https://objectivefs.com/howto/how-to-restrict-s3-bucket-policy-to-only-one-aws-s3-bucket&#34;&gt;instruction&lt;/a&gt; to create a &lt;code&gt;single-bucket-user&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Create specific bucket for the user&lt;/li&gt;&#xA;&lt;li&gt;Create other buckets&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;setup &lt;code&gt;backup-target&lt;/code&gt; with the &lt;strong&gt;single-bucket-user&lt;/strong&gt; permission&#xA;&lt;ol&gt;&#xA;&lt;li&gt;When assign the dedicated bucket (for the user), connection should success.&lt;/li&gt;&#xA;&lt;li&gt;When assign other buckets, connection should failed with &lt;strong&gt;AccessDenied&lt;/strong&gt; error message&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Backup Single VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm/</guid>
-      <description> Click take backup in virtual machine list Expected Results Backup should be created Backup should be listed in backups list Backup should be available on remote storage (S3/NFS) </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Click take backup in virtual machine list&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backup should be created&lt;/li&gt;&#xA;&lt;li&gt;Backup should be listed in backups list&lt;/li&gt;&#xA;&lt;li&gt;Backup should be available on remote storage (S3/NFS)&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Backup Single VM that has been live migrated before (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-that-has-been-live-migrated/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-that-has-been-live-migrated/</guid>
-      <description> Click take backup in virtual machine list Expected Results Backup should be created Backup should be listed in backups list Backup should be available on remote storage (S3/NFS) </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Click take backup in virtual machine list&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backup should be created&lt;/li&gt;&#xA;&lt;li&gt;Backup should be listed in backups list&lt;/li&gt;&#xA;&lt;li&gt;Backup should be available on remote storage (S3/NFS)&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Backup single VM with node off</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-node-off/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup-single-vm-node-off/</guid>
-      <description>On multi-node setup bring down node that is hosting VM Click take backup in virtual machine list Expected Results The backup should complete successfully Comments We do allow taking backup even if the VM is down, as you can take backup when the VM is off, this is because the volume still exists with longhorn&amp;rsquo;s multi replicas, but weneed to check the data integrity.&#xA;Known Bugs https://github.com/harvester/harvester/issues/1483</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;On multi-node setup bring down node that is hosting VM&lt;/li&gt;&#xA;&lt;li&gt;Click take backup in virtual machine list&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The backup should complete successfully&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;comments&#34;&gt;Comments&lt;/h2&gt;&#xA;&lt;p&gt;We do allow taking backup even if the VM is down, as you can take backup when the VM is off, this is because the volume still exists with longhorn&amp;rsquo;s multi replicas, but weneed to check the data integrity.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Backup Target error message</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/backup_target_errmsg/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/backup_target_errmsg/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/1051&#xA;Verify Items Backup target should check input before Click Save Error message should displayed on edit page when input is wrong Case: Connect to invalid Backup Target Install Harvester with any node Login to dashboard, then navigate to Advanced Settings Edit backup-target,then input invalid data for NFS/S3 and click Save The Page should not be redirect to Advanced Settings Error Message should displayed under Save button </description>
+      <description>&lt;p&gt;Ref: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1051&#34;&gt;https://github.com/harvester/harvester/issues/1051&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Backup target should check input before Click &lt;strong&gt;Save&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Error message should displayed on edit page when input is wrong&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-connect-to-invalid-backup-target&#34;&gt;Case: Connect to invalid Backup Target&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any node&lt;/li&gt;&#xA;&lt;li&gt;Login to dashboard, then navigate to &lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Edit &lt;strong&gt;backup-target&lt;/strong&gt;,then input invalid data for NFS/S3 and click &lt;strong&gt;Save&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;The Page should not be redirect to &lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Error Message should displayed under &lt;strong&gt;Save&lt;/strong&gt; button&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Create Backup Target (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/create-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/create-backup-target/</guid>
-      <description> Open up Backup-target in settings Input server info Save Expected Results Backup Target should show in settings </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Open up Backup-target in settings&lt;/li&gt;&#xA;&lt;li&gt;Input server info&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backup Target should show in settings&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete backup from backups list (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-single-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-single-backup/</guid>
-      <description> Delete backup from backups list Expected Results Backup should be removed from list Backup should be removed from remote storage </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Delete backup from backups list&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backup should be removed from list&lt;/li&gt;&#xA;&lt;li&gt;Backup should be removed from remote storage&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete first backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-first-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-first-backup-chained-backup/</guid>
-      <description> Create a new VM Create a file named 1 and add text Create a backup Edit text in file 1 create file 2 Create Backup Edit file 2 text Create file 3 and add text Create backup Delete backup 1 Validate file 2 and 3 are the same as they were Restore to backup 2 Validate that md5sum -c file1-2.md5 file2.md5 file3.md5 file 1 is in second format file 2 is in first format file 3 doesn&amp;rsquo;t exist Expected Results Vm should create All file operations should create Backup should run All file operations should create Backup should run All file operations should create files should be as expected </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM&lt;/li&gt;&#xA;&lt;li&gt;Create a file named 1 and add text&lt;/li&gt;&#xA;&lt;li&gt;Create a backup&lt;/li&gt;&#xA;&lt;li&gt;Edit text in file 1&lt;/li&gt;&#xA;&lt;li&gt;create file 2&lt;/li&gt;&#xA;&lt;li&gt;Create Backup&lt;/li&gt;&#xA;&lt;li&gt;Edit file 2 text&lt;/li&gt;&#xA;&lt;li&gt;Create file 3 and add text&lt;/li&gt;&#xA;&lt;li&gt;Create backup&lt;/li&gt;&#xA;&lt;li&gt;Delete backup 1&lt;/li&gt;&#xA;&lt;li&gt;Validate file 2 and 3 are the same as they were&lt;/li&gt;&#xA;&lt;li&gt;Restore to backup 2&lt;/li&gt;&#xA;&lt;li&gt;Validate that&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;md5sum -c file1-2.md5 file2.md5 file3.md5&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;file 1 is in second format&lt;/li&gt;&#xA;&lt;li&gt;file 2 is in first format&lt;/li&gt;&#xA;&lt;li&gt;file 3 doesn&amp;rsquo;t exist&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Vm should create&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;files should be as expected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete last backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-last-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-last-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup delete backup 3 Validate that files didn&amp;rsquo;t change Restore to backup 2 Validate that md5sum -c file1-2.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM&lt;/li&gt;&#xA;&lt;li&gt;Create a file named 1 and add some data using command &lt;code&gt;dd if=/dev/urandom of=file1.txt count=100 bs=1M&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum : md5sum-1&lt;/li&gt;&#xA;&lt;li&gt;Create a backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite file 1&lt;/li&gt;&#xA;&lt;li&gt;Create file 2&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3&lt;/li&gt;&#xA;&lt;li&gt;Create Backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite the file 2&lt;/li&gt;&#xA;&lt;li&gt;Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5&lt;/li&gt;&#xA;&lt;li&gt;Create backup&lt;/li&gt;&#xA;&lt;li&gt;delete backup 3&lt;/li&gt;&#xA;&lt;li&gt;Validate that files didn&amp;rsquo;t change&lt;/li&gt;&#xA;&lt;li&gt;Restore to backup 2&lt;/li&gt;&#xA;&lt;li&gt;Validate that&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;md5sum -c file1-2.md5 file2.md5 file3.md5 &lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;file 1 is in second format&lt;/li&gt;&#xA;&lt;li&gt;file 2 is in original format&lt;/li&gt;&#xA;&lt;li&gt;file 3 doesn&amp;rsquo;t exist&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Vm should create&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;files should be as expected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete middle backup in chained backup (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-middle-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-middle-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Delete backup 2 Validate file 2 and 3 are the same as they were Restore to backup 1 Validate that md5sum -c file1.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM&lt;/li&gt;&#xA;&lt;li&gt;Create a file named 1 and add some data using command &lt;code&gt;dd if=/dev/urandom of=file1.txt count=100 bs=1M&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum : md5sum-1&lt;/li&gt;&#xA;&lt;li&gt;Create a backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite file 1&lt;/li&gt;&#xA;&lt;li&gt;Create file 2&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3&lt;/li&gt;&#xA;&lt;li&gt;Create Backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite the file 2&lt;/li&gt;&#xA;&lt;li&gt;Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5&lt;/li&gt;&#xA;&lt;li&gt;Create backup&lt;/li&gt;&#xA;&lt;li&gt;Delete backup 2&lt;/li&gt;&#xA;&lt;li&gt;Validate file 2 and 3 are the same as they were&lt;/li&gt;&#xA;&lt;li&gt;Restore to backup 1&lt;/li&gt;&#xA;&lt;li&gt;Validate that&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;md5sum -c file1.md5 file2.md5 file3.md5 &lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;file 1 is in original format - md5sum-1&lt;/li&gt;&#xA;&lt;li&gt;file 2 doesn&amp;rsquo;t exist&lt;/li&gt;&#xA;&lt;li&gt;file 3 doesn&amp;rsquo;t exist&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Validate data by restoring other backups also.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Vm should create&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;files should be as expected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Delete multiple backups</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/delete-multiple-backups/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/delete-multiple-backups/</guid>
-      <description> Select multiple Backups from Backups list Click Delete Expected Results Backups should be removed from list Backups should be removed from remote storage </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Select multiple Backups from Backups list&lt;/li&gt;&#xA;&lt;li&gt;Click Delete&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backups should be removed from list&lt;/li&gt;&#xA;&lt;li&gt;Backups should be removed from remote storage&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit backup read YAML from file</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/edit-backup-read-yaml-from-file/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/edit-backup-read-yaml-from-file/</guid>
-      <description> Edit YAML for backup Read from File Show Diff Save Expected Results Diff should show changes Backup should be updated </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit YAML for backup&lt;/li&gt;&#xA;&lt;li&gt;Read from File&lt;/li&gt;&#xA;&lt;li&gt;Show Diff&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Diff should show changes&lt;/li&gt;&#xA;&lt;li&gt;Backup should be updated&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Edit backup via YAML (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/edit-backup-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/edit-backup-yaml/</guid>
-      <description> Edit YAML for backup Show Diff Save Expected Results Diff should show changes Backup should be updated </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Edit YAML for backup&lt;/li&gt;&#xA;&lt;li&gt;Show Diff&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Diff should show changes&lt;/li&gt;&#xA;&lt;li&gt;Backup should be updated&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Filter backups</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/filter-backups/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/filter-backups/</guid>
-      <description> Enter in string in filter input field Columns available for matching: State &amp;ldquo;Ready&amp;rdquo; &amp;ldquo;Progressing&amp;rdquo; Name Target VM With string With matching string Input Clear With non-matching string Input Clear Clear String Expected Results List should filter based on string List should re-populate after clearing string </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Enter in string in filter input field&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Columns available for matching:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;State&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&amp;ldquo;Ready&amp;rdquo;&lt;/li&gt;&#xA;&lt;li&gt;&amp;ldquo;Progressing&amp;rdquo;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Name&lt;/li&gt;&#xA;&lt;li&gt;Target VM&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;With string&#xA;&lt;ul&gt;&#xA;&lt;li&gt;With matching string&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Input&lt;/li&gt;&#xA;&lt;li&gt;Clear&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;With non-matching string&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Input Clear&lt;/li&gt;&#xA;&lt;li&gt;Clear String&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;List should filter based on string&lt;/li&gt;&#xA;&lt;li&gt;List should re-populate after clearing string&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative create backup on store that is full (NFS)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-full-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-full-backup-target/</guid>
-      <description> Initiate a backup with existing VM where the NFS store is full Expected Results You should get an error </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Initiate a backup with existing VM where the NFS store is full&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative Create Backup Target</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-create-backup-target/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-create-backup-target/</guid>
-      <description> Open up Backup-target in settings Input Incorrect server info Save Expected Results You should get an error on saving </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Open up Backup-target in settings&lt;/li&gt;&#xA;&lt;li&gt;Input Incorrect server info&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error on saving&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative delete backup while restore is in progress</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-backup-while-restoring/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-backup-while-restoring/</guid>
-      <description> Create a backup of VM which has data more than 10Gi. Add 2Gi data in the same VM. Initiate deletion of the backup. While deletion is in progress, create another backup Expected Results Creation of backup should be prevented as there is a deletion is in progress. Once the deletion is completed, the backup creation should take place </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a backup of VM which has data more than 10Gi.&lt;/li&gt;&#xA;&lt;li&gt;Add 2Gi data in the same VM.&lt;/li&gt;&#xA;&lt;li&gt;Initiate deletion of the backup.&lt;/li&gt;&#xA;&lt;li&gt;While deletion is in progress, create another backup&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Creation of backup should be prevented as there is a deletion is in progress.&lt;/li&gt;&#xA;&lt;li&gt;Once the deletion is completed, the backup creation should take place&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative delete multiple backups</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-multiple-backups/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-multiple-backups/</guid>
-      <description> Disconnect Backup Target Select multiple Backups from Backups list Click Delete Expected Results You should get an error </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Disconnect Backup Target&lt;/li&gt;&#xA;&lt;li&gt;Select multiple Backups from Backups list&lt;/li&gt;&#xA;&lt;li&gt;Click Delete&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative delete single backup</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-single-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-delete-single-backup/</guid>
-      <description> Take down backup target either by account, or via network blocking Delete backup from backups list Expected Results You should get an error </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Take down backup target either by account, or via network blocking&lt;/li&gt;&#xA;&lt;li&gt;Delete backup from backups list&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative disrupt backup server while restore is in progress</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-disrupt-backup-target-while-restoring/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-disrupt-backup-target-while-restoring/</guid>
-      <description> Initiate a backup restore from NFS server. Disconnect network from NFS server for 5 secs Verify the restore status Expected Results The restore is not be interrupted and should complete. Data should be intact </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Initiate a backup restore from NFS server.&lt;/li&gt;&#xA;&lt;li&gt;Disconnect network from NFS server for 5 secs&lt;/li&gt;&#xA;&lt;li&gt;Verify the restore status&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The restore is not be interrupted and should complete.&lt;/li&gt;&#xA;&lt;li&gt;Data should be intact&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative edit backup read from file YAML</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-file/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-file/</guid>
-      <description> Disconnect backup target Edit YAML for backup Read from File Show Diff Save Expected Results You should get an error on saving </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Disconnect backup target&lt;/li&gt;&#xA;&lt;li&gt;Edit YAML for backup&lt;/li&gt;&#xA;&lt;li&gt;Read from File&lt;/li&gt;&#xA;&lt;li&gt;Show Diff&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error on saving&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative edit backup YAML</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-yaml/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-edit-backup-yaml/</guid>
-      <description> Disconnect backup target Edit YAML for backup Show Diff Save Expected Results You should get an error on saving </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Disconnect backup target&lt;/li&gt;&#xA;&lt;li&gt;Edit YAML for backup&lt;/li&gt;&#xA;&lt;li&gt;Show Diff&lt;/li&gt;&#xA;&lt;li&gt;Save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error on saving&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative initiate a backup while system is taking another backup</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-while-taking-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-backup-while-taking-backup/</guid>
-      <description> Start a VM backup, bk-1 of a VM which has data d1 While the backup is in progress, write some more data d2 in the VM disk and initiate another backup bk-2. Verify the backup 1 and backup 2 Expected Results Backup bk-1 should have only d1 data backup bk-2 should have data d1 and d2 </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Start a VM backup, bk-1 of a VM which has data  d1&lt;/li&gt;&#xA;&lt;li&gt;While the backup is in progress, write some more data d2 in the VM disk and initiate another backup bk-2.&lt;/li&gt;&#xA;&lt;li&gt;Verify the backup 1 and backup 2&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backup bk-1 should have only d1 data&lt;/li&gt;&#xA;&lt;li&gt;backup bk-2 should have data d1 and d2&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative Power down the node where the VM is getting replaced by the restore</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring-replace/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring-replace/</guid>
-      <description>Related issues tests#1263 [ReleaseTesting] Negative Power down the node where the VM is getting replaced by the restore Verification Steps Setup a 3 nodes harvester&#xA;Create a VM w/ extra disk and some data&#xA;Backup and shutdown VM&#xA;Start to observe pod/virt-launcher-VMNAME to get the node VM restoring on for next step.&#xA;Initiate a restore with existing VM, get node info from pod/virt-launcher-VMNAME. While the restore is in progress and VM is starting on a node, shut down the node</description>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://github.com/harvester/tests/issues/1263&#34;&gt;tests#1263&lt;/a&gt; [ReleaseTesting] Negative Power down the node where the VM is getting replaced by the restore&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Setup a 3 nodes harvester&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Create a VM w/ extra disk and some data&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Backup and shutdown VM&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Start to observe &lt;code&gt;pod/virt-launcher-VMNAME&lt;/code&gt; to get the node VM restoring on for next step.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Negative power down the node where the VM is getting restored</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-power-down-node-while-restoring/</guid>
-      <description> Initiate a restore. While the restore is in progress and VM is starting on a node, shut down the node Expected Results The restore should fail </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Initiate a restore.&lt;/li&gt;&#xA;&lt;li&gt;While the restore is in progress and VM is starting on a node, shut down the node&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The restore should fail&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative restore backup replace existing VM</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace/</guid>
-      <description> On multi-node setup bring down node that is hosting VM Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Expected Results You should get an error on restoring </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;On multi-node setup bring down node that is hosting VM&lt;/li&gt;&#xA;&lt;li&gt;Navigate to backups list&lt;/li&gt;&#xA;&lt;li&gt;Click restore Backup&lt;/li&gt;&#xA;&lt;li&gt;Select appropriate option&lt;/li&gt;&#xA;&lt;li&gt;Select backup&lt;/li&gt;&#xA;&lt;li&gt;Click restore&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error on restoring&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative restore backup replace existing VM with backup from same VM that is turned on</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-deleting-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-deleting-backup/</guid>
-      <description> Make sure VM is turned on Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Delete backup while restoring Expected Results You should get an error </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Make sure VM is turned on&lt;/li&gt;&#xA;&lt;li&gt;Navigate to backups list&lt;/li&gt;&#xA;&lt;li&gt;Click restore Backup&lt;/li&gt;&#xA;&lt;li&gt;Select appropriate option&lt;/li&gt;&#xA;&lt;li&gt;Select backup&lt;/li&gt;&#xA;&lt;li&gt;Click restore&lt;/li&gt;&#xA;&lt;li&gt;Delete backup while restoring&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You should get an error&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Negative restore backup replace existing VM with backup from same VM that is turned on (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-turned-on/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/negative-restore-backup-replace-while-turned-on/</guid>
-      <description> Make sure VM is turned on Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Expected Results You get an error that you have to stop VM before restoring backup </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Make sure VM is turned on&lt;/li&gt;&#xA;&lt;li&gt;Navigate to backups list&lt;/li&gt;&#xA;&lt;li&gt;Click restore Backup&lt;/li&gt;&#xA;&lt;li&gt;Select appropriate option&lt;/li&gt;&#xA;&lt;li&gt;Select backup&lt;/li&gt;&#xA;&lt;li&gt;Click restore&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You get an error that you have to stop VM before restoring backup&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Restore backup create new vm (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm/</guid>
-      <description> Create a new file before restoring the backup and add some data Stop the VM where the backup was taken Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine Expected Results Backup should restore VM should update to previous backup File should no longer be present </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new file before restoring the backup and add some data&lt;/li&gt;&#xA;&lt;li&gt;Stop the VM where the backup was taken&lt;/li&gt;&#xA;&lt;li&gt;Navigate to backups list&lt;/li&gt;&#xA;&lt;li&gt;Click restore Backup&lt;/li&gt;&#xA;&lt;li&gt;Select appropriate option&lt;/li&gt;&#xA;&lt;li&gt;Select backup&lt;/li&gt;&#xA;&lt;li&gt;Click restore&lt;/li&gt;&#xA;&lt;li&gt;Validate that new file is no longer present on machine&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backup should restore&lt;/li&gt;&#xA;&lt;li&gt;VM should update to previous backup&lt;/li&gt;&#xA;&lt;li&gt;File should no longer be present&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Restore backup create new vm in another namespace</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm-in-another-namespace/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-create-new-vm-in-another-namespace/</guid>
-      <description> Create a VM vm in namespace default. Create a file ~/test.txt with content test. Create a VMBackup default-vm-backup for it. Create a new namepsace new-ns. Create a VMRestore restore-default-vm-backup-to-new-ns in new-ns namespace based on the VMBackup default-vm-backup to create a new VM. Expected Results A new VM in new-ns namespace should be created. It should have the file ~/test.txt with content test. </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a VM &lt;code&gt;vm&lt;/code&gt; in namespace &lt;code&gt;default&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Create a file &lt;code&gt;~/test.txt&lt;/code&gt; with content &lt;code&gt;test&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Create a VMBackup &lt;code&gt;default-vm-backup&lt;/code&gt; for it.&lt;/li&gt;&#xA;&lt;li&gt;Create a new namepsace &lt;code&gt;new-ns&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;li&gt;Create a VMRestore &lt;code&gt;restore-default-vm-backup-to-new-ns&lt;/code&gt; in &lt;code&gt;new-ns&lt;/code&gt; namespace based on the VMBackup &lt;code&gt;default-vm-backup&lt;/code&gt; to create a new VM.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;A new VM in &lt;code&gt;new-ns&lt;/code&gt; namespace should be created.&lt;/li&gt;&#xA;&lt;li&gt;It should have the file &lt;code&gt;~/test.txt&lt;/code&gt; with content &lt;code&gt;test&lt;/code&gt;.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Restore Backup for VM that was live migrated (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-for-vm-live-migrated/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-for-vm-live-migrated/</guid>
-      <description> Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine Expected Results Backup should restore VM should update to previous backup File should no longer be present </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Navigate to backups list&lt;/li&gt;&#xA;&lt;li&gt;Click restore Backup&lt;/li&gt;&#xA;&lt;li&gt;Select appropriate option&lt;/li&gt;&#xA;&lt;li&gt;Select backup&lt;/li&gt;&#xA;&lt;li&gt;Click restore&lt;/li&gt;&#xA;&lt;li&gt;Validate that new file is no longer present on machine&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backup should restore&lt;/li&gt;&#xA;&lt;li&gt;VM should update to previous backup&lt;/li&gt;&#xA;&lt;li&gt;File should no longer be present&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Restore backup replace existing VM with backup from same VM (e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-replace-existing/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-backup-replace-existing/</guid>
-      <description> Create a new file before restoring the backup and add some data Stop the VM Navigate to backups list Click restore Backup Select appropriate option Select backup Click restore Validate that new file is no longer present on machine Expected Results Backup should restore VM should update to previous backup File should no longer be present </description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new file before restoring the backup and add some data&lt;/li&gt;&#xA;&lt;li&gt;Stop the VM&lt;/li&gt;&#xA;&lt;li&gt;Navigate to backups list&lt;/li&gt;&#xA;&lt;li&gt;Click restore Backup&lt;/li&gt;&#xA;&lt;li&gt;Select appropriate option&lt;/li&gt;&#xA;&lt;li&gt;Select backup&lt;/li&gt;&#xA;&lt;li&gt;Click restore&lt;/li&gt;&#xA;&lt;li&gt;Validate that new file is no longer present on machine&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Backup should restore&lt;/li&gt;&#xA;&lt;li&gt;VM should update to previous backup&lt;/li&gt;&#xA;&lt;li&gt;File should no longer be present&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Restore First backup in chained backup</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-first-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-first-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 1 Validate that md5sum -c file1.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM&lt;/li&gt;&#xA;&lt;li&gt;Create a file named 1 and add some data using command &lt;code&gt;dd if=/dev/urandom of=file1.txt count=100 bs=1M&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum : md5sum-1&lt;/li&gt;&#xA;&lt;li&gt;Create a backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite file 1&lt;/li&gt;&#xA;&lt;li&gt;Create file 2&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3&lt;/li&gt;&#xA;&lt;li&gt;Create Backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite the file 2&lt;/li&gt;&#xA;&lt;li&gt;Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5&lt;/li&gt;&#xA;&lt;li&gt;Create backup&lt;/li&gt;&#xA;&lt;li&gt;Validate that files didn&amp;rsquo;t change&lt;/li&gt;&#xA;&lt;li&gt;Restore to backup 1&lt;/li&gt;&#xA;&lt;li&gt;Validate that&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;md5sum -c file1.md5 file2.md5 file3.md5&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;file 1 is in original format - md5sum-1&lt;/li&gt;&#xA;&lt;li&gt;file 2 doesn&amp;rsquo;t exist&lt;/li&gt;&#xA;&lt;li&gt;file 3 doesn&amp;rsquo;t exist&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Vm should create&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;files should be as expected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Restore last backup in chained backup</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-last-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-last-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 3 Validate that md5sum -c file1-2.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM&lt;/li&gt;&#xA;&lt;li&gt;Create a file named 1 and add some data using command &lt;code&gt;dd if=/dev/urandom of=file1.txt count=100 bs=1M&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum : md5sum-1&lt;/li&gt;&#xA;&lt;li&gt;Create a backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite file 1&lt;/li&gt;&#xA;&lt;li&gt;Create file 2&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3&lt;/li&gt;&#xA;&lt;li&gt;Create Backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite the file 2&lt;/li&gt;&#xA;&lt;li&gt;Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5&lt;/li&gt;&#xA;&lt;li&gt;Create backup&lt;/li&gt;&#xA;&lt;li&gt;Validate that files didn&amp;rsquo;t change&lt;/li&gt;&#xA;&lt;li&gt;Restore to backup 3&lt;/li&gt;&#xA;&lt;li&gt;Validate that&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;md5sum -c file1-2.md5 file2-2.md5 file3.md5 &lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;file 1 is in second format&lt;/li&gt;&#xA;&lt;li&gt;file 2 is in second format&lt;/li&gt;&#xA;&lt;li&gt;file 3 matches&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Vm should create&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;files should be as expected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>Restore middle backup in chained backup</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/restore-middle-backup-chained-backup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/restore-middle-backup-chained-backup/</guid>
-      <description>Create a new VM Create a file named 1 and add some data using command dd if=/dev/urandom of=file1.txt count=100 bs=1M Compute md5sum : md5sum-1 Create a backup Overwrite file 1 Create file 2 Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3 Create Backup Overwrite the file 2 Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5 Create backup Validate that files didn&amp;rsquo;t change Restore to backup 2 Validate that md5sum -c file1-2.</description>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create a new VM&lt;/li&gt;&#xA;&lt;li&gt;Create a file named 1 and add some data using command &lt;code&gt;dd if=/dev/urandom of=file1.txt count=100 bs=1M&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum : md5sum-1&lt;/li&gt;&#xA;&lt;li&gt;Create a backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite file 1&lt;/li&gt;&#xA;&lt;li&gt;Create file 2&lt;/li&gt;&#xA;&lt;li&gt;Compute md5sum for file 1 and file 2 : md5sum-2, md5sum-3&lt;/li&gt;&#xA;&lt;li&gt;Create Backup&lt;/li&gt;&#xA;&lt;li&gt;Overwrite the file 2&lt;/li&gt;&#xA;&lt;li&gt;Create file 3 and compute md5sum for file 2 and file 3 : md5sum-4, md5sum-5&lt;/li&gt;&#xA;&lt;li&gt;Create backup&lt;/li&gt;&#xA;&lt;li&gt;Validate that files didn&amp;rsquo;t change&lt;/li&gt;&#xA;&lt;li&gt;Restore to backup 2&lt;/li&gt;&#xA;&lt;li&gt;Validate that&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;code&gt;md5sum -c file1-2.md5 file2.md5 file3.md5&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;file 1 is in second format&lt;/li&gt;&#xA;&lt;li&gt;file 2 is in original format&lt;/li&gt;&#xA;&lt;li&gt;file 3 doesn&amp;rsquo;t exist&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Vm should create&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;Backup should run&lt;/li&gt;&#xA;&lt;li&gt;All file operations should create&lt;/li&gt;&#xA;&lt;li&gt;files should be as expected&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
       <title>VM Backup with metadata</title>
       <link>https://harvester.github.io/tests/manual/backup-and-restore/vm_backup_metadata/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/backup-and-restore/vm_backup_metadata/</guid>
-      <description>Ref: https://github.com/harvester/harvester/issues/988&#xA;Verify Items Metadata should be removed along with VM deleted Metadata should be synced after backup target switched Metadata can be used in new cluster Case: Metadata create and delete Install Harvester with any nodes Create an image for VM creation Setup NFS/S3 backup target Create a VM, then create a backup named backup1 File default-backup1.cfg should be exist in the backup target path &amp;lt;backup root&amp;gt;/harvester/vmbackups Delete the VM Backup backup1 File default-backup1.</description>
+      <description>&lt;p&gt;Ref: &lt;a href=&#34;https://github.com/harvester/harvester/issues/988&#34;&gt;https://github.com/harvester/harvester/issues/988&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Metadata should be removed along with VM deleted&lt;/li&gt;&#xA;&lt;li&gt;Metadata should be synced after backup target switched&lt;/li&gt;&#xA;&lt;li&gt;Metadata can be used in new cluster&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-metadata-create-and-delete&#34;&gt;Case: Metadata create and delete&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any nodes&lt;/li&gt;&#xA;&lt;li&gt;Create an image for VM creation&lt;/li&gt;&#xA;&lt;li&gt;Setup NFS/S3 &lt;strong&gt;backup target&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Create a VM, then create a backup named &lt;code&gt;backup1&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;File &lt;code&gt;default-backup1.cfg&lt;/code&gt; should be exist in the &lt;strong&gt;backup target&lt;/strong&gt; path &lt;code&gt;&amp;lt;backup root&amp;gt;/harvester/vmbackups&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Delete the VM Backup &lt;code&gt;backup1&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;File &lt;code&gt;default-backup1.cfg&lt;/code&gt; should be removed&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-metadata-sync-after-backup-target-changed&#34;&gt;Case: Metadata sync after backup target changed&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any nodes&lt;/li&gt;&#xA;&lt;li&gt;Create an image for VM creation&lt;/li&gt;&#xA;&lt;li&gt;Setup NFS &lt;strong&gt;backup target&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Create VM &lt;code&gt;vm1&lt;/code&gt;, then create file &lt;code&gt;tmp&lt;/code&gt; with content &lt;code&gt;first&lt;/code&gt; in the VM&lt;/li&gt;&#xA;&lt;li&gt;Backup &lt;code&gt;vm1&lt;/code&gt; named &lt;code&gt;backup1&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Append content &lt;code&gt;second&lt;/code&gt; into &lt;code&gt;tmp&lt;/code&gt; file in the VM &lt;code&gt;vm1&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Backup &lt;code&gt;vm1&lt;/code&gt; named &lt;code&gt;backup2&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;Switch &lt;strong&gt;backup target&lt;/strong&gt; to S3&lt;/li&gt;&#xA;&lt;li&gt;Delete backups and VM &lt;code&gt;vm1&lt;/code&gt; in the dashboard&lt;/li&gt;&#xA;&lt;li&gt;Backup Files should be kept in the former &lt;strong&gt;backup target&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Swithc &lt;strong&gt;backup target&lt;/strong&gt; back&lt;/li&gt;&#xA;&lt;li&gt;Backups should be loaded in Dashboard&amp;rsquo;s Backup page&lt;/li&gt;&#xA;&lt;li&gt;Restore &lt;code&gt;backup1&lt;/code&gt; to &lt;code&gt;vm-b1&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;vm-b1&lt;/code&gt; should contain file which was created in &lt;strong&gt;Step 4&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Restore &lt;code&gt;backup2&lt;/code&gt; to &lt;code&gt;vm-b2&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;vm-b2&lt;/code&gt; should contain file which was modified in &lt;strong&gt;step 6&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Repeat &lt;strong&gt;Step 3&lt;/strong&gt; to &lt;strong&gt;Step 16&lt;/strong&gt; with following Backup ordering&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;S3 -&amp;gt; NFS&lt;/li&gt;&#xA;&lt;li&gt;NFS -&amp;gt; NFS&lt;/li&gt;&#xA;&lt;li&gt;S3 -&amp;gt; S3&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-backup-rebuild-in-new-cluster&#34;&gt;Case: Backup rebuild in new cluster&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Repeat &lt;strong&gt;Case: Metadata create and delete&lt;/strong&gt; as cluster A to generate backup data&lt;/li&gt;&#xA;&lt;li&gt;Installer another Harvester with any nodes as cluster B&lt;/li&gt;&#xA;&lt;li&gt;setup &lt;strong&gt;backup-target&lt;/strong&gt; which contained old backup data&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Backup Targets&lt;/strong&gt; in &lt;em&gt;Backups&lt;/em&gt; should show &lt;code&gt;Ready&lt;/code&gt; state for all backups.  (this will take few mins depends on network connection)&lt;/li&gt;&#xA;&lt;li&gt;Create image for backup&#xA;&lt;ol&gt;&#xA;&lt;li&gt;The image &lt;strong&gt;MUST&lt;/strong&gt; use the same &lt;code&gt;storageClassName&lt;/code&gt; name as the backup created.&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;storageClassName&lt;/code&gt; can be found in backup&amp;rsquo;s &lt;code&gt;volumeBackups&lt;/code&gt; in the YAML definition.&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;storageClassName&lt;/code&gt; can be assigned by &lt;code&gt;metadata.name&lt;/code&gt; when creating image via YAML.&#xA;For example, when you assign &lt;code&gt;metadata.name&lt;/code&gt; as &lt;code&gt;image-dgf27&lt;/code&gt;, the &lt;code&gt;storageClassName&lt;/code&gt; will be named as &lt;code&gt;longhorn-image-dgf27&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;Restore backup to new VM&lt;/li&gt;&#xA;&lt;li&gt;VM should started successfully&lt;/li&gt;&#xA;&lt;li&gt;VM should contain those data that it was taken backup&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
   </channel>
 </rss>
