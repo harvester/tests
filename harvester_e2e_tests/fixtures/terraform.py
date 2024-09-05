@@ -170,12 +170,12 @@ def tf_script_dir(request):
 @pytest.fixture(scope="session")
 def tf_provider_version(request, harvester_metadata):
     version = request.config.getoption('--terraform-provider-harvester')
-    import requests
-    resp = requests.get("https://registry.terraform.io/v1/providers/harvester/harvester")
-    latest = max(resp.json()['versions'], key=parse_version)
-    version = None if version == '0.0.0-dev' else version
-    harvester_metadata['Terraform Harvester Provider Version'] = f"{version} || {latest}"
-    return version or latest
+    if not version:
+        import requests
+        resp = requests.get("https://registry.terraform.io/v1/providers/harvester/harvester")
+        version = max(resp.json()['versions'], key=parse_version)
+    harvester_metadata['Terraform Harvester Provider Version'] = f"{version}"
+    return version
 
 
 @pytest.fixture(scope="session")
@@ -223,7 +223,9 @@ def tf_rancher(rancher_api_client, tf_script_dir, tf_provider_rancher_ver, tf_ex
 @pytest.fixture(scope="session")
 def tf_resource(tf_provider_version):
     converter = Path("./terraform_test_artifacts/json2hcl")
-    return TerraformResource.for_version(tf_provider_version)(converter)
+    # update `0.0.0-dev` to get newest class
+    version = "8.8.99" if tf_provider_version == '0.0.0-dev' else tf_provider_version
+    return TerraformResource.for_version(version)(converter)
 
 
 @pytest.fixture(scope="session")
@@ -258,29 +260,28 @@ class TerraformHarvester:
                 tf_version=">=0.13", config_path=kubefile.resolve(),
                 provider_source="harvester/harvester", provider_version=provider_version
             ))
-
-        # cleanup terraform plugin cache
-        local_plugin_path = "~/.terraform.d/plugins/registry.terraform.io"
-        local_plugin_tf = "harvester/harvester/0.0.0-dev/linux_amd64"
-        rv = run(
-            f"rm -rf ~/.terraform.d/plugins/registry.terraform.io/harvester/harvester &&"
-            f" mkdir -p {local_plugin_path}/{local_plugin_tf}",
-            shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir)
-        assert not remove_ansicode(rv.stderr) and 0 == rv.returncode
+        init_arg = ""
 
         if provider_version == "0.0.0-dev":
-            docker_plugin_path = "/root/.terraform.d/plugins/terraform.local/local"
-            docker_plugin_tf = "harvester/0.0.0-dev/linux_amd64/terraform-provider-harvester_v0.0.0-dev"  # noqa: E501
+            local_plugin_path = "./registry.terraform.io/harvester/harvester/0.0.0-dev"
+            docker_plugin_path = (
+                "/root/.terraform.d/plugins/terraform.local/local/"
+                "harvester/0.0.0-dev/linux_amd64/terraform-provider-harvester_v0.0.0-dev"
+            )
             rv = run(
-                f"docker run --pull=always -q --rm --name harv-tf-master-head"
-                f" -v {local_plugin_path}/{local_plugin_tf}:/_tf"
+                f"mkdir -p {local_plugin_path}"
+                f"&& mkdir linux_amd64"
+                f"&& docker run --pull=always -q --rm --name harv-tf-master-head"
+                f" -v ./linux_amd64:/_tf"
                 f" rancher/terraform-provider-harvester:master-head-amd64"
-                f' bash -c "cp {docker_plugin_path}/{docker_plugin_tf} /_tf/"',
+                f' bash -c "cp {docker_plugin_path} /_tf/"'
+                f"&& mv linux_amd64 {local_plugin_path}",
                 shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir
             )
             assert not remove_ansicode(rv.stderr) and 0 == rv.returncode
+            init_arg = " -plugin-dir ."
 
-        return self.execute("init")
+        return self.execute(f"init {init_arg}")
 
     def save_as(self, content, filename, ext=".tf"):
         filepath = self.workdir / f"{filename}{ext}"
