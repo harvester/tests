@@ -643,7 +643,7 @@ class TestBackupRestore:
         pub_key, pri_key = ssh_keypair
 
         vm_snapshot_name = unique_vm_name + '-snapshot'
-        # unique_backup_name = f"{unique_vm_name}-backup-with-snapshot"
+
         # take vm snapshot
         code, data = api_client.vm_snapshots.create(unique_vm_name, vm_snapshot_name)
         assert 201 == code
@@ -695,6 +695,8 @@ class TestBackupRestore:
         spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, (code, data)
+        vm_getable, (code, data) = vm_checker.wait_getable(restored_vm_name)
+        assert vm_getable, (code, data)
 
         # Check VM Started then get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(restored_vm_name, ['default'])
@@ -708,6 +710,7 @@ class TestBackupRestore:
         code, data = api_client.hosts.get(data['status']['nodeName'])
         host_ip = next(addr['address'] for addr in data['status']['addresses']
                        if addr['type'] == 'InternalIP')
+        base_vm_with_data['host_ip'], base_vm_with_data['vm_ip'] = host_ip, vm_ip
 
         # Login to the new VM and check data is existing
         with vm_shell_from_host(host_ip, vm_ip, base_vm_with_data['ssh_user'], pkey=pri_key) as sh:
@@ -759,7 +762,7 @@ class TestBackupRestore:
         pub_key, pri_key = ssh_keypair
 
         vm_snapshot_name = unique_vm_name + '-snapshot-retain'
-        # unique_backup_name = f"{unique_vm_name}-backup-with-snapshot"
+
         # take vm snapshot
         code, data = api_client.vm_snapshots.create(unique_vm_name, vm_snapshot_name)
         assert 201 == code
@@ -816,6 +819,12 @@ class TestBackupRestore:
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=False)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
+
+        vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
+        assert vm_running, (
+            f"Failed to restore VM({unique_vm_name}) with errors:\n"
+            f"Status({code}): {data}"
+        )
 
         # Check VM Started then get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
