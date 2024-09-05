@@ -10,4 +10,11 @@ class VolumeSnapshotManager(BaseManager):
 
     def get(self, name="", namespace=DEFAULT_NAMESPACE, *, raw=False):
         path = self.PATH_fmt.format(uid=name, ns=namespace)
-        return self._get(path, raw=raw)
+        rv = self._get(path, raw=raw)
+        if not (name or raw):
+            _, ds = rv
+            ds['data'] = [
+                d for d in ds['data']
+                if d['metadata']['ownerReferences'][0]['kind'] == "PersistentVolumeClaim"
+            ]
+        return rv

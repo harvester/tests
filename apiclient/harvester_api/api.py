@@ -65,7 +65,7 @@ class HarvesterAPI:
         self.ippools = mgrs.IPPoolManager.for_version(version)(self, version)
         self.loadbalancers = mgrs.LoadBalancerManager.for_version(version)(self, version)
         self.volumes = mgrs.VolumeManager.for_version(version)(self, version)
-        self.volsnapshots = mgrs.VolumeSnapshotManager.for_version(version)(self, version)
+        self.vol_snapshots = mgrs.VolumeSnapshotManager.for_version(version)(self, version)
         self.templates = mgrs.TemplateManager.for_version(version)(self, version)
         self.supportbundle = mgrs.SupportBundleManager.for_version(version)(self, version)
         self.settings = mgrs.SettingManager.for_version(version)(self, version)

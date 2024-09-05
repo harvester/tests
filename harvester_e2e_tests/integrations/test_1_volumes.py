@@ -1,3 +1,6 @@
+from time import sleep
+from datetime import datetime, timedelta
+
 import yaml
 import pytest
 
@@ -69,42 +72,97 @@ def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
 
 @pytest.mark.p0
 @pytest.mark.volumes
+@pytest.mark.parametrize("source_type", ["New", "VM-Image"])
 @pytest.mark.parametrize("create_as", ["json", "yaml"])
-@pytest.mark.parametrize("source_type", ["New", "VM Image"])
-def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_type, polling_for):
-    image_id, storage_cls = None, None
-    if source_type == "VM Image":
-        image_id, storage_cls = ubuntu_image['id'], f"longhorn-{ubuntu_image['display_name']}"
+class TestVolume:
+    fixtures, volumes = dict(), dict()
 
-    spec = api_client.volumes.Spec("10Gi", storage_cls)
-    if create_as == 'yaml':
-        kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
-                   data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
-    else:
-        kws = dict()
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-    assert 201 == code, (code, unique_name, data, image_id)
+    @pytest.mark.dependency()
+    def test_create_volume(
+        self, api_client, unique_name, ubuntu_image, create_as, source_type, polling_for
+    ):
+        image_id, storage_cls = None, None
+        unique_name = f"{create_as}-{source_type.lower()}-{unique_name}"
+        self.volumes[f"{create_as}-{source_type}"] = unique_name
 
-    polling_for("volume do created",
-                lambda code, data: 200 == code and data['status']['phase'] == "Bound",
-                api_client.volumes.get, unique_name)
+        if source_type == "VM-Image":
+            image_id, storage_cls = ubuntu_image['id'], f"longhorn-{ubuntu_image['display_name']}"
 
-    code, data = api_client.volumes.get(unique_name)
-    mdata, annotations = data['metadata'], data['metadata']['annotations']
-    assert 200 == code, (code, data)
-    assert unique_name == mdata['name'], (code, data)
-    # status
-    assert not mdata['state']['error'], (code, data)
-    assert not mdata['state']['transitioning'], (code, data)
-    assert data['status']['phase'] == "Bound", (code, data)
-    # source
-    if source_type == "VM Image":
-        assert image_id == annotations['harvesterhci.io/imageId'], (code, data)
-    else:
-        assert not annotations.get('harvesterhci.io/imageId'), (code, data)
-    # teardown
-    polling_for("volume do deleted", lambda code, _: 404 == code,
-                api_client.volumes.delete, unique_name)
+        spec = api_client.volumes.Spec("10Gi", storage_cls)
+        if create_as == 'yaml':
+            kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
+                       data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
+        else:
+            kws = dict()
+        code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
+        assert 201 == code, (code, unique_name, data, image_id)
+
+        polling_for("volume do created",
+                    lambda code, data: 200 == code and data['status']['phase'] == "Bound",
+                    api_client.volumes.get, unique_name)
+
+        code, data = api_client.volumes.get(unique_name)
+        mdata, annotations = data['metadata'], data['metadata']['annotations']
+        assert 200 == code, (code, data)
+        assert unique_name == mdata['name'], (code, data)
+        # status
+        assert not mdata['state']['error'], (code, data)
+        assert not mdata['state']['transitioning'], (code, data)
+        assert data['status']['phase'] == "Bound", (code, data)
+        # source
+        if source_type == "VM-Image":
+            assert image_id == annotations['harvesterhci.io/imageId'], (code, data)
+        else:
+            assert not annotations.get('harvesterhci.io/imageId'), (code, data)
+        # attachment
+        assert not annotations.get("harvesterhci.io/owned-by"), (code, data)
+
+    @pytest.mark.dependency(depends=["TestVolume::test_create_volume"], param=True)
+    def test_clone_volume(self, api_client, wait_timeout, create_as, source_type):
+        self.fixtures.update(api_client=api_client, wait_timeout=wait_timeout)
+        unique_name = self.volumes[f"{create_as}-{source_type}"]
+        code, data = api_client.volumes.get(unique_name)
+        assert 200 == code, (code, data)
+
+        cloned_name = f"cloned-{unique_name}"
+        code, data = api_client.volumes.clone(unique_name, cloned_name)
+        assert 204 == code, (code, data)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.volumes.get(cloned_name)
+            if "Bound" == data['status']['phase']:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                "Volume not changed to phase: _Bound_ with {wait_timeout} timed out\n"
+                f"Got error: {code}, {data}"
+            )
+
+        self.volumes[cloned_name] = cloned_name
+
+    @classmethod
+    def teardown_class(cls):
+        api_client, wait_timeout = cls.fixtures['api_client'], cls.fixtures['wait_timeout']
+
+        vol_names = cls.volumes.values()
+        for name in vol_names:
+            api_client.volumes.delete(name)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.volumes.get()
+            volumes = [v['metadata']['name'] for v in data['data']]
+            if all(v not in volumes for v in vol_names):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                "Volumes not deleted correctly\n"
+                f"existing: {volumes}\n"
+                f"created: {vol_names}"
+            )
 
 
 @pytest.mark.p0
