@@ -30,18 +30,12 @@ def cluster_state(request, unique_name, api_client):
 
     state = ClusterState()
 
-    # target version
     if request.config.getoption('--upgrade-target-version'):
         state.version_verify = True
         state.version = request.config.getoption('--upgrade-target-version')
     else:
         state.version_verify = False
         state.version = f"version-{unique_name}"
-
-    # cluster size
-    code, data = api_client.hosts.get()
-    assert 200 == code, (code, data)
-    state.size = len(data['data'])
 
     return state
 
@@ -500,9 +494,11 @@ class TestInvalidUpgrade:
         4. Upgrade should fail.
         """
         # https://github.com/harvester/harvester/issues/6425
-        if cluster_state.size < 3:
+        code, data = api_client.hosts.get()
+        assert 200 == code, (code, data)
+        if (cluster_size := len(data['data'])) < 3:
             pytest.skip(
-                f"Degraded volumes only checked on 3+ nodes cluster, skip on {cluster_state.size}."
+                f"Degraded volumes only checked on 3+ nodes cluster, skip on {cluster_size}."
             )
 
         vm_name, ssh_user, pri_key = stopped_vm
@@ -557,30 +553,44 @@ class TestInvalidUpgrade:
 @pytest.mark.upgrade
 @pytest.mark.any_nodes
 class TestAnyNodesUpgrade:
-    @pytest.mark.skip_version_if("< v1.2.0", reason="logging is implemented as addon since v1.2.0")
     @pytest.mark.dependency(name="preq_setup_logging")
-    def test_preq_setup_logging(self, api_client, wait_timeout, sleep_timeout):
-        addon = "cattle-logging-system/rancher-logging"
+    def test_preq_logging_pods(self, api_client, wait_timeout, sleep_timeout):
+        # logging is an addon instead of built-in since v1.2.0
+        if api_client.cluster_version.release >= (1, 2, 0):
+            addon = "cattle-logging-system/rancher-logging"
 
-        code, data = api_client.addons.get(addon)
-        assert 200 == code, (code, data)
-        assert not data.get('spec', {}).get('enabled', True), (code, data)
-        assert "AddonDisabled" == data.get('status', {}).get('status')
-
-        code, data = api_client.addons.enable(addon)
-        assert 200 == code, (code, data)
-        assert data.get('spec', {}).get('enabled', False), (code, data)
-
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
             code, data = api_client.addons.get(addon)
-            if data.get('status', {}).get('status', "") in ("deployed", "AddonDeploySuccessful"):
-                break
-            sleep(sleep_timeout)
+            assert 200 == code, (code, data)
+            assert not data.get('spec', {}).get('enabled', True), (code, data)
+            assert "AddonDisabled" == data.get('status', {}).get('status')
+
+            code, data = api_client.addons.enable(addon)
+            assert 200 == code, (code, data)
+            assert data.get('spec', {}).get('enabled', False), (code, data)
+
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                code, data = api_client.addons.get(addon)
+                if data.get('status', {}).get('status') in ("deployed", "AddonDeploySuccessful"):
+                    break
+                sleep(sleep_timeout)
+            else:
+                raise AssertionError(
+                    f"Failed to enable addon {addon} with {wait_timeout} timed out\n"
+                    f"API Status({code}): {data}"
+                )
+
+        code, pods = api_client.get_pods(namespace="cattle-logging-system")
+        assert code == 200 and len(pods['data']) > 0, "No logging pods found"
+
+        fails = []
+        for pod in pods['data']:
+            phase = pod["status"]["phase"]
+            if phase not in ("Running", "Succeeded"):
+                fails.append((pod['metadata']['name'], phase))
         else:
-            raise AssertionError(
-                f"Failed to enable addon {addon} with {wait_timeout} timed out\n"
-                f"API Status({code}): {data}"
+            assert not fails, (
+                "\n".join(f"Pod({n})'s phase({p}) is not expected." for n, p in fails)
             )
 
     @pytest.mark.dependency(name="preq_setup_vmnetwork")
@@ -767,15 +777,17 @@ class TestAnyNodesUpgrade:
         """ Verify logging pods and logs
         Criteria: https://github.com/harvester/tests/issues/535
         """
-        code, data = api_client.addons.get("cattle-logging-system/rancher-logging")
-        assert data.get('status', {}).get('status') in ("deployed", "AddonDeploySuccessful")
+        # logging is an addon instead of built-in since v1.2.0
+        addon = "cattle-logging-system/rancher-logging"
+        if api_client.cluster_version.release >= (1, 2, 0):
+            code, data = api_client.addons.get(addon)
+            assert data.get('status', {}).get('status') in ("deployed", "AddonDeploySuccessful")
 
         code, pods = api_client.get_pods(namespace="cattle-logging-system")
         assert code == 200 and len(pods['data']) > 0, "No logging pods found"
 
         fails = []
         for pod in pods['data']:
-            # Verify pod is running or completed
             phase = pod["status"]["phase"]
             if phase not in ("Running", "Succeeded"):
                 fails.append((pod['metadata']['name'], phase))
@@ -783,6 +795,10 @@ class TestAnyNodesUpgrade:
             assert not fails, (
                 "\n".join(f"Pod({n})'s phase({p}) is not expected." for n, p in fails)
             )
+
+        # teardown
+        if api_client.cluster_version.release >= (1, 2, 0):
+            api_client.addons.disable(addon)
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
     def test_verify_audit_log(self, api_client, host_shell, wait_timeout):
