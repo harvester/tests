@@ -166,6 +166,61 @@ class TestVolume:
 
 
 @pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.volumes
+def test_volume_export(api_client, wait_timeout, unique_name, ubuntu_image):
+    ''' ref: https://github.com/harvester/tests/issues/1057
+
+    1. Create image
+    2. Create volume from the image
+    3. export the volume to new image
+    4. delete the new image
+    '''
+    image_id, storage_cls = ubuntu_image['id'], f"longhorn-{ubuntu_image['display_name']}"
+    spec = api_client.volumes.Spec("10Gi", storage_cls)
+
+    # Create Volume from image and wait it bounded
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id)
+    assert 201 == code, (code, data)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.volumes.get(unique_name)
+        if "Bound" == data['status']['phase']:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            "Volume not changed to phase: _Bound_ with {wait_timeout} timed out\n"
+            f"Got error: {code}, {data}"
+        )
+
+    # Export volume to new image
+    code, data = api_client.volumes.export(unique_name, unique_name, "harvester-longhorn")
+    assert 204 == code, (code, data)
+    # check the new image is available and creating
+    code, data = api_client.images.get()
+    assert 200 == code, (code, data)
+    new_img = next(d for d in data['items'] if unique_name == d['spec']['displayName'])
+    assert new_img, (code, data['items'])
+    assert 100 > new_img['status'].get('progress', 0), (code, new_img)
+    # Delete the source volume
+    code, data = api_client.volumes.delete(unique_name)
+    assert 422 == code, (code, data)
+
+    # teardown
+    fns = [(api_client.volumes, unique_name), (api_client.images, new_img['metadata']['name'])]
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        fn, name = fns[-1]
+        code, data = fn.delete(name)
+        if 404 == code:
+            fns.pop()
+        if not fns:
+            break
+        sleep(3)
+
+
+@pytest.mark.p0
 @pytest.mark.volumes
 class TestVolumeWithVM:
     def pause_vm(self, api_client, ubuntu_vm, polling_for):
