@@ -277,7 +277,7 @@ class TestBackendImages:
         code, data = api_client.images.get(name=image_name)
         assert 200 == code, (code, data)
 
-        image_id = data[&#34;metadata&#34;][&#34;uid&#34;]
+        image_id = f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{image_name}&#34;
 
         # Create volume from image_id
         spec = api_client.volumes.Spec(1)
