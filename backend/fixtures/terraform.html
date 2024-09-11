@@ -268,29 +268,28 @@ class ResourceContext:
                 tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
                 provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
             ))
-
-        # cleanup terraform plugin cache
-        local_plugin_path = &#34;~/.terraform.d/plugins/registry.terraform.io&#34;
-        local_plugin_tf = &#34;harvester/harvester/0.0.0-dev/linux_amd64&#34;
-        rv = run(
-            f&#34;rm -rf ~/.terraform.d/plugins/registry.terraform.io/harvester/harvester &amp;&amp;&#34;
-            f&#34; mkdir -p {local_plugin_path}/{local_plugin_tf}&#34;,
-            shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir)
-        assert not remove_ansicode(rv.stderr) and 0 == rv.returncode
+        init_arg = &#34;&#34;
 
         if provider_version == &#34;0.0.0-dev&#34;:
-            docker_plugin_path = &#34;/root/.terraform.d/plugins/terraform.local/local&#34;
-            docker_plugin_tf = &#34;harvester/0.0.0-dev/linux_amd64/terraform-provider-harvester_v0.0.0-dev&#34;  # noqa: E501
+            local_plugin_path = &#34;./registry.terraform.io/harvester/harvester/0.0.0-dev&#34;
+            docker_plugin_path = (
+                &#34;/root/.terraform.d/plugins/terraform.local/local/&#34;
+                &#34;harvester/0.0.0-dev/linux_amd64/terraform-provider-harvester_v0.0.0-dev&#34;
+            )
             rv = run(
-                f&#34;docker run --pull=always -q --rm --name harv-tf-master-head&#34;
-                f&#34; -v {local_plugin_path}/{local_plugin_tf}:/_tf&#34;
+                f&#34;mkdir -p {local_plugin_path}&#34;
+                f&#34;&amp;&amp; mkdir linux_amd64&#34;
+                f&#34;&amp;&amp; docker run --pull=always -q --rm --name harv-tf-master-head&#34;
+                f&#34; -v ./linux_amd64:/_tf&#34;
                 f&#34; rancher/terraform-provider-harvester:master-head-amd64&#34;
-                f&#39; bash -c &#34;cp {docker_plugin_path}/{docker_plugin_tf} /_tf/&#34;&#39;,
+                f&#39; bash -c &#34;cp {docker_plugin_path} /_tf/&#34;&#39;
+                f&#34;&amp;&amp; mv linux_amd64 {local_plugin_path}&#34;,
                 shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir
             )
             assert not remove_ansicode(rv.stderr) and 0 == rv.returncode
+            init_arg = &#34; -plugin-dir .&#34;
 
-        return self.execute(&#34;init&#34;)
+        return self.execute(f&#34;init {init_arg}&#34;)
 
     def save_as(self, content, filename, ext=&#34;.tf&#34;):
         filepath = self.workdir / f&#34;{filename}{ext}&#34;
