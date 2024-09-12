@@ -1831,6 +1831,9 @@
   <li><a href="https://harvester.github.io/tests/manual/volumes/1401-support-volume-hot-unplug/"></a></li>
   
 
+  <li><a href="https://harvester.github.io/tests/manual/volumes/prevent-attached-volume-to-other-vm/">A volume can&rsquo;t be attached to another VM (Yaml)</a></li>
+  
+
   <li><a href="https://harvester.github.io/tests/manual/volumes/1623-add-disk-to-host/">Add/remove disk to Host config</a></li>
   
 
@@ -1865,6 +1868,9 @@
   
 
   <li><a href="https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-yaml/">Edit volume increase size via YAML (e2e_be)</a></li>
+  
+
+  <li><a href="https://harvester.github.io/tests/manual/volumes/edit-volume-increase-size-vm-running/">Edit volume to increase size when vm is running</a></li>
   
 
   <li><a href="https://harvester.github.io/tests/manual/volumes/edit-volume-yaml-add-label/">Edit Volume YAML add label (e2e_be)</a></li>
@@ -1925,20 +1931,69 @@
   <div>
     <article id="content">
        <ol>
-<li>Create volume</li>
-<li>Validate that it created</li>
-<li>Check the volume crd.</li>
-<li>Delete the volume</li>
-<li>Verify that volume is removed from list</li>
-<li>Check the volume object doesn&rsquo;t exist anymore.</li>
+<li>
+<p>Create volume</p>
+</li>
+<li>
+<p>Validate that it created</p>
+</li>
+<li>
+<p>Check the volume crd.</p>
+</li>
+<li>
+<p>Delete the volume</p>
+</li>
+<li>
+<p>Verify that volume is removed from list</p>
+</li>
+<li>
+<p>Check the volume object doesn&rsquo;t exist anymore.</p>
+</li>
+<li>
+<p>Create a VM</p>
+</li>
+<li>
+<p>Make sure VM have started in running state with IP address</p>
+</li>
+<li>
+<p>Delete the VM</p>
+</li>
+<li>
+<p>Do not select the option <code>Select the volume you want to delete</code> (Keep volume)</p>
+</li>
+<li>
+<p>Click the Delete button</p>
+</li>
+<li>
+<p>Open Volumes page</p>
+</li>
+<li>
+<p>Delete the volume remains for the VM</p>
+</li>
 </ol>
 <h2 id="expected-results">Expected Results</h2>
 <ol>
-<li>Volume should create</li>
-<li>It should show in volume list</li>
-<li>Volume crd should have correct info.</li>
-<li>Volume should delete.</li>
-<li>Volume should be removed from list</li>
+<li>
+<p>Volume should create</p>
+</li>
+<li>
+<p>It should show in volume list</p>
+</li>
+<li>
+<p>Volume crd should have correct info.</p>
+</li>
+<li>
+<p>Volume should delete.</p>
+</li>
+<li>
+<p>Volume should be removed from list</p>
+</li>
+<li>
+<p>VM should be removed correctly</p>
+</li>
+<li>
+<p>The remains volume can also be deleted on volumes page</p>
+</li>
 </ol>
 
     </article>
