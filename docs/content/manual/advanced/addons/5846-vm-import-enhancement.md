@@ -16,8 +16,8 @@ title: VM import with EFI mode and secure boot
 1. Get the available access to the existing or prepared vSphere client (v7.1)
 
 ## Harvester Prerequisite Setup
-1. Harvester can connect to the OpenStack dashbord and API endpoint
-1. Harvester can connect to the vShpere client dashboard and API endpoint
+1. Harvester can connect to the OpenStack dashboard and API endpoint
+1. Harvester can connect to the vSphere client dashboard and API endpoint
 1. Enable the `vm-import-controller` in the `Addons` page
 1. Create the `vlan1` vm network on the `mgmt` interface
 
@@ -43,7 +43,7 @@ title: VM import with EFI mode and secure boot
   ```
 1. Check can list the image list on OpenStack Server 
   ```
-  openstack image list --os-auth-url http://172.19.109.182/identity --os-identity-api-version 3 --os-project-name admin --os-project-domain-name default --os-username <username> --os-password <password>
+  openstack image list --os-auth-url <openstack URL>/identity --os-identity-api-version 3 --os-project-name admin --os-project-domain-name default --os-username <username> --os-password <password>
 
   ```
 
@@ -427,7 +427,7 @@ title: VM import with EFI mode and secure boot
   apiVersion: migration.harvesterhci.io/v1beta1
   kind: VirtualMachineImport
   metadata:
-    name: uefi-storare-class-test
+    name: uefi-storage-class-test
     namespace: default
   spec:
     virtualMachineName: "<instance name>" #Name or UUID for instance
