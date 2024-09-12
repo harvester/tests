@@ -605,6 +605,8 @@ class TestBackupRestore:
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 201 == code, f'Failed to restore backup with current VM replaced, {data}'
+        vm_getable, (code, data) = vm_checker.wait_getable(unique_vm_name)
+        assert vm_getable, (code, data)
 
         # Check VM Started then get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
@@ -652,14 +654,15 @@ class TestBackupRestore:
         while deadline > datetime.now():
             code, data = api_client.vm_snapshots.get(vm_snapshot_name)
             if data.get("status", {}).get("readyToUse"):
+                assert 200 == code
                 break
             print(f"waiting for {vm_snapshot_name} to be ready")
             sleep(3)
         else:
-            raise AssertionError(f"timed out waiting for {vm_snapshot_name} to be ready")
-
-        assert 200 == code
-        assert data.get("status", {}).get("readyToUse") is True
+            raise AssertionError(
+                f"timed out waiting for {vm_snapshot_name} to be ready:\n"
+                f"Status({code}): {data}"
+            )
 
         vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
         assert vm_running, (
@@ -667,10 +670,10 @@ class TestBackupRestore:
             f"Status({code}): {data}"
         )
 
-        # Check VM Started then get IPs (vm and host)
+        # Check VM is still running and can get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
         assert vm_got_ips, (
-            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Failed to check the VM({unique_vm_name}) is sill in running state:\n"
             f"Status: {data.get('status')}\n"
             f"API Status({code}): {data}"
         )
@@ -771,14 +774,15 @@ class TestBackupRestore:
         while deadline > datetime.now():
             code, data = api_client.vm_snapshots.get(vm_snapshot_name)
             if data.get("status", {}).get("readyToUse"):
+                assert 200 == code
                 break
             print(f"waiting for {vm_snapshot_name} to be ready")
             sleep(3)
         else:
-            raise AssertionError(f"timed out waiting for {vm_snapshot_name} to be ready")
-
-        assert 200 == code
-        assert data.get("status", {}).get("readyToUse") is True
+            raise AssertionError(
+                f"timed out waiting for {vm_snapshot_name} to be ready:\n"
+                f"Status({code}): {data}"
+            )
 
         vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
         assert vm_running, (
@@ -786,10 +790,10 @@ class TestBackupRestore:
             f"Status({code}): {data}"
         )
 
-        # Check VM Started then get IPs (vm and host)
+        # Check VM is still running and can get IPs (vm and host)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, ['default'])
         assert vm_got_ips, (
-            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Failed to check the VM({unique_vm_name}) is sill in running state:\n"
             f"Status: {data.get('status')}\n"
             f"API Status({code}): {data}"
         )
