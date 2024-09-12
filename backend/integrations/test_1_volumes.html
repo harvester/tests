@@ -33,6 +33,18 @@ hljs.highlightAll();
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_volume_export"><code class="name flex">
+<span>def <span class="ident">test_volume_export</span></span>(<span>api_client, wait_timeout, unique_name, ubuntu_image)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/1057">https://github.com/harvester/tests/issues/1057</a></p>
+<ol>
+<li>Create image</li>
+<li>Create volume from the image</li>
+<li>export the volume to new image</li>
+<li>delete the new image</li>
+</ol></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image"><code class="name flex">
 <span>def <span class="ident">ubuntu_image</span></span>(<span>api_client, unique_name, image_ubuntu, polling_for)</span>
 </code></dt>
@@ -363,6 +375,7 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_volume_export" href="#harvester_e2e_tests.integrations.test_1_volumes.test_volume_export">test_volume_export</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image">ubuntu_image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm">ubuntu_vm</a></code></li>
 </ul>
