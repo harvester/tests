@@ -6,6 +6,7 @@ from hashlib import sha512
 from operator import add
 from functools import reduce
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 
 import pytest
 from paramiko.ssh_exception import SSHException, NoValidConnectionsError
@@ -205,7 +206,7 @@ def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id, 
         sleep(3)
     else:
         raise AssertionError(
-            f"Failed to remote VM network {unique_name} after {wait_timeout}s\n"
+            f"Failed to remove VM network {unique_name} after {wait_timeout}s\n"
             f"API Status({code}): {data}"
         )
 
@@ -246,6 +247,16 @@ def interceptor(api_client):
                 func(data)
 
     return Interceptor()
+
+
+@pytest.fixture(scope="module")
+def logging_addon():
+    return SimpleNamespace(
+        namespace="cattle-logging-system",
+        name="rancher-logging",
+        enable_statuses=("deployed", "AddonDeploySuccessful"),
+        enable_toggled=False
+    )
 
 
 @pytest.fixture(scope="class")
@@ -482,9 +493,8 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(data['metadata']['name'])
         api_client.versions.delete(version)
 
-    def test_degraded_volume(
-        self, api_client, wait_timeout, vm_shell_from_host, vm_checker, upgrade_target, stopped_vm
-    ):
+    def test_degraded_volume(self, api_client, wait_timeout, vm_shell_from_host,
+                             vm_checker, upgrade_target, stopped_vm):
         """
         Criteria: create upgrade should fails if there are any degraded volumes
         Steps:
@@ -494,6 +504,14 @@ class TestInvalidUpgrade:
         3. Immediately upgrade Harvester.
         4. Upgrade should fail.
         """
+        # https://github.com/harvester/harvester/issues/6425
+        code, data = api_client.hosts.get()
+        assert 200 == code, (code, data)
+        if (cluster_size := len(data['data'])) < 3:
+            pytest.skip(
+                f"Degraded volumes only checked on 3+ nodes cluster, skip on {cluster_size}."
+            )
+
         vm_name, ssh_user, pri_key = stopped_vm
         vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
         assert vm_started, (code, vmi)
@@ -547,9 +565,43 @@ class TestInvalidUpgrade:
 @pytest.mark.any_nodes
 class TestAnyNodesUpgrade:
     @pytest.mark.dependency(name="preq_setup_logging")
-    def test_preq_setup_logging(self, api_client):
-        # TODO: enable addon if > v1.2.0
-        return
+    def test_preq_logging_pods(self, api_client, logging_addon, wait_timeout, sleep_timeout):
+        # logging is an addon instead of built-in since v1.2.0
+        if api_client.cluster_version.release >= (1, 2, 0):
+            addon = "/".join([logging_addon.namespace, logging_addon.name])
+            code, data = api_client.addons.get(addon)
+            assert 200 == code, (code, data)
+
+            if not data.get('status', {}).get('status') in logging_addon.enable_statuses:
+                code, data = api_client.addons.enable(addon)
+                assert 200 == code, (code, data)
+                assert data.get('spec', {}).get('enabled', False), (code, data)
+                logging_addon.enable_toggled = True
+
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    code, data = api_client.addons.get(addon)
+                    if data.get('status', {}).get('status') in logging_addon.enable_statuses:
+                        break
+                    sleep(sleep_timeout)
+                else:
+                    raise AssertionError(
+                        f"Failed to enable addon {addon} with {wait_timeout} timed out\n"
+                        f"API Status({code}): {data}"
+                    )
+
+        code, pods = api_client.get_pods(namespace=logging_addon.namespace)
+        assert code == 200 and len(pods['data']) > 0, "No logging pods found"
+
+        fails = []
+        for pod in pods['data']:
+            phase = pod["status"]["phase"]
+            if phase not in ("Running", "Succeeded"):
+                fails.append((pod['metadata']['name'], phase))
+        else:
+            assert not fails, (
+                "\n".join(f"Pod({n})'s phase({p}) is not expected." for n, p in fails)
+            )
 
     @pytest.mark.dependency(name="preq_setup_vmnetwork")
     def test_preq_setup_vmnetwork(self, vm_network):
@@ -666,7 +718,7 @@ class TestAnyNodesUpgrade:
                     )
                     assert "success" == out and not err
                     break
-            except (SSHException, NoValidConnectionsError, TimeoutError):
+            except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
                 sleep(5)
         else:
             raise AssertionError("Unable to login to restored VM to check data consistency")
@@ -731,17 +783,21 @@ class TestAnyNodesUpgrade:
             )
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_logging"])
-    def test_verify_logging_pods(self, api_client):
+    def test_verify_logging_pods(self, api_client, logging_addon):
         """ Verify logging pods and logs
         Criteria: https://github.com/harvester/tests/issues/535
         """
+        # logging is an addon instead of built-in since v1.2.0
+        if api_client.cluster_version.release >= (1, 2, 0):
+            addon = "/".join([logging_addon.namespace, logging_addon.name])
+            code, data = api_client.addons.get(addon)
+            assert data.get('status', {}).get('status') in logging_addon.enable_statuses
 
-        code, pods = api_client.get_pods(namespace="cattle-logging-system")
+        code, pods = api_client.get_pods(namespace=logging_addon.namespace)
         assert code == 200 and len(pods['data']) > 0, "No logging pods found"
 
         fails = []
         for pod in pods['data']:
-            # Verify pod is running or completed
             phase = pod["status"]["phase"]
             if phase not in ("Running", "Succeeded"):
                 fails.append((pod['metadata']['name'], phase))
@@ -749,6 +805,10 @@ class TestAnyNodesUpgrade:
             assert not fails, (
                 "\n".join(f"Pod({n})'s phase({p}) is not expected." for n, p in fails)
             )
+
+        # teardown
+        if logging_addon.enable_toggled:
+            api_client.addons.disable(addon)
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
     def test_verify_audit_log(self, api_client, host_shell, wait_timeout):
@@ -777,7 +837,7 @@ class TestAnyNodesUpgrade:
                             continue
                         if not err and cmp[ip] < timestamp:
                             done.add(ip)
-                except (SSHException, NoValidConnectionsError, TimeoutError):
+                except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
                     continue
 
             if not done.symmetric_difference(node_ips):
@@ -857,7 +917,7 @@ class TestAnyNodesUpgrade:
                         assert not err, (md5, err)
                         assert md5 == cluster_state.vms['md5']
                         break
-                except (SSHException, NoValidConnectionsError, TimeoutError):
+                except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
                     sleep(5)
             else:
                 fails.append(f"Data in VM({name}, {vm_ip}) is inconsistent.")
@@ -924,7 +984,7 @@ class TestAnyNodesUpgrade:
                     assert not err, (md5, err)
                     assert md5 == cluster_state.vms['md5']
                     break
-            except (SSHException, NoValidConnectionsError, TimeoutError):
+            except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
                 sleep(5)
         else:
             raise AssertionError("Unable to login to restored VM to check data consistency")
