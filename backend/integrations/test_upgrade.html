@@ -75,6 +75,12 @@ hljs.highlightAll();
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_upgrade.logging_addon"><code class="name flex">
+<span>def <span class="ident">logging_addon</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_upgrade.stopped_vm"><code class="name flex">
 <span>def <span class="ident">stopped_vm</span></span>(<span>request, api_client, ssh_keypair, wait_timeout, unique_name, image)</span>
 </code></dt>
@@ -111,9 +117,43 @@ hljs.highlightAll();
 @pytest.mark.any_nodes
 class TestAnyNodesUpgrade:
     @pytest.mark.dependency(name=&#34;preq_setup_logging&#34;)
-    def test_preq_setup_logging(self, api_client):
-        # TODO: enable addon if &gt; v1.2.0
-        return
+    def test_preq_logging_pods(self, api_client, logging_addon, wait_timeout, sleep_timeout):
+        # logging is an addon instead of built-in since v1.2.0
+        if api_client.cluster_version.release &gt;= (1, 2, 0):
+            addon = &#34;/&#34;.join([logging_addon.namespace, logging_addon.name])
+            code, data = api_client.addons.get(addon)
+            assert 200 == code, (code, data)
+
+            if not data.get(&#39;status&#39;, {}).get(&#39;status&#39;) in logging_addon.enable_statuses:
+                code, data = api_client.addons.enable(addon)
+                assert 200 == code, (code, data)
+                assert data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, False), (code, data)
+                logging_addon.enable_toggled = True
+
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime &gt; datetime.now():
+                    code, data = api_client.addons.get(addon)
+                    if data.get(&#39;status&#39;, {}).get(&#39;status&#39;) in logging_addon.enable_statuses:
+                        break
+                    sleep(sleep_timeout)
+                else:
+                    raise AssertionError(
+                        f&#34;Failed to enable addon {addon} with {wait_timeout} timed out\n&#34;
+                        f&#34;API Status({code}): {data}&#34;
+                    )
+
+        code, pods = api_client.get_pods(namespace=logging_addon.namespace)
+        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
+
+        fails = []
+        for pod in pods[&#39;data&#39;]:
+            phase = pod[&#34;status&#34;][&#34;phase&#34;]
+            if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
+                fails.append((pod[&#39;metadata&#39;][&#39;name&#39;], phase))
+        else:
+            assert not fails, (
+                &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails)
+            )
 
     @pytest.mark.dependency(name=&#34;preq_setup_vmnetwork&#34;)
     def test_preq_setup_vmnetwork(self, vm_network):
@@ -230,7 +270,7 @@ class TestAnyNodesUpgrade:
                     )
                     assert &#34;success&#34; == out and not err
                     break
-            except (SSHException, NoValidConnectionsError, TimeoutError):
+            except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
                 sleep(5)
         else:
             raise AssertionError(&#34;Unable to login to restored VM to check data consistency&#34;)
@@ -295,17 +335,21 @@ class TestAnyNodesUpgrade:
             )
 
     @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;, &#34;preq_setup_logging&#34;])
-    def test_verify_logging_pods(self, api_client):
+    def test_verify_logging_pods(self, api_client, logging_addon):
         &#34;&#34;&#34; Verify logging pods and logs
         Criteria: https://github.com/harvester/tests/issues/535
         &#34;&#34;&#34;
+        # logging is an addon instead of built-in since v1.2.0
+        if api_client.cluster_version.release &gt;= (1, 2, 0):
+            addon = &#34;/&#34;.join([logging_addon.namespace, logging_addon.name])
+            code, data = api_client.addons.get(addon)
+            assert data.get(&#39;status&#39;, {}).get(&#39;status&#39;) in logging_addon.enable_statuses
 
-        code, pods = api_client.get_pods(namespace=&#34;cattle-logging-system&#34;)
+        code, pods = api_client.get_pods(namespace=logging_addon.namespace)
         assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
 
         fails = []
         for pod in pods[&#39;data&#39;]:
-            # Verify pod is running or completed
             phase = pod[&#34;status&#34;][&#34;phase&#34;]
             if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
                 fails.append((pod[&#39;metadata&#39;][&#39;name&#39;], phase))
@@ -313,6 +357,10 @@ class TestAnyNodesUpgrade:
             assert not fails, (
                 &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails)
             )
+
+        # teardown
+        if logging_addon.enable_toggled:
+            api_client.addons.disable(addon)
 
     @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;])
     def test_verify_audit_log(self, api_client, host_shell, wait_timeout):
@@ -341,7 +389,7 @@ class TestAnyNodesUpgrade:
                             continue
                         if not err and cmp[ip] &lt; timestamp:
                             done.add(ip)
-                except (SSHException, NoValidConnectionsError, TimeoutError):
+                except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
                     continue
 
             if not done.symmetric_difference(node_ips):
@@ -421,7 +469,7 @@ class TestAnyNodesUpgrade:
                         assert not err, (md5, err)
                         assert md5 == cluster_state.vms[&#39;md5&#39;]
                         break
-                except (SSHException, NoValidConnectionsError, TimeoutError):
+                except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
                     sleep(5)
             else:
                 fails.append(f&#34;Data in VM({name}, {vm_ip}) is inconsistent.&#34;)
@@ -488,7 +536,7 @@ class TestAnyNodesUpgrade:
                     assert not err, (md5, err)
                     assert md5 == cluster_state.vms[&#39;md5&#39;]
                     break
-            except (SSHException, NoValidConnectionsError, TimeoutError):
+            except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
                 sleep(5)
         else:
             raise AssertionError(&#34;Unable to login to restored VM to check data consistency&#34;)
@@ -704,8 +752,8 @@ class TestAnyNodesUpgrade:
 <li>check all nodes upgraded</li>
 </ul></div>
 </dd>
-<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_logging"><code class="name flex">
-<span>def <span class="ident">test_preq_setup_logging</span></span>(<span>self, api_client)</span>
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_logging_pods"><code class="name flex">
+<span>def <span class="ident">test_preq_logging_pods</span></span>(<span>self, api_client, logging_addon, wait_timeout, sleep_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -770,7 +818,7 @@ Criteria:
 of kubevirt and longhorn</p></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_logging_pods"><code class="name flex">
-<span>def <span class="ident">test_verify_logging_pods</span></span>(<span>self, api_client)</span>
+<span>def <span class="ident">test_verify_logging_pods</span></span>(<span>self, api_client, logging_addon)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Verify logging pods and logs
@@ -937,9 +985,8 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(data[&#39;metadata&#39;][&#39;name&#39;])
         api_client.versions.delete(version)
 
-    def test_degraded_volume(
-        self, api_client, wait_timeout, vm_shell_from_host, vm_checker, upgrade_target, stopped_vm
-    ):
+    def test_degraded_volume(self, api_client, wait_timeout, vm_shell_from_host,
+                             vm_checker, upgrade_target, stopped_vm):
         &#34;&#34;&#34;
         Criteria: create upgrade should fails if there are any degraded volumes
         Steps:
@@ -949,6 +996,14 @@ class TestInvalidUpgrade:
         3. Immediately upgrade Harvester.
         4. Upgrade should fail.
         &#34;&#34;&#34;
+        # https://github.com/harvester/harvester/issues/6425
+        code, data = api_client.hosts.get()
+        assert 200 == code, (code, data)
+        if (cluster_size := len(data[&#39;data&#39;])) &lt; 3:
+            pytest.skip(
+                f&#34;Degraded volumes only checked on 3+ nodes cluster, skip on {cluster_size}.&#34;
+            )
+
         vm_name, ssh_user, pri_key = stopped_vm
         vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
         assert vm_started, (code, vmi)
@@ -1063,6 +1118,7 @@ degraded state.
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.harvester_crds" href="#harvester_e2e_tests.integrations.test_upgrade.harvester_crds">harvester_crds</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.image" href="#harvester_e2e_tests.integrations.test_upgrade.image">image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.interceptor" href="#harvester_e2e_tests.integrations.test_upgrade.interceptor">interceptor</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.logging_addon" href="#harvester_e2e_tests.integrations.test_upgrade.logging_addon">logging_addon</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.stopped_vm" href="#harvester_e2e_tests.integrations.test_upgrade.stopped_vm">stopped_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.upgrade_target" href="#harvester_e2e_tests.integrations.test_upgrade.upgrade_target">upgrade_target</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.vm_network" href="#harvester_e2e_tests.integrations.test_upgrade.vm_network">vm_network</a></code></li>
@@ -1075,7 +1131,7 @@ degraded state.
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.pytestmark" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade">test_perform_upgrade</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_logging" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_logging">test_preq_setup_logging</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_logging_pods" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_logging_pods">test_preq_logging_pods</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_storageclass" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_storageclass">test_preq_setup_storageclass</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_vmnetwork" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_vmnetwork">test_preq_setup_vmnetwork</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_vms" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_preq_setup_vms">test_preq_setup_vms</a></code></li>
