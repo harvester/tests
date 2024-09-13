@@ -7,7 +7,7 @@ from rancher_api import RancherAPI
 
 
 @pytest.fixture(scope="session")
-def rancher_api_client(request):
+def rancher_api_client(request, harvester_metadata):
     endpoint = request.config.getoption("--rancher-endpoint")
     password = request.config.getoption("--rancher-admin-password")
     ssl_verify = request.config.getoption("--ssl_verify", False)
@@ -16,6 +16,9 @@ def rancher_api_client(request):
     api.authenticate("admin", password, verify=ssl_verify)
 
     api.session.verify = ssl_verify
+
+    harvester_metadata['Rancher Endpoint'] = endpoint
+    harvester_metadata['Rancher Version'] = api.cluster_version.raw
 
     return api
 
@@ -42,18 +45,20 @@ def _pickup_k8s_version(versions, target_version):
 
 
 @pytest.fixture(scope='session')
-def rke1_version(request, rancher_api_client):
+def rke1_version(request, rancher_api_client, harvester_metadata):
     target_ver = request.config.getoption("--k8s-version")
 
     code, data = rancher_api_client.settings.get("k8s-versions-current")
     assert 200 == code, (code, data)
     supported_vers = data["value"].split(",")
 
-    return _pickup_k8s_version(supported_vers, target_ver)
+    ver = _pickup_k8s_version(supported_vers, target_ver)
+    harvester_metadata['RKE1 Version'] = ver
+    return ver
 
 
 @pytest.fixture(scope="session")
-def rke2_version(request, api_client, rancher_api_client):
+def rke2_version(request, rancher_api_client, harvester_metadata):
     target_ver = request.config.getoption("--k8s-version")
 
     # Ref. https://github.com/rancher/dashboard/blob/master/shell/edit/provisioning.cattle.io.cluster/rke2.vue  # noqa
@@ -61,15 +66,19 @@ def rke2_version(request, api_client, rancher_api_client):
     assert resp.ok
     supported_vers = [r['id'] for r in resp.json()['data']]
 
-    return _pickup_k8s_version(supported_vers, target_ver)
+    ver = _pickup_k8s_version(supported_vers, target_ver)
+    harvester_metadata['RKE2 Version'] = ver
+    return ver
 
 
 @pytest.fixture(scope="session")
-def k3s_version(request, api_client, rancher_api_client):
+def k3s_version(request, rancher_api_client, harvester_metadata):
     target_ver = request.config.getoption("--k8s-version")
 
     resp = rancher_api_client._get("v1-k3s-release/releases")
     assert resp.ok
     supported_vers = [r['id'] for r in resp.json()['data']]
 
-    return _pickup_k8s_version(supported_vers, target_ver)
+    ver = _pickup_k8s_version(supported_vers, target_ver)
+    harvester_metadata['K3S Version'] = ver
+    return ver
