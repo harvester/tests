@@ -55,9 +55,27 @@ class RancherAPI:
     def cluster_version(self):
         if not self._version:
             code, data = self.settings.get('server-version')
-            ver = data['value']
-            # XXX: fix master-xxx-head to 8.8.8, need the API fix the problem
-            self._version = parse_version('8.8.8' if 'master' in ver else ver)
+            version = data['value']
+
+            # Rancher versions look like v2.9.2, or v2.9.2-suffix but also
+            # possibly v2.9-abcdef0123-head
+            try:
+                # Split off the version name
+                # parse the version name into a Version object if possible
+                # save the suffixes as one string, e.g.:
+                # v2.9.2               => <Version('2.9.2')>, suffix = None
+                # v2.9.2-rc1           => <Version('2.9.2')>, suffix = "rc1"
+                # v2.9.2-dev-20240912  => <Version('2.9.2')>, suffix = "dev-20240912"
+                # master-head          => <Version('8.8.8')>, suffix = "head"
+                # v1.4-ba586eaf-head   => <Version('1.4')>, suffix = "ba586eaf-head"
+                parts = version.split('-')
+                self._version = parse_version("v8.8.8" if "master" in parts[0] else parts[0])
+                self._version.suffix = '-'.join(parts[1:]) if len(parts) > 1 else None
+            except ValueError:
+                self._version = parse_version(version)
+
+            # store the raw version string for reference
+            self._version.raw = version
         return self._version
 
     def __repr__(self):
