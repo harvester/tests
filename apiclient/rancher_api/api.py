@@ -58,6 +58,8 @@ class RancherAPI:
             ver = data['value']
             # XXX: fix master-xxx-head to 8.8.8, need the API fix the problem
             self._version = parse_version('8.8.8' if 'master' in ver else ver)
+
+            self._version.raw = ver
         return self._version
 
     def __repr__(self):
