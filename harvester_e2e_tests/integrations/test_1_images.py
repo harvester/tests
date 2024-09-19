@@ -318,6 +318,9 @@ class TestBackendImages:
         get_image(api_client, unique_name)
         delete_image(api_client, unique_name, wait_timeout)
 
+        get_image(api_client, image_name)
+        delete_image(api_client, image_name, wait_timeout)
+
     @pytest.mark.p0
     def test_create_invalid_file(
         self, api_client, gen_unique_name, fake_invalid_image_file, wait_timeout
