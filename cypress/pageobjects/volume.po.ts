@@ -41,7 +41,7 @@ export class VolumePage extends CruResourcePo {
     return new LabeledSelectPo(".labeled-select", `:contains("Image"):last`);
   }
 
-  checkState(name:  string, state: string = 'Ready', namespace: string = 'default') {
+  checkState(name: string, state: string = 'Ready', namespace: string = 'default') {
     this.goToList();
     this.censorInColumn(name, 3, namespace, 4, state, 2);
   }
@@ -60,15 +60,15 @@ export class VolumePage extends CruResourcePo {
     cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
   }
 
-  setBasics({source, image, size} : { source?: string, image?: string, size: string }) {
+  setBasics({ source, image, size }: { source?: string, image?: string, size: string }) {
     this.clickTab('basic');
 
     if (source) {
-      this.source().select({option: source});
+      this.source().select({ option: source });
     }
 
     if (image) {
-      this.image().select({option: image});
+      this.image().select({ option: image });
     }
 
     this.size().input(size);
@@ -104,13 +104,13 @@ export class VolumePage extends CruResourcePo {
   }
 
   public setValue(value: ValueInterface) {
-    this.namespace().select({option: value?.namespace})
+    this.namespace().select({ option: value?.namespace })
     this.size().input(value?.size);
     this.name().input(value?.name);
 
     if (!!value.image) {
-      this.source().select({option: "VM Image"});
-      this.image().select({option: value?.image});
+      this.source().select({ option: "Virtual Machine Image" });
+      this.image().select({ option: value?.image });
     }
   }
 
