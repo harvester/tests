@@ -44,15 +44,15 @@ export class VmsPage extends CruResourcePo {
     });
   }
 
-  setBasics(cpu?: string, memery?: string, ssh?: {id?: string, createNew?: boolean, value?: string}) {
+  setBasics(cpu?: string, memory?: string, ssh?: { id?: string, createNew?: boolean, value?: string }) {
     this.clickTab('basics');
     this.cpu().input(cpu);
-    this.memory().input(memery);
+    this.memory().input(memory);
 
     if (ssh && ssh.id) {
-      new LabeledSelectPo('.labeled-select', `:contains("SSHKey")`).select({option: ssh.id});
+      new LabeledSelectPo('.labeled-select', `:contains("SSHKey")`).select({ option: ssh.id });
     } else if (ssh && ssh.createNew) {
-      new LabeledSelectPo('.labeled-select', `:contains("SSHKey")`).select({option: 'Create a New...'});
+      new LabeledSelectPo('.labeled-select', `:contains("SSHKey")`).select({ option: 'Create a New...' });
       new LabeledTextAreaPo('.v--modal-box .card-container .labeled-input', `:contains("SSH-Key")`).input(ssh.value, {
         delay: 0,
       });
@@ -74,32 +74,32 @@ export class VmsPage extends CruResourcePo {
         let imageEl: any;
         let volumeEl: any;
         cy.get('.info-box').eq(index).within(() => {
-            if (volume.image) {
-              imageEl = new LabeledSelectPo('.labeled-select', `:contains("Image")`);
-            }
+          if (volume.image) {
+            imageEl = new LabeledSelectPo('.labeled-select', `:contains("Image")`);
+          }
 
-            if (volume.size) {
-              new LabeledInputPo('.labeled-input', `:contains("Size")`).input(volume.size);
-            }
+          if (volume.size) {
+            new LabeledInputPo('.labeled-input', `:contains("Size")`).input(volume.size);
+          }
 
-            if (volume.volume) {
-              volumeEl = new LabeledSelectPo('.labeled-select', `:contains("Volume")`);
-            }
+          if (volume.volume) {
+            volumeEl = new LabeledSelectPo('.labeled-select', `:contains("Volume")`);
+          }
         }).then(() => {
           if (imageEl) {
-            imageEl.select({option: volume.image});
+            imageEl.select({ option: volume.image });
           }
 
           if (volumeEl) {
-            volumeEl.select({option: volume.volume});
+            volumeEl.select({ option: volume.volume });
           }
         })
       })
     })
   }
 
-  selectSchedulingType({ type = 'any' }: { type:string }) {
-    const map:any = {
+  selectSchedulingType({ type = 'any' }: { type: string }) {
+    const map: any = {
       any: 'Run VM on any available node',
       specific: 'Run VM on specific node - (Live migration is not supported)',
       rules: 'Run VM on node(s) matching scheduling rules'
@@ -113,18 +113,18 @@ export class VmsPage extends CruResourcePo {
       scheduling.input(map[type]);
     })
   }
-  
-  checkSpecificNodes({includeNodes = [], excludeNodes = []}: { includeNodes: Array<string>, excludeNodes?: Array<string> }) {
+
+  checkSpecificNodes({ includeNodes = [], excludeNodes = [] }: { includeNodes: Array<string>, excludeNodes?: Array<string> }) {
     this.specificNode().self().click();
     includeNodes.forEach((node) => cy.get('.vs__dropdown-menu').should('contain', node));
     excludeNodes.forEach((node) => cy.get('.vs__dropdown-menu').should('not.contain', node));
   }
 
-  setAdvancedOption(option: {[index: string]: any}) {
+  setAdvancedOption(option: { [index: string]: any }) {
     this.clickTab('advanced');
 
     if (option.runStrategy) {
-      new LabeledSelectPo('.labeled-select', `:contains("Run Strategy")`).select({option: option.runStrategy});
+      new LabeledSelectPo('.labeled-select', `:contains("Run Strategy")`).select({ option: option.runStrategy });
     }
 
     if ([true, false].includes(option.efiEnabled)) {
@@ -140,7 +140,7 @@ export class VmsPage extends CruResourcePo {
     }
   }
 
-  checkVMState(name:  string, state: string = 'Running', namespace: string = 'default') {
+  checkVMState(name: string, state: string = 'Running', namespace: string = 'default') {
     this.goToList();
     this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.uploadTimeout, nameSelector: '.name-console a' });
   }
@@ -171,13 +171,13 @@ export class VmsPage extends CruResourcePo {
   }
 
   public setValue(value: ValueInterface) {
-    this.namespace().select({option: value?.namespace})
+    this.namespace().select({ option: value?.namespace })
     this.name().input(value?.name)
     this.description().input(value?.description)
     this.cpu().input(value?.cpu)
     this.memory().input(value?.memory)
     cy.get('.tab#Volume').click()
-    this.image().select({option: value?.image})
+    this.image().select({ option: value?.image })
     this.networks(value?.networks)
     cy.get('.tab#advanced').click()
     this.usbTablet().check(value?.usbTablet)
@@ -269,24 +269,24 @@ export class VmsPage extends CruResourcePo {
   }
 
   specificNode() {
-    return new LabeledSelectPo('.labeled-select', `:contains("Node Name")`); 
+    return new LabeledSelectPo('.labeled-select', `:contains("Node Name")`);
   }
 
   networks(networks: Array<Network> = []) {
-    if (networks.length === 0){
+    if (networks.length === 0) {
       return
     } else {
       cy.get('.tab#Network').click()
 
       cy.get('.info-box.infoBox').then(elms => {
         if (elms?.length < networks?.length) {
-          for(let i=0; i<networks?.length - elms?.length; i++) {
+          for (let i = 0; i < networks?.length - elms?.length; i++) {
             cy.contains('Add Network').click()
           }
         }
 
         networks.map((n, idx) => {
-          this.network().select({option: n?.network, index: idx})
+          this.network().select({ option: n?.network, index: idx })
         })
       })
     }
@@ -323,7 +323,7 @@ export class VmsPage extends CruResourcePo {
 
       const name = Cypress._.toLower(imageEnv.name)
       const url = imageEnv.url
-      const imageFound = images.find((i:any) => i?.spec?.displayName === name)
+      const imageFound = images.find((i: any) => i?.spec?.displayName === name)
 
       if (imageFound) {
         return
@@ -332,14 +332,14 @@ export class VmsPage extends CruResourcePo {
 
         image.goToCreate();
         image.setNameNsDescription(name, namespace);
-        image.setBasics({url});
+        image.setBasics({ url });
         image.save();
-        image.checkState({name, namespace});
+        image.checkState({ name, namespace });
       }
     })
   }
 
-  public checkState({name = '', namespace = 'default', state = 'Running'}: {name?:string, namespace?:string, state?:string}) {
+  public checkState({ name = '', namespace = 'default', state = 'Running' }: { name?: string, namespace?: string, state?: string }) {
     this.censorInColumn(name, 3, namespace, 4, state, 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
   }
 
@@ -364,7 +364,7 @@ export class VmsPage extends CruResourcePo {
     cy.get('.cru-resource-footer').contains('Save').click()
   }
 
-  public delete(namespace:string, name: string, displayName?: string, { removeRootDisk, id }: { removeRootDisk?: boolean, id?: string } = { removeRootDisk: true }) {
+  public delete(namespace: string, name: string, displayName?: string, { removeRootDisk, id }: { removeRootDisk?: boolean, id?: string } = { removeRootDisk: true }) {
     cy.visit(`/harvester/c/local/${this.type}`)
 
     this.clickAction(name, 'Delete').then((_) => {
@@ -392,7 +392,7 @@ export class VmsPage extends CruResourcePo {
         cy.get('.v--modal-box,.v--modal .card-container').within(() => {
           this.plugVolumeCustomName().input(V);
         })
-        this.plugVolumeName().select({option: V});
+        this.plugVolumeName().select({ option: V });
       })
 
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}/${vmName}*`).as('plug');
@@ -438,14 +438,14 @@ export class VmsPage extends CruResourcePo {
     return new YamlEditorPo(selector)
   }
 
-  public selectTemplateAndVersion({name, namespace, id, version}: {
+  public selectTemplateAndVersion({ name, namespace, id, version }: {
     name?: string,
     namespace?: string,
     id?: string,
     version?: string,
   }) {
-    cy.contains('Use VM Template').click()
-    this.template().select({option: id || `${namespace}/${name}`})
+    cy.contains('Use the virtual machine template').click()
+    this.template().select({ option: id || `${namespace}/${name}` })
     this.version().select({
       option: version,
       selector: '.vs__dropdown-menu',
@@ -456,7 +456,7 @@ export class VmsPage extends CruResourcePo {
     this.multipleInstance().input('Multiple Instance')
   }
 
-  setMultipleInstance({namePrefix, count}: {
+  setMultipleInstance({ namePrefix, count }: {
     namePrefix?: string,
     count?: string,
   }) {
