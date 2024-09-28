@@ -5,8 +5,8 @@ const settings = new SettingsPagePo();
 
 describe('Setting Page', () => {
     beforeEach(() => {
-       cy.login({url: PageUrl.setting});
-       settings.checkIsCurrentPage();
+        cy.login({ url: PageUrl.setting });
+        settings.checkIsCurrentPage();
     })
 
     /**
@@ -18,11 +18,11 @@ describe('Setting Page', () => {
      */
     it('change UI source type to Bundled, Check whether the configuration takes effect', () => {
         const address = `${Cypress.env('baseUrl')}/dashboard/js/**`;
-        settings.clickMenu('ui-source', 'Edit Setting', 'ui-source', undefined,'UI')
+        settings.clickMenu('ui-source', 'Edit Setting', 'ui-source', undefined, 'UI')
         settings.checkUiSource('Bundled', address);
     });
 
-    
+
     it('change UI source type to external, Check whether the configuration takes effect', () => {
         const address = 'https://releases.rancher.com/harvester-ui/dashboard/**';
         settings.clickMenu('ui-source', 'Edit Setting', 'ui-source', undefined, 'UI')
@@ -58,7 +58,7 @@ describe('Setting Page', () => {
  */
 describe('Set backup target S3', () => {
     beforeEach(() => {
-        cy.login({url: PageUrl.setting});
+        cy.login({ url: PageUrl.setting });
         settings.checkIsCurrentPage(false);
     })
 
@@ -67,8 +67,8 @@ describe('Set backup target S3', () => {
 
         const backupTarget = Cypress.env('backupTarget');
         settings.setS3BackupTarget({
-            type: 'S3', 
-            endpoint: backupTarget.endpoint, 
+            type: 'S3',
+            endpoint: backupTarget.endpoint,
             bucketName: backupTarget.bucketName,
             bucketRegion: backupTarget.bucketRegion,
             accessKeyId: backupTarget.accessKey,

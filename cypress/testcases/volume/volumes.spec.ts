@@ -44,7 +44,7 @@ describe("Create image from Volume", () => {
     vms.save();
 
     // check VM state
-    vms.checkState({name: VM_NAME});
+    vms.checkState({ name: VM_NAME });
 
     // // export IMAGE
     image.exportImage(VM_NAME, IMAGE_NAME, namespace);
@@ -63,7 +63,7 @@ describe("Create image from Volume", () => {
     vms.save();
 
     // check VM state
-    vms.checkState({name: ANOTHER_VM_NAME});
+    vms.checkState({ name: ANOTHER_VM_NAME });
 
     // delete VM
     vms.delete(namespace, ANOTHER_VM_NAME);
@@ -104,7 +104,7 @@ describe("Create volume root disk VM Image Form", () => {
     // create VOLUME
     volumes.goToCreate();
     volumes.setNameNsDescription(VOLUME_NAME, namespace);
-    volumes.setBasics({source: 'VM Image', image: imageEnv.name, size: '10'});
+    volumes.setBasics({ source: 'Virtual Machine Image', image: imageEnv.name, size: '10' });
     volumes.save();
 
     // check state
@@ -156,7 +156,7 @@ describe("Delete volume that was attached to VM but now is not", () => {
       const volumeName = vm.spec?.template?.spec?.volumes?.[0]?.persistentVolumeClaim?.claimName || '';
 
       // check VM state
-      vms.checkState({name: VM_NAME});
+      vms.checkState({ name: VM_NAME });
 
       // delete VM
       vms.delete(namespace, VM_NAME, VM_NAME, { removeRootDisk: false });
@@ -202,13 +202,13 @@ describe("Support Volume Hot Unplug", () => {
     // create VOLUME
     volumes.goToCreate();
     volumes.setNameNsDescription(VOLUME_NAME_1, namespace);
-    volumes.setBasics({size: '4'});
+    volumes.setBasics({ size: '4' });
     volumes.save();
     volumes.censorInColumn(VOLUME_NAME_1, 3, namespace, 4, 'Ready');
 
     volumes.goToCreate();
     volumes.setNameNsDescription(VOLUME_NAME_2, namespace);
-    volumes.setBasics({size: '4'});
+    volumes.setBasics({ size: '4' });
     volumes.save();
     volumes.censorInColumn(VOLUME_NAME_2, 3, namespace, 4, 'Ready');
 
@@ -221,10 +221,10 @@ describe("Support Volume Hot Unplug", () => {
     vms.save();
 
     // check VM state
-    vms.checkState({name: VM_NAME});
+    vms.checkState({ name: VM_NAME });
 
     vms.plugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
-    vms.unplugVolume(VM_NAME, [1,2], namespace);
+    vms.unplugVolume(VM_NAME, [1, 2], namespace);
     vms.plugVolume(VM_NAME, [VOLUME_NAME_1, VOLUME_NAME_2], namespace);
 
     // delete VM
@@ -245,7 +245,7 @@ describe("Support Volume Hot Unplug", () => {
   * Expected Results
   * 1. Disk should be resized
   */
- describe("Edit volume increase size via form", () => {
+describe("Edit volume increase size via form", () => {
   const VM_NAME = generateName("vm-e2e-1");
 
   it("Edit volume increase size via form", () => {
@@ -277,12 +277,12 @@ describe("Support Volume Hot Unplug", () => {
       // check VM state
       vms.clickAction(VM_NAME, 'Stop');
       vms.searchClear();
-      vms.checkState({name: VM_NAME, state: 'Off'});
+      vms.checkState({ name: VM_NAME, state: 'Off' });
 
       volumes.goToEdit(volumeName);
-      volumes.setBasics({size: '5'});
+      volumes.setBasics({ size: '5' });
       volumes.update(`${namespace}/${volumeName}`);
-      
+
       // check VOLUME state
       volumes.censorInColumn(volumeName, 3, namespace, 4, 'In-use', 2);
 

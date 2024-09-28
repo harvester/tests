@@ -19,7 +19,7 @@ interface Vlan {
  * Expected Results
  * 1. create/delete network success
 */
-export function CheckCreateNetwork() {}
+export function CheckCreateNetwork() { }
 describe('Check create/delete network', () => {
   it('Check create/delete network', () => {
     cy.login();
@@ -45,7 +45,7 @@ describe('Check create/delete network', () => {
  * Expected Results
  * 1. Create network with DHCP server IP success
 */
-export function CheckDHCP() {}
+export function CheckDHCP() { }
 describe('Check network with DHCP', () => {
   it('Check network with DHCP', () => {
     cy.login();
@@ -61,7 +61,7 @@ describe('Check network with DHCP', () => {
       namespace,
       vlan: '234',
       clusterNetwork: 'mgmt',
-      mode: 'Auto(DHCP)',
+      mode: 'Auto (DHCP)',
       dhcp,
     })
 
@@ -88,7 +88,7 @@ describe('Check network with DHCP', () => {
  * Expected Results
  * 1. Create network with manual mode success
 */
-export function CheckManualMode() {}
+export function CheckManualMode() { }
 describe('Check network with Manual Mode', () => {
   it('Check network with Manual Mode', () => {
     cy.login();
@@ -125,7 +125,7 @@ describe('Check network with Manual Mode', () => {
 });
 
 
-export function CreateVlan1() {}
+export function CreateVlan1() { }
 describe('Preset Vlans', () => {
   function createVlan(vlan: Vlan) {
     cy.intercept('POST', `/v1/harvester/k8s.cni.cncf.io.network-attachment-definitions`).as('create');
@@ -157,7 +157,7 @@ describe('Preset Vlans', () => {
     const vlan = vlans[0].vlan
 
     cy.login();
-    
+
     createVlan({
       name: `vlan${vlan}`,
       namespace: 'default',
@@ -171,7 +171,7 @@ describe('Preset Vlans', () => {
     const vlan = vlans[1].vlan
 
     cy.login();
-    
+
     createVlan({
       name: `vlan${vlan}`,
       namespace: 'default',

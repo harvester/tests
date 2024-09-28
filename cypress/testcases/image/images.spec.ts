@@ -9,41 +9,41 @@ const vms = new VmsPage();
 const image = new ImagePage();
 
 describe('Auto setup image from cypress environment', () => {
-  it('Auto setup image from cypress environment', () => {
-    const imageEnv = Cypress.env('image');
-    const IMAGE_NAME = Cypress._.toLower(imageEnv.name);
-    const IMAGE_URL = imageEnv.url;
-    
-    const value = {
-        name: IMAGE_NAME,
-        url: IMAGE_URL,
-    }
+    it('Auto setup image from cypress environment', () => {
+        const imageEnv = Cypress.env('image');
+        const IMAGE_NAME = Cypress._.toLower(imageEnv.name);
+        const IMAGE_URL = imageEnv.url;
 
-    cy.login();
+        const value = {
+            name: IMAGE_NAME,
+            url: IMAGE_URL,
+        }
 
-    cy.request({
-      url: `v1/harvester/${HCI.IMAGE}s`,
-      headers: {
-        accept: 'application/json'
-      }
-    }).then(res => {
-      expect(res?.status, 'Check Image list').to.equal(200);
-      const images = res?.body?.data || []
-      const imageFound = images.find((i:any) => i?.spec?.displayName === IMAGE_NAME)
+        cy.login();
 
-      if (imageFound) {
-        return
-      } else {
-        const namespace = 'default';
+        cy.request({
+            url: `v1/harvester/${HCI.IMAGE}s`,
+            headers: {
+                accept: 'application/json'
+            }
+        }).then(res => {
+            expect(res?.status, 'Check Image list').to.equal(200);
+            const images = res?.body?.data || []
+            const imageFound = images.find((i: any) => i?.spec?.displayName === IMAGE_NAME)
 
-        image.goToCreate();
-        image.setNameNsDescription(IMAGE_NAME, namespace);
-        image.setBasics({url: IMAGE_URL});
-        image.save();
-        image.checkState({name: IMAGE_NAME});
-      }
+            if (imageFound) {
+                return
+            } else {
+                const namespace = 'default';
+
+                image.goToCreate();
+                image.setNameNsDescription(IMAGE_NAME, namespace);
+                image.setBasics({ url: IMAGE_URL });
+                image.save();
+                image.checkState({ name: IMAGE_NAME });
+            }
+        })
     })
-  })
 })
 
 /**
@@ -72,17 +72,17 @@ describe('Create an image with valid image URL', () => {
 
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
-        image.setBasics({url: IMAGE_URL});
+        image.setBasics({ url: IMAGE_URL });
         image.setLabels({
             labels: {
                 foo: 'foo',
                 bar: 'bar'
             }
         });
-        
+
         cy.wrap(image.save()).then((realName) => {
             // check IMAGE state
-            image.checkState({name: IMAGE_NAME});
+            image.checkState({ name: IMAGE_NAME });
 
             // edit IMAGE
             image.goToEdit(IMAGE_NAME);
@@ -102,10 +102,10 @@ describe('Create an image with valid image URL', () => {
         // create IMAGE with the same name
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
-        image.setBasics({url: IMAGE_URL});
+        image.setBasics({ url: IMAGE_URL });
         cy.wrap(image.save()).then((realName) => {
             // check IMAGE state
-            image.checkState({name: IMAGE_NAME});
+            image.checkState({ name: IMAGE_NAME });
 
             // delete IMAGE
             image.delete(namespace, realName as string, IMAGE_NAME);
@@ -118,7 +118,7 @@ describe('Create an image with valid image URL', () => {
  * Expected Results
  * 1. Image state show as Failed
  */
- describe('Create image with invalid URL', () => {
+describe('Create image with invalid URL', () => {
     const IMAGE_NAME = generateName('auto-image-invalid-url-test');
 
     it('Create image with invalid URL', () => {
@@ -129,7 +129,7 @@ describe('Create an image with valid image URL', () => {
 
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
-        image.setBasics({url: 'https://test.img'});
+        image.setBasics({ url: 'https://test.img' });
 
         cy.wrap(image.save()).then((realName) => {
             image.censorInColumn(IMAGE_NAME, 3, namespace, 4, 'Failed', 2, { timeout: constants.timeout.uploadTimeout });
@@ -170,11 +170,11 @@ describe('Delete VM with exported image', () => {
         vms.setBasics('1', '1');
         vms.setVolumes(volumes);
         vms.save();
-        
+
         // export IMAGE
         image.exportImage(VM_NAME, IMAGE_NAME, namespace);
         image.goToList();
-        image.checkState({name: IMAGE_NAME, size: '10 GB'});
+        image.checkState({ name: IMAGE_NAME, size: '10 GB' });
 
         // delete VM
         vms.delete(namespace, VM_NAME);
@@ -218,14 +218,14 @@ describe('Update image labels after deleting source VM', () => {
         vms.setBasics('1', '1');
         vms.setVolumes(volumes);
         vms.save();
-        vms.checkState({name: VM_NAME, namespace});
+        vms.checkState({ name: VM_NAME, namespace });
 
         // export IMAGE
         image.exportImage(VM_NAME, IMAGE_NAME, namespace);
 
         // check IMAGE state
         image.goToList();
-        image.checkState({name: IMAGE_NAME, size: '10 GB'});
+        image.checkState({ name: IMAGE_NAME, size: '10 GB' });
 
         // delete VM
         vms.delete(namespace, VM_NAME);
@@ -321,10 +321,10 @@ describe('Create a ISO image via upload', () => {
 
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
-        image.setBasics({path: 'cypress/fixtures/cirros-0.5.2-aarch64-disk.img'});
+        image.setBasics({ path: 'cypress/fixtures/cirros-0.5.2-aarch64-disk.img' });
 
-        cy.wrap(image.save({upload: true})).then((realName) => {
-            image.checkState({name: IMAGE_NAME});
+        cy.wrap(image.save({ upload: true })).then((realName) => {
+            image.checkState({ name: IMAGE_NAME });
 
             // create VM
             const volumes = [{
@@ -338,7 +338,7 @@ describe('Create a ISO image via upload', () => {
             vms.setBasics('1', '1');
             vms.setVolumes(volumes);
             vms.save();
-            vms.checkState({name: VM_NAME});
+            vms.checkState({ name: VM_NAME });
 
             // delete VM
             vms.delete(namespace, VM_NAME);
@@ -353,12 +353,12 @@ describe('Create a ISO image via upload', () => {
 /**
  * https://harvester.github.io/tests/manual/_incoming/2562-clone-image/
  */
- describe('Clone image', () => {
+describe('Clone image', () => {
     const IMAGE_NAME = generateName('auto-image-test');
     const CLONED_NAME = generateName('cloned-image');
     const imageEnv = Cypress.env('image');
     const IMAGE_URL = imageEnv.url;
-    let IMAGE_REAL_NAME:string, CLONED_IMAGE_REAL_NAME:string;
+    let IMAGE_REAL_NAME: string, CLONED_IMAGE_REAL_NAME: string;
 
     it('Clone image', () => {
         cy.login();
@@ -372,13 +372,13 @@ describe('Create a ISO image via upload', () => {
         image.setLabels({
             labels: { cloned: 'cloned' }
         });
-        image.setBasics({url: IMAGE_URL});
+        image.setBasics({ url: IMAGE_URL });
 
         cy.wrap(image.save()).then((realName) => {
             IMAGE_REAL_NAME = realName as string;
         })
 
-        image.checkState({name: IMAGE_NAME});
+        image.checkState({ name: IMAGE_NAME });
         image.clickAction(IMAGE_NAME, 'Clone');
         image.setNameNsDescription(CLONED_NAME, namespace);
 
@@ -386,7 +386,7 @@ describe('Create a ISO image via upload', () => {
             CLONED_IMAGE_REAL_NAME = realName as string;
         })
 
-        image.checkState({name: CLONED_NAME});
+        image.checkState({ name: CLONED_NAME });
         image.goToEdit(CLONED_NAME);
         image.clickTab('labels');
         cy.get('.tab-container .kv-item.key input').eq(0).should('have.value', 'cloned');
@@ -401,7 +401,7 @@ describe('Create a ISO image via upload', () => {
 /**
  * https://harvester.github.io/tests/manual/_incoming/2474-image-filtering-by-labels/
  */
- describe('Image filtering by labels', () => {
+describe('Image filtering by labels', () => {
     const imageEnv = Cypress.env('image');
     // has only one label
     const IMAGE_NAME_1 = generateName('auto-image-suse');
@@ -411,7 +411,7 @@ describe('Create a ISO image via upload', () => {
     const IMAGE_NAME_3 = generateName('auto-image-both');
     const IMAGE_URL = imageEnv.url;
     const namespace = 'default';
-    let IMAGE_REAL_NAME_1:string, IMAGE_REAL_NAME_2:string, IMAGE_REAL_NAME_3:string;
+    let IMAGE_REAL_NAME_1: string, IMAGE_REAL_NAME_2: string, IMAGE_REAL_NAME_3: string;
 
     it('Upload several images and add related label, add filter according to test plan 1', () => {
         cy.login();
@@ -422,11 +422,11 @@ describe('Create a ISO image via upload', () => {
         image.setLabels({
             labels: { suse_group: '1', harvester_e2e_test: 'harvester' }
         });
-        image.setBasics({url: IMAGE_URL});
+        image.setBasics({ url: IMAGE_URL });
         cy.wrap(image.save()).then((realName) => {
             IMAGE_REAL_NAME_1 = realName as string
         })
-        image.checkState({name: IMAGE_NAME_1});
+        image.checkState({ name: IMAGE_NAME_1 });
 
         // create the second one
         image.goToCreate();
@@ -434,22 +434,22 @@ describe('Create a ISO image via upload', () => {
         image.setLabels({
             labels: { ubuntu_group: '1', harvester_e2e_test: 'harvester' }
         });
-        image.setBasics({url: IMAGE_URL});
+        image.setBasics({ url: IMAGE_URL });
         cy.wrap(image.save()).then((realName) => {
             IMAGE_REAL_NAME_2 = realName as string
         })
-        image.checkState({name: IMAGE_NAME_2});
+        image.checkState({ name: IMAGE_NAME_2 });
 
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME_3, namespace);
         image.setLabels({
             labels: { suse_group: '1', ubuntu_group: '1', harvester_e2e_test: 'harvester' }
         });
-        image.setBasics({url: IMAGE_URL});
+        image.setBasics({ url: IMAGE_URL });
         cy.wrap(image.save()).then((realName) => {
             IMAGE_REAL_NAME_3 = realName as string
         })
-        image.checkState({name: IMAGE_NAME_3});
+        image.checkState({ name: IMAGE_NAME_3 });
 
         // Can search specific image by name in the Harvester VM creation page
         vms.goToCreate();
@@ -466,14 +466,14 @@ describe('Create a ISO image via upload', () => {
         })
         cy.get('tbody').should('contain', IMAGE_NAME_1);
         cy.get('tbody').should('contain', IMAGE_NAME_3);
-        
+
         // Can filter using One key with value
         image.filterByLabels({
             suse_group: '1',
         })
         cy.get('tbody').should('contain', IMAGE_NAME_1);
         cy.get('tbody').should('contain', IMAGE_NAME_3);
-        
+
         // Can filter using Two keys without value
         image.filterByLabels({
             suse_group: null,
@@ -481,7 +481,7 @@ describe('Create a ISO image via upload', () => {
         })
         cy.get('tbody').should('contain', IMAGE_NAME_2);
         cy.get('tbody').should('contain', IMAGE_NAME_3);
-        
+
         // Can filter using using Two keys and one key without value
         image.filterByLabels({
             suse_group: '1',
@@ -489,7 +489,7 @@ describe('Create a ISO image via upload', () => {
         })
         cy.get('tbody').should('contain', IMAGE_NAME_2);
         cy.get('tbody').should('contain', IMAGE_NAME_3);
-        
+
         // Can filter using Two keys both have values
         image.filterByLabels({
             suse_group: '1',
@@ -513,11 +513,11 @@ describe('Create a ISO image via upload', () => {
 /**
  * https://harvester.github.io/tests/manual/_incoming/2563-image-naming-inline-css/
  */
- describe('Image naming with inline CSS', () => {
+describe('Image naming with inline CSS', () => {
     const imageEnv = Cypress.env('image');
     const IMAGE_NAME = '<strong><em>something_interesting</em></strong>';
     const IMAGE_URL = imageEnv.url;
-    let name:string;
+    let name: string;
 
     it('Create an image with valid image URL', () => {
         cy.login();
@@ -527,17 +527,17 @@ describe('Create a ISO image via upload', () => {
 
         image.goToCreate();
         image.setNameNsDescription(IMAGE_NAME, namespace);
-        image.setBasics({url: IMAGE_URL});
-        
+        image.setBasics({ url: IMAGE_URL });
+
         cy.wrap(image.save()).then((realName) => {
             name = realName as string;
         })
 
         // check IMAGE state
-        image.checkState({name: IMAGE_NAME});
+        image.checkState({ name: IMAGE_NAME });
 
         // edit IMAGE
-        image.goToDetail({name: IMAGE_NAME, ns: namespace});
+        image.goToDetail({ name: IMAGE_NAME, ns: namespace });
         cy.get('.primaryheader').should('contain', IMAGE_NAME)
 
         // delete IMAGE
