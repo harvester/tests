@@ -100,9 +100,9 @@ export class VmsPage extends CruResourcePo {
 
   selectSchedulingType({ type = 'any' }: { type: string }) {
     const map: any = {
-      any: 'Run VM on any available node',
-      specific: 'Run VM on specific node - (Live migration is not supported)',
-      rules: 'Run VM on node(s) matching scheduling rules'
+      any: 'Run virtual machine on any available node',
+      specific: 'Run virtual machine on specific node - (Live migration is not supported))',
+      rules: 'Run virtual machine on node(s) matching scheduling rules'
     }
 
     this.clickTab('nodeScheduling');
@@ -152,8 +152,8 @@ export class VmsPage extends CruResourcePo {
   }
 
   clickVMSnapshotAction(name: string, snapshotName: string) {
-    this.clickAction(name, 'Take VM Snapshot');
-    cy.get('.v--modal-box .card-title').find('h4').contains('Take VM Snapshot');
+    this.clickAction(name, 'Take Virtual Machine Snapshot');
+    cy.get('.v--modal-box .card-title').find('h4').contains('Take Virtual Machine Snapshot');
 
     new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name *")`).input(snapshotName)
     cy.get('.v--modal-box button').contains('Create').click();
@@ -474,16 +474,16 @@ export class VmsPage extends CruResourcePo {
   }) {
     this.clickTab('nodeScheduling');
 
-    const rulesRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on node(s) matching scheduling rules")')
-    const specificRadio = new RadioButtonPo('.radio-group', ':contains("Run VM on specific node")')
+    const rulesRadio = new RadioButtonPo('.radio-group', ':contains("Run virtual machine on node(s) matching scheduling rules")')
+    const specificRadio = new RadioButtonPo('.radio-group', ':contains("Run virtual machine on specific node - (Live migration is not supported)")')
     const nodeNameSelector = new LabeledSelectPo('.labeled-select', `:contains("Node Name")`)
 
     switch (radio) {
       case 'rules':
-        rulesRadio.input('Run VM on node(s) matching scheduling rules')
+        rulesRadio.input('Run virtual machine on node(s) matching scheduling rules')
         break;
       case 'specific':
-        specificRadio.input('Run VM on specific node')
+        specificRadio.input('Run virtual machine on specific node - (Live migration is not supported)')
 
         nodeNameSelector.select({
           selector: '.vs__dropdown-menu',

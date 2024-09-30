@@ -47,7 +47,7 @@ export const MenuNav = {
     Images: ['Images', 'harvester/c/local/harvesterhci.io.virtualmachineimage', 'Images'],
     namespace: ['Namespaces', 'harvester/c/local/namespace', 'Namespaces'],
     clusterNetwork: ['Cluster Network Configuration', 'harvester/c/local/network.harvesterhci.io.clusternetwork', 'Cluster Network Configuration', ['Networks']],
-    vmNetwork: ['VM Networks', 'harvester/c/local/harvesterhci.io.networkattachmentdefinition', 'VM Networks', ['Networks']],
+    vmNetwork: ['Virtual Machine Networks', 'harvester/c/local/harvesterhci.io.networkattachmentdefinition', 'Virtual Machine Networks', ['Networks']],
     vmBackup: ['VM Backups', 'harvester/c/local/harvesterhci.io.virtualmachinebackup', 'VM Backups', ['Backup & Snapshot']],
     vmSnapshot: ['VM Snapshots', 'harvester/c/local/harvesterhci.io.vmsnapshot', 'VM Snapshots', ['Backup & Snapshot']],
     volumeSnapshot: ['Volume Snapshots', 'harvester/c/local/harvesterhci.io.volumesnapshot', 'Volume Snapshots', ['Backup & Snapshot']],
