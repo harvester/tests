@@ -11,7 +11,8 @@ class ImageManager(BaseManager):
     DOWNLOAD_fmt = "v1/harvester/harvesterhci.io.virtualmachineimages/{ns}/{uid}/download"
     _KIND = "VirtualMachineImage"
 
-    def create_data(self, name, url, desc, stype, namespace, display_name=None, storageclass=None):
+    def create_data(self, name, url, desc, stype, namespace, image_checksum=None,
+                    display_name=None, storageclass=None):
         data = {
             "apiVersion": "{API_VERSION}",
             "kind": self._KIND,
@@ -26,6 +27,7 @@ class ImageManager(BaseManager):
             "spec": {
                 "displayName": display_name or name,
                 "sourceType": stype,
+                "checksum": image_checksum,
                 "url": url
             }
         }
@@ -38,10 +40,10 @@ class ImageManager(BaseManager):
         return self._create(self.PATH_fmt.format(uid=name, ns=namespace), **kwargs)
 
     def create_by_url(
-        self, name, url, namespace=DEFAULT_NAMESPACE,
+        self, name, url, imageChecksum=None, namespace=DEFAULT_NAMESPACE,
         description="", display_name=None, storageclass=None
     ):
-        data = self.create_data(name, url, description, "download", namespace,
+        data = self.create_data(name, url, description, "download", namespace, imageChecksum,
                                 display_name, storageclass)
         return self.create("", namespace, json=data)
 

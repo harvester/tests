@@ -37,8 +37,8 @@ def fake_invalid_image_file():
         yield Path(f.name)
 
 
-def create_image_url(api_client, name, image_url, wait_timeout):
-    code, data = api_client.images.create_by_url(name, image_url)
+def create_image_url(api_client, name, image_url, image_checksum, wait_timeout):
+    code, data = api_client.images.create_by_url(name, image_url, image_checksum)
 
     assert 201 == code, (code, data)
     image_spec = data.get("spec")
@@ -112,6 +112,7 @@ def get_image(api_client, image_name):
 
 @pytest.fixture(scope="class")
 def cluster_network(api_client, vlan_nic):
+    # We should change this at some point. It fails if the total cnet name is over 12 chars
     cnet = f"cnet-{vlan_nic}"
     code, data = api_client.clusternetworks.get(cnet)
     if code != 200:
@@ -266,7 +267,8 @@ class TestBackendImages:
         """
         image_name = f"{image_info.name}-{unique_name}"
         image_url = image_info.url
-        create_image_url(api_client, image_name, image_url, wait_timeout)
+        create_image_url(api_client, image_name, image_url,
+                         image_info.image_checksum, wait_timeout)
 
     @pytest.mark.skip_version_if("> v1.2.0", "<= v1.4.0", reason="Issue#4293 fix after `v1.4.0`")
     @pytest.mark.p0

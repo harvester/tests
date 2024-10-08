@@ -1,5 +1,5 @@
 # Harvester Cluster
-endpoint: 'https://localhost:30443'
+endpoint: 'https://localhost'
 username: 'admin'
 password: 'password1234'
 # Be used to access Harvester node, fill in one of following is enough.
@@ -23,7 +23,13 @@ sleep-timeout: 3
 node-scripts-location: 'scripts/vagrant'
 
 opensuse-image-url: https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/openSUSE-Leap-15.5.x86_64-NoCloud.qcow2
+# sha512sum for opensuse image-url
+opensuse-checksum: ''
+
 ubuntu-image-url: https://cloud-images.ubuntu.com/releases/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img
+# sha512sum for ubuntu image-url
+ubuntu-checksum: ''
+
 # URL to download all images
 image-cache-url: ''
 

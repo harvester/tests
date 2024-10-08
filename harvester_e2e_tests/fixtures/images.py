@@ -14,6 +14,7 @@ DEFAULT_UBUNTU_IMAGE_URL = (
 @pytest.fixture(scope="session")
 def image_opensuse(request, api_client):
     image_server = request.config.getoption("--image-cache-url")
+    image_checksum = request.config.getoption("--opensuse-checksum", default=None)
     url = urlparse(
         request.config.getoption("--opensuse-image-url")
     )
@@ -22,12 +23,13 @@ def image_opensuse(request, api_client):
         *_, image_name = url.path.rsplit("/", 1)
         url = urlparse(urljoin(f"{image_server}/", image_name))
 
-    return ImageInfo(url, name="opensuse", ssh_user="opensuse")
+    return ImageInfo(url, image_checksum, name="opensuse", ssh_user="opensuse")
 
 
 @pytest.fixture(scope="session")
 def image_ubuntu(request):
     image_server = request.config.getoption("--image-cache-url")
+    image_checksum = request.config.getoption("--ubuntu-checksum", default=None)
     url = urlparse(
         request.config.getoption("--ubuntu-image-url") or DEFAULT_UBUNTU_IMAGE_URL
     )
@@ -36,7 +38,7 @@ def image_ubuntu(request):
         *_, image_name = url.path.rsplit("/", 1)
         url = urlparse(urljoin(f"{image_server}/", image_name))
 
-    return ImageInfo(url, name="ubuntu", ssh_user="ubuntu")
+    return ImageInfo(url, image_checksum, name="ubuntu", ssh_user="ubuntu")
 
 
 @pytest.fixture(scope="session")
@@ -49,13 +51,14 @@ def image_k3s(request):
 
 
 class ImageInfo:
-    def __init__(self, url_result, name="", ssh_user=None):
+    def __init__(self, url_result, image_checksum=None, name="", ssh_user=None):
         self.url_result = url_result
         if name:
             self.name = name
         else:
             self.name = self.url.rsplit("/", 1)[-1]
         self.ssh_user = ssh_user
+        self.image_checksum = image_checksum
 
     def __repr__(self):
         return f"{__class__.__name__}({self.url_result})"

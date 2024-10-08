@@ -274,6 +274,18 @@ def pytest_addoption(parser):
         default=config_data.get('terraform-provider-rancher'),
         help=('Version of Terraform Rancher Provider')
     )
+    parser.addoption(
+        '--ubuntu-checksum',
+        action='store',
+        default=config_data.get('ubuntu-checksum'),
+        help=('Checksum for ubuntu_image')
+    )
+    parser.addoption(
+        '--opensuse-checksum',
+        action='store',
+        default=config_data.get('opensuse-checksum'),
+        help=('Checksum for opensuse_image')
+    )
 
 
 def pytest_configure(config):
