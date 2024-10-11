@@ -64,7 +64,7 @@ hljs.highlightAll();
 <dl>
 <dt id="harvester_e2e_tests.fixtures.images.ImageInfo"><code class="flex name class">
 <span>class <span class="ident">ImageInfo</span></span>
-<span>(</span><span>url_result, name='', ssh_user=None)</span>
+<span>(</span><span>url_result, image_checksum=None, name='', ssh_user=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -73,13 +73,14 @@ hljs.highlightAll();
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ImageInfo:
-    def __init__(self, url_result, name=&#34;&#34;, ssh_user=None):
+    def __init__(self, url_result, image_checksum=None, name=&#34;&#34;, ssh_user=None):
         self.url_result = url_result
         if name:
             self.name = name
         else:
             self.name = self.url.rsplit(&#34;/&#34;, 1)[-1]
         self.ssh_user = ssh_user
+        self.image_checksum = image_checksum
 
     def __repr__(self):
         return f&#34;{__class__.__name__}({self.url_result})&#34;

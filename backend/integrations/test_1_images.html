@@ -40,7 +40,7 @@ hljs.highlightAll();
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_1_images.create_image_url"><code class="name flex">
-<span>def <span class="ident">create_image_url</span></span>(<span>api_client, name, image_url, wait_timeout)</span>
+<span>def <span class="ident">create_image_url</span></span>(<span>api_client, name, image_url, image_checksum, wait_timeout)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -186,7 +186,8 @@ class TestBackendImages:
         &#34;&#34;&#34;
         image_name = f&#34;{image_info.name}-{unique_name}&#34;
         image_url = image_info.url
-        create_image_url(api_client, image_name, image_url, wait_timeout)
+        create_image_url(api_client, image_name, image_url,
+                         image_info.image_checksum, wait_timeout)
 
     @pytest.mark.skip_version_if(&#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;, reason=&#34;Issue#4293 fix after `v1.4.0`&#34;)
     @pytest.mark.p0

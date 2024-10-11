@@ -33,23 +33,67 @@ hljs.highlightAll();
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_volume_export"><code class="name flex">
-<span>def <span class="ident">test_volume_export</span></span>(<span>api_client, wait_timeout, unique_name, ubuntu_image)</span>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume"><code class="name flex">
+<span>def <span class="ident">test_create_volume</span></span>(<span>api_client, unique_name, ubuntu_image, create_as, source_type, polling_for)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/1057">https://github.com/harvester/tests/issues/1057</a></p>
-<ol>
-<li>Create image</li>
-<li>Create volume from the image</li>
-<li>export the volume to new image</li>
-<li>delete the new image</li>
+<div class="desc"><ol>
+<li>Create a volume from image</li>
+<li>Create should respond with 201</li>
+<li>Wait for volume to create</li>
+<li>Failures should be at 0</li>
+<li>Get volume metadata</li>
+<li>Volume should not be in error or transitioning state</li>
+<li>ImageId should match what was used in create</li>
+<li>Delete volume</li>
+<li>Delete volume should reply 404 after delete
+Ref.</li>
+</ol></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum"><code class="name flex">
+<span>def <span class="ident">test_create_volume_bad_checksum</span></span>(<span>api_client, unique_name, ubuntu_image_bad_checksum, create_as, source_type, polling_for)</span>
+</code></dt>
+<dd>
+<div class="desc"><ol>
+<li>Create a volume from image with a bad checksum</li>
+<li>Create should respond with 201</li>
+<li>Wait for volume to create</li>
+<li>Wait for 4 failures in the volume fail status</li>
+<li>Failures should be set at 4</li>
+<li>Delete volume</li>
+<li>Delete volume should reply 404 after delete
+Ref. <a href="https://github.com/harvester/tests/issues/1121">https://github.com/harvester/tests/issues/1121</a></li>
 </ol></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image"><code class="name flex">
 <span>def <span class="ident">ubuntu_image</span></span>(<span>api_client, unique_name, image_ubuntu, polling_for)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Generates a Ubuntu image</p>
+<ol>
+<li>Creates an image name based on unique_name</li>
+<li>Create the image based on URL</li>
+<li>Response for creation should be 201</li>
+<li>Loop while waiting for image to be created</li>
+<li>Yield the image with the namespace and name</li>
+<li>Delete the image</li>
+<li>The response for getting the image name should be 404 after deletion</li>
+</ol></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum"><code class="name flex">
+<span>def <span class="ident">ubuntu_image_bad_checksum</span></span>(<span>api_client, unique_name, image_ubuntu, polling_for)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generates a Ubuntu image with a bad sha512 checksum</p>
+<ol>
+<li>Creates an image name based on unique_name</li>
+<li>Create the image based on URL with a bad statically assigned checksum</li>
+<li>Response for creation should be 201</li>
+<li>Loop while waiting for image to be created</li>
+<li>Yield the image with the namespace and name</li>
+<li>Delete the image</li>
+<li>The response for getting the image name should be 404 after deletion</li>
+</ol></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm"><code class="name flex">
 <span>def <span class="ident">ubuntu_vm</span></span>(<span>api_client, unique_name, ubuntu_image, polling_for)</span>
@@ -62,149 +106,6 @@ hljs.highlightAll();
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolume"><code class="flex name class">
-<span>class <span class="ident">TestVolume</span></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.mark.p0
-@pytest.mark.volumes
-@pytest.mark.parametrize(&#34;source_type&#34;, [&#34;New&#34;, &#34;VM-Image&#34;])
-@pytest.mark.parametrize(&#34;create_as&#34;, [&#34;json&#34;, &#34;yaml&#34;])
-class TestVolume:
-    fixtures, volumes = dict(), dict()
-
-    @pytest.mark.dependency()
-    def test_create_volume(
-        self, api_client, unique_name, ubuntu_image, create_as, source_type, polling_for
-    ):
-        image_id, storage_cls = None, None
-        unique_name = f&#34;{create_as}-{source_type.lower()}-{unique_name}&#34;
-        self.volumes[f&#34;{create_as}-{source_type}&#34;] = unique_name
-
-        if source_type == &#34;VM-Image&#34;:
-            image_id, storage_cls = ubuntu_image[&#39;id&#39;], f&#34;longhorn-{ubuntu_image[&#39;display_name&#39;]}&#34;
-
-        spec = api_client.volumes.Spec(&#34;10Gi&#34;, storage_cls)
-        if create_as == &#39;yaml&#39;:
-            kws = dict(headers={&#39;Content-Type&#39;: &#39;application/yaml&#39;}, json=None,
-                       data=yaml.dump(spec.to_dict(unique_name, &#39;default&#39;, image_id=image_id)))
-        else:
-            kws = dict()
-        code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-        assert 201 == code, (code, unique_name, data, image_id)
-
-        polling_for(&#34;volume do created&#34;,
-                    lambda code, data: 200 == code and data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
-                    api_client.volumes.get, unique_name)
-
-        code, data = api_client.volumes.get(unique_name)
-        mdata, annotations = data[&#39;metadata&#39;], data[&#39;metadata&#39;][&#39;annotations&#39;]
-        assert 200 == code, (code, data)
-        assert unique_name == mdata[&#39;name&#39;], (code, data)
-        # status
-        assert not mdata[&#39;state&#39;][&#39;error&#39;], (code, data)
-        assert not mdata[&#39;state&#39;][&#39;transitioning&#39;], (code, data)
-        assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, (code, data)
-        # source
-        if source_type == &#34;VM-Image&#34;:
-            assert image_id == annotations[&#39;harvesterhci.io/imageId&#39;], (code, data)
-        else:
-            assert not annotations.get(&#39;harvesterhci.io/imageId&#39;), (code, data)
-        # attachment
-        assert not annotations.get(&#34;harvesterhci.io/owned-by&#34;), (code, data)
-
-    @pytest.mark.dependency(depends=[&#34;TestVolume::test_create_volume&#34;], param=True)
-    def test_clone_volume(self, api_client, wait_timeout, create_as, source_type):
-        self.fixtures.update(api_client=api_client, wait_timeout=wait_timeout)
-        unique_name = self.volumes[f&#34;{create_as}-{source_type}&#34;]
-        code, data = api_client.volumes.get(unique_name)
-        assert 200 == code, (code, data)
-
-        cloned_name = f&#34;cloned-{unique_name}&#34;
-        code, data = api_client.volumes.clone(unique_name, cloned_name)
-        assert 204 == code, (code, data)
-
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.volumes.get(cloned_name)
-            if &#34;Bound&#34; == data[&#39;status&#39;][&#39;phase&#39;]:
-                break
-            sleep(5)
-        else:
-            raise AssertionError(
-                &#34;Volume not changed to phase: _Bound_ with {wait_timeout} timed out\n&#34;
-                f&#34;Got error: {code}, {data}&#34;
-            )
-
-        self.volumes[cloned_name] = cloned_name
-
-    @classmethod
-    def teardown_class(cls):
-        api_client, wait_timeout = cls.fixtures[&#39;api_client&#39;], cls.fixtures[&#39;wait_timeout&#39;]
-
-        vol_names = cls.volumes.values()
-        for name in vol_names:
-            api_client.volumes.delete(name)
-
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.volumes.get()
-            volumes = [v[&#39;metadata&#39;][&#39;name&#39;] for v in data[&#39;data&#39;]]
-            if all(v not in volumes for v in vol_names):
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                &#34;Volumes not deleted correctly\n&#34;
-                f&#34;existing: {volumes}\n&#34;
-                f&#34;created: {vol_names}&#34;
-            )</code></pre>
-</details>
-<h3>Class variables</h3>
-<dl>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.fixtures"><code class="name">var <span class="ident">fixtures</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.volumes"><code class="name">var <span class="ident">volumes</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Static methods</h3>
-<dl>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.teardown_class"><code class="name flex">
-<span>def <span class="ident">teardown_class</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.test_clone_volume"><code class="name flex">
-<span>def <span class="ident">test_clone_volume</span></span>(<span>self, api_client, wait_timeout, create_as, source_type)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.test_create_volume"><code class="name flex">
-<span>def <span class="ident">test_create_volume</span></span>(<span>self, api_client, unique_name, ubuntu_image, create_as, source_type, polling_for)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-</dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM"><code class="flex name class">
 <span>class <span class="ident">TestVolumeWithVM</span></span>
 </code></dt>
@@ -375,24 +276,15 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_volume_export" href="#harvester_e2e_tests.integrations.test_1_volumes.test_volume_export">test_volume_export</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume">test_create_volume</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum">test_create_volume_bad_checksum</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image">ubuntu_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum">ubuntu_image_bad_checksum</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm">ubuntu_vm</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li>
-<h4><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolume" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolume">TestVolume</a></code></h4>
-<ul class="two-column">
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.fixtures" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolume.fixtures">fixtures</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.pytestmark" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolume.pytestmark">pytestmark</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.teardown_class" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolume.teardown_class">teardown_class</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.test_clone_volume" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolume.test_clone_volume">test_clone_volume</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.test_create_volume" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolume.test_create_volume">test_create_volume</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolume.volumes" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolume.volumes">volumes</a></code></li>
-</ul>
-</li>
 <li>
 <h4><code><a title="harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM" href="#harvester_e2e_tests.integrations.test_1_volumes.TestVolumeWithVM">TestVolumeWithVM</a></code></h4>
 <ul class="">
