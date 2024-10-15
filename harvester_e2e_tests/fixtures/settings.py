@@ -10,7 +10,8 @@ def setting_checker(api_client, wait_timeout, sleep_timeout):
     class SettingChecker:
         def __init__(self):
             self.settings = api_client.settings
-            self.network_annotation = 'k8s.v1.cni.cncf.io/network-status'
+            self.nets_annotation = 'k8s.v1.cni.cncf.io/networks'
+            self.net_status_annotation = 'k8s.v1.cni.cncf.io/network-status'
 
         def _storage_net_configured(self):
             code, data = self.settings.get('storage-network')
@@ -44,14 +45,7 @@ def setting_checker(api_client, wait_timeout, sleep_timeout):
 
             for imgr in lh_instance_mgrs:
                 if 'Running' != imgr['status']['phase']:
-                    return False, (f"Pod {imgr['id']} is NOT Running", imgr)
-
-                if not (self.network_annotation in imgr['metadata']['annotations']):
-                    return False, (f"No annotation '{self.network_annotation}' on pod", imgr)
-
-                networks = json.loads(imgr['metadata']['annotations'][self.network_annotation])
-                if not networks:
-                    return False, (f"Pod annotation '{self.network_annotation}' is empty", imgr)
+                    return False, (f"Pod {imgr['id']} is not Running", imgr)
 
             return True, (None, lh_instance_mgrs)
 
@@ -62,15 +56,37 @@ def setting_checker(api_client, wait_timeout, sleep_timeout):
                 return False, (code, data)
 
             for imgr in data:
-                networks = json.loads(imgr['metadata']['annotations'][self.network_annotation])
-                try:
-                    snet_network = next(n for n in networks if 'lhnet1' == n.get('interface'))
-                except StopIteration:
-                    return False, ("No dedicated interface interface 'lhnet1'", imgr)
+                annotations = imgr['metadata']['annotations']
 
-                snet_ips = snet_network.get('ips', ['::1'])
+                for na in [self.nets_annotation, self.net_status_annotation]:
+                    if na not in annotations:
+                        return False, (f"Pod has no annotation {na}", imgr)
+
+                # Check k8s.v1.cni.cncf.io/networks
+                try:
+                    nets = json.loads(annotations[self.nets_annotation])
+                    snet = next(n for n in nets if 'lhnet1' == n.get('interface'))
+                except StopIteration:
+                    msg = f"Annotation {self.nets_annotation} has no interface 'lhnet1'"
+                    return False, (msg, imgr)
+
+                # Check k8s.v1.cni.cncf.io/network-status
+                try:
+                    net_statuses = json.loads(annotations[self.net_status_annotation])
+                    snet_status = next(s for s in net_statuses if 'lhnet1' == s.get('interface'))
+                except StopIteration:
+                    msg = f"Annotation {self.net_status_annotation} has no interface 'lhnet1'"
+                    return False, (msg, imgr)
+
+                snet_ips = snet_status.get('ips', ['::1'])
                 if not all(ip_address(sip) in ip_network(snet_cidr) for sip in snet_ips):
                     return False, (f"Dedicated IPs {snet_ips} does NOT fits {snet_cidr}", imgr)
+
+                # Check network name identical in both annotations
+                if f"{snet.get('namespace')}/{snet.get('name')}" != snet_status.get('name'):
+                    msg = "Network name is not identical between annotations {} and {}".format(
+                        self.nets_annotation, self.net_status_annotation)
+                    return False, (msg, imgr)
 
             return True, (None, None)
 
@@ -81,12 +97,8 @@ def setting_checker(api_client, wait_timeout, sleep_timeout):
                 return False, (code, data)
 
             for imgr in data:
-                networks = json.loads(imgr['metadata']['annotations'][self.network_annotation])
-                try:
-                    next(n for n in networks if 'lhnet1' == n.get('interface'))
-                    return False, ("No dedicated interface 'lhnet1'", imgr)
-                except StopIteration:
-                    continue
+                if self.nets_annotation in imgr['metadata']['annotations']:
+                    return False, (f"Pod should not has annotation {self.nets_annotation}", imgr)
 
             return True, (None, None)
 
