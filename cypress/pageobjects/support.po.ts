@@ -6,7 +6,7 @@ import Dashboard from "@/pageobjects/dashboard.po";
 const constants = new Constants();
 
 export class SupportPage {
-    private supportBundleButton = 'Generate Support Bundle';
+    private supportBundleButton = 'Generate a Support Bundle';
     private supportBundleInput = 'textarea'
     private generateButton = '[type="submit"]';
 
@@ -31,23 +31,23 @@ export class SupportPage {
     }
 
     public get generateSupportBundleBtn(): CypressChainable {
-        return cy.get("main button").contains("Generate Support Bundle")
+        return cy.get("main button").contains("Generate a Support Bundle")
     }
 
     public visit() {
         cy.url().then(url => {
-            if(!url.includes(constants.dashboardUrl)) {
+            if (!url.includes(constants.dashboardUrl)) {
                 cy.login();
             }
             Dashboard.nav.SupportLink.click()
-            cy.get("main h1").should("contain","Harvester Support")
+            cy.get("main h1").should("contain", "Harvester Support")
             cy.url().should("contain", constants.supportPage)
         })
     }
 
-    public inputSupportBundle(description?:string, issueURL?:string): CypressChainable {
+    public inputSupportBundle(description?: string, issueURL?: string): CypressChainable {
         return cy.get("main .bundleModal").as("generateView").then($el => {
-            if(description) cy.wrap($el).get("textarea").type(description)
+            if (description) cy.wrap($el).get("textarea").type(description)
             if (issueURL) cy.wrap($el).get("input").type(issueURL)
 
             cy.wrap($el).get(".footer button").contains("Close").as("closeBtn")
@@ -61,13 +61,13 @@ export class SupportPage {
         });
         // this.validateSupportPage();
     }
-    
+
     public generateSupportBundle(description: string) {
         // cy.task('deleteDownloadsFolder');
         this.visitSupportPage();
         cy.get('.btn').contains(this.supportBundleButton).click();
         cy.get(this.supportBundleInput).each(($elem, index) => {
-            if(index == 1) {
+            if (index == 1) {
                 cy.wrap($elem).type(description)
             }
         });
@@ -85,7 +85,7 @@ export class SupportPage {
         this.visitSupportPage();
 
     }
-    
+
     private validateSupportPage() {
         cy.url().should('contain', constants.supportPage);
     }
