@@ -106,6 +106,131 @@ it('Generate Support Bundle', () => {
 
 ```
 
+## Code Samples
+
+**Code Sample 1: [Constant properties]**
+```typescript
+/* Declare in constant/**.ts */
+
+export const PageUrl = {
+  setting:          '/harvester/c/local/harvesterhci.io.setting',
+  virtualMachine:   '/harvester/c/local/kubevirt.io.virtualmachine',
+  vmNetwork:        '/harvester/c/local/harvesterhci.io.networkattachmentdefinition',
+  namespace:        '/harvester/c/local/namespace',
+  volumeSnapshot:   '/harvester/c/local/harvesterhci.io.volumesnapshot'
+}
+
+/* Usages */
+import { PageUrl } from "@/constants/constants";
+
+cy.login({url: PageUrl.virtualMachine});
+```
+
+**Code Sample 2: [Abstract class of resource]**
+```typescript
+/* There is an abstract class for resources located at /utils/components/cru-resource.po.ts */
+/* It includes numerous properties like `Create`, `Delete` */
+/* If you discover any missing properties what can also be used by other resources, you should provide them to this class. */
+
+public create(value: any, urlWithNamespace?: boolean) {
+  // ...
+}
+
+public delete(namespace:any, name:string, displayName?: string) {
+  // ...
+}
+```
+
+**Code Sample 3: [Common components]**
+```typescript
+/* There are several common components located at /utils/components/**.po.ts */
+/* The suggestion is to abstract the test cases or properties of the common component and relocate them here. */
+
+/* /utils/components/checkbox.po.ts */
+export default class CheckboxPo extends ComponentPo {
+   check(newValue: boolean | undefined) {
+    // ...
+  }
+}
+
+/* Usages */
+new CheckboxPo('.v--modal-box .checkbox-container', `:contains("clone volume data")`).check(false);
+```
+
+**Code Sample 4: [Isolated test cases]**
+```typescript
+/* Ensure that an independent feature is associated with a single test case.*/
+
+describe('Create an image with valid image URL', () => {
+  // We only complete the creation test here...
+}
+```
+
+**Code Sample 5: [Epic test cases]**
+
+If this feature is relatively large, consider splitting it into multiple **.spec.ts files, with each **.spec.ts file corresponding to a separate and independent functionality.
+I think the VM feature is an epic feature, there will be a number of test cases to cover it.
+For this situation, you should split these test cases into multiple **.spec.ts
+
+Directory structure looks like:
+- /virtualmachines
+  - advanced.spec.ts
+  - network.spec.ts
+  - ...
+
+We will only implement test cases are belonged to part of vm's advanced options in `/virtualmachines/advanced.spec.ts`
+
+```typescript
+
+describe('Create a new VM and add Enable USB tablet option', () => {
+  // ...
+}
+
+describe("Create a new VM and add Install guest agent option", () => {
+  // ...
+}
+```
+
+**Code Sample 6: [Dry cases]**
+```typescript
+/* Please avoid completing the implementation directly in **.spec.ts */
+/* **.spec.ts files are expected to only call functions from **.po.ts files. */
+
+/* **.spec.ts */
+/* There is a dry case that doesn't implement functions but calls functions. */ 
+it('Take a vm backup from vm', () => {
+    const namespace = 'default';
+
+    const id = '';
+    const imageEnv = Cypress.env('image');
+    const volume = [{
+      buttonText: 'Add Volume',
+      create: false,
+      size: '2',
+      image: '',
+    }];
+
+    vmBackups.deleteFromStore(`${namespace}/${vmBackupName}`)
+    vms.deleteVMFromStore(id)
+    vms.goToCreate();
+    vms.deleteVMFromStore(`${namespace}/${vmName}`);
+    vms.setNameNsDescription(vmName, namespace);
+    vms.setBasics('1', '1');
+    vms.setVolumes(volume);
+    vms.save();
+
+    // create a vm snapshot
+    vms.checkVMState(vmName, 'Running');
+    vms.clickVMBackupAction(vmName, vmBackupName);
+
+    // check vm snapshot
+    vmBackups.goToList();
+    // vmBackups.checkState(vmBackupName, vmName);
+    vmBackups.censorInColumn(vmBackupName, 3, namespace, 4, vmName, 5, { timeout: 5000, nameSelector: 'a' });
+  })
+```
+
+
 ## How to use docker image
 
 ### Build docker image
