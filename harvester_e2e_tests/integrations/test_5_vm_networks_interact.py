@@ -13,7 +13,8 @@ import paramiko
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
     "harvester_e2e_tests.fixtures.networks",
-    "harvester_e2e_tests.fixtures.virtualmachines"
+    "harvester_e2e_tests.fixtures.virtualmachines",
+    "harvester_e2e_tests.fixtures.images"
 ]
 
 tcp = "sudo sed -i 's/AllowTcpForwarding no/AllowTcpForwarding yes/g' /etc/ssh/sshd_config"
