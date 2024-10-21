@@ -8,8 +8,8 @@ host-private-key: ''
 
 # VLAN ID, will invoke the tests depended on external networking if not set to -1.
 vlan-id: 1
-# Physical NIC for VLAN. Default is "harvester-mgmt"
-vlan-nic: 'harvester-mgmt'
+# Physical NIC for VLAN. Default is "mgmt"
+vlan-nic: 'mgmt'
 ip-pool-subnet: '192.168.0.0/24'
 ip-pool-start: ''
 ip-pool-end: ''
@@ -29,8 +29,7 @@ opensuse-checksum: ''
 ubuntu-image-url: https://cloud-images.ubuntu.com/releases/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img
 # sha512sum for ubuntu image-url
 ubuntu-checksum: ''
-
-# URL to download all images
+# cache URL, convert image-url to <image-cache-url>/<filename>
 image-cache-url: ''
 
 # script location for terraform related test cases
@@ -51,7 +50,7 @@ accessKeyId: ''
 secretAccessKey: ''
 bucketName: ''
 
-# Backup Targer NFS
+# Backup Target NFS
 nfs-endpoint: ''
 nfs-mount-dir: 'nfsshare'
 

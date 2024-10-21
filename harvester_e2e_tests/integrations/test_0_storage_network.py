@@ -2,7 +2,6 @@ import json
 from time import sleep
 from operator import add
 from functools import reduce
-from ipaddress import ip_address, ip_network
 from datetime import datetime, timedelta
 
 import pytest
@@ -129,58 +128,18 @@ def test_storage_network(
             f"API Status({code}): {data}"
         )
     _ = api_client.networks.delete(unique_name)
-    cidr = route['cidr']
+    vlan_cidr = route['cidr']
 
     # Create storage-network
-    spec = api_client.settings.StorageNetworkSpec.enable_with(vlan_id, cluster_network, cidr)
-    code, data = api_client.settings.update('storage-network', spec)
+    enable_spec = api_client.settings.StorageNetworkSpec.enable_with(
+        vlan_id, cluster_network, vlan_cidr
+    )
+    code, data = api_client.settings.update('storage-network', enable_spec)
     assert 200 == code, (code, data)
-
-    # Verify Configuration is Completed
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = api_client.settings.get('storage-network')
-        conds = data.get('status', {}).get('conditions', [])
-        if conds and 'True' == conds[-1].get('status') and 'Completed' == conds[-1].get('reason'):
-            break
-        sleep(3)
-    else:
-        raise AssertionError(
-            "Storage network updated but not completed.\n"
-            f"API Status({code}): {data}"
-        )
-
-    # Verify Longhorn status
-    done, ip_range = [], ip_network(cidr)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = api_client.get_pods(namespace='longhorn-system')
-        lh_instance_mgrs = [d for d in data['data']
-                            if 'instance-manager' in d['id'] and d['id'] not in done]
-        retries = []
-        for im in lh_instance_mgrs:
-            if 'Running' != im['status']['phase']:
-                retries.append(im)
-                continue
-            nets = json.loads(im['metadata']['annotations']['k8s.v1.cni.cncf.io/network-status'])
-            try:
-                dedicated = next(n for n in nets if 'lhnet1' == n.get('interface'))
-            except StopIteration:
-                retries.append(im)
-                continue
-
-            if not all(ip_address(ip) in ip_range for ip in dedicated.get('ips', ['::1'])):
-                retries.append(im)
-                continue
-
-        if not retries:
-            break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f"{len(retries)} Longhorn's instance manager not be updated after {wait_timeout}s\n"
-            f"Not completed: {retries}"
-        )
+    snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_harvester()
+    assert snet_enabled, (code, data)
+    snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_longhorn(vlan_cidr)
+    assert snet_enabled, (code, data)
 
     # teardown
     disable_spec = api_client.settings.StorageNetworkSpec.disable()
