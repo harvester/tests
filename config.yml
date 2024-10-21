@@ -22,10 +22,12 @@ sleep-timeout: 3
 # script location to manipulate node power cycle
 node-scripts-location: 'scripts/vagrant'
 
-# Images and its sha512sum
-opensuse-image-url: https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.5/images/openSUSE-Leap-15.5.x86_64-NoCloud.qcow2
+# Images and their sha512sums
+opensuse-image-url: https://rsync.opensuse.org/repositories/Cloud%3A/Images%3A/Leap_15.6/images/openSUSE-Leap-15.6.x86_64-NoCloud.qcow2
+# sha512sum for opensuse image-url
 opensuse-checksum: ''
-ubuntu-image-url: https://cloud-images.ubuntu.com/releases/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img
+ubuntu-image-url: https://cloud-images.ubuntu.com/releases/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img
+# sha512sum for ubuntu image-url
 ubuntu-checksum: ''
 # cache URL, convert image-url to <image-cache-url>/<filename>
 image-cache-url: ''
