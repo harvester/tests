@@ -14,7 +14,7 @@ const imagePO = new ImagePage();
 
 describe('VM Form Validation', () => {
   beforeEach(() => {
-    cy.login({url: PageUrl.virtualMachine});
+    cy.login({ url: PageUrl.virtualMachine });
   });
 
   /**
@@ -50,11 +50,11 @@ describe('VM Form Validation', () => {
   /**
    * https://harvester.github.io/tests/manual/virtual-machines/1283-vm-creation-required-fields/
    */
-   it('Check VM creation without required-fields', () => {
+  it('Check VM creation without required-fields', () => {
     vms.goToCreatePage();
     vms.clickFooterBtn();
     cy.get('#cru-errors').contains('"Name" is required').should('exist');
-    cy.get('#cru-errors').contains('"Cpu" is required').should('exist');
+    cy.get('#cru-errors').contains('"CPU" is required').should('exist');
     cy.get('#cru-errors').contains('"Memory" is required').should('exist');
     cy.get('#cru-errors').contains('"Image" is required').should('exist');
   })
@@ -68,21 +68,21 @@ describe('VM Form Validation', () => {
   it('Create VM without memory provided', () => {
     const VM_NAME = 'test-memory-required';
     const namespace = 'default'
-  
+
     const imageEnv = Cypress.env('image');
-  
+
     const value = {
       name: VM_NAME,
       cpu: '2',
       image: Cypress._.toLower(imageEnv.name),
       namespace,
     }
-  
+
     vms.goToCreate();
     vms.setValue(value);
-  
+
     vms.clickFooterBtn();
-  
+
     cy.contains('"Memory" is required').should('exist')
   });
 });
@@ -95,7 +95,7 @@ describe('VM Form Validation', () => {
  * 1. vm assignment to different nodes
  * @notImplemented
  */
-export function CheckMultiVMScheduler() {}
+export function CheckMultiVMScheduler() { }
 describe("automatic assignment to different nodes when creating multiple vm's", () => {
   it("automatic assignment to different nodes when creating multiple vm's", () => {
 
@@ -104,7 +104,7 @@ describe("automatic assignment to different nodes when creating multiple vm's", 
 
 describe('VM clone Validation', () => {
   beforeEach(() => {
-    cy.login({url: PageUrl.virtualMachine});
+    cy.login({ url: PageUrl.virtualMachine });
   });
 
   /**
@@ -129,7 +129,7 @@ describe('VM clone Validation', () => {
     vms.goToCreate();
 
     const imageEnv = Cypress.env('image');
-    
+
     const volume = [{
       buttonText: 'Add Volume',
       create: false,
@@ -161,7 +161,7 @@ describe('VM clone Validation', () => {
 
 describe('VM runStategy Validation (Halted)', () => {
   beforeEach(() => {
-    cy.login({url: PageUrl.virtualMachine});
+    cy.login({ url: PageUrl.virtualMachine });
   });
 
   const namespace = 'default'
@@ -170,7 +170,7 @@ describe('VM runStategy Validation (Halted)', () => {
     vms.goToCreate();
 
     const imageEnv = Cypress.env('image');
-    
+
     const VM_NAME = 'vm-halted';
     const volume = [{
       buttonText: 'Add Volume',
@@ -202,16 +202,16 @@ describe('VM runStategy Validation (Halted)', () => {
  * Expected Results
  * 1. Image “img-1” will be deleted
  */
-export function DeleteVMWithImage() {}
+export function DeleteVMWithImage() { }
 describe("Delete VM with exported image", () => {
   it("Delete VM with exported image", () => {
     const VM_NAME = generateName('vm-1');
     const namespace = 'default'
-  
+
     cy.login();
-  
+
     const imageEnv = Cypress.env('image');
-  
+
     const value = {
       name: VM_NAME,
       cpu: '1',
@@ -219,10 +219,10 @@ describe("Delete VM with exported image", () => {
       image: Cypress._.toLower(imageEnv.name),
       namespace,
     }
-  
+
     vms.goToCreate();
     vms.setValue(value);
-  
+
     cy.intercept('POST', '/v1/harvester/kubevirt.io.virtualmachines/*').as('createVM');
     cy.get('.cru-resource-footer').contains('Create').click()
     cy.wait('@createVM').then(res => {
@@ -231,22 +231,22 @@ describe("Delete VM with exported image", () => {
       const volumeClaimTemplates = body?.metadata?.annotations?.['harvesterhci.io/volumeClaimTemplates']
       const volumes = JSON.parse(volumeClaimTemplates || '{}')
 
-      const imageName = generateName('img-1'); 
-      
+      const imageName = generateName('img-1');
+
       volumePO.goToList()
       volumePO.exportImage(volumes[0].metadata.name, imageName)
       cy.intercept('DELETE', `/v1/harvester/kubevirt.io.virtualmachines/${namespace}/${VM_NAME}*`).as('deleteVM');
       vms.delete(namespace, VM_NAME)
       cy.wait('@deleteVM').then(res => {
         expect(res.response?.statusCode, 'Delete VM').to.be.oneOf([200, 204]);
-        
+
         imagePO.goToList()
 
         cy.intercept('DELETE', `/v1/harvester/harvesterhci.io.virtualmachineimages/${namespace}/*`).as('deleteImage');
         imagePO.clickAction(imageName, 'Delete')
         cy.get('[data-testid="prompt-remove-confirm-button"]').click()
         cy.wait('@deleteImage').then(res => {
-          expect(res.response?.statusCode, 'Delete Image').to.be.oneOf([200, 204]); 
+          expect(res.response?.statusCode, 'Delete Image').to.be.oneOf([200, 204]);
         })
       })
     })
@@ -287,7 +287,7 @@ describe('Edit vm and insert ssh and check the ssh key is accepted for the login
       network: NETWORK_1,
     }])
 
-    vms.save(); 
+    vms.save();
 
     vms.censorInColumn(VM_NAME, 3, namespace, 4, 'Running', 2, { timeout: constants.timeout.maxTimeout, nameSelector: '.name-console a' });
     // Wait for IP address show in table
@@ -304,16 +304,16 @@ describe('Edit vm and insert ssh and check the ssh key is accepted for the login
           host: address,
           remoteCommand: 'ls',
         })
-        .then(result => {
-          vms.delete(namespace, VM_NAME)
-        })
+          .then(result => {
+            vms.delete(namespace, VM_NAME)
+          })
       })
   })
 })
 
 describe('All Namespace filtering in VM list', () => {
   beforeEach(() => {
-    cy.login({url: PageUrl.namespace});
+    cy.login({ url: PageUrl.namespace });
   });
 
   // https://harvester.github.io/tests/manual/_incoming/2578-all-namespace-filtering/  
@@ -329,7 +329,7 @@ describe('All Namespace filtering in VM list', () => {
 
     // create vm in test namespace
     const imageEnv = Cypress.env('image');
-    
+
     const VM_NAME = 'namespace-test';
     const volume = [{
       buttonText: 'Add Volume',

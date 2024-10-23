@@ -5,8 +5,8 @@ const settings = new SettingsPagePo();
 
 describe('Setting Page', () => {
     beforeEach(() => {
-       cy.login({url: PageUrl.setting});
-       settings.checkIsCurrentPage();
+        cy.login({ url: PageUrl.setting });
+        settings.checkIsCurrentPage();
     })
 
     /**
@@ -18,11 +18,11 @@ describe('Setting Page', () => {
      */
     it('change UI source type to Bundled, Check whether the configuration takes effect', () => {
         const address = `${Cypress.env('baseUrl')}/dashboard/js/**`;
-        settings.clickMenu('ui-source', 'Edit Setting', 'ui-source', undefined,'UI')
+        settings.clickMenu('ui-source', 'Edit Setting', 'ui-source', undefined, 'UI')
         settings.checkUiSource('Bundled', address);
     });
 
-    
+
     it('change UI source type to external, Check whether the configuration takes effect', () => {
         const address = 'https://releases.rancher.com/harvester-ui/dashboard/**';
         settings.clickMenu('ui-source', 'Edit Setting', 'ui-source', undefined, 'UI')
@@ -58,21 +58,21 @@ describe('Setting Page', () => {
  */
 describe('Set backup target S3', () => {
     beforeEach(() => {
-        cy.login({url: PageUrl.setting});
+        cy.login({ url: PageUrl.setting });
         settings.checkIsCurrentPage(false);
     })
 
     it.only('Set backup target S3', () => {
         settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
 
-        const backupTarget = Cypress.env('backupTarget');
+        const backupTarget = Cypress.env('S3backupTarget');
         settings.setS3BackupTarget({
-            type: 'S3', 
-            endpoint: backupTarget.endpoint, 
-            bucketName: backupTarget.bucketName,
-            bucketRegion: backupTarget.bucketRegion,
-            accessKeyId: backupTarget.accessKey,
-            secretAccessKey: backupTarget.secretKey,
+            type: 'S3',
+            endpoint: backupTarget.S3endpoint,
+            bucketName: backupTarget.S3bucketName,
+            bucketRegion: backupTarget.S3bucketRegion,
+            accessKeyId: backupTarget.S3accessKey,
+            secretAccessKey: backupTarget.S3secretKey,
         })
 
         settings.update('backup-target');

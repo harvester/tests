@@ -42,7 +42,7 @@ describe('Create a storage class with all the required values', () => {
       migratable: 'No',
       reclaimPolicy: 'Retain the volume for manual cleanup',
       allowVolumeExpansion: 'Disabled',
-      volumeBindingMode: 'Bind and provision a persistent volume once a VM using the PersistentVolumeClaim is created',
+      volumeBindingMode: 'Bind and provision a persistent volume once a virtual machine using the PersistentVolumeClaim is created',
     }
 
     storageClasses.create(value);
@@ -54,7 +54,7 @@ describe('Create a storage class with all the required values', () => {
       migratable: 'false',
       reclaimPolicy: 'Retain',
       allowVolumeExpansion: false,
-      volumeBindingMode: 'WaitForFirstConsumer', 
+      volumeBindingMode: 'WaitForFirstConsumer',
     });
 
     storageClasses.delete({ name: NAME })
