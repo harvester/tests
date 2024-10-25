@@ -130,7 +130,14 @@ def harvester_mgmt_cluster(api_client, rancher_api_client, unique_name, polling_
 @pytest.fixture(scope='module')
 def harvester_cloud_credential(api_client, rancher_api_client,
                                harvester_mgmt_cluster, unique_name):
-    harvester_kubeconfig = api_client.generate_kubeconfig()
+    code, data = rancher_api_client.clusters.generate_kubeconfig(
+        harvester_mgmt_cluster['id']
+    )
+    assert 200 == code, (
+        f"Failed to create kubconfig with error: {code}, {data}"
+    )
+    harvester_kubeconfig = data['config']
+
     code, data = rancher_api_client.cloud_credentials.create(
         unique_name,
         harvester_kubeconfig,

@@ -31,7 +31,7 @@ class BaseManager:
             raise ReferenceError("API object no longer exists")
         return self._api()
 
-    def _delegate(self, meth, path, *, raw=False, **kwargs):
+    def _delegate(self, meth, path, params, *, raw=False, **kwargs):
         func = getattr(self.api, meth)
         resp = func(path, **kwargs)
 
@@ -46,22 +46,22 @@ class BaseManager:
         except json.decoder.JSONDecodeError as e:
             return resp.status_code, dict(error=e, response=resp)
 
-    def _get(self, path, *, raw=False, **kwargs):
-        return self._delegate("_get", path, raw=raw, **kwargs)
+    def _get(self, path, params={}, *, raw=False, **kwargs):
+        return self._delegate("_get", path, params=params, raw=raw, **kwargs)
 
-    def _create(self, path, *, raw=False, **kwargs):
-        return self._delegate("_post", path, raw=raw, **kwargs)
+    def _create(self, path, params={}, *, raw=False, **kwargs):
+        return self._delegate("_post", path, params=params, raw=raw, **kwargs)
 
-    def _update(self, path, data, *, raw=False, as_json=True, **kwargs):
+    def _update(self, path, data, *, params={}, raw=False, as_json=True, **kwargs):
         if as_json:
             kwargs.update(json=data)
         else:
             kwargs.update(data=data)
 
-        return self._delegate("_put", path, raw=raw, **kwargs)
+        return self._delegate("_put", path, params=params, raw=raw, **kwargs)
 
-    def _delete(self, path, *, raw=False, **kwargs):
-        return self._delegate("_delete", path, raw=raw, **kwargs)
+    def _delete(self, path, params={}, *, raw=False, **kwargs):
+        return self._delegate("_delete", path, params=params, raw=raw, **kwargs)
 
 
 class UserManager(BaseManager):
@@ -678,6 +678,7 @@ class NodeTemplateManager(BaseManager):
 
 class ClusterManager(BaseManager):
     PATH_fmt = "v3/cluster/{uid}"
+    PATH1_fmt = "v3/clusters/{uid}"
 
     def create_data(self, name, k8s_version, kubeconfig):
 
@@ -807,6 +808,10 @@ class ClusterManager(BaseManager):
 
     def delete(self, name, *, raw=False):
         return self._delete(self.PATH_fmt.format(uid=name), raw=raw)
+
+    def generate_kubeconfig(self, name, *, raw=False):
+        params = {'action': 'generateKubeconfig'}
+        return self._create(f"v3/clusters/{name}", params=params, raw=raw)
 
     def explore(self, name):
         from .cluster_api import ClusterExploreAPI  # circular dependency

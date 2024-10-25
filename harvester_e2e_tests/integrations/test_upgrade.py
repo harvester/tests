@@ -507,7 +507,8 @@ class TestInvalidUpgrade:
         # https://github.com/harvester/harvester/issues/6425
         code, data = api_client.hosts.get()
         assert 200 == code, (code, data)
-        if (cluster_size := len(data['data'])) < 3:
+        cluster_size = len(data['data'])
+        if cluster_size < 3:
             pytest.skip(
                 f"Degraded volumes only checked on 3+ nodes cluster, skip on {cluster_size}."
             )
