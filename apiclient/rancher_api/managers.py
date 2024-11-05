@@ -678,6 +678,7 @@ class NodeTemplateManager(BaseManager):
 
 class ClusterManager(BaseManager):
     PATH_fmt = "v3/cluster/{uid}"
+    PATH1_fmt = "v3/clusters/{uid}"
 
     def create_data(self, name, k8s_version, kubeconfig):
 
@@ -807,6 +808,10 @@ class ClusterManager(BaseManager):
 
     def delete(self, name, *, raw=False):
         return self._delete(self.PATH_fmt.format(uid=name), raw=raw)
+
+    def generate_kubeconfig(self, name, *, raw=False):
+        params = {'action': 'generateKubeconfig'}
+        return self._create(f"v3/clusters/{name}", raw=raw, params=params)
 
     def explore(self, name):
         from .cluster_api import ClusterExploreAPI  # circular dependency
