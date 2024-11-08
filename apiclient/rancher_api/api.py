@@ -68,25 +68,21 @@ class RancherAPI:
     def _get(self, path, **kwargs):
         url = urljoin(self.endpoint, path)
         resp = self.session.get(url, **kwargs)
-        print(f"{resp.request.method} {resp.request.url}")
         return resp
 
     def _post(self, path, **kwargs):
         url = urljoin(self.endpoint, path)
         resp = self.session.post(url, **kwargs)
-        print(f"{resp.request.method} {resp.request.url}")
         return resp
 
     def _put(self, path, **kwargs):
         url = urljoin(self.endpoint, path)
         resp = self.session.put(url, **kwargs)
-        print(f"{resp.request.method} {resp.request.url}")
         return resp
 
     def _delete(self, path, **kwargs):
         url = urljoin(self.endpoint, path)
         resp = self.session.delete(url, **kwargs)
-        print(f"{resp.request.method} {resp.request.url}")
         return resp
 
     def authenticate(self, user, passwd, **kwargs):

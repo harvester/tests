@@ -16,8 +16,7 @@ def setting_checker(api_client, wait_timeout, sleep_timeout):
         def _storage_net_configured(self):
             code, data = self.settings.get('storage-network')
 
-            cs = data.get('status', {}).get('conditions')
-            if cs:
+            if (cs := data.get('status', {}).get('conditions')):
                 if 'True' == cs[-1].get('status') and 'Completed' == cs[-1].get('reason'):
                     return True, (code, data)
             return False, (code, data)
