@@ -810,8 +810,11 @@ class ClusterManager(BaseManager):
         return self._delete(self.PATH_fmt.format(uid=name), raw=raw)
 
     def generate_kubeconfig(self, name, *, raw=False):
-        params = {'action': 'generateKubeconfig'}
-        return self._create(f"v3/clusters/{name}", raw=raw, params=params)
+        return self._create(
+            self.PATH1_fmt.format(uid=name),
+            raw=raw,
+            params={'action': 'generateKubeconfig'}
+        )
 
     def explore(self, name):
         from .cluster_api import ClusterExploreAPI  # circular dependency
