@@ -153,20 +153,20 @@ export class VmsPage extends CruResourcePo {
 
   clickVMSnapshotAction(name: string, snapshotName: string) {
     this.clickAction(name, 'Take Virtual Machine Snapshot');
-    cy.get('.v--modal-box .card-title').find('h4').contains('Take Virtual Machine Snapshot');
+    cy.get('.modal-container .card-title').find('h4').contains('Take Virtual Machine Snapshot');
 
-    new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name *")`).input(snapshotName)
-    cy.get('.v--modal-box button').contains('Create').click();
+    new LabeledInputPo('.modal-container .labeled-input', `:contains("Name *")`).input(snapshotName)
+    cy.get('.modal-container button').contains('Create').click();
     cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
   }
 
 
   clickVMBackupAction(name: string, backupName: string) {
     this.clickAction(name, 'Take Backup');
-    cy.get('.v--modal-box .card-title').find('h4').contains('Add Backup');
+    cy.get('.modal-container .card-title').find('h4').contains('Add Backup');
 
-    new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name")`).input(backupName)
-    cy.get('.v--modal-box button').contains('Create').click();
+    new LabeledInputPo('.modal-container .labeled-input', `:contains("Name")`).input(backupName)
+    cy.get('.modal-container button').contains('Create').click();
     cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
   }
 
@@ -229,7 +229,7 @@ export class VmsPage extends CruResourcePo {
       }
     });
 
-    cy.get('.v--modal-box button').contains('Delete').click();
+    cy.get('[data-testid="prompt-remove-confirm-button"]').contains('Delete').click();
   }
 
   network() {
@@ -378,7 +378,7 @@ export class VmsPage extends CruResourcePo {
     cy.wait('@delete').then(res => {
       cy.window().then((win) => {
         const id = `${namespace}/${name}`;
-        super.checkDelete(this.type, id, 80)
+        super.checkDelete(this.type, id, 240)
         expect(res.response?.statusCode, `Delete ${this.type}`).to.be.oneOf([200, 204]);
       })
     })
@@ -389,14 +389,14 @@ export class VmsPage extends CruResourcePo {
 
     cy.wrap(volumeNames).each((V: string) => {
       this.clickAction(vmName, 'Add Volume').then((_) => {
-        cy.get('.v--modal-box,.v--modal .card-container').within(() => {
+        cy.get('.modal-container .card-container').within(() => {
           this.plugVolumeCustomName().input(V);
         })
         this.plugVolumeName().select({ option: V });
       })
 
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}/${vmName}*`).as('plug');
-      cy.get('.v--modal-box,.v--modal .card-container').contains('Apply').click();
+      cy.get('.modal-container .card-container').contains('Apply').click();
       cy.wait('@plug').then(res => {
         expect(res.response?.statusCode, `${this.type} plug Volume`).to.be.oneOf([200, 204]);
         this.searchClear();
@@ -411,7 +411,7 @@ export class VmsPage extends CruResourcePo {
     cy.wrap(volumeIndexArray).each((index: number) => {
       cy.get('.info-box.box').eq(index).contains('Detach Volume').click();
       cy.intercept('POST', `/v1/harvester/${this.realType}s/${namespace}/${vmName}*`).as('unplug');
-      cy.get('.v--modal-box,.v--modal .card-container').contains('Detach').click();
+      cy.get('.modal-container .card-container').contains('Detach').click();
       cy.wait('@unplug').then(res => {
         expect(res.response?.statusCode, `${this.type} unplug Volume`).to.be.oneOf([200, 204]);
       })

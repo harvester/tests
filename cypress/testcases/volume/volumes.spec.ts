@@ -257,7 +257,7 @@ describe("Edit volume increase size via form", () => {
       buttonText: 'Add Volume',
       create: false,
       image: `default/${imageEnv.name}`,
-      size: 4
+      size: '10'
     }];
 
     // create VM
@@ -280,7 +280,7 @@ describe("Edit volume increase size via form", () => {
       vms.checkState({ name: VM_NAME, state: 'Off' });
 
       volumes.goToEdit(volumeName);
-      volumes.setBasics({ size: '5' });
+      volumes.setBasics({ size: '15' });
       volumes.update(`${namespace}/${volumeName}`);
 
       // check VOLUME state
