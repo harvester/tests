@@ -213,8 +213,7 @@ export class rancherPage {
 
         cy.contains(constants.rancherUrl, { timeout: constants.timeout.timeout });
 
-        return cy.get('.copy');
-
+        return cy.get('.copy', { timeout: constants.timeout.timeout });
     }
 
     public registerRancher() {

@@ -64,7 +64,7 @@ export class ImagePage extends CruResourcePo {
     const keys = Object.keys(labels);
 
     cy.get('body').click(0,0);
-    cy.get('.fixed-header-actions').contains('Filter Labels').click();
+    cy.get('.fixed-header-actions').contains('Filter labels').click();
     cy.get('.filter-popup').contains('Clear All').click();
     keys.forEach((key, index) => {
       cy.get('.filter-popup').contains('Add').click();

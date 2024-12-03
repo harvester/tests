@@ -62,7 +62,7 @@ describe('Set backup target S3', () => {
         settings.checkIsCurrentPage(false);
     })
 
-    it.only('Set backup target S3', () => {
+    it('Set backup target S3', () => {
         settings.clickMenu('backup-target', 'Edit Setting', 'backup-target');
 
         const backupTarget = Cypress.env('backupTarget');

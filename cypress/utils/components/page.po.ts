@@ -142,7 +142,7 @@ class Header {
   public static findNamespace(ns: string) {
     cy.get('.top').find('.ns-filter').focus();
     cy.get(`.ns-dropdown-menu .ns-options #ns_${ns} .ns-item div`).contains(ns);
-    cy.get('.top').find('.ns-filter .ns-values').click();
+    cy.get('.top').find('.ns-filter .ns-values').click({ force: true });
   }
 }
 
