@@ -46,7 +46,7 @@ export class SupportPage {
     }
 
     public inputSupportBundle(description?: string, issueURL?: string): CypressChainable {
-        return cy.get("main .bundleModal").as("generateView").then($el => {
+        return cy.get(".modal-container.bundleModal").as("generateView").then($el => {
             if (description) cy.wrap($el).get("textarea").type(description)
             if (issueURL) cy.wrap($el).get("input").type(issueURL)
 

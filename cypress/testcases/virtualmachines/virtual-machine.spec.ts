@@ -235,6 +235,9 @@ describe("Delete VM with exported image", () => {
 
       volumePO.goToList()
       volumePO.exportImage(volumes[0].metadata.name, imageName)
+      imagePO.goToList()
+      imagePO.checkState({ name: imageName, size: '10 GB' }); // Check image state before delete vm
+
       cy.intercept('DELETE', `/v1/harvester/kubevirt.io.virtualmachines/${namespace}/${VM_NAME}*`).as('deleteVM');
       vms.delete(namespace, VM_NAME)
       cy.wait('@deleteVM').then(res => {

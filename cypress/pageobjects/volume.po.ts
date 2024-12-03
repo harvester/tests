@@ -53,10 +53,10 @@ export class VolumePage extends CruResourcePo {
 
   clickVolumeSnapshotAction(name: string, snapshotName: string) {
     this.clickAction(name, 'Take Snapshot');
-    cy.get('.v--modal-box').find('.card-title').contains('Take Snapshot');
+    cy.get('.modal-container').find('.card-title').contains('Take Snapshot');
 
-    new LabeledInputPo('.v--modal-box .labeled-input', `:contains("Name")`).input(snapshotName)
-    cy.get('.v--modal-box button').contains('Create').click();
+    new LabeledInputPo('.modal-container .labeled-input', `:contains("Name")`).input(snapshotName)
+    cy.get('.modal-container button').contains('Create').click();
     cy.get('.growl-container .growl-list').find('.growl-text div').contains('Succeed');
   }
 
