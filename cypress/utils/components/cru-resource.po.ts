@@ -14,7 +14,7 @@ export default class CruResourcePo extends PagePo {
    * @param realType: matches api.
    * @param storeType: matches vuex.
    */
-  constructor({ type, realType, storeType}:  {type: string, realType?: string, storeType?: string}) {
+  constructor({ type, realType, storeType }: { type: string, realType?: string, storeType?: string }) {
     super(`/harvester/c/local/${type}`);
 
     this.type = type
@@ -24,7 +24,7 @@ export default class CruResourcePo extends PagePo {
 
   public type = '';
   public realType = '';
-  public storeType: string|undefined = undefined;
+  public storeType: string | undefined = undefined;
   public table = new TablePo();;
   public footerButtons = '.cru-resource-footer'
   public confirmRemove = '.card-container.prompt-remove'
@@ -62,30 +62,30 @@ export default class CruResourcePo extends PagePo {
     cy.visit(`/harvester/c/local/${this.type}/create`)
 
     this.setValue(value)
-    
+
     if (urlWithNamespace) {
-      this.save({namespace: value.namespace})
+      this.save({ namespace: value.namespace })
     } else {
       this.save()
     }
   }
 
-  public clone(id:string, value:any) {
+  public clone(id: string, value: any) {
     cy.visit(`/harvester/c/local/${this.type}/${id}?mode=clone`)
 
     this.setValue(value)
 
     this.save()
   }
-  
+
 
   public save({
-    namespace, 
+    namespace,
     buttonText = 'save',
     edit,
-  } : {
-    namespace?:string, 
-    buttonText?:string,
+  }: {
+    namespace?: string,
+    buttonText?: string,
     edit?: boolean;
   } = {}) {
     if (namespace) {
@@ -93,20 +93,20 @@ export default class CruResourcePo extends PagePo {
     } else {
       cy.intercept('POST', `/v1/harvester/${this.realType}s`).as('create');
     }
-    
+
     this.clickFooterBtn(buttonText)
     cy.wait('@create').then(res => {
       expect(res.response?.statusCode, `Create ${this.type} success`).to.equal(201);
     })
   }
 
-  public delete(namespace:any, name:string, displayName?: string) {
+  public delete(namespace: any, name: string, displayName?: string) {
     cy.visit(`/harvester/c/local/${this.type}`)
 
     this.clickAction(displayName || name, 'Delete')
 
     let id = '';
-    
+
     if (!namespace) {
       id = name;
     } else {
@@ -123,13 +123,13 @@ export default class CruResourcePo extends PagePo {
     })
   }
 
-  async deleteFromStore(id: string, realType: string=this.realType) {
+  async deleteFromStore(id: string, realType: string = this.realType) {
     cy.window().then(async (win: any) => {
       try {
         const resource = await (win as any).$nuxt.$store.dispatch('harvester/find', { type: realType, id: id });
         await resource.remove();
         this.checkDelete(realType, id)
-      } catch(e: any) {
+      } catch (e: any) {
         if (e.status === 404) {
           cy.log(`The resource ${realType} does not exist`)
         } else {
@@ -168,12 +168,12 @@ export default class CruResourcePo extends PagePo {
   }
 
   public setValue(value: any) {
-    this.namespace().select({option: value?.namespace})
+    this.namespace().select({ option: value?.namespace })
     this.name().input(value?.name)
     this.description().input(value?.description)
   }
 
-  public update(id:string, type?: string) {
+  public update(id: string, type?: string) {
     const _type = type || this.realType
     cy.intercept('PUT', `/v1/harvester/${_type}s/${id}`).as('update');
     cy.get(this.footerButtons).contains('Save').click()
@@ -182,7 +182,7 @@ export default class CruResourcePo extends PagePo {
     })
   }
 
-  public hasAction({name, nameIndex = 3, ns, nsIndex = 4, action, expect = true, nameSelector}: { name:string, nameIndex?:number, ns:string, nsIndex?:number, action: string, expect?:boolean, nameSelector?:string }) {
+  public hasAction({ name, nameIndex = 3, ns, nsIndex = 4, action, expect = true, nameSelector }: { name: string, nameIndex?: number, ns: string, nsIndex?: number, action: string, expect?: boolean, nameSelector?: string }) {
     this.search(name);
     cy.wait(2000);
     cy.wrap('async').then(() => {
@@ -191,13 +191,13 @@ export default class CruResourcePo extends PagePo {
           cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).find(this.actionMenuIcon).click();
           cy.get(this.actionMenu).should(`${expect ? '' : 'not.'}contain`, action);
           // click outside to close action menu
-          cy.get('body').click(0,0);
+          cy.get('body').click(0, 0);
         }
       })
     });
   }
 
-  public clickAction(name:string, action: string) {
+  public clickAction(name: string, action: string) {
     this.search(name);
     const record = cy.contains(name)
     expect(record.should('be.visible'))
@@ -205,11 +205,11 @@ export default class CruResourcePo extends PagePo {
     return cy.get(this.actionMenu).contains(action).click()
   }
 
-  public checkEdit(name:string, namespace?:string, value?:any, action:string = 'Edit Config') {
+  public checkEdit(name: string, namespace?: string, value?: any, action: string = 'Edit Config') {
     this.clickAction(name, action)
-  
+
     this.setValue(value)
-    
+
     if (namespace) {
       this.update(`${namespace}/${name}`)
     } else {
@@ -217,11 +217,11 @@ export default class CruResourcePo extends PagePo {
     }
   }
 
-  public checkClone(name:string, namespace?:string, value?:any, action:string = 'Clone') {
+  public checkClone(name: string, namespace?: string, value?: any, action: string = 'Clone') {
     this.clickAction(name, action)
-  
+
     this.setValue(value)
-    
+
     this.save()
   }
 
@@ -251,7 +251,7 @@ export default class CruResourcePo extends PagePo {
     cy.wrap('async').then(() => {
       this.table.find(name, nameIndex, ns, nsIndex, options?.nameSelector).then((rowIndex: any) => {
         if (typeof rowIndex === 'number') {
-          cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).find('td').eq(columnIndex - 1, {timeout: options?.timeout || constants.timeout.timeout}).should('contain', columnValue);
+          cy.get(`[data-testid="sortable-table-${rowIndex}-row"]`).find('td').eq(columnIndex - 1, { timeout: options?.timeout || constants.timeout.timeout }).should('contain', columnValue);
         }
       })
     });
@@ -273,7 +273,7 @@ export default class CruResourcePo extends PagePo {
     this.clickAction(name, 'Edit Config');
   }
 
-  public goToDetail({name, nameIndex = 3, ns, nsIndex = 4, nameSelector}: { name:string, nameIndex?:number, ns:string, nsIndex?:number, nameSelector?:string }) {
+  public goToDetail({ name, nameIndex = 3, ns, nsIndex = 4, nameSelector }: { name: string, nameIndex?: number, ns: string, nsIndex?: number, nameSelector?: string }) {
     this.goToList();
     this.search(name);
     cy.wait(2000);
