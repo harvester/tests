@@ -4,6 +4,7 @@ title: Terraform import VLAN
 
 * Related issues: [#2261](https://github.com/harvester/harvester/issues/2261) [FEATURE] enhance terraform network to not pruge route_cidr and route_gateway
 
+** Harvester Version <= `v1.0.3`**
 
 ## Category: 
 * Terraform
