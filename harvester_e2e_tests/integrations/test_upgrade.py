@@ -14,7 +14,9 @@ from harvester_api.managers import DEFAULT_HARVESTER_NAMESPACE, DEFAULT_LONGHORN
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
-    "harvester_e2e_tests.fixtures.virtualmachines"
+    "harvester_e2e_tests.fixtures.virtualmachines",
+    "harvester_e2e_tests.fixtures.volumes",
+    "harvester_e2e_tests.fixtures.upgrades"
 ]
 
 UPGRADE_STATE_LABEL = "harvesterhci.io/upgradeState"
@@ -393,7 +395,7 @@ def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, imag
 @pytest.mark.negative
 @pytest.mark.any_nodes
 class TestInvalidUpgrade:
-    def test_iso_url(self, api_client, unique_name, upgrade_timeout):
+    def test_iso_url(self, api_client, unique_name, upgrade_checker):
         """
         Steps:
         1. Create an invalid manifest.
@@ -407,32 +409,25 @@ class TestInvalidUpgrade:
         if code != 200:
             code, data = api_client.versions.create(version, url, checksum)
             assert code == 201, f"Failed to create invalid version: {data}"
+            version_created, (code, data) = upgrade_checker.wait_upgrade_version_created(version)
+            assert version_created, (code, data)
 
         code, data = api_client.upgrades.create(version)
         assert code == 201, f"Failed to create invalid upgrade: {data}"
+        upgrade_name = data['metadata']['name']
 
-        endtime = datetime.now() + timedelta(seconds=upgrade_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.upgrades.get(data['metadata']['name'])
-            conds = dict((c['type'], c) for c in data.get('status', {}).get('conditions', []))
-            verified = [
-                "False" == conds.get('Completed', {}).get('status'),
-                "False" == conds.get('ImageReady', {}).get('status'),
-                "retry limit" in conds.get('ImageReady', {}).get('message', "")
-            ]
-            if all(verified):
-                break
-        else:
-            raise AssertionError(f"Upgrade NOT failed in expected conditions: {conds}")
+        upgrade_fail_by_invalid_iso_url, (code, data) = \
+            upgrade_checker.wait_upgrade_fail_by_invalid_iso_url(upgrade_name)
+        assert upgrade_fail_by_invalid_iso_url, (code, data)
 
         # teardown
-        api_client.upgrades.delete(data['metadata']['name'])
+        api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
     @pytest.mark.parametrize(
         "resort", [slice(None, None, -1), slice(None, None, 2)], ids=("mismatched", "invalid")
     )
-    def test_checksum(self, api_client, unique_name, upgrade_target, upgrade_timeout, resort):
+    def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade_checker):
         version, url, checksum = upgrade_target
         version = f"{version}-{unique_name}"
 
@@ -446,25 +441,19 @@ class TestInvalidUpgrade:
 
         code, data = api_client.versions.create(version, url, checksum[resort])
         assert 201 == code, f"Failed to create upgrade for {version}"
+        version_created, (code, data) = upgrade_checker.wait_upgrade_version_created(version)
+        assert version_created, (code, data)
+
         code, data = api_client.upgrades.create(version)
         assert 201 == code, f"Failed to start upgrade for {version}"
+        upgrade_name = data['metadata']['name']
 
-        endtime = datetime.now() + timedelta(seconds=upgrade_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.upgrades.get(data['metadata']['name'])
-            conds = dict((c['type'], c) for c in data.get('status', {}).get('conditions', []))
-            verified = [
-                "False" == conds.get('Completed', {}).get('status'),
-                "False" == conds.get('ImageReady', {}).get('status'),
-                "n't match the file actual check" in conds.get('ImageReady', {}).get('message', "")
-            ]
-            if all(verified):
-                break
-        else:
-            raise AssertionError(f"Upgrade NOT failed in expected conditions: {conds}")
+        upgrade_fail_by_invalid_checksum, (code, data) = \
+            upgrade_checker.wait_upgrade_fail_by_invalid_checksum(upgrade_name)
+        assert upgrade_fail_by_invalid_checksum, (code, data)
 
         # teardown
-        api_client.upgrades.delete(data['metadata']['name'])
+        api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
     @pytest.mark.skip("https://github.com/harvester/harvester/issues/5494")
@@ -493,8 +482,10 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(data['metadata']['name'])
         api_client.versions.delete(version)
 
-    def test_degraded_volume(self, api_client, wait_timeout, vm_shell_from_host,
-                             vm_checker, upgrade_target, stopped_vm):
+    def test_degraded_volume(
+        self, api_client, vm_shell_from_host, upgrade_target, stopped_vm,
+        vm_checker, volume_checker
+    ):
         """
         Criteria: create upgrade should fails if there are any degraded volumes
         Steps:
@@ -539,16 +530,8 @@ class TestInvalidUpgrade:
         assert code == 200 and data['items'], f"Failed to get longhorn replicas ({code}): {data}"
         replica = next(r for r in data["items"] if pv_name == r['spec']['volumeName'])
         api_client.lhreplicas.delete(name=replica['metadata']['name'])
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.lhvolumes.get(pv_name)
-            if 200 == code and "degraded" == data['status']['robustness']:
-                break
-        else:
-            raise AssertionError(
-                f"Unable to make the Volume {pv_name} degraded\n"
-                f"API Status({code}): {data}"
-            )
+        lhvolume_degraded = volume_checker.wait_lhvolume_degraded(pv_name)
+        assert lhvolume_degraded, (code, data)
 
         # create upgrade and verify it is not allowed
         version, url, checksum = upgrade_target
@@ -1163,7 +1146,7 @@ class TestAnyNodesUpgrade:
         while endtime > datetime.now():
             code, data = api_client.volumes.get(namespace='harvester-system')
             upgrade_vols = [vol for vol in data['data']
-                            if 'upgrade' in vol['id'] and not vol['id'].endswith('log-archive')]
+                            if 'upgrade' in vol['id'] and 'log-archive' not in vol['id']]
             if not upgrade_vols:
                 break
         else:
