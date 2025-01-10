@@ -23,7 +23,13 @@ def volume_checker(api_client, wait_timeout, sleep_timeout):
                 code, data = self.lhvolumes.get(pvc_name)
                 if not (200 == code and "detached" == data['status']['state']):
                     return False, (code, data)
-
             return True, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
+        def wait_lhvolume_degraded(self, pv_name):
+            code, data = api_client.lhvolumes.get(pv_name)
+            if 200 == code and "degraded" == data['status']['robustness']:
+                return True, (code, data)
+            return False, (code, data)
 
     return VolumeChecker()
