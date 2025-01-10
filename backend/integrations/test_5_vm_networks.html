@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>harvester_e2e_tests.integrations.test_5_vm_networks API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,36 +48,248 @@ hljs.highlightAll();
 <span>def <span class="ident">cluster_network</span></span>(<span>vlan_nic, api_client, unique_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def cluster_network(vlan_nic, api_client, unique_name):
+    code, data = api_client.clusternetworks.get_config()
+    assert 200 == code, (code, data)
+
+    node_key = &#39;network.harvesterhci.io/matched-nodes&#39;
+    cnet_nodes = dict()  # cluster_network: items
+    for cfg in data[&#39;items&#39;]:
+        if vlan_nic in cfg[&#39;spec&#39;][&#39;uplink&#39;][&#39;nics&#39;]:
+            nodes = json.loads(cfg[&#39;metadata&#39;][&#39;annotations&#39;][node_key])
+            cnet_nodes.setdefault(cfg[&#39;spec&#39;][&#39;clusterNetwork&#39;], []).extend(nodes)
+
+    code, data = api_client.hosts.get()
+    assert 200 == code, (code, data)
+    all_nodes = set(n[&#39;id&#39;] for n in data[&#39;data&#39;])
+    try:
+        # vlad_nic configured on specific cluster network, reuse it
+        yield next(cnet for cnet, nodes in cnet_nodes.items() if all_nodes == set(nodes))
+        return None
+    except StopIteration:
+        configured_nodes = reduce(add, cnet_nodes.values(), [])
+        if any(n in configured_nodes for n in all_nodes):
+            raise AssertionError(
+                &#34;Not all nodes&#39; VLAN NIC {vlan_nic} are available.\n&#34;
+                f&#34;VLAN NIC configured nodes: {configured_nodes}\n&#34;
+                f&#34;All nodes: {all_nodes}\n&#34;
+            )
+
+    # Create cluster network
+    cnet = f&#34;cnet-{datetime.strptime(unique_name, &#39;%Hh%Mm%Ss%f-%m-%d&#39;).strftime(&#39;%H%M%S&#39;)}&#34;
+    created = []
+    code, data = api_client.clusternetworks.create(cnet)
+    assert 201 == code, (code, data)
+    while all_nodes:
+        node = all_nodes.pop()
+        code, data = api_client.clusternetworks.create_config(node, cnet, vlan_nic, hostname=node)
+        assert 201 == code, (
+            f&#34;Failed to create cluster config for {node}\n&#34;
+            f&#34;Created: {created}\t Remaining: {all_nodes}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+        created.append(node)
+
+    yield cnet
+
+    # Teardown
+    deleted = {name: api_client.clusternetworks.delete_config(name) for name in created}
+    failed = [(name, code, data) for name, (code, data) in deleted.items() if 200 != code]
+    if failed:
+        fmt = &#34;Unable to delete VLAN Config {} with error ({}): {}&#34;
+        raise AssertionError(
+            &#34;\n&#34;.join(fmt.format(name, code, data) for (name, code, data) in failed)
+        )
+
+    code, data = api_client.clusternetworks.delete(cnet)
+    assert 200 == code, (code, data)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.gen_ifconfig"><code class="name flex">
 <span>def <span class="ident">gen_ifconfig</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def gen_ifconfig():
+    # eth/eno/ens(idx) | enp(idx)s[0-9]
+    pattern = r&#34;(?:(e(?:th|no|ns))(\d+)|(enp)(\d+)(s\d+))&#34;
+
+    def replace_to(idx):
+        def _repl(match):
+            p1, idx1, p2, idx2, tail = match.groups()
+            return f&#34;{p1}{int(idx1)+idx}&#34; if not tail else f&#34;{p2}{int(idx2)+idx}{tail}&#34;
+        return _repl
+
+    def generate_ifconfig(ifname, idx=0):
+        return {
+            &#34;type&#34;: &#34;physical&#34;,
+            &#34;name&#34;: re.sub(pattern, replace_to(idx), ifname),
+            &#34;subnets&#34;: [dict(type=&#34;dhcp&#34;)]
+        }
+
+    return generate_ifconfig</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.image"><code class="name flex">
 <span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def image(api_client, image_opensuse, unique_name, wait_timeout):
+    unique_image_id = f&#39;image-{unique_name}&#39;
+    code, data = api_client.images.create_by_url(
+        unique_image_id, image_opensuse.url, display_name=f&#34;{unique_name}-{image_opensuse.name}&#34;
+    )
+
+    assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_image_id)
+        if 100 == data.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            &#34;Failed to create Image with error:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    yield dict(id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
+               user=image_opensuse.ssh_user)
+
+    code, data = api_client.images.delete(unique_image_id)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.minimal_vm"><code class="name flex">
 <span>def <span class="ident">minimal_vm</span></span>(<span>api_client, ssh_keypair, wait_timeout, unique_name, vm_checker, image)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def minimal_vm(api_client, ssh_keypair, wait_timeout, unique_name, vm_checker, image):
+    unique_vm_name = f&#34;{datetime.now().strftime(&#39;%m%S%f&#39;)}-{unique_name}&#34;
+    cpu, mem = 1, 2
+    pub_key, _ = ssh_keypair
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata[&#39;ssh_authorized_keys&#39;] = [pub_key]
+    vm_spec.user_data = yaml.dump(userdata)
+
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    assert 201 == code, (code, data)
+    vm_started, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+
+    yield unique_vm_name, image[&#39;user&#39;]
+
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_deleted, (code, data) = vm_checker.wait_deleted(unique_vm_name)
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.two_mirror_vms"><code class="name flex">
 <span>def <span class="ident">two_mirror_vms</span></span>(<span>api_client, ssh_keypair, unique_name, vm_checker, image, vm_network)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def two_mirror_vms(api_client, ssh_keypair, unique_name, vm_checker, image, vm_network):
+    cpu, mem = 1, 2
+    pub_key, pri_key = ssh_keypair
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.mgmt_network = False
+    vm_spec.add_network(&#39;nic-1&#39;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
+
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata[&#39;ssh_authorized_keys&#39;] = [pub_key]
+    vm_spec.user_data = yaml.dump(userdata)
+    vm_names = [f&#34;vm{idx}-{unique_name}&#34; for idx in range(1, 3)]
+
+    for vm_name in vm_names:
+        code, data = api_client.vms.create(vm_name, vm_spec)
+        assert 201 == code, (code, data)
+
+    yield vm_names, image[&#39;user&#39;]
+
+    params = dict(removedDisks=&#34;disk-0&#34;, propagationPolicy=&#34;Foreground&#34;)
+    for vm_name in vm_names:
+        vm_checker.wait_deleted(vm_name, params=params)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.vm_network"><code class="name flex">
 <span>def <span class="ident">vm_network</span></span>(<span>api_client, unique_name, wait_timeout, cluster_network, vlan_id)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id):
+    code, data = api_client.networks.create(
+        unique_name, vlan_id, cluster_network=cluster_network
+    )
+    assert 201 == code, (code, data)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.networks.get(unique_name)
+        annotations = data[&#39;metadata&#39;].get(&#39;annotations&#39;, {})
+        if 200 == code and annotations.get(&#39;network.harvesterhci.io/route&#39;):
+            route = json.loads(annotations[&#39;network.harvesterhci.io/route&#39;])
+            if route[&#39;cidr&#39;]:
+                break
+        sleep(3)
+    else:
+        raise AssertionError(
+            &#34;VM network created but route info not available\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    yield dict(name=unique_name, cidr=route[&#39;cidr&#39;], namespace=data[&#39;metadata&#39;][&#39;namespace&#39;])
+
+    code, data = api_client.networks.delete(unique_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.networks.get(unique_name)
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to remote VM network {unique_name} after {wait_timeout}s\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -78,7 +301,6 @@ hljs.highlightAll();
 <span>class <span class="ident">TestVMNetwork</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -228,6 +450,7 @@ class TestVMNetwork:
                     f&#34;Unable to login to VM via VLAN IP {src_ip}&#34;
                 ) from ex</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
@@ -238,21 +461,174 @@ class TestVMNetwork:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_add_vlan"><code class="name flex">
-<span>def <span class="ident">test_add_vlan</span></span>(<span>self, api_client, ssh_keypair, vm_mgmt_static, vm_checker, vm_shell_from_host, vm_network, minimal_vm, gen_ifconfig)</span>
+<span>def <span class="ident">test_add_vlan</span></span>(<span>self,<br>api_client,<br>ssh_keypair,<br>vm_mgmt_static,<br>vm_checker,<br>vm_shell_from_host,<br>vm_network,<br>minimal_vm,<br>gen_ifconfig)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;add_vlan&#34;)
+def test_add_vlan(
+    self, api_client, ssh_keypair, vm_mgmt_static, vm_checker, vm_shell_from_host, vm_network,
+    minimal_vm, gen_ifconfig
+):
+    # clean cloud-init for rerun, and get the correct ifname
+    (unique_vm_name, ssh_user), (_, pri_key) = minimal_vm, ssh_keypair
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (out, err)
+        out, err = sh.exec_command(&#34;sudo cloud-init clean&#34;)
+        out, err = sh.exec_command(&#34;sudo cloud-init status&#34;)
+        assert &#34;not run&#34; in out, (out, err)
+        out, err = sh.exec_command(&#34;ip --json a s&#34;)
+        assert not err
+    ifname = next(i[&#39;ifname&#39;] for i in json.loads(out) if i[&#39;link_type&#39;] != &#39;loopback&#39;)
+    # https://cloudinit.readthedocs.io/en/22.4.2/topics/network-config-format-v1.html#subnet-ip
+    # and https://harvesterhci.io/kb/multiple-nics-vm-connectivity/#cloud-init-config
+    nic_config = [gen_ifconfig(ifname, idx=i) for i in range(2)]
+    nic_config[0][&#39;subnets&#39;] = [vm_mgmt_static]
+
+    # add vlan NIC and network data then restart VM
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.add_network(&#39;nic-1&#39;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
+    vm_spec.network_data = &#34;#cloud-config\n&#34; + yaml.dump({
+        &#34;version&#34;: 1,
+        &#34;config&#34;: nic_config
+    })
+    code, data = api_client.vms.update(unique_vm_name, vm_spec)
+    assert 200 == code, (code, data)
+    vm_restarted, ctx = vm_checker.wait_restarted(unique_vm_name)
+    assert vm_restarted, (
+        f&#34;Failed to Restart VM({unique_vm_name}),&#34;
+        f&#34; timed out while executing {ctx.callee!r}&#34;
+    )
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited and not err, (out, err)
+        out, err = sh.exec_command(&#34;ip --json -4 a s&#34;)
+    ips = [j[&#39;local&#39;] for i in json.loads(out) for j in i[&#39;addr_info&#39;]]
+    vlan_ip_range = ip_network(vm_network[&#39;cidr&#39;])
+
+    def get_vlan_ip(ctx):
+        if ctx.callee == &#39;vm.get_status&#39;:
+            return all(iface.get(&#39;ipAddress&#39;) for iface in ctx.data[&#39;status&#39;][&#39;interfaces&#39;]
+                       if iface[&#39;name&#39;] != &#39;default&#39;)
+        return True
+    # ???: status data from API will have delay a bit
+    vm_got_ips, (code, data) = vm_checker.wait_interfaces(unique_vm_name, callback=get_vlan_ip)
+    assert vm_got_ips, (code, data)
+    vm_vlan_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                      if iface[&#39;name&#39;] != &#39;default&#39;)
+    assert ip_address(vm_vlan_ip) in vlan_ip_range and vm_vlan_ip in ips</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_ssh_connection"><code class="name flex">
 <span>def <span class="ident">test_ssh_connection</span></span>(<span>self, api_client, ssh_keypair, vm_checker, vm_network, minimal_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;add_vlan&#34;])
+def test_ssh_connection(
+    self, api_client, ssh_keypair, vm_checker, vm_network, minimal_vm
+):
+    (unique_vm_name, ssh_user), (_, pri_key) = minimal_vm, ssh_keypair
+    vm_started, (code, data) = vm_checker.wait_interfaces(unique_vm_name)
+    assert vm_started, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] != &#39;default&#39;)
+    try:
+        with vm_checker.wait_ssh_connected(vm_ip, ssh_user, pkey=pri_key) as sh:
+            out, err = sh.exec_command(&#34;ip -brief a s&#34;)
+            assert vm_ip in out and not err
+    except AssertionError as ex:
+        raise ex
+    except Exception as ex:
+        raise AssertionError(
+            f&#34;Unable to login to VM via VLAN IP {vm_ip}&#34;
+        ) from ex</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_5_vm_networks.TestVMNetwork.test_vms_on_same_vlan"><code class="name flex">
 <span>def <span class="ident">test_vms_on_same_vlan</span></span>(<span>self, api_client, ssh_keypair, vm_checker, vm_network, two_mirror_vms)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_vms_on_same_vlan(
+    self, api_client, ssh_keypair, vm_checker, vm_network, two_mirror_vms
+):
+    _, pri_key = ssh_keypair
+    vm_names, ssh_user = two_mirror_vms
+
+    def get_vlan_ip(ctx):
+        if ctx.callee == &#39;vm.get_status&#39;:
+            return all(iface.get(&#39;ipAddress&#39;) for iface in ctx.data[&#39;status&#39;][&#39;interfaces&#39;]
+                       if iface[&#39;name&#39;] != &#39;default&#39;)
+        return True
+    # Verify VM having IP which belongs to VLAN
+    vm_info, vlan_ip_range = [], ip_network(vm_network[&#39;cidr&#39;])
+    for vm_name in vm_names:
+        vm_got_ips, (code, data) = vm_checker.wait_interfaces(vm_name, callback=get_vlan_ip)
+        assert vm_got_ips, (
+            f&#34;Failed to Start VM({vm_name}) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+        vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                     if iface[&#39;name&#39;] != &#39;default&#39;)
+        assert ip_address(vm_ip) in vlan_ip_range
+        vm_info.append((vm_name, vm_ip))
+
+    # verify Ping from each
+    for (src_name, src_ip), (dst_name, dst_ip) in zip(vm_info, vm_info[::-1]):
+        try:
+            with vm_checker.wait_ssh_connected(src_ip, ssh_user, pkey=pri_key) as sh:
+                out, err = sh.exec_command(f&#34;ping -c5 {dst_ip}&#34;)
+                assert &#39;100% packet loss&#39; not in out, (
+                    f&#34;Failed to ping VM({dst_name!r}, {dst_ip}) &lt;- VM({src_name!r}, {src_ip})&#34;
+                )
+        except AssertionError as ex:
+            raise ex
+        except Exception as ex:
+            raise AssertionError(
+                f&#34;Unable to login to VM via VLAN IP {src_ip}&#34;
+            ) from ex</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -297,7 +673,7 @@ class TestVMNetwork:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

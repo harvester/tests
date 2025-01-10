@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>harvester_e2e_tests.integrations.test_3_vm_functions API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,6 +48,63 @@ hljs.highlightAll();
 <span>def <span class="ident">bogus_vlan_net</span></span>(<span>request, api_client)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def bogus_vlan_net(request, api_client):
+    &#34;&#34;&#34;bogus vlan network fixture (no dhcp) on mgmt network
+
+    Args:
+        request (FixtureRequest): https://docs.pytest.org/en/7.1.x/_modules/_pytest/fixtures.html#FixtureRequest # noqa
+        api_client (HarvesterAPI): HarvesterAPI client
+
+    Yields:
+        dict: created bogus network attachment definition dictionary
+    &#34;&#34;&#34;
+    original_vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
+
+    existing_vm_net_code, existing_vm_net_data = api_client.networks.get()
+    assert existing_vm_net_code == 200, &#39;we should be able to fetch vm networks from harvester&#39;
+    existing_vm_net_list = existing_vm_net_data.get(&#39;items&#39;, [])
+    vlans_to_exclude = set()
+    vlans_to_exclude.add(1)
+    for existing_vm_net in existing_vm_net_list:
+        existing_vm_net_config = existing_vm_net.get(&#39;spec&#39;, {}).get(&#39;config&#39;, &#39;{}&#39;)
+        assert existing_vm_net_config != &#39;{}&#39;, &#39;existing vm net should exist&#39;
+        existing_vm_net_config_dict = json.loads(existing_vm_net_config)
+        assert existing_vm_net_config_dict.get(
+            &#39;vlan&#39;, 0) != 0, &#39;we should be able to get the vlan off the config&#39;
+        existing_vm_net_vlan = existing_vm_net_config_dict.get(&#39;vlan&#39;)
+        vlans_to_exclude.add(existing_vm_net_vlan)
+
+    if original_vlan_id != -1:
+        vlans_to_exclude.add(original_vlan_id)
+
+    vlan_ids = set(range(2, 4095))  # 4094 is the last, 1 should always be excluded.
+    code, data = api_client.networks.get()
+    for net in data[&#39;items&#39;]:
+        config = json.loads(net[&#39;spec&#39;].get(&#39;config&#39;, &#39;{}&#39;))
+        if config.get(&#39;vlan&#39;):
+            try:
+                # try to remove the key, but VLAN may be used in both &#39;mgmt&#39;
+                # and other cluster network(s) so it might have already been removed
+                vlan_ids.remove(config[&#39;vlan&#39;])
+            except KeyError:
+                print(f&#34;key, {config[&#39;vlan&#39;]} was already removed by another cluster network&#34;)
+
+    vlan_id = vlan_ids.pop()  # Remove and return an arbitrary set element.
+    vm_network_name = f&#39;bogus-net-{vlan_id}&#39;
+    code, data = api_client.networks.create(vm_network_name, vlan_id)
+    assert 201 == code, (
+        f&#34;Failed to create N.A.D. {vm_network_name} with error {code}, {data}&#34;
+    )
+
+    yield data
+
+    api_client.networks.delete(vm_network_name)</code></pre>
+</details>
 <div class="desc"><p>bogus vlan network fixture (no dhcp) on mgmt network</p>
 <h2 id="args">Args</h2>
 <dl>
@@ -55,24 +123,149 @@ hljs.highlightAll();
 <span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def image(api_client, image_opensuse, unique_name, wait_timeout):
+    unique_image_id = f&#39;image-{unique_name}&#39;
+    code, data = api_client.images.create_by_url(
+        unique_image_id, image_opensuse.url, display_name=f&#34;{unique_name}-{image_opensuse.name}&#34;
+    )
+
+    assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_image_id)
+        if 100 == data.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            &#34;Failed to create Image with error:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    yield dict(id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
+               user=image_opensuse.ssh_user)
+
+    code, data = api_client.images.delete(unique_image_id)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.small_volume"><code class="name flex">
 <span>def <span class="ident">small_volume</span></span>(<span>api_client, unique_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def small_volume(api_client, unique_name):
+    vol_name, size = f&#34;sv-{unique_name}&#34;, 3
+    vol_spec = api_client.volumes.Spec(size)
+    code, data = api_client.volumes.create(vol_name, vol_spec)
+
+    assert 201 == code, (code, data)
+
+    yield vol_name, size
+
+    code, data = api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.stopped_vm"><code class="name flex">
 <span>def <span class="ident">stopped_vm</span></span>(<span>api_client, ssh_keypair, wait_timeout, image, unique_vm_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
+    unique_vm_name = f&#34;stopped-{datetime.now().strftime(&#39;%m%S%f&#39;)}-{unique_vm_name}&#34;
+    cpu, mem = 1, 2
+    pub_key, pri_key = ssh_keypair
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.run_strategy = &#34;Halted&#34;
+
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata[&#39;ssh_authorized_keys&#39;] = [pub_key]
+    vm_spec.user_data = yaml.dump(userdata)
+
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if &#34;Stopped&#34; == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;):
+            break
+        sleep(1)
+
+    yield unique_vm_name, image[&#39;user&#39;]
+
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+
+    api_client.vms.delete(unique_vm_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(3)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.test_create_stopped_vm"><code class="name flex">
 <span>def <span class="ident">test_create_stopped_vm</span></span>(<span>api_client, stopped_vm, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.virtualmachines
+def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
+    &#34;&#34;&#34;
+    To cover test:
+    - https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/ # noqa
+
+    Steps:
+        1. Create a VM with 1 CPU 2 Memory and runStrategy is `Halted`
+        2. Save
+    Exepected Result:
+        - VM should created
+        - VM should Stooped
+        - VMI should not exist
+    &#34;&#34;&#34;
+    unique_vm_name, _ = stopped_vm
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if (code == 200
+                and &#39;Halted&#39; == data[&#39;spec&#39;][&#39;runStrategy&#39;]
+                and &#39;Stopped&#39; == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;)):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Create a Stopped VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    code, data = api_client.vms.get_status(unique_vm_name)
+    assert 404 == code, (code, data)</code></pre>
+</details>
 <div class="desc"><p>To cover test:
 - <a href="https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/">https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-start-vm-on-creation-unchecked/</a> # noqa</p>
 <h2 id="steps">Steps</h2>
@@ -91,6 +284,129 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_create_vm_no_available_resources</span></span>(<span>resource, api_client, image, wait_timeout, unique_vm_name, sleep_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.virtualmachines
+@pytest.mark.negative
+@pytest.mark.parametrize(&#34;resource&#34;, [dict(cpu=MAX), dict(mem=MAX), dict(disk=MAX),
+                                      dict(mem=MAX, cpu=MAX), dict(mem=MAX, cpu=MAX, disk=MAX)],
+                         ids=[&#39;cpu&#39;, &#39;mem&#39;, &#39;disk&#39;, &#39;mem-and-cpu&#39;, &#39;mem-cpu-and-disk&#39;])
+def test_create_vm_no_available_resources(resource, api_client, image,
+                                          wait_timeout, unique_vm_name, sleep_timeout):
+    &#34;&#34;&#34;Creates a VM with outlandish resources for varying elements (purposefully negative test)
+
+    Prerequisite:
+        Setting opensuse-image-url set to a valid URL for
+        an opensuse image.
+
+    Manual Test Doc(s):
+        - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-cpu-not-in-cluster/ # noqa
+        - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-memory-not-in-cluster/ # noqa
+        - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-both-cpu-and-memory-not-in-cluster/ # noqa
+
+
+    Args:
+        request (FixtureRequest): https://docs.pytest.org/en/7.1.x/_modules/_pytest/fixtures.html#FixtureRequest # noqa
+        resource (dict): dict of name(s) &amp; value that can be deconstructed
+        api_client (HarvesterAPI): HarvesterAPI client
+        image (str): corresponding image from fixture
+        wait_timeout (int): seconds for wait timeout from fixture
+        unique_vm_name (str): string of unique vm name
+
+    Raises:
+        AssertionError: when vm can not be created, all vms should be allowed to be created
+
+    Steps:
+    1. build vm object specs for outlandish resource(s) under test
+    2. request to build the vm, assert that succeeds
+    3. check for conditions of guest not running and vm being unschedulable
+    4. delete vm and volumes
+
+    Expected Result:
+    - building vm with outlandish resource requests to be successful
+    - asserting that the status condition of the vm that is built to not be running
+    - asserting that the status condition of the vm that is built to be unschedulable
+    - assert deleting vm and volumes to be successful
+    &#34;&#34;&#34;
+    unique_name_for_vm = f&#34;{&#39;&#39;.join(resource.keys())}-{unique_vm_name}&#34;
+    overall_vm_obj = dict(cpu=1, mem=2, disk=10)
+    overall_vm_obj.update(resource)
+
+    vm = api_client.vms.Spec(overall_vm_obj[&#39;cpu&#39;], overall_vm_obj[&#39;mem&#39;])
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], size=overall_vm_obj.get(&#39;disk&#39;))
+    code, data = api_client.vms.create(unique_name_for_vm, vm)
+    assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_name_for_vm)
+        if 200 == code and len(data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])) &gt; 1:
+            checks = dict(GuestNotRunning=False, Unschedulable=False)
+            for condition in data[&#39;status&#39;][&#39;conditions&#39;]:
+                if condition.get(&#39;reason&#39;) in checks:
+                    checks[condition[&#39;reason&#39;]] = True
+
+            assert all(checks.values()), (
+                &#34;The VM miss condition:\n&#34;
+                &#34; and &#34;.join(k for k, v in checks.items() if not v)
+            )
+            code, data = api_client.vms.delete(unique_name_for_vm)
+            assert 200 == code, (code, data)
+
+            spec = api_client.vms.Spec.from_dict(data)
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Failed to create VM({overall_vm_obj.get(&#39;cpu&#39;)} core, \n&#34;
+            f&#34;{overall_vm_obj.get(&#39;mem&#39;)} RAM, \n&#34;
+            f&#34;{overall_vm_obj.get(&#39;disk&#39;)} DISK) with errors:\n&#34;
+            f&#34;Phase: {data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)}\t&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_name_for_vm)
+        if 404 == code:
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Delete VM({unique_name_for_vm}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+    fails, check = [], dict()
+    for vol in spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        check[vol_name] = api_client.volumes.delete(vol_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        l_check = dict()
+        for vol_name, (code, data) in check.items():
+            if code not in (200, 204):
+                fails.append(
+                    (vol_name, f&#34;Failed to delete\nStatus({code}): {data}&#34;))
+            else:
+                code, data = api_client.volumes.get(vol_name)
+                if 404 != code:
+                    l_check[vol_name] = (code, data)
+        check = l_check
+        if not check:
+            break
+        sleep(sleep_timeout)
+    else:
+        for vol_name, (code, data) in check.items():
+            fails.append(
+                (vol_name, f&#34;Failed to delete\nStatus({code}): {data}&#34;))
+    assert not fails, (
+        f&#34;Failed to delete VM({unique_vm_name})&#39;s volumes with errors:\n&#34;
+        &#34;\n&#34;.join(f&#34;Volume({n}): {r}&#34; for n, r in fails)
+    )</code></pre>
+</details>
 <div class="desc"><p>Creates a VM with outlandish resources for varying elements (purposefully negative test)</p>
 <h2 id="prerequisite">Prerequisite</h2>
 <p>Setting opensuse-image-url set to a valid URL for
@@ -134,6 +450,46 @@ an opensuse image.</p>
 <span>def <span class="ident">test_minimal_vm</span></span>(<span>api_client, image, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.virtualmachines
+@pytest.mark.dependency(name=&#34;minimal_vm&#34;)
+def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
+    &#34;&#34;&#34;
+    To cover test:
+    - https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/ # noqa
+
+    Steps:
+        1. Create a VM with 1 CPU 2 Memory and other default values
+        2. Save
+    Exepected Result:
+        - VM should created
+        - VM should Started
+    &#34;&#34;&#34;
+    cpu, mem = 1, 2
+    vm = api_client.vms.Spec(cpu, mem)
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+
+    code, data = api_client.vms.create(unique_vm_name, vm)
+
+    assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 200 == code and &#34;Running&#34; == data.get(&#39;status&#39;, {}).get(&#39;phase&#39;):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to create Minimal VM({cpu} core, {mem} RAM) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
 <div class="desc"><p>To cover test:
 - <a href="https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/">https://harvester.github.io/tests/manual/virtual-machines/create-a-vm-with-all-the-default-values/</a> # noqa</p>
 <h2 id="steps">Steps</h2>
@@ -151,6 +507,168 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_update_vm_machine_type</span></span>(<span>api_client, image, unique_vm_name, wait_timeout, machine_types, sleep_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.virtualmachines
+@pytest.mark.skip_version_if(
+    &#34;&gt; v1.2.1&#34;, &#34;&gt; v1.3.0&#34;,
+    reason=&#34;`pc type removed, ref: https://github.com/harvester/harvester/issues/5437&#34;
+)
+@pytest.mark.parametrize(
+    &#34;machine_types&#34;, [(&#34;q35&#34;, &#34;pc&#34;), (&#34;pc&#34;, &#34;q35&#34;)], ids=[&#39;q35_to_pc&#39;, &#39;pc_to_q35&#39;]
+)
+def test_update_vm_machine_type(
+    api_client, image, unique_vm_name, wait_timeout, machine_types, sleep_timeout
+):
+    &#34;&#34;&#34;Create a VM with machine type then update to another
+
+    Prerequisite:
+        Setting opensuse-image-url set to a valid URL for
+        an opensuse image.
+
+    Manual Test Doc(s):
+        - https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-pc/ # noqa
+        - https://harvester.github.io/tests/manual/virtual-machines/create-new-vm-with-a-machine-type-q35/ # noqa
+
+    Args:
+        api_client (HarvesterAPI): HarvesterAPI client
+        image (str): corresponding image from fixture
+        wait_timeout (int): seconds for wait timeout from fixture
+        unique_vm_name (str): fixture at module level based unique vm name
+        machine_types (tuple)(str): deconstructed to provide starting type and desired end type
+
+    Raises:
+        AssertionError: failure to create, stop, update, or start
+
+    Steps:
+    1. build vm with starting machine type
+    2. power down vm with starting machine type
+    3. update vm from machine type starting to machine type ending
+    4. power up vm
+    5. delete vm and volumes
+
+    Expected Result:
+    - building a vm with machine type starting to be successful
+    - powering down the vm with machine type starting to be successful
+    - modifying the existing machine type starting and updating to ending to be successful
+    - powering up the modified vm to be successful and that now has the machine type ending
+    - deleting the vm to be successful
+    &#34;&#34;&#34;
+    cpu, mem = 1, 2
+    starting_machine_type, ending_machine_type = machine_types
+    vm = api_client.vms.Spec(cpu, mem)
+    vm.machine_type = starting_machine_type
+
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    unique_name_for_vm = f&#34;{&#39;&#39;.join(starting_machine_type)}-{unique_vm_name}&#34;
+
+    code, vm_create_data = api_client.vms.create(unique_name_for_vm, vm)
+
+    assert 201 == code, (code, vm_create_data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_name_for_vm)
+        if 200 == code and &#34;Running&#34; == data.get(&#39;status&#39;, {}).get(&#39;phase&#39;):
+            code, data = api_client.vms.stop(unique_name_for_vm)
+            assert 204 == code, &#34;`Stop` return unexpected status code&#34;
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Failed to create VM({cpu} core, {mem} RAM) with errors:\n&#34;
+            f&#34;Phase: {data.get(&#39;status&#39;, {}).get(&#39;phase&#39;, &#39;&#39;)}\t&#34;
+            f&#34;Status: {data.get(&#39;status&#39;, {})}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_name_for_vm)
+        if 404 == code:
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Stop VM({unique_name_for_vm}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+    code, data = api_client.vms.get(unique_name_for_vm)
+    assert &#34;Halted&#34; == data[&#39;spec&#39;][&#39;runStrategy&#39;]
+    assert &#34;Stopped&#34; == data[&#39;status&#39;][&#39;printableStatus&#39;]
+    code, vm_to_modify = api_client.vms.get(unique_name_for_vm)
+    assert code == 200
+    spec = api_client.vms.Spec.from_dict(vm_to_modify)
+    spec.machine_type = ending_machine_type
+    code, data = api_client.vms.update(unique_name_for_vm, spec)
+    result = api_client.vms.Spec.from_dict(data)
+    if 200 == code and result.machine_type == ending_machine_type:
+        code, data = api_client.vms.start(unique_name_for_vm)
+        assert 204 == code, &#34;`Start return unexpected status code&#34;
+    else:
+        raise AssertionError(
+            f&#34;Failed to Update VM({unique_name_for_vm}) with errors:\n&#34;
+            f&#34;Phase: {data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)}\t&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_name_for_vm)
+        strategy = data[&#39;spec&#39;][&#39;runStrategy&#39;]
+        pstats = data[&#39;status&#39;][&#39;printableStatus&#39;]
+        if &#34;Halted&#34; != strategy and &#34;Running&#34; == pstats:
+            code, data = api_client.vms.delete(unique_name_for_vm)
+            assert 200 == code, (code, data)
+
+            spec = api_client.vms.Spec.from_dict(data)
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Start VM({unique_name_for_vm}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_name_for_vm)
+        if 404 == code:
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Delete VM({unique_name_for_vm}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+    fails, check = [], dict()
+    for vol in spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        check[vol_name] = api_client.volumes.delete(vol_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        l_check = dict()
+        for vol_name, (code, data) in check.items():
+            if 200 != code:
+                fails.append(
+                    (vol_name, f&#34;Failed to delete\nStatus({code}): {data}&#34;))
+            else:
+                code, data = api_client.volumes.get(vol_name)
+                if 404 != code:
+                    l_check[vol_name] = (code, data)
+        check = l_check
+        if not check:
+            break
+    else:
+        for vol_name, (code, data) in check.items():
+            fails.append(
+                (vol_name, f&#34;Failed to delete\nStatus({code}): {data}&#34;))
+    assert not fails, (
+        f&#34;Failed to delete VM({unique_name_for_vm})&#39;s volumes with errors:\n&#34;
+        &#34;\n&#34;.join(f&#34;Volume({n}): {r}&#34; for n, r in fails)
+    )</code></pre>
+</details>
 <div class="desc"><p>Create a VM with machine type then update to another</p>
 <h2 id="prerequisite">Prerequisite</h2>
 <p>Setting opensuse-image-url set to a valid URL for
@@ -192,6 +710,125 @@ an opensuse image.</p>
 <span>def <span class="ident">test_vm_with_bogus_vlan</span></span>(<span>api_client, image, unique_vm_name, wait_timeout, bogus_vlan_net, sleep_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.negative
+@pytest.mark.virtualmachines
+def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
+                            wait_timeout, bogus_vlan_net, sleep_timeout):
+    &#34;&#34;&#34;test building a VM with a VM (VLAN) Network has a bogus VLAN ID (no DHCP)
+
+    Prerequisite:
+        Setting opensuse-image-url set to a valid URL for
+        an opensuse image.
+
+    Manual Test Doc(s):
+        - N/A
+
+    Args:
+        api_client (HarvesterAPI): HarvesterAPI client_
+        image (str): corresponding image from fixture_
+        unique_vm_name (str): fixture at module level based unique vm name
+        wait_timeout (int): seconds for wait timeout from fixture
+        bogus_vlan_net (dict): the data dict that contains info surrounding vm net
+
+    Raises:
+        AssertionError: fails to create, delete, or delete volumes
+
+    Steps:
+    1. build vm with a single virtio network interface
+    that has a bogus vlan vm network (no dhcp)
+    2. delete vm and volumes
+
+    Expected Result:
+    - assert vlan vm network can be created successfully (fixture level)
+    - assert vm can be created successfully
+    - assert &#39;ipAddresses&#39; not in the status of running vm&#39;s interfaces
+    - assert can delete vm and volumes
+    &#34;&#34;&#34;
+    cpu, mem = 1, 2
+    bvn = bogus_vlan_net
+    vm = api_client.vms.Spec(cpu, mem)
+    net_uid = f&#34;{bvn[&#39;metadata&#39;][&#39;namespace&#39;]}/{bvn[&#39;metadata&#39;][&#39;name&#39;]}&#34;
+    vm = api_client.vms.Spec(cpu, mem)
+    vm.add_network(&#39;no-dhcp&#39;, net_uid)
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    code, data = api_client.vms.create(unique_vm_name, vm)
+
+    assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 200 == code and &#34;Running&#34; == data.get(&#39;status&#39;, {}).get(&#39;phase&#39;):
+            code, data = api_client.vms.get_status(unique_vm_name)
+            assert 200 == code, (code, data)
+            assert data[&#39;status&#39;][&#39;interfaces&#39;][1] is not None
+            assert &#39;infoSource&#39; in data[&#39;status&#39;][&#39;interfaces&#39;][1]
+            assert &#39;mac&#39; in data[&#39;status&#39;][&#39;interfaces&#39;][1]
+            assert data[&#39;status&#39;][&#39;interfaces&#39;][1][&#39;mac&#39;] is not None
+            assert &#39;name&#39; in data[&#39;status&#39;][&#39;interfaces&#39;][1]
+            # checking that ipAddress/es are not present due to
+            # vlan that was used not having dhcp so no assignment
+            # kubevirt v1 virtualmachineinstancenetworkinterface
+            assert &#39;ipAddresses&#39; not in data[&#39;status&#39;][&#39;interfaces&#39;][1]
+            assert &#39;ipAddress&#39; not in data[&#39;status&#39;][&#39;interfaces&#39;][1]
+            code, data = api_client.vms.delete(unique_vm_name)
+            assert 200 == code, (code, data)
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Failed to create VM({cpu} core, {mem} RAM) with errors:\n&#34;
+            f&#34;Phase: {data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)}\t&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+    spec = api_client.vms.Spec.from_dict(data)
+
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Delete VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    fails, check = [], dict()
+    for vol in spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        check[vol_name] = api_client.volumes.delete(vol_name)
+
+    while endtime &gt; datetime.now():
+        l_check = dict()
+        for vol_name, (code, data) in check.items():
+            if 200 != code:
+                fails.append(
+                    (vol_name, f&#34;Failed to delete\nStatus({code}): {data}&#34;))
+            else:
+                code, data = api_client.volumes.get(vol_name)
+                if 404 != code:
+                    l_check[vol_name] = (code, data)
+        check = l_check
+        if not check:
+            break
+        sleep(sleep_timeout)
+    else:
+        for vol_name, (code, data) in check.items():
+            fails.append(
+                (vol_name, f&#34;Failed to delete\nStatus({code}): {data}&#34;))
+
+    assert not fails, (
+        f&#34;Failed to delete VM({unique_vm_name})&#39;s volumes with errors:\n&#34;
+        &#34;\n&#34;.join(f&#34;Volume({n}): {r}&#34; for n, r in fails)
+    )</code></pre>
+</details>
 <div class="desc"><p>test building a VM with a VM (VLAN) Network has a bogus VLAN ID (no DHCP)</p>
 <h2 id="prerequisite">Prerequisite</h2>
 <p>Setting opensuse-image-url set to a valid URL for
@@ -230,12 +867,41 @@ that has a bogus vlan vm network (no dhcp)
 <span>def <span class="ident">unique_vm_name</span></span>(<span>unique_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def unique_vm_name(unique_name):
+    return f&#34;vm-{unique_name}&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.unset_cpu_memory_overcommit"><code class="name flex">
 <span>def <span class="ident">unset_cpu_memory_overcommit</span></span>(<span>api_client)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture
+def unset_cpu_memory_overcommit(api_client):
+    code, data = api_client.settings.get(&#39;overcommit-config&#39;)
+    assert 200 == code, (code, data)
+
+    origin_val = json.loads(data.get(&#39;value&#39;, data[&#39;default&#39;]))
+    spec = api_client.settings.Spec.from_dict(data)
+    spec.cpu = spec.memory = 100
+    spec.storage = origin_val[&#39;storage&#39;]
+    code, data = api_client.settings.update(&#39;overcommit-config&#39;, spec)
+    assert 200 == code, (code, data)
+
+    yield json.loads(data[&#39;value&#39;]), origin_val
+
+    spec.val = origin_val
+    api_client.settings.update(&#39;overcommit-config&#39;, spec)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -247,22 +913,6 @@ that has a bogus vlan vm network (no dhcp)
 <span>class <span class="ident">TestHotPlugVolume</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>To cover test:
-- <a href="https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/">https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</a></p>
-<h2 id="steps">Steps</h2>
-<ol>
-<li>Create and start VM</li>
-<li>Create Data volume</li>
-<li>Attach data volume</li>
-<li>Detach data volume
-Exepected Result:<ul>
-<li>VM should started successfully</li>
-<li>Data volume should attached and available in VM</li>
-<li>Data volume should detached and unavailable in VM</li>
-<li>VM should not be reboot or restart while attaching/detaching volume</li>
-</ul>
-</li>
-</ol></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -426,6 +1076,22 @@ class TestHotPlugVolume:
         assert not scsi, &#34;SCSI device still available in `/sys/block/`&#34;
         assert not out, &#34;SCSI device still available in `lsblk -r`&#34;</code></pre>
 </details>
+<div class="desc"><p>To cover test:
+- <a href="https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/">https://harvester.github.io/tests/manual/volumes/support-volume-hot-unplug/</a></p>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>Create and start VM</li>
+<li>Create Data volume</li>
+<li>Attach data volume</li>
+<li>Detach data volume
+Exepected Result:<ul>
+<li>VM should started successfully</li>
+<li>Data volume should attached and available in VM</li>
+<li>Data volume should detached and unavailable in VM</li>
+<li>VM should not be reboot or restart while attaching/detaching volume</li>
+</ul>
+</li>
+</ol></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.disk_name"><code class="name">var <span class="ident">disk_name</span></code></dt>
@@ -443,18 +1109,168 @@ class TestHotPlugVolume:
 <span>def <span class="ident">login_to_vm_from_host</span></span>(<span>self, host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@contextmanager
+def login_to_vm_from_host(
+    self, host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+):
+    with host_shell.login(host_ip, jumphost=True) as host_sh:
+        vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            try:
+                vm_sh.connect(vm_ip, jumphost=host_sh.client)
+            except ChannelException as e:
+                login_ex = e
+                sleep(3)
+            else:
+                break
+        else:
+            raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
+
+        with vm_sh as vm_sh:
+            yield (vm_sh, host_sh)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.test_add"><code class="name flex">
-<span>def <span class="ident">test_add</span></span>(<span>self, api_client, ssh_keypair, wait_timeout, vm_checker, host_shell, vm_shell, small_volume, stopped_vm)</span>
+<span>def <span class="ident">test_add</span></span>(<span>self,<br>api_client,<br>ssh_keypair,<br>wait_timeout,<br>vm_checker,<br>host_shell,<br>vm_shell,<br>small_volume,<br>stopped_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;hot_plug_volume&#34;)
+def test_add(
+    self, api_client, ssh_keypair, wait_timeout, vm_checker,
+    host_shell, vm_shell, small_volume, stopped_vm
+):
+    unique_vm_name, ssh_user = stopped_vm
+    pub_key, pri_key = ssh_keypair
+
+    # Start VM
+    code, data = api_client.vms.start(unique_vm_name)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+    # Log into VM to verify OS is ready
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    with self.login_to_vm_from_host(
+        host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+    ) as (sh, host_sh):
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            out, err = sh.exec_command(&#39;cloud-init status&#39;)
+            if &#39;done&#39; in out:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                f&#34;, but cloud-init still in {out}&#34;
+            )
+
+    # attach volume
+    vol_name, vol_size = small_volume
+    code, data = api_client.vms.add_volume(unique_vm_name, self.disk_name, vol_name)
+
+    assert 204 == code, (code, data)
+
+    # Login to VM to verify volume hot pluged
+    with self.login_to_vm_from_host(
+        host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+    ) as (sh, host_sh):
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            scsi, err = sh.exec_command(
+                &#34;ls -d /sys/block/sd*/device/scsi_device/*&#34;
+                &#34; | awk -F &#39;[/]&#39; &#39;{print $4,$7}&#39;&#34;
+            )
+            if scsi:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;Hot pluged Volume {vol_name} unavailable after {wait_timeout}s\n&#34;
+                f&#34;STDOUT: {scsi}, STDERR: {err}&#34;
+            )
+
+        out, err = sh.exec_command(
+            f&#34;lsblk -r | grep {scsi.split()[0]}&#34;
+        )
+
+    assert f&#34;{vol_size}G 0 disk&#34; in out, (
+        f&#34;existing Volume {vol_size}G not found\n&#34;
+        f&#34;lsblk output: {out}&#34;
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestHotPlugVolume.test_remove"><code class="name flex">
-<span>def <span class="ident">test_remove</span></span>(<span>self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, small_volume, stopped_vm)</span>
+<span>def <span class="ident">test_remove</span></span>(<span>self,<br>api_client,<br>ssh_keypair,<br>wait_timeout,<br>host_shell,<br>vm_shell,<br>small_volume,<br>stopped_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;hot_plug_volume&#34;])
+def test_remove(
+    self, api_client, ssh_keypair, wait_timeout, host_shell, vm_shell, small_volume, stopped_vm
+):
+    unique_vm_name, ssh_user = stopped_vm
+    pub_key, pri_key = ssh_keypair
+
+    # remove volume
+    vol_name, vol_size = small_volume
+    code, data = api_client.vms.remove_volume(unique_vm_name, self.disk_name)
+
+    assert 204 == code, (code, data)
+
+    # Log into VM to verify volume removed
+    code, data = api_client.vms.get_status(unique_vm_name)
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    with self.login_to_vm_from_host(
+        host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
+    ) as (sh, host_sh):
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            scsi, err = sh.exec_command(
+                &#34;ls -d1 /sys/block/* | grep &#39;sd&#39;&#34;
+            )
+            if not scsi:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;Hot pluged Volume {vol_name} still available after {wait_timeout}s\n&#34;
+                f&#34;STDOUT: {scsi}, STDERR: {err}&#34;
+            )
+
+        out, err = sh.exec_command(
+            &#34;lsblk -r | grep &#39;sd&#39;&#34;
+        )
+
+    assert not scsi, &#34;SCSI device still available in `/sys/block/`&#34;
+    assert not out, &#34;SCSI device still available in `lsblk -r`&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -463,7 +1279,6 @@ class TestHotPlugVolume:
 <span>class <span class="ident">TestVMClone</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -791,6 +1606,7 @@ class TestVMClone:
             vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
             api_client.volumes.delete(vol_name)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
@@ -804,6 +1620,160 @@ class TestVMClone:
 <span>def <span class="ident">test_clone_running_vm</span></span>(<span>self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_clone_running_vm(
+    self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm
+):
+    &#34;&#34;&#34;
+    To cover test:
+    - (legacy) https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/ # noqa
+    - (new) https://github.com/harvester/tests/issues/361
+
+    Steps:
+        1. Create a VM with 1 CPU 2 Memory
+        2. Start the VM and write some data
+        3. Clone the VM into VM-cloned
+        4. Verify VM-Cloned
+
+    Exepected Result:
+        - Cloned-VM should be available and starting
+        - Cloned-VM should becomes `Running`
+        - Written data should available in Cloned-VM
+    &#34;&#34;&#34;
+    unique_vm_name, ssh_user = stopped_vm
+    pub_key, pri_key = ssh_keypair
+    code, data = api_client.vms.start(unique_vm_name)
+
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    # Log into VM to make some data
+    with host_shell.login(host_ip, jumphost=True) as h:
+        vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            try:
+                vm_sh.connect(vm_ip, jumphost=h.client)
+            except ChannelException as e:
+                login_ex = e
+                sleep(3)
+            else:
+                break
+        else:
+            raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
+
+        with vm_sh as sh:
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                out, err = sh.exec_command(&#39;cloud-init status&#39;)
+                if &#39;done&#39; in out:
+                    break
+                sleep(3)
+            else:
+                raise AssertionError(
+                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                    f&#34;, but cloud-init still in {out}&#34;
+                )
+            out, err = sh.exec_command(f&#39;echo {unique_vm_name!r} &gt; ~/vmname&#39;)
+            assert not err, (out, err)
+            sh.exec_command(&#39;sync&#39;)
+
+    # Clone VM into new VM
+    cloned_name = f&#34;cloned-{unique_vm_name}&#34;
+    code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
+    assert 204 == code, f&#34;Failed to clone VM {unique_vm_name} into new VM {cloned_name}&#34;
+
+    # Check cloned VM is created
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(cloned_name)
+        if 200 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;restored VM {cloned_name} is not created&#34;
+        )
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(cloned_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({cloned_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    # Log into new VM to check VM is cloned as old one
+    with host_shell.login(host_ip, jumphost=True) as h:
+        vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            try:
+                vm_sh.connect(vm_ip, jumphost=h.client)
+            except ChannelException as e:
+                login_ex = e
+                sleep(3)
+            else:
+                break
+        else:
+            raise AssertionError(f&#34;Unable to login to VM {cloned_name}&#34;) from login_ex
+
+        with vm_sh as sh:
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                out, err = sh.exec_command(&#39;cloud-init status&#39;)
+                if &#39;done&#39; in out:
+                    break
+                sleep(3)
+            else:
+                raise AssertionError(
+                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                    f&#34;, but cloud-init still in {out}&#34;
+                )
+
+            out, err = sh.exec_command(&#39;cat ~/vmname&#39;)
+        assert unique_vm_name in out, (
+            f&#34;cloud-init writefile failed\n&#34;
+            f&#34;Executed stdout: {out}\n&#34;
+            f&#34;Executed stderr: {err}&#34;
+        )
+
+    # Remove cloned VM and volumes
+    code, data = api_client.vms.get(cloned_name)
+    cloned_spec = api_client.vms.Spec.from_dict(data)
+    api_client.vms.delete(cloned_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(cloned_name)
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Delete VM({cloned_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+    for vol in cloned_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"><p>To cover test:
 - (legacy) <a href="https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/">https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-on/</a> # noqa
 - (new) <a href="https://github.com/harvester/tests/issues/361">https://github.com/harvester/tests/issues/361</a></p>
@@ -823,6 +1793,180 @@ class TestVMClone:
 <span>def <span class="ident">test_clone_stopped_vm</span></span>(<span>self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_clone_stopped_vm(
+    self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm
+):
+    &#34;&#34;&#34;
+    To cover test:
+    - (legacy) https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-off/ # noqa
+    - (new) https://github.com/harvester/tests/issues/361
+
+    Steps:
+        1. Create a VM with 1 CPU 2 Memory
+        2. Start the VM and write some data
+        3. Stop the VM
+        4. Clone the VM into VM-cloned
+        5. Verify VM-Cloned
+
+    Exepected Result:
+        - Cloned-VM should be available and stopped
+        - Cloned-VM should able to start and becomes `Running`
+        - Written data should available in Cloned-VM
+    &#34;&#34;&#34;
+    unique_vm_name, ssh_user = stopped_vm
+    pub_key, pri_key = ssh_keypair
+    code, data = api_client.vms.start(unique_vm_name)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    # Log into VM to make some data
+    with host_shell.login(host_ip, jumphost=True) as h:
+        vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            try:
+                vm_sh.connect(vm_ip, jumphost=h.client)
+            except ChannelException as e:
+                login_ex = e
+                sleep(3)
+            else:
+                break
+        else:
+            raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
+
+        with vm_sh as sh:
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                out, err = sh.exec_command(&#39;cloud-init status&#39;)
+                if &#39;done&#39; in out:
+                    break
+                sleep(3)
+            else:
+                raise AssertionError(
+                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                    f&#34;, but cloud-init still in {out}&#34;
+                )
+            out, err = sh.exec_command(f&#39;echo &#34;stopped-{unique_vm_name}&#34; &gt; ~/vmname&#39;)
+            assert not err, (out, err)
+            sh.exec_command(&#39;sync&#39;)
+
+    # Stop the VM
+    code, data = api_client.vms.stop(unique_vm_name)
+    assert 204 == code, &#34;`Stop` return unexpected status code&#34;
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    # Clone VM into new VM
+    cloned_name = f&#34;cloned-{unique_vm_name}&#34;
+    code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
+    assert 204 == code, f&#34;Failed to clone VM {unique_vm_name} into new VM {cloned_name}&#34;
+
+    # Check cloned VM is available and stooped
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(cloned_name)
+        if (200 == code
+           and &#34;Halted&#34; == data[&#39;spec&#39;].get(&#39;runStrategy&#39;)
+           and &#34;Stopped&#34; == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;)):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Cloned VM {cloned_name} is not available and stopped&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    # Check cloned VM started
+    api_client.vms.start(cloned_name)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(cloned_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({cloned_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    # Log into new VM to check VM is cloned as old one
+    with host_shell.login(host_ip, jumphost=True) as h:
+        vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            try:
+                vm_sh.connect(vm_ip, jumphost=h.client)
+            except ChannelException as e:
+                login_ex = e
+                sleep(3)
+            else:
+                break
+        else:
+            raise AssertionError(f&#34;Unable to login to VM {cloned_name}&#34;) from login_ex
+
+        with vm_sh as sh:
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                out, err = sh.exec_command(&#39;cloud-init status&#39;)
+                if &#39;done&#39; in out:
+                    break
+                sleep(3)
+            else:
+                raise AssertionError(
+                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                    f&#34;, but cloud-init still in {out}&#34;
+                )
+
+            out, err = sh.exec_command(&#39;cat ~/vmname&#39;)
+        assert f&#34;stopped-{unique_vm_name}&#34; in out, (
+            f&#34;cloud-init writefile failed\n&#34;
+            f&#34;Executed stdout: {out}\n&#34;
+            f&#34;Executed stderr: {err}&#34;
+        )
+
+    # Remove cloned VM and volumes
+    code, data = api_client.vms.get(cloned_name)
+    cloned_spec = api_client.vms.Spec.from_dict(data)
+    api_client.vms.delete(cloned_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(cloned_name)
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Delete VM({cloned_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+    for vol in cloned_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"><p>To cover test:
 - (legacy) <a href="https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-off/">https://harvester.github.io/tests/manual/virtual-machines/clone-vm-that-is-turned-off/</a> # noqa
 - (new) <a href="https://github.com/harvester/tests/issues/361">https://github.com/harvester/tests/issues/361</a></p>
@@ -845,8 +1989,6 @@ class TestVMClone:
 <span>class <span class="ident">TestVMOperations</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>To cover tests:
-- <a href="https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/">https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</a> # noqa</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1222,6 +2364,8 @@ class TestVMOperations:
             &#34;\n&#34;.join(f&#34;Volume({n}): {r}&#34; for n, r in fails)
         )</code></pre>
 </details>
+<div class="desc"><p>To cover tests:
+- <a href="https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/">https://harvester.github.io/tests/manual/virtual-machines/verify-operations-like-stop-restart-pause-download-yaml-generate-template/</a> # noqa</p></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMOperations.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
@@ -1235,6 +2379,63 @@ class TestVMOperations:
 <span>def <span class="ident">test_abort_migrate</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_abort_migrate(self, api_client, unique_vm_name, wait_timeout):
+    &#34;&#34;&#34;
+    To cover test:
+    - https://harvester.github.io/tests/manual/live-migration/abort-live-migration/
+
+    Steps:
+        1. Abort the VM was created and migrating
+    Exepected Result:
+        - VM should able to perform migrate
+        - VM should stay in current host when migrating be aborted.
+    &#34;&#34;&#34;
+    code, host_data = api_client.hosts.get()
+    assert 200 == code, (code, host_data)
+    code, data = api_client.vms.get_status(unique_vm_name)
+    cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+    assert cur_host, (
+        f&#34;VMI exists but `nodeName` is empty.\n&#34;
+        f&#34;{data}&#34;
+    )
+
+    new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;]
+                    if cur_host != h[&#39;id&#39;] and not h[&#39;spec&#39;].get(&#39;taint&#39;))
+
+    code, data = api_client.vms.migrate(unique_vm_name, new_host)
+    assert 204 == code, (code, data)
+
+    states = [&#34;Aborting migration&#34;, &#34;Migrating&#34;]
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        m_state = data[&#39;metadata&#39;][&#39;annotations&#39;].get(&#34;harvesterhci.io/migrationState&#34;)
+        if m_state == states[-1]:
+            states.pop()
+            if states:
+                code, err = api_client.vms.abort_migrate(unique_vm_name)
+                assert 204 == code, (code, err)
+            else:
+                break
+        elif len(states) == 1 and not m_state:
+            # we did abort migration, and the anootation removed
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to abort VM({unique_vm_name})&#39;s migration, stuck on {states[-1]}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    assert cur_host == data[&#39;status&#39;][&#39;nodeName&#39;], (
+        f&#34;Failed to abort VM({unique_vm_name})&#39;s migration,&#34;
+        f&#34;VM been moved to {data[&#39;status&#39;][&#39;nodeName&#39;]} is not the origin host {cur_host}\n&#34;
+    )</code></pre>
+</details>
 <div class="desc"><p>To cover test:
 - <a href="https://harvester.github.io/tests/manual/live-migration/abort-live-migration/">https://harvester.github.io/tests/manual/live-migration/abort-live-migration/</a></p>
 <h2 id="steps">Steps</h2>
@@ -1251,6 +2452,65 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_delete</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_delete(self, api_client, unique_vm_name, wait_timeout):
+    &#39;&#39;&#39;
+    Steps:
+        1. Delete the VM was created
+        2. Delete Volumes was belonged to the VM
+    Exepected Result:
+        - VM should able to be deleted and success
+        - Volumes should able to be deleted and success
+    &#39;&#39;&#39;
+
+    code, data = api_client.vms.delete(unique_vm_name)
+    assert 200 == code, (code, data)
+
+    spec = api_client.vms.Spec.from_dict(data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Delete VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    fails, check = [], dict()
+    for vol in spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        check[vol_name] = api_client.volumes.delete(vol_name)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        l_check = dict()
+        for vol_name, (code, data) in check.items():
+            if code not in (200, 204):
+                fails.append((vol_name, f&#34;Failed to delete\nStatus({code}): {data}&#34;))
+            else:
+                code, data = api_client.volumes.get(vol_name)
+                if 404 != code:
+                    l_check[vol_name] = (code, data)
+        check = l_check
+        if not check:
+            break
+        sleep(5)
+    else:
+        for vol_name, (code, data) in check.items():
+            fails.append((vol_name, f&#34;Failed to delete\nStatus({code}): {data}&#34;))
+
+    assert not fails, (
+        f&#34;Failed to delete VM({unique_vm_name})&#39;s volumes with errors:\n&#34;
+        &#34;\n&#34;.join(f&#34;Volume({n}): {r}&#34; for n, r in fails)
+    )</code></pre>
+</details>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Delete the VM was created</li>
@@ -1266,6 +2526,48 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_migrate</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_migrate(self, api_client, unique_vm_name, wait_timeout):
+    &#34;&#34;&#34;
+    To cover test:
+    - https://harvester.github.io/tests/manual/live-migration/migrate-turned-on-vm-to-another-host/ # noqa
+
+    Steps:
+        1. migrate the VM was created
+    Exepected Result:
+        - VM&#39;s host Node should be changed to another one
+    &#34;&#34;&#34;
+    code, host_data = api_client.hosts.get()
+    assert 200 == code, (code, host_data)
+    code, data = api_client.vms.get_status(unique_vm_name)
+    cur_host = data[&#39;status&#39;].get(&#39;nodeName&#39;)
+    assert cur_host, (
+        f&#34;VMI exists but `nodeName` is empty.\n&#34;
+        f&#34;{data}&#34;
+    )
+
+    new_host = next(h[&#39;id&#39;] for h in host_data[&#39;data&#39;]
+                    if cur_host != h[&#39;id&#39;] and not h[&#39;spec&#39;].get(&#39;taint&#39;))
+
+    code, data = api_client.vms.migrate(unique_vm_name, new_host)
+    assert 204 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        migrating = data[&#39;metadata&#39;][&#39;annotations&#39;].get(&#34;harvesterhci.io/migrationState&#34;)
+        if not migrating and new_host == data[&#39;status&#39;][&#39;nodeName&#39;]:
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Migrate VM({unique_vm_name}) from {cur_host} to {new_host}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
 <div class="desc"><p>To cover test:
 - <a href="https://harvester.github.io/tests/manual/live-migration/migrate-turned-on-vm-to-another-host/">https://harvester.github.io/tests/manual/live-migration/migrate-turned-on-vm-to-another-host/</a> # noqa</p>
 <h2 id="steps">Steps</h2>
@@ -1281,6 +2583,38 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_pause</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;pause_vm&#34;, depends=[&#34;minimal_vm&#34;])
+def test_pause(self, api_client, unique_vm_name, wait_timeout):
+    &#39;&#39;&#39;
+    Steps:
+        1. Pause the VM was created
+    Exepected Result:
+        - VM should change status into `Paused`
+    &#39;&#39;&#39;
+    code, data = api_client.vms.pause(unique_vm_name)
+    assert 204 == code, &#34;`Pause` return unexpected status code&#34;
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if [c for c in data[&#39;status&#39;].get(&#39;conditions&#39;, []) if &#34;Paused&#34; == c[&#39;type&#39;]]:
+            conditions = data[&#39;status&#39;][&#39;conditions&#39;]
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to pause VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;VM Status: {data[&#39;status&#39;]}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    assert &#34;Paused&#34; == conditions[-1].get(&#39;type&#39;), conditions
+    assert &#34;PausedByUser&#34; == conditions[-1].get(&#39;reason&#39;), conditions</code></pre>
+</details>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Pause the VM was created
@@ -1294,6 +2628,57 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_restart</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_restart(self, api_client, unique_vm_name, wait_timeout):
+    &#39;&#39;&#39;
+    Steps:
+        1. Restart the VM was created
+    Exepected Result:
+        - VM&#39;s ActivePods should be updated (which means the VM restarted)
+        - VM&#39;s status should update to `Running`
+        - VM&#39;s qemu-agent should be connected
+    &#39;&#39;&#39;
+    code, data = api_client.vms.get_status(unique_vm_name)
+    assert 200 == code, (
+        f&#34;unable to get VM({unique_vm_name})&#39;s instance infos with errors:\n&#34;
+        f&#34;Status({code}): {data}&#34;
+    )
+
+    old_pods = set(data[&#39;status&#39;][&#39;activePods&#39;].items())
+
+    code, data = api_client.vms.restart(unique_vm_name)
+    assert 204 == code, &#34;`Restart return unexpected status code&#34;
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if old_pods.difference(data[&#39;status&#39;].get(&#39;activePods&#39;, {}).items() or old_pods):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Restart VM({unique_vm_name}), activePods is not updated.\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        phase = data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
+        conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
+        if &#34;Running&#34; == phase and conds and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Restart VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Restart the VM was created
@@ -1309,6 +2694,58 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_softreboot</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_softreboot(self, api_client, unique_vm_name, wait_timeout):
+    &#39;&#39;&#39;
+    Steps:
+        1. Softreboot the VM was created
+    Exepected Result:
+        - VM&#39;s qemu-agent should disconnected (which means the VM rebooting)
+        - VM&#39;s qemu-agent should re-connected (which means the VM boot into OS)
+        - VM&#39;s status should be changed to `Running`
+    &#39;&#39;&#39;
+    code, data = api_client.vms.get_status(unique_vm_name)
+    assert 200 == code, (
+        f&#34;unable to get VM({unique_vm_name})&#39;s instance infos with errors:\n&#34;
+        f&#34;Status({code}): {data}&#34;
+    )
+    old_agent = data[&#39;status&#39;][&#39;conditions&#39;][-1]
+    assert &#34;AgentConnected&#34; == old_agent[&#39;type&#39;], (code, data)
+
+    api_client.vms.softreboot(unique_vm_name)
+    # Wait until agent disconnected (leaving OS)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if &#34;AgentConnected&#34; not in data[&#39;status&#39;][&#39;conditions&#39;][-1][&#39;type&#39;]:
+            break
+        sleep(5)
+    # then wait agent connected again (Entering OS)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        phase, conds = data[&#39;status&#39;][&#39;phase&#39;], data[&#39;status&#39;].get(&#39;conditions&#39;, [{}])
+        if &#34;Running&#34; == phase and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Softreboot VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    old_t = datetime.strptime(old_agent[&#39;lastProbeTime&#39;], &#39;%Y-%m-%dT%H:%M:%SZ&#39;)
+    new_t = datetime.strptime(conds[-1][&#39;lastProbeTime&#39;], &#39;%Y-%m-%dT%H:%M:%SZ&#39;)
+
+    assert new_t &gt; old_t, (
+        &#34;Agent&#39;s probe time is not updated.\t&#34;
+        f&#34;Before softreboot: {old_t}, After softreboot: {new_t}\n&#34;
+        f&#34;Last API Status({code}): {data}&#34;
+    )</code></pre>
+</details>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Softreboot the VM was created
@@ -1324,6 +2761,50 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_start</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;start_vm&#34;, depends=[&#34;stop_vm&#34;])
+def test_start(self, api_client, unique_vm_name, wait_timeout):
+    &#39;&#39;&#39;
+    Steps:
+        1. Start the VM was created and stopped
+    Exepected Result:
+        - VM should change status into `Running`
+    &#39;&#39;&#39;
+    code, data = api_client.vms.start(unique_vm_name)
+    assert 204 == code, &#34;`Start return unexpected status code&#34;
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        strategy = data[&#39;spec&#39;][&#39;runStrategy&#39;]
+        pstats = data[&#39;status&#39;][&#39;printableStatus&#39;]
+        if &#34;Halted&#34; != strategy and &#34;Running&#34; == pstats:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        phase = data.get(&#39;status&#39;, {}).get(&#39;phase&#39;)
+        conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [{}])
+        if &#34;Running&#34; == phase and conds and &#34;AgentConnected&#34; == conds[-1].get(&#39;type&#39;):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Start the VM was created and stopped
@@ -1337,6 +2818,38 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_stop</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;stop_vm&#34;, depends=[&#34;minimal_vm&#34;])
+def test_stop(self, api_client, unique_vm_name, wait_timeout):
+    &#39;&#39;&#39;
+    Steps:
+        1. Stop the VM was created and not stopped
+    Exepected Result:
+        - VM&#39;s status should be changed to `Stopped`
+        - VM&#39;s `RunStrategy` should be changed to `Halted`
+    &#39;&#39;&#39;
+    code, data = api_client.vms.stop(unique_vm_name)
+    assert 204 == code, &#34;`Stop` return unexpected status code&#34;
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    code, data = api_client.vms.get(unique_vm_name)
+    assert &#34;Halted&#34; == data[&#39;spec&#39;][&#39;runStrategy&#39;]
+    assert &#34;Stopped&#34; == data[&#39;status&#39;][&#39;printableStatus&#39;]</code></pre>
+</details>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Stop the VM was created and not stopped
@@ -1351,6 +2864,35 @@ Exepected Result:<ul>
 <span>def <span class="ident">test_unpause</span></span>(<span>self, api_client, unique_vm_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;pause_vm&#34;])
+def test_unpause(self, api_client, unique_vm_name, wait_timeout):
+    &#39;&#39;&#39;
+    Steps:
+        1. Unpause the VM was paused
+    Exepected Result:
+        - VM&#39;s status should not be `Paused`
+    &#39;&#39;&#39;
+    code, data = api_client.vms.unpause(unique_vm_name)
+    assert 204 == code, &#34;`Unpause` return unexpected status code&#34;
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        cond_types = set(c[&#39;type&#39;] for c in data[&#39;status&#39;].get(&#39;conditions&#39;, []))
+        if {&#34;AgentConnected&#34;} &amp; cond_types and not {&#34;Paused&#34;} &amp; cond_types:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;Failed to unpause VM({unique_vm_name}) with errors:\n&#34;
+            f&#34;VM Status: {data[&#39;status&#39;]}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Unpause the VM was paused
@@ -1366,7 +2908,6 @@ Exepected Result:<ul>
 <span>class <span class="ident">TestVMResource</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1670,6 +3211,7 @@ class TestVMResource:
             vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
             api_client.volumes.delete(vol_name)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
@@ -1680,33 +3222,349 @@ class TestVMResource:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_create_schedule_on_maximum"><code class="name flex">
-<span>def <span class="ident">test_create_schedule_on_maximum</span></span>(<span>self, api_client, unique_vm_name, vm_checker, vm_calc, image, unset_cpu_memory_overcommit, res_type)</span>
+<span>def <span class="ident">test_create_schedule_on_maximum</span></span>(<span>self,<br>api_client,<br>unique_vm_name,<br>vm_checker,<br>vm_calc,<br>image,<br>unset_cpu_memory_overcommit,<br>res_type)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.parametrize(&#34;res_type&#34;, [&#34;cpu&#34;, &#34;memory&#34;])
+def test_create_schedule_on_maximum(
+    self, api_client, unique_vm_name, vm_checker, vm_calc, image,
+    unset_cpu_memory_overcommit, res_type
+):
+    # get the node having the maximum resource
+    code, data = api_client.hosts.get()
+    nodes_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
+                 for n in data[&#39;data&#39;]]
+    nodes_res = sorted(nodes_res, key=lambda n: n[1][res_type], reverse=True)
+    expected_host, expected_res = next((cn, nd[res_type] + (cd[res_type] - nd[res_type]) / 2)
+                                       for (cn, cd), (nn, nd) in zip(nodes_res, nodes_res[1:]))
+
+    # Calculate the maximum resource
+    vm_spec, namespace = api_client.vms.Spec(1, 2), &#39;default&#39;
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    data = vm_spec.to_dict(unique_vm_name, namespace)
+
+    if res_type == &#39;cpu&#39;:
+        exp = -2
+        data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][res_type][&#39;cores&#39;] = int(expected_res) + 1
+    else:
+        exp = 2
+
+    for k, resource in data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;resources&#39;].items():
+        resource[res_type] = vm_calc.format_unit(expected_res, max_exp=exp, suffix_space=False)
+
+    try:
+        # Create VM then verify it
+        code, data = api_client.vms.create(unique_vm_name, data, namespace)
+        assert 201 == code, (code, data)
+        vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+        assert vm_started, (code, vmi)
+
+        code, hosts = api_client.hosts.get()
+        cur_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
+                   for n in hosts[&#39;data&#39;]]
+        schedulables = [(name, res) for (name, res) in cur_res if res[res_type] &gt; expected_res]
+        if not schedulables:
+            # General case
+            assert expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;], (
+                f&#34;VM started but not hosted on expected host: {expected_host}&#34;
+            )
+        else:
+            # ???: node&#39;s resources released while creating VM
+            expected_conditions = [
+                # VM still be hosted on expected host
+                expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;],
+                # VM be hosted on others
+                expected_host in [name for name, _ in schedulables],
+            ]
+            assert any(expected_conditions), (
+                f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
+                f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
+            )
+    finally:
+        # We must delete the VM to release node&#39;s resources
+        _ = vm_checker.wait_deleted(unique_vm_name, namespace=namespace)
+        for vol in data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;volumes&#39;]:
+            if &#39;persistentVolumeClaim&#39; in vol:
+                api_client.volumes.delete(vol[&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_cpu"><code class="name flex">
 <span>def <span class="ident">test_update_cpu</span></span>(<span>self, api_client, ssh_keypair, vm_shell_from_host, vm_checker, stopped_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_update_cpu(
+    self, api_client, ssh_keypair, vm_shell_from_host, vm_checker,
+    stopped_vm
+):
+    unique_vm_name, ssh_user = stopped_vm
+    pub_key, pri_key = ssh_keypair
+
+    code, data = api_client.vms.start(unique_vm_name)
+    assert 204 == code, (code, data)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#34;default&#34;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Login to VM to check current CPU counts
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (
+            f&#34;VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds&#34;
+            f&#34;, but cloud-init still in {out}&#34;
+        )
+
+        out, err = sh.exec_command(&#34;lscpu -e=cpu | tail -1&#34;)
+        out = out.strip()
+    assert out.isdigit() and not err, (
+        f&#34;Failed to list cpu amount, output: {out}\nerror: {err}&#34;
+    )
+    new_cpus = (int(out) + 1) + 1  # (shift to 1) + 1
+
+    # Update CPUs
+    code, data = api_client.vms.get(unique_vm_name)
+    assert 200 == code, (code, data)
+    spec = api_client.vms.Spec.from_dict(data)
+    spec.cpu_cores = new_cpus
+    code, data = api_client.vms.update(unique_vm_name, spec)
+    assert 200 == code, (code, data)
+    vm_restarted, ctx = vm_checker.wait_restarted(unique_vm_name)
+    assert vm_restarted, (
+        f&#34;Failed to Restart VM({unique_vm_name}),&#34;
+        f&#34; timed out while executing {ctx.callee!r}&#34;
+    )
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#34;default&#34;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Login to VM to check updated CPUs
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (
+            f&#34;VM {unique_vm_name} Started {vm_checker.wait_timeout} seconds&#34;
+            f&#34;, but cloud-init still in {out}&#34;
+        )
+
+        out, err = sh.exec_command(&#34;lscpu -e=cpu | tail -1&#34;)
+        out = out.strip()
+    assert out.isdigit() and not err, (
+        f&#34;Failed to list cpu amount, output: {out}\nerror: {err}&#34;
+    )
+    assert new_cpus == int(out) + 1, (
+        f&#34;Failed to update CPU to {new_cpus}, it still be {out}&#34;
+    )
+
+    # stop the VM
+    vm_checker.wait_stopped(unique_vm_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_enable_usb"><code class="name flex">
 <span>def <span class="ident">test_update_enable_usb</span></span>(<span>self, api_client, unique_vm_name, vm_checker, image)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_update_enable_usb(self, api_client, unique_vm_name, vm_checker, image):
+    cpu, mem = 1, 2
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.run_strategy = &#34;Halted&#34;
+    vm_spec.usbtablet = False
+
+    # Create a stopped VM without usbtablet
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    assert 201 == code, (code, data)
+    with vm_checker.configure(snooze=1):
+        vm_show_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
+    assert vm_show_stopped, (code, data)
+
+    # update VM to enable usbtablet and start
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.usbtablet = True
+    code, data = api_client.vms.update(unique_vm_name, vm_spec)
+    assert 200 == code, (code, data)
+    vm_started, (code, data) = vm_checker.wait_started(unique_vm_name)
+    assert vm_started, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    devices = data[&#39;spec&#39;][&#39;domain&#39;][&#39;devices&#39;]
+    assert &#39;inputs&#39; in devices
+    assert &#39;usb&#39; in devices[&#39;inputs&#39;][0][&#39;bus&#39;]
+    assert &#39;tablet&#39; in devices[&#39;inputs&#39;][0][&#39;name&#39;]
+    assert &#39;tablet&#39; in devices[&#39;inputs&#39;][0][&#39;type&#39;]
+
+    # teardown: remove the VM
+    _ = vm_checker.wait_deleted(unique_vm_name)
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_enable_user_data"><code class="name flex">
 <span>def <span class="ident">test_update_enable_user_data</span></span>(<span>self, api_client, unique_vm_name, vm_checker, image)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_update_enable_user_data(self, api_client, unique_vm_name, vm_checker, image):
+    cpu, mem = 1, 2
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.run_strategy = &#34;Halted&#34;
+    vm_spec.guest_agent = False
+
+    # Create a stopped VM without user data (guest agent)
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    assert 201 == code, (code, data)
+    with vm_checker.configure(snooze=1):
+        vm_show_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
+    assert vm_show_stopped, (code, data)
+
+    # update VM to add guest agent and start
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.guest_agent = True
+    code, data = api_client.vms.update(unique_vm_name, vm_spec)
+    assert 200 == code, (code, data)
+    vm_started, (code, data) = vm_checker.wait_started(unique_vm_name)
+    assert vm_started, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    cloudinit = next(d for d in data[&#39;spec&#39;][&#39;volumes&#39;] if &#39;cloudInitNoCloud&#39; in d)
+    user_data = yaml.safe_load(cloudinit[&#39;cloudInitNoCloud&#39;][&#39;userData&#39;])
+
+    assert &#39;packages&#39; in user_data
+    assert &#39;runcmd&#39; in user_data
+    assert &#39;qemu-guest-agent&#39; in user_data[&#39;packages&#39;]
+    assert &#39;systemctl&#39; in user_data[&#39;runcmd&#39;][0]
+    assert &#39;enable&#39; in user_data[&#39;runcmd&#39;][0]
+    assert &#39;--now&#39; in user_data[&#39;runcmd&#39;][0]
+    assert &#39;qemu-guest-agent.service&#39; in user_data[&#39;runcmd&#39;][0]
+
+    # teardown: remove the VM
+    _ = vm_checker.wait_deleted(unique_vm_name)
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMResource.test_update_schedule_on_maximum"><code class="name flex">
-<span>def <span class="ident">test_update_schedule_on_maximum</span></span>(<span>self, api_client, vm_checker, vm_calc, stopped_vm, unset_cpu_memory_overcommit, res_type)</span>
+<span>def <span class="ident">test_update_schedule_on_maximum</span></span>(<span>self,<br>api_client,<br>vm_checker,<br>vm_calc,<br>stopped_vm,<br>unset_cpu_memory_overcommit,<br>res_type)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.parametrize(&#34;res_type&#34;, [&#34;cpu&#34;, &#34;memory&#34;])
+def test_update_schedule_on_maximum(
+    self, api_client, vm_checker, vm_calc, stopped_vm, unset_cpu_memory_overcommit, res_type
+):
+    unique_vm_name, ssh_user = stopped_vm
+
+    # make sure VM stopped and configure as minimal resource
+    vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+    assert vm_stopped, (code, data)
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.cpu_cores, vm_spec.memory = 1, 2
+    code, data = api_client.vms.update(unique_vm_name, vm_spec)
+    assert 200 == code, (code, data)
+
+    # get the node having the maximum resource
+    code, data = api_client.hosts.get()
+    nodes_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
+                 for n in data[&#39;data&#39;]]
+    nodes_res = sorted(nodes_res, key=lambda n: n[1][res_type], reverse=True)
+    expected_host, expected_res = next((cn, nd[res_type] + (cd[res_type] - nd[res_type]) / 2)
+                                       for (cn, cd), (nn, nd) in zip(nodes_res, nodes_res[1:]))
+
+    # update VM to target resource and start it
+    code, data = api_client.vms.get(unique_vm_name)
+    if res_type == &#39;cpu&#39;:
+        exp = -2
+        data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][res_type][&#39;cores&#39;] = int(expected_res) + 1
+    else:
+        exp = 2
+
+    for k, resource in data[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;domain&#39;][&#39;resources&#39;].items():
+        resource[res_type] = vm_calc.format_unit(expected_res, max_exp=exp, suffix_space=False)
+
+    try:
+        code, data = api_client.vms.update(unique_vm_name, data)
+        assert 200 == code, (code, data)
+        vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+        assert vm_started, (code, vmi)
+
+        # Verify the VM be hosted expected
+        code, hosts = api_client.hosts.get()
+        cur_res = [(n[&#39;metadata&#39;][&#39;name&#39;], vm_calc.node_resources(n)[&#39;schedulable&#39;])
+                   for n in hosts[&#39;data&#39;]]
+        schedulables = [(name, res) for (name, res) in cur_res if res[res_type] &gt; expected_res]
+        if not schedulables:
+            # General case
+            assert expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;], (
+                f&#34;VM started but not hosted on expected host: {expected_host}&#34;
+            )
+        else:
+            # ???: node&#39;s resources released while creating VM
+            expected_conditions = [
+                # VM still be hosted on expected host
+                expected_host == vmi[&#39;status&#39;][&#39;nodeName&#39;],
+                # VM be hosted on others
+                expected_host in [name for name, _ in schedulables],
+            ]
+            assert any(expected_conditions), (
+                f&#34;VM started on another host {vmi[&#39;status&#39;][&#39;nodeName&#39;]},&#34;
+                f&#34; and the resource of expected host {expected_host!r} be updated.&#34;
+            )
+    finally:
+        # Stop the VM
+        vm_checker.wait_stopped(unique_vm_name)
+        # Revert the VM to request minimal resource
+        code, data = api_client.vms.get(unique_vm_name)
+        vm_spec._data = data
+        code, data = api_client.vms.update(unique_vm_name, vm_spec)
+        assert 200 == code, (code, data)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -1715,7 +3573,6 @@ class TestVMResource:
 <span>class <span class="ident">TestVMWithVolumes</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1987,6 +3844,7 @@ class TestVMWithVolumes:
 
         api_client.volumes.delete(vol_name)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
@@ -2000,6 +3858,123 @@ class TestVMWithVolumes:
 <span>def <span class="ident">test_create_with_existing_volume</span></span>(<span>self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_create_with_existing_volume(
+    self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm
+):
+    &#34;&#34;&#34;
+    To cover test:
+    - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/ # noqa
+
+    Steps:
+        1. Create a data volume
+        2. Create a VM with 1 CPU 2 Memory and the existing data volume
+        3. Start the VM
+        4. Verify the VM
+
+    Exepected Result:
+        - VM should able to start and becomes `Running`
+        - Disk volume should be available in the VM
+        - Disk size in VM should be the same as its volume configured
+    &#34;&#34;&#34;
+    unique_vm_name, ssh_user = stopped_vm
+    pub_key, pri_key = ssh_keypair
+
+    vol_name, size = &#39;disk-existing&#39;, 3
+    vol_spec = api_client.volumes.Spec(size)
+    code, data = api_client.volumes.create(f&#34;{unique_vm_name}-{vol_name}&#34;, vol_spec)
+
+    assert 201 == code, (code, data)
+
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.run_strategy = &#34;RerunOnFailure&#34;
+    vm_spec.add_existing_volume(vol_name, f&#34;{unique_vm_name}-{vol_name}&#34;)
+
+    # Start VM with added existing volume
+    code, data = api_client.vms.update(unique_vm_name, vm_spec)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Log into VM to verify added volumes
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    with host_shell.login(host_ip, jumphost=True) as h:
+        vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            try:
+                vm_sh.connect(vm_ip, jumphost=h.client)
+            except ChannelException as e:
+                login_ex = e
+                sleep(3)
+            else:
+                break
+        else:
+            raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
+
+        with vm_sh as sh:
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                out, err = sh.exec_command(&#39;cloud-init status&#39;)
+                if &#39;done&#39; in out:
+                    break
+                sleep(3)
+            else:
+                raise AssertionError(
+                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                    f&#34;, but cloud-init still in {out}&#34;
+                )
+            out, err = sh.exec_command(&#34;lsblk -r&#34;)
+            assert not err, (out, err)
+
+    assert 1 + len(vm_spec.volumes) == len(re.findall(&#39;disk&#39;, out)), (
+        f&#34;Added Volumes amount is not correct.\n&#34;
+        f&#34;lsblk output: {out}&#34;
+    )
+
+    assert f&#34;{size}G 0 disk&#34; in out, (
+        f&#34;existing Volume {size}G not found\n&#34;
+        f&#34;lsblk output: {out}&#34;
+    )
+
+    # Tear down: Stop VM and remove added volumes
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.run_strategy = &#34;Halted&#34;
+    vols, claims = [], []
+    for vd in vm_spec.volumes:
+        if vd[&#39;disk&#39;][&#39;name&#39;] == vol_name:
+            claims.append(vd[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
+        else:
+            vols.append(vd)
+    else:
+        vm_spec.volumes = vols
+
+    api_client.vms.update(unique_vm_name, vm_spec)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if (code == 200
+                and &#39;Halted&#39; == data[&#39;spec&#39;][&#39;runStrategy&#39;]
+                and &#39;Stopped&#39; == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;)):
+            break
+        sleep(3)
+
+    for claim in claims:
+        api_client.volumes.delete(claim)</code></pre>
+</details>
 <div class="desc"><p>To cover test:
 - <a href="https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/">https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-existing-volume/</a> # noqa</p>
 <h2 id="steps">Steps</h2>
@@ -2018,6 +3993,122 @@ class TestVMWithVolumes:
 <span>def <span class="ident">test_create_with_two_volumes</span></span>(<span>self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_create_with_two_volumes(
+    self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, stopped_vm
+):
+    &#34;&#34;&#34;
+    To cover test:
+    - https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/ # noqa
+
+    Steps:
+        1. Create a VM with 1 CPU 2 Memory and 2 disk volumes
+        2. Start the VM
+        3. Verify the VM
+
+    Exepected Result:
+        - VM should able to start and becomes `Running`
+        - 2 disk volumes should be available in the VM
+        - Disk size in VM should be the same as its volume configured
+    &#34;&#34;&#34;
+    unique_vm_name, ssh_user = stopped_vm
+    pub_key, pri_key = ssh_keypair
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.run_strategy = &#34;RerunOnFailure&#34;
+    volumes = [(&#39;disk-1&#39;, 1), (&#39;disk-2&#39;, 2)]
+    for name, size in volumes:
+        vm_spec.add_volume(name, size)
+
+    # Start VM with 2 additional volumes
+    code, data = api_client.vms.update(unique_vm_name, vm_spec)
+    assert 200 == code, (code, data)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#39;default&#39;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Log into VM to verify added volumes
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+
+    with host_shell.login(host_ip, jumphost=True) as h:
+        vm_sh = vm_shell(ssh_user, pkey=pri_key)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            try:
+                vm_sh.connect(vm_ip, jumphost=h.client)
+            except ChannelException as e:
+                login_ex = e
+                sleep(3)
+            else:
+                break
+        else:
+            raise AssertionError(f&#34;Unable to login to VM {unique_vm_name}&#34;) from login_ex
+
+        with vm_sh as sh:
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                out, err = sh.exec_command(&#39;cloud-init status&#39;)
+                if &#39;done&#39; in out:
+                    break
+                sleep(3)
+            else:
+                raise AssertionError(
+                    f&#34;VM {unique_vm_name} Started {wait_timeout} seconds&#34;
+                    f&#34;, but cloud-init still in {out}&#34;
+                )
+            out, err = sh.exec_command(&#34;lsblk -r&#34;)
+            assert not err, (out, err)
+
+    assert 1 + len(vm_spec.volumes) == len(re.findall(&#39;disk&#39;, out)), (
+        f&#34;Added Volumes amount is not correct.\n&#34;
+        f&#34;lsblk output: {out}&#34;
+    )
+    fails = []
+    for _, size in volumes:
+        if not re.search(f&#34;vd.*{size}G 0 disk&#34;, out):
+            fails.append(f&#34;Volume size {size}G not found&#34;)
+
+    assert not fails, (
+        f&#34;lsblk output: {out}\n&#34;
+        &#34;\n&#34;.join(fails)
+    )
+
+    # Tear down: Stop VM and remove added volumes
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_spec.run_strategy = &#34;Halted&#34;
+    vol_names, vols, claims = [n for n, s in volumes], [], []
+    for vd in vm_spec.volumes:
+        if vd[&#39;disk&#39;][&#39;name&#39;] in vol_names:
+            claims.append(vd[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
+        else:
+            vols.append(vd)
+    else:
+        vm_spec.volumes = vols
+
+    api_client.vms.update(unique_vm_name, vm_spec)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if (code == 200
+                and &#39;Halted&#39; == data[&#39;spec&#39;][&#39;runStrategy&#39;]
+                and &#39;Stopped&#39; == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;)):
+            break
+        sleep(3)
+
+    for vol_name in claims:
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"><p>To cover test:
 - <a href="https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/">https://harvester.github.io/tests/manual/virtual-machines/create-vm-with-two-disk-volumes/</a> # noqa</p>
 <h2 id="steps">Steps</h2>
@@ -2032,9 +4123,52 @@ class TestVMWithVolumes:
 - Disk size in VM should be the same as its volume configured</p></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMWithVolumes.test_create_with_volume_image"><code class="name flex">
-<span>def <span class="ident">test_create_with_volume_image</span></span>(<span>self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, unique_name, image)</span>
+<span>def <span class="ident">test_create_with_volume_image</span></span>(<span>self,<br>api_client,<br>ssh_keypair,<br>vm_checker,<br>wait_timeout,<br>host_shell,<br>vm_shell,<br>unique_name,<br>image)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_create_with_volume_image(
+    self, api_client, ssh_keypair, vm_checker, wait_timeout, host_shell, vm_shell, unique_name,
+    image
+):
+    # Create the volume from image
+    vol_name, size = f&#34;vm-image-vol-{unique_name}&#34;, 10
+    vol_spec = api_client.volumes.Spec(size)
+    code, data = api_client.volumes.create(vol_name, vol_spec, image_id=image[&#39;id&#39;])
+    assert 201 == code, (code, data)
+
+    # Create VM using the image volume
+    cpu, mem, unique_vm_name = 1, 2, vol_name
+    pub_key, pri_key = ssh_keypair
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_existing_volume(&#34;disk-0&#34;, vol_name)
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata[&#39;ssh_authorized_keys&#39;] = [pub_key]
+    vm_spec.user_data = yaml.dump(userdata)
+
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    # Verify the VM will got IP address
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_vm_name, [&#34;default&#34;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Teardown: delete the VM and volume
+    api_client.vms.delete(unique_vm_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(3)
+
+    api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -2128,7 +4262,7 @@ class TestVMWithVolumes:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

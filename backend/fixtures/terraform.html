@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>harvester_e2e_tests.fixtures.terraform API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,54 +48,159 @@ hljs.highlightAll();
 <span>def <span class="ident">remove_ansicode</span></span>(<span>ctx)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_ansicode(ctx):
+    if isinstance(ctx, bytes):
+        ctx = ctx.decode()
+    return re.sub(r&#34;\x1b|\[\d+m&#34;, &#34;&#34;, ctx)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_executor"><code class="name flex">
 <span>def <span class="ident">tf_executor</span></span>(<span>tf_script_dir)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_executor(tf_script_dir):
+    run(str(tf_script_dir / &#34;terraform_install.sh&#34;), stdout=PIPE, stderr=PIPE)
+    executor = tf_script_dir / &#34;bin/terraform&#34;
+    assert executor.is_file()
+
+    yield executor</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_harvester"><code class="name flex">
 <span>def <span class="ident">tf_harvester</span></span>(<span>api_client, tf_script_dir, tf_provider_version, tf_executor)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_harvester(api_client, tf_script_dir, tf_provider_version, tf_executor):
+    harv = TerraformHarvester(tf_executor, tf_script_dir / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
+    kuebconfig = api_client.generate_kubeconfig()
+    out, err, exc_code = harv.initial_provider(kuebconfig, tf_provider_version)
+    assert not err and 0 == exc_code
+    return harv</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_provider_rancher_ver"><code class="name flex">
 <span>def <span class="ident">tf_provider_rancher_ver</span></span>(<span>request, harvester_metadata)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_provider_rancher_ver(request, harvester_metadata):
+    version = request.config.getoption(&#39;--terraform-provider-rancher&#39;)
+    if not version:
+        import requests
+        resp = requests.get(&#34;https://registry.terraform.io/v1/providers/rancher/rancher2&#34;)
+        version = max(resp.json()[&#39;versions&#39;], key=parse_version)
+    harvester_metadata[&#39;Terraform Rancher Provider Version&#39;] = version
+    return version</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_provider_version"><code class="name flex">
 <span>def <span class="ident">tf_provider_version</span></span>(<span>request, harvester_metadata)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_provider_version(request, harvester_metadata):
+    version = request.config.getoption(&#39;--terraform-provider-harvester&#39;)
+    if not version:
+        import requests
+        resp = requests.get(&#34;https://registry.terraform.io/v1/providers/harvester/harvester&#34;)
+        version = max(resp.json()[&#39;versions&#39;], key=parse_version)
+    harvester_metadata[&#39;Terraform Harvester Provider Version&#39;] = f&#34;{version}&#34;
+    return version</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_rancher"><code class="name flex">
-<span>def <span class="ident">tf_rancher</span></span>(<span>rancher_api_client, tf_script_dir, tf_provider_rancher_ver, tf_executor, harvester, rancher)</span>
+<span>def <span class="ident">tf_rancher</span></span>(<span>rancher_api_client,<br>tf_script_dir,<br>tf_provider_rancher_ver,<br>tf_executor,<br>harvester,<br>rancher)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def tf_rancher(rancher_api_client, tf_script_dir, tf_provider_rancher_ver, tf_executor,
+               harvester, rancher):
+    tf_rancher = TerraformRancher(tf_executor,
+                                  tf_script_dir / datetime.now().strftime(&#34;%Hh%Mm_%m-%d&#34;))
+    kubeconfig = rancher_api_client.generate_kubeconfig(harvester[&#34;id&#34;], harvester[&#34;name&#34;])
+
+    out, err, exc_code = \
+        tf_rancher.initial_provider(kubeconfig, tf_provider_rancher_ver, harvester, rancher)
+    assert not err and 0 == exc_code
+    return tf_rancher</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_rancher_resource"><code class="name flex">
 <span>def <span class="ident">tf_rancher_resource</span></span>(<span>tf_provider_rancher_ver)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_rancher_resource(tf_provider_rancher_ver):
+    converter = Path(&#34;./terraform_test_artifacts/json2hcl&#34;)
+    return TerraformRancherResource.for_version(tf_provider_rancher_ver)(converter)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_resource"><code class="name flex">
 <span>def <span class="ident">tf_resource</span></span>(<span>tf_provider_version)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_resource(tf_provider_version):
+    converter = Path(&#34;./terraform_test_artifacts/json2hcl&#34;)
+    # update `0.0.0-dev` to get newest class
+    version = &#34;8.8.99&#34; if tf_provider_version == &#39;0.0.0-dev&#39; else tf_provider_version
+    return TerraformResource.for_version(version)(converter)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.tf_script_dir"><code class="name flex">
 <span>def <span class="ident">tf_script_dir</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def tf_script_dir(request):
+    return Path(request.config.getoption(&#39;--terraform-scripts-location&#39;))</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -97,7 +213,6 @@ hljs.highlightAll();
 <span>(</span><span>converter)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -151,6 +266,7 @@ hljs.highlightAll();
             return ResourceContext(resource_type, resource_name, self.convert_to_hcl(rv), rv)
         return rv</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource">TerraformRancherResource</a></li>
@@ -185,12 +301,40 @@ Type: str</p></div>
 <span>def <span class="ident">convert_to_hcl</span></span>(<span>self, json_spec, raw=False)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convert_to_hcl(self, json_spec, raw=False):
+    rv = run(f&#34;echo {json.dumps(json_spec)!r} | {self.executor!s}&#34;,
+             shell=True, stdout=PIPE, stderr=PIPE)
+    if raw:
+        return rv
+    if rv.stderr:
+        raise TypeError(rv.stderr, rv.stdout, rv.returncode)
+    out = rv.stdout.decode()
+    out = re.sub(r&#39;&#34;resource&#34;&#39;, &#34;resource&#34;, out)    # resource should not quote
+    out = re.sub(r&#34;\&#34;(.+?)\&#34; =&#34;, r&#34;\1 =&#34;, out)      # property should not quote
+    out = re.sub(r&#39;&#34;(data\.\S+?)&#34;&#39;, r&#34;\1&#34;, out)     # data should not quote
+    out = re.sub(r&#34;(.[^ ]+) = {&#34;, r&#34;\1 {&#34;, out)     # block should not have `=`
+    return out</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource.make_resource"><code class="name flex">
 <span>def <span class="ident">make_resource</span></span>(<span>self, resource_type, resource_name, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_resource(self, resource_type, resource_name, *, convert=True, **properties):
+    rv = dict(resource={resource_type: {resource_name: properties}})
+    if convert:
+        return ResourceContext(resource_type, resource_name, self.convert_to_hcl(rv), rv)
+    return rv</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -200,7 +344,6 @@ Type: str</p></div>
 <span>(</span><span>type: str, name: str, ctx: str, raw: dict = &lt;factory&gt;)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ResourceContext(type: str, name: str, ctx: str, raw: dict = <factory>)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -212,6 +355,7 @@ class ResourceContext:
     ctx: str
     raw: dict = field(default_factory=dict, compare=False)</code></pre>
 </details>
+<div class="desc"><p>ResourceContext(type: str, name: str, ctx: str, raw: dict = <factory>)</p></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="harvester_e2e_tests.fixtures.terraform.ResourceContext.ctx"><code class="name">var <span class="ident">ctx</span> : str</code></dt>
@@ -237,7 +381,6 @@ class ResourceContext:
 <span>(</span><span>executor, workdir)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -302,6 +445,7 @@ class ResourceContext:
     def destroy_resource(self, resource_type, resource_name):
         return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancher" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancher">TerraformRancher</a></li>
@@ -312,36 +456,114 @@ class ResourceContext:
 <span>def <span class="ident">apply_resource</span></span>(<span>self, resource_type, resource_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def apply_resource(self, resource_type, resource_name):
+    return self.execute(f&#34;apply -auto-approve -target {resource_type}.{resource_name}&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.destroy_resource"><code class="name flex">
 <span>def <span class="ident">destroy_resource</span></span>(<span>self, resource_type, resource_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def destroy_resource(self, resource_type, resource_name):
+    return self.execute(f&#34;destroy -auto-approve -target {resource_type}.{resource_name}&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.exec_command"><code class="name flex">
 <span>def <span class="ident">exec_command</span></span>(<span>self, cmd, raw=False, **kws)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def exec_command(self, cmd, raw=False, **kws):
+    rv = run(cmd, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir, **kws)
+
+    if raw:
+        return rv
+    return remove_ansicode(rv.stdout), remove_ansicode(rv.stderr), rv.returncode</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.execute"><code class="name flex">
 <span>def <span class="ident">execute</span></span>(<span>self, cmd, raw=False, **kws)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def execute(self, cmd, raw=False, **kws):
+    return self.exec_command(f&#34;{self.executor} {cmd}&#34;, raw=raw, **kws)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.initial_provider"><code class="name flex">
 <span>def <span class="ident">initial_provider</span></span>(<span>self, kubeconfig, provider_version)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initial_provider(self, kubeconfig, provider_version):
+    kubefile = self.workdir / &#34;kubeconfig&#34;
+    with open(kubefile, &#34;w&#34;) as f:
+        f.write(kubeconfig)
+
+    with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+        f.write(TF_PROVIDER % dict(
+            tf_version=&#34;&gt;=0.13&#34;, config_path=kubefile.resolve(),
+            provider_source=&#34;harvester/harvester&#34;, provider_version=provider_version
+        ))
+    init_arg = &#34;&#34;
+
+    if provider_version == &#34;0.0.0-dev&#34;:
+        local_plugin_path = &#34;./registry.terraform.io/harvester/harvester/0.0.0-dev&#34;
+        docker_plugin_path = (
+            &#34;/root/.terraform.d/plugins/terraform.local/local/&#34;
+            &#34;harvester/0.0.0-dev/linux_amd64/terraform-provider-harvester_v0.0.0-dev&#34;
+        )
+        rv = run(
+            f&#34;mkdir -p {local_plugin_path}&#34;
+            f&#34;&amp;&amp; mkdir linux_amd64&#34;
+            f&#34;&amp;&amp; docker run --pull=always -q --rm --name harv-tf-master-head&#34;
+            f&#34; -v ./linux_amd64:/_tf&#34;
+            f&#34; rancher/terraform-provider-harvester:master-head-amd64&#34;
+            f&#39; bash -c &#34;cp {docker_plugin_path} /_tf/&#34;&#39;
+            f&#34;&amp;&amp; mv linux_amd64 {local_plugin_path}&#34;,
+            shell=True, stdout=PIPE, stderr=PIPE, cwd=self.workdir
+        )
+        assert not remove_ansicode(rv.stderr) and 0 == rv.returncode
+        init_arg = &#34; -plugin-dir .&#34;
+
+    return self.execute(f&#34;init {init_arg}&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformHarvester.save_as"><code class="name flex">
 <span>def <span class="ident">save_as</span></span>(<span>self, content, filename, ext='.tf')</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_as(self, content, filename, ext=&#34;.tf&#34;):
+    filepath = self.workdir / f&#34;{filename}{ext}&#34;
+    with open(filepath, &#34;w&#34;) as f:
+        f.write(content)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -351,7 +573,6 @@ class ResourceContext:
 <span>(</span><span>executor, workdir)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -373,6 +594,7 @@ class ResourceContext:
 
         return self.execute(&#34;init&#34;)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="harvester_e2e_tests.fixtures.terraform.TerraformHarvester" href="#harvester_e2e_tests.fixtures.terraform.TerraformHarvester">TerraformHarvester</a></li>
@@ -383,6 +605,26 @@ class ResourceContext:
 <span>def <span class="ident">initial_provider</span></span>(<span>self, kubeconfig, provider_version, harvester, rancher)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initial_provider(self, kubeconfig, provider_version, harvester, rancher):
+    kubefile = self.workdir / &#34;kubeconfig&#34;
+    with open(kubefile, &#34;w&#34;) as f:
+        f.write(kubeconfig)
+
+    with open(self.workdir / &#34;provider.tf&#34;, &#34;w&#34;) as f:
+        f.write(TF_PROVIDER_RANCHER % {
+            &#34;provider_source&#34;: &#34;rancher/rancher2&#34;,
+            &#34;provider_version&#34;: provider_version,
+            &#34;rancher_endpoint&#34;: rancher[&#34;endpoint&#34;],
+            &#34;rancher_token&#34;: rancher[&#34;token&#34;],
+            &#34;harvester_name&#34;: harvester[&#34;name&#34;]
+        })
+
+    return self.execute(&#34;init&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -392,7 +634,6 @@ class ResourceContext:
 <span>(</span><span>converter)</span>
 </code></dt>
 <dd>
-<div class="desc"><p><a href="https://github.com/rancher/terraform-provider-rancher2/tree/v1.20.0/docs/resources">https://github.com/rancher/terraform-provider-rancher2/tree/v1.20.0/docs/resources</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -430,6 +671,7 @@ class ResourceContext:
         }
         return ResourceContext(&#34;rancher2_cluster_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)</code></pre>
 </details>
+<div class="desc"><p><a href="https://github.com/rancher/terraform-provider-rancher2/tree/v1.20.0/docs/resources">https://github.com/rancher/terraform-provider-rancher2/tree/v1.20.0/docs/resources</a></p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></li>
@@ -444,12 +686,48 @@ class ResourceContext:
 <span>def <span class="ident">cluster_config</span></span>(<span>self, rke_cluster_name, k8s_version, harvester_name, cloud_credential_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cluster_config(self, rke_cluster_name, k8s_version, harvester_name, cloud_credential_name):
+    machine_pools = TF_MACHINE_POOLS % {
+        &#34;cloud_credential_name&#34;: cloud_credential_name,
+        &#34;machine_config_name&#34;: rke_cluster_name
+    }
+    rke_config = TF_RKE_CONFIG % {
+        &#34;machine_pools&#34;: machine_pools,
+        &#34;harvester_name&#34;: harvester_name
+    }
+    hcl_str = TF_CLUSTER_CONFIG % {
+        &#34;name&#34;: rke_cluster_name,
+        &#34;rke2_version&#34;: k8s_version,
+        &#34;rke_config&#34;: rke_config
+    }
+    return ResourceContext(&#34;rancher2_cluster_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource.machine_config"><code class="name flex">
 <span>def <span class="ident">machine_config</span></span>(<span>self, rke_cluster_name, network_id, image_id, ssh_user)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def machine_config(self, rke_cluster_name, network_id, image_id, ssh_user):
+    hcl_str = TF_MACHINE_CONFIG % {
+        &#34;name&#34;: rke_cluster_name,
+        &#34;harvester_config&#34;: TF_HARVESTER_CONFIG % {
+            &#34;ssh_user&#34;: ssh_user,
+            &#34;disk_info&#34;: TF_DISK_INFO % {&#34;image_name&#34;: image_id},
+            &#34;network_info&#34;: TF_NETWORK_INFO % {&#34;network_name&#34;: network_id},
+            &#34;user_data&#34;: TF_USER_DATA
+        }
+    }
+    return ResourceContext(&#34;rancher2_machine_config_v2&#34;, rke_cluster_name, hcl_str, &#34;&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -467,7 +745,6 @@ class ResourceContext:
 <span>(</span><span>converter)</span>
 </code></dt>
 <dd>
-<div class="desc"><p><a href="https://github.com/rancher/terraform-provider-rancher2/tree/v1.23.0/docs/resources">https://github.com/rancher/terraform-provider-rancher2/tree/v1.23.0/docs/resources</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -488,6 +765,7 @@ class ResourceContext:
                                   harvester_credential_config=harvester_credential_config,
                                   convert=convert, **properties)</code></pre>
 </details>
+<div class="desc"><p><a href="https://github.com/rancher/terraform-provider-rancher2/tree/v1.23.0/docs/resources">https://github.com/rancher/terraform-provider-rancher2/tree/v1.23.0/docs/resources</a></p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="harvester_e2e_tests.fixtures.terraform.TerraformRancherResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformRancherResource">TerraformRancherResource</a></li>
@@ -499,6 +777,21 @@ class ResourceContext:
 <span>def <span class="ident">cloud_credential</span></span>(<span>self, name, harvester_name, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cloud_credential(self, name, harvester_name, *, convert=True, **properties):
+    harvester_credential_config = {
+        &#34;cluster_id&#34;: f&#34;data.rancher2_cluster_v2.{harvester_name}.cluster_v1_id&#34;,
+        &#34;cluster_type&#34;: &#34;imported&#34;,
+        &#34;kubeconfig_content&#34;: f&#34;data.rancher2_cluster_v2.{harvester_name}.kube_config&#34;
+    }
+    return self.make_resource(&#34;rancher2_cloud_credential&#34;, name,
+                              name=name,
+                              harvester_credential_config=harvester_credential_config,
+                              convert=convert, **properties)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -516,7 +809,6 @@ class ResourceContext:
 <span>(</span><span>converter)</span>
 </code></dt>
 <dd>
-<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -572,6 +864,7 @@ class ResourceContext:
             convert=convert, **properties
         )</code></pre>
 </details>
+<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.1.0/docs/resources/</a></p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="harvester_e2e_tests.fixtures.terraform.BaseTerraformResource" href="#harvester_e2e_tests.fixtures.terraform.BaseTerraformResource">BaseTerraformResource</a></li>
@@ -586,42 +879,123 @@ class ResourceContext:
 <span>def <span class="ident">image_download</span></span>(<span>self, resource_name, name, display_name, url, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def image_download(
+    self, resource_name, name, display_name, url, *, convert=True, **properties
+):
+    return self.make_resource(
+        &#34;harvester_image&#34;, resource_name, name=name, display_name=display_name, url=url,
+        source_type=&#34;download&#34;, convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.image_export_from_volume"><code class="name flex">
-<span>def <span class="ident">image_export_from_volume</span></span>(<span>self, resource_name, name, display_name, pvc_name, pvc_namespace, *, convert=True, **properties)</span>
+<span>def <span class="ident">image_export_from_volume</span></span>(<span>self,<br>resource_name,<br>name,<br>display_name,<br>pvc_name,<br>pvc_namespace,<br>*,<br>convert=True,<br>**properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def image_export_from_volume(
+    self, resource_name, name, display_name, pvc_name, pvc_namespace,
+    *, convert=True, **properties
+):
+    return self.make_resource(
+        &#34;harvester_image&#34;, resource_name, name=name, display_name=display_name,
+        pvc_name=pvc_name, pvc_namespace=pvc_namespace, source_type=&#34;export-from-volume&#34;,
+        convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.network"><code class="name flex">
 <span>def <span class="ident">network</span></span>(<span>self, resource_name, name, vlan_id, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def network(self, resource_name, name, vlan_id, *, convert=True, **properties):
+    return self.make_resource(
+        &#34;harvester_network&#34;, resource_name, name=name, vlan_id=vlan_id,
+        convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.ssh_key"><code class="name flex">
 <span>def <span class="ident">ssh_key</span></span>(<span>self, resource_name, name, public_key, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ssh_key(self, resource_name, name, public_key, *, convert=True, **properties):
+    return self.make_resource(
+        &#34;harvester_ssh_key&#34;, resource_name, name=name, public_key=public_key,
+        convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.virtual_machine"><code class="name flex">
 <span>def <span class="ident">virtual_machine</span></span>(<span>self, resource_name, name, disks, nics, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def virtual_machine(self, resource_name, name, disks, nics, *, convert=True, **properties):
+    disks.extend(properties.pop(&#34;disk&#34;, []))
+    nics.extend(properties.pop(&#34;network_interface&#34;, []))
+    return self.make_resource(
+        &#34;harvester_virtualmachine&#34;, resource_name, name=name, disk=disks,
+        network_interface=nics, convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.vm"><code class="name flex">
 <span>def <span class="ident">vm</span></span>(<span>self, resource_name, name, disks, nics, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def virtual_machine(self, resource_name, name, disks, nics, *, convert=True, **properties):
+    disks.extend(properties.pop(&#34;disk&#34;, []))
+    nics.extend(properties.pop(&#34;network_interface&#34;, []))
+    return self.make_resource(
+        &#34;harvester_virtualmachine&#34;, resource_name, name=name, disk=disks,
+        network_interface=nics, convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource.volume"><code class="name flex">
 <span>def <span class="ident">volume</span></span>(<span>self, resource_name, name, size=1, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def volume(self, resource_name, name, size=1, *, convert=True, **properties):
+    size = size if isinstance(size, str) else f&#34;{size}Gi&#34;
+    return self.make_resource(
+        &#34;harvester_volume&#34;, resource_name, name=name, size=size,
+        convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -639,7 +1013,6 @@ class ResourceContext:
 <span>(</span><span>converter)</span>
 </code></dt>
 <dd>
-<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -687,6 +1060,7 @@ class ResourceContext:
             convert=convert, **properties
         )</code></pre>
 </details>
+<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.6.0/docs/resources/</a></p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource">TerraformResource</a></li>
@@ -702,24 +1076,79 @@ class ResourceContext:
 <span>def <span class="ident">cluster_network</span></span>(<span>self, resource_name, name, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cluster_network(self, resource_name, name, *, convert=True, **properties):
+    return self.make_resource(
+        &#34;harvester_clusternetwork&#34;, resource_name, name=name, convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.network"><code class="name flex">
 <span>def <span class="ident">network</span></span>(<span>self, resource_name, name, vlan_id, cluster_network_name, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def network(
+    self, resource_name, name, vlan_id, cluster_network_name, *, convert=True, **properties
+):
+    return super().network(
+        resource_name, name, vlan_id, cluster_network_name=cluster_network_name,
+        convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.storage_class"><code class="name flex">
-<span>def <span class="ident">storage_class</span></span>(<span>self, resource_name, name, replicas=1, stale_timeout=30, migratable='true', *, convert=True, **properties)</span>
+<span>def <span class="ident">storage_class</span></span>(<span>self,<br>resource_name,<br>name,<br>replicas=1,<br>stale_timeout=30,<br>migratable='true',<br>*,<br>convert=True,<br>**properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def storage_class(
+    self, resource_name, name, replicas=1, stale_timeout=30, migratable=&#34;true&#34;,
+    *, convert=True, **properties
+):
+    params = {
+            &#34;migratable&#34;: migratable,
+            &#34;numberOfReplicas&#34;: str(replicas),
+            &#34;staleReplicaTimeout&#34;: str(stale_timeout)
+    }
+    params.update(properties.pop(&#39;parameters&#39;, {}))
+    return self.make_resource(
+        &#34;harvester_storageclass&#34;, resource_name, name=name, parameters=params,
+        convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.terraform.TerraformResource_060.vlanconfig"><code class="name flex">
 <span>def <span class="ident">vlanconfig</span></span>(<span>self, resource_name, name, cluster_network_name, nics, *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def vlanconfig(
+    self, resource_name, name, cluster_network_name, nics, *, convert=True, **properties
+):
+    uplink = properties.pop(&#39;uplink&#39;, dict())
+    uplink[&#39;nics&#39;] = nics
+
+    return self.make_resource(
+        &#34;harvester_vlanconfig&#34;, resource_name, name=name, uplink=uplink,
+        cluster_network_name=cluster_network_name, convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -737,7 +1166,6 @@ class ResourceContext:
 <span>(</span><span>converter)</span>
 </code></dt>
 <dd>
-<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -755,6 +1183,7 @@ class ResourceContext:
             user_data=user_data, network_data=network_data, convert=convert, **properties
         )</code></pre>
 </details>
+<div class="desc"><p><a href="https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/">https://github.com/harvester/terraform-provider-harvester/blob/v0.6.3/docs/resources/</a></p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="harvester_e2e_tests.fixtures.terraform.TerraformResource_060" href="#harvester_e2e_tests.fixtures.terraform.TerraformResource_060">TerraformResource_060</a></li>
@@ -767,6 +1196,18 @@ class ResourceContext:
 <span>def <span class="ident">cloudinit_secret</span></span>(<span>self, resource_name, name, user_data='', network_data='', *, convert=True, **properties)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cloudinit_secret(
+    self, resource_name, name, user_data=&#34;&#34;, network_data=&#34;&#34;, *, convert=True, **properties
+):
+    return self.make_resource(
+        &#34;harvester_cloudinit_secret&#34;, resource_name,
+        user_data=user_data, network_data=network_data, convert=convert, **properties
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -889,7 +1330,7 @@ class ResourceContext:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

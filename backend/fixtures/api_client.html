@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>harvester_e2e_tests.fixtures.api_client API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,78 +48,415 @@ hljs.highlightAll();
 <span>def <span class="ident">api_client</span></span>(<span>request, harvester_metadata)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def api_client(request, harvester_metadata):
+    endpoint = request.config.getoption(&#34;--endpoint&#34;)
+    username = request.config.getoption(&#34;--username&#34;)
+    password = request.config.getoption(&#34;--password&#34;)
+    ssl_verify = request.config.getoption(&#34;--ssl_verify&#34;, False)
+
+    api = HarvesterAPI(endpoint)
+    api.authenticate(username, password, verify=ssl_verify)
+
+    api.session.verify = ssl_verify
+
+    harvester_metadata[&#39;Cluster Endpoint&#39;] = endpoint
+    harvester_metadata[&#39;Cluster Version&#39;] = api.cluster_version.raw
+
+    return api</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.expected_settings"><code class="name flex">
 <span>def <span class="ident">expected_settings</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def expected_settings():
+    return {
+        &#34;1.1.0&#34;: {&#39;storage-network&#39;, &#39;containerd-registry&#39;, &#39;ui-plugin-index&#39;},
+        &#34;default&#34;: {
+            &#39;additional-ca&#39;,
+            &#39;auto-disk-provision-paths&#39;,
+            &#39;backup-target&#39;,
+            &#39;cluster-registration-url&#39;,
+            &#39;http-proxy&#39;,
+            &#39;log-level&#39;,
+            &#39;overcommit-config&#39;,
+            &#39;release-download-url&#39;,
+            &#39;server-version&#39;,
+            &#39;ssl-certificates&#39;,
+            &#39;ssl-parameters&#39;,
+            &#39;support-bundle-image&#39;,
+            &#39;support-bundle-namespaces&#39;,
+            &#39;support-bundle-timeout&#39;,
+            &#39;ui-index&#39;,
+            &#39;ui-source&#39;,
+            &#39;upgrade-checker-enabled&#39;,
+            &#39;upgrade-checker-url&#39;,
+            &#39;vip-pools&#39;,
+            &#39;vm-force-reset-policy&#39;,
+        }
+    }</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.fake_image_file"><code class="name flex">
 <span>def <span class="ident">fake_image_file</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def fake_image_file():
+    with NamedTemporaryFile(&#34;wb&#34;) as f:
+        f.seek(10 * 1024 ** 2 - 1)  # 10MB
+        f.write(b&#34;\0&#34;)
+        f.seek(0)
+        yield Path(f.name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.gen_unique_name"><code class="name flex">
 <span>def <span class="ident">gen_unique_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def gen_unique_name():
+    &#34;&#34;&#34;Generate unique name on-demand&#34;&#34;&#34;
+    return lambda: datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)</code></pre>
+</details>
 <div class="desc"><p>Generate unique name on-demand</p></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.harvester_metadata"><code class="name flex">
 <span>def <span class="ident">harvester_metadata</span></span>(<span>pytestconfig)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def harvester_metadata(pytestconfig):
+    &#39;&#39;&#39; be used to store harvester&#39;s metadata and expose into html report. &#39;&#39;&#39;
+    # ref: https://github.com/pytest-dev/pytest-html/blob/4.1.1/src/pytest_html/basereport.py#L71
+    try:
+        from pytest_metadata.plugin import metadata_key
+        metadata = pytestconfig.stash[metadata_key]
+    except ImportError:
+        metadata = pytestconfig._metadata
+
+    harv = dict()
+    metadata[&#34;Harvester&#34;] = harv
+    return harv</code></pre>
+</details>
 <div class="desc"><p>be used to store harvester's metadata and expose into html report.</p></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.host_shell"><code class="name flex">
 <span>def <span class="ident">host_shell</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def host_shell(request):
+    password = request.config.getoption(&#34;--host-password&#34;) or None
+    pkey = request.config.getoption(&#39;--host-private-key&#39;) or None
+    if pkey:
+        pkey = RSAKey.from_private_key(StringIO(pkey))
+
+    class HostShell:
+        _client = _jump = None
+
+        def __init__(self, username, password=None, pkey=None):
+            self.username = username
+            self.password = password
+            self.pkey = pkey
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, exc_tb):
+            self.logout()
+
+        @property
+        def client(self):
+            return self._client
+
+        def reconnect(self, ipaddr, port=22, **kwargs):
+            if self.client:
+                self.client.close()
+                self._client = cli = SSHClient()
+                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+                kws = dict(username=self.username, password=self.password, pkey=self.pkey)
+                kws.update(kwargs)
+                cli.connect(ipaddr, port, **kws)
+
+        def login(self, ipaddr, port=22, jumphost=False, allow_agent=False,
+                  look_for_keys=False, **kwargs):
+            if not self.client:
+                cli = SSHClient()
+                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+                kws = dict(username=self.username, password=self.password, pkey=self.pkey)
+                kws.update(kwargs)
+
+                # in case we&#39;re using a password to log into the host, this
+                # prevents paramiko from getting confused by ssh keys in the ssh
+                # agent:
+                if self.password and not self.pkey:
+                    kws.update(dict(allow_agent=allow_agent,
+                                    look_for_keys=look_for_keys))
+
+                cli.connect(ipaddr, port, **kws)
+                self._client = cli
+
+                if jumphost:
+                    self.jumphost_policy()
+                    self._jump = True
+                    self.reconnect(ipaddr, port, **kws)
+
+            return self
+
+        def logout(self):
+            if self.client and self.client.get_transport():
+                if self._jump:
+                    self.jumphost_policy(False)
+                    self._jump = None
+                self.client.close()
+                self._client = None
+
+        def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None,
+                         splitlines=False):
+            _, out, err = self.client.exec_command(command, bufsize, timeout, get_pty, env)
+            out, err = out.read().decode(), err.read().decode()
+            if splitlines:
+                out = out.splitlines()
+            return out, err
+
+        def jumphost_policy(self, allow=True):
+            ctx, err = self.exec_command(&#34;sudo cat /etc/ssh/sshd_config&#34;)
+            if allow:
+                renew = re.sub(r&#39;\n(Allow(?:Tcp|Agent)Forwarding no)&#39;,
+                               lambda m: f&#34;\n#{m.group(1)}&#34;, ctx, re.I | re.M)
+            else:
+                renew = re.sub(r&#39;#(Allow(?:Tcp|Agent)Forwarding no)&#39;,
+                               lambda m: m.group(1), ctx, re.I | re.M)
+            self.exec_command(f&#39;sudo cat&lt;&lt;&#34;EOF&#34;&gt;_config\n{renew}EOF&#39;)
+            self.exec_command(&#39;sudo mv _config /etc/ssh/sshd_config&#39;
+                              &#39; &amp;&amp; sudo systemctl restart sshd&#39;)
+
+    return HostShell(&#39;rancher&#39;, password, pkey)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.host_state"><code class="name flex">
 <span>def <span class="ident">host_state</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def host_state(request):
+    class HostState:
+        files = (&#34;power_off.sh&#34;, &#34;power_on.sh&#34;, &#34;reboot.sh&#34;)  # [False, True, -1]
+
+        def __init__(self, script_path, delay=120):
+            self.path = Path(script_path)
+            self.delay = delay
+
+        def __repr__(self):
+            return f&#34;HostState({self.path}, {self.delay})&#34;
+
+        def power(self, name, ip, on=True):
+            proc = run([self.path / self.files[on], name, ip],
+                       stdout=PIPE, stderr=PIPE)
+            return proc.returncode, proc.stdout, proc.stderr
+
+        def reboot(self, name, ip):
+            return self.power(name, ip, -1)
+
+    return HostState(request.config.getoption(&#34;--node-scripts-location&#34;))</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.opensuse_checksum"><code class="name flex">
 <span>def <span class="ident">opensuse_checksum</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def opensuse_checksum(request):
+    &#34;&#34;&#34;Returns openSUSE checksum from config&#34;&#34;&#34;
+    return request.config.getoption(&#34;--opensuse-checksum&#34;)</code></pre>
+</details>
 <div class="desc"><p>Returns openSUSE checksum from config</p></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.polling_for"><code class="name flex">
 <span>def <span class="ident">polling_for</span></span>(<span>wait_timeout, sleep_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def polling_for(wait_timeout, sleep_timeout):
+    # TODO: Try to redesign refer to multiprocessing package (e.g. apply_async and map_async)
+    def _polling_for(subject: str,
+                     checker: Callable[..., bool],
+                     poller: Callable, *args,
+                     timeout=wait_timeout):
+        &#34;&#34;&#34; Polling expected confition for `timeout`s every `sleep_timeout`s
+
+        Arguments:
+          subject: str, what is waiting for
+          checker: Callable, check `poller` output and returns bool
+          args: list, [*poller_args, testee]
+          poller: Callable, poller(*poller_args, testee) for each testee
+
+        Returns:
+          Any: `poller` output if qualified by `checker`
+
+        Raises:
+          AssertionError: if still NOT qualified within `timeout`s
+        &#34;&#34;&#34;
+        *poller_args, testee = args
+        testees = testee if isinstance(testee, list) else [testee]
+        checker_args_len = len(getfullargspec(checker).args)
+
+        endtime = datetime.now() + timedelta(seconds=timeout)
+        while endtime &gt; datetime.now():
+            for testee in testees[:]:
+                output = poller(*poller_args, testee)
+                # unpack poller output according to checker signature
+                qualified = checker(*output) if checker_args_len &gt; 1 else checker(output)
+                if qualified:
+                    testees.remove(testee)
+            if not testees:
+                return output
+            sleep(sleep_timeout)
+        else:
+            raise AssertionError(
+                f&#39;Timeout {timeout}s waiting for {subject}\n&#39;
+                f&#39;Got error: {output}&#39;
+            )
+
+    return _polling_for</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.rancher_wait_timeout"><code class="name flex">
 <span>def <span class="ident">rancher_wait_timeout</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def rancher_wait_timeout(request):
+    return request.config.getoption(&#34;--rancher-cluster-wait-timeout&#34;, 1800)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.skip_version_after"><code class="name flex">
 <span>def <span class="ident">skip_version_after</span></span>(<span>request, api_client)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(autouse=True)
+def skip_version_after(request, api_client):
+    mark = request.node.get_closest_marker(&#34;skip_version_after&#34;)
+    if mark:
+        cluster_ver = api_client.cluster_version
+        for target_ver in mark.args:
+            if not hasattr(cluster_ver, &#39;major&#39;) or parse_version(target_ver) &lt;= cluster_ver:
+                return pytest.skip(
+                    f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
+                    f&#34; in the supported version (most &lt; `{target_ver}`)&#34;
+                )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.skip_version_before"><code class="name flex">
 <span>def <span class="ident">skip_version_before</span></span>(<span>request, api_client)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(autouse=True)
+def skip_version_before(request, api_client):
+    mark = request.node.get_closest_marker(&#34;skip_version_before&#34;)
+    if mark:
+        cluster_ver = api_client.cluster_version
+        for target_ver in mark.args:
+            if &#39;-head&#39; not in cluster_ver.public and parse_version(target_ver) &gt; cluster_ver:
+                return pytest.skip(
+                    f&#34;Cluster Version `{api_client.cluster_version}` is not included&#34;
+                    f&#34; in the supported version (most &gt;= `{target_ver}`)&#34;
+                )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.skip_version_if"><code class="name flex">
 <span>def <span class="ident">skip_version_if</span></span>(<span>request, api_client)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(autouse=True)
+def skip_version_if(request, api_client):
+    &#39;&#39;&#39; To mark test case should be skip when hit the condition string.
+
+    Args:
+        *args: Version string prefixing with one of operators: `!=`, `==`, `&gt;=`, `&lt;=`, `&gt;`, `&lt;`
+    Keyword Args:
+        reason: The reason string for `pytest.skip`, default is:
+            &#34;Cluster Version `{cluster_version}` is not included in versions: {versions}&#34;
+        condition: Condition callable function to check compare result(bool), default is `all`
+    &#39;&#39;&#39;
+    default_reason = (
+        &#34;Cluster Version `{cluster_version}` is not included in versions: {versions}&#34;
+    )
+    mark = request.node.get_closest_marker(&#34;skip_version_if&#34;)
+    if mark:
+        cluster_ver = api_client.cluster_version
+        checks = [version_check(vstr, cluster_ver) for vstr in mark.args]
+        reason = mark.kwargs.get(&#39;reason&#39;, default_reason)
+        if mark.kwargs.get(&#39;condition&#39;, all)(r for *_, r in checks):
+            versions = [f&#34;{op} {v}&#34; for op, v, _ in checks]
+            return pytest.skip(
+                reason.format(cluster_version=cluster_ver, versions=versions)
+            )</code></pre>
+</details>
 <div class="desc"><p>To mark test case should be skip when hit the condition string.</p>
 <h2 id="args">Args</h2>
 <dl>
@@ -124,48 +472,145 @@ condition: Condition callable function to check compare result(bool), default is
 <span>def <span class="ident">sleep_timeout</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def sleep_timeout(request):
+    return request.config.getoption(&#34;--sleep-timeout&#34;, 4)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.ssh_keypair"><code class="name flex">
 <span>def <span class="ident">ssh_keypair</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def ssh_keypair():
+    private_key = asymmetric.rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=1024,
+        backend=backends.default_backend()
+    )
+    private_key_pem = private_key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.OpenSSH,
+        serialization.NoEncryption()
+    )
+
+    public_key = private_key.public_key()
+    public_key_ssh = public_key.public_bytes(
+        serialization.Encoding.OpenSSH,
+        serialization.PublicFormat.OpenSSH
+    )
+
+    return public_key_ssh.decode(&#39;utf-8&#39;), private_key_pem.decode(&#39;utf-8&#39;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.support_bundle_state"><code class="name flex">
 <span>def <span class="ident">support_bundle_state</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def support_bundle_state():
+    class SupportBundle:
+        def __init__(self, fio):
+            self.uid = &#34;&#34;
+            self.files = list()  # for checking file name
+            self.fio = fio  # for checking file content
+
+    with NamedTemporaryFile() as f:
+        yield SupportBundle(f)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.ubuntu_checksum"><code class="name flex">
 <span>def <span class="ident">ubuntu_checksum</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def ubuntu_checksum(request):
+    &#34;&#34;&#34;Returns Ubuntu checksum from config&#34;&#34;&#34;
+    return request.config.getoption(&#34;--ubuntu-checksum&#34;)</code></pre>
+</details>
 <div class="desc"><p>Returns Ubuntu checksum from config</p></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.unique_name"><code class="name flex">
 <span>def <span class="ident">unique_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def unique_name():
+    &#34;&#34;&#34;Default unique name&#34;&#34;&#34;
+    return datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)</code></pre>
+</details>
 <div class="desc"><p>Default unique name</p></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.upgrade_timeout"><code class="name flex">
 <span>def <span class="ident">upgrade_timeout</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def upgrade_timeout(request):
+    return request.config.getoption(&#39;--upgrade-wait-timeout&#39;) or 7200</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.version_check"><code class="name flex">
 <span>def <span class="ident">version_check</span></span>(<span>vstring, version)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def version_check(vstring, version):
+    from operator import le, lt, ge, gt, ne, eq
+    ops = {&#34;&lt;=&#34;: le, &#34;&lt;&#34;: lt, &#34;&gt;=&#34;: ge, &#34;&gt;&#34;: gt, &#34;!=&#34;: ne, &#34;==&#34;: eq}
+
+    try:
+        op = target_ver = None
+        op, target_ver = re.search(r&#34;([&lt;&gt;=!]+)\s?(.+)&#34;, vstring).groups()
+        return op, target_ver, ops[op](version, parse_version(target_ver))
+    except Exception:
+        return op, target_ver, False</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.fixtures.api_client.wait_timeout"><code class="name flex">
 <span>def <span class="ident">wait_timeout</span></span>(<span>request)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;session&#34;)
+def wait_timeout(request):
+    return request.config.getoption(&#34;--wait-timeout&#34;, 300)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -212,7 +657,7 @@ condition: Condition callable function to check compare result(bool), default is
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

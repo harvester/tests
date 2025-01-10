@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>harvester_e2e_tests.integrations.test_4_vm_snapshot API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,90 +48,392 @@ hljs.highlightAll();
 <span>def <span class="ident">create_vm</span></span>(<span>name, api_client, ssh_keypair, image, timeout_secs)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_vm(name, api_client, ssh_keypair, image, timeout_secs):
+    cpu = 1
+    mem = 2
+    pubkey, _ = ssh_keypair
+
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#34;id&#34;])
+
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata[&#34;ssh_authorized_keys&#34;] = [pubkey]
+    vm_spec.user_data = yaml.dump(userdata)
+
+    _, data = api_client.vms.create(name, vm_spec)
+    deadline = datetime.now() + timedelta(seconds=timeout_secs)
+    while deadline &gt; datetime.now():
+        _, data = api_client.vms.get(name)
+        if &#34;Running&#34; == data.get(&#34;status&#34;, {}).get(&#34;printableStatus&#34;):
+            break
+        sleep(1)
+    else:
+        raise AssertionError(f&#34;timed out waiting for {name} to transition to Running&#34;)
+
+    return name, image[&#34;user&#34;]</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.delete_vm"><code class="name flex">
 <span>def <span class="ident">delete_vm</span></span>(<span>name, api_client, timeout_secs)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_vm(name, api_client, timeout_secs):
+    code, data = api_client.vms.get(name)
+    if code == 404:
+        return
+
+    vm_spec = api_client.vms.Spec.from_dict(data)
+
+    api_client.vms.delete(name)
+    deadline = datetime.now() + timedelta(seconds=timeout_secs)
+    while deadline &gt; datetime.now():
+        code, data = api_client.vms.get_status(name)
+        if 404 == code:
+            break
+        sleep(3)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#34;volume&#34;][&#34;persistentVolumeClaim&#34;][&#34;claimName&#34;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.image"><code class="name flex">
 <span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def image(api_client, image_opensuse, wait_timeout):
+    unique_image_id = unique_name(&#34;image&#34;)
+    display_name = f&#34;{unique_image_id}-{image_opensuse.name}&#34;
+    code, data = api_client.images.create_by_url(unique_image_id,
+                                                 image_opensuse.url,
+                                                 display_name=display_name)
+
+    assert 201 == code, (code, data)
+
+    deadline = datetime.now() + timedelta(seconds=wait_timeout)
+    while deadline &gt; datetime.now():
+        code, data = api_client.images.get(unique_image_id)
+        if 100 == data.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            &#34;Failed to create Image with error:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    yield dict(id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
+               user=image_opensuse.ssh_user)
+
+    code, data = api_client.images.delete(unique_image_id)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_name"><code class="name flex">
 <span>def <span class="ident">restored_from_snapshot_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def restored_from_snapshot_name():
+    return unique_name(&#34;vm-from-snapshot&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_name_2"><code class="name flex">
 <span>def <span class="ident">restored_from_snapshot_name_2</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def restored_from_snapshot_name_2():
+    return unique_name(&#34;vm-from-snapshot-2&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_from_snapshot_vm"><code class="name flex">
-<span>def <span class="ident">restored_from_snapshot_vm</span></span>(<span>api_client, restored_from_snapshot_name, vm_snapshot_name, source_vm, host_shell, vm_shell, ssh_keypair, wait_timeout)</span>
+<span>def <span class="ident">restored_from_snapshot_vm</span></span>(<span>api_client,<br>restored_from_snapshot_name,<br>vm_snapshot_name,<br>source_vm,<br>host_shell,<br>vm_shell,<br>ssh_keypair,<br>wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def restored_from_snapshot_vm(api_client, restored_from_snapshot_name,
+                              vm_snapshot_name, source_vm, host_shell,
+                              vm_shell, ssh_keypair, wait_timeout):
+    name, ssh_user = source_vm
+    start_vm(name, api_client, wait_timeout)
+
+    def modify(sh):
+        _, _ = sh.exec_command(&#34;echo 5678 &gt; test.txt &amp;&amp; sync&#34;)
+
+    vm_shell_do(name, api_client,
+                host_shell, vm_shell,
+                ssh_user, ssh_keypair,
+                modify, wait_timeout)
+
+    # Just to wait for `sync`
+    sleep(2)
+
+    stop_vm(name, api_client, wait_timeout)
+
+    spec = api_client.vm_snapshots.RestoreSpec.for_new(restored_from_snapshot_name)
+    code, data = api_client.vm_snapshots.restore(vm_snapshot_name, spec)
+    assert 201 == code
+
+    deadline = datetime.now() + timedelta(seconds=wait_timeout)
+    while deadline &gt; datetime.now():
+        code, data = api_client.vms.get(restored_from_snapshot_name)
+        if 200 == code and &#34;Running&#34; == data.get(&#34;status&#34;, {}).get(&#34;printableStatus&#34;):
+            break
+        print(&#34;waiting for restored vm to be running&#34;)
+        sleep(3)
+    else:
+        raise AssertionError(f&#34;timed out waiting to restore into new VM&#34;
+                             f&#34;{restored_from_snapshot_name}&#34;)
+
+    yield restored_from_snapshot_name, ssh_user
+
+    delete_vm(restored_from_snapshot_name, api_client, wait_timeout)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.restored_vm_2"><code class="name flex">
-<span>def <span class="ident">restored_vm_2</span></span>(<span>api_client, restored_from_snapshot_name_2, vm_snapshot_name, source_vm, host_shell, vm_shell, ssh_keypair, wait_timeout)</span>
+<span>def <span class="ident">restored_vm_2</span></span>(<span>api_client,<br>restored_from_snapshot_name_2,<br>vm_snapshot_name,<br>source_vm,<br>host_shell,<br>vm_shell,<br>ssh_keypair,<br>wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def restored_vm_2(api_client, restored_from_snapshot_name_2,
+                  vm_snapshot_name, source_vm,
+                  host_shell, vm_shell,
+                  ssh_keypair, wait_timeout):
+    name, ssh_user = source_vm
+
+    start_vm(name, api_client, wait_timeout)
+
+    def modify(sh):
+        _, _ = sh.exec_command(&#34;echo 99999999 &gt; test.txt &amp;&amp; sync&#34;)
+
+    vm_shell_do(name, api_client,
+                host_shell, vm_shell,
+                ssh_user, ssh_keypair,
+                modify, wait_timeout)
+
+    # Just to wait for `sync`
+    sleep(2)
+
+    stop_vm(name, api_client, wait_timeout)
+
+    spec = api_client.vm_snapshots.RestoreSpec.for_new(restored_from_snapshot_name_2)
+    code, data = api_client.vm_snapshots.restore(vm_snapshot_name, spec)
+    assert 201 == code
+
+    deadline = datetime.now() + timedelta(seconds=wait_timeout)
+    while deadline &gt; datetime.now():
+        code, data = api_client.vms.get(restored_from_snapshot_name_2)
+        if 200 == code and &#34;Running&#34; == data.get(&#34;status&#34;, {}).get(&#34;printableStatus&#34;):
+            break
+        print(&#34;waiting for restored vm to be running&#34;)
+        sleep(3)
+    else:
+        raise AssertionError(f&#34;timed out waiting to restore into new VM&#34;
+                             f&#34;{restored_from_snapshot_name_2}&#34;)
+
+    yield restored_from_snapshot_name_2, ssh_user
+
+    delete_vm(restored_from_snapshot_name_2, api_client, wait_timeout)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.source_vm"><code class="name flex">
 <span>def <span class="ident">source_vm</span></span>(<span>sourcevm_name, api_client, ssh_keypair, image, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def source_vm(sourcevm_name, api_client, ssh_keypair, image, wait_timeout):
+    yield create_vm(sourcevm_name, api_client, ssh_keypair, image, wait_timeout)
+    delete_vm(sourcevm_name, api_client, wait_timeout)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.sourcevm_name"><code class="name flex">
 <span>def <span class="ident">sourcevm_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def sourcevm_name():
+    return unique_name(&#34;source-vm&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.start_vm"><code class="name flex">
 <span>def <span class="ident">start_vm</span></span>(<span>name, api_client, timeout_secs)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start_vm(name, api_client, timeout_secs):
+    _, data = api_client.vms.start(name)
+    deadline = datetime.now() + timedelta(seconds=timeout_secs)
+    while deadline &gt; datetime.now():
+        _, data = api_client.vms.get(name)
+        status = data.get(&#34;status&#34;, {}).get(&#34;printableStatus&#34;)
+        if &#34;Running&#34; == status:
+            return
+        sleep(1)
+
+    raise AssertionError(f&#34;timed out trying to start {name}&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.stop_vm"><code class="name flex">
 <span>def <span class="ident">stop_vm</span></span>(<span>name, api_client, timeout_secs)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def stop_vm(name, api_client, timeout_secs):
+    _, data = api_client.vms.stop(name)
+    deadline = datetime.now() + timedelta(seconds=timeout_secs)
+    while deadline &gt; datetime.now():
+        _, data = api_client.vms.get(name)
+        status = data.get(&#34;status&#34;, {}).get(&#34;printableStatus&#34;)
+        if &#34;Stopped&#34; == status:
+            return
+        sleep(1)
+
+    raise AssertionError(f&#34;timed out trying to stop {name}&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.unique_name"><code class="name flex">
 <span>def <span class="ident">unique_name</span></span>(<span>name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unique_name(name):
+    return f&#34;{datetime.now().strftime(&#39;%m%S%f&#39;)}-{name}&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_shell_do"><code class="name flex">
 <span>def <span class="ident">vm_shell_do</span></span>(<span>name, api_client, host_shell, vm_shell, user, ssh_keypair, action, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def vm_shell_do(name, api_client, host_shell, vm_shell, user, ssh_keypair, action, wait_timeout):
+    _, privatekey = ssh_keypair
+
+    deadline = datetime.now() + timedelta(seconds=wait_timeout)
+    while deadline &gt; datetime.now():
+        code, data = api_client.vms.get_status(name)
+        if 200 == code:
+            phase = data.get(&#34;status&#34;, {}).get(&#34;phase&#34;)
+            conds = data.get(&#34;status&#34;, {}).get(&#34;conditions&#34;, [{}])
+            if (&#34;Running&#34; == phase
+                    and &#34;AgentConnected&#34; == conds[-1].get(&#34;type&#34;)
+                    and data[&#34;status&#34;].get(&#34;interfaces&#34;)):
+                break
+            sleep(3)
+
+        vm_ip = next(iface[&#34;ipAddress&#34;] for iface in data[&#34;status&#34;][&#34;interfaces&#34;]
+                     if iface[&#34;name&#34;] == &#34;default&#34;)
+
+        code, data = api_client.hosts.get(data[&#34;status&#34;][&#34;nodeName&#34;])
+        host_ip = next(addr[&#34;address&#34;] for addr in data[&#34;status&#34;][&#34;addresses&#34;]
+                       if addr[&#34;type&#34;] == &#34;InternalIP&#34;)
+
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(user, pkey=privatekey)
+
+            deadline = datetime.now() + timedelta(seconds=wait_timeout)
+            while deadline &gt; datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    print(e)
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f&#34;Unable to login to {name}&#34;)
+
+            with vm_sh as sh:
+                action(sh)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_snapshot_2_name"><code class="name flex">
 <span>def <span class="ident">vm_snapshot_2_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def vm_snapshot_2_name():
+    return &#34;vm-snapshot-2&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.vm_snapshot_name"><code class="name flex">
 <span>def <span class="ident">vm_snapshot_name</span></span>(<span>)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def vm_snapshot_name():
+    return &#34;vm-snapshot&#34;</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -132,7 +445,6 @@ hljs.highlightAll();
 <span>class <span class="ident">TestVMSnapshot</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -451,6 +763,7 @@ class TestVMSnapshot:
         else:
             raise AssertionError(f&#34;timed out waiting for {volumesnapshotname} to be deleted&#34;)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
@@ -464,6 +777,44 @@ class TestVMSnapshot:
 <span>def <span class="ident">test_create_vm_snapshot_while_pvc_detached</span></span>(<span>self, api_client, vm_snapshot_2_name, source_vm, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;snapshot_created_from_detached_source_vm_pvc&#34;,
+                        depends=[&#34;detached_source_vm_pvc&#34;])
+def test_create_vm_snapshot_while_pvc_detached(self, api_client,
+                                               vm_snapshot_2_name, source_vm, wait_timeout):
+    &#34;&#34;&#34;
+    Test that a VM snapshot can be created when the source
+    PVC is detached.
+
+    Prerequisites:
+    The original VM (`source-vm`) exists and is stopped (so that
+    the PVC is detached.)
+    &#34;&#34;&#34;
+    name, _ = source_vm
+
+    stop_vm(name, api_client, wait_timeout)
+
+    code, _ = api_client.vm_snapshots.create(name, vm_snapshot_2_name)
+    assert 201 == code
+
+    deadline = datetime.now() + timedelta(seconds=wait_timeout)
+    while deadline &gt; datetime.now():
+        code, data = api_client.vm_snapshots.get(vm_snapshot_2_name)
+        if data.get(&#34;status&#34;, {}).get(&#34;readyToUse&#34;):
+            break
+        print(f&#34;waiting for {vm_snapshot_2_name} to be ready&#34;)
+        sleep(3)
+    else:
+        raise AssertionError(f&#34;timed out waiting for {vm_snapshot_2_name} to be ready&#34;)
+
+    code, data = api_client.vm_snapshots.get(vm_snapshot_2_name)
+
+    assert 200 == code
+    assert data.get(&#34;status&#34;, {}).get(&#34;readyToUse&#34;) is True</code></pre>
+</details>
 <div class="desc"><p>Test that a VM snapshot can be created when the source
 PVC is detached.</p>
 <p>Prerequisites:
@@ -474,12 +825,99 @@ the PVC is detached.)</p></div>
 <span>def <span class="ident">test_replace_is_rejected_when_deletepolicy_is_retain</span></span>(<span>self, api_client, source_vm, vm_snapshot_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;source_vm_snapshot&#34;])
+def test_replace_is_rejected_when_deletepolicy_is_retain(self, api_client,
+                                                         source_vm, vm_snapshot_name,
+                                                         wait_timeout):
+    name, _ = source_vm
+
+    stop_vm(name, api_client, wait_timeout)
+
+    &#34;&#34;&#34;
+    Test that the Harvester API rejects a `replace`
+    VirtualMachineRestore where the deletePolicy is
+    not `retain`.
+
+    Prequisites:
+    1. The original VM (`source-vm`) and snapshot (`vm-snapshot`)
+    from the first test case.
+    &#34;&#34;&#34;
+    spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=True)
+    code, data = api_client.vm_snapshots.restore(vm_snapshot_name, spec)
+
+    reason = data.get(&#34;message&#34;)
+
+    wantmsg = &#34;Delete policy with backup type snapshot&#34;
+    &#34; for replacing VM is not supported&#34;
+
+    assert wantmsg in reason
+    assert 422 == code</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_replace_vm_with_vm_snapshot"><code class="name flex">
-<span>def <span class="ident">test_replace_vm_with_vm_snapshot</span></span>(<span>self, api_client, source_vm, vm_snapshot_name, ssh_keypair, host_shell, vm_shell, wait_timeout)</span>
+<span>def <span class="ident">test_replace_vm_with_vm_snapshot</span></span>(<span>self,<br>api_client,<br>source_vm,<br>vm_snapshot_name,<br>ssh_keypair,<br>host_shell,<br>vm_shell,<br>wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;replaced_source_vm&#34;, depends=[&#34;source_vm_snapshot&#34;])
+def test_replace_vm_with_vm_snapshot(self, api_client,
+                                     source_vm, vm_snapshot_name,
+                                     ssh_keypair, host_shell,
+                                     vm_shell, wait_timeout):
+    &#34;&#34;&#34;
+    Test that the original virtual machine can be replaced
+    from its original snapshot (`vm-snapshot`) and that
+    the snapshot&#39;s data contains the well-known file (`test.txt`)
+    and its expected contents (`123`).
+
+    Prerequisites:
+    `vm-snapshot` VM snapshot exists.
+    &#34;&#34;&#34;
+    name, ssh_user = source_vm
+    start_vm(name, api_client, wait_timeout)
+
+    def modify(sh):
+        _, _ = sh.exec_command(&#34;rm -f test.txt &amp;&amp; sync&#34;)
+
+    vm_shell_do(name, api_client,
+                host_shell, vm_shell,
+                ssh_user, ssh_keypair,
+                modify, wait_timeout)
+
+    # Just to wait for `sync`
+    sleep(2)
+
+    stop_vm(name, api_client, wait_timeout)
+
+    spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=False)
+    code, data = api_client.vm_snapshots.restore(vm_snapshot_name, spec)
+
+    deadline = datetime.now() + timedelta(seconds=wait_timeout)
+    while deadline &gt; datetime.now():
+        code, data = api_client.vms.get(name)
+        if 200 == code and &#34;Running&#34; == data.get(&#34;status&#34;, {}).get(&#34;printableStatus&#34;):
+            break
+        print(&#34;waiting for restored vm to be running&#34;)
+        sleep(3)
+    assert &#34;Running&#34; == data.get(&#34;status&#34;, {}).get(&#34;printableStatus&#34;)
+
+    def actassert(sh):
+        out, _ = sh.exec_command(&#34;cat test.txt&#34;)
+        assert &#34;123&#34; in out
+
+    vm_shell_do(name, api_client,
+                host_shell, vm_shell,
+                ssh_user, ssh_keypair,
+                actassert, wait_timeout)</code></pre>
+</details>
 <div class="desc"><p>Test that the original virtual machine can be replaced
 from its original snapshot (<code>vm-snapshot</code>) and that
 the snapshot's data contains the well-known file (<code>test.txt</code>)
@@ -491,6 +929,41 @@ and its expected contents (<code>123</code>).</p>
 <span>def <span class="ident">test_restore_from_vm_snapshot_while_pvc_detached_from_source</span></span>(<span>self, api_client, restored_vm_2, host_shell, vm_shell, ssh_keypair, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;detached_source_vm_pvc&#34;, depends=[&#34;replaced_source_vm&#34;])
+def test_restore_from_vm_snapshot_while_pvc_detached_from_source(self,
+                                                                 api_client,
+                                                                 restored_vm_2,
+                                                                 host_shell,
+                                                                 vm_shell,
+                                                                 ssh_keypair,
+                                                                 wait_timeout):
+    &#34;&#34;&#34;
+    Test that a new virtual machine can be created from a
+    VM snapshot created from a source PersistentVolumeClaim
+    that is now detached.
+
+    Prerequisites:
+    The original VM (`source-vm`) exists and is stopped (so that
+    the PVC is detached.)
+
+    The original snapshot (`vm-snapshot`) exists.
+    &#34;&#34;&#34;
+
+    name, ssh_user = restored_vm_2
+
+    def actassert(sh):
+        out, _ = sh.exec_command(&#34;cat test.txt&#34;)
+        assert &#34;123&#34; in out
+
+    vm_shell_do(name, api_client,
+                host_shell, vm_shell,
+                ssh_user, ssh_keypair,
+                actassert, wait_timeout)</code></pre>
+</details>
 <div class="desc"><p>Test that a new virtual machine can be created from a
 VM snapshot created from a source PersistentVolumeClaim
 that is now detached.</p>
@@ -500,9 +973,40 @@ the PVC is detached.)</p>
 <p>The original snapshot (<code>vm-snapshot</code>) exists.</p></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_restore_into_new_vm_from_vm_snapshot"><code class="name flex">
-<span>def <span class="ident">test_restore_into_new_vm_from_vm_snapshot</span></span>(<span>self, api_client, restored_from_snapshot_vm, ssh_keypair, host_shell, vm_shell, wait_timeout)</span>
+<span>def <span class="ident">test_restore_into_new_vm_from_vm_snapshot</span></span>(<span>self,<br>api_client,<br>restored_from_snapshot_vm,<br>ssh_keypair,<br>host_shell,<br>vm_shell,<br>wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;source_vm_snapshot&#34;])
+def test_restore_into_new_vm_from_vm_snapshot(self, api_client,
+                                              restored_from_snapshot_vm,
+                                              ssh_keypair, host_shell,
+                                              vm_shell, wait_timeout):
+    &#34;&#34;&#34;
+    Test that restoring the `vm-snapshot` into a new virtual
+    machine results in a virtual machine with the expected
+    well-known file (`test.txt`) with the expected contents
+    (`123`).
+
+    Prerequisites:
+    1. The source VM from the first test case and its
+       snapshot (`vm-snapshot`).
+    &#34;&#34;&#34;
+
+    name, ssh_user = restored_from_snapshot_vm
+
+    def actassert(sh):
+        out, _ = sh.exec_command(&#34;cat test.txt&#34;)
+        assert &#34;123&#34; in out
+
+    vm_shell_do(name, api_client,
+                host_shell, vm_shell,
+                ssh_user, ssh_keypair,
+                actassert, wait_timeout)</code></pre>
+</details>
 <div class="desc"><p>Test that restoring the <code>vm-snapshot</code> into a new virtual
 machine results in a virtual machine with the expected
 well-known file (<code>test.txt</code>) with the expected contents
@@ -512,9 +1016,55 @@ well-known file (<code>test.txt</code>) with the expected contents
 snapshot (<code>vm-snapshot</code>).</p></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_vm_snapshot_create"><code class="name flex">
-<span>def <span class="ident">test_vm_snapshot_create</span></span>(<span>self, api_client, source_vm, vm_snapshot_name, host_shell, vm_shell, ssh_keypair, wait_timeout)</span>
+<span>def <span class="ident">test_vm_snapshot_create</span></span>(<span>self,<br>api_client,<br>source_vm,<br>vm_snapshot_name,<br>host_shell,<br>vm_shell,<br>ssh_keypair,<br>wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;source_vm_snapshot&#34;)
+def test_vm_snapshot_create(self, api_client,
+                            source_vm, vm_snapshot_name,
+                            host_shell, vm_shell,
+                            ssh_keypair, wait_timeout):
+    &#34;&#34;&#34;
+    Test that the VM snapshot can be created.
+
+    Prerequisite:
+    A virtual machine has been created and is running.
+    &#34;&#34;&#34;
+    name, ssh_user = source_vm
+
+    def action(sh):
+        _, _ = sh.exec_command(&#34;echo 123 &gt; test.txt&#34;)
+        _, _ = sh.exec_command(&#34;sync&#34;)
+
+    vm_shell_do(name, api_client,
+                host_shell, vm_shell,
+                ssh_user, ssh_keypair,
+                action, wait_timeout)
+
+    # Since `sync` isn&#39;t actually synchronous, wait a couple of
+    # seconds to let the I/O flush to disk.
+    sleep(2)
+
+    code, _ = api_client.vm_snapshots.create(name, vm_snapshot_name)
+    assert 201 == code
+
+    deadline = datetime.now() + timedelta(seconds=wait_timeout)
+    while deadline &gt; datetime.now():
+        code, data = api_client.vm_snapshots.get(vm_snapshot_name)
+        if data.get(&#34;status&#34;, {}).get(&#34;readyToUse&#34;):
+            break
+        print(f&#34;waiting for {vm_snapshot_name} to be ready&#34;)
+        sleep(3)
+    else:
+        raise AssertionError(f&#34;timed out waiting for {vm_snapshot_name} to be ready&#34;)
+
+    assert 200 == code
+    assert data.get(&#34;status&#34;, {}).get(&#34;readyToUse&#34;) is True</code></pre>
+</details>
 <div class="desc"><p>Test that the VM snapshot can be created.</p>
 <p>Prerequisite:
 A virtual machine has been created and is running.</p></div>
@@ -523,6 +1073,47 @@ A virtual machine has been created and is running.</p></div>
 <span>def <span class="ident">test_vm_snapshots_are_cleaned_up_after_source_vm_deleted</span></span>(<span>self, api_client, source_vm, vm_snapshot_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;cleaned_up_after_vm_delete&#34;)
+def test_vm_snapshots_are_cleaned_up_after_source_vm_deleted(self, api_client,
+                                                             source_vm, vm_snapshot_name,
+                                                             wait_timeout):
+    &#34;&#34;&#34;
+    Test that VM snapshots are removed when the VM they correspond
+    to have been deleted.
+
+    Prerequisites:
+    The original VM (`source-vm`) exists and so does its first
+    snapshot (`vm-snapshot`).
+
+    Assert that the snapshot exists, then delete the VM
+    and assert that the snapshot has been removed.
+    &#34;&#34;&#34;
+
+    code, _ = api_client.vm_snapshots.get(vm_snapshot_name)
+    assert 200 == code
+
+    name, _ = source_vm
+
+    code, _ = api_client.vms.delete(name)
+    assert 200 == code
+
+    def wait_for_snapshot_to_disappear(snapshot):
+        deadline = datetime.now() + timedelta(seconds=wait_timeout)
+        while deadline &gt; datetime.now():
+            code, _ = api_client.vm_snapshots.get(snapshot)
+            if code == 404:
+                return
+            sleep(1)
+        else:
+            AssertionError(f&#34;timeout while waiting for {snapshot}&#34;
+                           f&#34; to be deleted after its VM was deleted&#34;)
+
+    wait_for_snapshot_to_disappear(vm_snapshot_name)</code></pre>
+</details>
 <div class="desc"><p>Test that VM snapshots are removed when the VM they correspond
 to have been deleted.</p>
 <p>Prerequisites:
@@ -535,12 +1126,81 @@ and assert that the snapshot has been removed.</p></div>
 <span>def <span class="ident">test_volume_snapshot_not_exist</span></span>(<span>self, api_client)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;source_vm_snapshot&#34;])
+def test_volume_snapshot_not_exist(self, api_client):
+    &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/524 &#39;&#39;&#39;
+    code, data = api_client.vol_snapshots.get()
+
+    assert 200 == code, (code, data)
+    assert not data[&#39;data&#39;], (code, data)</code></pre>
+</details>
 <div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/524">https://github.com/harvester/tests/issues/524</a></p></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_volume_snapshots_are_cleaned_up_after_source_volume_deleted"><code class="name flex">
 <span>def <span class="ident">test_volume_snapshots_are_cleaned_up_after_source_volume_deleted</span></span>(<span>self, api_client, source_vm, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;snapshot_created_from_detached_source_vm_pvc&#34;,
+                                 &#34;cleaned_up_after_vm_delete&#34;])
+def test_volume_snapshots_are_cleaned_up_after_source_volume_deleted(self, api_client,
+                                                                     source_vm, wait_timeout):
+    &#34;&#34;&#34;
+    Test that any volume snapshots that result from taking
+    a VM snapshot while the PVC is detached are cleaned up
+    after the volume is deleted.
+
+    Prerequisites:
+    The volume from the original VM (`source-vm`) exists
+    and is not attached because the original VM was replaced
+    and the deletePolicy was `retain`.
+    &#34;&#34;&#34;
+
+    # First, assert that the expected volume exists.
+    name, _ = source_vm
+    volumename = f&#34;{name}-disk-0&#34;
+
+    code, _ = api_client.volumes.get(volumename)
+    assert 200 == code
+
+    # And assert that it has a volume snapshot associated with it.
+    volumesnapshotname = f&#34;vm-snapshot-volume-{volumename}&#34;
+
+    code, data = api_client.vol_snapshots.get(volumesnapshotname)
+    assert 200 == code
+
+    ownerpvc = data.get(&#34;spec&#34;, {}).get(&#34;source&#34;, {}).get(&#34;persistentVolumeClaimName&#34;)
+    assert volumename == ownerpvc
+
+    # Then delete the volume and wait for it to disappear.
+    code, _ = api_client.volumes.delete(volumename)
+    deadline = datetime.now() + timedelta(seconds=wait_timeout)
+    while deadline &gt; datetime.now():
+        code, _ = api_client.volumes.get(volumename)
+        if code == 404:
+            break
+        sleep(1)
+    else:
+        raise AssertionError(f&#34;timed out waiting for {volumename} to be deleted&#34;)
+
+    # Finally, wait for the volume snapshot to be cleaned up
+    # automatically.
+    code, _ = api_client.vol_snapshots.get(volumesnapshotname)
+    while deadline &gt; datetime.now():
+        code, _ = api_client.vol_snapshots.get(volumesnapshotname)
+        if code == 404:
+            break
+        sleep(1)
+    else:
+        raise AssertionError(f&#34;timed out waiting for {volumesnapshotname} to be deleted&#34;)</code></pre>
+</details>
 <div class="desc"><p>Test that any volume snapshots that result from taking
 a VM snapshot while the PVC is detached are cleaned up
 after the volume is deleted.</p>
@@ -606,7 +1266,7 @@ and the deletePolicy was <code>retain</code>.</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

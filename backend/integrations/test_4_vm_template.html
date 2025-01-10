@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>harvester_e2e_tests.integrations.test_4_vm_template API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,12 +48,84 @@ hljs.highlightAll();
 <span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def image(api_client, image_opensuse, unique_name, wait_timeout):
+    unique_image_id = f&#39;image-{unique_name}&#39;
+    code, data = api_client.images.create_by_url(
+        unique_image_id, image_opensuse.url, display_name=f&#34;{unique_name}-{image_opensuse.name}&#34;
+    )
+
+    assert 201 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.images.get(unique_image_id)
+        if 100 == data.get(&#39;status&#39;, {}).get(&#39;progress&#39;, 0):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            &#34;Failed to create Image with error:\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    yield dict(id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
+               user=image_opensuse.ssh_user)
+
+    code, data = api_client.images.delete(unique_image_id)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_template.stopped_vm"><code class="name flex">
 <span>def <span class="ident">stopped_vm</span></span>(<span>api_client, ssh_keypair, wait_timeout, image, unique_name)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_name):
+    unique_name = f&#34;stopped-{datetime.now().strftime(&#39;%m%S%f&#39;)}-{unique_name}&#34;
+    cpu, mem = 1, 2
+    pub_key, pri_key = ssh_keypair
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.run_strategy = &#34;Halted&#34;
+
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata[&#39;ssh_authorized_keys&#39;] = [pub_key]
+    vm_spec.user_data = yaml.dump(userdata)
+
+    code, data = api_client.vms.create(unique_name, vm_spec)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_name)
+        if &#34;Stopped&#34; == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;):
+            break
+        sleep(1)
+
+    yield unique_name, image[&#39;user&#39;]
+
+    code, data = api_client.vms.get(unique_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+
+    api_client.vms.delete(unique_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(unique_name)
+        if 404 == code:
+            break
+        sleep(3)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -54,7 +137,6 @@ hljs.highlightAll();
 <span>class <span class="ident">TestVMTemplate</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -182,12 +264,139 @@ hljs.highlightAll();
         code, data = api_client.templates.delete(unique_name)
         assert 200 == code, (code, data)</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_template.TestVMTemplate.test_create_template_with_data"><code class="name flex">
 <span>def <span class="ident">test_create_template_with_data</span></span>(<span>self, api_client, vm_shell_from_host, vm_checker, ssh_keypair, wait_timeout, stopped_vm)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_create_template_with_data(
+    self, api_client, vm_shell_from_host, vm_checker, ssh_keypair, wait_timeout, stopped_vm
+):
+    &#34;&#34;&#34; ref: https://github.com/harvester/tests/issues/1194
+    Steps:
+        1. Create VM and write some data
+        2. Create new template and keep data from the VM
+        3. Create new VM from the template
+        4. Check data consitency
+    Expected result:
+        - VM should created and operate normally
+        - Template should created successfully
+        - New VM should able to be created and operate normally
+        - Data in new VM should consistent with old one
+    &#34;&#34;&#34;
+
+    unique_name, ssh_user = stopped_vm
+    pub_key, pri_key = ssh_keypair
+
+    code, data = api_client.vms.start(unique_name)
+    assert 204 == code, (code, data)
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(unique_name, [&#34;default&#34;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({unique_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Login to VM and write some data
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (
+            f&#34;VM {unique_name} Started {vm_checker.wait_timeout} seconds&#34;
+            f&#34;, but cloud-init still in {out}&#34;
+        )
+        out, err = sh.exec_command(
+            &#34;dd if=/dev/urandom of=./generate_file bs=1M count=512; sync&#34;
+        )
+        assert not out, (out, err)
+        vm1_md5, err = sh.exec_command(
+            &#34;md5sum ./generate_file &gt; ./generate_file.md5; cat ./generate_file.md5; sync&#34;
+        )
+        assert not err, (vm1_md5, err)
+
+    # generate VM template with data
+    code, data = api_client.vms.create_template(unique_name, unique_name, keep_data=True)
+    assert 204 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        try:
+            code, data = api_client.templates.get(unique_name)
+            assert 200 == code, (code, data)
+            ns, name = data[&#39;spec&#39;][&#39;defaultVersionId&#39;].split(&#39;/&#39;)
+        except (AssertionError, ValueError):
+            # ValueError: version is not created yet, so `defaultVersionId` will be empty
+            pass
+        else:
+            code, data = api_client.templates.get_version(name, ns)
+            conds = data.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, [])
+            if conds and all(&#39;True&#39; == c[&#39;status&#39;] for c in conds):
+                tmpl_spec = api_client.templates.Spec.from_dict(data)
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            &#34;Failed to create template with status:\n&#34;
+            f&#34;{data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+    # Create new VM from the template
+    tmpl_vm_name = f&#34;tmpl-{unique_name}&#34;
+    code, data = api_client.vms.create(tmpl_vm_name, tmpl_spec)
+    assert 201 == code, (code, data)
+
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(tmpl_vm_name, [&#34;default&#34;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({tmpl_vm_name}) with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Login to VM and check the data is consistent
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;default&#39;)
+    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
+    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
+        cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+        assert cloud_inited, (
+            f&#34;VM {tmpl_vm_name} Started {vm_checker.wait_timeout} seconds&#34;
+            f&#34;, but cloud-init still in {out}&#34;
+        )
+        out, err = sh.exec_command(&#34;md5sum -c ./generate_file.md5&#34;)
+        assert not err, (out, err)
+        vm2_md5, err = sh.exec_command(&#34;cat ./generate_file.md5&#34;)
+        assert not err, (vm2_md5, err)
+        assert vm1_md5 == vm2_md5
+
+    # teardown
+    api_client.vms.delete(tmpl_vm_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get_status(tmpl_vm_name)
+        if 404 == code:
+            break
+        sleep(3)
+
+    for vol in tmpl_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)
+
+    code, data = api_client.templates.delete(unique_name)
+    assert 200 == code, (code, data)</code></pre>
+</details>
 <div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/1194">https://github.com/harvester/tests/issues/1194</a></p>
 <h2 id="steps">Steps</h2>
 <ol>
@@ -239,7 +448,7 @@ Expected result:<ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

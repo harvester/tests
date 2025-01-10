@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>harvester_e2e_tests.conftest API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,36 +48,477 @@ hljs.highlightAll();
 <span>def <span class="ident">check_depends</span></span>(<span>self, depends, item)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_depends(self, depends, item):
+    # monkey patch `DependencyManager.checkDepends`
+
+    marker = item.get_closest_marker(&#34;dependency&#34;)
+    if marker and marker.kwargs.get(&#39;param&#39;):
+        try:
+            param_id = item.callspec.id
+            depends = [f&#34;{d}[{param_id}]&#34; for d in depends]
+        except AttributeError:
+            pass
+
+    # ref: https://github.com/RKrahl/pytest-dependency/issues/57#issuecomment-1000896418
+    if marker and marker.kwargs.get(&#39;any&#39;):
+        for depend in depends:
+            try:
+                self._check_depend([depend], item)
+            except pytest.skip.Exception:
+                continue
+            else:
+                return
+        pytest.skip(&#34;%s depends on any of %s&#34; % (item.name, &#34;, &#34;.join(depends)))
+    else:
+        self._check_depend(depends, item)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.conftest.pytest_addoption"><code class="name flex">
 <span>def <span class="ident">pytest_addoption</span></span>(<span>parser)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pytest_addoption(parser):
+    with open(&#39;config.yml&#39;) as f:
+        config_data = yaml.safe_load(f)
+    parser.addoption(
+        &#39;--endpoint&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;endpoint&#39;],
+        help=&#39;Harvester API endpoint&#39;
+    )
+    parser.addoption(
+        &#39;--username&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;username&#39;],
+        help=&#39;Harvester username&#39;
+    )
+    parser.addoption(
+        &#39;--password&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;password&#39;],
+        help=&#39;Harvester password&#39;
+    )
+    parser.addoption(
+        &#39;--host-password&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;host-password&#39;],
+        help=&#39;Password to access Harvesrer node&#39;
+    )
+    parser.addoption(
+        &#39;--host-private-key&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;host-private-key&#39;],
+        help=&#39;private key to access Harvester node&#39;
+    )
+    parser.addoption(
+        &#39;--vlan-id&#39;,
+        action=&#39;store&#39;,
+        type=int,
+        default=config_data[&#39;vlan-id&#39;],
+        help=(&#39;VLAN ID, if specified, will invoke the tests depended on &#39;
+              &#39;external networking.&#39;)
+    )
+    parser.addoption(
+        &#39;--vlan-nic&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;vlan-nic&#39;],
+        help=&#39;Physical NIC for VLAN. Default is &#34;eth0&#34;&#39;
+    )
+    parser.addoption(
+        &#39;--ip-pool-subnet&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;ip-pool-subnet&#39;],
+        help=&#39;Subnet of IP pool for load balancer&#39;
+    )
+    parser.addoption(
+        &#39;--ip-pool-start&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;ip-pool-start&#39;],
+        help=&#39;Start IP of IP pool for load balancer&#39;
+    )
+    parser.addoption(
+        &#39;--ip-pool-end&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;ip-pool-end&#39;],
+        help=&#39;End IP of IP pool for load balancer&#39;
+    )
+    parser.addoption(
+        &#39;--wait-timeout&#39;,
+        action=&#39;store&#39;,
+        type=int,
+        default=config_data[&#39;wait-timeout&#39;],
+        help=&#39;Wait time for polling operations&#39;
+    )
+    parser.addoption(
+        &#39;--sleep-timeout&#39;,
+        action=&#39;store&#39;,
+        type=int,
+        default=config_data[&#39;sleep-timeout&#39;],
+        help=&#39;Wait time for polling operations&#39;
+    )
+    parser.addoption(
+        &#39;--node-scripts-location&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;node-scripts-location&#39;],
+        help=(&#39;External scripts to power-off, power-up, and reboot a given &#39;
+              &#39;Harvester node to facilitate the host-specific tests&#39;)
+    )
+    parser.addoption(
+        &#39;--opensuse-image-url&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;opensuse-image-url&#39;),
+        help=(&#39;OpenSUSE image URL&#39;)
+    )
+    parser.addoption(
+        &#39;--ubuntu-image-url&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;ubuntu-image-url&#39;),
+        help=(&#39;ubuntu image URL&#39;)
+    )
+    parser.addoption(
+        &#39;--terraform-scripts-location&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;terraform-scripts-location&#39;],
+        help=(&#39;External scripts to create resources using terraform&#39;)
+    )
+    parser.addoption(
+        &#39;--image-cache-url&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;image-cache-url&#39;],
+        help=(&#39;URL for the local images cache&#39;)
+    )
+    parser.addoption(
+        &#39;--accessKeyId&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;accessKeyId&#39;],
+        help=(&#39;A user-id that uniquely identifies your account. &#39;)
+    )
+    parser.addoption(
+        &#39;--secretAccessKey&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;secretAccessKey&#39;],
+        help=(&#39;The password to your account&#39;)
+    )
+    parser.addoption(
+        &#39;--bucketName&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;bucketName&#39;],
+        help=(&#39;Name of the bucket&#39;)
+    )
+    parser.addoption(
+        &#39;--region&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;region&#39;],
+        help=(&#39;Region of the bucket&#39;)
+    )
+    parser.addoption(
+        &#39;--s3-endpoint&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;s3-endpoint&#39;, &#39;&#39;),
+        help=(&#39;S3 endpoint&#39;)
+    )
+    parser.addoption(
+        &#39;--nfs-endpoint&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;nfs-endpoint&#39;],
+        help=(&#39;Endpoint for storing backup in nfs share&#39;)
+    )
+    parser.addoption(
+        &#39;--rancher-endpoint&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;rancher-endpoint&#39;, None),
+        help=&#39;Rancher API endpoint&#39;
+    )
+    parser.addoption(
+        &#39;--rancher-admin-password&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;rancher-admin-password&#39;, None),
+        help=&#39;Rancher admin user password&#39;
+    )
+    parser.addoption(
+        &#39;--k8s-version&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;k8s-version&#39;),
+        help=&#39;K8s version to use for downstream cluster in Rancher integration tests&#39;
+    )
+    parser.addoption(
+        &#39;--rancher-cluster-wait-timeout&#39;,
+        action=&#39;store&#39;,
+        type=int,
+        default=config_data[&#39;rancher-cluster-wait-timeout&#39;],
+        help=&#39;Wait time for polling Rancher cluster ready status&#39;
+    )
+    parser.addoption(
+        &#39;--nfs-mount-dir&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;nfs-mount-dir&#39;],
+        help=(&#39;mount directory for nfs share&#39;)
+    )
+    parser.addoption(
+        &#39;--upgrade-prepare-dependence&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;upgrade-prepare-dependence&#39;],
+        help=(&#39;If true to prepare dependence&#39;)
+    )
+    parser.addoption(
+        &#39;--upgrade-sc-replicas&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;upgrade-sc-replicas&#39;],
+        help=(&#39;default storage class replicas&#39;)
+    )
+    parser.addoption(
+        &#39;--upgrade-target-version&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;upgrade-target-version&#39;],
+        help=(&#39;test target harvester version&#39;)
+    )
+    parser.addoption(
+        &#39;--upgrade-iso-url&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;upgrade-iso-url&#39;],
+        help=(&#39;URL for specific iso&#39;)
+    )
+    parser.addoption(
+        &#39;--upgrade-iso-checksum&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;upgrade-iso-checksum&#39;],
+        help=(&#39;URL for specific iso checksum&#39;)
+    )
+    parser.addoption(
+        &#39;--upgrade-wait-timeout&#39;,
+        action=&#39;store&#39;,
+        default=config_data[&#39;upgrade-wait-timeout&#39;],
+        help=(&#39;Wait time for polling upgrade Harvester cluster completed status&#39;)
+    )
+    parser.addoption(
+        &#39;--terraform-provider-harvester&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;terraform-provider-harvester&#39;),
+        help=(&#39;Version of Terraform Harvester Provider&#39;)
+    )
+    parser.addoption(
+        &#39;--terraform-provider-rancher&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;terraform-provider-rancher&#39;),
+        help=(&#39;Version of Terraform Rancher Provider&#39;)
+    )
+    parser.addoption(
+        &#39;--ubuntu-checksum&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;ubuntu-checksum&#39;),
+        help=(&#39;Checksum for ubuntu_image&#39;)
+    )
+    parser.addoption(
+        &#39;--opensuse-checksum&#39;,
+        action=&#39;store&#39;,
+        default=config_data.get(&#39;opensuse-checksum&#39;),
+        help=(&#39;Checksum for opensuse_image&#39;)
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.conftest.pytest_collection_modifyitems"><code class="name flex">
 <span>def <span class="ident">pytest_collection_modifyitems</span></span>(<span>session, config, items)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.hookimpl(hookwrapper=True)
+def pytest_collection_modifyitems(session, config, items):
+    if config.getoption(&#39;--vlan-id&#39;) == -1:
+        skip_public_network = pytest.mark.skip(reason=(
+            &#39;VM not accessible because no VLAN setup with public routing&#39;))
+        for item in items:
+            if &#39;public_network&#39; in item.keywords:
+                item.add_marker(skip_public_network)
+
+    if (config.getoption(&#39;--nfs-endpoint&#39;) == &#39;&#39; and
+            config.getoption(&#39;--accessKeyId&#39;) == &#39;&#39;):
+        skip_backup = pytest.mark.skip(reason=(
+            &#39;AWS credentials or NFS endpoint are not available&#39;))
+        for item in items:
+            if &#39;backup&#39; in item.keywords:
+                item.add_marker(skip_backup)
+
+    if config.getoption(&#39;--accessKeyId&#39;) == &#39;&#39;:
+        skip_backup = pytest.mark.skip(reason=(
+            &#39;AWS credentials are not available&#39;))
+        for item in items:
+            if &#39;backups3&#39; in item.keywords:
+                item.add_marker(skip_backup)
+
+    if config.getoption(&#39;--nfs-endpoint&#39;) == &#39;&#39;:
+        skip_backup = pytest.mark.skip(reason=(
+            &#39;NFS endpoint is not available&#39;))
+        for item in items:
+            if &#39;backupnfs&#39; in item.keywords:
+                item.add_marker(skip_backup)
+
+    if (not config.getoption(&#39;--rancher-endpoint&#39;) and
+            not config.getoption(&#39;--rancher-admin-password&#39;)):
+        skip_rancher_integration_external = pytest.mark.skip(reason=(
+            &#39;Rancher endpoint and admin password are not specified&#39;))
+        for item in items:
+            if &#39;rancher_integration_with_external_rancher&#39; in item.keywords:
+                item.add_marker(skip_rancher_integration_external)
+
+    if not config.getoption(&#34;--delete-host&#34;, False):
+        for item in items:
+            if &#34;delete_host&#34; in item.keywords:
+                item.add_marker(pytest.mark.skip(reason=&#34;Not configured to test host deletion.&#34;))
+
+    # legacy code above
+    # &#39;&#39;&#39; To enable the test select with `and depends` keyword,
+    #     to select test cases and it depended test cases.
+    # &#39;&#39;&#39;
+
+    if &#34;and depends&#34; not in config.option.keyword:
+        # DO nothing
+        yield
+        return
+
+    all_items, old_keyword = items.copy(), config.option.keyword
+    config.option.keyword = old_keyword.replace(&#39;and depends&#39;, &#39;&#39;)
+
+    yield
+
+    scope_cls = {
+        &#34;session&#34;: pytest.Session,
+        &#34;package&#34;: pytest.Package,
+        &#34;module&#34;: pytest.Module,
+        &#34;class&#34;: pytest.Class
+    }
+    # ref: https://github.com/RKrahl/pytest-dependency/blob/0.5.1/pytest_dependency.py#L77
+    # named_items : dict[(&#39;dep-scope&#39;, &#39;dep-name&#39;), list[(idx, &#39;test-item&#39;)]]
+    # picked : list[(idx, &#39;test-item&#39;)]
+    named_items, picked = dict(), list()
+    for idx, item in enumerate(all_items):
+        if item in items:
+            picked.append((idx, item))
+        try:
+            marker = item.get_closest_marker(&#39;dependency&#39;)
+            scope = marker.kwargs.get(&#39;scope&#39;, &#39;module&#39;)
+            node = item.getparent(scope_cls[scope])
+            named_items.setdefault((node, marker.kwargs[&#39;name&#39;]), []).append((idx, item))
+        except AttributeError:
+            continue
+        except KeyError:
+            nodeid = item.nodeid.replace(&#34;::()::&#34;, &#34;::&#34;)
+            if scope not in (&#34;session&#34;, &#34;package&#34;):
+                shift = 2 if scope == &#34;class&#34; else 1
+                nodeid = nodeid.split(&#34;::&#34;, shift)[shift]
+            named_items.setdefault((node, nodeid), []).append((idx, item))
+
+    def pick_depends(idx, item, items):
+        picked = []
+        try:
+            marker = item.get_closest_marker(&#39;dependency&#39;)
+            scope = marker.kwargs.get(&#39;scope&#39;, &#39;module&#39;)
+            node = item.getparent(scope_cls[scope])
+            for name in marker.kwargs[&#39;depends&#39;]:
+                picked.extend(items.get((node, name), []))
+        except (AttributeError, KeyError):
+            pass
+        return picked
+
+    depends = []  # list[(idx, &#39;test-item&#39;)]
+    while picked:
+        depends.append(picked.pop())
+        picked.extend(pick_depends(*depends[-1], named_items))
+
+    session.items = items = [it for idx, it in sorted(set(depends), key=lambda it: it[0])]
+    # deselected.extend(t for ts in named_items.values() for i, t in ts if t not in items)
+    deselected = [t for t in all_items if t not in items]
+    # update to let the report shows correct counts
+    config.pluginmanager.get_plugin(&#39;terminalreporter&#39;).stats[&#39;deselected&#39;] = deselected</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.conftest.pytest_configure"><code class="name flex">
 <span>def <span class="ident">pytest_configure</span></span>(<span>config)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pytest_configure(config):
+    # Register marker as the format (marker, (description))
+    markers = [
+        (&#34;skip_version_if&#34;, &#34;Mark test skipped when cluster version hit the condition&#34;),
+        (&#34;skip_version_before&#34;, (
+            &#34;mark test skipped when cluster version &lt; provided version&#34;)),
+        (&#34;skip_version_after&#34;, (
+            &#34;mark test skipped when cluster version &gt;= provided version&#34;)),
+        (&#39;p0&#39;, (&#34;mark the test&#39;s priority is p0&#34;)),
+        (&#39;p1&#39;, (&#34;mark the test&#39;s priority is p1&#34;)),
+        (&#39;p2&#39;, (&#34;mark the test&#39;s priority is p2&#34;)),
+        (&#39;hosts&#39;, (&#39;{_r} host tests&#39;)),
+        (&#39;delete_host&#39;, (&#39;{_r} host and will delete one of hosts&#39;)),
+        (&#34;negative&#34;, (&#34;{_r} a negative tests&#34;)),
+        (&#39;keypairs&#39;, (&#34;{_r} SSH keypairs tests&#34;)),
+        (&#39;images&#39;, (&#34;{_r} image tests&#34;)),
+        (&#34;networks&#34;, (&#34;{_r} vlan network tests&#34;)),
+        (&#34;volumes&#34;, (&#34;{_r} volume tests&#34;)),
+        (&#34;virtualmachines&#34;, (&#34;{_r} VM tests&#34;)),
+        (&#34;templates&#34;, (&#34;{_r} VM template tests&#34;)),
+        (&#34;support_bundle&#34;, (&#34;{_r} Support Bundle tests&#34;)),
+        (&#34;settings&#34;, (&#34;{_r} settings tests&#34;)),
+        (&#34;upgrade&#34;, (&#34;{_r} upgrade tests&#34;)),
+        (&#34;any_nodes&#34;, (&#34;{_r} tests which could be ran on clushter with any nodes&#34;)),
+        (&#34;single_node&#34;, (&#34;{_r} tests which could only be ran on cluster with single node&#34;)),
+        (&#34;three_nodes&#34;, (&#34;{_r} tests which could only be ran on cluster with three nodes&#34;)),
+        (&#39;rancher&#39;, (&#34;{_r} rancher integration tests&#34;)),
+        (&#39;rke1&#39;, (&#34;{_r} rancher RKE1 tests&#34;)),
+        (&#39;rke2&#39;, (&#34;{_r} rancher RKE2 tests&#34;)),
+        (&#39;terraform&#39;, (&#34;{_r} terraform tests&#34;)),
+        (&#39;virtualmachines&#39;, (&#39;{_r} virtualmachines tests&#39;)),
+        (&#39;backup_target&#39;, (&#39;{_r} backup-target tests&#39;)),
+        (&#39;S3&#39;, (&#39;{_r} backup-target tests with S3&#39;)),
+        (&#39;NFS&#39;, (&#39;{_r} backup-target tests with NFS&#39;))
+    ]
+
+    for m, msg in markers:
+        related = &#39;mark the test is related to&#39;
+        config.addinivalue_line(&#34;markers&#34;, f&#34;{m}:{msg.format(_r=related)}&#34;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.conftest.pytest_html_results_table_header"><code class="name flex">
 <span>def <span class="ident">pytest_html_results_table_header</span></span>(<span>cells)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pytest_html_results_table_header(cells):
+    cells.insert(1, &#39;&lt;th class=&#34;sortable time&#34; data-column-type=&#34;time&#34;&gt;EndTime&lt;/th&gt;&#39;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.conftest.pytest_html_results_table_row"><code class="name flex">
 <span>def <span class="ident">pytest_html_results_table_row</span></span>(<span>report, cells)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pytest_html_results_table_row(report, cells):
+    cells.insert(1, f&#39;&lt;td class=&#34;col-time&#34;&gt;{datetime.utcnow()}&lt;/td&gt;&#39;)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -98,7 +550,7 @@ hljs.highlightAll();
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>

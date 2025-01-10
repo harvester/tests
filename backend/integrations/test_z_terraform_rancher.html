@@ -3,19 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-<meta name="generator" content="pdoc3 0.11.1">
+<meta name="generator" content="pdoc3 0.11.5">
 <title>harvester_e2e_tests.integrations.test_z_terraform_rancher API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => {
 hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
 hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
 })</script>
 </head>
 <body>
@@ -37,90 +48,391 @@ hljs.highlightAll();
 <span>def <span class="ident">cluster_resource</span></span>(<span>tf_rancher_resource, rke2_cluster, harvester, credential_resource)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def cluster_resource(tf_rancher_resource, rke2_cluster, harvester, credential_resource):
+    return tf_rancher_resource.cluster_config(
+        rke2_cluster[&#34;name&#34;], rke2_cluster[&#34;k8s_version&#34;], harvester[&#34;name&#34;],
+        credential_resource.name
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.credential_resource"><code class="name flex">
 <span>def <span class="ident">credential_resource</span></span>(<span>unique_name, tf_rancher_resource, harvester)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def credential_resource(unique_name, tf_rancher_resource, harvester):
+    return tf_rancher_resource.cloud_credential(
+        f&#34;cc-{unique_name}&#34;, harvester[&#34;name&#34;]
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.harvester"><code class="name flex">
 <span>def <span class="ident">harvester</span></span>(<span>api_client, rancher_api_client, unique_name, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def harvester(api_client, rancher_api_client, unique_name, wait_timeout):
+    &#34;&#34;&#34; Rancher creates Harvester entry (Import Existing)
+    &#34;&#34;&#34;
+    name = f&#34;hvst-{unique_name}&#34;
+
+    rc, data = rancher_api_client.mgmt_clusters.create_harvester(name)
+    assert 201 == rc, (rc, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        rc, data = rancher_api_client.mgmt_clusters.get(name)
+        if data.get(&#39;status&#39;, {}).get(&#39;clusterName&#39;):
+            break
+    else:
+        raise AssertionError(
+            f&#34;Fail to get MgmtCluster with clusterName {name}\n&#34;
+            f&#34;rc: {rc}, data:\n{data}&#34;
+        )
+    namespace = data[&#39;metadata&#39;][&#39;namespace&#39;]
+
+    yield {
+        &#34;name&#34;: name,
+        &#34;namespace&#34;: namespace,
+        &#34;id&#34;: data[&#39;status&#39;][&#39;clusterName&#39;],
+        &#34;kubeconfig&#34;: api_client.generate_kubeconfig()
+    }
+
+    rancher_api_client.mgmt_clusters.delete(name, namespace)
+    updates = dict(value=&#34;&#34;)
+    api_client.settings.update(&#34;cluster-registration-url&#34;, updates)</code></pre>
+</details>
 <div class="desc"><p>Rancher creates Harvester entry (Import Existing)</p></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.machine_resource"><code class="name flex">
 <span>def <span class="ident">machine_resource</span></span>(<span>tf_rancher_resource, rke2_cluster, vlan_network, ubuntu_image)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def machine_resource(tf_rancher_resource, rke2_cluster, vlan_network, ubuntu_image):
+    return tf_rancher_resource.machine_config(
+        rke2_cluster[&#34;name&#34;], vlan_network[&#34;id&#34;], ubuntu_image[&#34;id&#34;], ubuntu_image[&#34;ssh_user&#34;]
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.rancher"><code class="name flex">
 <span>def <span class="ident">rancher</span></span>(<span>rancher_api_client)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def rancher(rancher_api_client):
+    access_key, secret_key = rancher_api_client.token.split(&#34;:&#34;)
+    yield {
+        &#34;endpoint&#34;: rancher_api_client.endpoint,
+        &#34;token&#34;: rancher_api_client.token,
+        &#34;access_key&#34;: access_key,
+        &#34;secret_key&#34;: secret_key
+    }</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.rke2_cluster"><code class="name flex">
 <span>def <span class="ident">rke2_cluster</span></span>(<span>unique_name, rke2_version)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def rke2_cluster(unique_name, rke2_version):
+    return {
+        &#34;name&#34;: f&#34;rke2-{unique_name}&#34;,
+        &#34;id&#34;: &#34;&#34;,                         # set in test_create_rke2_cluster
+        &#34;k8s_version&#34;: rke2_version
+    }</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.test_create_cloud_credential"><code class="name flex">
 <span>def <span class="ident">test_create_cloud_credential</span></span>(<span>rancher_api_client, tf_rancher, credential_resource)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name=&#34;create_cloud_credential&#34;, depends=[&#34;import_harvester&#34;])
+def test_create_cloud_credential(rancher_api_client, tf_rancher, credential_resource):
+    spec = credential_resource
+    tf_rancher.save_as(spec.ctx, &#34;cloud_credential&#34;)
+    out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
+    assert not err and 0 == code
+
+    code, data = rancher_api_client.cloud_credentials.get(params={&#34;name&#34;: spec.name})
+    assert 200 == code, (
+        f&#34;Failed to get cloud credential {spec.name}: {code}, {data}&#34;
+    )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.test_create_machine_config"><code class="name flex">
 <span>def <span class="ident">test_create_machine_config</span></span>(<span>tf_rancher, machine_resource)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name=&#34;create_machine_config&#34;, depends=[&#34;create_cloud_credential&#34;])
+def test_create_machine_config(tf_rancher, machine_resource):
+    spec = machine_resource
+    tf_rancher.save_as(spec.ctx, &#34;machine_config&#34;)
+    out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
+    assert not err and 0 == code</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.test_create_rke2_cluster"><code class="name flex">
 <span>def <span class="ident">test_create_rke2_cluster</span></span>(<span>tf_rancher, rke2_cluster, rancher_api_client, cluster_resource)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name=&#34;create_rke2_cluster&#34;, depends=[&#34;create_machine_config&#34;])
+def test_create_rke2_cluster(tf_rancher, rke2_cluster, rancher_api_client, cluster_resource):
+    spec = cluster_resource
+    tf_rancher.save_as(spec.ctx, &#34;rke2_cluster&#34;)
+    out, err, code = tf_rancher.apply_resource(spec.type, spec.name)
+    assert not err and 0 == code
+
+    rc, data = rancher_api_client.mgmt_clusters.get(rke2_cluster[&#39;name&#39;])
+    cluster_state = data.get(&#34;metadata&#34;, {}).get(&#34;state&#34;, {})
+    assert &#34;active&#34; == cluster_state[&#39;name&#39;] and \
+           &#34;Ready&#34; in cluster_state[&#39;message&#39;]
+
+    # check deployments
+    rke2_cluster[&#39;id&#39;] = data[&#34;status&#34;][&#34;clusterName&#34;]
+    for deployment in [&#34;harvester-cloud-provider&#34;, &#34;harvester-csi-driver-controllers&#34;]:
+        rc, data = rancher_api_client.cluster_deployments.get(
+            rke2_cluster[&#39;id&#39;], &#34;kube-system&#34;, deployment
+        )
+        cluster_state = data.get(&#34;metadata&#34;, {}).get(&#34;state&#34;, {})
+        assert 200 == rc and \
+               &#34;active&#34; == cluster_state[&#34;name&#34;]</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.test_delete_cloud_credential"><code class="name flex">
 <span>def <span class="ident">test_delete_cloud_credential</span></span>(<span>tf_rancher, credential_resource)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name=&#34;delete_cloud_credential&#34;, depends=[&#34;create_cloud_credential&#34;])
+def test_delete_cloud_credential(tf_rancher, credential_resource):
+    spec = credential_resource
+    out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == code</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.test_delete_machine_config"><code class="name flex">
 <span>def <span class="ident">test_delete_machine_config</span></span>(<span>tf_rancher, machine_resource)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name=&#34;delete_machine_config&#34;, depends=[&#34;create_machine_config&#34;])
+def test_delete_machine_config(tf_rancher, machine_resource):
+    spec = machine_resource
+    out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == code</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.test_delete_rke2_cluster"><code class="name flex">
 <span>def <span class="ident">test_delete_rke2_cluster</span></span>(<span>tf_rancher, rke2_cluster, rancher_api_client, cluster_resource)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name=&#34;delete_rke2_cluster&#34;, depends=[&#34;create_rke2_cluster&#34;])
+def test_delete_rke2_cluster(tf_rancher, rke2_cluster, rancher_api_client, cluster_resource):
+    spec = cluster_resource
+    out, err, code = tf_rancher.destroy_resource(spec.type, spec.name)
+    assert not err and 0 == code
+
+    rc, data = rancher_api_client.mgmt_clusters.get(rke2_cluster[&#39;name&#39;])
+    assert 404 == rc</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.test_import_harvester"><code class="name flex">
 <span>def <span class="ident">test_import_harvester</span></span>(<span>api_client, rancher_api_client, harvester, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.terraform
+@pytest.mark.rancher
+@pytest.mark.dependency(name=&#34;import_harvester&#34;)
+def test_import_harvester(api_client, rancher_api_client, harvester, wait_timeout):
+    # Get cluster registration URL in Rancher&#39;s Virtualization Management
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        rc, data = rancher_api_client.cluster_registration_tokens.get(harvester[&#39;id&#39;])
+        if 200 == rc and data.get(&#39;manifestUrl&#39;):
+            break
+    else:
+        raise AssertionError(
+            f&#34;Fail to registration URL for the imported harvester {harvester[&#39;name&#39;]}\n&#34;
+            f&#34;rc: {rc}, data:\n{data}&#34;
+        )
+
+    # Set cluster-registration-url on Harvester
+    updates = dict(value=data[&#39;manifestUrl&#39;])
+    rc, data = api_client.settings.update(&#34;cluster-registration-url&#34;, updates)
+    assert 200 == rc, (
+        f&#34;Failed to update Harvester&#39;s settings `cluster-registration-url`&#34;
+        f&#34;rc: {rc}, data:\n{data}&#34;
+    )
+
+    # Check Cluster becomes `active` in Rancher&#39;s Virtualization Management
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        rc, data = rancher_api_client.mgmt_clusters.get(harvester[&#39;name&#39;])
+        cluster_state = data[&#39;metadata&#39;][&#39;state&#39;]
+        if &#34;active&#34; == cluster_state[&#39;name&#39;] and &#34;Ready&#34; in cluster_state[&#39;message&#39;]:
+            break
+    else:
+        raise AssertionError(
+            f&#34;Fail to import harvester\n&#34;
+            f&#34;rc: {rc}, data:\n{data}&#34;
+        )</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.ubuntu_image"><code class="name flex">
 <span>def <span class="ident">ubuntu_image</span></span>(<span>api_client, unique_name, image_ubuntu, wait_timeout)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def ubuntu_image(api_client, unique_name, image_ubuntu, wait_timeout):
+    rc, data = api_client.images.create_by_url(unique_name, image_ubuntu.url)
+    assert 201 == rc, (
+        f&#34;Failed to upload ubuntu image with error\n&#34;
+        f&#34;rc: {rc}, data:\n{data}&#34;
+    )
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        rc, data = api_client.images.get(unique_name)
+        if 200 == rc and image_ubuntu.url == data[&#39;spec&#39;][&#39;url&#39;]:
+            break
+    else:
+        raise AssertionError(
+            f&#34;Fail to create image {unique_name}\n&#34;
+            f&#34;rc: {rc}, data:\n{data}&#34;
+        )
+    namespace = data[&#39;metadata&#39;][&#39;namespace&#39;]
+    name = data[&#39;metadata&#39;][&#39;name&#39;]
+
+    yield {
+        &#34;id&#34;: f&#34;{namespace}/{name}&#34;,
+        &#34;ssh_user&#34;: &#34;ubuntu&#34;
+    }
+
+    api_client.images.delete(name, namespace)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_z_terraform_rancher.vlan_network"><code class="name flex">
 <span>def <span class="ident">vlan_network</span></span>(<span>request, api_client)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
+def vlan_network(request, api_client):
+    vlan_nic = request.config.getoption(&#39;--vlan-nic&#39;)
+    vlan_id = request.config.getoption(&#39;--vlan-id&#39;)
+    assert -1 != vlan_id, &#34;Rancher integration test needs VLAN&#34;
+
+    api_client.clusternetworks.create(vlan_nic)
+    api_client.clusternetworks.create_config(vlan_nic, vlan_nic, vlan_nic)
+
+    network_name = f&#39;vlan-network-{vlan_id}&#39;
+    code, data = api_client.networks.get(network_name)
+    if code != 200:
+        code, data = api_client.networks.create(network_name, vlan_id, cluster_network=vlan_nic)
+        assert 201 == code, (
+            f&#34;Failed to create network-attachment-definition {network_name}\n&#34;
+            f&#34;rc: {code}, data:\n{data}&#34;
+        )
+    namespace = data[&#39;metadata&#39;][&#39;namespace&#39;]
+    name = data[&#39;metadata&#39;][&#39;name&#39;]
+
+    yield {
+        &#34;id&#34;: f&#34;{namespace}/{name}&#34;
+    }
+
+    api_client.networks.delete(network_name, namespace)</code></pre>
+</details>
 <div class="desc"></div>
 </dd>
 </dl>
@@ -161,7 +473,7 @@ hljs.highlightAll();
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.5</a>.</p>
 </footer>
 </body>
 </html>
