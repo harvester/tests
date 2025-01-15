@@ -1128,6 +1128,30 @@ class TestAnyNodesUpgrade:
             raise AssertionError(f"CRDs {not_existed_crds} are not existed")
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
+    def test_verify_upgradelog(self, api_client):
+        """ Verify upgradelog pod and volume existed when upgrade with "Enable Logging"
+        """
+        # pod
+        code, data = api_client.get_pods(namespace='harvester-system')
+        assert code == 200 and data['data'], (code, data)
+
+        upgradelog_pods = [pod for pod in data['data'] if 'upgradelog' in pod['id']]
+        assert upgradelog_pods, f"No upgradelog pod found:\n{data['data']}"
+        for pod in upgradelog_pods:
+            assert pod["status"]["phase"] == "Running", (code, upgradelog_pods)
+
+        # volume
+        code, data = api_client.volumes.get(namespace='harvester-system')
+        assert code == 200 and data['data'], (code, data)
+
+        upgradelog_vols = [vol for vol in data['data'] if 'upgradelog' in vol['id']]
+        assert upgradelog_vols, f"No upgradelog volume found:\n{data['data']}"
+        for vol in upgradelog_vols:
+            assert not vol["metadata"]['state']['error'], (code, upgradelog_vols)
+            assert not vol["metadata"]['state']['transitioning'], (code, upgradelog_vols)
+            assert vol['status']['phase'] == "Bound", (code, upgradelog_vols)
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade"])
     def test_upgrade_vm_deleted(self, api_client, wait_timeout):
         # max to wait 300s for the upgrade related VMs to be deleted
         endtime = datetime.now() + timedelta(seconds=min(wait_timeout / 5, 300))
