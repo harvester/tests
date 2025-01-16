@@ -1972,7 +1972,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      fs:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - name: &#34;write file test&#34;
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          commands:
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there&#34; &gt; /etc/sillyfile.conf</span>    
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there&#34; &gt; /etc/sillyfile.conf</span>
 </span></span></code></pre></div><ol start="2">
 <li>Log on to any one of the nodes in the cluster and validate:</li>
 <li><code>99_filewrite.log.yaml</code> is present within <code>/oem/</code> directory on the node</li>
@@ -1996,7 +1996,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      fs:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - name: &#34;write file test&#34;
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          commands:
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there&#34; &gt; /etc/sillyfile.conf</span>    
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there&#34; &gt; /etc/sillyfile.conf</span>
 </span></span></code></pre></div><ol start="2">
 <li>Log on to any one of the nodes in the cluster and validate:
 <ol>
@@ -2019,7 +2019,7 @@
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">matchSelector</span>: {}
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">filename</span>: <span style="color:#ae81ff">install/console.log</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">contents</span>: |<span style="color:#e6db74">
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    hello  there</span>    
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    hello  there</span>
 </span></span></code></pre></div><ol start="2">
 <li>When trying to apply the YAML, it should be rejected at a Webhook level, test via: <code>kubectl create -f your-file-name.yaml</code></li>
 <li>Validate that is rejected.</li>
@@ -2041,7 +2041,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      network:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - authorized_keys:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            rancher:
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              - ATTACH-YOUR-SSH-KEY-HERE</span>    
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              - ATTACH-YOUR-SSH-KEY-HERE</span>
 </span></span></code></pre></div><ol start="2">
 <li>Apply it to the cluster via <code>kubectl create -f filename.yaml</code></li>
 <li>Validate that the CloudInit Resource was scaffolded appropriately <code>kubectl describe cloudinits/ssh-access-test</code></li>
@@ -2069,7 +2069,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      network:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - authorized_keys:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            rancher:
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              - ATTACH-YOUR-SSH-KEY-HERE</span>    
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              - ATTACH-YOUR-SSH-KEY-HERE</span>
 </span></span></code></pre></div><ol start="2">
 <li>Apply it to the cluster via <code>kubectl create -f filename.yaml</code></li>
 <li>validate that the CloudInit resource was built appropriately <code>kubectl describe cloudinits/ssh-access-test-one-node</code></li>
@@ -2098,7 +2098,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      fs:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - name: &#34;write file test reflects nodes&#34;
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          commands:
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there&#34; &gt; /etc/sillyfile.conf</span>    
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there&#34; &gt; /etc/sillyfile.conf</span>
 </span></span></code></pre></div><ol start="3">
 <li>validate that the cloudinit resource was built correctly <code>kubectl describe cloudinits/write-file-reflects-nodes</code></li>
 <li>Check the nodes applied to, to make sure <code>/oem/99_filewrite_nodes.yaml</code> is present, if not you may need to wait for the controller to reconcile the label logic on the nodes</li>
@@ -2129,7 +2129,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      fs:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - name: &#34;write file test reflects nodes&#34;
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          commands:
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there&#34; &gt; /etc/sillyfile-that-doesnt-get-changes.conf</span>    
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there&#34; &gt; /etc/sillyfile-that-doesnt-get-changes.conf</span>
 </span></span></code></pre></div><ol start="3">
 <li>Apply the resource <code>kubectl create -f</code></li>
 <li>Reboot the node</li>
@@ -2150,7 +2150,7 @@
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      fs:
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        - name: &#34;write file test reflects nodes&#34;
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          commands:
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there NEW CHANGES&#34; &gt; /etc/sillyfile-that-doesnt-get-changes.conf</span>    
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - echo &#34;hello, there NEW CHANGES&#34; &gt; /etc/sillyfile-that-doesnt-get-changes.conf</span>
 </span></span></code></pre></div><ol start="7">
 <li>Audit that paused is turned on <code>kubectl describe cloudinits/silly-file-one-node-no-changes</code></li>
 <li>Reboot the node</li>
