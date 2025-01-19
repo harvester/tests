@@ -12,7 +12,7 @@ def upgrade_checker(api_client, wait_timeout, sleep_timeout):
             self.upgrades = api_client.upgrades
 
         @wait_until(wait_timeout, sleep_timeout)
-        def wait_upgrade_version_created(self, version):
+        def wait_version_created(self, version):
             code, data = self.versions.get(version)
             if code == 200:
                 return True, (code, data)
@@ -25,7 +25,10 @@ def upgrade_checker(api_client, wait_timeout, sleep_timeout):
             verified = [
                 "False" == conds.get('Completed', {}).get('status'),
                 "False" == conds.get('ImageReady', {}).get('status'),
-                "no such host" in conds.get('ImageReady', {}).get('message', "")
+                any([
+                    "no such host" in conds.get('ImageReady', {}).get('message', ""),  # >= v1.4.0
+                    "retry limit" in conds.get('ImageReady', {}).get('message', "")    # < v1.4.0
+                ])
             ]
             if all(verified):
                 return True, (code, data)
@@ -38,7 +41,10 @@ def upgrade_checker(api_client, wait_timeout, sleep_timeout):
             verified = [
                 "False" == conds.get('Completed', {}).get('status'),
                 "False" == conds.get('ImageReady', {}).get('status'),
-                "n't match the file actual check" in conds.get('ImageReady', {}).get('message', "")
+                any([
+                    "actual check" in conds.get('ImageReady', {}).get('message', ""),  # >= v1.4.0
+                    "retry limit" in conds.get('ImageReady', {}).get('message', "")    # < v1.4.0
+                ])
             ]
             if all(verified):
                 return True, (code, data)

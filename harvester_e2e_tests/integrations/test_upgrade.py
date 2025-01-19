@@ -80,11 +80,11 @@ def harvester_crds(api_client):
 
 @pytest.fixture(scope="module")
 def upgrade_target(request, unique_name):
-    version = request.config.getoption('--upgrade-target-version')
+    version = request.config.getoption('--upgrade-target-version').strip()
     version = version or f"upgrade-{unique_name}"
-    iso_url = request.config.getoption('--upgrade-iso-url')
+    iso_url = request.config.getoption('--upgrade-iso-url').strip()
     assert iso_url, "Target ISO URL should not be empty"
-    checksum = request.config.getoption("--upgrade-iso-checksum")
+    checksum = request.config.getoption("--upgrade-iso-checksum").strip()
     assert checksum, "Checksum for Target ISO should not be empty"
 
     return version, iso_url, checksum
@@ -118,7 +118,7 @@ def image(api_client, image_ubuntu, unique_name, wait_timeout):
 
 
 @pytest.fixture(scope='module')
-def cluster_network(vlan_nic, api_client, unique_name):
+def cluster_network(vlan_nic, api_client, unique_name, network_checker, wait_timeout):
     code, data = api_client.clusternetworks.get_config()
     assert 200 == code, (code, data)
 
@@ -158,17 +158,24 @@ def cluster_network(vlan_nic, api_client, unique_name):
             f"Created: {created}\t Remaining: {all_nodes}\n"
             f"API Status({code}): {data}"
         )
+        cnet_config_created, (code, data) = network_checker.wait_cnet_config_created(node)
+        assert cnet_config_created, (code, data)
         created.append(node)
 
     yield cnet
 
     # Teardown
-    deleted = {name: api_client.clusternetworks.delete_config(name) for name in created}
-    failed = [(name, code, data) for name, (code, data) in deleted.items() if 200 != code]
-    if failed:
-        fmt = "Unable to delete VLAN Config {} with error ({}): {}"
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now() and created:
+        name = created.pop(0)
+        code, data = api_client.clusternetworks.delete_config(name)
+        if code != 404:
+            created.append(name)
+        sleep(1)
+    else:
         raise AssertionError(
-            "\n".join(fmt.format(name, code, data) for (name, code, data) in failed)
+            f"Failed to remove network configs {created} after {wait_timeout}s\n"
+            f"Last API Status({code}): {data}"
         )
 
     code, data = api_client.clusternetworks.delete(cnet)
@@ -409,7 +416,7 @@ class TestInvalidUpgrade:
         if code != 200:
             code, data = api_client.versions.create(version, url, checksum)
             assert code == 201, f"Failed to create invalid version: {data}"
-            version_created, (code, data) = upgrade_checker.wait_upgrade_version_created(version)
+            version_created, (code, data) = upgrade_checker.wait_version_created(version)
             assert version_created, (code, data)
 
         code, data = api_client.upgrades.create(version)
@@ -441,7 +448,7 @@ class TestInvalidUpgrade:
 
         code, data = api_client.versions.create(version, url, checksum[resort])
         assert 201 == code, f"Failed to create upgrade for {version}"
-        version_created, (code, data) = upgrade_checker.wait_upgrade_version_created(version)
+        version_created, (code, data) = upgrade_checker.wait_version_created(version)
         assert version_created, (code, data)
 
         code, data = api_client.upgrades.create(version)
@@ -483,8 +490,8 @@ class TestInvalidUpgrade:
         api_client.versions.delete(version)
 
     def test_degraded_volume(
-        self, api_client, vm_shell_from_host, upgrade_target, stopped_vm,
-        vm_checker, volume_checker
+        self, api_client, unique_name, vm_shell_from_host, upgrade_target, stopped_vm,
+        vm_checker, volume_checker, upgrade_checker
     ):
         """
         Criteria: create upgrade should fails if there are any degraded volumes
@@ -535,8 +542,11 @@ class TestInvalidUpgrade:
 
         # create upgrade and verify it is not allowed
         version, url, checksum = upgrade_target
+        version = f"{version}-{unique_name}"
         code, data = api_client.versions.create(version, url, checksum)
         assert code == 201, f"Failed to create version {version}: {data}"
+        version_created, (code, data) = upgrade_checker.wait_version_created(version)
+        assert version_created, (code, data)
         code, data = api_client.upgrades.create(version)
         assert code == 400, f"Failed to verify degraded volume: {code}, {data}"
 
@@ -723,7 +733,8 @@ class TestAnyNodesUpgrade:
 
     @pytest.mark.dependency(name="any_nodes_upgrade")
     def test_perform_upgrade(
-        self, api_client, unique_name, upgrade_target, upgrade_timeout, interceptor
+        self, api_client, unique_name, upgrade_target, upgrade_timeout, interceptor,
+        upgrade_checker
     ):
         """
         - perform upgrade
@@ -740,6 +751,8 @@ class TestAnyNodesUpgrade:
         version = f"{version}-{unique_name}"
         code, data = api_client.versions.create(version, url, checksum)
         assert 201 == code, f"Failed to create upgrade for {version}"
+        version_created, (code, data) = upgrade_checker.wait_version_created(version)
+        assert version_created, (code, data)
         code, data = api_client.upgrades.create(version, annotations=skip_version_check)
         assert 201 == code, f"Failed to start upgrade for {version}"
         upgrade_name = data['metadata']['name']
