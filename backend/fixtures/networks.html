@@ -57,6 +57,7 @@ def network_checker(api_client, wait_timeout, sleep_timeout):
     class NetworkChecker:
         def __init__(self):
             self.networks = api_client.networks
+            self.clusternetworks = api_client.clusternetworks
 
         @wait_until(wait_timeout, sleep_timeout)
         def wait_routed(self, vnet_name):
@@ -64,6 +65,13 @@ def network_checker(api_client, wait_timeout, sleep_timeout):
             annotations = data[&#39;metadata&#39;].get(&#39;annotations&#39;, {})
             route = json.loads(annotations.get(&#39;network.harvesterhci.io/route&#39;, &#39;{}&#39;))
             if code == 200 and route.get(&#39;connectivity&#39;) == &#39;true&#39;:
+                return True, (code, data)
+            return False, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
+        def wait_cnet_config_created(self, cnet_config_name):
+            code, data = api_client.clusternetworks.get_config(cnet_config_name)
+            if code == 200:
                 return True, (code, data)
             return False, (code, data)
 

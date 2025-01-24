@@ -45,7 +45,7 @@ el.replaceWith(d);
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_upgrade.cluster_network"><code class="name flex">
-<span>def <span class="ident">cluster_network</span></span>(<span>vlan_nic, api_client, unique_name)</span>
+<span>def <span class="ident">cluster_network</span></span>(<span>vlan_nic, api_client, unique_name, network_checker, wait_timeout)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -53,7 +53,7 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;module&#39;)
-def cluster_network(vlan_nic, api_client, unique_name):
+def cluster_network(vlan_nic, api_client, unique_name, network_checker, wait_timeout):
     code, data = api_client.clusternetworks.get_config()
     assert 200 == code, (code, data)
 
@@ -93,17 +93,24 @@ def cluster_network(vlan_nic, api_client, unique_name):
             f&#34;Created: {created}\t Remaining: {all_nodes}\n&#34;
             f&#34;API Status({code}): {data}&#34;
         )
+        cnet_config_created, (code, data) = network_checker.wait_cnet_config_created(node)
+        assert cnet_config_created, (code, data)
         created.append(node)
 
     yield cnet
 
     # Teardown
-    deleted = {name: api_client.clusternetworks.delete_config(name) for name in created}
-    failed = [(name, code, data) for name, (code, data) in deleted.items() if 200 != code]
-    if failed:
-        fmt = &#34;Unable to delete VLAN Config {} with error ({}): {}&#34;
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now() and created:
+        name = created.pop(0)
+        code, data = api_client.clusternetworks.delete_config(name)
+        if code != 404:
+            created.append(name)
+        sleep(1)
+    else:
         raise AssertionError(
-            &#34;\n&#34;.join(fmt.format(name, code, data) for (name, code, data) in failed)
+            f&#34;Failed to remove network configs {created} after {wait_timeout}s\n&#34;
+            f&#34;Last API Status({code}): {data}&#34;
         )
 
     code, data = api_client.clusternetworks.delete(cnet)
@@ -453,11 +460,11 @@ def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, imag
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
 def upgrade_target(request, unique_name):
-    version = request.config.getoption(&#39;--upgrade-target-version&#39;)
+    version = request.config.getoption(&#39;--upgrade-target-version&#39;).strip()
     version = version or f&#34;upgrade-{unique_name}&#34;
-    iso_url = request.config.getoption(&#39;--upgrade-iso-url&#39;)
+    iso_url = request.config.getoption(&#39;--upgrade-iso-url&#39;).strip()
     assert iso_url, &#34;Target ISO URL should not be empty&#34;
-    checksum = request.config.getoption(&#34;--upgrade-iso-checksum&#34;)
+    checksum = request.config.getoption(&#34;--upgrade-iso-checksum&#34;).strip()
     assert checksum, &#34;Checksum for Target ISO should not be empty&#34;
 
     return version, iso_url, checksum</code></pre>
@@ -703,7 +710,8 @@ class TestAnyNodesUpgrade:
 
     @pytest.mark.dependency(name=&#34;any_nodes_upgrade&#34;)
     def test_perform_upgrade(
-        self, api_client, unique_name, upgrade_target, upgrade_timeout, interceptor
+        self, api_client, unique_name, upgrade_target, upgrade_timeout, interceptor,
+        upgrade_checker
     ):
         &#34;&#34;&#34;
         - perform upgrade
@@ -720,6 +728,8 @@ class TestAnyNodesUpgrade:
         version = f&#34;{version}-{unique_name}&#34;
         code, data = api_client.versions.create(version, url, checksum)
         assert 201 == code, f&#34;Failed to create upgrade for {version}&#34;
+        version_created, (code, data) = upgrade_checker.wait_version_created(version)
+        assert version_created, (code, data)
         code, data = api_client.upgrades.create(version, annotations=skip_version_check)
         assert 201 == code, f&#34;Failed to start upgrade for {version}&#34;
         upgrade_name = data[&#39;metadata&#39;][&#39;name&#39;]
@@ -1180,7 +1190,7 @@ class TestAnyNodesUpgrade:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_perform_upgrade"><code class="name flex">
-<span>def <span class="ident">test_perform_upgrade</span></span>(<span>self, api_client, unique_name, upgrade_target, upgrade_timeout, interceptor)</span>
+<span>def <span class="ident">test_perform_upgrade</span></span>(<span>self,<br>api_client,<br>unique_name,<br>upgrade_target,<br>upgrade_timeout,<br>interceptor,<br>upgrade_checker)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -1189,7 +1199,8 @@ class TestAnyNodesUpgrade:
 </summary>
 <pre><code class="python">@pytest.mark.dependency(name=&#34;any_nodes_upgrade&#34;)
 def test_perform_upgrade(
-    self, api_client, unique_name, upgrade_target, upgrade_timeout, interceptor
+    self, api_client, unique_name, upgrade_target, upgrade_timeout, interceptor,
+    upgrade_checker
 ):
     &#34;&#34;&#34;
     - perform upgrade
@@ -1206,6 +1217,8 @@ def test_perform_upgrade(
     version = f&#34;{version}-{unique_name}&#34;
     code, data = api_client.versions.create(version, url, checksum)
     assert 201 == code, f&#34;Failed to create upgrade for {version}&#34;
+    version_created, (code, data) = upgrade_checker.wait_version_created(version)
+    assert version_created, (code, data)
     code, data = api_client.upgrades.create(version, annotations=skip_version_check)
     assert 201 == code, f&#34;Failed to start upgrade for {version}&#34;
     upgrade_name = data[&#39;metadata&#39;][&#39;name&#39;]
@@ -2058,7 +2071,7 @@ class TestInvalidUpgrade:
         if code != 200:
             code, data = api_client.versions.create(version, url, checksum)
             assert code == 201, f&#34;Failed to create invalid version: {data}&#34;
-            version_created, (code, data) = upgrade_checker.wait_upgrade_version_created(version)
+            version_created, (code, data) = upgrade_checker.wait_version_created(version)
             assert version_created, (code, data)
 
         code, data = api_client.upgrades.create(version)
@@ -2090,7 +2103,7 @@ class TestInvalidUpgrade:
 
         code, data = api_client.versions.create(version, url, checksum[resort])
         assert 201 == code, f&#34;Failed to create upgrade for {version}&#34;
-        version_created, (code, data) = upgrade_checker.wait_upgrade_version_created(version)
+        version_created, (code, data) = upgrade_checker.wait_version_created(version)
         assert version_created, (code, data)
 
         code, data = api_client.upgrades.create(version)
@@ -2132,8 +2145,8 @@ class TestInvalidUpgrade:
         api_client.versions.delete(version)
 
     def test_degraded_volume(
-        self, api_client, vm_shell_from_host, upgrade_target, stopped_vm,
-        vm_checker, volume_checker
+        self, api_client, unique_name, vm_shell_from_host, upgrade_target, stopped_vm,
+        vm_checker, volume_checker, upgrade_checker
     ):
         &#34;&#34;&#34;
         Criteria: create upgrade should fails if there are any degraded volumes
@@ -2184,8 +2197,11 @@ class TestInvalidUpgrade:
 
         # create upgrade and verify it is not allowed
         version, url, checksum = upgrade_target
+        version = f&#34;{version}-{unique_name}&#34;
         code, data = api_client.versions.create(version, url, checksum)
         assert code == 201, f&#34;Failed to create version {version}: {data}&#34;
+        version_created, (code, data) = upgrade_checker.wait_version_created(version)
+        assert version_created, (code, data)
         code, data = api_client.upgrades.create(version)
         assert code == 400, f&#34;Failed to verify degraded volume: {code}, {data}&#34;
 
@@ -2227,7 +2243,7 @@ def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade
 
     code, data = api_client.versions.create(version, url, checksum[resort])
     assert 201 == code, f&#34;Failed to create upgrade for {version}&#34;
-    version_created, (code, data) = upgrade_checker.wait_upgrade_version_created(version)
+    version_created, (code, data) = upgrade_checker.wait_version_created(version)
     assert version_created, (code, data)
 
     code, data = api_client.upgrades.create(version)
@@ -2245,7 +2261,7 @@ def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_upgrade.TestInvalidUpgrade.test_degraded_volume"><code class="name flex">
-<span>def <span class="ident">test_degraded_volume</span></span>(<span>self,<br>api_client,<br>vm_shell_from_host,<br>upgrade_target,<br>stopped_vm,<br>vm_checker,<br>volume_checker)</span>
+<span>def <span class="ident">test_degraded_volume</span></span>(<span>self,<br>api_client,<br>unique_name,<br>vm_shell_from_host,<br>upgrade_target,<br>stopped_vm,<br>vm_checker,<br>volume_checker,<br>upgrade_checker)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -2253,8 +2269,8 @@ def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_degraded_volume(
-    self, api_client, vm_shell_from_host, upgrade_target, stopped_vm,
-    vm_checker, volume_checker
+    self, api_client, unique_name, vm_shell_from_host, upgrade_target, stopped_vm,
+    vm_checker, volume_checker, upgrade_checker
 ):
     &#34;&#34;&#34;
     Criteria: create upgrade should fails if there are any degraded volumes
@@ -2305,8 +2321,11 @@ def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade
 
     # create upgrade and verify it is not allowed
     version, url, checksum = upgrade_target
+    version = f&#34;{version}-{unique_name}&#34;
     code, data = api_client.versions.create(version, url, checksum)
     assert code == 201, f&#34;Failed to create version {version}: {data}&#34;
+    version_created, (code, data) = upgrade_checker.wait_version_created(version)
+    assert version_created, (code, data)
     code, data = api_client.upgrades.create(version)
     assert code == 400, f&#34;Failed to verify degraded volume: {code}, {data}&#34;
 
@@ -2343,7 +2362,7 @@ degraded state.
     if code != 200:
         code, data = api_client.versions.create(version, url, checksum)
         assert code == 201, f&#34;Failed to create invalid version: {data}&#34;
-        version_created, (code, data) = upgrade_checker.wait_upgrade_version_created(version)
+        version_created, (code, data) = upgrade_checker.wait_version_created(version)
         assert version_created, (code, data)
 
     code, data = api_client.upgrades.create(version)

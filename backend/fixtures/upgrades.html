@@ -60,7 +60,7 @@ def upgrade_checker(api_client, wait_timeout, sleep_timeout):
             self.upgrades = api_client.upgrades
 
         @wait_until(wait_timeout, sleep_timeout)
-        def wait_upgrade_version_created(self, version):
+        def wait_version_created(self, version):
             code, data = self.versions.get(version)
             if code == 200:
                 return True, (code, data)
@@ -73,7 +73,10 @@ def upgrade_checker(api_client, wait_timeout, sleep_timeout):
             verified = [
                 &#34;False&#34; == conds.get(&#39;Completed&#39;, {}).get(&#39;status&#39;),
                 &#34;False&#34; == conds.get(&#39;ImageReady&#39;, {}).get(&#39;status&#39;),
-                &#34;no such host&#34; in conds.get(&#39;ImageReady&#39;, {}).get(&#39;message&#39;, &#34;&#34;)
+                any([
+                    &#34;no such host&#34; in conds.get(&#39;ImageReady&#39;, {}).get(&#39;message&#39;, &#34;&#34;),  # &gt;= v1.4.0
+                    &#34;retry limit&#34; in conds.get(&#39;ImageReady&#39;, {}).get(&#39;message&#39;, &#34;&#34;)    # &lt; v1.4.0
+                ])
             ]
             if all(verified):
                 return True, (code, data)
@@ -86,7 +89,10 @@ def upgrade_checker(api_client, wait_timeout, sleep_timeout):
             verified = [
                 &#34;False&#34; == conds.get(&#39;Completed&#39;, {}).get(&#39;status&#39;),
                 &#34;False&#34; == conds.get(&#39;ImageReady&#39;, {}).get(&#39;status&#39;),
-                &#34;n&#39;t match the file actual check&#34; in conds.get(&#39;ImageReady&#39;, {}).get(&#39;message&#39;, &#34;&#34;)
+                any([
+                    &#34;actual check&#34; in conds.get(&#39;ImageReady&#39;, {}).get(&#39;message&#39;, &#34;&#34;),  # &gt;= v1.4.0
+                    &#34;retry limit&#34; in conds.get(&#39;ImageReady&#39;, {}).get(&#39;message&#39;, &#34;&#34;)    # &lt; v1.4.0
+                ])
             ]
             if all(verified):
                 return True, (code, data)
