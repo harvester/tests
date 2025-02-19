@@ -166,11 +166,13 @@ def cluster_network(vlan_nic, api_client, unique_name, network_checker, wait_tim
 
     # Teardown
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now() and created:
+    while endtime > datetime.now():
         name = created.pop(0)
         code, data = api_client.clusternetworks.delete_config(name)
         if code != 404:
             created.append(name)
+        if not created:
+            break
         sleep(1)
     else:
         raise AssertionError(
