@@ -1079,23 +1079,26 @@ class TestAnyNodesUpgrade:
         engine_image_version_existed = False
         longhorn_manager_version_existed = False
 
-        # Get except version from apps.catalog.cattle.io/harvester
-        code, apps = api_client.get_apps_catalog(name="harvester",
-                                                 namespace=DEFAULT_HARVESTER_NAMESPACE)
-        assert code == 200 and apps['type'] != "error", (
-            f"Failed to get apps.catalog.cattle.io/harvester: {apps['message']}")
+        # Get expected image of kubevirt
+        code, app = api_client.get_apps_deployments(name="virt-operator",
+                                                    namespace=DEFAULT_HARVESTER_NAMESPACE)
+        assert code == 200, (code, app)
+        kubevirt_operator_image = app['spec']['template']['spec']['containers'][0]['image']
 
-        # Get except image of kubevirt and longhorn
-        kubevirt_operator = (
-            apps['spec']['chart']['values']['kubevirt-operator']['containers']['operator'])
-        kubevirt_operator_image = (
-            f"{kubevirt_operator['image']['repository']}:{kubevirt_operator['image']['tag']}")
+        # Get except image of longhorn
+        code, apps = api_client.get_apps_controllerrevisions(namespace=DEFAULT_LONGHORN_NAMESPACE)
+        assert code == 200, (code, apps)
 
-        longhorn = apps['spec']['chart']['values']['longhorn']['image']['longhorn']
         longhorn_images = {
-            "engine-image": f"{longhorn['engine']['repository']}:{longhorn['engine']['tag']}",
-            "longhorn-manager": f"{longhorn['manager']['repository']}:{longhorn['manager']['tag']}"
+            "engine-image": "",
+            "longhorn-manager": ""
         }
+        for lh_app in longhorn_images:
+            for app in apps['data']:
+                if app["id"].startswith(f"{DEFAULT_LONGHORN_NAMESPACE}/{lh_app}"):
+                    longhorn_images[lh_app] = (
+                        app["data"]["spec"]["template"]["spec"]["containers"][0]["image"])
+                    break
 
         # Verify kubevirt version
         code, pods = api_client.get_pods(namespace=DEFAULT_HARVESTER_NAMESPACE)

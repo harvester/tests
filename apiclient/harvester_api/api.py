@@ -140,8 +140,13 @@ class HarvesterAPI:
         resp = self._get(path)
         return resp.status_code, resp.json()
 
-    def get_apps_catalog(self, name="", namespace=DEFAULT_NAMESPACE):
-        path = f"v1/catalog.cattle.io.apps/{namespace}/{name}"
+    def get_apps_deployments(self, name="", namespace=DEFAULT_NAMESPACE):
+        path = f"v1/apps.deployments/{namespace}/{name}"
+        resp = self._get(path)
+        return resp.status_code, resp.json()
+
+    def get_apps_controllerrevisions(self, namespace=""):
+        path = f"v1/apps.controllerrevisions/{namespace}"
         resp = self._get(path)
         return resp.status_code, resp.json()
 
