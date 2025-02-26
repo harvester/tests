@@ -101,11 +101,13 @@ def cluster_network(vlan_nic, api_client, unique_name, network_checker, wait_tim
 
     # Teardown
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now() and created:
+    while endtime &gt; datetime.now():
         name = created.pop(0)
         code, data = api_client.clusternetworks.delete_config(name)
         if code != 404:
             created.append(name)
+        if not created:
+            break
         sleep(1)
     else:
         raise AssertionError(
@@ -1054,23 +1056,26 @@ class TestAnyNodesUpgrade:
         engine_image_version_existed = False
         longhorn_manager_version_existed = False
 
-        # Get except version from apps.catalog.cattle.io/harvester
-        code, apps = api_client.get_apps_catalog(name=&#34;harvester&#34;,
-                                                 namespace=DEFAULT_HARVESTER_NAMESPACE)
-        assert code == 200 and apps[&#39;type&#39;] != &#34;error&#34;, (
-            f&#34;Failed to get apps.catalog.cattle.io/harvester: {apps[&#39;message&#39;]}&#34;)
+        # Get expected image of kubevirt
+        code, app = api_client.get_apps_deployments(name=&#34;virt-operator&#34;,
+                                                    namespace=DEFAULT_HARVESTER_NAMESPACE)
+        assert code == 200, (code, app)
+        kubevirt_operator_image = app[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
 
-        # Get except image of kubevirt and longhorn
-        kubevirt_operator = (
-            apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;kubevirt-operator&#39;][&#39;containers&#39;][&#39;operator&#39;])
-        kubevirt_operator_image = (
-            f&#34;{kubevirt_operator[&#39;image&#39;][&#39;repository&#39;]}:{kubevirt_operator[&#39;image&#39;][&#39;tag&#39;]}&#34;)
+        # Get except image of longhorn
+        code, apps = api_client.get_apps_controllerrevisions(namespace=DEFAULT_LONGHORN_NAMESPACE)
+        assert code == 200, (code, apps)
 
-        longhorn = apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;longhorn&#39;][&#39;image&#39;][&#39;longhorn&#39;]
         longhorn_images = {
-            &#34;engine-image&#34;: f&#34;{longhorn[&#39;engine&#39;][&#39;repository&#39;]}:{longhorn[&#39;engine&#39;][&#39;tag&#39;]}&#34;,
-            &#34;longhorn-manager&#34;: f&#34;{longhorn[&#39;manager&#39;][&#39;repository&#39;]}:{longhorn[&#39;manager&#39;][&#39;tag&#39;]}&#34;
+            &#34;engine-image&#34;: &#34;&#34;,
+            &#34;longhorn-manager&#34;: &#34;&#34;
         }
+        for lh_app in longhorn_images:
+            for app in apps[&#39;data&#39;]:
+                if app[&#34;id&#34;].startswith(f&#34;{DEFAULT_LONGHORN_NAMESPACE}/{lh_app}&#34;):
+                    longhorn_images[lh_app] = (
+                        app[&#34;data&#34;][&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;containers&#34;][0][&#34;image&#34;])
+                    break
 
         # Verify kubevirt version
         code, pods = api_client.get_pods(namespace=DEFAULT_HARVESTER_NAMESPACE)
@@ -1629,23 +1634,26 @@ def test_verify_deployed_components_version(self, api_client):
     engine_image_version_existed = False
     longhorn_manager_version_existed = False
 
-    # Get except version from apps.catalog.cattle.io/harvester
-    code, apps = api_client.get_apps_catalog(name=&#34;harvester&#34;,
-                                             namespace=DEFAULT_HARVESTER_NAMESPACE)
-    assert code == 200 and apps[&#39;type&#39;] != &#34;error&#34;, (
-        f&#34;Failed to get apps.catalog.cattle.io/harvester: {apps[&#39;message&#39;]}&#34;)
+    # Get expected image of kubevirt
+    code, app = api_client.get_apps_deployments(name=&#34;virt-operator&#34;,
+                                                namespace=DEFAULT_HARVESTER_NAMESPACE)
+    assert code == 200, (code, app)
+    kubevirt_operator_image = app[&#39;spec&#39;][&#39;template&#39;][&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
 
-    # Get except image of kubevirt and longhorn
-    kubevirt_operator = (
-        apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;kubevirt-operator&#39;][&#39;containers&#39;][&#39;operator&#39;])
-    kubevirt_operator_image = (
-        f&#34;{kubevirt_operator[&#39;image&#39;][&#39;repository&#39;]}:{kubevirt_operator[&#39;image&#39;][&#39;tag&#39;]}&#34;)
+    # Get except image of longhorn
+    code, apps = api_client.get_apps_controllerrevisions(namespace=DEFAULT_LONGHORN_NAMESPACE)
+    assert code == 200, (code, apps)
 
-    longhorn = apps[&#39;spec&#39;][&#39;chart&#39;][&#39;values&#39;][&#39;longhorn&#39;][&#39;image&#39;][&#39;longhorn&#39;]
     longhorn_images = {
-        &#34;engine-image&#34;: f&#34;{longhorn[&#39;engine&#39;][&#39;repository&#39;]}:{longhorn[&#39;engine&#39;][&#39;tag&#39;]}&#34;,
-        &#34;longhorn-manager&#34;: f&#34;{longhorn[&#39;manager&#39;][&#39;repository&#39;]}:{longhorn[&#39;manager&#39;][&#39;tag&#39;]}&#34;
+        &#34;engine-image&#34;: &#34;&#34;,
+        &#34;longhorn-manager&#34;: &#34;&#34;
     }
+    for lh_app in longhorn_images:
+        for app in apps[&#39;data&#39;]:
+            if app[&#34;id&#34;].startswith(f&#34;{DEFAULT_LONGHORN_NAMESPACE}/{lh_app}&#34;):
+                longhorn_images[lh_app] = (
+                    app[&#34;data&#34;][&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;containers&#34;][0][&#34;image&#34;])
+                break
 
     # Verify kubevirt version
     code, pods = api_client.get_pods(namespace=DEFAULT_HARVESTER_NAMESPACE)
