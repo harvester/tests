@@ -1,0 +1,47 @@
+---
+title: Terraform Harvester Provider for v1.1.0
+---
+
+* Related issues: [#2957](https://github.com/harvester/harvester/issues/2957) [BUG] Terraform Harvester Provider for v1.1.0
+
+** Harvester Version >= `v1.1.0`**
+
+## Category: 
+* Terraform
+
+## Verification Steps
+
+
+1. Install Harvester with any nodes
+1. Install terraform-harvester-provider (using master-head for testing)
+1. Execute `terraform init`
+1. Create the file network.tf as following snippets:
+```
+resource "harvester_clusternetwork" "tf_cnet" {
+  name = "cnet-003710"
+}
+resource "harvester_vlanconfig" "tf_vlanconfig" {
+  name = "cnet-003710-eno50"
+
+  uplink {
+    nics = ["eno50"]
+  }
+
+  cluster_network_name = "cnet-003710"
+}
+resource "harvester_network" "tf_vmnetwork" {
+  name = "tf_vmnetwork"
+
+  vlan_id = 1
+
+  cluster_network_name = "cnet-003710"
+}
+```
+1. execute `terraform apply -auto-approve`
+1. Login to dashboard then navigate to Networks/Cluster Networks, cluster network `cnet-003710` should be created, vlanconfig `cnet-003710-eno50` should be the member in the cluster network
+1. Navigate to Networks/VM Networks, VM Network `tf_vmnetwork` should be created
+1. Execute `terraform apply` again and many more times
+
+## Expected Results
+1. Cluster Network and Configurations should able to be created
+1. VM Network should able to be created
