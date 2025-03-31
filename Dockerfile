@@ -1,5 +1,5 @@
 # Setting Up Default Dockerfile For Backend E2E Tests For CI
-FROM python:3.8.13-buster
+FROM python:3.10.16-bookworm
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential findutils wget && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
