@@ -295,11 +295,12 @@ class TestBackendImages:
         """
         image_name = f"{image_info.name}-{unique_name}"
         image_url = image_info.url
+        image_checksum = image_info.image_checksum
 
         get_image(api_client, image_name)
         delete_image(api_client, image_name, wait_timeout)
 
-        create_image_url(api_client, image_name, image_url, wait_timeout)
+        create_image_url(api_client, image_name, image_url, image_checksum, wait_timeout)
         get_image(api_client, image_name)
 
         resp = api_client.images.create_by_file(unique_name, fake_image_file)
@@ -359,10 +360,11 @@ class TestBackendImages:
         code, data = api_client.images.get(name=image_name)
         assert 200 == code, (code, data)
 
+        image_size_gb = data["status"]["virtualSize"] // 1024**3 + 1
         image_id = f"{data['metadata']['namespace']}/{image_name}"
 
         # Create volume from image_id
-        spec = api_client.volumes.Spec(1)
+        spec = api_client.volumes.Spec(image_size_gb)
         code, data = api_client.volumes.create(volume_name, spec, image_id=image_id)
         assert 201 == code, (code, data)
 
