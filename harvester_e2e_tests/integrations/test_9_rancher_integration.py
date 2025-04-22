@@ -158,8 +158,7 @@ def harvester_cloud_credential(api_client, rancher_api_client,
 
 
 @pytest.fixture(scope="module",
-                params=[1,
-                        pytest.param(3, marks=pytest.mark.skip(reason="Skip for low I/O env."))])
+                params=[1, 3])
 def machine_count(request):
     return request.param
 
