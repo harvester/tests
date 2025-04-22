@@ -581,6 +581,7 @@ class TestBackendNetwork:
         check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # get data from running VM and transfer to spec
+        sleep(1)  # to prevent update too fast cause code 409 conflict: 'object has been modified'
         code, data = api_client.vms.get(vm_name)
         assert 200 == code, (f"Failed to get specific vm content: {code}, {data}")
 

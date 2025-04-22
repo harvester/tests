@@ -368,6 +368,8 @@ class VMSpec:
         obj.machine_type = machine.get('type', "")
         obj.usbtablet = devices.get('inputs') and bool(devices['inputs'][0])
 
+        obj.metadata = metadata
+
         obj._features = features
         obj._firmwares = firmware
         obj._cloudinit_vol = dict(disk=devices['disks'][-1], volume=volumes[-1])
