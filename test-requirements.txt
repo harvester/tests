@@ -7,6 +7,8 @@ pytest-json-report
 pytest-dependency
 jinja2
 bcrypt
+kubernetes
+semver
 requests
 paramiko
 pycryptodome
