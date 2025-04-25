@@ -324,6 +324,7 @@ class TestBackupRestore:
 
     @pytest.mark.dependency()
     def test_connection(self, api_client, backup_config, config_backup_target):
+        sleep(1)  # to prevent check too fast and get 409 'backup-target setting is not set'
         code, data = api_client.settings.backup_target_test_connection()
         assert 200 == code, f'Failed to test backup target connection: {data}'
 
