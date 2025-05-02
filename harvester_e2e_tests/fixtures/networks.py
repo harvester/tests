@@ -41,4 +41,11 @@ def network_checker(api_client, wait_timeout, sleep_timeout):
                 return True, (code, data)
             return False, (code, data)
 
+        @wait_until(wait_timeout, sleep_timeout)
+        def wait_cnet_config_deleted(self, cnet_config_name):
+            code, data = api_client.clusternetworks.get_config(cnet_config_name)
+            if code == 404:
+                return True, (code, data)
+            return False, (code, data)
+
     return NetworkChecker()

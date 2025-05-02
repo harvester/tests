@@ -14,7 +14,7 @@ pytest_plugins = [
 
 
 @pytest.fixture(scope='module')
-def cluster_network(request, api_client, unique_name):
+def cluster_network(request, api_client, unique_name, setting_checker, network_checker):
     vlan_nic = request.config.getoption('--vlan-nic')
     assert vlan_nic, f"VLAN NIC {vlan_nic} not configured correctly."
 
@@ -62,14 +62,19 @@ def cluster_network(request, api_client, unique_name):
     yield cnet
 
     # Teardown
-    deleted = {name: api_client.clusternetworks.delete_config(name) for name in created}
-    failed = [(name, code, data) for name, (code, data) in deleted.items() if 200 != code]
-    if failed:
-        fmt = "Unable to delete VLAN Config {} with error ({}): {}"
-        raise AssertionError(
-            "\n".join(fmt.format(name, code, data) for (name, code, data) in failed)
-        )
-
+    # storage network
+    disable_spec = api_client.settings.StorageNetworkSpec.disable()
+    code, data = api_client.settings.update('storage-network', disable_spec)
+    assert 200 == code, (code, data)
+    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_harvester()
+    assert snet_disabled, (code, data)
+    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_longhorn()
+    assert snet_disabled, (code, data)
+    # cluster network
+    for cnet_cfg_name in created:
+        code, data = api_client.clusternetworks.delete_config(cnet_cfg_name)
+        cnet_cfg_deleted, (code, data) = network_checker.wait_cnet_config_deleted(cnet_cfg_name)
+        assert cnet_cfg_deleted, (code, data)
     code, data = api_client.clusternetworks.delete(cnet)
     assert 200 == code, (code, data)
 
@@ -141,11 +146,3 @@ def test_storage_network(
     snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_longhorn(vlan_cidr)
     assert snet_enabled, (code, data)
 
-    # teardown
-    disable_spec = api_client.settings.StorageNetworkSpec.disable()
-    code, data = api_client.settings.update('storage-network', disable_spec)
-    assert 200 == code, (code, data)
-    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_harvester()
-    assert snet_disabled, (code, data)
-    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_longhorn()
-    assert snet_disabled, (code, data)
