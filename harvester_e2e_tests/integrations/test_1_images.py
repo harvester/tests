@@ -12,6 +12,7 @@ import pytest
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
     "harvester_e2e_tests.fixtures.images",
+    "harvester_e2e_tests.fixtures.volumes",
     "harvester_e2e_tests.fixtures.networks",
     "harvester_e2e_tests.fixtures.settings"
 ]
@@ -37,72 +38,36 @@ def fake_invalid_image_file():
         yield Path(f.name)
 
 
-def create_image_url(api_client, name, image_url, image_checksum, wait_timeout):
+def create_image_url(api_client, name, image_url, image_checksum, image_checker):
     code, data = api_client.images.create_by_url(name, image_url, image_checksum)
-
     assert 201 == code, (code, data)
-    image_spec = data.get("spec")
 
+    image_spec = data.get("spec")
     assert name == image_spec.get("displayName")
     assert "download" == image_spec.get("sourceType")
 
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-    while endtime > datetime.now():
-        code, data = api_client.images.get(name)
-        image_status = data.get("status", {})
-
-        assert 200 == code, (code, data)
-        if image_status.get("progress") == 100:
-            break
-        sleep(5)
-    else:
-        raise AssertionError(
-            f"Failed to download image {name} with {wait_timeout} timed out\n"
-            f"Still got {code} with {data}"
-        )
+    image_downloaded, (code, data) = image_checker.wait_downloaded(name)
+    assert image_downloaded, (code, data)
 
 
-def delete_image(api_client, image_name, wait_timeout):
+def delete_image(api_client, image_name, image_checker):
     code, data = api_client.images.delete(image_name)
-
     assert 200 == code, f"Failed to delete image with error: {code}, {data}"
 
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-    while endtime > datetime.now():
-        code, data = api_client.images.get(image_name)
-        if code == 404:
-            break
-        sleep(5)
-    else:
-        raise AssertionError(
-            f"Failed to delete image {image_name} with {wait_timeout} timed out\n"
-            f"Still got {code} with {data}"
-        )
+    image_deleted, (code, data) = image_checker.wait_deleted(image_name)
+    assert image_deleted, (code, data)
 
 
-def delete_volume(api_client, volume_name, wait_timeout):
+def delete_volume(api_client, volume_name, volume_checker):
     code, data = api_client.volumes.delete(volume_name)
-
     assert 200 == code, f"Failed to delete volume with error: {code}, {data}"
 
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = api_client.volumes.get(volume_name)
-        if code == 404:
-            break
-        sleep(5)
-    else:
-        raise AssertionError(
-            f"Failed to delete volume {volume_name} with {wait_timeout} timed out\n"
-            f"Still got {code} with {data}"
-        )
+    volume_deleted, (code, data) = volume_checker.wait_volume_deleted(volume_name)
+    assert volume_deleted, (code, data)
 
 
 def get_image(api_client, image_name):
     code, data = api_client.images.get()
-
     assert len(data["items"]) > 0, (code, data)
 
     code, data = api_client.images.get(image_name)
@@ -111,7 +76,7 @@ def get_image(api_client, image_name):
 
 
 @pytest.fixture(scope="class")
-def cluster_network(api_client, vlan_nic):
+def cluster_network(api_client, vlan_nic, network_checker):
     # We should change this at some point. It fails if the total cnet name is over 12 chars
     cnet = f"cnet-{vlan_nic}"
     code, data = api_client.clusternetworks.get(cnet)
@@ -127,39 +92,37 @@ def cluster_network(api_client, vlan_nic):
     yield cnet
 
     # Teardown
+    # cluster network config
     code, data = api_client.clusternetworks.delete_config(cnet)
     assert 200 == code, (code, data)
+    cnet_config_deleted, (code, data) = network_checker.wait_cnet_config_deleted(cnet)
+    assert cnet_config_deleted, (code, data)
+    # cluster network
     code, data = api_client.clusternetworks.delete(cnet)
     assert 200 == code, (code, data)
+    cnet_deleted, (code, data) = network_checker.wait_cnet_deleted(cnet)
+    assert cnet_deleted, (code, data)
 
 
 @pytest.fixture(scope="class")
-def vlan_cidr(api_client, cluster_network, vlan_id, wait_timeout, sleep_timeout):
+def vlan_cidr(api_client, cluster_network, vlan_id, network_checker):
     vnet = f'{cluster_network}-vlan{vlan_id}'
     code, data = api_client.networks.get(vnet)
     if code != 200:
         code, data = api_client.networks.create(vnet, vlan_id, cluster_network=cluster_network)
         assert 201 == code, (code, data)
 
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = api_client.networks.get(vnet)
-        annotations = data['metadata'].get('annotations', {})
-        if 200 == code and annotations.get('network.harvesterhci.io/route'):
-            route = json.loads(annotations['network.harvesterhci.io/route'])
-            if route['cidr']:
-                break
-        sleep(sleep_timeout)
-    else:
-        raise AssertionError(
-            f"Fail to get route info of VM network {vnet} with error: {code}, {data}"
-        )
+    vnet_routed, (code, data) = network_checker.wait_vnet_routed(vnet)
+    assert vnet_routed, (code, data)
+    route = json.loads(data['metadata'].get('annotations').get('network.harvesterhci.io/route'))
 
     yield route['cidr']
 
     # Teardown
     code, data = api_client.networks.delete(vnet)
     assert 200 == code, (code, data)
+    vnet_deleted, (code, data) = network_checker.wait_vnet_deleted(vnet)
+    assert vnet_deleted, (code, data)
 
 
 @pytest.fixture(scope="class")
@@ -193,7 +156,8 @@ class TestBackendImages:
     @pytest.mark.p0
     @pytest.mark.dependency(name="create_image_from_volume")
     def test_create_image_from_volume(
-        self, api_client, unique_name, export_storage_class, wait_timeout
+        self, api_client, unique_name, export_storage_class, wait_timeout,
+        image_checker, volume_checker
     ):
         """
         Test create image from volume
@@ -249,12 +213,13 @@ class TestBackendImages:
 
             sleep(3)  # snooze
 
-        delete_volume(api_client, volume_name, wait_timeout)
-        delete_image(api_client, image_id, wait_timeout)
+        # Teardown
+        delete_volume(api_client, volume_name, volume_checker)
+        delete_image(api_client, image_id, image_checker)
 
     @pytest.mark.p0
     @pytest.mark.dependency(name="create_image_url")
-    def test_create_image_url(self, image_info, unique_name, api_client, wait_timeout):
+    def test_create_image_url(self, image_info, unique_name, api_client, image_checker):
         """
         Test create raw and iso type image from url
 
@@ -266,20 +231,14 @@ class TestBackendImages:
         5. Check the iso image exists
         """
         image_name = f"{image_info.name}-{unique_name}"
-        image_url = image_info.url
-        create_image_url(api_client, image_name, image_url,
-                         image_info.image_checksum, wait_timeout)
+        image_url, image_checksum = image_info.url, image_info.image_checksum
+        create_image_url(api_client, image_name, image_url, image_checksum, image_checker)
 
     @pytest.mark.skip_version_if("> v1.2.0", "<= v1.4.0", reason="Issue#4293 fix after `v1.4.0`")
     @pytest.mark.p0
     @pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
     def test_delete_image_recreate(
-        self,
-        api_client,
-        image_info,
-        unique_name,
-        fake_image_file,
-        wait_timeout,
+        self, api_client, image_info, unique_name, fake_image_file, image_checker
     ):
         """
         Test create raw and iso type image from file
@@ -298,9 +257,9 @@ class TestBackendImages:
         image_checksum = image_info.image_checksum
 
         get_image(api_client, image_name)
-        delete_image(api_client, image_name, wait_timeout)
+        delete_image(api_client, image_name, image_checker)
 
-        create_image_url(api_client, image_name, image_url, image_checksum, wait_timeout)
+        create_image_url(api_client, image_name, image_url, image_checksum, image_checker)
         get_image(api_client, image_name)
 
         resp = api_client.images.create_by_file(unique_name, fake_image_file)
@@ -310,7 +269,7 @@ class TestBackendImages:
         ), f"Failed to upload fake image with error:{resp.status_code}, {resp.content}"
 
         get_image(api_client, unique_name)
-        delete_image(api_client, unique_name, wait_timeout)
+        delete_image(api_client, unique_name, image_checker)
 
         resp = api_client.images.create_by_file(unique_name, fake_image_file)
 
@@ -319,11 +278,11 @@ class TestBackendImages:
         ), f"Failed to upload fake image with error:{resp.status_code}, {resp.content}"
 
         get_image(api_client, unique_name)
-        delete_image(api_client, unique_name, wait_timeout)
+        delete_image(api_client, unique_name, image_checker)
 
     @pytest.mark.p0
     def test_create_invalid_file(
-        self, api_client, gen_unique_name, fake_invalid_image_file, wait_timeout
+        self, api_client, gen_unique_name, fake_invalid_image_file, wait_timeout, image_checker
     ):
         """
         Test create upload image from invalid file type
@@ -339,11 +298,13 @@ class TestBackendImages:
         assert (
             500 == resp.status_code
         ), f"File size correct, it's a multiple of 512 bytes:{resp.status_code}, {resp.content}"
-        delete_image(api_client, unique_name, wait_timeout)
+        delete_image(api_client, unique_name, image_checker)
 
     @pytest.mark.p0
     @pytest.mark.dependency(name="edit_image_in_use", depends=["create_image_url"])
-    def test_edit_image_in_use(self, api_client, unique_name, image_info, wait_timeout):
+    def test_edit_image_in_use(
+        self, api_client, unique_name, image_info, wait_timeout, image_checker, volume_checker
+    ):
         """
         Test can edit image which already in use
 
@@ -402,8 +363,9 @@ class TestBackendImages:
             for f, k, v, n in unexpected
         )
 
-        delete_volume(api_client, volume_name, wait_timeout)
-        delete_image(api_client, image_name, wait_timeout)
+        # Teardown
+        delete_volume(api_client, volume_name, volume_checker)
+        delete_image(api_client, image_name, image_checker)
 
 
 @pytest.mark.p0

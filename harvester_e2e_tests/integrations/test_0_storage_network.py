@@ -70,13 +70,17 @@ def cluster_network(request, api_client, unique_name, setting_checker, network_c
     assert snet_disabled, (code, data)
     snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_longhorn()
     assert snet_disabled, (code, data)
-    # cluster network
+    # cluster network config
     for cnet_cfg_name in created:
         code, data = api_client.clusternetworks.delete_config(cnet_cfg_name)
+        assert 200 == code, (code, data)
         cnet_cfg_deleted, (code, data) = network_checker.wait_cnet_config_deleted(cnet_cfg_name)
         assert cnet_cfg_deleted, (code, data)
+    # cluster network
     code, data = api_client.clusternetworks.delete(cnet)
     assert 200 == code, (code, data)
+    cnet_deleted, (code, data) = network_checker.wait_cnet_deleted(cnet)
+    assert cnet_deleted, (code, data)
 
 
 @pytest.mark.p0
@@ -145,4 +149,3 @@ def test_storage_network(
     assert snet_enabled, (code, data)
     snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_longhorn(vlan_cidr)
     assert snet_enabled, (code, data)
-
