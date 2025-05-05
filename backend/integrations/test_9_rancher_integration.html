@@ -232,8 +232,7 @@ def lb_service(request, api_client, unique_name, nginx_deployment, ip_pool):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#34;module&#34;,
-                params=[1,
-                        pytest.param(3, marks=pytest.mark.skip(reason=&#34;Skip for low I/O env.&#34;))])
+                params=[1, 3])
 def machine_count(request):
     return request.param</code></pre>
 </details>

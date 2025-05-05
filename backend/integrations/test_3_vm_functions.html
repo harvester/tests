@@ -243,7 +243,7 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
     Steps:
         1. Create a VM with 1 CPU 2 Memory and runStrategy is `Halted`
         2. Save
-    Exepected Result:
+    Expected Result:
         - VM should created
         - VM should Stooped
         - VMI should not exist
@@ -272,7 +272,7 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
 <ol>
 <li>Create a VM with 1 CPU 2 Memory and runStrategy is <code>Halted</code></li>
 <li>Save
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM should created</li>
 <li>VM should Stooped</li>
 <li>VMI should not exist</li>
@@ -465,7 +465,7 @@ def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
     Steps:
         1. Create a VM with 1 CPU 2 Memory and other default values
         2. Save
-    Exepected Result:
+    Expected Result:
         - VM should created
         - VM should Started
     &#34;&#34;&#34;
@@ -496,7 +496,7 @@ def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
 <ol>
 <li>Create a VM with 1 CPU 2 Memory and other default values</li>
 <li>Save
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM should created</li>
 <li>VM should Started</li>
 </ul>
@@ -514,8 +514,7 @@ Exepected Result:<ul>
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.virtualmachines
 @pytest.mark.skip_version_if(
-    &#34;&gt; v1.2.1&#34;, &#34;&gt; v1.3.0&#34;,
-    reason=&#34;`pc type removed, ref: https://github.com/harvester/harvester/issues/5437&#34;
+    &#34;&gt; v1.3.0&#34;, reason=&#34;`pc type removed, ref: https://github.com/harvester/harvester/issues/5437&#34;
 )
 @pytest.mark.parametrize(
     &#34;machine_types&#34;, [(&#34;q35&#34;, &#34;pc&#34;), (&#34;pc&#34;, &#34;q35&#34;)], ids=[&#39;q35_to_pc&#39;, &#39;pc_to_q35&#39;]
@@ -929,7 +928,7 @@ class TestHotPlugVolume:
         2. Create Data volume
         3. Attach data volume
         4. Detach data volume
-    Exepected Result:
+    Expected Result:
         - VM should started successfully
         - Data volume should attached and available in VM
         - Data volume should detached and unavailable in VM
@@ -1003,7 +1002,7 @@ class TestHotPlugVolume:
 
         assert 204 == code, (code, data)
 
-        # Login to VM to verify volume hot pluged
+        # Login to VM to verify volume hot plugged
         with self.login_to_vm_from_host(
             host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
         ) as (sh, host_sh):
@@ -1018,7 +1017,7 @@ class TestHotPlugVolume:
                 sleep(3)
             else:
                 raise AssertionError(
-                    f&#34;Hot pluged Volume {vol_name} unavailable after {wait_timeout}s\n&#34;
+                    f&#34;Hot plugged Volume {vol_name} unavailable after {wait_timeout}s\n&#34;
                     f&#34;STDOUT: {scsi}, STDERR: {err}&#34;
                 )
 
@@ -1065,7 +1064,7 @@ class TestHotPlugVolume:
                 sleep(3)
             else:
                 raise AssertionError(
-                    f&#34;Hot pluged Volume {vol_name} still available after {wait_timeout}s\n&#34;
+                    f&#34;Hot plugged Volume {vol_name} still available after {wait_timeout}s\n&#34;
                     f&#34;STDOUT: {scsi}, STDERR: {err}&#34;
                 )
 
@@ -1084,7 +1083,7 @@ class TestHotPlugVolume:
 <li>Create Data volume</li>
 <li>Attach data volume</li>
 <li>Detach data volume
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM should started successfully</li>
 <li>Data volume should attached and available in VM</li>
 <li>Data volume should detached and unavailable in VM</li>
@@ -1188,7 +1187,7 @@ def test_add(
 
     assert 204 == code, (code, data)
 
-    # Login to VM to verify volume hot pluged
+    # Login to VM to verify volume hot plugged
     with self.login_to_vm_from_host(
         host_shell, vm_shell, wait_timeout, host_ip, ssh_user, pri_key, vm_ip
     ) as (sh, host_sh):
@@ -1203,7 +1202,7 @@ def test_add(
             sleep(3)
         else:
             raise AssertionError(
-                f&#34;Hot pluged Volume {vol_name} unavailable after {wait_timeout}s\n&#34;
+                f&#34;Hot plugged Volume {vol_name} unavailable after {wait_timeout}s\n&#34;
                 f&#34;STDOUT: {scsi}, STDERR: {err}&#34;
             )
 
@@ -1260,7 +1259,7 @@ def test_remove(
             sleep(3)
         else:
             raise AssertionError(
-                f&#34;Hot pluged Volume {vol_name} still available after {wait_timeout}s\n&#34;
+                f&#34;Hot plugged Volume {vol_name} still available after {wait_timeout}s\n&#34;
                 f&#34;STDOUT: {scsi}, STDERR: {err}&#34;
             )
 
@@ -1300,7 +1299,7 @@ class TestVMClone:
             3. Clone the VM into VM-cloned
             4. Verify VM-Cloned
 
-        Exepected Result:
+        Expected Result:
             - Cloned-VM should be available and starting
             - Cloned-VM should becomes `Running`
             - Written data should available in Cloned-VM
@@ -1451,7 +1450,7 @@ class TestVMClone:
             4. Clone the VM into VM-cloned
             5. Verify VM-Cloned
 
-        Exepected Result:
+        Expected Result:
             - Cloned-VM should be available and stopped
             - Cloned-VM should able to start and becomes `Running`
             - Written data should available in Cloned-VM
@@ -1638,7 +1637,7 @@ class TestVMClone:
         3. Clone the VM into VM-cloned
         4. Verify VM-Cloned
 
-    Exepected Result:
+    Expected Result:
         - Cloned-VM should be available and starting
         - Cloned-VM should becomes `Running`
         - Written data should available in Cloned-VM
@@ -1784,7 +1783,7 @@ class TestVMClone:
 <li>Clone the VM into VM-cloned</li>
 <li>Verify VM-Cloned</li>
 </ol>
-<p>Exepected Result:
+<p>Expected Result:
 - Cloned-VM should be available and starting
 - Cloned-VM should becomes <code>Running</code>
 - Written data should available in Cloned-VM</p></div>
@@ -1812,7 +1811,7 @@ class TestVMClone:
         4. Clone the VM into VM-cloned
         5. Verify VM-Cloned
 
-    Exepected Result:
+    Expected Result:
         - Cloned-VM should be available and stopped
         - Cloned-VM should able to start and becomes `Running`
         - Written data should available in Cloned-VM
@@ -1978,7 +1977,7 @@ class TestVMClone:
 <li>Clone the VM into VM-cloned</li>
 <li>Verify VM-Cloned</li>
 </ol>
-<p>Exepected Result:
+<p>Expected Result:
 - Cloned-VM should be available and stopped
 - Cloned-VM should able to start and becomes <code>Running</code>
 - Written data should available in Cloned-VM</p></div>
@@ -2007,7 +2006,7 @@ class TestVMOperations:
         &#39;&#39;&#39;
         Steps:
             1. Pause the VM was created
-        Exepected Result:
+        Expected Result:
             - VM should change status into `Paused`
         &#39;&#39;&#39;
         code, data = api_client.vms.pause(unique_vm_name)
@@ -2035,7 +2034,7 @@ class TestVMOperations:
         &#39;&#39;&#39;
         Steps:
             1. Unpause the VM was paused
-        Exepected Result:
+        Expected Result:
             - VM&#39;s status should not be `Paused`
         &#39;&#39;&#39;
         code, data = api_client.vms.unpause(unique_vm_name)
@@ -2060,7 +2059,7 @@ class TestVMOperations:
         &#39;&#39;&#39;
         Steps:
             1. Stop the VM was created and not stopped
-        Exepected Result:
+        Expected Result:
             - VM&#39;s status should be changed to `Stopped`
             - VM&#39;s `RunStrategy` should be changed to `Halted`
         &#39;&#39;&#39;
@@ -2088,7 +2087,7 @@ class TestVMOperations:
         &#39;&#39;&#39;
         Steps:
             1. Start the VM was created and stopped
-        Exepected Result:
+        Expected Result:
             - VM should change status into `Running`
         &#39;&#39;&#39;
         code, data = api_client.vms.start(unique_vm_name)
@@ -2127,7 +2126,7 @@ class TestVMOperations:
         &#39;&#39;&#39;
         Steps:
             1. Restart the VM was created
-        Exepected Result:
+        Expected Result:
             - VM&#39;s ActivePods should be updated (which means the VM restarted)
             - VM&#39;s status should update to `Running`
             - VM&#39;s qemu-agent should be connected
@@ -2174,7 +2173,7 @@ class TestVMOperations:
         &#39;&#39;&#39;
         Steps:
             1. Softreboot the VM was created
-        Exepected Result:
+        Expected Result:
             - VM&#39;s qemu-agent should disconnected (which means the VM rebooting)
             - VM&#39;s qemu-agent should re-connected (which means the VM boot into OS)
             - VM&#39;s status should be changed to `Running`
@@ -2225,7 +2224,7 @@ class TestVMOperations:
 
         Steps:
             1. migrate the VM was created
-        Exepected Result:
+        Expected Result:
             - VM&#39;s host Node should be changed to another one
         &#34;&#34;&#34;
         code, host_data = api_client.hosts.get()
@@ -2263,7 +2262,7 @@ class TestVMOperations:
 
         Steps:
             1. Abort the VM was created and migrating
-        Exepected Result:
+        Expected Result:
             - VM should able to perform migrate
             - VM should stay in current host when migrating be aborted.
         &#34;&#34;&#34;
@@ -2295,7 +2294,7 @@ class TestVMOperations:
                 else:
                     break
             elif len(states) == 1 and not m_state:
-                # we did abort migration, and the anootation removed
+                # we did abort migration, and the annotation removed
                 break
             sleep(3)
         else:
@@ -2314,7 +2313,7 @@ class TestVMOperations:
         Steps:
             1. Delete the VM was created
             2. Delete Volumes was belonged to the VM
-        Exepected Result:
+        Expected Result:
             - VM should able to be deleted and success
             - Volumes should able to be deleted and success
         &#39;&#39;&#39;
@@ -2390,7 +2389,7 @@ class TestVMOperations:
 
     Steps:
         1. Abort the VM was created and migrating
-    Exepected Result:
+    Expected Result:
         - VM should able to perform migrate
         - VM should stay in current host when migrating be aborted.
     &#34;&#34;&#34;
@@ -2422,7 +2421,7 @@ class TestVMOperations:
             else:
                 break
         elif len(states) == 1 and not m_state:
-            # we did abort migration, and the anootation removed
+            # we did abort migration, and the annotation removed
             break
         sleep(3)
     else:
@@ -2441,7 +2440,7 @@ class TestVMOperations:
 <h2 id="steps">Steps</h2>
 <ol>
 <li>Abort the VM was created and migrating
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM should able to perform migrate</li>
 <li>VM should stay in current host when migrating be aborted.</li>
 </ul>
@@ -2461,7 +2460,7 @@ Exepected Result:<ul>
     Steps:
         1. Delete the VM was created
         2. Delete Volumes was belonged to the VM
-    Exepected Result:
+    Expected Result:
         - VM should able to be deleted and success
         - Volumes should able to be deleted and success
     &#39;&#39;&#39;
@@ -2515,7 +2514,7 @@ Exepected Result:<ul>
 <ol>
 <li>Delete the VM was created</li>
 <li>Delete Volumes was belonged to the VM
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM should able to be deleted and success</li>
 <li>Volumes should able to be deleted and success</li>
 </ul>
@@ -2537,7 +2536,7 @@ Exepected Result:<ul>
 
     Steps:
         1. migrate the VM was created
-    Exepected Result:
+    Expected Result:
         - VM&#39;s host Node should be changed to another one
     &#34;&#34;&#34;
     code, host_data = api_client.hosts.get()
@@ -2573,7 +2572,7 @@ Exepected Result:<ul>
 <h2 id="steps">Steps</h2>
 <ol>
 <li>migrate the VM was created
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM's host Node should be changed to another one</li>
 </ul>
 </li>
@@ -2592,7 +2591,7 @@ def test_pause(self, api_client, unique_vm_name, wait_timeout):
     &#39;&#39;&#39;
     Steps:
         1. Pause the VM was created
-    Exepected Result:
+    Expected Result:
         - VM should change status into `Paused`
     &#39;&#39;&#39;
     code, data = api_client.vms.pause(unique_vm_name)
@@ -2618,7 +2617,7 @@ def test_pause(self, api_client, unique_vm_name, wait_timeout):
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Pause the VM was created
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM should change status into <code>Paused</code></li>
 </ul>
 </li>
@@ -2636,7 +2635,7 @@ Exepected Result:<ul>
     &#39;&#39;&#39;
     Steps:
         1. Restart the VM was created
-    Exepected Result:
+    Expected Result:
         - VM&#39;s ActivePods should be updated (which means the VM restarted)
         - VM&#39;s status should update to `Running`
         - VM&#39;s qemu-agent should be connected
@@ -2682,7 +2681,7 @@ Exepected Result:<ul>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Restart the VM was created
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM's ActivePods should be updated (which means the VM restarted)</li>
 <li>VM's status should update to <code>Running</code></li>
 <li>VM's qemu-agent should be connected</li>
@@ -2702,7 +2701,7 @@ Exepected Result:<ul>
     &#39;&#39;&#39;
     Steps:
         1. Softreboot the VM was created
-    Exepected Result:
+    Expected Result:
         - VM&#39;s qemu-agent should disconnected (which means the VM rebooting)
         - VM&#39;s qemu-agent should re-connected (which means the VM boot into OS)
         - VM&#39;s status should be changed to `Running`
@@ -2749,7 +2748,7 @@ Exepected Result:<ul>
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Softreboot the VM was created
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM's qemu-agent should disconnected (which means the VM rebooting)</li>
 <li>VM's qemu-agent should re-connected (which means the VM boot into OS)</li>
 <li>VM's status should be changed to <code>Running</code></li>
@@ -2770,7 +2769,7 @@ def test_start(self, api_client, unique_vm_name, wait_timeout):
     &#39;&#39;&#39;
     Steps:
         1. Start the VM was created and stopped
-    Exepected Result:
+    Expected Result:
         - VM should change status into `Running`
     &#39;&#39;&#39;
     code, data = api_client.vms.start(unique_vm_name)
@@ -2808,7 +2807,7 @@ def test_start(self, api_client, unique_vm_name, wait_timeout):
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Start the VM was created and stopped
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM should change status into <code>Running</code></li>
 </ul>
 </li>
@@ -2827,7 +2826,7 @@ def test_stop(self, api_client, unique_vm_name, wait_timeout):
     &#39;&#39;&#39;
     Steps:
         1. Stop the VM was created and not stopped
-    Exepected Result:
+    Expected Result:
         - VM&#39;s status should be changed to `Stopped`
         - VM&#39;s `RunStrategy` should be changed to `Halted`
     &#39;&#39;&#39;
@@ -2853,7 +2852,7 @@ def test_stop(self, api_client, unique_vm_name, wait_timeout):
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Stop the VM was created and not stopped
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM's status should be changed to <code>Stopped</code></li>
 <li>VM's <code>RunStrategy</code> should be changed to <code>Halted</code></li>
 </ul>
@@ -2873,7 +2872,7 @@ def test_unpause(self, api_client, unique_vm_name, wait_timeout):
     &#39;&#39;&#39;
     Steps:
         1. Unpause the VM was paused
-    Exepected Result:
+    Expected Result:
         - VM&#39;s status should not be `Paused`
     &#39;&#39;&#39;
     code, data = api_client.vms.unpause(unique_vm_name)
@@ -2896,7 +2895,7 @@ def test_unpause(self, api_client, unique_vm_name, wait_timeout):
 <div class="desc"><h2 id="steps">Steps</h2>
 <ol>
 <li>Unpause the VM was paused
-Exepected Result:<ul>
+Expected Result:<ul>
 <li>VM's status should not be <code>Paused</code></li>
 </ul>
 </li>
@@ -3143,10 +3142,12 @@ class TestVMResource:
         assert vm_show_stopped, (code, data)
 
         # update VM to enable usbtablet and start
+        sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
         code, data = api_client.vms.get(unique_vm_name)
         vm_spec = api_client.vms.Spec.from_dict(data)
         vm_spec.usbtablet = True
         code, data = api_client.vms.update(unique_vm_name, vm_spec)
+
         assert 200 == code, (code, data)
         vm_started, (code, data) = vm_checker.wait_started(unique_vm_name)
         assert vm_started, (
@@ -3182,6 +3183,7 @@ class TestVMResource:
         assert vm_show_stopped, (code, data)
 
         # update VM to add guest agent and start
+        sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
         code, data = api_client.vms.get(unique_vm_name)
         vm_spec = api_client.vms.Spec.from_dict(data)
         vm_spec.guest_agent = True
@@ -3406,10 +3408,12 @@ def test_create_schedule_on_maximum(
     assert vm_show_stopped, (code, data)
 
     # update VM to enable usbtablet and start
+    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
     code, data = api_client.vms.get(unique_vm_name)
     vm_spec = api_client.vms.Spec.from_dict(data)
     vm_spec.usbtablet = True
     code, data = api_client.vms.update(unique_vm_name, vm_spec)
+
     assert 200 == code, (code, data)
     vm_started, (code, data) = vm_checker.wait_started(unique_vm_name)
     assert vm_started, (
@@ -3455,6 +3459,7 @@ def test_create_schedule_on_maximum(
     assert vm_show_stopped, (code, data)
 
     # update VM to add guest agent and start
+    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
     code, data = api_client.vms.get(unique_vm_name)
     vm_spec = api_client.vms.Spec.from_dict(data)
     vm_spec.guest_agent = True
@@ -3592,13 +3597,15 @@ class TestVMWithVolumes:
             2. Start the VM
             3. Verify the VM
 
-        Exepected Result:
+        Expected Result:
             - VM should able to start and becomes `Running`
             - 2 disk volumes should be available in the VM
             - Disk size in VM should be the same as its volume configured
         &#34;&#34;&#34;
         unique_vm_name, ssh_user = stopped_vm
         pub_key, pri_key = ssh_keypair
+
+        sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
         code, data = api_client.vms.get(unique_vm_name)
         vm_spec = api_client.vms.Spec.from_dict(data)
         vm_spec.run_strategy = &#34;RerunOnFailure&#34;
@@ -3705,7 +3712,7 @@ class TestVMWithVolumes:
             3. Start the VM
             4. Verify the VM
 
-        Exepected Result:
+        Expected Result:
             - VM should able to start and becomes `Running`
             - Disk volume should be available in the VM
             - Disk size in VM should be the same as its volume configured
@@ -3875,7 +3882,7 @@ class TestVMWithVolumes:
         3. Start the VM
         4. Verify the VM
 
-    Exepected Result:
+    Expected Result:
         - VM should able to start and becomes `Running`
         - Disk volume should be available in the VM
         - Disk size in VM should be the same as its volume configured
@@ -3984,7 +3991,7 @@ class TestVMWithVolumes:
 <li>Start the VM</li>
 <li>Verify the VM</li>
 </ol>
-<p>Exepected Result:
+<p>Expected Result:
 - VM should able to start and becomes <code>Running</code>
 - Disk volume should be available in the VM
 - Disk size in VM should be the same as its volume configured</p></div>
@@ -4009,13 +4016,15 @@ class TestVMWithVolumes:
         2. Start the VM
         3. Verify the VM
 
-    Exepected Result:
+    Expected Result:
         - VM should able to start and becomes `Running`
         - 2 disk volumes should be available in the VM
         - Disk size in VM should be the same as its volume configured
     &#34;&#34;&#34;
     unique_vm_name, ssh_user = stopped_vm
     pub_key, pri_key = ssh_keypair
+
+    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
     code, data = api_client.vms.get(unique_vm_name)
     vm_spec = api_client.vms.Spec.from_dict(data)
     vm_spec.run_strategy = &#34;RerunOnFailure&#34;
@@ -4117,7 +4126,7 @@ class TestVMWithVolumes:
 <li>Start the VM</li>
 <li>Verify the VM</li>
 </ol>
-<p>Exepected Result:
+<p>Expected Result:
 - VM should able to start and becomes <code>Running</code>
 - 2 disk volumes should be available in the VM
 - Disk size in VM should be the same as its volume configured</p></div>

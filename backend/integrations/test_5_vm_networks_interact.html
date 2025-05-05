@@ -647,6 +647,7 @@ class TestBackendNetwork:
         check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
         # get data from running VM and transfer to spec
+        sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
         code, data = api_client.vms.get(vm_name)
         assert 200 == code, (f&#34;Failed to get specific vm content: {code}, {data}&#34;)
 
@@ -1434,6 +1435,7 @@ def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
     check_vm_ip_exists(api_client, vm_name, wait_timeout)
 
     # get data from running VM and transfer to spec
+    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
     code, data = api_client.vms.get(vm_name)
     assert 200 == code, (f&#34;Failed to get specific vm content: {code}, {data}&#34;)
 
