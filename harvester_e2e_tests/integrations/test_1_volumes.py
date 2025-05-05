@@ -88,14 +88,11 @@ def ubuntu_vm(api_client, unique_name, ubuntu_image, vm_checker, volume_checker)
     volumes = list(filter(lambda vol: "persistentVolumeClaim" in vol,
                           data["spec"]["template"]["spec"]["volumes"]))
     assert len(volumes) == 1
+
     yield data
 
-    code, data = api_client.vms.get(vm_name)
-    if 200 == code:
-        code, data = api_client.vms.delete(vm_name)
-        assert 200 == code, f"Fail to cleanup VM\n{code}, {data}"
-        vm_checker.wait_deleted(vm_name)
-
+    # teardown
+    _ = vm_checker.wait_deleted(vm_name)
     vol_name = volumes[0]['persistentVolumeClaim']['claimName']
     code, data = api_client.volumes.get(vol_name)
     if 200 == code:
