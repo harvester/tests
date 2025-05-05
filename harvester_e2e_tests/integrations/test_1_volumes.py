@@ -4,12 +4,13 @@ from hashlib import sha512
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.api_client',
-    "harvester_e2e_tests.fixtures.images"
+    "harvester_e2e_tests.fixtures.images",
+    "harvester_e2e_tests.fixtures.virtualmachines"
 ]
 
 
 @pytest.fixture(scope="module")
-def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
+def ubuntu_image(api_client, unique_name, image_ubuntu, image_checker):
     """
     Generates a Ubuntu image
 
@@ -25,9 +26,8 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
     code, data = api_client.images.create_by_url(image_name, image_ubuntu.url,
                                                  image_ubuntu.image_checksum)
     assert 201 == code, f"Fail to create image\n{code}, {data}"
-    code, data = polling_for("image do created",
-                             lambda c, d: c == 200 and d.get('status', {}).get('progress') == 100,
-                             api_client.images.get, image_name)
+    image_created, (code, data) = image_checker.wait_downloaded(image_name)
+    assert image_created, (code, data)
 
     namespace = data['metadata']['namespace']
     name = data['metadata']['name']
@@ -37,13 +37,12 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
     if 200 == code:
         code, data = api_client.images.delete(image_name)
         assert 200 == code, f"Fail to cleanup image\n{code}, {data}"
-        polling_for("image do deleted",
-                    lambda c, d: 404 == c,
-                    api_client.images.get, image_name)
+        image_deleted, (code, data) = image_checker.wait_deleted(image_name)
+        assert image_deleted, (code, data)
 
 
 @pytest.fixture(scope="module")
-def ubuntu_image_bad_checksum(api_client, unique_name, image_ubuntu, polling_for):
+def ubuntu_image_bad_checksum(api_client, unique_name, image_ubuntu, image_checker):
     """
     Generates a Ubuntu image with a bad sha512 checksum
 
@@ -61,9 +60,9 @@ def ubuntu_image_bad_checksum(api_client, unique_name, image_ubuntu, polling_for
     fake_checksum = sha512(b'not_a_valid_checksum').hexdigest()
     code, data = api_client.images.create_by_url(image_name, image_ubuntu.url, fake_checksum)
     assert 201 == code, f"Fail to create image\n{code}, {data}"
-    code, data = polling_for("image do created",
-                             lambda c, d: c == 200 and d.get('status', {}).get('progress') == 100,
-                             api_client.images.get, image_name)
+    image_created, (code, data) = image_checker.wait_downloaded(image_name)
+    assert image_created, (code, data)
+
     namespace = data['metadata']['namespace']
     name = data['metadata']['name']
     yield dict(ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}", display_name=image_name)
@@ -71,24 +70,20 @@ def ubuntu_image_bad_checksum(api_client, unique_name, image_ubuntu, polling_for
     if 200 == code:
         code, data = api_client.images.delete(image_name)
         assert 200 == code, f"Fail to cleanup image\n{code}, {data}"
-        polling_for("image do deleted",
-                    lambda c, d: 404 == c,
-                    api_client.images.get, image_name)
+        image_deleted, (code, data) = image_checker.wait_deleted(image_name)
+        assert image_deleted, (code, data)
 
 
 @pytest.fixture(scope="class")
-def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
+def ubuntu_vm(api_client, unique_name, ubuntu_image, vm_checker, volume_checker):
     vm_name = f"vm-{unique_name}"
 
     vm_spec = api_client.vms.Spec(1, 2)
     vm_spec.add_image(vm_name, ubuntu_image["id"])
     code, data = api_client.vms.create(vm_name, vm_spec)
     assert 201 == code, f"Fail to create VM\n{code}, {data}"
-    code, data = polling_for(
-        "VM do created",
-        lambda c, d: 200 == c and d.get('status', {}).get('printableStatus') == "Running",
-        api_client.vms.get, vm_name
-    )
+    vm_running, (code, data) = vm_checker.wait_status_running(vm_name)
+    assert vm_running, (code, data)
 
     volumes = list(filter(lambda vol: "persistentVolumeClaim" in vol,
                           data["spec"]["template"]["spec"]["volumes"]))
@@ -99,25 +94,34 @@ def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
     if 200 == code:
         code, data = api_client.vms.delete(vm_name)
         assert 200 == code, f"Fail to cleanup VM\n{code}, {data}"
-        polling_for("VM do deleted",
-                    lambda c, d: 404 == c,
-                    api_client.vms.get, vm_name)
+        vm_checker.wait_deleted(vm_name)
 
     vol_name = volumes[0]['persistentVolumeClaim']['claimName']
     code, data = api_client.volumes.get(vol_name)
     if 200 == code:
-        api_client.volumes.delete(vol_name)
+        code, data = api_client.volumes.delete(vol_name)
         assert 200 == code, f"Fail to cleanup volume\n{code}, {data}"
-        polling_for("volume do deleted",
-                    lambda c, d: 404 == c,
-                    api_client.volumes.get, vol_name)
+        volume_deleted, (code, data) = volume_checker.wait_volume_deleted(vol_name)
+        assert volume_deleted, (code, data)
+
+
+@pytest.fixture()
+def unique_volume(api_client, unique_name, volume_checker):
+    yield unique_name
+
+    code, data = api_client.volumes.delete(unique_name)
+    assert 200 == code, (code, data)
+    volume_deleted, (code, data) = volume_checker.wait_volume_deleted(unique_name)
+    assert volume_deleted, (code, data)
 
 
 @pytest.mark.p0
 @pytest.mark.volumes
 @pytest.mark.parametrize("create_as", ["json", "yaml"])
 @pytest.mark.parametrize("source_type", ["New", "VM Image"])
-def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_type, polling_for):
+def test_create_volume(
+    api_client, unique_volume, ubuntu_image, create_as, source_type, polling_for
+):
     """
     1. Create a volume from image
     2. Create should respond with 201
@@ -137,25 +141,25 @@ def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_
     spec = api_client.volumes.Spec("10Gi", storage_cls)
     if create_as == 'yaml':
         kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
-                   data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
+                   data=yaml.dump(spec.to_dict(unique_volume, 'default', image_id=image_id)))
     else:
         kws = dict()
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-    assert 201 == code, (code, unique_name, data, image_id)
+    code, data = api_client.volumes.create(unique_volume, spec, image_id=image_id, **kws)
+    assert 201 == code, (code, unique_volume, data, image_id)
 
     polling_for("volume do created",
                 lambda code, data: 200 == code and data['status']['phase'] == "Bound",
-                api_client.volumes.get, unique_name)
+                api_client.volumes.get, unique_volume)
     code2, data2 = api_client.images.get(ubuntu_image['display_name'])
     # This grabs the failed count for the image
     failed: int = data2['status']['failed']
     # This makes sure that the failures are 0
     assert failed <= 3, 'Image failed more than 3 times'
 
-    code, data = api_client.volumes.get(unique_name)
+    code, data = api_client.volumes.get(unique_volume)
     mdata, annotations = data['metadata'], data['metadata']['annotations']
     assert 200 == code, (code, data)
-    assert unique_name == mdata['name'], (code, data)
+    assert unique_volume == mdata['name'], (code, data)
     # status
     assert not mdata['state']['error'], (code, data)
     assert not mdata['state']['transitioning'], (code, data)
@@ -165,9 +169,6 @@ def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_
         assert image_id == annotations['harvesterhci.io/imageId'], (code, data)
     else:
         assert not annotations.get('harvesterhci.io/imageId'), (code, data)
-    # teardown
-    polling_for("volume do deleted", lambda code, _: 404 == code,
-                api_client.volumes.delete, unique_name)
 
 
 @pytest.mark.p1
@@ -175,7 +176,7 @@ def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_
 @pytest.mark.negative
 @pytest.mark.parametrize("create_as", ["json", "yaml"])
 @pytest.mark.parametrize("source_type", ["New", "VM Image"])
-def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_checksum,
+def test_create_volume_bad_checksum(api_client, unique_volume, ubuntu_image_bad_checksum,
                                     create_as, source_type, polling_for):
     """
     1. Create a volume from image with a bad checksum
@@ -195,15 +196,15 @@ def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_ch
     spec = api_client.volumes.Spec("10Gi", storage_cls)
     if create_as == 'yaml':
         kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
-                   data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
+                   data=yaml.dump(spec.to_dict(unique_volume, 'default', image_id=image_id)))
     else:
         kws = dict()
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-    assert 201 == code, (code, unique_name, data, image_id)
+    code, data = api_client.volumes.create(unique_volume, spec, image_id=image_id, **kws)
+    assert 201 == code, (code, unique_volume, data, image_id)
 
     polling_for("volume do created",
                 lambda code, data: 200 == code and data['status']['phase'] == "Bound",
-                api_client.volumes.get, unique_name)
+                api_client.volumes.get, unique_volume)
     code2, data2 = api_client.images.get(ubuntu_image_bad_checksum['display_name'])
     polling_for("failed to process sync file",
                 lambda code2, data2: 200 == code2 and data2['status']['failed'] == 4,
@@ -214,10 +215,6 @@ def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_ch
     failed: int = data2['status']['failed']
     # This makes sure that the tests fails with bad checksum
     assert failed == 4, 'Image download correctly failed more than 3 times with bad checksum'
-
-    # teardown
-    polling_for("volume do deleted", lambda code, _: 404 == code,
-                api_client.volumes.delete, unique_name)
 
 
 @pytest.mark.p0
