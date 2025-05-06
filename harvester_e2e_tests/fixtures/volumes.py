@@ -13,6 +13,13 @@ def volume_checker(api_client, wait_timeout, sleep_timeout):
             self.lhvolumes = api_client.lhvolumes
 
         @wait_until(wait_timeout, sleep_timeout)
+        def wait_volume_deleted(self, vol_name):
+            code, data = self.volumes.get(vol_name)
+            if code == 404:
+                return True, (code, data)
+            return False, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
         def wait_volumes_detached(self, vol_names):
             for vol_name in vol_names:
                 code, data = self.volumes.get(name=vol_name)

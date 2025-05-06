@@ -26,7 +26,7 @@ def network_checker(api_client, wait_timeout, sleep_timeout):
             self.clusternetworks = api_client.clusternetworks
 
         @wait_until(wait_timeout, sleep_timeout)
-        def wait_routed(self, vnet_name):
+        def wait_vnet_routed(self, vnet_name):
             code, data = self.networks.get(vnet_name)
             annotations = data['metadata'].get('annotations', {})
             route = json.loads(annotations.get('network.harvesterhci.io/route', '{}'))
@@ -35,9 +35,30 @@ def network_checker(api_client, wait_timeout, sleep_timeout):
             return False, (code, data)
 
         @wait_until(wait_timeout, sleep_timeout)
+        def wait_vnet_deleted(self, vnet_name):
+            code, data = api_client.networks.get(vnet_name)
+            if code == 404:
+                return True, (code, data)
+            return False, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
         def wait_cnet_config_created(self, cnet_config_name):
             code, data = api_client.clusternetworks.get_config(cnet_config_name)
             if code == 200:
+                return True, (code, data)
+            return False, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
+        def wait_cnet_config_deleted(self, cnet_config_name):
+            code, data = api_client.clusternetworks.get_config(cnet_config_name)
+            if code == 404:
+                return True, (code, data)
+            return False, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
+        def wait_cnet_deleted(self, cnet_name):
+            code, data = api_client.clusternetworks.get(cnet_name)
+            if code == 404:
                 return True, (code, data)
             return False, (code, data)
 

@@ -87,7 +87,7 @@ def vm_network(api_client, unique_name, cluster_network, vlan_id, network_checke
     code, data = api_client.networks.create(name, vlan_id, cluster_network=cluster_network)
     assert 201 == code, (code, data)
 
-    vnet_routed, (code, data) = network_checker.wait_routed(name)
+    vnet_routed, (code, data) = network_checker.wait_vnet_routed(name)
     assert vnet_routed, (code, data)
     route = json.loads(data['metadata'].get('annotations').get('network.harvesterhci.io/route'))
 
