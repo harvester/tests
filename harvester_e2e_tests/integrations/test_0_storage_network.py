@@ -78,8 +78,9 @@ def cluster_network(request, api_client, unique_name):
 @pytest.mark.settings
 @pytest.mark.networks
 @pytest.mark.skip_version_before('v1.0.3')
-def test_storage_network(
-    api_client, cluster_network, vlan_id, unique_name, wait_timeout, setting_checker
+def test_enable_storage_network(
+    api_client, cluster_network, vlan_id, unique_name, wait_timeout,
+    setting_checker, network_checker
 ):
     '''
     To cover test:
@@ -127,7 +128,10 @@ def test_storage_network(
             "VM network created but route info not available\n"
             f"API Status({code}): {data}"
         )
-    _ = api_client.networks.delete(unique_name)
+    code, data = api_client.networks.delete(unique_name)
+    assert 200 == code, (code, data)
+    vnet_deleted, (code, data) = network_checker.wait_vnet_deleted(unique_name)
+    assert vnet_deleted, (code, data)
     vlan_cidr = route['cidr']
 
     # Create storage-network
@@ -141,7 +145,12 @@ def test_storage_network(
     snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_longhorn(vlan_cidr)
     assert snet_enabled, (code, data)
 
-    # teardown
+
+@pytest.mark.p0
+@pytest.mark.settings
+@pytest.mark.networks
+@pytest.mark.skip_version_before('v1.0.3')
+def test_disable_storage_network(api_client, setting_checker):
     disable_spec = api_client.settings.StorageNetworkSpec.disable()
     code, data = api_client.settings.update('storage-network', disable_spec)
     assert 200 == code, (code, data)

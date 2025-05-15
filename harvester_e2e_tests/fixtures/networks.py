@@ -41,4 +41,11 @@ def network_checker(api_client, wait_timeout, sleep_timeout):
                 return True, (code, data)
             return False, (code, data)
 
+        @wait_until(wait_timeout, sleep_timeout)
+        def wait_vnet_deleted(self, vnet_name):
+            code, data = api_client.networks.get(vnet_name)
+            if code == 404:
+                return True, (code, data)
+            return False, (code, data)
+
     return NetworkChecker()
