@@ -121,6 +121,8 @@ def config_backup_target(api_client, conflict_retries, backup_config, wait_timeo
         f'Failed to update backup target to {backup_type} with {config}\n'
         f"API Status({code}): {data}"
     )
+    # sleeping to allow longhorn secret to be built on Harvester side
+    sleep(5)
 
     yield spec
 
