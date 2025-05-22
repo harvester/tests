@@ -114,8 +114,8 @@ def cluster_network(request, api_client, unique_name):
 </details>
 <div class="desc"></div>
 </dd>
-<dt id="harvester_e2e_tests.integrations.test_0_storage_network.test_storage_network"><code class="name flex">
-<span>def <span class="ident">test_storage_network</span></span>(<span>api_client, cluster_network, vlan_id, unique_name, wait_timeout, setting_checker)</span>
+<dt id="harvester_e2e_tests.integrations.test_0_storage_network.test_disable_storage_network"><code class="name flex">
+<span>def <span class="ident">test_disable_storage_network</span></span>(<span>api_client, setting_checker)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -126,8 +126,32 @@ def cluster_network(request, api_client, unique_name):
 @pytest.mark.settings
 @pytest.mark.networks
 @pytest.mark.skip_version_before(&#39;v1.0.3&#39;)
-def test_storage_network(
-    api_client, cluster_network, vlan_id, unique_name, wait_timeout, setting_checker
+def test_disable_storage_network(api_client, setting_checker):
+    disable_spec = api_client.settings.StorageNetworkSpec.disable()
+    code, data = api_client.settings.update(&#39;storage-network&#39;, disable_spec)
+    assert 200 == code, (code, data)
+    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_harvester()
+    assert snet_disabled, (code, data)
+    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_longhorn()
+    assert snet_disabled, (code, data)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_0_storage_network.test_enable_storage_network"><code class="name flex">
+<span>def <span class="ident">test_enable_storage_network</span></span>(<span>api_client,<br>cluster_network,<br>vlan_id,<br>unique_name,<br>wait_timeout,<br>setting_checker,<br>network_checker)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.settings
+@pytest.mark.networks
+@pytest.mark.skip_version_before(&#39;v1.0.3&#39;)
+def test_enable_storage_network(
+    api_client, cluster_network, vlan_id, unique_name, wait_timeout,
+    setting_checker, network_checker
 ):
     &#39;&#39;&#39;
     To cover test:
@@ -175,7 +199,10 @@ def test_storage_network(
             &#34;VM network created but route info not available\n&#34;
             f&#34;API Status({code}): {data}&#34;
         )
-    _ = api_client.networks.delete(unique_name)
+    code, data = api_client.networks.delete(unique_name)
+    assert 200 == code, (code, data)
+    vnet_deleted, (code, data) = network_checker.wait_vnet_deleted(unique_name)
+    assert vnet_deleted, (code, data)
     vlan_cidr = route[&#39;cidr&#39;]
 
     # Create storage-network
@@ -187,16 +214,7 @@ def test_storage_network(
     snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_harvester()
     assert snet_enabled, (code, data)
     snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_longhorn(vlan_cidr)
-    assert snet_enabled, (code, data)
-
-    # teardown
-    disable_spec = api_client.settings.StorageNetworkSpec.disable()
-    code, data = api_client.settings.update(&#39;storage-network&#39;, disable_spec)
-    assert 200 == code, (code, data)
-    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_harvester()
-    assert snet_disabled, (code, data)
-    snet_disabled, (code, data) = setting_checker.wait_storage_net_disabled_on_longhorn()
-    assert snet_disabled, (code, data)</code></pre>
+    assert snet_enabled, (code, data)</code></pre>
 </details>
 <div class="desc"><p>To cover test:
 - <a href="https://harvester.github.io/tests/manual/_incoming/1055_dedicated_storage_network/">https://harvester.github.io/tests/manual/_incoming/1055_dedicated_storage_network/</a></p>
@@ -241,7 +259,8 @@ Expected Result:<ul>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integrations.test_0_storage_network.cluster_network" href="#harvester_e2e_tests.integrations.test_0_storage_network.cluster_network">cluster_network</a></code></li>
-<li><code><a title="harvester_e2e_tests.integrations.test_0_storage_network.test_storage_network" href="#harvester_e2e_tests.integrations.test_0_storage_network.test_storage_network">test_storage_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_0_storage_network.test_disable_storage_network" href="#harvester_e2e_tests.integrations.test_0_storage_network.test_disable_storage_network">test_disable_storage_network</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_0_storage_network.test_enable_storage_network" href="#harvester_e2e_tests.integrations.test_0_storage_network.test_enable_storage_network">test_enable_storage_network</a></code></li>
 </ul>
 </li>
 </ul>
