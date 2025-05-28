@@ -37,6 +37,48 @@ def fake_invalid_image_file():
         yield Path(f.name)
 
 
+def wait_resource_deleted(get_func, name, wait_timeout, namespace=None, sleep_time=3):
+    """
+    Long polling until resource is deleted (get_func returns 404) or timeout.
+    get_func: function to get the resource, should return (code, data)
+    name: resource name
+    wait_timeout: timeout in seconds
+    namespace: optional, if needed by get_func
+    sleep_time: polling interval in seconds
+    """
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        if namespace is not None:
+            code, _ = get_func(name, namespace=namespace)
+        else:
+            code, _ = get_func(name)
+        if code == 404:
+            return
+        sleep(sleep_time)
+    raise AssertionError(f"Failed to delete resource {name} in {wait_timeout} seconds")
+
+
+def wait_image_progress(api_client, image_name, wait_timeout):
+    """
+    Long polling image status until progress == 100 or timeout.
+    """
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    last_code, last_data = None, None
+    while endtime > datetime.now():
+        code, data = api_client.images.get(image_name)
+        image_status = data.get("status", {})
+        last_code, last_data = code, data
+
+        assert 200 == code, (code, data)
+        if image_status.get("progress") == 100:
+            return
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Still got {last_code} with {last_data}"
+        )
+
+
 def create_image_url(api_client, name, image_url, image_checksum, wait_timeout):
     code, data = api_client.images.create_by_url(name, image_url, image_checksum)
 
@@ -46,21 +88,7 @@ def create_image_url(api_client, name, image_url, image_checksum, wait_timeout):
     assert name == image_spec.get("displayName")
     assert "download" == image_spec.get("sourceType")
 
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-    while endtime > datetime.now():
-        code, data = api_client.images.get(name)
-        image_status = data.get("status", {})
-
-        assert 200 == code, (code, data)
-        if image_status.get("progress") == 100:
-            break
-        sleep(5)
-    else:
-        raise AssertionError(
-            f"Failed to download image {name} with {wait_timeout} timed out\n"
-            f"Still got {code} with {data}"
-        )
+    wait_image_progress(api_client, name, wait_timeout)
 
 
 def delete_image(api_client, image_name, wait_timeout):
@@ -131,6 +159,26 @@ def cluster_network(api_client, vlan_nic):
     assert 200 == code, (code, data)
     code, data = api_client.clusternetworks.delete(cnet)
     assert 200 == code, (code, data)
+
+
+@pytest.fixture(scope="module")
+def shared_image(api_client, image_ubuntu, unique_name, wait_timeout):
+    source_image_name = f"shared-ubuntu-{unique_name}"
+    image_info = image_ubuntu
+    create_image_url(
+        api_client,
+        source_image_name,
+        image_info.url,
+        image_info.image_checksum,
+        wait_timeout,
+    )
+
+    yield source_image_name
+
+    # Cleanup: delete the image after tests
+    code, _ = api_client.images.delete(source_image_name)
+    if code == 200:
+        wait_resource_deleted(api_client.images.get, source_image_name, wait_timeout)
 
 
 @pytest.fixture(scope="class")
