@@ -37,6 +37,48 @@ def fake_invalid_image_file():
         yield Path(f.name)
 
 
+def wait_resource_deleted(get_func, name, wait_timeout, namespace=None, sleep_time=3):
+    """
+    Long polling until resource is deleted (get_func returns 404) or timeout.
+    get_func: function to get the resource, should return (code, data)
+    name: resource name
+    wait_timeout: timeout in seconds
+    namespace: optional, if needed by get_func
+    sleep_time: polling interval in seconds
+    """
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        if namespace is not None:
+            code, _ = get_func(name, namespace=namespace)
+        else:
+            code, _ = get_func(name)
+        if code == 404:
+            return
+        sleep(sleep_time)
+    raise AssertionError(f"Failed to delete resource {name} in {wait_timeout} seconds")
+
+
+def wait_image_progress(api_client, image_name, wait_timeout):
+    """
+    Long polling image status until progress == 100 or timeout.
+    """
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    last_code, last_data = None, None
+    while endtime > datetime.now():
+        code, data = api_client.images.get(image_name)
+        image_status = data.get("status", {})
+        last_code, last_data = code, data
+
+        assert 200 == code, (code, data)
+        if image_status.get("progress") == 100:
+            return
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Still got {last_code} with {last_data}"
+        )
+
+
 def create_image_url(api_client, name, image_url, image_checksum, wait_timeout):
     code, data = api_client.images.create_by_url(name, image_url, image_checksum)
 
@@ -46,21 +88,7 @@ def create_image_url(api_client, name, image_url, image_checksum, wait_timeout):
     assert name == image_spec.get("displayName")
     assert "download" == image_spec.get("sourceType")
 
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-
-    while endtime > datetime.now():
-        code, data = api_client.images.get(name)
-        image_status = data.get("status", {})
-
-        assert 200 == code, (code, data)
-        if image_status.get("progress") == 100:
-            break
-        sleep(5)
-    else:
-        raise AssertionError(
-            f"Failed to download image {name} with {wait_timeout} timed out\n"
-            f"Still got {code} with {data}"
-        )
+    wait_image_progress(api_client, name, wait_timeout)
 
 
 def delete_image(api_client, image_name, wait_timeout):
@@ -131,6 +159,116 @@ def cluster_network(api_client, vlan_nic):
     assert 200 == code, (code, data)
     code, data = api_client.clusternetworks.delete(cnet)
     assert 200 == code, (code, data)
+
+
+# 定義你要測試的 secret 組合
+SECRET_COMBINATIONS = [
+    {
+        "CRYPTO_KEY_CIPHER": "aes-xts-plain64",
+        "CRYPTO_KEY_HASH": "sha256",
+        "CRYPTO_KEY_PROVIDER": "secret",
+        "CRYPTO_KEY_SIZE": "256",
+        "CRYPTO_KEY_VALUE": "test",
+        "CRYPTO_PBKDF": "argon2i",
+    },
+    {
+        "CRYPTO_KEY_CIPHER": "aes-xts-plain64",
+        "CRYPTO_KEY_HASH": "sha512",
+        "CRYPTO_KEY_PROVIDER": "secret",
+        "CRYPTO_KEY_SIZE": "512",
+        "CRYPTO_KEY_VALUE": "test",
+        "CRYPTO_PBKDF": "argon2i",
+    },
+]
+
+
+@pytest.fixture(scope="class", params=SECRET_COMBINATIONS)
+def encryption_secret_data(request):
+    return request.param
+
+
+@pytest.fixture(scope="module")
+def shared_image(api_client, image_ubuntu, unique_name, wait_timeout):
+    source_image_name = f"shared-ubuntu-{unique_name}"
+    image_info = image_ubuntu
+    create_image_url(
+        api_client,
+        source_image_name,
+        image_info.url,
+        image_info.image_checksum,
+        wait_timeout,
+    )
+
+    yield source_image_name
+
+    # Cleanup: delete the image after tests
+    code, _ = api_client.images.delete(source_image_name)
+    if code == 200:
+        wait_resource_deleted(api_client.images.get, source_image_name, wait_timeout)
+
+
+@pytest.fixture(scope="class")
+def encrypted_backing_resources(api_client, encryption_secret_data, unique_name, wait_timeout):
+    """
+    Fixture to create and yield all resources for TestEncryptedBackingImage,
+    and clean them up after tests.
+    """
+    namespace = "default"
+    secret_name = f"my-secret-{unique_name}"
+    sc_name = f"my-encrypted-sc-{unique_name}"
+    encrypted_image_name = f"encrypted-image-{unique_name}"
+    decrypted_image_name = f"decrypted-image-{unique_name}"
+
+    # Create secret
+    code, data = api_client.secrets.create(
+        name=secret_name,
+        data=encryption_secret_data,
+        namespace=namespace,
+    )
+    assert code == 201, (code, data)
+
+    # Create storage class
+    sc_parameters = {
+        "csi.storage.k8s.io/node-publish-secret-name": secret_name,
+        "csi.storage.k8s.io/node-publish-secret-namespace": namespace,
+        "csi.storage.k8s.io/node-stage-secret-name": secret_name,
+        "csi.storage.k8s.io/node-stage-secret-namespace": namespace,
+        "csi.storage.k8s.io/provisioner-secret-name": secret_name,
+        "csi.storage.k8s.io/provisioner-secret-namespace": namespace,
+        "encrypted": "true",
+        "migratable": "true",
+        "numberOfReplicas": "3",
+        "staleReplicaTimeout": "30",
+    }
+    code, sc = api_client.scs.create_by_parameters(sc_name, sc_parameters)
+    assert code == 201, f"Failed to create storage class: {code}, {sc}"
+
+    resources = {
+        "namespace": namespace,
+        "secret_name": secret_name,
+        "sc_name": sc_name,
+        "encrypted_image_name": encrypted_image_name,
+        "decrypted_image_name": decrypted_image_name,
+    }
+    yield resources
+
+    # Cleanup: delete images, storage class, secret
+    for image_name in [decrypted_image_name, encrypted_image_name]:
+        code, data = api_client.images.delete(image_name, namespace=namespace)
+        if code == 200:
+            wait_resource_deleted(
+                api_client.images.get, image_name, wait_timeout, namespace=namespace
+            )
+
+    code, data = api_client.scs.delete(sc_name)
+    if code == 200:
+        wait_resource_deleted(api_client.scs.get, sc_name, wait_timeout)
+
+    code, data = api_client.secrets.delete(secret_name, namespace=namespace)
+    if code == 204:
+        wait_resource_deleted(
+            api_client.secrets.get, secret_name, wait_timeout, namespace=namespace
+        )
 
 
 @pytest.fixture(scope="class")
@@ -451,3 +589,150 @@ class TestImageWithStorageNetwork:
             raise AssertionError(
                 f"Fail to delete image {unique_name} with error: {code}, {data}"
             )
+
+
+@pytest.mark.p0
+@pytest.mark.usefixtures("encrypted_backing_resources")
+@pytest.mark.skip_version_if("< v1.4.0", reason="New feature after v1.4.0")
+class TestEncryptedBackingImage:
+    @pytest.mark.p0
+    @pytest.mark.dependency(name="create_encrypted_image")
+    def test_create_encrypted_image(
+        self,
+        encrypted_backing_resources,
+        api_client,
+        wait_timeout,
+        shared_image,
+    ):
+        source_image_name = shared_image
+        encrypted_image_name = encrypted_backing_resources["encrypted_image_name"]
+        namespace = encrypted_backing_resources["namespace"]
+        storage_class_name = encrypted_backing_resources["sc_name"]
+
+        code, image = api_client.images.create_crypto_image(
+            source_image_name=source_image_name,
+            new_image_name=encrypted_image_name,
+            storage_class_name=storage_class_name,
+            namespace=namespace,
+            crypto_operation="encrypt"
+        )
+        assert code == 201, f"Failed to create encrypted image: {code}, {image}"
+
+        code, image = api_client.images.get(encrypted_image_name)
+        assert code == 200, f"Encrypted image not found: {code}, {image}"
+        assert image["metadata"]["name"] == encrypted_image_name
+        assert image["spec"]["securityParameters"]["cryptoOperation"] == "encrypt"
+        assert image["spec"]["securityParameters"]["sourceImageName"] == source_image_name
+        assert image["spec"]["securityParameters"]["sourceImageNamespace"] == namespace
+        assert (
+            image["metadata"]["annotations"]["harvesterhci.io/storageClassName"]
+            == storage_class_name
+        )
+
+        wait_image_progress(api_client, encrypted_image_name, wait_timeout)
+
+    @pytest.mark.p0
+    @pytest.mark.dependency(name="create_decrypted_image", depends=["create_encrypted_image"])
+    def test_create_decrypted_image(self, encrypted_backing_resources, api_client, wait_timeout):
+        encrypted_image_name = encrypted_backing_resources["encrypted_image_name"]
+        decrypted_image_name = encrypted_backing_resources["decrypted_image_name"]
+        namespace = encrypted_backing_resources["namespace"]
+
+        code, image = api_client.images.create_crypto_image(
+            source_image_name=encrypted_image_name,
+            new_image_name=decrypted_image_name,
+            storage_class_name="",  # Decrypted images do not need a encryption storage class
+            crypto_operation="decrypt",
+            namespace=namespace,
+        )
+        assert code == 201, f"Failed to create decrypted image: {code}, {image}"
+
+        code, image = api_client.images.get(decrypted_image_name)
+        assert code == 200, f"Decrypted image not found: {code}, {image}"
+        assert image["metadata"]["name"] == decrypted_image_name
+        assert image["spec"]["securityParameters"]["cryptoOperation"] == "decrypt"
+        assert image["spec"]["securityParameters"]["sourceImageName"] == encrypted_image_name
+        assert image["spec"]["securityParameters"]["sourceImageNamespace"] == namespace
+
+        wait_image_progress(api_client, decrypted_image_name, wait_timeout)
+
+
+# Define invalid secret combinations for error testing
+INVALID_SECRET_COMBINATIONS = [
+    {
+        "CRYPTO_KEY_CIPHER": "aes-xts-plain64",
+        "CRYPTO_KEY_HASH": "sha256",
+        "CRYPTO_KEY_PROVIDER": "secret",
+        "CRYPTO_KEY_SIZE": "asdasd",  # invalid
+        "CRYPTO_KEY_VALUE": "test",
+        "CRYPTO_PBKDF": "argon2i",
+    },
+    {
+        "CRYPTO_KEY_CIPHER": "invalid-cipher",   # invalid
+        "CRYPTO_KEY_HASH": "sha256",
+        "CRYPTO_KEY_PROVIDER": "secret",
+        "CRYPTO_KEY_SIZE": "256",
+        "CRYPTO_KEY_VALUE": "test",
+        "CRYPTO_PBKDF": "argon2i",
+    },
+]
+
+
+@pytest.fixture(params=INVALID_SECRET_COMBINATIONS)
+def invalid_encryption_secret_data(request):
+    return request.param
+
+
+@pytest.fixture
+def created_invalid_secret(api_client, invalid_encryption_secret_data, unique_name):
+    """
+    Create an invalid encryption secret, yield the name, and cleanup after test.
+    """
+    namespace = "default"
+    invalid_secret_name = f"invalid-encrypted-sc-{unique_name}"
+    code, _ = api_client.secrets.create(
+        name=invalid_secret_name,
+        data=invalid_encryption_secret_data,
+        namespace=namespace,
+    )
+
+    yield invalid_secret_name
+
+    # Teardown: delete secret if it was created
+    if code == 201 or code == 409:
+        api_client.secrets.delete(invalid_secret_name, namespace=namespace)
+
+
+@pytest.mark.p0
+class TestInvalidEncryptionSecret:
+    """
+    Test creating invalid encryption secrets and verify error handling.
+    """
+
+    @pytest.mark.p0
+    def test_create_invalid_encryption_secret(self, api_client, created_invalid_secret):
+        namespace = "default"
+        secret_name = created_invalid_secret
+        storage_class_name = secret_name
+        sc_parameters = {
+            "csi.storage.k8s.io/node-publish-secret-name": secret_name,
+            "csi.storage.k8s.io/node-publish-secret-namespace": namespace,
+            "csi.storage.k8s.io/node-stage-secret-name": secret_name,
+            "csi.storage.k8s.io/node-stage-secret-namespace": namespace,
+            "csi.storage.k8s.io/provisioner-secret-name": secret_name,
+            "csi.storage.k8s.io/provisioner-secret-namespace": namespace,
+            "encrypted": "true",
+            "migratable": "true",
+            "numberOfReplicas": "3",
+            "staleReplicaTimeout": "30",
+        }
+        code, data = api_client.scs.create_by_parameters(storage_class_name, sc_parameters)
+        # Should not be able to create storage class with invalid secret
+        assert code == 422, (
+            f"Storage class creation should fail for invalid secret: {code}, {data}"
+        )
+        assert (
+            isinstance(data, dict)
+            and "message" in data
+            and "invalid field" in data["message"]
+        ), f"Error message should mention 'invalid field': {data}"
