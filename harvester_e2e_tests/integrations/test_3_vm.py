@@ -169,6 +169,7 @@ def storage_network(api_client, cluster_network, vm_network, setting_checker):
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.virtualmachines
 def test_multiple_migrations(
     api_client, unique_name, ubuntu_image, wait_timeout, available_node_names
@@ -266,6 +267,7 @@ def test_multiple_migrations(
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.virtualmachines
 def test_migrate_vm_with_user_data(
     api_client, unique_name, ubuntu_image, wait_timeout, available_node_names, vm_checker
@@ -335,6 +337,7 @@ def test_migrate_vm_with_user_data(
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.virtualmachines
 def test_migrate_vm_with_multiple_volumes(
     api_client, unique_name, ubuntu_image, wait_timeout, available_node_names, vm_checker
@@ -398,7 +401,8 @@ def test_migrate_vm_with_multiple_volumes(
             api_client.volumes.delete(vol['volume']['persistentVolumeClaim']['claimName'])
 
 
-@pytest.mark.p0
+@pytest.mark.p1
+@pytest.mark.sanity
 @pytest.mark.networks
 @pytest.mark.settings
 @pytest.mark.virtualmachines

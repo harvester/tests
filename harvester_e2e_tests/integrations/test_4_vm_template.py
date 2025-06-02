@@ -71,6 +71,10 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_name):
         api_client.volumes.delete(vol_name)
 
 
+@pytest.mark.p0
+@pytest.mark.smoke
+@pytest.mark.templates
+@pytest.mark.virtualmachines
 class TestVMTemplate:
     def test_create_template_with_data(
         self, api_client, vm_shell_from_host, vm_checker, ssh_keypair, wait_timeout, stopped_vm

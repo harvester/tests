@@ -215,6 +215,7 @@ def two_mirror_vms(api_client, ssh_keypair, unique_name, vm_checker, image, vm_n
 @pytest.mark.networks
 @pytest.mark.virtualmachines
 class TestVMNetwork:
+    @pytest.mark.sanity
     @pytest.mark.dependency(name="add_vlan")
     def test_add_vlan(
         self, api_client, ssh_keypair, vm_mgmt_static, vm_checker, vm_shell_from_host, vm_network,
@@ -292,6 +293,7 @@ class TestVMNetwork:
                           if iface['name'] != 'default')
         assert ip_address(vm_vlan_ip) in vlan_ip_range and vm_vlan_ip in ips
 
+    @pytest.mark.smoke
     @pytest.mark.dependency(depends=["add_vlan"])
     def test_ssh_connection(
         self, api_client, ssh_keypair, vm_checker, vm_network, minimal_vm
@@ -316,6 +318,7 @@ class TestVMNetwork:
                 f"Unable to login to VM via VLAN IP {vm_ip}"
             ) from ex
 
+    @pytest.mark.sanity
     def test_vms_on_same_vlan(
         self, api_client, ssh_keypair, vm_checker, vm_network, two_mirror_vms
     ):

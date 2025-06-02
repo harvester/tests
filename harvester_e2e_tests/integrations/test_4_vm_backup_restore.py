@@ -313,6 +313,7 @@ def base_vm_with_data(
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.backup_target
 @pytest.mark.parametrize(
     "backup_config", [
@@ -640,6 +641,7 @@ class TestBackupRestore:
 
 @pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.backup_target
 @pytest.mark.parametrize(
     "backup_config", [
@@ -745,6 +747,7 @@ class TestBackupRestoreOnMigration:
 
 
 @pytest.mark.p1
+@pytest.mark.sanity
 @pytest.mark.backup_target
 @pytest.mark.parametrize(
     "backup_config", [
