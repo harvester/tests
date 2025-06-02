@@ -29,6 +29,7 @@ DEFAULT_TEMPLATES_NAMESPACE = 'harvester-public'
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.templates
 @pytest.mark.negative
 class TestVMTemplateNegative:
@@ -52,6 +53,7 @@ class TestVMTemplateNegative:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.templates
 class TestVMTemplate:
     def test_create(self, api_client, unique_name):

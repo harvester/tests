@@ -27,6 +27,7 @@ pytest_plugins = [
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.keypairs
 class TestKeypairsNegative:
@@ -63,6 +64,7 @@ class TestKeypairsNegative:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.keypairs
 class TestKeypairs:
     @pytest.mark.dependency(depends=["delete_keypair_negative", "create_keypair_negative"],

@@ -5,6 +5,7 @@ import pytest
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.parametrize("addon", [
     'cattle-logging-system/rancher-logging',
     'cattle-monitoring-system/rancher-monitoring',
