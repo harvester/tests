@@ -296,6 +296,8 @@ def pytest_configure(config):
             "mark test skipped when cluster version < provided version")),
         ("skip_version_after", (
             "mark test skipped when cluster version >= provided version")),
+        ("smoke", "{_r} smoke testing"),
+        ("sanity", "{_r} sanity testing"),
         ('p0', ("mark the test's priority is p0")),
         ('p1', ("mark the test's priority is p1")),
         ('p2', ("mark the test's priority is p2")),
@@ -326,7 +328,7 @@ def pytest_configure(config):
 
     for m, msg in markers:
         related = 'mark the test is related to'
-        config.addinivalue_line("markers", f"{m}:{msg.format(_r=related)}")
+        config.addinivalue_line("markers", f"{m}: {msg.format(_r=related)}")
 
 
 @pytest.hookimpl(hookwrapper=True)
