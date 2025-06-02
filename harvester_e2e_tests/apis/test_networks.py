@@ -28,6 +28,7 @@ VLAN_ID = 4000
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.networks
 class TestNetworksNegative:
@@ -68,6 +69,7 @@ class TestNetworksNegative:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.networks
 class TestNetworks:
 

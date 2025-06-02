@@ -24,6 +24,7 @@ pytest_plugins = [
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.settings
 def test_get_all_settings(api_client, expected_settings):
     expected_settings = expected_settings['default']
@@ -63,6 +64,7 @@ def test_get_all_settings_v110(api_client, expected_settings):
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.settings
 def test_update_log_level(api_client):
     code, data = api_client.settings.get("log-level")
@@ -80,6 +82,7 @@ def test_update_log_level(api_client):
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.settings
 def test_get_storage_network(api_client):
     code, data = api_client.settings.get("storage-network")
@@ -87,6 +90,7 @@ def test_get_storage_network(api_client):
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.settings
 class TestUpdateInvalidStorageNetwork:
@@ -119,6 +123,7 @@ class TestUpdateInvalidStorageNetwork:
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.settings
 class TestUpdateInvalidBackupTarget:
@@ -165,6 +170,7 @@ class TestUpdateInvalidBackupTarget:
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.settings
 class TestUpdateKubeconfigDefaultToken:
     @pytest.mark.skip_version_before("v1.3.2", reason="Issue#5891 fixed after v1.3.2")

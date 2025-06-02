@@ -6,6 +6,7 @@ pytest_plugins = [
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.virtualmachines
 class TestVMNegative:

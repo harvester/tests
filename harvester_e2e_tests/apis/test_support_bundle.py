@@ -29,6 +29,7 @@ pytest_plugins = [
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.support_bundle
 class TestSupportBundleNegative:
@@ -46,6 +47,7 @@ class TestSupportBundleNegative:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.support_bundle
 class TestSupportBundle:
     @pytest.mark.dependency(name="create support bundle")

@@ -27,6 +27,7 @@ pytest_plugins = [
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.volumes
 class TestVolumesNegative:
@@ -74,6 +75,7 @@ class TestVolumesNegative:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.volumes
 class TestVolumes:
     def test_create(self, api_client, unique_name):

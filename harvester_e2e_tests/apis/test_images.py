@@ -82,6 +82,7 @@ class CasesImages:
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.images
 class TestImagesNegative:
@@ -117,6 +118,7 @@ class TestImagesNegative:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.images
 class TestImages:
 
@@ -223,6 +225,7 @@ class TestImages:
 
 @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.images
 @parametrize_with_cases("gen_unique_name", cases=CasesImages, has_tag='gen-unique-name')
