@@ -209,11 +209,10 @@ def check_vm_ip_exists(api_client, vm_name, wait_timeout):
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
+@pytest.mark.virtualmachines
 @pytest.mark.networks
 class TestBackendNetwork:
-
-    @pytest.mark.p0
-    @pytest.mark.networks
     def test_mgmt_network_connection(
         self, api_client, request, client, image_opensuse, unique_name, wait_timeout,
         host_shell, vm_shell_from_host, vm_checker
@@ -309,8 +308,6 @@ class TestBackendNetwork:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
 
-    @pytest.mark.p0
-    @pytest.mark.networks
     @pytest.mark.dependency(name="vlan_network_connection")
     def test_vlan_network_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout, vm_checker):
@@ -393,8 +390,6 @@ class TestBackendNetwork:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
 
-    @pytest.mark.p0
-    @pytest.mark.networks
     @pytest.mark.dependency(name="reboot_vlan_connection",
                             depends=["vlan_network_connection"])
     def test_reboot_vlan_connection(self, api_client, request, unique_name,
@@ -540,8 +535,6 @@ class TestBackendNetwork:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
 
-    @pytest.mark.p0
-    @pytest.mark.networks
     def test_mgmt_to_vlan_connection(self, api_client, request, client, unique_name,
                                      image_opensuse, vm_network, wait_timeout, vm_checker):
         """
@@ -672,8 +665,6 @@ class TestBackendNetwork:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
 
-    @pytest.mark.p0
-    @pytest.mark.networks
     def test_vlan_to_mgmt_connection(
         self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout,
         host_shell, vm_shell_from_host, vm_checker
@@ -803,8 +794,6 @@ class TestBackendNetwork:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
 
-    @pytest.mark.p0
-    @pytest.mark.networks
     def test_delete_vlan_from_multiple(
         self, api_client, request, client, unique_name, image_opensuse, vm_network, wait_timeout,
         host_shell, vm_checker

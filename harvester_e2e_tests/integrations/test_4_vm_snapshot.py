@@ -273,6 +273,7 @@ def vm_shell_do(name, api_client, host_shell, vm_shell, user, ssh_keypair, actio
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 class TestVMSnapshot:
+    @pytest.mark.smoke
     @pytest.mark.dependency(name="source_vm_snapshot")
     def test_vm_snapshot_create(self, api_client,
                                 source_vm, vm_snapshot_name,
@@ -315,6 +316,7 @@ class TestVMSnapshot:
         assert 200 == code
         assert data.get("status", {}).get("readyToUse") is True
 
+    @pytest.mark.negative
     @pytest.mark.dependency(depends=["source_vm_snapshot"])
     def test_volume_snapshot_not_exist(self, api_client):
         ''' ref: https://github.com/harvester/tests/issues/524 '''
@@ -323,6 +325,7 @@ class TestVMSnapshot:
         assert 200 == code, (code, data)
         assert not data['data'], (code, data)
 
+    @pytest.mark.smoke
     @pytest.mark.dependency(depends=["source_vm_snapshot"])
     def test_restore_into_new_vm_from_vm_snapshot(self, api_client,
                                                   restored_from_snapshot_vm,
@@ -350,6 +353,7 @@ class TestVMSnapshot:
                     ssh_user, ssh_keypair,
                     actassert, wait_timeout)
 
+    @pytest.mark.negative
     @pytest.mark.dependency(depends=["source_vm_snapshot"])
     def test_replace_is_rejected_when_deletepolicy_is_retain(self, api_client,
                                                              source_vm, vm_snapshot_name,
@@ -378,6 +382,7 @@ class TestVMSnapshot:
         assert wantmsg in reason
         assert 422 == code
 
+    @pytest.mark.smoke
     @pytest.mark.dependency(name="replaced_source_vm", depends=["source_vm_snapshot"])
     def test_replace_vm_with_vm_snapshot(self, api_client,
                                          source_vm, vm_snapshot_name,
@@ -429,6 +434,7 @@ class TestVMSnapshot:
                     ssh_user, ssh_keypair,
                     actassert, wait_timeout)
 
+    @pytest.mark.sanity
     @pytest.mark.dependency(name="detached_source_vm_pvc", depends=["replaced_source_vm"])
     def test_restore_from_vm_snapshot_while_pvc_detached_from_source(self,
                                                                      api_client,
@@ -460,6 +466,7 @@ class TestVMSnapshot:
                     ssh_user, ssh_keypair,
                     actassert, wait_timeout)
 
+    @pytest.mark.sanity
     @pytest.mark.dependency(name="snapshot_created_from_detached_source_vm_pvc",
                             depends=["detached_source_vm_pvc"])
     def test_create_vm_snapshot_while_pvc_detached(self, api_client,
@@ -494,6 +501,7 @@ class TestVMSnapshot:
         assert 200 == code
         assert data.get("status", {}).get("readyToUse") is True
 
+    @pytest.mark.sanity
     @pytest.mark.dependency(name="cleaned_up_after_vm_delete")
     def test_vm_snapshots_are_cleaned_up_after_source_vm_deleted(self, api_client,
                                                                  source_vm, vm_snapshot_name,
@@ -531,6 +539,7 @@ class TestVMSnapshot:
 
         wait_for_snapshot_to_disappear(vm_snapshot_name)
 
+    @pytest.mark.sanity
     @pytest.mark.dependency(depends=["snapshot_created_from_detached_source_vm_pvc",
                                      "cleaned_up_after_vm_delete"])
     def test_volume_snapshots_are_cleaned_up_after_source_volume_deleted(self, api_client,

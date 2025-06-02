@@ -175,6 +175,7 @@ def unset_cpu_memory_overcommit(api_client):
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(name="minimal_vm")
 def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
@@ -212,6 +213,7 @@ def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["minimal_vm"])
 class TestVMOperations:
@@ -584,6 +586,7 @@ class TestVMOperations:
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.virtualmachines
 def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
     """
@@ -618,6 +621,7 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.virtualmachines
 class TestVMResource:
     @pytest.mark.parametrize("res_type", ["cpu", "memory"])
@@ -921,6 +925,7 @@ class TestVMResource:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.virtualmachines
 class TestVMClone:
     def test_clone_running_vm(
@@ -1245,6 +1250,8 @@ class TestVMClone:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
+@pytest.mark.volumes
 @pytest.mark.virtualmachines
 class TestVMWithVolumes:
     def test_create_with_two_volumes(
@@ -1515,6 +1522,7 @@ class TestVMWithVolumes:
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.virtualmachines
 @pytest.mark.negative
 @pytest.mark.parametrize("resource", [dict(cpu=MAX), dict(mem=MAX), dict(disk=MAX),
@@ -1635,6 +1643,7 @@ def test_create_vm_no_available_resources(resource, api_client, image,
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.virtualmachines
 @pytest.mark.skip_version_if(
     "> v1.3.0", reason="`pc type removed, ref: https://github.com/harvester/harvester/issues/5437"
@@ -1793,6 +1802,7 @@ def test_update_vm_machine_type(
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.virtualmachines
 def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
@@ -1909,6 +1919,8 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
+@pytest.mark.wait_volumes_detached
 @pytest.mark.virtualmachines
 class TestHotPlugVolume:
     """

@@ -75,6 +75,7 @@ def cluster_network(request, api_client, unique_name):
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.settings
 @pytest.mark.networks
 @pytest.mark.skip_version_before('v1.0.3')
@@ -147,6 +148,7 @@ def test_enable_storage_network(
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.settings
 @pytest.mark.networks
 @pytest.mark.skip_version_before('v1.0.3')

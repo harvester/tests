@@ -114,6 +114,7 @@ def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.volumes
 @pytest.mark.parametrize("create_as", ["json", "yaml"])
 @pytest.mark.parametrize("source_type", ["New", "VM Image"])
@@ -171,6 +172,7 @@ def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_
 
 
 @pytest.mark.p1
+@pytest.mark.sanity
 @pytest.mark.volumes
 @pytest.mark.negative
 @pytest.mark.parametrize("create_as", ["json", "yaml"])
@@ -221,7 +223,9 @@ def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_ch
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.volumes
+@pytest.mark.virtualmachines
 class TestVolumeWithVM:
     def pause_vm(self, api_client, ubuntu_vm, polling_for):
         vm_name = ubuntu_vm['metadata']['name']

@@ -117,6 +117,7 @@ def vm_force_reset_policy(api_client):
 
 
 @pytest.mark.hosts
+@pytest.mark.sanity
 @pytest.mark.p1
 class TestHostState:
     @pytest.mark.dependency(name="host_poweroff")
@@ -192,6 +193,7 @@ class TestHostState:
 
 
 @pytest.mark.hosts
+@pytest.mark.smoke
 @pytest.mark.p0
 def test_verify_host_info(api_client):
     status_code, nodes_info = api_client.hosts.get()
@@ -221,7 +223,9 @@ def test_verify_host_info(api_client):
 
 
 @pytest.mark.hosts
+@pytest.mark.smoke
 @pytest.mark.p0
+@pytest.mark.virtualmachines
 def test_maintenance_mode_trigger_vm_migrate(
     api_client, focal_vm, wait_timeout, available_node_names
 ):
@@ -277,7 +281,9 @@ def test_maintenance_mode_trigger_vm_migrate(
 
 
 @pytest.mark.hosts
+@pytest.mark.sanity
 @pytest.mark.p0
+@pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["host_poweroff", "host_poweron"])
 def test_poweroff_node_trigger_vm_reschedule(
     api_client, host_state, focal_vm, wait_timeout, available_node_names, vm_force_reset_policy
@@ -365,7 +371,9 @@ def test_poweroff_node_trigger_vm_reschedule(
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.hosts
+@pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["host_poweroff", "host_poweron"])
 def test_delete_vm_after_host_shutdown(
     api_client, host_state, wait_timeout, focal_vm, available_node_names
@@ -479,7 +487,9 @@ def test_delete_vm_after_host_shutdown(
 
 
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.hosts
+@pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["host_poweroff", "host_poweron"])
 def test_vm_restarted_after_host_reboot(
     api_client, host_state, wait_timeout, focal_vm, available_node_names

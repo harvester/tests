@@ -189,8 +189,9 @@ def storage_network(api_client, cluster_network, vlan_id, vlan_cidr, setting_che
 
 
 @pytest.mark.p0
+@pytest.mark.images
 class TestBackendImages:
-    @pytest.mark.p0
+    @pytest.mark.smoke
     @pytest.mark.dependency(name="create_image_from_volume")
     def test_create_image_from_volume(
         self, api_client, unique_name, export_storage_class, wait_timeout
@@ -252,7 +253,7 @@ class TestBackendImages:
         delete_volume(api_client, volume_name, wait_timeout)
         delete_image(api_client, image_id, wait_timeout)
 
-    @pytest.mark.p0
+    @pytest.mark.smoke
     @pytest.mark.dependency(name="create_image_url")
     def test_create_image_url(self, image_info, unique_name, api_client, wait_timeout):
         """
@@ -270,8 +271,8 @@ class TestBackendImages:
         create_image_url(api_client, image_name, image_url,
                          image_info.image_checksum, wait_timeout)
 
+    @pytest.mark.sanity
     @pytest.mark.skip_version_if("> v1.2.0", "<= v1.4.0", reason="Issue#4293 fix after `v1.4.0`")
-    @pytest.mark.p0
     @pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
     def test_delete_image_recreate(
         self,
@@ -321,7 +322,8 @@ class TestBackendImages:
         get_image(api_client, unique_name)
         delete_image(api_client, unique_name, wait_timeout)
 
-    @pytest.mark.p0
+    @pytest.mark.sanity
+    @pytest.mark.negative
     def test_create_invalid_file(
         self, api_client, gen_unique_name, fake_invalid_image_file, wait_timeout
     ):
@@ -341,7 +343,8 @@ class TestBackendImages:
         ), f"File size correct, it's a multiple of 512 bytes:{resp.status_code}, {resp.content}"
         delete_image(api_client, unique_name, wait_timeout)
 
-    @pytest.mark.p0
+    @pytest.mark.sanity
+    @pytest.mark.negative
     @pytest.mark.dependency(name="edit_image_in_use", depends=["create_image_url"])
     def test_edit_image_in_use(self, api_client, unique_name, image_info, wait_timeout):
         """
@@ -407,6 +410,10 @@ class TestBackendImages:
 
 
 @pytest.mark.p0
+@pytest.mark.smoke
+@pytest.mark.images
+@pytest.mark.settings
+@pytest.mark.networks
 @pytest.mark.skip_version_if("< v1.0.3")
 @pytest.mark.usefixtures("storage_network")
 class TestImageWithStorageNetwork:
