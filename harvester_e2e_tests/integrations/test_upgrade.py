@@ -404,6 +404,7 @@ def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, imag
 @pytest.mark.negative
 @pytest.mark.any_nodes
 class TestInvalidUpgrade:
+    @pytest.mark.skip_version_if("< v1.5.0", reason="Issue#7654 fix after `v1.5.0`")
     def test_iso_url(self, api_client, unique_name, upgrade_checker):
         """
         Steps:
@@ -433,6 +434,7 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
+    @pytest.mark.skip_version_if("< v1.5.0", reason="Issue#7654 fix after `v1.5.0`")
     @pytest.mark.parametrize(
         "resort", [slice(None, None, -1), slice(None, None, 2)], ids=("mismatched", "invalid")
     )
