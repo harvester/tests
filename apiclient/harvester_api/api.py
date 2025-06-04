@@ -84,6 +84,7 @@ class HarvesterAPI:
         self.lhreplicas = mgrs.LonghornReplicaManager.for_version(version)(self, version)
         self.lhvolumes = mgrs.LonghornVolumeManager.for_version(version)(self, version)
         self.lhbackupvolumes = mgrs.LonghornBackupVolumeManager.for_version(version)(self, version)
+        self.secrets = mgrs.SecretManager.for_version(version)(self, version)
 
     def _get(self, path, **kwargs):
         url = self.get_url(path)
