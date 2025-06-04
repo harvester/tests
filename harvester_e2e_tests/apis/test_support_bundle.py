@@ -21,6 +21,7 @@ from time import sleep
 from zipfile import ZipFile
 from datetime import datetime, timedelta
 
+import yaml
 import pytest
 
 pytest_plugins = [
@@ -105,6 +106,28 @@ class TestSupportBundle:
         assert len(matches) == len(patterns), (
             f"Some file(s) not found, files: {matches}\npatterns: {patterns}"
         )
+
+    @pytest.mark.dependency(depends=["donwnload support bundle"])
+    def test_plan_secrets_exists(self, support_bundle_state):
+        # ref: https://github.com/harvester/tests/issues/603
+        path = r"^.*/yamls/namespaced/fleet-local/v1/secrets.yaml"
+
+        for fname in support_bundle_state.files:
+            if re.match(path, fname):
+                break
+        else:
+            raise AssertionError(f"{path} not existed")
+
+        try:
+            with ZipFile(support_bundle_state.fio, 'r') as zf:
+                with zf.open(fname) as file:
+                    secrets = yaml.safe_load(file)
+            assert all('rke.cattle.io/machine-plan' == o['type'] for o in secrets['items']), (
+                "secrets got unexpected type:\n"
+                f"{[o['type'] for o in secrets['items']]}"
+            )
+        finally:
+            support_bundle_state.fio.seek(0)
 
     @pytest.mark.dependency(depends=["get support bundle"])
     def test_delete(self, api_client, support_bundle_state):
