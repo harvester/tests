@@ -222,6 +222,37 @@ def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_ch
                 api_client.volumes.delete, unique_name)
 
 
+@pytest.mark.p1
+@pytest.mark.sanity
+@pytest.mark.negative
+@pytest.mark.volumes
+@pytest.mark.images
+def test_delete_volume_when_exporting(api_client, unique_name, ubuntu_image, polling_for):
+    # ref: https://github.com/harvester/tests/issues/1057
+
+    # image id must follow RFC1123 which ends with alphanumeric char
+    spec = api_client.volumes.Spec('10Gi')
+    # create volume from image
+    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image['id'])
+    assert 201 == code, (code, data)
+    polling_for("volume do created",
+                lambda code, data: 200 == code and data['status']['phase'] == "Bound",
+                api_client.volumes.get, unique_name)
+    # export volume to image
+    code, data = api_client.volumes.export(unique_name, unique_name, 'harvester-longhorn')
+    assert 200 == code, (code, data)
+    export_image = data['metadata']['name']
+    # delete volume while exporting
+    code, data = api_client.volumes.delete(unique_name)
+    assert 422 == code, (code, data)
+
+    # teardown
+    polling_for("image do deleted", lambda code, _: 404 == code,
+                api_client.images.delete, export_image)
+    polling_for("volume do deleted", lambda code, _: 404 == code,
+                api_client.volumes.delete, unique_name)
+
+
 @pytest.mark.p0
 @pytest.mark.sanity
 @pytest.mark.volumes
