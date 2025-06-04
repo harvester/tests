@@ -53,6 +53,7 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.settings
 def test_get_all_settings(api_client, expected_settings):
     expected_settings = expected_settings[&#39;default&#39;]
@@ -110,6 +111,7 @@ def test_get_all_settings_v110(api_client, expected_settings):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.settings
 def test_get_storage_network(api_client):
     code, data = api_client.settings.get(&#34;storage-network&#34;)
@@ -126,6 +128,7 @@ def test_get_storage_network(api_client):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.settings
 def test_update_log_level(api_client):
     code, data = api_client.settings.get(&#34;log-level&#34;)
@@ -157,6 +160,7 @@ def test_update_log_level(api_client):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.settings
 class TestUpdateInvalidBackupTarget:
@@ -283,6 +287,7 @@ class TestUpdateInvalidBackupTarget:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.settings
 class TestUpdateInvalidStorageNetwork:
@@ -389,6 +394,7 @@ class TestUpdateInvalidStorageNetwork:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.settings
 class TestUpdateKubeconfigDefaultToken:
     @pytest.mark.skip_version_before(&#34;v1.3.2&#34;, reason=&#34;Issue#5891 fixed after v1.3.2&#34;)

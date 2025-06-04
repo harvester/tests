@@ -123,6 +123,7 @@ def cluster_network(request, api_client, unique_name):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.settings
 @pytest.mark.networks
 @pytest.mark.skip_version_before(&#39;v1.0.3&#39;)
@@ -146,6 +147,7 @@ def test_disable_storage_network(api_client, setting_checker):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.settings
 @pytest.mark.networks
 @pytest.mark.skip_version_before(&#39;v1.0.3&#39;)

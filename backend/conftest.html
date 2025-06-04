@@ -461,6 +461,8 @@ def pytest_collection_modifyitems(session, config, items):
             &#34;mark test skipped when cluster version &lt; provided version&#34;)),
         (&#34;skip_version_after&#34;, (
             &#34;mark test skipped when cluster version &gt;= provided version&#34;)),
+        (&#34;smoke&#34;, &#34;{_r} smoke testing&#34;),
+        (&#34;sanity&#34;, &#34;{_r} sanity testing&#34;),
         (&#39;p0&#39;, (&#34;mark the test&#39;s priority is p0&#34;)),
         (&#39;p1&#39;, (&#34;mark the test&#39;s priority is p1&#34;)),
         (&#39;p2&#39;, (&#34;mark the test&#39;s priority is p2&#34;)),
@@ -491,7 +493,7 @@ def pytest_collection_modifyitems(session, config, items):
 
     for m, msg in markers:
         related = &#39;mark the test is related to&#39;
-        config.addinivalue_line(&#34;markers&#34;, f&#34;{m}:{msg.format(_r=related)}&#34;)</code></pre>
+        config.addinivalue_line(&#34;markers&#34;, f&#34;{m}: {msg.format(_r=related)}&#34;)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>

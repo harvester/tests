@@ -309,6 +309,7 @@ def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id):
 @pytest.mark.networks
 @pytest.mark.virtualmachines
 class TestVMNetwork:
+    @pytest.mark.sanity
     @pytest.mark.dependency(name=&#34;add_vlan&#34;)
     def test_add_vlan(
         self, api_client, ssh_keypair, vm_mgmt_static, vm_checker, vm_shell_from_host, vm_network,
@@ -386,6 +387,7 @@ class TestVMNetwork:
                           if iface[&#39;name&#39;] != &#39;default&#39;)
         assert ip_address(vm_vlan_ip) in vlan_ip_range and vm_vlan_ip in ips
 
+    @pytest.mark.smoke
     @pytest.mark.dependency(depends=[&#34;add_vlan&#34;])
     def test_ssh_connection(
         self, api_client, ssh_keypair, vm_checker, vm_network, minimal_vm
@@ -410,6 +412,7 @@ class TestVMNetwork:
                 f&#34;Unable to login to VM via VLAN IP {vm_ip}&#34;
             ) from ex
 
+    @pytest.mark.sanity
     def test_vms_on_same_vlan(
         self, api_client, ssh_keypair, vm_checker, vm_network, two_mirror_vms
     ):
@@ -468,7 +471,8 @@ class TestVMNetwork:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(name=&#34;add_vlan&#34;)
+<pre><code class="python">@pytest.mark.sanity
+@pytest.mark.dependency(name=&#34;add_vlan&#34;)
 def test_add_vlan(
     self, api_client, ssh_keypair, vm_mgmt_static, vm_checker, vm_shell_from_host, vm_network,
     minimal_vm, gen_ifconfig
@@ -555,7 +559,8 @@ def test_add_vlan(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;add_vlan&#34;])
+<pre><code class="python">@pytest.mark.smoke
+@pytest.mark.dependency(depends=[&#34;add_vlan&#34;])
 def test_ssh_connection(
     self, api_client, ssh_keypair, vm_checker, vm_network, minimal_vm
 ):
@@ -589,7 +594,8 @@ def test_ssh_connection(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_vms_on_same_vlan(
+<pre><code class="python">@pytest.mark.sanity
+def test_vms_on_same_vlan(
     self, api_client, ssh_keypair, vm_checker, vm_network, two_mirror_vms
 ):
     _, pri_key = ssh_keypair

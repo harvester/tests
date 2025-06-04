@@ -55,6 +55,7 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.keypairs
 class TestKeypairs:
     @pytest.mark.dependency(depends=[&#34;delete_keypair_negative&#34;, &#34;create_keypair_negative&#34;],
@@ -208,6 +209,7 @@ def test_get(self, api_client, ssh_keypair, unique_name):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.keypairs
 class TestKeypairsNegative:

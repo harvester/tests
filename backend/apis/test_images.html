@@ -54,6 +54,7 @@ el.replaceWith(d);
 </summary>
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.images
 @parametrize_with_cases(&#34;gen_unique_name&#34;, cases=CasesImages, has_tag=&#39;gen-unique-name&#39;)
@@ -288,6 +289,7 @@ def case_unique_name_regular(self, unique_name):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.images
 class TestImages:
 
@@ -562,6 +564,7 @@ def test_update(self, api_client, unique_name):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.images
 class TestImagesNegative:

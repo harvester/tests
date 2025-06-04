@@ -53,6 +53,7 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.volumes
 @pytest.mark.parametrize(&#34;create_as&#34;, [&#34;json&#34;, &#34;yaml&#34;])
 @pytest.mark.parametrize(&#34;source_type&#34;, [&#34;New&#34;, &#34;VM Image&#34;])
@@ -130,6 +131,7 @@ Ref.</li>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p1
+@pytest.mark.sanity
 @pytest.mark.volumes
 @pytest.mark.negative
 @pytest.mark.parametrize(&#34;create_as&#34;, [&#34;json&#34;, &#34;yaml&#34;])
@@ -353,7 +355,9 @@ def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.volumes
+@pytest.mark.virtualmachines
 class TestVolumeWithVM:
     def pause_vm(self, api_client, ubuntu_vm, polling_for):
         vm_name = ubuntu_vm[&#39;metadata&#39;][&#39;name&#39;]

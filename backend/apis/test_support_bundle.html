@@ -55,6 +55,7 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.support_bundle
 class TestSupportBundle:
     @pytest.mark.dependency(name=&#34;create support bundle&#34;)
@@ -254,6 +255,7 @@ def test_logfile_exists(self, support_bundle_state):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.support_bundle
 class TestSupportBundleNegative:

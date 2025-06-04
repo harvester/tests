@@ -55,6 +55,7 @@ el.replaceWith(d);
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
 @pytest.mark.templates
 class TestVMTemplate:
     def test_create(self, api_client, unique_name):
@@ -258,6 +259,7 @@ def test_get_system_default_versions(self, api_client):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.templates
 @pytest.mark.negative
 class TestVMTemplateNegative:

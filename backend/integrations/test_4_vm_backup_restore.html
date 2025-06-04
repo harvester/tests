@@ -423,6 +423,7 @@ def image(api_client, unique_name, wait_timeout, image_opensuse):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.backup_target
 @pytest.mark.parametrize(
     &#34;backup_config&#34;, [
@@ -1171,6 +1172,7 @@ def tests_backup_vm(self, api_client, wait_timeout, backup_config, base_vm_with_
 </summary>
 <pre><code class="python">@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/1473&#34;)
 @pytest.mark.p0
+@pytest.mark.sanity
 @pytest.mark.backup_target
 @pytest.mark.parametrize(
     &#34;backup_config&#34;, [
@@ -1409,6 +1411,7 @@ def test_restore_replace_migrated_vm(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p1
+@pytest.mark.sanity
 @pytest.mark.backup_target
 @pytest.mark.parametrize(
     &#34;backup_config&#34;, [
