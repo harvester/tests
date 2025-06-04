@@ -2065,6 +2065,7 @@ Criteria:
 @pytest.mark.negative
 @pytest.mark.any_nodes
 class TestInvalidUpgrade:
+    @pytest.mark.skip_version_if(&#34;&lt; v1.5.0&#34;, reason=&#34;Issue#7654 fix after `v1.5.0`&#34;)
     def test_iso_url(self, api_client, unique_name, upgrade_checker):
         &#34;&#34;&#34;
         Steps:
@@ -2094,6 +2095,7 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
+    @pytest.mark.skip_version_if(&#34;&lt; v1.5.0&#34;, reason=&#34;Issue#7654 fix after `v1.5.0`&#34;)
     @pytest.mark.parametrize(
         &#34;resort&#34;, [slice(None, None, -1), slice(None, None, 2)], ids=(&#34;mismatched&#34;, &#34;invalid&#34;)
     )
@@ -2234,7 +2236,8 @@ class TestInvalidUpgrade:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.parametrize(
+<pre><code class="python">@pytest.mark.skip_version_if(&#34;&lt; v1.5.0&#34;, reason=&#34;Issue#7654 fix after `v1.5.0`&#34;)
+@pytest.mark.parametrize(
     &#34;resort&#34;, [slice(None, None, -1), slice(None, None, 2)], ids=(&#34;mismatched&#34;, &#34;invalid&#34;)
 )
 def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade_checker):
@@ -2356,7 +2359,8 @@ degraded state.
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_iso_url(self, api_client, unique_name, upgrade_checker):
+<pre><code class="python">@pytest.mark.skip_version_if(&#34;&lt; v1.5.0&#34;, reason=&#34;Issue#7654 fix after `v1.5.0`&#34;)
+def test_iso_url(self, api_client, unique_name, upgrade_checker):
     &#34;&#34;&#34;
     Steps:
     1. Create an invalid manifest.
