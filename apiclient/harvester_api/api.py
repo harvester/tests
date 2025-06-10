@@ -25,36 +25,42 @@ class HarvesterAPI:
         api.load_managers(api.cluster_version)
         return api
 
-    def __init__(self, endpoint, token=None, session=None):
+    def __init__(self, endpoint, token=None, session=None, version=None):
         self.session = session or requests.Session()
         self.session.headers.update(Authorization=token or "")
         if session is None:
             self.set_retries()
 
         self._version = None
+        self._config_version = version
         self.endpoint = endpoint
         self.load_managers()
 
     @property
     def cluster_version(self):
-        if not self._version:
-            resp = self._get("apis/{API_VERSION}/settings/server-version")
-            ver = resp.json()['value']
-            try:
-                # XXX: https://github.com/harvester/harvester/issues/3137
-                # Fixed as:
-                # 1. va.b-xxx-head => va.b.99
-                # 2. master-xxx-head => v8.8.99
-                # release-1.3-1bda61b3-head => v1.3-1bda61b3-head
-                if ver.startswith('release-'):
-                    ver = ver.replace('release-', 'v')
-                cur, _, _ = ver.split('-')
-                cur = "v8.8" if "master" in cur else cur
-                self._version = parse_version(f"{cur}.99")
-            except ValueError:
-                self._version = parse_version(ver)
-            # store the raw version returns from `server-version` for reference
-            self._version.raw = ver
+        if self._version:
+            return self._version
+        if self._config_version:
+            self._version = parse_version(self._config_version)
+            self._version.raw = self._config_version
+            return self._version
+        resp = self._get("apis/{API_VERSION}/settings/server-version")
+        ver = resp.json()['value']
+        try:
+            # XXX: https://github.com/harvester/harvester/issues/3137
+            # Fixed as:
+            # 1. va.b-xxx-head => va.b.99
+            # 2. master-xxx-head => v8.8.99
+            # release-1.3-1bda61b3-head => v1.3-1bda61b3-head
+            if ver.startswith('release-'):
+                ver = ver.replace('release-', 'v')
+            cur, _, _ = ver.split('-')
+            cur = "v8.8" if "master" in cur else cur
+            self._version = parse_version(f"{cur}.99")
+        except ValueError:
+            self._version = parse_version(ver)
+        # store the raw version returns from `server-version` for reference
+        self._version.raw = ver
         return self._version
 
     def __repr__(self):

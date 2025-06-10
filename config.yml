@@ -2,6 +2,10 @@
 endpoint: 'https://localhost'
 username: 'admin'
 password: 'password1234'
+# Default is empty because released Harvester version always has a version.
+# In self built Harvester, you can set this to the specific version to skip the test cases.
+# Otherwise, in self built Harvester, it's a dirty commit (like <commit_hash>) which the `skip_version_if` check will fail to check.
+harvester-version: ''
 # Be used to access Harvester node, fill in one of following is enough.
 host-password: ''
 host-private-key: ''

@@ -71,6 +71,12 @@ def pytest_addoption(parser):
         help='Harvester password'
     )
     parser.addoption(
+        '--harvester-version',
+        action='store',
+        default=config_data['harvester-version'],
+        help='Harvester version to run tests against'
+    )
+    parser.addoption(
         '--host-password',
         action='store',
         default=config_data['host-password'],

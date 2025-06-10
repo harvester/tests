@@ -38,14 +38,15 @@ def api_client(request, harvester_metadata):
     username = request.config.getoption("--username")
     password = request.config.getoption("--password")
     ssl_verify = request.config.getoption("--ssl_verify", False)
+    harvester_version = request.config.getoption("--harvester-version", "")
 
-    api = HarvesterAPI(endpoint)
+    api = HarvesterAPI(endpoint, version=harvester_version)
     api.authenticate(username, password, verify=ssl_verify)
-
     api.session.verify = ssl_verify
 
     harvester_metadata['Cluster Endpoint'] = endpoint
     harvester_metadata['Cluster Version'] = api.cluster_version.raw
+    harvester_metadata['Harvester Version (config)'] = harvester_version
 
     return api
 
