@@ -1,4 +1,4 @@
-from .base import BaseManager
+from .base import BaseManager, merge_dict
 
 DEFAULT_STORAGE_CLASS_ANNOTATION = "storageclass.kubernetes.io/is-default-class"
 
@@ -45,6 +45,12 @@ class StorageClassManager(BaseManager):
     def create(self, name, replicas=3, *, raw=False):
         path = self.CREATE_PATH_fmt.format(SC_API=self.API_VERSION)
         data = self.create_data(name, replicas)
+        return self._create(path, json=data, raw=raw)
+
+    def create_by_parameters(self, name, parameters, replicas=3, *, raw=False):
+        path = self.CREATE_PATH_fmt.format(SC_API=self.API_VERSION)
+        data = self.create_data(name, replicas)
+        merge_dict(parameters, data["parameters"])
         return self._create(path, json=data, raw=raw)
 
     def set_default(self, name, *, raw=False):
