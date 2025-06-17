@@ -191,6 +191,46 @@ def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_ch
 Ref. <a href="https://github.com/harvester/tests/issues/1121">https://github.com/harvester/tests/issues/1121</a></li>
 </ol></div>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_delete_volume_when_exporting"><code class="name flex">
+<span>def <span class="ident">test_delete_volume_when_exporting</span></span>(<span>api_client, unique_name, ubuntu_image, polling_for)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p1
+@pytest.mark.sanity
+@pytest.mark.negative
+@pytest.mark.volumes
+@pytest.mark.images
+def test_delete_volume_when_exporting(api_client, unique_name, ubuntu_image, polling_for):
+    # ref: https://github.com/harvester/tests/issues/1057
+
+    # image id must follow RFC1123 which ends with alphanumeric char
+    spec = api_client.volumes.Spec(&#39;10Gi&#39;)
+    # create volume from image
+    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image[&#39;id&#39;])
+    assert 201 == code, (code, data)
+    polling_for(&#34;volume do created&#34;,
+                lambda code, data: 200 == code and data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
+                api_client.volumes.get, unique_name)
+    # export volume to image
+    code, data = api_client.volumes.export(unique_name, unique_name, &#39;harvester-longhorn&#39;)
+    assert 200 == code, (code, data)
+    export_image = data[&#39;metadata&#39;][&#39;name&#39;]
+    # delete volume while exporting
+    code, data = api_client.volumes.delete(unique_name)
+    assert 422 == code, (code, data)
+
+    # teardown
+    polling_for(&#34;image do deleted&#34;, lambda code, _: 404 == code,
+                api_client.images.delete, export_image)
+    polling_for(&#34;volume do deleted&#34;, lambda code, _: 404 == code,
+                api_client.volumes.delete, unique_name)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image"><code class="name flex">
 <span>def <span class="ident">ubuntu_image</span></span>(<span>api_client, unique_name, image_ubuntu, polling_for)</span>
 </code></dt>
@@ -627,6 +667,7 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume">test_create_volume</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum">test_create_volume_bad_checksum</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_delete_volume_when_exporting" href="#harvester_e2e_tests.integrations.test_1_volumes.test_delete_volume_when_exporting">test_delete_volume_when_exporting</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image">ubuntu_image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum">ubuntu_image_bad_checksum</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm">ubuntu_vm</a></code></li>

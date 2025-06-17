@@ -114,6 +114,28 @@ class TestSupportBundle:
             f&#34;Some file(s) not found, files: {matches}\npatterns: {patterns}&#34;
         )
 
+    @pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+    def test_plan_secrets_exists(self, support_bundle_state):
+        # ref: https://github.com/harvester/tests/issues/603
+        path = r&#34;^.*/yamls/namespaced/fleet-local/v1/secrets.yaml&#34;
+
+        for fname in support_bundle_state.files:
+            if re.match(path, fname):
+                break
+        else:
+            raise AssertionError(f&#34;{path} not existed&#34;)
+
+        try:
+            with ZipFile(support_bundle_state.fio, &#39;r&#39;) as zf:
+                with zf.open(fname) as file:
+                    secrets = yaml.safe_load(file)
+            assert all(&#39;rke.cattle.io/machine-plan&#39; == o[&#39;type&#39;] for o in secrets[&#39;items&#39;]), (
+                &#34;secrets got unexpected type:\n&#34;
+                f&#34;{[o[&#39;type&#39;] for o in secrets[&#39;items&#39;]]}&#34;
+            )
+        finally:
+            support_bundle_state.fio.seek(0)
+
     @pytest.mark.dependency(depends=[&#34;get support bundle&#34;])
     def test_delete(self, api_client, support_bundle_state):
         code, data = api_client.supportbundle.delete(support_bundle_state.uid)
@@ -244,6 +266,38 @@ def test_logfile_exists(self, support_bundle_state):
 </details>
 <div class="desc"></div>
 </dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_plan_secrets_exists"><code class="name flex">
+<span>def <span class="ident">test_plan_secrets_exists</span></span>(<span>self, support_bundle_state)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+def test_plan_secrets_exists(self, support_bundle_state):
+    # ref: https://github.com/harvester/tests/issues/603
+    path = r&#34;^.*/yamls/namespaced/fleet-local/v1/secrets.yaml&#34;
+
+    for fname in support_bundle_state.files:
+        if re.match(path, fname):
+            break
+    else:
+        raise AssertionError(f&#34;{path} not existed&#34;)
+
+    try:
+        with ZipFile(support_bundle_state.fio, &#39;r&#39;) as zf:
+            with zf.open(fname) as file:
+                secrets = yaml.safe_load(file)
+        assert all(&#39;rke.cattle.io/machine-plan&#39; == o[&#39;type&#39;] for o in secrets[&#39;items&#39;]), (
+            &#34;secrets got unexpected type:\n&#34;
+            f&#34;{[o[&#39;type&#39;] for o in secrets[&#39;items&#39;]]}&#34;
+        )
+    finally:
+        support_bundle_state.fio.seek(0)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 </dl>
 </dd>
 <dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleNegative"><code class="flex name class">
@@ -332,13 +386,14 @@ class TestSupportBundleNegative:
 <ul>
 <li>
 <h4><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle">TestSupportBundle</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.pytestmark" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_create" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_create">test_create</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_delete" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_delete">test_delete</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_download" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_download">test_download</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_get" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_get">test_get</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists">test_logfile_exists</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_plan_secrets_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_plan_secrets_exists">test_plan_secrets_exists</a></code></li>
 </ul>
 </li>
 <li>
