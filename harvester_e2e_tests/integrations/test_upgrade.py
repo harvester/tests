@@ -587,18 +587,22 @@ class TestAnyNodesUpgrade:
                         f"API Status({code}): {data}"
                     )
 
-        code, pods = api_client.get_pods(namespace=logging_addon.namespace)
-        assert code == 200 and len(pods['data']) > 0, "No logging pods found"
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, pods = api_client.get_pods(namespace=logging_addon.namespace)
+            assert code == 200 and len(pods['data']) > 0, "No logging pods found"
 
-        fails = []
-        for pod in pods['data']:
-            phase = pod["status"]["phase"]
-            if phase not in ("Running", "Succeeded"):
-                fails.append((pod['metadata']['name'], phase))
+            fails = []
+            for pod in pods['data']:
+                name, phase = pod['metadata']['name'], pod["status"]["phase"]
+                if phase not in ("Running", "Succeeded"):
+                    fails.append((name, phase))
+            if not fails:
+                break
+            sleep(sleep_timeout)
         else:
-            assert not fails, (
-                "\n".join(f"Pod({n})'s phase({p}) is not expected." for n, p in fails)
-            )
+            raise AssertionError(
+                "\n".join(f"Pod({n})'s phase({p}) is not expected." for n, p in fails))
 
     @pytest.mark.dependency(name="preq_setup_vmnetwork")
     def test_preq_setup_vmnetwork(self, vm_network):
