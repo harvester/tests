@@ -1,4 +1,4 @@
-from .base import BaseManager
+from .base import BaseManager, merge_dict
 
 DEFAULT_STORAGE_CLASS_ANNOTATION = "storageclass.kubernetes.io/is-default-class"
 
@@ -23,7 +23,7 @@ class StorageClassManager(BaseManager):
         else:
             return code, data
 
-    def create_data(self, name, replicas):
+    def create_data(self, name, replicas, **options):
         data = {
             "type": f"{self.API_VERSION}",
             "metadata": {
@@ -39,12 +39,11 @@ class StorageClassManager(BaseManager):
             "reclaimPolicy": "Delete",
             "volumeBindingMode": "Immediate"
         }
+        return merge_dict(options, data)
 
-        return data
-
-    def create(self, name, replicas=3, *, raw=False):
+    def create(self, name, replicas=3, *, raw=False, **options):
         path = self.CREATE_PATH_fmt.format(SC_API=self.API_VERSION)
-        data = self.create_data(name, replicas)
+        data = self.create_data(name, replicas, **options)
         return self._create(path, json=data, raw=raw)
 
     def set_default(self, name, *, raw=False):
