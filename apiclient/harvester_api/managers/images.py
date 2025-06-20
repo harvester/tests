@@ -77,3 +77,57 @@ class ImageManager(BaseManager):
 
     def download(self, name, namespace=DEFAULT_NAMESPACE):
         return self._get(self.DOWNLOAD_fmt.format(uid=name, ns=namespace), raw=True)
+
+    def create_by_encrypt(
+        self,
+        source_image_name,
+        new_image_name,
+        storage_class_name,
+        namespace=DEFAULT_NAMESPACE,
+    ):
+        data = self.create_data(
+            name=new_image_name,
+            url=None,
+            desc="",
+            stype="clone",
+            namespace=namespace,
+            image_checksum=None,
+            display_name=new_image_name,
+            storageclass=storage_class_name
+        )
+
+        # Add securityParameters
+        data["spec"]["securityParameters"] = {
+            "cryptoOperation": "encrypt",
+            "sourceImageName": source_image_name,
+            "sourceImageNamespace": namespace,
+        }
+
+        return self.create("", namespace=namespace, json=data)
+
+    def create_by_decrypt(
+        self,
+        source_image_name,
+        new_image_name,
+        storage_class_name,
+        namespace=DEFAULT_NAMESPACE,
+    ):
+        data = self.create_data(
+            name=new_image_name,
+            url=None,
+            desc="",
+            stype="clone",
+            namespace=namespace,
+            image_checksum=None,
+            display_name=new_image_name,
+            storageclass=storage_class_name
+        )
+
+        # Add securityParameters
+        data["spec"]["securityParameters"] = {
+            "cryptoOperation": "decrypt",
+            "sourceImageName": source_image_name,
+            "sourceImageNamespace": namespace,
+        }
+
+        return self.create("", namespace=namespace, json=data)
