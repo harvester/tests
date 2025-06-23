@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>harvester_e2e_tests.integrations.test_2_security_images API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_2_security_images</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.created_invalid_secret"><code class="name flex">
+<span>def <span class="ident">created_invalid_secret</span></span>(<span>api_client, invalid_encryption_secret_data, unique_name)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture
+def created_invalid_secret(
+    api_client, invalid_encryption_secret_data, unique_name
+):
+    &#34;&#34;&#34;
+    Create an invalid encryption secret, yield the name, and cleanup after test.
+    &#34;&#34;&#34;
+    namespace = &#34;default&#34;
+    invalid_secret_name = f&#34;invalid-encrypted-sc-{unique_name}&#34;
+    code, data = api_client.secrets.create(
+        name=invalid_secret_name,
+        data=invalid_encryption_secret_data,
+        namespace=namespace,
+    )
+    assert code == 201, f&#34;Failed to create invalid secret: {code}, {data}&#34;
+
+    yield invalid_secret_name
+
+    # Teardown: delete secret if it was created
+    code, data = api_client.secrets.delete(invalid_secret_name, namespace=namespace)
+    assert code == 200, f&#34;Failed to delete invalid secret: {code}, {data}&#34;</code></pre>
+</details>
+<div class="desc"><p>Create an invalid encryption secret, yield the name, and cleanup after test.</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.encrypted_backing_resources"><code class="name flex">
+<span>def <span class="ident">encrypted_backing_resources</span></span>(<span>api_client, encryption_secret_data, unique_name, image_checker)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def encrypted_backing_resources(
+    api_client, encryption_secret_data, unique_name, image_checker
+):
+    &#34;&#34;&#34;
+    Fixture to create and yield all resources for TestEncryptedBackingImage,
+    and clean them up after tests.
+    &#34;&#34;&#34;
+    namespace = &#34;default&#34;
+    secret_name = f&#34;my-secret-{unique_name}&#34;
+    sc_name = f&#34;my-encrypted-sc-{unique_name}&#34;
+    encrypted_image_name = f&#34;encrypted-image-{unique_name}&#34;
+    decrypted_image_name = f&#34;decrypted-image-{unique_name}&#34;
+
+    # Create secret
+    code, data = api_client.secrets.create(
+        name=secret_name,
+        data=encryption_secret_data,
+        namespace=namespace,
+    )
+    assert code == 201, (code, data)
+
+    # Create storage class
+    sc_parameters = {
+        &#34;parameters&#34;: {
+            &#34;csi.storage.k8s.io/node-publish-secret-name&#34;: secret_name,
+            &#34;csi.storage.k8s.io/node-publish-secret-namespace&#34;: namespace,
+            &#34;csi.storage.k8s.io/node-stage-secret-name&#34;: secret_name,
+            &#34;csi.storage.k8s.io/node-stage-secret-namespace&#34;: namespace,
+            &#34;csi.storage.k8s.io/provisioner-secret-name&#34;: secret_name,
+            &#34;csi.storage.k8s.io/provisioner-secret-namespace&#34;: namespace,
+            &#34;encrypted&#34;: &#34;true&#34;,
+            &#34;migratable&#34;: &#34;true&#34;,
+            &#34;numberOfReplicas&#34;: &#34;3&#34;,
+            &#34;staleReplicaTimeout&#34;: &#34;30&#34;,
+        }
+    }
+    code, sc = api_client.scs.create(sc_name, **sc_parameters)
+    assert code == 201, f&#34;Failed to create storage class: {code}, {sc}&#34;
+
+    resources = {
+        &#34;namespace&#34;: namespace,
+        &#34;secret_name&#34;: secret_name,
+        &#34;sc_name&#34;: sc_name,
+        &#34;encrypted_image_name&#34;: encrypted_image_name,
+        &#34;decrypted_image_name&#34;: decrypted_image_name,
+    }
+
+    yield resources
+
+    # Cleanup: delete images, storage class, secret
+    for image_name in [decrypted_image_name, encrypted_image_name]:
+        code, data = api_client.images.delete(image_name, namespace=namespace)
+        if code == 200:
+            image_checker.wait_deleted(image_name)
+
+    code, data = api_client.scs.delete(sc_name)
+    assert code == 200, f&#34;Failed to delete storage class: {code}, {data}&#34;
+
+    code, data = api_client.secrets.delete(secret_name, namespace=namespace)
+    assert code == 200, (f&#34;Failed to delete secret: {code}, {data}&#34;)</code></pre>
+</details>
+<div class="desc"><p>Fixture to create and yield all resources for TestEncryptedBackingImage,
+and clean them up after tests.</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.encryption_secret_data"><code class="name flex">
+<span>def <span class="ident">encryption_secret_data</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;, params=SECRET_COMBINATIONS)
+def encryption_secret_data(request):
+    return request.param</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.invalid_encryption_secret_data"><code class="name flex">
+<span>def <span class="ident">invalid_encryption_secret_data</span></span>(<span>request)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(params=INVALID_SECRET_COMBINATIONS)
+def invalid_encryption_secret_data(request):
+    return request.param</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.shared_image"><code class="name flex">
+<span>def <span class="ident">shared_image</span></span>(<span>api_client, image_ubuntu, unique_name, image_checker)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def shared_image(api_client, image_ubuntu, unique_name, image_checker):
+    source_image_name = f&#34;shared-ubuntu-{unique_name}&#34;
+    image_info = image_ubuntu
+    code, _ = api_client.images.create_by_url(
+        source_image_name, image_info.url, image_info.image_checksum
+    )
+    assert code == 201, f&#34;Failed to create image: {code}&#34;
+
+    image_checker.wait_downloaded(source_image_name)
+
+    yield source_image_name
+
+    # Cleanup: delete the image after tests
+    code, _ = api_client.images.delete(source_image_name)
+    if code == 200:
+        image_checker.wait_deleted(source_image_name)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage"><code class="flex name class">
+<span>class <span class="ident">TestEncryptedBackingImage</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.skip_version_if(&#34;&lt; v1.4.0&#34;, reason=&#34;New feature after v1.4.0&#34;)
+class TestEncryptedBackingImage:
+    &#34;&#34;&#34;
+    Integration tests for encrypted and decrypted backing images.
+    At least one passed and one failed case are included.
+    &#34;&#34;&#34;
+
+    @pytest.mark.p0
+    def test_create_encrypted_image_success(
+        self,
+        encrypted_backing_resources,
+        api_client,
+        wait_timeout,
+        shared_image,
+        image_checker,
+    ):
+        &#34;&#34;&#34;
+        Test creating an encrypted image (should succeed).
+        &#34;&#34;&#34;
+        source_image_name = shared_image
+        encrypted_image_name = encrypted_backing_resources[&#34;encrypted_image_name&#34;]
+        namespace = encrypted_backing_resources[&#34;namespace&#34;]
+        storage_class_name = encrypted_backing_resources[&#34;sc_name&#34;]
+
+        code, image = api_client.images.create_by_encrypt(
+            source_image_name=source_image_name,
+            new_image_name=encrypted_image_name,
+            storage_class_name=storage_class_name,
+            namespace=namespace,
+        )
+        assert code == 201, f&#34;Failed to create encrypted image: {code}, {image}&#34;
+
+        code, image = api_client.images.get(encrypted_image_name)
+        assert code == 200, f&#34;Encrypted image not found: {code}, {image}&#34;
+        assert image[&#34;metadata&#34;][&#34;name&#34;] == encrypted_image_name
+        assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;cryptoOperation&#34;] == &#34;encrypt&#34;
+        assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;sourceImageName&#34;] == source_image_name
+        assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;sourceImageNamespace&#34;] == namespace
+        assert (
+            image[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/storageClassName&#34;]
+            == storage_class_name
+        )
+        image_checker.wait_downloaded(encrypted_image_name)
+
+    @pytest.mark.p0
+    def test_create_encrypted_image_fail(
+        self,
+        api_client,
+        shared_image,
+        encrypted_backing_resources,
+    ):
+        &#34;&#34;&#34;
+        Test creating an encrypted image with invalid storage class (should fail).
+        &#34;&#34;&#34;
+        source_image_name = shared_image
+        encrypted_image_name = &#34;fail-encrypted-image&#34;
+        namespace = &#34;default&#34;
+        storage_class_name = &#34;non-existent-sc&#34;
+
+        code, image = api_client.images.create_by_encrypt(
+            source_image_name=source_image_name,
+            new_image_name=encrypted_image_name,
+            storage_class_name=storage_class_name,
+            namespace=namespace,
+        )
+        assert code != 201, f&#34;Expected failure, but got code {code} with data: {image}&#34;
+
+    @pytest.mark.p0
+    def test_create_decrypted_image_success(
+            self,
+            encrypted_backing_resources,
+            api_client,
+            wait_timeout,
+            image_checker
+    ):
+
+        &#34;&#34;&#34;
+        Test creating a decrypted image (should succeed).
+        &#34;&#34;&#34;
+        encrypted_image_name = encrypted_backing_resources[&#34;encrypted_image_name&#34;]
+        decrypted_image_name = encrypted_backing_resources[&#34;decrypted_image_name&#34;]
+        namespace = encrypted_backing_resources[&#34;namespace&#34;]
+
+        code, image = api_client.images.create_by_decrypt(
+            source_image_name=encrypted_image_name,
+            new_image_name=decrypted_image_name,
+            storage_class_name=&#34;&#34;,  # Decrypted images do not need a encryption storage class
+            namespace=namespace,
+        )
+        assert code == 201, f&#34;Failed to create decrypted image: {code}, {image}&#34;
+
+        code, image = api_client.images.get(decrypted_image_name)
+        assert code == 200, f&#34;Decrypted image not found: {code}, {image}&#34;
+        assert image[&#34;metadata&#34;][&#34;name&#34;] == decrypted_image_name
+        assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;cryptoOperation&#34;] == &#34;decrypt&#34;
+        assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;sourceImageName&#34;] == encrypted_image_name
+        assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;sourceImageNamespace&#34;] == namespace
+        image_checker.wait_downloaded(encrypted_image_name)
+
+    @pytest.mark.p0
+    def test_create_decrypted_image_fail(self, api_client, encrypted_backing_resources):
+        &#34;&#34;&#34;
+        Test creating a decrypted image with non-existent encrypted image (should fail).
+        &#34;&#34;&#34;
+        encrypted_image_name = &#34;non-existent-encrypted-image&#34;
+        decrypted_image_name = &#34;fail-decrypted-image&#34;
+        namespace = &#34;default&#34;
+
+        code, image = api_client.images.create_by_decrypt(
+            source_image_name=encrypted_image_name,
+            new_image_name=decrypted_image_name,
+            storage_class_name=&#34;&#34;,
+            namespace=namespace,
+        )
+
+        assert code != 201, f&#34;Expected failure, but got code {code} with data: {image}&#34;</code></pre>
+</details>
+<div class="desc"><p>Integration tests for encrypted and decrypted backing images.
+At least one passed and one failed case are included.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_decrypted_image_fail"><code class="name flex">
+<span>def <span class="ident">test_create_decrypted_image_fail</span></span>(<span>self, api_client, encrypted_backing_resources)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+def test_create_decrypted_image_fail(self, api_client, encrypted_backing_resources):
+    &#34;&#34;&#34;
+    Test creating a decrypted image with non-existent encrypted image (should fail).
+    &#34;&#34;&#34;
+    encrypted_image_name = &#34;non-existent-encrypted-image&#34;
+    decrypted_image_name = &#34;fail-decrypted-image&#34;
+    namespace = &#34;default&#34;
+
+    code, image = api_client.images.create_by_decrypt(
+        source_image_name=encrypted_image_name,
+        new_image_name=decrypted_image_name,
+        storage_class_name=&#34;&#34;,
+        namespace=namespace,
+    )
+
+    assert code != 201, f&#34;Expected failure, but got code {code} with data: {image}&#34;</code></pre>
+</details>
+<div class="desc"><p>Test creating a decrypted image with non-existent encrypted image (should fail).</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_decrypted_image_success"><code class="name flex">
+<span>def <span class="ident">test_create_decrypted_image_success</span></span>(<span>self, encrypted_backing_resources, api_client, wait_timeout, image_checker)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+def test_create_decrypted_image_success(
+        self,
+        encrypted_backing_resources,
+        api_client,
+        wait_timeout,
+        image_checker
+):
+
+    &#34;&#34;&#34;
+    Test creating a decrypted image (should succeed).
+    &#34;&#34;&#34;
+    encrypted_image_name = encrypted_backing_resources[&#34;encrypted_image_name&#34;]
+    decrypted_image_name = encrypted_backing_resources[&#34;decrypted_image_name&#34;]
+    namespace = encrypted_backing_resources[&#34;namespace&#34;]
+
+    code, image = api_client.images.create_by_decrypt(
+        source_image_name=encrypted_image_name,
+        new_image_name=decrypted_image_name,
+        storage_class_name=&#34;&#34;,  # Decrypted images do not need a encryption storage class
+        namespace=namespace,
+    )
+    assert code == 201, f&#34;Failed to create decrypted image: {code}, {image}&#34;
+
+    code, image = api_client.images.get(decrypted_image_name)
+    assert code == 200, f&#34;Decrypted image not found: {code}, {image}&#34;
+    assert image[&#34;metadata&#34;][&#34;name&#34;] == decrypted_image_name
+    assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;cryptoOperation&#34;] == &#34;decrypt&#34;
+    assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;sourceImageName&#34;] == encrypted_image_name
+    assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;sourceImageNamespace&#34;] == namespace
+    image_checker.wait_downloaded(encrypted_image_name)</code></pre>
+</details>
+<div class="desc"><p>Test creating a decrypted image (should succeed).</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_encrypted_image_fail"><code class="name flex">
+<span>def <span class="ident">test_create_encrypted_image_fail</span></span>(<span>self, api_client, shared_image, encrypted_backing_resources)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+def test_create_encrypted_image_fail(
+    self,
+    api_client,
+    shared_image,
+    encrypted_backing_resources,
+):
+    &#34;&#34;&#34;
+    Test creating an encrypted image with invalid storage class (should fail).
+    &#34;&#34;&#34;
+    source_image_name = shared_image
+    encrypted_image_name = &#34;fail-encrypted-image&#34;
+    namespace = &#34;default&#34;
+    storage_class_name = &#34;non-existent-sc&#34;
+
+    code, image = api_client.images.create_by_encrypt(
+        source_image_name=source_image_name,
+        new_image_name=encrypted_image_name,
+        storage_class_name=storage_class_name,
+        namespace=namespace,
+    )
+    assert code != 201, f&#34;Expected failure, but got code {code} with data: {image}&#34;</code></pre>
+</details>
+<div class="desc"><p>Test creating an encrypted image with invalid storage class (should fail).</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_encrypted_image_success"><code class="name flex">
+<span>def <span class="ident">test_create_encrypted_image_success</span></span>(<span>self,<br>encrypted_backing_resources,<br>api_client,<br>wait_timeout,<br>shared_image,<br>image_checker)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+def test_create_encrypted_image_success(
+    self,
+    encrypted_backing_resources,
+    api_client,
+    wait_timeout,
+    shared_image,
+    image_checker,
+):
+    &#34;&#34;&#34;
+    Test creating an encrypted image (should succeed).
+    &#34;&#34;&#34;
+    source_image_name = shared_image
+    encrypted_image_name = encrypted_backing_resources[&#34;encrypted_image_name&#34;]
+    namespace = encrypted_backing_resources[&#34;namespace&#34;]
+    storage_class_name = encrypted_backing_resources[&#34;sc_name&#34;]
+
+    code, image = api_client.images.create_by_encrypt(
+        source_image_name=source_image_name,
+        new_image_name=encrypted_image_name,
+        storage_class_name=storage_class_name,
+        namespace=namespace,
+    )
+    assert code == 201, f&#34;Failed to create encrypted image: {code}, {image}&#34;
+
+    code, image = api_client.images.get(encrypted_image_name)
+    assert code == 200, f&#34;Encrypted image not found: {code}, {image}&#34;
+    assert image[&#34;metadata&#34;][&#34;name&#34;] == encrypted_image_name
+    assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;cryptoOperation&#34;] == &#34;encrypt&#34;
+    assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;sourceImageName&#34;] == source_image_name
+    assert image[&#34;spec&#34;][&#34;securityParameters&#34;][&#34;sourceImageNamespace&#34;] == namespace
+    assert (
+        image[&#34;metadata&#34;][&#34;annotations&#34;][&#34;harvesterhci.io/storageClassName&#34;]
+        == storage_class_name
+    )
+    image_checker.wait_downloaded(encrypted_image_name)</code></pre>
+</details>
+<div class="desc"><p>Test creating an encrypted image (should succeed).</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret"><code class="flex name class">
+<span>class <span class="ident">TestInvalidEncryptionSecret</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.skip_version_if(&#34;&lt; v1.4.0&#34;, reason=&#34;New feature after v1.4.0&#34;)
+class TestInvalidEncryptionSecret:
+    &#34;&#34;&#34;
+    Test creating invalid encryption secrets and verify error handling.
+    &#34;&#34;&#34;
+
+    @pytest.mark.p0
+    def test_create_invalid_encryption_secret(self, api_client, created_invalid_secret):
+        namespace = &#34;default&#34;
+        secret_name = created_invalid_secret
+        storage_class_name = secret_name
+        sc_parameters = {
+            &#34;parameters&#34;: {
+                &#34;csi.storage.k8s.io/node-publish-secret-name&#34;: secret_name,
+                &#34;csi.storage.k8s.io/node-publish-secret-namespace&#34;: namespace,
+                &#34;csi.storage.k8s.io/node-stage-secret-name&#34;: secret_name,
+                &#34;csi.storage.k8s.io/node-stage-secret-namespace&#34;: namespace,
+                &#34;csi.storage.k8s.io/provisioner-secret-name&#34;: secret_name,
+                &#34;csi.storage.k8s.io/provisioner-secret-namespace&#34;: namespace,
+                &#34;encrypted&#34;: &#34;true&#34;,
+                &#34;migratable&#34;: &#34;true&#34;,
+                &#34;numberOfReplicas&#34;: &#34;3&#34;,
+                &#34;staleReplicaTimeout&#34;: &#34;30&#34;,
+            }
+        }
+        code, data = api_client.scs.create(storage_class_name, **sc_parameters)
+        assert code == 422, (
+            f&#34;Storage class creation should fail for invalid secret: {code}, {data}&#34;
+        )
+        assert (
+            isinstance(data, dict)
+            and &#34;message&#34; in data
+            and &#34;invalid field&#34; in data[&#34;message&#34;]
+        ), f&#34;Error message should mention &#39;invalid field&#39;: {data}&#34;</code></pre>
+</details>
+<div class="desc"><p>Test creating invalid encryption secrets and verify error handling.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret.test_create_invalid_encryption_secret"><code class="name flex">
+<span>def <span class="ident">test_create_invalid_encryption_secret</span></span>(<span>self, api_client, created_invalid_secret)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+def test_create_invalid_encryption_secret(self, api_client, created_invalid_secret):
+    namespace = &#34;default&#34;
+    secret_name = created_invalid_secret
+    storage_class_name = secret_name
+    sc_parameters = {
+        &#34;parameters&#34;: {
+            &#34;csi.storage.k8s.io/node-publish-secret-name&#34;: secret_name,
+            &#34;csi.storage.k8s.io/node-publish-secret-namespace&#34;: namespace,
+            &#34;csi.storage.k8s.io/node-stage-secret-name&#34;: secret_name,
+            &#34;csi.storage.k8s.io/node-stage-secret-namespace&#34;: namespace,
+            &#34;csi.storage.k8s.io/provisioner-secret-name&#34;: secret_name,
+            &#34;csi.storage.k8s.io/provisioner-secret-namespace&#34;: namespace,
+            &#34;encrypted&#34;: &#34;true&#34;,
+            &#34;migratable&#34;: &#34;true&#34;,
+            &#34;numberOfReplicas&#34;: &#34;3&#34;,
+            &#34;staleReplicaTimeout&#34;: &#34;30&#34;,
+        }
+    }
+    code, data = api_client.scs.create(storage_class_name, **sc_parameters)
+    assert code == 422, (
+        f&#34;Storage class creation should fail for invalid secret: {code}, {data}&#34;
+    )
+    assert (
+        isinstance(data, dict)
+        and &#34;message&#34; in data
+        and &#34;invalid field&#34; in data[&#34;message&#34;]
+    ), f&#34;Error message should mention &#39;invalid field&#39;: {data}&#34;</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.created_invalid_secret" href="#harvester_e2e_tests.integrations.test_2_security_images.created_invalid_secret">created_invalid_secret</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.encrypted_backing_resources" href="#harvester_e2e_tests.integrations.test_2_security_images.encrypted_backing_resources">encrypted_backing_resources</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.encryption_secret_data" href="#harvester_e2e_tests.integrations.test_2_security_images.encryption_secret_data">encryption_secret_data</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.invalid_encryption_secret_data" href="#harvester_e2e_tests.integrations.test_2_security_images.invalid_encryption_secret_data">invalid_encryption_secret_data</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.shared_image" href="#harvester_e2e_tests.integrations.test_2_security_images.shared_image">shared_image</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage" href="#harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage">TestEncryptedBackingImage</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.pytestmark" href="#harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_decrypted_image_fail" href="#harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_decrypted_image_fail">test_create_decrypted_image_fail</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_decrypted_image_success" href="#harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_decrypted_image_success">test_create_decrypted_image_success</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_encrypted_image_fail" href="#harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_encrypted_image_fail">test_create_encrypted_image_fail</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_encrypted_image_success" href="#harvester_e2e_tests.integrations.test_2_security_images.TestEncryptedBackingImage.test_create_encrypted_image_success">test_create_encrypted_image_success</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret" href="#harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret">TestInvalidEncryptionSecret</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret.pytestmark" href="#harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret.test_create_invalid_encryption_secret" href="#harvester_e2e_tests.integrations.test_2_security_images.TestInvalidEncryptionSecret.test_create_invalid_encryption_secret">test_create_invalid_encryption_secret</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>
