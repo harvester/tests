@@ -562,18 +562,22 @@ class TestAnyNodesUpgrade:
                         f&#34;API Status({code}): {data}&#34;
                     )
 
-        code, pods = api_client.get_pods(namespace=logging_addon.namespace)
-        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, pods = api_client.get_pods(namespace=logging_addon.namespace)
+            assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
 
-        fails = []
-        for pod in pods[&#39;data&#39;]:
-            phase = pod[&#34;status&#34;][&#34;phase&#34;]
-            if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
-                fails.append((pod[&#39;metadata&#39;][&#39;name&#39;], phase))
+            fails = []
+            for pod in pods[&#39;data&#39;]:
+                name, phase = pod[&#39;metadata&#39;][&#39;name&#39;], pod[&#34;status&#34;][&#34;phase&#34;]
+                if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
+                    fails.append((name, phase))
+            if not fails:
+                break
+            sleep(sleep_timeout)
         else:
-            assert not fails, (
-                &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails)
-            )
+            raise AssertionError(
+                &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails))
 
     @pytest.mark.dependency(name=&#34;preq_setup_vmnetwork&#34;)
     def test_preq_setup_vmnetwork(self, vm_network):
@@ -1288,18 +1292,22 @@ def test_preq_logging_pods(self, api_client, logging_addon, wait_timeout, sleep_
                     f&#34;API Status({code}): {data}&#34;
                 )
 
-    code, pods = api_client.get_pods(namespace=logging_addon.namespace)
-    assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, pods = api_client.get_pods(namespace=logging_addon.namespace)
+        assert code == 200 and len(pods[&#39;data&#39;]) &gt; 0, &#34;No logging pods found&#34;
 
-    fails = []
-    for pod in pods[&#39;data&#39;]:
-        phase = pod[&#34;status&#34;][&#34;phase&#34;]
-        if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
-            fails.append((pod[&#39;metadata&#39;][&#39;name&#39;], phase))
+        fails = []
+        for pod in pods[&#39;data&#39;]:
+            name, phase = pod[&#39;metadata&#39;][&#39;name&#39;], pod[&#34;status&#34;][&#34;phase&#34;]
+            if phase not in (&#34;Running&#34;, &#34;Succeeded&#34;):
+                fails.append((name, phase))
+        if not fails:
+            break
+        sleep(sleep_timeout)
     else:
-        assert not fails, (
-            &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails)
-        )</code></pre>
+        raise AssertionError(
+            &#34;\n&#34;.join(f&#34;Pod({n})&#39;s phase({p}) is not expected.&#34; for n, p in fails))</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
