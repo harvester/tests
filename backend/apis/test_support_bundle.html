@@ -136,6 +136,78 @@ class TestSupportBundle:
         finally:
             support_bundle_state.fio.seek(0)
 
+    @pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+    def test_secret_file_exists(self, support_bundle_state):
+        &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/603 &#39;&#39;&#39;
+        pattern = r&#34;^.*/yamls/namespaced/fleet-local/v1/secrets\.yaml&#34;
+        for fname in support_bundle_state.files:
+            if re.match(pattern, fname):
+                break
+        else:
+            raise AssertionError(&#34;secret file is not available in namespaced/fleet-local&#34;)
+
+        with ZipFile(support_bundle_state.fio, &#39;r&#39;) as zf:
+            ctx = zf.read(fname)
+        support_bundle_state.fio.seek(0)
+
+        secret = yaml.safe_load(ctx)
+        assert secret.get(&#39;items&#39;)
+
+        fails = []
+        for it in secret[&#39;items&#39;]:
+            if it.get(&#39;type&#39;) != &#34;rke.cattle.io/machine-plan&#34; or not it.get(&#39;data&#39;):
+                fails.append(it)
+
+        assert not fails, (
+            f&#34;Got {len(fails)} incorrect item(s) from secret file,&#34;
+            &#34; expected type should be &#39;rke.cattle.io/machine-plan&#39;&#34;
+            &#34; and `data` field should not be empty but got:\n&#34;
+            f&#34;{fails}&#34;
+        )
+
+    @pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+    def test_hardware_info_exists(self, support_bundle_state):
+        &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/569 &#39;&#39;&#39;
+        nodes, pattern = [], r&#34;^.*/nodes/.*.zip&#34;
+
+        for fname in support_bundle_state.files:
+            if re.match(pattern, fname):
+                nodes.append(fname)
+        assert nodes, &#34;Host information is not generated&#34;
+
+        with ZipFile(support_bundle_state.fio, &#39;r&#39;) as zf:
+            b_nodes = [zf.read(n) for n in nodes]
+        support_bundle_state.fio.seek(0)
+
+        fails, txz_pattern = [], r&#34;^.*/scc_supportconfig.*.txz&#34;
+        for npath, node_byte in zip(nodes, b_nodes):
+            node_name = npath.rsplit(&#34;/&#34;, 1)[-1]
+            with ZipFile(BytesIO(node_byte), &#39;r&#39;) as zf:
+                try:
+                    txz_file = next(i for i in zf.namelist() if re.match(txz_pattern, i))
+                    txz_byte = zf.read(txz_file)
+                except StopIteration:
+                    fails.append(f&#34;`.txz` file is not available in {node_name}&#34;)
+                    continue
+                try:
+                    with tarfile.open(mode=&#34;r:xz&#34;, fileobj=BytesIO(txz_byte)) as xz:
+                        txt_m = next(m for m in xz.getmembers() if m.name.endswith(&#34;hardware.txt&#34;))
+                        hardware_ctx = xz.extractfile(txt_m).read().decode()
+                except StopIteration:
+                    fails.append(f&#34;`hardware.txt` file is not available in {node_name}&#34;)
+                    continue
+
+            if &#34;lsusb&#34; not in hardware_ctx or &#34;hwinfo&#34; not in hardware_ctx:
+                fails.append(
+                    f&#34;Node {node_name}&#39;s Hardware info not contains lsusb/hwinfo command ouput\n&#34;
+                    f&#34;got: {hardware_ctx}&#34;
+                )
+
+        assert not fails, (
+            f&#34;Got {len(fails)} incorrect item(s):\n&#34;
+            &#34;\n&#34;.join(fails)
+        )
+
     @pytest.mark.dependency(depends=[&#34;get support bundle&#34;])
     def test_delete(self, api_client, support_bundle_state):
         code, data = api_client.supportbundle.delete(support_bundle_state.uid)
@@ -242,6 +314,59 @@ def test_get(self, api_client, support_bundle_state):
 </details>
 <div class="desc"></div>
 </dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_hardware_info_exists"><code class="name flex">
+<span>def <span class="ident">test_hardware_info_exists</span></span>(<span>self, support_bundle_state)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+def test_hardware_info_exists(self, support_bundle_state):
+    &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/569 &#39;&#39;&#39;
+    nodes, pattern = [], r&#34;^.*/nodes/.*.zip&#34;
+
+    for fname in support_bundle_state.files:
+        if re.match(pattern, fname):
+            nodes.append(fname)
+    assert nodes, &#34;Host information is not generated&#34;
+
+    with ZipFile(support_bundle_state.fio, &#39;r&#39;) as zf:
+        b_nodes = [zf.read(n) for n in nodes]
+    support_bundle_state.fio.seek(0)
+
+    fails, txz_pattern = [], r&#34;^.*/scc_supportconfig.*.txz&#34;
+    for npath, node_byte in zip(nodes, b_nodes):
+        node_name = npath.rsplit(&#34;/&#34;, 1)[-1]
+        with ZipFile(BytesIO(node_byte), &#39;r&#39;) as zf:
+            try:
+                txz_file = next(i for i in zf.namelist() if re.match(txz_pattern, i))
+                txz_byte = zf.read(txz_file)
+            except StopIteration:
+                fails.append(f&#34;`.txz` file is not available in {node_name}&#34;)
+                continue
+            try:
+                with tarfile.open(mode=&#34;r:xz&#34;, fileobj=BytesIO(txz_byte)) as xz:
+                    txt_m = next(m for m in xz.getmembers() if m.name.endswith(&#34;hardware.txt&#34;))
+                    hardware_ctx = xz.extractfile(txt_m).read().decode()
+            except StopIteration:
+                fails.append(f&#34;`hardware.txt` file is not available in {node_name}&#34;)
+                continue
+
+        if &#34;lsusb&#34; not in hardware_ctx or &#34;hwinfo&#34; not in hardware_ctx:
+            fails.append(
+                f&#34;Node {node_name}&#39;s Hardware info not contains lsusb/hwinfo command ouput\n&#34;
+                f&#34;got: {hardware_ctx}&#34;
+            )
+
+    assert not fails, (
+        f&#34;Got {len(fails)} incorrect item(s):\n&#34;
+        &#34;\n&#34;.join(fails)
+    )</code></pre>
+</details>
+<div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/569">https://github.com/harvester/tests/issues/569</a></p></div>
+</dd>
 <dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists"><code class="name flex">
 <span>def <span class="ident">test_logfile_exists</span></span>(<span>self, support_bundle_state)</span>
 </code></dt>
@@ -297,6 +422,45 @@ def test_plan_secrets_exists(self, support_bundle_state):
         support_bundle_state.fio.seek(0)</code></pre>
 </details>
 <div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_secret_file_exists"><code class="name flex">
+<span>def <span class="ident">test_secret_file_exists</span></span>(<span>self, support_bundle_state)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+def test_secret_file_exists(self, support_bundle_state):
+    &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/603 &#39;&#39;&#39;
+    pattern = r&#34;^.*/yamls/namespaced/fleet-local/v1/secrets\.yaml&#34;
+    for fname in support_bundle_state.files:
+        if re.match(pattern, fname):
+            break
+    else:
+        raise AssertionError(&#34;secret file is not available in namespaced/fleet-local&#34;)
+
+    with ZipFile(support_bundle_state.fio, &#39;r&#39;) as zf:
+        ctx = zf.read(fname)
+    support_bundle_state.fio.seek(0)
+
+    secret = yaml.safe_load(ctx)
+    assert secret.get(&#39;items&#39;)
+
+    fails = []
+    for it in secret[&#39;items&#39;]:
+        if it.get(&#39;type&#39;) != &#34;rke.cattle.io/machine-plan&#34; or not it.get(&#39;data&#39;):
+            fails.append(it)
+
+    assert not fails, (
+        f&#34;Got {len(fails)} incorrect item(s) from secret file,&#34;
+        &#34; expected type should be &#39;rke.cattle.io/machine-plan&#39;&#34;
+        &#34; and `data` field should not be empty but got:\n&#34;
+        f&#34;{fails}&#34;
+    )</code></pre>
+</details>
+<div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/603">https://github.com/harvester/tests/issues/603</a></p></div>
 </dd>
 </dl>
 </dd>
@@ -392,8 +556,10 @@ class TestSupportBundleNegative:
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_delete" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_delete">test_delete</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_download" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_download">test_download</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_get" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_get">test_get</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_hardware_info_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_hardware_info_exists">test_hardware_info_exists</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists">test_logfile_exists</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_plan_secrets_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_plan_secrets_exists">test_plan_secrets_exists</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_secret_file_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_secret_file_exists">test_secret_file_exists</a></code></li>
 </ul>
 </li>
 <li>
