@@ -6,10 +6,7 @@ class SupportBundleManager(BaseManager):
                 "/supportbundles/{uid}")
     DL_fmt = "/v1/harvester/supportbundles/{uid}/download"
 
-    def create_data(
-        self, name, description, issue_url,
-        timeout, node_timeout, expiration, extra_collection_namespaces,
-    ):
+    def create_data(self, name, description, issue_url, **specs):
         data = {
             "apiVersion": "{API_VERSION}",
             "kind": "SupportBundle",
@@ -23,14 +20,11 @@ class SupportBundleManager(BaseManager):
             }
         }
 
-        if timeout is not None:
-            data['spec']['timeout'] = timeout
-        if node_timeout is not None:
-            data['spec']['nodeTimeout'] = node_timeout
-        if expiration is not None:
-            data['spec']['expiration'] = expiration
-        if extra_collection_namespaces is not None:
-            data['spec']['extraCollectionNamespaces'] = extra_collection_namespaces
+        available_specs = ("timeout", "nodeTimeout", "expiration", "extraCollectionNamespaces")
+        data['spec'].update({
+            k: specs.get(k) for k in available_specs
+            if k in specs and specs.get(k) is not None
+        })
 
         return self._inject_data(data)
 
@@ -42,9 +36,11 @@ class SupportBundleManager(BaseManager):
                timeout=None, node_timeout=None, expiration=None,
                extra_collection_namespaces=None, *, raw=False):
         data = self.create_data(
-            name, description,
-            issue_url, timeout, node_timeout,
-            expiration, extra_collection_namespaces
+            name, description, issue_url,
+            timeout=timeout,
+            nodeTimeout=node_timeout,
+            expiration=expiration,
+            extraCollectionNamespaces=extra_collection_namespaces
         )
         path = self.PATH_fmt.format(uid="")
 
