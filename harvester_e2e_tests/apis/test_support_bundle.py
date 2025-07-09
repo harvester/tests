@@ -255,6 +255,21 @@ class TestSupportBundleInvalidExtraCollectionNamespaces:
 
         assert 400 == code, (code, data)
         assert 'namespace invalid-namespace not found' in data.get("message", ""), (code, data)
+    
+    def test_create_mixed_valid_and_invalid_extra_collection_namespaces(
+        self, api_client, unique_name, support_bundle_state
+    ):
+        """
+        1. Tries to create a support bundle with mixed valid and invalid namespaces
+        2. Checks that it gets a 400
+        """
+        code, data = api_client.supportbundle.create(
+            unique_name,
+            extra_collection_namespaces=["kube-system", "invalid-namespace"]
+        )
+
+        assert 400 == code, (code, data)
+        assert 'namespace invalid-namespace not found' in data.get("message", ""), (code, data)
 
 
 @pytest.mark.p0
@@ -278,9 +293,10 @@ class TestSupportBundleTimeout:
 
     @pytest.mark.dependency(name="process support bundle", depends=["get support bundle"])
     def test_process_timeout(self, api_client, support_bundle_state, wait_timeout):
-        wait_for_support_bundle_error(
+        code, data = wait_for_support_bundle_error(
             api_client, support_bundle_state.uid, wait_timeout
         )
+        assert 200 == code, (code, data)
 
     @pytest.mark.dependency(depends=["process support bundle"])
     def test_delete(self, api_client, support_bundle_state):
