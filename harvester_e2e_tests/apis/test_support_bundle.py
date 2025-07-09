@@ -255,7 +255,7 @@ class TestSupportBundleInvalidExtraCollectionNamespaces:
 
         assert 400 == code, (code, data)
         assert 'namespace invalid-namespace not found' in data.get("message", ""), (code, data)
-    
+
     def test_create_mixed_valid_and_invalid_extra_collection_namespaces(
         self, api_client, unique_name, support_bundle_state
     ):
