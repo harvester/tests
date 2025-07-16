@@ -383,3 +383,8 @@ class VMSpec:
 
         obj._data = data
         return obj
+
+
+class VMSpec140(VMSpec):
+    # ref: https://github.com/harvester/tests/issues/1201
+    eviction_strategy = "LiveMigrateIfPossible"
