@@ -1,4 +1,4 @@
-from harvester_api.models.virtualmachines import VMSpec
+from harvester_api.models.virtualmachines import VMSpec, VMSpec140
 from .base import DEFAULT_NAMESPACE, BaseManager
 
 
@@ -124,3 +124,18 @@ class VirtualMachineManager(BaseManager):
         json = dict(description=description, name=template_name, withData=keep_data)
         params = dict(action="createTemplate")
         return self._create(path, params=params, json=json, raw=raw)
+
+
+class VMManager122(VirtualMachineManager):
+    support_to = "v1.2.2"
+    Spec = VMSpec140
+
+
+class VMManager131(VirtualMachineManager):
+    support_to = "v1.3.1"
+    Spec = VMSpec140
+
+
+class VMManager140(VirtualMachineManager):
+    support_to = "v1.4.0"
+    Spec = VMSpec140

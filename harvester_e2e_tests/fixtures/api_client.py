@@ -43,6 +43,7 @@ def api_client(request, harvester_metadata):
     api.authenticate(username, password, verify=ssl_verify)
 
     api.session.verify = ssl_verify
+    api.load_managers(api.cluster_version)
 
     harvester_metadata['Cluster Endpoint'] = endpoint
     harvester_metadata['Cluster Version'] = api.cluster_version.raw
