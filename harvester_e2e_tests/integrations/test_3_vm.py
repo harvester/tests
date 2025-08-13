@@ -66,7 +66,7 @@ def available_node_names(api_client):
 
 @pytest.fixture(scope="class")
 def cluster_network(api_client, vlan_nic):
-    name = f"cnet-{vlan_nic}"
+    name = f"cnet-{vlan_nic.lower()}"[:12]  # ???: RFC1123 and length limits
     code, data = api_client.clusternetworks.create(name)
     assert 201 == code, (code, data)
     code, data = api_client.clusternetworks.create_config(name, name, vlan_nic)
