@@ -376,8 +376,7 @@ class TestVMSnapshot:
 
         reason = data.get("message")
 
-        wantmsg = "Delete policy with backup type snapshot"
-        " for replacing VM is not supported"
+        wantmsg = "policy with backup type snapshot for replacing VM is not supported"
 
         assert wantmsg in reason
         assert 422 == code
