@@ -55,7 +55,7 @@ el.replaceWith(d);
 <pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
 def cluster_network(api_client, vlan_nic):
     # We should change this at some point. It fails if the total cnet name is over 12 chars
-    cnet = f&#34;cnet-{vlan_nic}&#34;
+    cnet = f&#34;cnet-{vlan_nic.lower()}&#34;[:12]  # ???: RFC1123 and length limits
     code, data = api_client.clusternetworks.get(cnet)
     if code != 200:
         code, data = api_client.clusternetworks.create(cnet)

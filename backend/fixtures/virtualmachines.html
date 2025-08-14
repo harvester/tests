@@ -351,7 +351,8 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
             def cb(ctx):
                 if ctx.callee == &#39;vm.start&#39;:
                     return callback(ctx)
-                ifaces = {d[&#39;name&#39;]: d for d in ctx.data.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;, {})}
+                ifaces = {d[&#39;name&#39;]: d for d in ctx.data.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;, {})
+                          if &#39;name&#39; in d}
                 return (
                     all(ifaces.get(name, {}).get(&#39;ipAddress&#39;) for name in ifnames)
                     and callback(ctx)

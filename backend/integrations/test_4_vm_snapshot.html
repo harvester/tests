@@ -555,8 +555,7 @@ class TestVMSnapshot:
 
         reason = data.get(&#34;message&#34;)
 
-        wantmsg = &#34;Delete policy with backup type snapshot&#34;
-        &#34; for replacing VM is not supported&#34;
+        wantmsg = &#34;policy with backup type snapshot for replacing VM is not supported&#34;
 
         assert wantmsg in reason
         assert 422 == code
@@ -862,8 +861,7 @@ def test_replace_is_rejected_when_deletepolicy_is_retain(self, api_client,
 
     reason = data.get(&#34;message&#34;)
 
-    wantmsg = &#34;Delete policy with backup type snapshot&#34;
-    &#34; for replacing VM is not supported&#34;
+    wantmsg = &#34;policy with backup type snapshot for replacing VM is not supported&#34;
 
     assert wantmsg in reason
     assert 422 == code</code></pre>
