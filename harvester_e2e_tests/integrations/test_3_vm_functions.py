@@ -698,6 +698,7 @@ class TestVMResource:
         code, data = api_client.vms.get(unique_vm_name)
         vm_spec = api_client.vms.Spec.from_dict(data)
         vm_spec.cpu_cores, vm_spec.memory = 1, 2
+        sleep(1) # to prevent update too fast cause code 409 conflict: 'object has been modified'
         code, data = api_client.vms.update(unique_vm_name, vm_spec)
         assert 200 == code, (code, data)
 
