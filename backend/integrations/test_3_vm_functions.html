@@ -903,7 +903,7 @@ def unset_cpu_memory_overcommit(api_client):
 
     yield json.loads(data[&#39;value&#39;]), origin_val
 
-    spec.val = origin_val
+    spec.value = origin_val
     api_client.settings.update(&#39;overcommit-config&#39;, spec)</code></pre>
 </details>
 <div class="desc"></div>
