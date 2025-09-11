@@ -113,7 +113,7 @@ def get_image(api_client, image_name):
 @pytest.fixture(scope="class")
 def cluster_network(api_client, vlan_nic):
     # We should change this at some point. It fails if the total cnet name is over 12 chars
-    cnet = f"cnet-{vlan_nic}"
+    cnet = f"cnet-{vlan_nic.lower()}"[:12]  # ???: RFC1123 and length limits
     code, data = api_client.clusternetworks.get(cnet)
     if code != 200:
         code, data = api_client.clusternetworks.create(cnet)
