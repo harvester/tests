@@ -155,7 +155,7 @@ class TestSupportBundle:
         finally:
             support_bundle_state.fio.seek(0)
 
-    @pytest.mark.dependency(depends=["donwnload support bundle"])
+    @pytest.mark.dependency(depends=["download support bundle"])
     def test_secret_file_exists(self, support_bundle_state):
         ''' ref: https://github.com/harvester/tests/issues/603 '''
         pattern = r"^.*/yamls/namespaced/fleet-local/v1/secrets\.yaml"
@@ -184,7 +184,7 @@ class TestSupportBundle:
             f"{fails}"
         )
 
-    @pytest.mark.dependency(depends=["donwnload support bundle"])
+    @pytest.mark.dependency(depends=["download support bundle"])
     def test_hardware_info_exists(self, support_bundle_state):
         ''' ref: https://github.com/harvester/tests/issues/569 '''
         nodes, pattern = [], r"^.*/nodes/.*.zip"
