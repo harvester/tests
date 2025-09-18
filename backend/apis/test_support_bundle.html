@@ -191,7 +191,7 @@ class TestSupportBundle:
         finally:
             support_bundle_state.fio.seek(0)
 
-    @pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+    @pytest.mark.dependency(depends=[&#34;download support bundle&#34;])
     def test_secret_file_exists(self, support_bundle_state):
         &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/603 &#39;&#39;&#39;
         pattern = r&#34;^.*/yamls/namespaced/fleet-local/v1/secrets\.yaml&#34;
@@ -220,7 +220,7 @@ class TestSupportBundle:
             f&#34;{fails}&#34;
         )
 
-    @pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+    @pytest.mark.dependency(depends=[&#34;download support bundle&#34;])
     def test_hardware_info_exists(self, support_bundle_state):
         &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/569 &#39;&#39;&#39;
         nodes, pattern = [], r&#34;^.*/nodes/.*.zip&#34;
@@ -366,7 +366,7 @@ def test_get(self, api_client, support_bundle_state):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;download support bundle&#34;])
 def test_hardware_info_exists(self, support_bundle_state):
     &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/569 &#39;&#39;&#39;
     nodes, pattern = [], r&#34;^.*/nodes/.*.zip&#34;
@@ -475,7 +475,7 @@ def test_plan_secrets_exists(self, support_bundle_state):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;donwnload support bundle&#34;])
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;download support bundle&#34;])
 def test_secret_file_exists(self, support_bundle_state):
     &#39;&#39;&#39; ref: https://github.com/harvester/tests/issues/603 &#39;&#39;&#39;
     pattern = r&#34;^.*/yamls/namespaced/fleet-local/v1/secrets\.yaml&#34;
