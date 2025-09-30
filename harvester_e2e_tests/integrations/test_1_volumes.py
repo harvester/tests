@@ -1,6 +1,11 @@
 import yaml
-import pytest
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from hashlib import sha512
+
+
+import pytest
+
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.api_client',
@@ -251,6 +256,133 @@ def test_delete_volume_when_exporting(api_client, unique_name, ubuntu_image, pol
                 api_client.images.delete, export_image)
     polling_for("volume do deleted", lambda code, _: 404 == code,
                 api_client.volumes.delete, unique_name)
+
+
+@pytest.mark.p1
+@pytest.mark.negative
+@pytest.mark.volumes
+@pytest.mark.parametrize("invalid_spec", [
+    {"size": "0Gi", "error_msg": "must be greater than zero"},
+    {"size": "-5Gi", "error_msg": "must be greater than zero"},
+    {"size": "invalid_size", "error_msg": "quantities must match"},
+    {"size": "999999Ti", "error_msg": "exceeds cluster capacity"},
+])
+def test_create_volume_invalid_specifications(api_client, unique_name, invalid_spec, polling_for):
+    """
+    Negative testing for volume creation with invalid specifications
+    1. Attempt to create volume with invalid size specification
+    2. Verify appropriate error response (400 or 422)
+    3. Ensure no volume resource is created
+    4. Validate error message contains expected error information
+
+    Test cases:
+    - Zero size volumes should be rejected
+    - Negative size volumes should be rejected
+    - Invalid size format should be rejected
+    - Excessively large volumes should be rejected
+    """
+    spec = api_client.volumes.Spec(invalid_spec["size"])
+
+    code, data = api_client.volumes.create(unique_name, spec)
+
+    # Should fail with 400 (Bad Request) or 422 (Unprocessable Entity)
+    assert code in [400, 422], f"Expected error response, got {code}: {data}"
+
+    # Verify error message contains expected information
+    error_message = str(data).lower()
+    assert invalid_spec["error_msg"].lower() in error_message, \
+        f"Expected '{invalid_spec['error_msg']}' in error: {data}"
+
+    # Ensure no volume was actually created
+    code, data = api_client.volumes.get(unique_name)
+    assert 404 == code, f"Volume should not exist after failed creation: {code}, {data}"
+
+
+@pytest.mark.p2
+@pytest.mark.volumes
+@pytest.mark.parametrize("concurrent_count", [3, 5])
+def test_concurrent_volume_creation(api_client, ubuntu_image, concurrent_count, polling_for):
+    """
+    Test concurrent volume creation to validate system stability
+    1. Create multiple volumes simultaneously using ThreadPoolExecutor
+    2. Verify all volumes are created successfully
+    3. Check for race conditions or resource conflicts
+    4. Validate each volume reaches Bound state independently
+    5. Cleanup all volumes concurrently
+
+    Validates:
+    - API endpoint thread safety
+    - Storage backend concurrency handling
+    - Resource naming collision prevention
+    - Longhorn concurrent provisioning
+    """
+    from datetime import datetime
+
+    volume_names = [f"concurrent-vol-{i}-{int(datetime.now().timestamp())}"
+                    for i in range(concurrent_count)]
+    created_volumes = []
+    errors = []
+
+    def create_single_volume(vol_name):
+        try:
+            spec = api_client.volumes.Spec("5Gi")  # Smaller size for faster creation
+            code, data = api_client.volumes.create(vol_name, spec, image_id=ubuntu_image['id'])
+
+            if code == 201:
+                # Wait for volume to be bound
+                code, data = polling_for(
+                    "volume do created",
+                    lambda c, d: 200 == c and d['status']['phase'] == 'Bound',
+                    api_client.volumes.get,
+                    vol_name
+                )
+                return {"name": vol_name, "success": True, "data": data}
+            else:
+                return {"name": vol_name, "success": False,
+                        "error": f"Creation failed: {code}, {data}"}
+
+        except Exception as e:
+            return {"name": vol_name, "success": False, "error": str(e)}
+
+    # Create volumes concurrently
+    with ThreadPoolExecutor(max_workers=concurrent_count) as executor:
+        futures = [executor.submit(create_single_volume, name) for name in volume_names]
+
+        for future in as_completed(futures):
+            result = future.result()
+            if result["success"]:
+                created_volumes.append(result["name"])
+            else:
+                errors.append(result)
+
+    # Validate results
+    assert len(errors) == 0, f"Concurrent creation errors: {errors}"
+    assert len(created_volumes) == concurrent_count, f"Expected {concurrent_count}" \
+                                                     f" volumes, created {len(created_volumes)}"
+
+    # Verify all volumes are properly created and accessible
+    for vol_name in created_volumes:
+        code, data = api_client.volumes.get(vol_name)
+        assert 200 == code, f"Volume {vol_name} not accessible: {code}"
+        assert data['status']['phase'] == "Bound", f"Volume {vol_name} not bound: " \
+                                                   f"{data['status']['phase']}"
+
+    # Cleanup all volumes concurrently
+    def cleanup_single_volume(vol_name):
+        try:
+            polling_for("volume do deleted",
+                        lambda code, _: 404 == code, api_client.volumes.delete, vol_name)
+            return True
+        except Exception as e:
+            print(f"Cleanup error for {vol_name}: {e}")
+            return False
+
+    with ThreadPoolExecutor(max_workers=concurrent_count) as executor:
+        cleanup_futures = [executor.submit(cleanup_single_volume, name)
+                           for name in created_volumes]
+        cleanup_results = [future.result() for future in as_completed(cleanup_futures)]
+
+    assert all(cleanup_results), "Some volumes failed to cleanup properly"
 
 
 @pytest.mark.p0
