@@ -44,6 +44,112 @@ el.replaceWith(d);
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_concurrent_volume_creation"><code class="name flex">
+<span>def <span class="ident">test_concurrent_volume_creation</span></span>(<span>api_client, ubuntu_image, concurrent_count, polling_for)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p2
+@pytest.mark.volumes
+@pytest.mark.parametrize(&#34;concurrent_count&#34;, [3, 5])
+def test_concurrent_volume_creation(api_client, ubuntu_image, concurrent_count, polling_for):
+    &#34;&#34;&#34;
+    Test concurrent volume creation to validate system stability
+    1. Create multiple volumes simultaneously using ThreadPoolExecutor
+    2. Verify all volumes are created successfully
+    3. Check for race conditions or resource conflicts
+    4. Validate each volume reaches Bound state independently
+    5. Cleanup all volumes concurrently
+
+    Validates:
+    - API endpoint thread safety
+    - Storage backend concurrency handling
+    - Resource naming collision prevention
+    - Longhorn concurrent provisioning
+    &#34;&#34;&#34;
+    from datetime import datetime
+
+    volume_names = [f&#34;concurrent-vol-{i}-{int(datetime.now().timestamp())}&#34;
+                    for i in range(concurrent_count)]
+    created_volumes = []
+    errors = []
+
+    def create_single_volume(vol_name):
+        try:
+            spec = api_client.volumes.Spec(&#34;5Gi&#34;)  # Smaller size for faster creation
+            code, data = api_client.volumes.create(vol_name, spec, image_id=ubuntu_image[&#39;id&#39;])
+
+            if code == 201:
+                # Wait for volume to be bound
+                code, data = polling_for(
+                    &#34;volume do created&#34;,
+                    lambda c, d: 200 == c and d[&#39;status&#39;][&#39;phase&#39;] == &#39;Bound&#39;,
+                    api_client.volumes.get,
+                    vol_name
+                )
+                return {&#34;name&#34;: vol_name, &#34;success&#34;: True, &#34;data&#34;: data}
+            else:
+                return {&#34;name&#34;: vol_name, &#34;success&#34;: False,
+                        &#34;error&#34;: f&#34;Creation failed: {code}, {data}&#34;}
+
+        except Exception as e:
+            return {&#34;name&#34;: vol_name, &#34;success&#34;: False, &#34;error&#34;: str(e)}
+
+    # Create volumes concurrently
+    with ThreadPoolExecutor(max_workers=concurrent_count) as executor:
+        futures = [executor.submit(create_single_volume, name) for name in volume_names]
+
+        for future in as_completed(futures):
+            result = future.result()
+            if result[&#34;success&#34;]:
+                created_volumes.append(result[&#34;name&#34;])
+            else:
+                errors.append(result)
+
+    # Validate results
+    assert len(errors) == 0, f&#34;Concurrent creation errors: {errors}&#34;
+    assert len(created_volumes) == concurrent_count, f&#34;Expected {concurrent_count}&#34; \
+                                                     f&#34; volumes, created {len(created_volumes)}&#34;
+
+    # Verify all volumes are properly created and accessible
+    for vol_name in created_volumes:
+        code, data = api_client.volumes.get(vol_name)
+        assert 200 == code, f&#34;Volume {vol_name} not accessible: {code}&#34;
+        assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, f&#34;Volume {vol_name} not bound: &#34; \
+                                                   f&#34;{data[&#39;status&#39;][&#39;phase&#39;]}&#34;
+
+    # Cleanup all volumes concurrently
+    def cleanup_single_volume(vol_name):
+        try:
+            polling_for(&#34;volume do deleted&#34;,
+                        lambda code, _: 404 == code, api_client.volumes.delete, vol_name)
+            return True
+        except Exception as e:
+            print(f&#34;Cleanup error for {vol_name}: {e}&#34;)
+            return False
+
+    with ThreadPoolExecutor(max_workers=concurrent_count) as executor:
+        cleanup_futures = [executor.submit(cleanup_single_volume, name)
+                           for name in created_volumes]
+        cleanup_results = [future.result() for future in as_completed(cleanup_futures)]
+
+    assert all(cleanup_results), &#34;Some volumes failed to cleanup properly&#34;</code></pre>
+</details>
+<div class="desc"><p>Test concurrent volume creation to validate system stability
+1. Create multiple volumes simultaneously using ThreadPoolExecutor
+2. Verify all volumes are created successfully
+3. Check for race conditions or resource conflicts
+4. Validate each volume reaches Bound state independently
+5. Cleanup all volumes concurrently</p>
+<p>Validates:
+- API endpoint thread safety
+- Storage backend concurrency handling
+- Resource naming collision prevention
+- Longhorn concurrent provisioning</p></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume"><code class="name flex">
 <span>def <span class="ident">test_create_volume</span></span>(<span>api_client, unique_name, ubuntu_image, create_as, source_type, polling_for)</span>
 </code></dt>
@@ -190,6 +296,64 @@ def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_ch
 <li>Delete volume should reply 404 after delete
 Ref. <a href="https://github.com/harvester/tests/issues/1121">https://github.com/harvester/tests/issues/1121</a></li>
 </ol></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_invalid_specifications"><code class="name flex">
+<span>def <span class="ident">test_create_volume_invalid_specifications</span></span>(<span>api_client, unique_name, invalid_spec, polling_for)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p1
+@pytest.mark.negative
+@pytest.mark.volumes
+@pytest.mark.parametrize(&#34;invalid_spec&#34;, [
+    {&#34;size&#34;: &#34;0Gi&#34;, &#34;error_msg&#34;: &#34;must be greater than zero&#34;},
+    {&#34;size&#34;: &#34;-5Gi&#34;, &#34;error_msg&#34;: &#34;must be greater than zero&#34;},
+    {&#34;size&#34;: &#34;invalid_size&#34;, &#34;error_msg&#34;: &#34;quantities must match&#34;},
+    {&#34;size&#34;: &#34;999999Ti&#34;, &#34;error_msg&#34;: &#34;exceeds cluster capacity&#34;},
+])
+def test_create_volume_invalid_specifications(api_client, unique_name, invalid_spec, polling_for):
+    &#34;&#34;&#34;
+    Negative testing for volume creation with invalid specifications
+    1. Attempt to create volume with invalid size specification
+    2. Verify appropriate error response (400 or 422)
+    3. Ensure no volume resource is created
+    4. Validate error message contains expected error information
+
+    Test cases:
+    - Zero size volumes should be rejected
+    - Negative size volumes should be rejected
+    - Invalid size format should be rejected
+    - Excessively large volumes should be rejected
+    &#34;&#34;&#34;
+    spec = api_client.volumes.Spec(invalid_spec[&#34;size&#34;])
+
+    code, data = api_client.volumes.create(unique_name, spec)
+
+    # Should fail with 400 (Bad Request) or 422 (Unprocessable Entity)
+    assert code in [400, 422], f&#34;Expected error response, got {code}: {data}&#34;
+
+    # Verify error message contains expected information
+    error_message = str(data).lower()
+    assert invalid_spec[&#34;error_msg&#34;].lower() in error_message, \
+        f&#34;Expected &#39;{invalid_spec[&#39;error_msg&#39;]}&#39; in error: {data}&#34;
+
+    # Ensure no volume was actually created
+    code, data = api_client.volumes.get(unique_name)
+    assert 404 == code, f&#34;Volume should not exist after failed creation: {code}, {data}&#34;</code></pre>
+</details>
+<div class="desc"><p>Negative testing for volume creation with invalid specifications
+1. Attempt to create volume with invalid size specification
+2. Verify appropriate error response (400 or 422)
+3. Ensure no volume resource is created
+4. Validate error message contains expected error information</p>
+<p>Test cases:
+- Zero size volumes should be rejected
+- Negative size volumes should be rejected
+- Invalid size format should be rejected
+- Excessively large volumes should be rejected</p></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.test_delete_volume_when_exporting"><code class="name flex">
 <span>def <span class="ident">test_delete_volume_when_exporting</span></span>(<span>api_client, unique_name, ubuntu_image, polling_for)</span>
@@ -665,8 +829,10 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_concurrent_volume_creation" href="#harvester_e2e_tests.integrations.test_1_volumes.test_concurrent_volume_creation">test_concurrent_volume_creation</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume">test_create_volume</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum">test_create_volume_bad_checksum</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_invalid_specifications" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_invalid_specifications">test_create_volume_invalid_specifications</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_delete_volume_when_exporting" href="#harvester_e2e_tests.integrations.test_1_volumes.test_delete_volume_when_exporting">test_delete_volume_when_exporting</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image">ubuntu_image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum">ubuntu_image_bad_checksum</a></code></li>
