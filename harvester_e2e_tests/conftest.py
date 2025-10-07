@@ -323,7 +323,8 @@ def pytest_configure(config):
         ('virtualmachines', ('{_r} virtualmachines tests')),
         ('backup_target', ('{_r} backup-target tests')),
         ('S3', ('{_r} backup-target tests with S3')),
-        ('NFS', ('{_r} backup-target tests with NFS'))
+        ('NFS', ('{_r} backup-target tests with NFS')),
+        ('performance', ('{_r} tests related to performance in any module'))
     ]
 
     for m, msg in markers:

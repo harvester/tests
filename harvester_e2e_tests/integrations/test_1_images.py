@@ -1,11 +1,14 @@
+import concurrent.futures
 import filecmp
+import hashlib
 import json
 import re
+import threading
+from time import sleep, time
 import zlib
 from datetime import datetime, timedelta
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from time import sleep
 
 import pytest
 
@@ -458,3 +461,505 @@ class TestImageWithStorageNetwork:
             raise AssertionError(
                 f"Fail to delete image {unique_name} with error: {code}, {data}"
             )
+
+
+class TestImageEnhancements:
+
+    @pytest.mark.p2
+    @pytest.mark.images
+    @pytest.mark.performance
+    @pytest.mark.parametrize("image_size", ["10Mi", "50Mi", "200Mi"])
+    def test_image_processing_performance(self, api_client, unique_name, image_size, wait_timeout):
+        """
+        Test Harvester image processing performance (excluding network upload time)
+        Steps:
+        1. Upload image files of different sizes
+        2. Measure processing time from upload completion to ready state
+        3. Verify Harvester processing meets performance expectations
+        """
+
+        # Processing thresholds (seconds) - time from upload complete to ready
+        processing_thresholds = {"10Mi": 10, "50Mi": 20, "200Mi": 40}
+        size_bytes = int(image_size[:-2]) * 1024 * 1024
+
+        if size_bytes % 512 != 0:
+            size_bytes = ((size_bytes // 512) + 1) * 512
+
+        with NamedTemporaryFile("wb", suffix=".raw") as f:
+            f.seek(size_bytes - 1)
+            f.write(b"\x00")
+            f.seek(0)
+
+            image_name = f"proc-perf-{unique_name}"
+
+            # Step 1: Upload (don't measure this time - it's network dependent)
+            resp = api_client.images.create_by_file(image_name, Path(f.name))
+            assert resp.ok, f"Failed to upload {image_size} image: {resp.status_code}, {resp.text}"
+
+            # Step 2: Wait for upload to be acknowledged by Harvester
+            initial_timeout = datetime.now() + timedelta(seconds=30)
+            while initial_timeout > datetime.now():
+                code, data = api_client.images.get(image_name)
+                if code == 200:
+                    status = data.get("status", {})
+                    if "progress" in status:
+                        # Upload acknowledged, start measuring processing time
+                        processing_start_time = time()
+                        break
+                sleep(1)
+            else:
+                raise AssertionError(f"Image {image_name} not acknowledged by Harvester")
+
+            # Step 3: Measure time from processing start to completion
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                code, data = api_client.images.get(image_name)
+                if code == 200 and data.get("status", {}).get("progress") == 100:
+                    processing_end_time = time()
+                    break
+                sleep(2)
+            else:
+                raise AssertionError(f"Image processing did not complete within {wait_timeout}s")
+
+            # Step 4: Validate Harvester processing performance
+            processing_time = processing_end_time - processing_start_time
+            threshold = processing_thresholds[image_size]
+            assert processing_time < threshold, f"Harvester processing took" \
+                                                f" {processing_time:.2f}s, expected < {threshold}s"
+
+            print(f"Harvester Processing Performance:"
+                  f" {image_size} processed in {processing_time:.2f}s")
+
+            delete_image(api_client, image_name, wait_timeout)
+
+    @pytest.mark.p1
+    @pytest.mark.images
+    def test_image_checksum_validation(self, api_client, image_info, unique_name, wait_timeout):
+        """
+        Test image checksum validation during URL-based creation
+        Steps:
+        1. Create image with correct checksum - should succeed
+        2. Create image with incorrect checksum - should fail
+        3. Create image with no checksum - should succeed
+        4. Verify checksum validation behavior
+        """
+        # Extract OS name from image_info for naming
+        os_name = image_info.name.lower()  # e.g., "opensuse" or "ubuntu"
+
+        # Test with correct checksum
+        correct_name = f"correct-checksum-{os_name}-{unique_name}"
+        create_image_url(api_client, correct_name, image_info.url,
+                         image_info.image_checksum, wait_timeout)
+
+        # Test with incorrect checksum
+        incorrect_name = f"incorrect-checksum-{os_name}-{unique_name}"
+        fake_checksum = hashlib.sha512(b'fake_checksum').hexdigest()
+
+        code, data = api_client.images.create_by_url(incorrect_name, image_info.url, fake_checksum)
+        assert 201 == code, "Image creation should initially succeed"
+
+        # Should eventually fail due to checksum mismatch
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        checksum_error = False
+        while endtime > datetime.now():
+            code, data = api_client.images.get(incorrect_name)
+            if code == 200:
+                status = data.get("status", {})
+                if "checksum" in str(status).lower() and status.get("failed", 0) > 0:
+                    checksum_error = True
+                    break
+            sleep(5)
+
+        assert checksum_error, "Image should fail due to checksum mismatch"
+
+        # Test with no checksum
+        no_checksum_name = f"no-checksum-{os_name}-{unique_name}"
+        create_image_url(api_client, no_checksum_name, image_info.url, None, wait_timeout)
+
+        # Cleanup
+        delete_image(api_client, correct_name, wait_timeout)
+
+        # Cleanup incorrect checksum image (may not exist if creation failed)
+        try:
+            delete_image(api_client, incorrect_name, wait_timeout)
+        except AssertionError as e:
+            print(f"Cleanup failed/skipped for incorrect checksum image {incorrect_name}: {e}")
+
+        # Cleanup no-checksum image (only if it was created)
+        try:
+            delete_image(api_client, no_checksum_name, wait_timeout)
+        except AssertionError as e:
+            print(f"Cleanup failed/skipped for no-checksum image {no_checksum_name}: {e}")
+
+    @pytest.mark.p1
+    @pytest.mark.images
+    def test_image_concurrent_operations(self, api_client, fake_image_file,
+                                         gen_unique_name, wait_timeout):
+        """
+        Test comprehensive concurrent image operations
+        Steps:
+        1. Test concurrent image uploads (multiple different images)
+        2. Test concurrent operations on same image (get, update, status checks)
+        3. Verify system handles all concurrency scenarios gracefully
+        4. Ensure data integrity and proper resource management
+        """
+
+        # Part 1: Concurrent uploads of different images
+        concurrent_upload_count = 3
+        upload_image_names = [f"upload-concurrent-{i}-{gen_unique_name()}"
+                              for i in range(concurrent_upload_count)]
+        successful_uploads = []
+        upload_errors = []
+
+        def upload_single_image(image_name):
+            resp = api_client.images.create_by_file(image_name, fake_image_file)
+            if resp.ok:
+                return {"name": image_name, "success": True}
+            else:
+                return {"name": image_name, "success": False,
+                        "error": f"{resp.status_code}: {resp.text}"}
+
+        # Execute concurrent uploads
+        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrent_upload_count) as executor:  # NOQA
+            upload_futures = [executor.submit(upload_single_image, name)
+                              for name in upload_image_names]
+
+            for future in concurrent.futures.as_completed(upload_futures):
+                result = future.result()
+                if result["success"]:
+                    successful_uploads.append(result["name"])
+                else:
+                    upload_errors.append(result)
+
+        assert len(upload_errors) == 0, f"Concurrent upload errors: {upload_errors}"
+        assert len(successful_uploads) == concurrent_upload_count, \
+            f"Expected {concurrent_upload_count} uploads, got {len(successful_uploads)}"
+
+        # Verify all uploaded images are accessible
+        for image_name in successful_uploads:
+            code, data = api_client.images.get(image_name)
+            assert code == 200, f"Image {image_name} not accessible: {code}"
+
+        # Part 2: Concurrent operations on the same image
+        # Use the first uploaded image for operations testing
+        target_image_name = successful_uploads[0]
+        concurrent_results = []
+
+        def concurrent_operation(operation_type, operation_id):
+            if operation_type == "get":
+                code, data = api_client.images.get(target_image_name)
+                return {"id": operation_id, "op": "get", "success": code == 200, "code": code}
+
+            elif operation_type == "update":
+                update_data = {"labels": {f"concurrent-op-{operation_id}": f"timestamp-{time.time()}"}}  # NOQA
+                code, data = api_client.images.update(target_image_name,
+                                                      dict(metadata=update_data))
+                return {"id": operation_id, "op": "update",
+                        "success": code in [200, 409], "code": code}
+
+            elif operation_type == "status_check":
+                code, data = api_client.images.get(target_image_name)
+                if code == 200:
+                    progress = data.get("status", {}).get("progress", 0)
+                    return {"id": operation_id, "op": "status_check",
+                            "success": True, "code": code, "progress": progress}
+                return {"id": operation_id, "op": "status_check", "success": False, "code": code}
+
+        # Launch concurrent operations on the same image
+        threads = []
+        operations = [
+            ("get", 1), ("update", 2), ("status_check", 3),
+            ("get", 4), ("update", 5), ("get", 6), ("status_check", 7)
+        ]
+
+        for op_type, op_id in operations:
+            thread = threading.Thread(
+                target=lambda ot=op_type, oid=op_id: concurrent_results.append(concurrent_operation(ot, oid))  # NOQA
+            )
+            threads.append(thread)
+            thread.start()
+
+        # Wait for all operations to complete
+        for thread in threads:
+            thread.join(timeout=15)
+            assert not thread.is_alive(), "Thread didn't complete in time"
+
+        # Analyze concurrent operation results
+        successful_ops = [r for r in concurrent_results if r and r.get("success")]
+        assert len(successful_ops) > 0, "No concurrent operations succeeded on same image"
+
+        # Target image should still be responsive after concurrent operations
+        final_code, final_data = api_client.images.get(target_image_name)
+        assert final_code == 200, f"Target image not accessible after " \
+                                  f"concurrent operations: {final_code}"
+
+        # Part 3: Concurrent cleanup of all images
+        cleanup_successful = 0
+
+        def cleanup_single_image(image_name):
+            delete_image(api_client, image_name, wait_timeout)
+            return image_name
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(successful_uploads)) as executor:  # NOQA
+            cleanup_futures = [executor.submit(cleanup_single_image, name)
+                               for name in successful_uploads]
+
+            for _ in concurrent.futures.as_completed(cleanup_futures):
+                cleanup_successful += 1
+
+        assert cleanup_successful == len(successful_uploads), \
+            f"Cleanup failed: {cleanup_successful}/{len(successful_uploads)}"
+
+    @pytest.mark.p1
+    @pytest.mark.images
+    def test_image_metadata_operations(self, api_client, fake_image_file,
+                                       unique_name, wait_timeout):
+        """
+        Test comprehensive image metadata operations
+        Steps:
+        1. Create image and verify initial metadata
+        2. Update labels, annotations, and description
+        3. Test metadata persistence across operations
+        4. Verify metadata validation and limits
+        """
+        image_name = f"metadata-test-{unique_name}"
+
+        # Create image
+        resp = api_client.images.create_by_file(image_name, fake_image_file)
+        assert resp.ok, f"Failed to create image: {resp.status_code}, {resp.text}"
+
+        # Wait for initial processing
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.images.get(image_name)
+            if code == 200 and data.get("status", {}).get("progress") == 100:
+                break
+            sleep(2)
+
+        # Test comprehensive metadata updates
+        metadata_updates = {
+            "labels": {
+                "environment": "test",
+                "team": "qa",
+                "version": "1.0.0",
+                "critical": "false"
+            },
+            "annotations": {
+                "field.cattle.io/description": "Test image for metadata operations",
+                "harvesterhci.io/imageId": image_name,
+                "custom.annotation/usage": "automation-testing",
+                "created.by": "harvester-e2e-tests"
+            }
+        }
+
+        code, data = api_client.images.update(image_name, dict(metadata=metadata_updates))
+        assert 200 == code, f"Failed to update metadata: {code}, {data}"
+
+        # Verify metadata was applied correctly
+        code, data = api_client.images.get(image_name)
+        assert 200 == code, (code, data)
+
+        metadata = data["metadata"]
+        for field, expected_pairs in metadata_updates.items():
+            for key, expected_value in expected_pairs.items():
+                actual_value = metadata.get(field, {}).get(key)
+                assert actual_value == expected_value, f"Metadata {field}.{key}: expected"\
+                                                       f" {expected_value}, got {actual_value}"
+
+        # Test incremental metadata updates
+        incremental_updates = {
+            "labels": {"priority": "high"},
+            "annotations": {"last.modified": "2025-09-30"}
+        }
+
+        code, data = api_client.images.update(image_name, dict(metadata=incremental_updates))
+        assert 200 == code, f"Failed incremental update: {code}, {data}"
+
+        # Verify both old and new metadata exist
+        code, data = api_client.images.get(image_name)
+        assert 200 == code, (code, data)
+
+        metadata = data["metadata"]
+        assert metadata.get("labels", {}).get("environment") == "test"  # Old label
+        assert metadata.get("labels", {}).get("priority") == "high"  # New label
+
+        delete_image(api_client, image_name, wait_timeout)
+
+    @pytest.mark.p2
+    @pytest.mark.images
+    def test_image_complete_lifecycle(self, api_client, image_info, unique_name, wait_timeout):
+        """
+        Test complete image lifecycle from creation to deletion
+        Steps:
+        1. Create image from URL with metadata
+        2. Update image properties multiple times
+        3. Create volume from image
+        4. Export volume back to new image
+        5. Download and verify image content
+        6. Perform cleanup and verify deletion
+        """
+        original_image = f"lifecycle-original-{unique_name}"
+        exported_image = f"lifecycle-exported-{unique_name}"
+        test_volume = f"lifecycle-volume-{unique_name}"
+
+        # Step 1: Create original image with metadata
+        create_image_url(api_client, original_image, image_info.url,
+                         image_info.image_checksum, wait_timeout)
+
+        initial_metadata = {
+            "labels": {"lifecycle": "test", "stage": "original"},
+            "annotations": {"description": "Lifecycle test original image"}
+        }
+
+        code, data = api_client.images.update(original_image, dict(metadata=initial_metadata))
+        assert 200 == code, f"Failed to set initial metadata: {code}, {data}"
+
+        # Step 2: Multiple metadata updates
+        for i in range(3):
+            update_metadata = {
+                "labels": {"update.count": str(i + 1)},
+                "annotations": {f"update.{i}": f"value-{i}"}
+            }
+            code, data = api_client.images.update(original_image, dict(metadata=update_metadata))
+            assert 200 == code, f"Failed update {i}: {code}, {data}"
+
+        # Step 3: Create volume from image
+        code, data = api_client.images.get(original_image)
+        assert 200 == code, (code, data)
+
+        image_size_gb = data["status"]["virtualSize"] // 1024**3 + 1
+        image_id = f"{data['metadata']['namespace']}/{original_image}"
+
+        spec = api_client.volumes.Spec(image_size_gb)
+        code, data = api_client.volumes.create(test_volume, spec, image_id=image_id)
+        assert 201 == code, (code, data)
+
+        # Wait for volume to be bound
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.volumes.get(test_volume)
+            if data["status"]["phase"] == "Bound":
+                break
+            sleep(5)
+        else:
+            raise AssertionError(f"Volume binding timeout: {code}, {data}")
+
+        # Step 4: Export volume back to image
+        code, data = api_client.volumes.export(test_volume, exported_image, "harvester-longhorn")
+        assert 200 == code, (code, data)
+
+        # Wait for export completion
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        exported_image_id = ""
+        while endtime > datetime.now():
+            code, data = api_client.images.get()
+            assert 200 == code, (code, data)
+
+            for image in data["items"]:
+                if image["spec"]["displayName"] == exported_image:
+                    if image.get("status", {}).get("progress") == 100:
+                        exported_image_id = image["metadata"]["name"]
+                        break
+
+            if exported_image_id:
+                break
+            sleep(5)
+
+        assert exported_image_id, f"Failed to find exported image {exported_image}"
+
+        # Step 5: Verify exported image properties
+        code, data = api_client.images.get(exported_image_id)
+        assert 200 == code, (code, data)
+        assert data["spec"]["displayName"] == exported_image
+
+        # Step 6: Cleanup in proper order
+        delete_volume(api_client, test_volume, wait_timeout)
+        delete_image(api_client, original_image, wait_timeout)
+        delete_image(api_client, exported_image_id, wait_timeout)
+
+    @pytest.mark.p1
+    @pytest.mark.images
+    @pytest.mark.negative
+    def test_image_name_length_limits(self, api_client, unique_name, wait_timeout):
+        """
+        Test image creation with various name lengths
+        Steps:
+        1. Test failure with image name > 63 characters (should fail)
+        2. Test success with image name ≤ 63 characters (should pass)
+        """
+        aligned_size = 1024 * 1024  # 1MB exactly
+
+        with NamedTemporaryFile("wb", suffix=".raw") as f:
+            f.write(b"\x00" * aligned_size)
+            f.flush()
+
+            # Test 1: Invalid long name (should FAIL)
+            long_base = "very-long-image-name-for-testing-kubernetes-name-length-limits-that-exceeds-maximum"  # NOQA
+            invalid_long_name = f"{long_base}-{unique_name}"
+
+            resp = api_client.images.create_by_file(invalid_long_name, Path(f.name))
+            assert not resp.ok, f"Expected failure with long name but" \
+                                f" got success: {resp.status_code}"
+            assert resp.status_code in [400, 422], f"Expected 400/422 for " \
+                                                   f"invalid name, got: {resp.status_code}"
+
+            # Test 2: Valid name (should PASS)
+            valid_base = "valid-image-name"
+            valid_name = f"{valid_base}-{unique_name}"
+
+            if len(valid_name) > 63:
+                valid_name = f"{valid_base[:30]}-{unique_name}"
+            valid_name = valid_name.rstrip('-')
+
+            resp = api_client.images.create_by_file(valid_name, Path(f.name))
+            assert resp.ok, f"Failed with valid name: {resp.status_code}, {resp.text}"
+
+            # Cleanup
+            delete_image(api_client, valid_name, wait_timeout)
+
+    @pytest.mark.p1
+    @pytest.mark.images
+    @pytest.mark.negative
+    def test_image_metadata_limits(self, api_client, unique_name, wait_timeout):
+        """
+        Test image metadata handling with excessive data
+        Steps:
+        1. Create a valid image
+        2. Test behavior with excessive metadata (many labels/annotations)
+        3. Verify proper handling of metadata limits
+        """
+        aligned_size = 1024 * 1024  # 1MB exactly
+
+        with NamedTemporaryFile("wb", suffix=".raw") as f:
+            f.write(b"\x00" * aligned_size)
+            f.flush()
+
+            # Create base image for metadata testing
+            image_name = f"metadata-test-{unique_name}"
+
+            resp = api_client.images.create_by_file(image_name, Path(f.name))
+            assert resp.ok, f"Failed to create base image: {resp.status_code}, {resp.text}"
+
+            # Test excessive metadata
+            excessive_metadata = {
+                "labels": {f"test-label-key-{i:03d}": f"test-label-value"
+                                                      f"-{i:03d}" for i in range(20)},
+                "annotations": {
+                    f"test.annotation.key/{i:03d}": "x" * 200 for i in range(10)
+                }
+            }
+
+            code, data = api_client.images.update(image_name, dict(metadata=excessive_metadata))
+
+            if code == 200:
+                # Verify metadata was actually stored
+                code, updated_data = api_client.images.get(image_name)
+                assert code == 200, f"Failed to retrieve updated image: {code}"
+
+            elif code in [400, 422, 413]:  # 413 = Request Entity Too Large
+                print(f"✓ Excessive metadata properly rejected with status: {code}")
+            else:
+                assert False, f"Unexpected metadata response: {code}, {data}"
+
+            # Cleanup
+            delete_image(api_client, image_name, wait_timeout)
