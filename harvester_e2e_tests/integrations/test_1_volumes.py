@@ -1,3 +1,4 @@
+import copy
 import yaml
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -383,6 +384,160 @@ def test_concurrent_volume_creation(api_client, ubuntu_image, concurrent_count, 
         cleanup_results = [future.result() for future in as_completed(cleanup_futures)]
 
     assert all(cleanup_results), "Some volumes failed to cleanup properly"
+
+
+@pytest.mark.p0
+@pytest.mark.sanity
+@pytest.mark.volumes
+def test_volume_resize_operations(api_client, unique_name, ubuntu_image, polling_for):
+    """
+    Test volume resize functionality
+    Steps:
+    1. Create initial volume with small size
+    2. Resize volume to larger size
+    3. Verify resize operation completes successfully
+    4. Validate new size is reflected in volume specifications
+    5. Test multiple resize operations
+    """
+    initial_size = "5Gi"
+    expanded_size = "10Gi"
+    final_size = "15Gi"
+
+    # Create initial volume
+    spec = api_client.volumes.Spec(initial_size)
+    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image['id'])
+    assert 201 == code, f"Initial volume creation failed: {code}, {data}"
+
+    # Wait for initial volume to be bound
+    polling_for("initial volume created",
+                lambda c, d: 200 == c and d['status']['phase'] == "Bound",
+                api_client.volumes.get, unique_name)
+
+    # Verify initial size
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, f"Failed to get initial volume: {code}, {data}"
+    assert data['spec']['resources']['requests']['storage'] == initial_size
+
+    # First resize: 5Gi -> 10Gi
+    # Get current volume state to obtain resourceVersion
+    code, current_volume = api_client.volumes.get(unique_name)
+    assert 200 == code, f"Failed to get volume for resize: {code}, {current_volume}"
+
+    # Prepare update with resourceVersion and modified storage
+    updated_volume = copy.deepcopy(current_volume)
+    updated_volume['spec']['resources']['requests']['storage'] = expanded_size
+
+    code, data = api_client.volumes.update(unique_name, updated_volume)
+    assert 200 == code, f"First resize operation failed: {code}, {data}"
+
+    # Wait for first resize to complete
+    polling_for("first volume resize completed",
+                lambda c, d: (200 == c and
+                              d['spec']['resources']['requests']['storage'] == expanded_size),
+                api_client.volumes.get, unique_name)
+
+    # Verify first resize
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, f"Failed to verify first resize: {code}, {data}"
+    assert data['spec']['resources']['requests']['storage'] == expanded_size
+    assert data['status']['phase'] == "Bound", "Volume should remain bound after resize"
+
+    # Second resize: 10Gi -> 15Gi
+    # Get updated volume state for second resize
+    code, current_volume = api_client.volumes.get(unique_name)
+    assert 200 == code, f"Failed to get volume for second resize: {code}, {current_volume}"
+
+    updated_volume = copy.deepcopy(current_volume)
+    updated_volume['spec']['resources']['requests']['storage'] = final_size
+
+    code, data = api_client.volumes.update(unique_name, updated_volume)
+    assert 200 == code, f"Second resize operation failed: {code}, {data}"
+
+    # Wait for final resize to complete
+    polling_for("final volume resize completed",
+                lambda c, d: (200 == c and
+                              d['spec']['resources']['requests']['storage'] == final_size),
+                api_client.volumes.get, unique_name)
+
+    # Final verification
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, f"Failed to verify final resize: {code}, {data}"
+    assert data['spec']['resources']['requests']['storage'] == final_size
+    assert data['status']['phase'] == "Bound", "Volume should remain bound after final resize"
+
+    # Cleanup
+    code, _ = api_client.volumes.delete(unique_name)
+    assert code in [200, 202, 204], f"Failed to initiate volume deletion: {code}"
+
+    polling_for("volume deleted", lambda code, _: 404 == code,
+                api_client.volumes.get, unique_name)
+
+
+@pytest.mark.p2
+@pytest.mark.volumes
+@pytest.mark.negative
+def test_volume_shrink_not_allowed(api_client, unique_name, ubuntu_image, polling_for):
+    """
+    Test that volume shrinking is properly rejected
+    Steps:
+    1. Create volume with larger initial size
+    2. Wait for volume to be bound and ready
+    3. Attempt to resize volume to smaller size
+    4. Verify operation fails with appropriate error
+    5. Confirm volume size remains unchanged
+    """
+    initial_size = "5Gi"
+    shrink_size = "1Gi"
+
+    # Create initial volume
+    spec = api_client.volumes.Spec(initial_size)
+    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image['id'])
+    assert 201 == code, f"Initial volume creation failed: {code}, {data}"
+
+    # Wait for volume to be bound
+    polling_for("initial volume created",
+                lambda c, d: 200 == c and d['status']['phase'] == "Bound",
+                api_client.volumes.get, unique_name)
+
+    # Verify initial size
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, f"Failed to get initial volume: {code}, {data}"
+    assert data['spec']['resources']['requests']['storage'] == initial_size
+
+    # Attempt to shrink volume
+    code, current_volume = api_client.volumes.get(unique_name)
+    assert 200 == code, f"Failed to get volume for shrink test: {code}, {current_volume}"
+
+    updated_volume = copy.deepcopy(current_volume)
+    updated_volume['spec']['resources']['requests']['storage'] = shrink_size
+
+    code, data = api_client.volumes.update(unique_name, updated_volume)
+
+    # Expect failure - common error codes for invalid operations
+    expected_error_codes = [400, 422, 409, 403]
+    assert code in expected_error_codes, f"Volume shrink should fail, but got: {code}, {data}"
+
+    # Verify error message contains relevant information
+    error_message = data.get('message', '').lower()
+    shrink_indicators = ['not allowed', 'not supported', 'forbidden']
+
+    message_found = any(indicator in error_message for indicator in shrink_indicators)
+    assert message_found, f"Error message should indicate shrinking issue. Got: {error_message}"
+
+    # Verify volume size unchanged after failed shrink
+    code, unchanged_volume = api_client.volumes.get(unique_name)
+    assert 200 == code, f"Failed to verify volume after shrink attempt: {code}, {unchanged_volume}"
+    assert unchanged_volume['spec']['resources']['requests']['storage'] == initial_size, \
+        "Volume size should remain unchanged after failed shrink"
+    assert unchanged_volume['status']['phase'] == "Bound", \
+        "Volume should remain bound after failed shrink attempt"
+
+    # Cleanup
+    code, _ = api_client.volumes.delete(unique_name)
+    assert code in [200, 202, 204], f"Failed to initiate volume deletion: {code}"
+
+    polling_for("volume deleted", lambda code, _: 404 == code,
+                api_client.volumes.get, unique_name)
 
 
 @pytest.mark.p0
