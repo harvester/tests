@@ -395,6 +395,190 @@ def test_delete_volume_when_exporting(api_client, unique_name, ubuntu_image, pol
 </details>
 <div class="desc"></div>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_volume_resize_operations"><code class="name flex">
+<span>def <span class="ident">test_volume_resize_operations</span></span>(<span>api_client, unique_name, ubuntu_image, polling_for)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.sanity
+@pytest.mark.volumes
+def test_volume_resize_operations(api_client, unique_name, ubuntu_image, polling_for):
+    &#34;&#34;&#34;
+    Test volume resize functionality
+    Steps:
+    1. Create initial volume with small size
+    2. Resize volume to larger size
+    3. Verify resize operation completes successfully
+    4. Validate new size is reflected in volume specifications
+    5. Test multiple resize operations
+    &#34;&#34;&#34;
+    initial_size = &#34;5Gi&#34;
+    expanded_size = &#34;10Gi&#34;
+    final_size = &#34;15Gi&#34;
+
+    # Create initial volume
+    spec = api_client.volumes.Spec(initial_size)
+    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image[&#39;id&#39;])
+    assert 201 == code, f&#34;Initial volume creation failed: {code}, {data}&#34;
+
+    # Wait for initial volume to be bound
+    polling_for(&#34;initial volume created&#34;,
+                lambda c, d: 200 == c and d[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
+                api_client.volumes.get, unique_name)
+
+    # Verify initial size
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, f&#34;Failed to get initial volume: {code}, {data}&#34;
+    assert data[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] == initial_size
+
+    # First resize: 5Gi -&gt; 10Gi
+    # Get current volume state to obtain resourceVersion
+    code, current_volume = api_client.volumes.get(unique_name)
+    assert 200 == code, f&#34;Failed to get volume for resize: {code}, {current_volume}&#34;
+
+    # Prepare update with resourceVersion and modified storage
+    updated_volume = copy.deepcopy(current_volume)
+    updated_volume[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] = expanded_size
+
+    code, data = api_client.volumes.update(unique_name, updated_volume)
+    assert 200 == code, f&#34;First resize operation failed: {code}, {data}&#34;
+
+    # Wait for first resize to complete
+    polling_for(&#34;first volume resize completed&#34;,
+                lambda c, d: (200 == c and
+                              d[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] == expanded_size),
+                api_client.volumes.get, unique_name)
+
+    # Verify first resize
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, f&#34;Failed to verify first resize: {code}, {data}&#34;
+    assert data[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] == expanded_size
+    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, &#34;Volume should remain bound after resize&#34;
+
+    # Second resize: 10Gi -&gt; 15Gi
+    # Get updated volume state for second resize
+    code, current_volume = api_client.volumes.get(unique_name)
+    assert 200 == code, f&#34;Failed to get volume for second resize: {code}, {current_volume}&#34;
+
+    updated_volume = copy.deepcopy(current_volume)
+    updated_volume[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] = final_size
+
+    code, data = api_client.volumes.update(unique_name, updated_volume)
+    assert 200 == code, f&#34;Second resize operation failed: {code}, {data}&#34;
+
+    # Wait for final resize to complete
+    polling_for(&#34;final volume resize completed&#34;,
+                lambda c, d: (200 == c and
+                              d[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] == final_size),
+                api_client.volumes.get, unique_name)
+
+    # Final verification
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, f&#34;Failed to verify final resize: {code}, {data}&#34;
+    assert data[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] == final_size
+    assert data[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, &#34;Volume should remain bound after final resize&#34;
+
+    # Cleanup
+    code, _ = api_client.volumes.delete(unique_name)
+    assert code in [200, 202, 204], f&#34;Failed to initiate volume deletion: {code}&#34;
+
+    polling_for(&#34;volume deleted&#34;, lambda code, _: 404 == code,
+                api_client.volumes.get, unique_name)</code></pre>
+</details>
+<div class="desc"><p>Test volume resize functionality
+Steps:
+1. Create initial volume with small size
+2. Resize volume to larger size
+3. Verify resize operation completes successfully
+4. Validate new size is reflected in volume specifications
+5. Test multiple resize operations</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_1_volumes.test_volume_shrink_not_allowed"><code class="name flex">
+<span>def <span class="ident">test_volume_shrink_not_allowed</span></span>(<span>api_client, unique_name, ubuntu_image, polling_for)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p2
+@pytest.mark.volumes
+@pytest.mark.negative
+def test_volume_shrink_not_allowed(api_client, unique_name, ubuntu_image, polling_for):
+    &#34;&#34;&#34;
+    Test that volume shrinking is properly rejected
+    Steps:
+    1. Create volume with larger initial size
+    2. Wait for volume to be bound and ready
+    3. Attempt to resize volume to smaller size
+    4. Verify operation fails with appropriate error
+    5. Confirm volume size remains unchanged
+    &#34;&#34;&#34;
+    initial_size = &#34;5Gi&#34;
+    shrink_size = &#34;1Gi&#34;
+
+    # Create initial volume
+    spec = api_client.volumes.Spec(initial_size)
+    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image[&#39;id&#39;])
+    assert 201 == code, f&#34;Initial volume creation failed: {code}, {data}&#34;
+
+    # Wait for volume to be bound
+    polling_for(&#34;initial volume created&#34;,
+                lambda c, d: 200 == c and d[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;,
+                api_client.volumes.get, unique_name)
+
+    # Verify initial size
+    code, data = api_client.volumes.get(unique_name)
+    assert 200 == code, f&#34;Failed to get initial volume: {code}, {data}&#34;
+    assert data[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] == initial_size
+
+    # Attempt to shrink volume
+    code, current_volume = api_client.volumes.get(unique_name)
+    assert 200 == code, f&#34;Failed to get volume for shrink test: {code}, {current_volume}&#34;
+
+    updated_volume = copy.deepcopy(current_volume)
+    updated_volume[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] = shrink_size
+
+    code, data = api_client.volumes.update(unique_name, updated_volume)
+
+    # Expect failure - common error codes for invalid operations
+    expected_error_codes = [400, 422, 409, 403]
+    assert code in expected_error_codes, f&#34;Volume shrink should fail, but got: {code}, {data}&#34;
+
+    # Verify error message contains relevant information
+    error_message = data.get(&#39;message&#39;, &#39;&#39;).lower()
+    shrink_indicators = [&#39;not allowed&#39;, &#39;not supported&#39;, &#39;forbidden&#39;]
+
+    message_found = any(indicator in error_message for indicator in shrink_indicators)
+    assert message_found, f&#34;Error message should indicate shrinking issue. Got: {error_message}&#34;
+
+    # Verify volume size unchanged after failed shrink
+    code, unchanged_volume = api_client.volumes.get(unique_name)
+    assert 200 == code, f&#34;Failed to verify volume after shrink attempt: {code}, {unchanged_volume}&#34;
+    assert unchanged_volume[&#39;spec&#39;][&#39;resources&#39;][&#39;requests&#39;][&#39;storage&#39;] == initial_size, \
+        &#34;Volume size should remain unchanged after failed shrink&#34;
+    assert unchanged_volume[&#39;status&#39;][&#39;phase&#39;] == &#34;Bound&#34;, \
+        &#34;Volume should remain bound after failed shrink attempt&#34;
+
+    # Cleanup
+    code, _ = api_client.volumes.delete(unique_name)
+    assert code in [200, 202, 204], f&#34;Failed to initiate volume deletion: {code}&#34;
+
+    polling_for(&#34;volume deleted&#34;, lambda code, _: 404 == code,
+                api_client.volumes.get, unique_name)</code></pre>
+</details>
+<div class="desc"><p>Test that volume shrinking is properly rejected
+Steps:
+1. Create volume with larger initial size
+2. Wait for volume to be bound and ready
+3. Attempt to resize volume to smaller size
+4. Verify operation fails with appropriate error
+5. Confirm volume size remains unchanged</p></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image"><code class="name flex">
 <span>def <span class="ident">ubuntu_image</span></span>(<span>api_client, unique_name, image_ubuntu, polling_for)</span>
 </code></dt>
@@ -834,6 +1018,8 @@ Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_bad_checksum">test_create_volume_bad_checksum</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_invalid_specifications" href="#harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_invalid_specifications">test_create_volume_invalid_specifications</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_delete_volume_when_exporting" href="#harvester_e2e_tests.integrations.test_1_volumes.test_delete_volume_when_exporting">test_delete_volume_when_exporting</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_volume_resize_operations" href="#harvester_e2e_tests.integrations.test_1_volumes.test_volume_resize_operations">test_volume_resize_operations</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.test_volume_shrink_not_allowed" href="#harvester_e2e_tests.integrations.test_1_volumes.test_volume_shrink_not_allowed">test_volume_shrink_not_allowed</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image">ubuntu_image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_image_bad_checksum">ubuntu_image_bad_checksum</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm" href="#harvester_e2e_tests.integrations.test_1_volumes.ubuntu_vm">ubuntu_vm</a></code></li>
