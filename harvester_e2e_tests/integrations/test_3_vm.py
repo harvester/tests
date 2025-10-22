@@ -8,6 +8,7 @@ import pytest
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
+    "harvester_e2e_tests.fixtures.hosts",
     "harvester_e2e_tests.fixtures.images",
     "harvester_e2e_tests.fixtures.networks",
     "harvester_e2e_tests.fixtures.settings",
@@ -39,29 +40,6 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, image_checker):
     assert 200 == code, (code, data)
     image_deleted, (code, data) = image_checker.wait_deleted(name)
     assert image_deleted, (code, data)
-
-
-@pytest.fixture(scope="class")
-def available_node_names(api_client):
-    status_code, nodes_info = api_client.hosts.get()
-    assert status_code == 200, f"Failed to list nodes with error: {nodes_info}"
-
-    node_names = []
-    for node_info in nodes_info['data']:
-        is_ready = False
-        for condition in node_info.get('status', {}).get('conditions', []):
-            if condition.get('type', "") == "Ready" and \
-                    condition.get('status', "") == "True":
-                is_ready = True
-                break
-
-        if is_ready and not node_info.get('spec', {}).get('unschedulable', False):
-            node_names.append(node_info['metadata']['name'])
-
-    assert 2 <= len(node_names), (
-        f"The cluster only have {len(node_names)} available node. It's not enough."
-    )
-    yield node_names
 
 
 @pytest.fixture(scope="class")
@@ -174,6 +152,9 @@ def storage_network(api_client, cluster_network, vm_network, setting_checker):
 def test_multiple_migrations(
     api_client, unique_name, ubuntu_image, wait_timeout, available_node_names
 ):
+    if len(available_node_names) < 2:
+        pytest.skip("Require 2+ nodes for migration testing.")
+
     vm_spec = api_client.vms.Spec(1, 1)
     vm_spec.add_image('disk-0', ubuntu_image.id)
     vm_names = [f"migrate-1-{unique_name}", f"migrate-2-{unique_name}"]
@@ -272,6 +253,9 @@ def test_multiple_migrations(
 def test_migrate_vm_with_user_data(
     api_client, unique_name, ubuntu_image, wait_timeout, available_node_names, vm_checker
 ):
+    if len(available_node_names) < 2:
+        pytest.skip("Require 2+ nodes for migration testing.")
+
     vm_spec = api_client.vms.Spec(1, 1)
     vm_spec.add_image('disk-0', ubuntu_image.id)
     vm_spec.user_data += (
@@ -342,6 +326,9 @@ def test_migrate_vm_with_user_data(
 def test_migrate_vm_with_multiple_volumes(
     api_client, unique_name, ubuntu_image, wait_timeout, available_node_names, vm_checker
 ):
+    if len(available_node_names) < 2:
+        pytest.skip("Require 2+ nodes for migration testing.")
+
     vm_spec = api_client.vms.Spec(1, 1)
     vm_spec.add_image('disk-0', ubuntu_image.id)
     vm_spec.add_volume('disk-1', 1)
