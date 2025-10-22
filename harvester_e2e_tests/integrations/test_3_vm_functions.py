@@ -457,8 +457,11 @@ class TestVMOperations:
             f"{data}"
         )
 
-        new_host = next(h['id'] for h in host_data['data']
-                        if cur_host != h['id'] and not h['spec'].get('taint'))
+        try:
+            new_host = next(h['id'] for h in host_data['data']
+                            if cur_host != h['id'] and not h['spec'].get('taint'))
+        except StopIteration:
+            pytest.skip("Require 2+ nodes for migration testing.")
 
         code, data = api_client.vms.migrate(unique_vm_name, new_host)
         assert 204 == code, (code, data)
@@ -496,8 +499,11 @@ class TestVMOperations:
             f"{data}"
         )
 
-        new_host = next(h['id'] for h in host_data['data']
-                        if cur_host != h['id'] and not h['spec'].get('taint'))
+        try:
+            new_host = next(h['id'] for h in host_data['data']
+                            if cur_host != h['id'] and not h['spec'].get('taint'))
+        except StopIteration:
+            pytest.skip("Require 2+ nodes for migration testing.")
 
         code, data = api_client.vms.migrate(unique_vm_name, new_host)
         assert 204 == code, (code, data)
