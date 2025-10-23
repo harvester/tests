@@ -44,35 +44,6 @@ el.replaceWith(d);
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.available_node_names"><code class="name flex">
-<span>def <span class="ident">available_node_names</span></span>(<span>api_client)</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
-def available_node_names(api_client):
-    status_code, nodes_info = api_client.hosts.get()
-    assert status_code == 200, f&#34;Failed to list nodes with error: {nodes_info}&#34;
-
-    node_names = []
-    for node_info in nodes_info.get(&#39;data&#39;, []):
-        is_ready = False
-        for condition in node_info.get(&#39;status&#39;, {}).get(&#39;conditions&#39;, []):
-            if condition.get(&#39;type&#39;, &#34;&#34;) == &#34;Ready&#34; and \
-                    condition.get(&#39;status&#39;, &#34;&#34;) == &#34;True&#34;:
-                is_ready = True
-                break
-
-        if is_ready and not node_info.get(&#39;spec&#39;, {}).get(&#39;unschedulable&#39;, False):
-            node_names.append(node_info[&#39;metadata&#39;][&#39;name&#39;])
-
-    return node_names</code></pre>
-</details>
-<div class="desc"></div>
-</dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image"><code class="name flex">
 <span>def <span class="ident">focal_image</span></span>(<span>api_client, unique_name, image_ubuntu, wait_timeout)</span>
 </code></dt>
@@ -868,7 +839,6 @@ def test_poweron_state(self, api_client, host_state, wait_timeout, available_nod
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.available_node_names" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.available_node_names">available_node_names</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_image">focal_image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_vm" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.focal_vm">focal_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_powercycle.test_delete_vm_after_host_shutdown" href="#harvester_e2e_tests.integrations.test_4_vm_host_powercycle.test_delete_vm_after_host_shutdown">test_delete_vm_after_host_shutdown</a></code></li>

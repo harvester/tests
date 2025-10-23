@@ -408,9 +408,9 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-pc/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-q35/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/</loc>
   </url><url>
@@ -948,9 +948,9 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/set-s3-backup-target/</loc>
   </url><url>
-    <loc>https://harvester.github.io/tests/manual/advanced/set-nfs-backup-target/</loc>
-  </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/negative-set-invalid-nfs-backup-target/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/advanced/set-nfs-backup-target/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/negative-set-invalid-s3-backup-target/</loc>
   </url><url>

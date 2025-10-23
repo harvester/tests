@@ -488,7 +488,8 @@ def pytest_collection_modifyitems(session, config, items):
         (&#39;virtualmachines&#39;, (&#39;{_r} virtualmachines tests&#39;)),
         (&#39;backup_target&#39;, (&#39;{_r} backup-target tests&#39;)),
         (&#39;S3&#39;, (&#39;{_r} backup-target tests with S3&#39;)),
-        (&#39;NFS&#39;, (&#39;{_r} backup-target tests with NFS&#39;))
+        (&#39;NFS&#39;, (&#39;{_r} backup-target tests with NFS&#39;)),
+        (&#39;performance&#39;, (&#39;{_r} tests related to performance in any module&#39;))
     ]
 
     for m, msg in markers:

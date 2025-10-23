@@ -92,7 +92,7 @@
       <description>&lt;p&gt;Ref: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1429&#34;&gt;https://github.com/harvester/harvester/issues/1429&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;verify-items&#34;&gt;Verify Items&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Overcommit can be edit on Dashboard&lt;/li&gt;&#xA;&lt;li&gt;VM can allocate exceed CPU on the host Node&lt;/li&gt;&#xA;&lt;li&gt;VM can chage allocated CPU after created&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;case-update-overcommit-configuration&#34;&gt;Case: Update Overcommit configuration&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Login to Dashboard, then navigate to &lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;li&gt;Edit &lt;code&gt;overcommit-config&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;The field of &lt;strong&gt;CPU&lt;/strong&gt; should be editable&lt;/li&gt;&#xA;&lt;li&gt;Created VM can allocate maximum CPU should be &lt;code&gt;&amp;lt;HostCPUs&amp;gt; * [&amp;lt;overcommit-CPU&amp;gt;/100] - &amp;lt;Host Reserved&amp;gt;&lt;/code&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-vm-can-allocate-cpus-more-than-host-have&#34;&gt;Case: VM can allocate CPUs more than Host have&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Create a cloud image for VM Creation&lt;/li&gt;&#xA;&lt;li&gt;Create a VM with &lt;code&gt;&amp;lt;HostCPUs&amp;gt; * 5&lt;/code&gt; CPUs&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;lscpu&lt;/code&gt; in VM should display allocated CPUs&lt;/li&gt;&#xA;&lt;li&gt;Page of Virtual Machines should display allocated CPUs correctly&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;case-update-vm-allocated-cpus&#34;&gt;Case: Update VM allocated CPUs&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Install Harvester with any Node&lt;/li&gt;&#xA;&lt;li&gt;Create a cloud image for VM Creation&lt;/li&gt;&#xA;&lt;li&gt;Create a VM with &lt;code&gt;&amp;lt;HostCPUs&amp;gt; * 5&lt;/code&gt; CPUs&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;Increase/Reduce VM allocated CPUs to minimum/maximum&lt;/li&gt;&#xA;&lt;li&gt;VM should start successfully&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;lscpu&lt;/code&gt; in VM should display allocated CPUs&lt;/li&gt;&#xA;&lt;li&gt;Page of Virtual Machines should display allocated CPUs correctly&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
-      <title>Create a new VM and add Enable USB tablet option	(e2e_be_fe)</title>
+      <title>Create a new VM and add Enable USB tablet option(e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-a-new-vm-and-add-enable-usb-tablet-option/</guid>
@@ -218,13 +218,6 @@
       <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
-      <title>Create Single instances of the vm with ISO image	(e2e_be)</title>
-      <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</guid>
-      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
-    </item>
-    <item>
       <title>Create Single instances of the vm with ISO image with machine type pc</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image-with-machine-type-q35/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -232,7 +225,14 @@
       <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
-      <title>Create Single instances of the vm with raw image	(e2e_be)</title>
+      <title>Create Single instances of the vm with ISO image(e2e_be)</title>
+      <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-iso-image/</guid>
+      <description>&lt;ol&gt;&#xA;&lt;li&gt;Create vm using the external path for ISO image.&lt;/li&gt;&#xA;&lt;li&gt;In user data mention the below to access the vm.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;#cloud-config&#xA;password: password&#xA;chpasswd: {expire: False}&#xA;sshpwauth: True&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;ol&gt;&#xA;&lt;li&gt;Create the vm and wait for vm to start.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;VM should come up and start with same config.&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
+    </item>
+    <item>
+      <title>Create Single instances of the vm with raw image(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/virtual-machines/create-single-instances-vm-with-raw-image/</guid>

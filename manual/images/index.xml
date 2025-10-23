@@ -29,7 +29,7 @@
       <description>&lt;ol&gt;&#xA;&lt;li&gt;Create image with invalid URL.&#xA;e.g. - &lt;a href=&#34;https://test.img&#34;&gt;https://test.img&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Image state show as Failed&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
-      <title>Delete the image	(e2e_be_fe)</title>
+      <title>Delete the image(e2e_be_fe)</title>
       <link>https://harvester.github.io/tests/manual/images/delete-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/images/delete-image/</guid>

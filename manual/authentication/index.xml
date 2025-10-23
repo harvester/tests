@@ -29,14 +29,14 @@
       <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/1619&#34;&gt;#1619&lt;/a&gt; User is unable to create ssh key through the templates page&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;on a harvester deployment, navigate to advanced -&amp;gt; templates and click create&lt;/li&gt;&#xA;&lt;li&gt;Click create new under SSH section&lt;/li&gt;&#xA;&lt;li&gt;enter valid credentials and save&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;SSH key should be created and show in the SSH key section&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
-      <title>First Time Login	 (e2e_fe)</title>
+      <title>First Time Login (e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/authentication/first-time-login/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/authentication/first-time-login/</guid>
       <description>&lt;ol&gt;&#xA;&lt;li&gt;After successful installation of Harvester using Iso, on navigating to UI, user should be prompted to change the password.&lt;/li&gt;&#xA;&lt;li&gt;Verify the password rules&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;User should be able to login&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
     </item>
     <item>
-      <title>Login after password reset	(e2e_fe)</title>
+      <title>Login after password reset(e2e_fe)</title>
       <link>https://harvester.github.io/tests/manual/authentication/login-after-password-reset/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/authentication/login-after-password-reset/</guid>

@@ -281,7 +281,7 @@
       <description>&lt;ol&gt;&#xA;&lt;li&gt;For Host that is in maintenance mode and turned off&lt;/li&gt;&#xA;&lt;li&gt;Start host&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;expected-results&#34;&gt;Expected Results&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Host should turn on&lt;/li&gt;&#xA;&lt;li&gt;Maintenance mode label in hosts list should go from red to yellow&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;known-bugs&#34;&gt;Known bugs&lt;/h3&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://github.com/harvester/harvester/issues/1272&#34;&gt;https://github.com/harvester/harvester/issues/1272&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     <item>
-      <title>Take host out of maintenance mode that has been rebooted	(e2e_be)</title>
+      <title>Take host out of maintenance mode that has been rebooted(e2e_be)</title>
       <link>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://harvester.github.io/tests/manual/hosts/maintenance-mode-enable-host-rebooted/</guid>
