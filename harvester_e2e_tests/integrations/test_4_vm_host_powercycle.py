@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import pytest
 
 pytest_plugins = [
-    "harvester_e2e_tests.fixtures.api_client"
+    "harvester_e2e_tests.fixtures.api_client",
     "harvester_e2e_tests.fixtures.hosts"
 ]
 
