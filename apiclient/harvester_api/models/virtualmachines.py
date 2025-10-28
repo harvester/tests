@@ -388,3 +388,17 @@ class VMSpec:
 class VMSpec140(VMSpec):
     # ref: https://github.com/harvester/tests/issues/1201
     eviction_strategy = "LiveMigrateIfPossible"
+    cpu_pinning = False
+
+    def to_dict(self, name, namespace, hostname=""):
+        data = super().to_dict(name, namespace, hostname)
+        if self.cpu_pinning:
+            data['spec']['template']['spec']['domain']['cpu']['dedicatedCpuPlacement'] = True
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        obj = super().from_dict(data)
+        is_pinned = data['spec']['template']['spec']['domain']['cpu'].get("dedicatedCpuPlacement")
+        obj.cpu_pinning = is_pinned
+        return obj
