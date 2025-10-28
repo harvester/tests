@@ -143,4 +143,4 @@ class VMManager140(VirtualMachineManager):
     def get_migratables(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         params = dict(action="findMigratableNodes")
-        return self.create(path, params=params, raw=raw)
+        return self._create(path, params=params, raw=raw)
