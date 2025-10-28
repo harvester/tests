@@ -139,3 +139,8 @@ class VMManager131(VirtualMachineManager):
 class VMManager140(VirtualMachineManager):
     support_to = "v1.4.0"
     Spec = VMSpec140
+
+    def get_migratables(self, name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="findMigratableNodes")
+        return self.create(path, params=params, raw=raw)
