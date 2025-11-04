@@ -305,6 +305,7 @@ def pytest_configure(config):
         ('delete_host', ('{_r} host and will delete one of hosts')),
         ("negative", ("{_r} a negative tests")),
         ('keypairs', ("{_r} SSH keypairs tests")),
+        ('namespaces', ("{_r} namespaces tests")),
         ('images', ("{_r} image tests")),
         ("networks", ("{_r} vlan network tests")),
         ("volumes", ("{_r} volume tests")),

@@ -1927,7 +1927,6 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
 
 @pytest.mark.p0
 @pytest.mark.smoke
-@pytest.mark.wait_volumes_detached
 @pytest.mark.virtualmachines
 class TestHotPlugVolume:
     """
