@@ -75,6 +75,7 @@ class HarvesterAPI:
         self.volumes = mgrs.VolumeManager.for_version(version)(self, version)
         self.vol_snapshots = mgrs.VolumeSnapshotManager.for_version(version)(self, version)
         self.templates = mgrs.TemplateManager.for_version(version)(self, version)
+        self.namespaces = mgrs.NamespaceManager.for_version(version)(self, version)
         self.supportbundle = mgrs.SupportBundleManager.for_version(version)(self, version)
         self.settings = mgrs.SettingManager.for_version(version)(self, version)
         self.clusternetworks = mgrs.ClusterNetworkManager.for_version(version)(self, version)

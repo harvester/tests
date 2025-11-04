@@ -7,6 +7,7 @@ from .keypairs import KeypairManager
 from .settings import SettingManager
 from .networks import NetworkManager, IPPoolManager, LoadBalancerManager
 from .templates import TemplateManager
+from .namespaces import NamespaceManager
 from .supportbundles import SupportBundleManager
 from .storageclasses import StorageClassManager
 from .clusternetworks import ClusterNetworkManager
@@ -29,6 +30,7 @@ __all__ = [
  "SettingManager",
  "NetworkManager", "IPPoolManager", "LoadBalancerManager",
  "TemplateManager",
+ "NamespaceManager",
  "SupportBundleManager",
  "VolumeSnapshotManager",
  "ClusterNetworkManager",
