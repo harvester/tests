@@ -15,6 +15,10 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+from json import loads, dumps
+from time import sleep
+from datetime import datetime, timedelta
+
 import pytest
 
 
@@ -208,6 +212,24 @@ def nginx_deployment(unique_name):
     }
 
 
+@pytest.fixture(scope="class")
+def unset_cpu_memory_overcommit(api_client):
+    code, data = api_client.settings.get('overcommit-config')
+    assert 200 == code, (code, data)
+
+    origin_val = loads(data.get('value', data['default']))
+    spec = api_client.settings.Spec.from_dict(data)
+    spec.cpu = spec.memory = 100
+    spec.storage = origin_val['storage']
+    code, data = api_client.settings.update('overcommit-config', spec)
+    assert 200 == code, (code, data)
+
+    yield loads(data['value']), origin_val
+
+    spec.value = origin_val
+    api_client.settings.update('overcommit-config', spec)
+
+
 @pytest.fixture(scope='function', params=["dhcp", "pool"])
 def lb_service(request, api_client, unique_name, nginx_deployment, ip_pool):
     namespace = "default"
@@ -328,6 +350,151 @@ def test_add_project_owner_user(api_client, rancher_api_client, unique_name, wai
     # teardown
     cluster_api.project_members.delete(proj_muid)
     rancher_api_client.users.delete(uid)
+
+
+@pytest.mark.p0
+@pytest.mark.namespace
+@pytest.mark.rancher
+class TestResourceQuota:
+    ns_quota = dict(cpu=3000, mem=4000)
+
+    @pytest.mark.dependency(name="create_project", depends=["import_harvester"])
+    def test_create_project(self, rancher_api_client, unique_name, harvester_mgmt_cluster):
+        cluster_api = rancher_api_client.clusters.explore(harvester_mgmt_cluster['id'])
+        spec = cluster_api.projects.Spec()
+        spec.project_quota.cpu_limit = 5000
+        spec.project_quota.mem_limit = 5000
+        spec.namespace_quota.cpu_limit = self.ns_quota['cpu']
+        spec.namespace_quota.mem_limit = self.ns_quota['mem']
+
+        code, data = cluster_api.projects.create(unique_name, spec)
+        assert 201 == code and unique_name == data['name'], (code, data)
+
+        project_quota = data['resourceQuota']['limit']
+        ns_quota = data['namespaceDefaultResourceQuota']['limit']
+        assert project_quota['limitsCpu'] == spec.project_quota.cpu_limit
+        assert project_quota['limitsMemory'] == spec.project_quota.mem_limit
+        assert ns_quota['limitsCpu'] == spec.namespace_quota.cpu_limit
+        assert ns_quota['limitsMemory'] == spec.namespace_quota.mem_limit
+
+    @pytest.mark.dependency(name="create_namespace", depends=["create_project"])
+    def test_create_namespace_on_project(
+        self, api_client, rancher_api_client, unique_name, harvester_mgmt_cluster
+    ):
+        cluster_api = rancher_api_client.clusters.explore(harvester_mgmt_cluster['id'])
+        code, data = cluster_api.projects.get_by_name(unique_name)
+        assert 200 == code, (code, data)
+
+        proj_spec = cluster_api.projects.Spec.from_dict(data)
+        proj_id = data['id'].split(':')[-1]
+        labels = {"field.cattle.io/projectId": proj_id}
+        annotations = {"field.cattle.io/projectId": data['id']}
+        ns_mgr = cluster_api.imitate(api_client.namespaces)
+        code, data = ns_mgr.create(unique_name, labels=labels, annotations=annotations)
+        assert 201 == code, (code, data)
+
+        code, data = ns_mgr.get(unique_name)
+        assert 200 == code, (code, data)
+        ns_quota = loads(data['metadata']['annotations']['field.cattle.io/resourceQuota'])['limit']
+        assert ns_quota['limitsCpu'] == proj_spec.namespace_quota.cpu_limit
+        assert ns_quota['limitsMemory'] == proj_spec.namespace_quota.mem_limit
+
+    @pytest.mark.negative
+    @pytest.mark.dependency(name="decrease_quota", depends=["create_namespace"])
+    def test_decrease_quota_when_vm_used(
+        self, api_client, rancher_api_client, unique_name, vm_checker,
+        unset_cpu_memory_overcommit, harvester_mgmt_cluster, ubuntu_image
+    ):
+        # ref: https://github.com/harvester/tests/issues/832
+        cpu = int(self.ns_quota['cpu'] / 1000 - 1)
+        mem = int(self.ns_quota['mem'] / 1000 - 1)
+        vm = api_client.vms.Spec(cpu, mem)
+        vm.add_image("disk-0", ubuntu_image['id'])
+        code, data = api_client.vms.create(unique_name, vm, namespace=unique_name)
+        assert 201 == code, (code, data)
+        vm_started, (code, vmi) = vm_checker.wait_started(unique_name, namespace=unique_name)
+        assert vm_started, (code, vmi)
+
+        cluster_api = rancher_api_client.clusters.explore(harvester_mgmt_cluster['id'])
+        ns_mgr = cluster_api.imitate(api_client.namespaces)
+        code, data = ns_mgr.get(unique_name)
+        assert 200 == code, (code, data)
+
+        ns_quota = loads(data['metadata']['annotations']['field.cattle.io/resourceQuota'])['limit']
+        ns_quota['limitsCpu'] = f"{(cpu -1) * 1000}m"
+        anno = {'field.cattle.io/resourceQuota': dumps({"limit": ns_quota})}
+        rancher_api_client.set_retries(status_forcelist=(502, 504))
+        code, data = ns_mgr.update(unique_name, dict(annotations=anno))
+        assert 500 == code and "is lower than the current used" in data['message'], (code, data)
+        rancher_api_client.set_retries()
+
+    @pytest.mark.dependency(depends=["decrease_quota"])
+    def test_migrate_vm_when_exceed_quota(
+        self, api_client, unique_name, vm_checker, available_node_names
+    ):
+        # ref: https://github.com/harvester/tests/issues/741
+        if len(available_node_names) < 2:
+            pytest.skip("Require 2+ nodes for migration testing.")
+
+        is_running, ctx = vm_checker.wait_status_running(unique_name, namespace=unique_name)
+        assert is_running, ctx
+        code, vmi = api_client.vms.get_status(unique_name, unique_name)
+        src_host = vmi['status']['nodeName']
+        dst_host = next(n for n in available_node_names if n != src_host)
+
+        vm_migrated, (code, data) = vm_checker.wait_migrated(
+            unique_name, dst_host, namespace=unique_name
+        )
+        assert vm_migrated, (
+            f"Failed to Migrate VM({unique_name}) from {src_host} to {dst_host}\n"
+            f"API Status({code}): {data}"
+        )
+
+    @pytest.mark.dependency(depends=["decrease_quota"])
+    def test_delete_project_when_vm_on_it(
+        self, api_client, rancher_api_client, unique_name, vm_checker, harvester_mgmt_cluster
+    ):
+        cluster_api = rancher_api_client.clusters.explore(harvester_mgmt_cluster['id'])
+        code, data = cluster_api.projects.get_by_name(unique_name)
+        assert 200 == code, (code, data)
+
+        code, data = cluster_api.projects.delete(data['id'])
+        assert 200 == code and "removing" in data['state'], (code, data)
+
+        code, data = api_client.vms.get(unique_name, unique_name)
+        assert 200 == code and 'Running' in data['status']['printableStatus'], (code, data)
+
+    @pytest.mark.dependency(depends=["decrease_quota"])
+    def test_delete_namespace_when_vm_on_it(
+        self, api_client, unique_name, wait_timeout
+    ):
+        # check VM is available
+        code, data = api_client.vms.get(unique_name, unique_name)
+        assert 200 == code, (code, data)
+
+        code, data = api_client.namespaces.delete(unique_name)
+
+        assert 200 == code, (code, data)
+        assert "Terminating" == data['status']['phase']
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            status_code, data = api_client.namespaces.get(unique_name)
+            if 404 == status_code:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"The namespace {unique_name} still not be deleted after {wait_timeout}s"
+            )
+
+        # check VM be deleted
+        code, data = api_client.vms.get(unique_name, unique_name)
+        assert 404 == code, (
+            f"The VM {unique_name} still available in the namespace {unique_name}"
+            " after the namespace be deleted.\n"
+            f"Status({code}): {data}"
+        )
 
 
 @pytest.mark.p0

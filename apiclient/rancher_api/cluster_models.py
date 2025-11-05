@@ -4,6 +4,119 @@ from operator import or_, xor
 from functools import reduce
 
 
+class Quota:
+    def __init__(self, data=None):
+        self._data = data or dict()
+
+    @property
+    def cpu_limit(self):
+        return self._data.get("limitsCpu")
+
+    @cpu_limit.setter
+    def cpu_limit(self, val):
+        if not isinstance(val, str):
+            val = f"{val}m"
+        self._data['limitsCpu'] = val
+
+    @property
+    def mem_limit(self):
+        return self._data.get("limitsMemory")
+
+    @mem_limit.setter
+    def mem_limit(self, val):
+        if not isinstance(val, str):
+            val = f"{val}Mi"
+        self._data['limitsMemory'] = val
+
+    @property
+    def cpu_request(self):
+        return self._data.get("requestsCpu")
+
+    @cpu_request.setter
+    def cpu_request(self, val):
+        if not isinstance(val, str):
+            val = f"{val}m"
+        self._data['requestsCpu'] = val
+
+    @property
+    def mem_request(self):
+        return self._data.get("requestsMemory")
+
+    @mem_request.setter
+    def mem_request(self, val):
+        if not isinstance(val, str):
+            val = f"{val}Mi"
+        self._data['requestsMemory'] = val
+
+
+class ResourceQuota(Quota):
+    @property
+    def storage_request(self):
+        return self._data.get("requestsStorage")
+
+    @storage_request.setter
+    def storage_request(self, val):
+        if not isinstance(val, str):
+            val = f"{val}Mi"
+        self._data['requestsStorage'] = val
+
+    @property
+    def config_maps(self):
+        return self._data.get("configMaps")
+
+    @config_maps.setter
+    def config_maps(self, val):
+        self._data['configMaps'] = str(val)
+
+    @property
+    def pvc(self):
+        return self._data.get("persistentVolumeClaims")
+
+    @pvc.setter
+    def pvc(self, val):
+        self._data['persistentVolumeClaims'] = str(val)
+
+    @property
+    def load_balancers(self):
+        return self._data.get("servicesLoadBalancers")
+
+    @load_balancers.setter
+    def load_balancers(self, val):
+        self._data['servicesLoadBalancers'] = str(val)
+
+    @property
+    def node_ports(self):
+        return self._data.get("servicesNodePorts")
+
+    @node_ports.setter
+    def node_ports(self, val):
+        self._data['servicesNodePorts'] = str(val)
+
+    @property
+    def pods(self):
+        return self._data.get("pods")
+
+    @pods.setter
+    def pods(self, val):
+        self._data['pods'] = str(val)
+
+    @property
+    def secrets(self):
+        return self._data.get("secrets")
+
+    @secrets.setter
+    def secrets(self, val):
+        self._data['secrets'] = str(val)
+
+    @property
+    def services(self):
+        return self._data.get("services")
+
+    @services.setter
+    def services(self, val):
+        self._data['services'] = str(val)
+
+
 class AccessModes(Flag):
     ReadWriteOnce = auto()
     ReadWriteMany = auto()
@@ -107,4 +220,44 @@ class PersistentVolumeClaimSpec:
         obj.access_modes = reduce(or_, (getattr(AccessModes, m) for m in spec['accessModes']))
         obj._data = data
 
+        return obj
+
+
+class ProjectSpec:
+    _data = None
+
+    def __init__(self, *, labels=None, annotations=None):
+        self.labels = labels
+        self.annotations = annotations
+        self.vm_quota = Quota()
+        self.project_quota = ResourceQuota()
+        self.namespace_quota = ResourceQuota()
+
+    def to_dict(self, name, cluster, creator=None):
+        data = {
+            "type": "project",
+            "name": name,
+            "clusterId": cluster,
+            "annotations": self.annotations or dict(),
+            "labels": self.labels or dict(),
+            "resourceQuota": {"limit": self.project_quota._data},
+            "namespaceDefaultResourceQuota": {"limit": self.namespace_quota._data},
+            "containerDefaultResourceLimit": self.vm_quota._data
+        }
+        if creator:
+            data["creatorId"] = creator
+
+        return deepcopy(data)
+
+    @classmethod
+    def from_dict(cls, data):
+        data = deepcopy(data)
+        labels = data.get('labels', {})
+        anno = data.get('annotations', {})
+        obj = cls(labels=labels, annotations=anno)
+        obj.vm_quota._data = data.get('containerDefaultResourceLimit', {})
+        obj.project_quota._data = data.get('resourceQuota', {}).get('limit', {})
+        obj.namespace_quota._data = data.get("namespaceDefaultResourceQuota", {}).get("limit", {})
+
+        obj._data = data
         return obj
