@@ -70,6 +70,9 @@ class UserManager(BaseManager):
 
     Spec = UserSpec
 
+    def me(self):
+        return self.get("", params=dict(me='true'))[1]['data'][0]
+
     def get(self, uid="", *, raw=False, **kwargs):
         path = self.PATH_fmt.format(uid=uid)
         return self._get(path, raw=raw, **kwargs)

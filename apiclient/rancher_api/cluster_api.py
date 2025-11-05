@@ -20,6 +20,9 @@ class ClusterExploreAPI:
         self.storageclasses = self.scs = StorageClassManager(self)
         self.persistentvolumeclaims = self.pvcs = PersistentVolumeClaimManager(self)
 
+    def imitate(self, manager):
+        return type(manager)(self, manager._ver)
+
     def _get(self, path, *, from_cluster=True, **kwargs):
         if from_cluster:
             path = f"k8s/clusters/{self.cluster_id}/{path}"

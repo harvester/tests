@@ -1,15 +1,16 @@
 from .managers import BaseManager, merge_dict
-from .cluster_models import PersistentVolumeClaimSpec
+from .cluster_models import PersistentVolumeClaimSpec, ProjectSpec
 
 DEFAULT_NAMESPACE = "default"
 
 
 class ProjectManager(BaseManager):
     PATH_fmt = "v3/projects/{pid}"
+    Spec = ProjectSpec
 
     def get(self, project_id="", *, raw=False, **kwargs):
         if project_id:
-            path = self.v3_PATH.format(pid=project_id)
+            path = self.PATH_fmt.format(pid=project_id)
             params = dict() or kwargs.pop('params', {})
         else:
             path = self.PATH_fmt.format(pid="")
@@ -28,6 +29,12 @@ class ProjectManager(BaseManager):
         except IndexError:
             return 404, dict(type="error", status=404, code="notFound",
                              message=f"Failed to find project {name!r}")
+
+    def create(self, name, spec, *, raw=False):
+        if isinstance(spec, self.Spec):
+            spec = spec.to_dict(name, self.api.cluster_id)
+        path = self.PATH_fmt.format(pid="")
+        return self._create(path, from_cluster=False, raw=raw, json=spec)
 
     def delete(self, project_id, *, raw=False):
         path = self.PATH_fmt.format(pid=project_id)
