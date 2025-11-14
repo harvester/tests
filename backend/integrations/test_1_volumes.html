@@ -313,7 +313,8 @@ Ref. <a href="https://github.com/harvester/tests/issues/1121">https://github.com
     {&#34;size&#34;: &#34;-5Gi&#34;, &#34;error_msg&#34;: &#34;must be greater than zero&#34;},
     {&#34;size&#34;: &#34;invalid_size&#34;, &#34;error_msg&#34;: &#34;quantities must match&#34;},
     {&#34;size&#34;: &#34;999999Ti&#34;, &#34;error_msg&#34;: &#34;exceeds cluster capacity&#34;},
-])
+    ],
+    ids=[&#39;zero_size&#39;, &#39;negative_size&#39;, &#39;not_number&#39;, &#39;too_large_size&#39;])
 def test_create_volume_invalid_specifications(api_client, unique_name, invalid_spec, polling_for):
     &#34;&#34;&#34;
     Negative testing for volume creation with invalid specifications
