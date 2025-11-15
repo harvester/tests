@@ -312,6 +312,7 @@ def pytest_configure(config):
         ("virtualmachines", ("{_r} VM tests")),
         ("templates", ("{_r} VM template tests")),
         ("support_bundle", ("{_r} Support Bundle tests")),
+        ("addons", ("{_r} addon tests")),
         ("settings", ("{_r} settings tests")),
         ("upgrade", ("{_r} upgrade tests")),
         ("any_nodes", ("{_r} tests which could be ran on clushter with any nodes")),
@@ -325,7 +326,8 @@ def pytest_configure(config):
         ('backup_target', ('{_r} backup-target tests')),
         ('S3', ('{_r} backup-target tests with S3')),
         ('NFS', ('{_r} backup-target tests with NFS')),
-        ('performance', ('{_r} tests related to performance in any module'))
+        ('performance', ('{_r} tests related to performance in any module')),
+        ('experimental', ('{_r} tests for experimental features'))
     ]
 
     for m, msg in markers:
