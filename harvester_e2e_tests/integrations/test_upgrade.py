@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
+from pkg_resources import parse_version
 from paramiko.ssh_exception import SSHException, NoValidConnectionsError
 from harvester_api.managers import DEFAULT_HARVESTER_NAMESPACE, DEFAULT_LONGHORN_NAMESPACE
 
@@ -1081,6 +1082,9 @@ class TestAnyNodesUpgrade:
           of kubevirt and longhorn
         """
 
+        def check_image_version(old, new):
+            return parse_version(old.split(':', 1)[-1]) <= parse_version(new.split(':', 1)[-1])
+
         kubevirt_version_existed = False
         engine_image_version_existed = False
         longhorn_manager_version_existed = False
@@ -1113,8 +1117,9 @@ class TestAnyNodesUpgrade:
 
         for pod in pods['data']:
             if "virt-operator" in pod['metadata']['name']:
-                kubevirt_version_existed = (
-                    kubevirt_operator_image == pod['spec']['containers'][0]['image'])
+                kubevirt_version_existed = check_image_version(
+                    kubevirt_operator_image, pod['spec']['containers'][0]['image']
+                )
 
         # Verify longhorn version
         code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
@@ -1123,11 +1128,13 @@ class TestAnyNodesUpgrade:
 
         for pod in pods['data']:
             if "longhorn-manager" in pod['metadata']['name']:
-                longhorn_manager_version_existed = (
-                  longhorn_images["longhorn-manager"] == pod['spec']['containers'][0]['image'])
+                longhorn_manager_version_existed = check_image_version(
+                  longhorn_images["longhorn-manager"], pod['spec']['containers'][0]['image']
+                )
             elif "engine-image" in pod['metadata']['name']:
-                engine_image_version_existed = (
-                    longhorn_images["engine-image"] == pod['spec']['containers'][0]['image'])
+                engine_image_version_existed = check_image_version(
+                    longhorn_images["engine-image"], pod['spec']['containers'][0]['image']
+                )
 
         assert kubevirt_version_existed, "kubevirt version is not correct"
         assert engine_image_version_existed, "longhorn engine image version is not correct"
