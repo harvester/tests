@@ -271,9 +271,10 @@ class TestVMNetwork:
         )
         vm_ip = next(iface['ipAddress'] for iface in data['status']['interfaces']
                      if iface['name'] == 'default')
-        code, data = api_client.hosts.get(data['status']['nodeName'])
-        host_ip = next(addr['address'] for addr in data['status']['addresses']
-                       if addr['type'] == 'InternalIP')
+        hostname = data['status']['nodeName']
+        code, data = api_client.hosts.get()
+        host_ip = next(addr['address'] for n in data['data'] for addr in n['status']['addresses']
+                       if addr['type'] == 'InternalIP' and hostname != n['id'])
         with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
             cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
             assert cloud_inited and not err, (out, err)
