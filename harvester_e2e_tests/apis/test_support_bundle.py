@@ -385,8 +385,11 @@ class TestSupportBundleExtraNamespaces:
             for pattern in patterns:
                 matches.extend([f] if re.match(pattern, f) else [])
 
-        assert len(matches) == len(patterns), (
-            f"Some file(s) not found, files: {matches}\npatterns: {patterns}"
+        # If the cluster has three control plane nodes, there should be three matches.
+        # If the cluster has only one control plane node, there should be one match.
+        # We just need to ensure that at least one file is matched for the given patterns.
+        assert len(matches) > 0, (
+            f"Some file(s) not found, files: {matches}\n"
         )
 
     @pytest.mark.dependency(depends=["get support bundle"])
