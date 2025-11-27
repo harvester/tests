@@ -378,15 +378,34 @@ class TestSupportBundleExtraNamespaces:
         support_bundle_state.fio.seek(0)
 
     @pytest.mark.dependency(depends=["download support bundle"])
-    def test_logfile_exists(self, support_bundle_state):
-        patterns = [r"^.*/logs/kube-system/kube-apiserver-.*/kube-apiserver.log",]
-        matches = []
+    def test_logfile_exists(self, api_client, support_bundle_state):
+        def check_apiserver_log(matches):
+            code, data = api_client.hosts.get()
+            assert 200 == code, (code, data)
+            filenames = [f"{d['metadata']['name']}/kube-apiserver.log" for d in data['data']
+                         if 'node-role.kubernetes.io/control-plane' in d['metadata']['labels']]
+            is_matched = all(any(m.endswith(n) for m in matches) for n in filenames)
+            return is_matched, filenames
+
+        patterns = {
+            # pattern: checker -> (bool, [tuple|list])
+            r"^.*/logs/kube-system/kube-apiserver-.*/kube-apiserver\.log$": check_apiserver_log,
+        }
+        matches = dict()
         for f in support_bundle_state.files:
             for pattern in patterns:
-                matches.extend([f] if re.match(pattern, f) else [])
+                matches[pattern] = matches.get(pattern, []) + ([f] if re.match(pattern, f) else [])
 
-        assert len(matches) == len(patterns), (
-            f"Some file(s) not found, files: {matches}\npatterns: {patterns}"
+        fails = []
+        for pattern, checker in patterns.items():
+            files = matches.get(pattern, [])
+            is_matched, expected = checker(files)
+            if not is_matched:
+                fails.append((pattern, expected, files))
+
+        assert not fails, (
+            "Some expected file(s) not found:\n"
+            "\n".join("Pattern: {}, Expected: {}, Got: {}".format(*s) for s in fails)
         )
 
     @pytest.mark.dependency(depends=["get support bundle"])
