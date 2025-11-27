@@ -52,12 +52,13 @@ class HarvesterAPI:
                 cur = "v8.8" if "master" in cur else cur
                 self._version = parse_version(f"{cur}.99")
             except ValueError:
-                # 1. va.b.c => valid version
+                # TL;DR: use KubeVirt version if '-' in ver and '-rc' not in ver
+                # 1. va.b.c[-rc?] => valid version
                 # 2. 3874194f-dirty (customized build)
-                #   Use KubeVirt version as the customized version
+                #    Use KubeVirt version as the customized version
                 data = self._get('apis/kubevirt.io/v1/kubevirts').json()
                 kube_ver = data['items'][0]['status'].get('operatorVersion')
-                self._version = parse_version(kube_ver if '-' in ver else ver)
+                self._version = parse_version(kube_ver if '-' in ver and '-rc' not in ver else ver)
             # store the raw version returns from `server-version` for reference
             self._version.raw = ver
         return self._version
