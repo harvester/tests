@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>harvester_e2e_tests.integrations.test_9_addons API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>harvester_e2e_tests.integrations.test_9_addons</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon"><code class="flex name class">
+<span>class <span class="ident">TestVMDHCPControllerAddon</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p1
+@pytest.mark.experimental
+@pytest.mark.addons
+class TestVMDHCPControllerAddon:
+    &#34;&#34;&#34;
+    Test VM DHCP Controller Addon functionality
+
+    Note: This is an experimental addon which is not installed in Harvester
+    by default.
+    Reference: https://docs.harvesterhci.io/v1.6/advanced/addons/managed-dhcp
+    Installation: Download from
+    https://raw.githubusercontent.com/harvester/experimental-addons/
+    &#34;&#34;&#34;
+
+    addon_id = &#39;harvester-system/harvester-vm-dhcp-controller&#39;
+    addon_url = (
+        &#39;https://raw.githubusercontent.com/harvester/experimental-addons/&#39;
+        &#39;main/harvester-vm-dhcp-controller/&#39;
+        &#39;harvester-vm-dhcp-controller.yaml&#39;
+    )
+
+    @pytest.mark.dependency(name=&#34;vmdhcp_download&#34;)
+    def test_download_and_install_vm_dhcp_addon(
+            self, api_client, wait_timeout):
+        &#34;&#34;&#34;
+        Test downloading and installing VM DHCP Controller experimental addon
+
+        Steps:
+            1. Check if addon already exists
+            2. If not exists, download addon manifest from experimental repo
+            3. Apply the addon manifest using kubectl
+            4. Wait for addon to be available
+
+        Expected Result:
+            - Addon should be created in Harvester
+            - Addon should be in disabled state initially
+
+        Note: Requires kubectl configured to access the Harvester cluster.
+              Experimental addons cannot be created via Harvester API
+        &#34;&#34;&#34;
+        # Check if addon already exists
+        code, data = api_client.addons.get(self.addon_id)
+        if code == 200:
+            return
+
+        # Download addon manifest
+        try:
+            response = requests.get(self.addon_url, timeout=30)
+            response.raise_for_status()
+            addon_manifest_text = response.text
+        except Exception as e:
+            pytest.skip(f&#34;Failed to download experimental addon: {e}&#34;)
+
+        # Apply addon manifest using kubectl
+        manifest_file = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                    mode=&#39;w&#39;, suffix=&#39;.yaml&#39;, delete=False) as f:
+                f.write(addon_manifest_text)
+                manifest_file = f.name
+
+            result = subprocess.run(
+                [&#39;kubectl&#39;, &#39;apply&#39;, &#39;-f&#39;, manifest_file],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                timeout=60
+            )
+
+            if result.returncode != 0:
+                pytest.skip(
+                    f&#34;Failed to apply addon manifest: {result.stderr}\n&#34;
+                    &#34;Ensure kubectl is configured to access the Harvester cluster&#34;
+                )
+
+        except FileNotFoundError:
+            pytest.skip(
+                &#34;kubectl command not found. Please install kubectl to run this test&#34;)
+        except Exception as e:
+            pytest.skip(f&#34;Failed to install experimental addon: {e}&#34;)
+        finally:
+            # Clean up temp file
+            if manifest_file:
+                try:
+                    os.unlink(manifest_file)
+                except Exception:
+                    pass
+
+        # Wait for addon to be available
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.addons.get(self.addon_id)
+            if code == 200:
+                assert not data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, True), (
+                    &#34;Newly installed addon should be disabled by default&#34;
+                )
+                return
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Addon &#39;{self.addon_id}&#39; did not become available within &#34;
+                f&#34;{wait_timeout} seconds after installation&#34;
+            )
+
+    @pytest.mark.dependency(name=&#34;vmdhcp_enable&#34;, depends=[&#34;vmdhcp_download&#34;])
+    def test_enable_vm_dhcp_addon(self, api_client, wait_timeout):
+        &#34;&#34;&#34;
+        Test enabling VM DHCP Controller addon
+
+        Steps:
+            1. Enable the harvester-vm-dhcp-controller addon
+            2. Wait for addon to be deployed successfully
+            3. Verify addon status changes to deployed
+
+        Expected Result:
+            - Addon should be enabled
+            - Status should be &#39;deployed&#39; or &#39;AddonDeploySuccessful&#39;
+            - DHCP controller should be ready to manage VM IP allocations
+        &#34;&#34;&#34;
+        code, data = api_client.addons.enable(self.addon_id)
+
+        assert 200 == code, (code, data)
+        assert data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, False), (code, data)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.addons.get(self.addon_id)
+            status = data.get(&#39;status&#39;, {}).get(&#39;status&#39;, &#34;&#34;)
+            if status in (&#34;deployed&#34;, &#34;AddonDeploySuccessful&#34;):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Failed to enable addon {self.addon_id} with &#34;
+                f&#34;{wait_timeout} timed out\n&#34;
+                f&#34;API Status({code}): {data}&#34;
+            )
+
+    @pytest.mark.dependency(name=&#34;vmdhcp_verify_enabled&#34;,
+                            depends=[&#34;vmdhcp_enable&#34;])
+    def test_verify_vm_dhcp_controller(
+            self, request, api_client, image_opensuse, unique_name,
+            vlan_id, wait_timeout):
+        &#34;&#34;&#34;
+        Test verifying VM DHCP Controller functionality.
+        Test requires IP pool configuration in config.yml
+
+        Steps:
+            1. Create a VM network (VLAN)
+            2. Configure an IP pool with specific subnet and IP range
+            3. Create a VM with the network that has the IP pool
+            4. Verify the VM gets an IP from the defined pool range
+            5. Clean up resources (VM, IP pool, network)
+
+        Expected Result:
+            - VM should receive an IP address from the IP pool
+            - IP should be within the configured pool range
+        &#34;&#34;&#34;
+        # Get IP pool configuration from config
+        ippool_subnet = request.config.getoption(&#39;--ip-pool-subnet&#39;)
+        ippool_start = request.config.getoption(&#39;--ip-pool-start&#39;)
+        ippool_end = request.config.getoption(&#39;--ip-pool-end&#39;)
+
+        # Validate IP pool configuration
+        if not ippool_subnet or not ippool_start or not ippool_end:
+            pytest.skip(
+                &#34;IP pool configuration is required for DHCP test. &#34;
+                &#34;Please set ip-pool-subnet, ip-pool-start, and &#34;
+                &#34;ip-pool-end in config.yml&#34;
+            )
+
+        # Step 1: Create a VM network (VLAN)
+        network_name = f&#34;dhcp-test-net-{unique_name}&#34;
+        code, network_data = api_client.networks.create(
+            network_name, vlan_id, cluster_network=&#39;mgmt&#39;
+        )
+        assert 201 == code, (
+            f&#34;Failed to create network: {code}, {network_data}&#34;
+        )
+
+        network_id = f&#34;default/{network_name}&#34;
+
+        # Step 2: Configure a DHCP IP pool with specific subnet and range
+        ippool_name = f&#34;dhcp-test-pool-{unique_name}&#34;
+
+        server_ip_parts = ippool_start.split(&#39;.&#39;)
+        server_ip_parts[3] = str(max(1, int(server_ip_parts[3]) - 1))
+        server_ip = &#39;.&#39;.join(server_ip_parts)
+
+        # Gateway/router is typically the first IP in the subnet
+        gateway_parts = ippool_subnet.split(&#39;/&#39;)[0].split(&#39;.&#39;)
+        gateway_parts[3] = &#39;1&#39;
+        gateway_ip = &#39;.&#39;.join(gateway_parts)
+
+        try:
+            # Create DHCP IPPool using kubectl
+            # (API doesn&#39;t support network.harvesterhci.io IPPools)
+            ippool_yaml = f&#34;&#34;&#34;apiVersion: network.harvesterhci.io/v1alpha1
+kind: IPPool
+metadata:
+  name: {ippool_name}
+  namespace: default
+spec:
+  ipv4Config:
+    serverIP: {server_ip}
+    cidr: {ippool_subnet}
+    pool:
+      start: {ippool_start}
+      end: {ippool_end}
+    router: {gateway_ip}
+    dns:
+      - 8.8.8.8
+    leaseTime: 300
+  networkName: {network_id}
+&#34;&#34;&#34;
+
+            manifest_file = None
+            try:
+                with tempfile.NamedTemporaryFile(
+                        mode=&#39;w&#39;, suffix=&#39;.yaml&#39;, delete=False) as f:
+                    f.write(ippool_yaml)
+                    manifest_file = f.name
+
+                # Apply the DHCP IPPool manifest
+                result = subprocess.run(
+                    [&#39;kubectl&#39;, &#39;apply&#39;, &#39;-f&#39;, manifest_file],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=30
+                )
+
+                if result.returncode != 0:
+                    raise AssertionError(
+                        f&#34;Failed to create DHCP IPPool: {result.stderr}&#34;
+                    )
+
+            finally:
+                if manifest_file:
+                    try:
+                        os.unlink(manifest_file)
+                    except Exception:
+                        pass
+
+            # Wait for DHCP IP pool to become Ready
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                result = subprocess.run(
+                    [&#39;kubectl&#39;, &#39;get&#39;, &#39;ippools.network&#39;,
+                     ippool_name, &#39;-o&#39;, &#39;json&#39;],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=30
+                )
+
+                if result.returncode == 0:
+                    ippool_status = json.loads(result.stdout)
+                    conditions = ippool_status.get(
+                        &#39;status&#39;, {}
+                    ).get(&#39;conditions&#39;, [])
+
+                    # Check for Registered, CacheReady, and AgentReady
+                    # conditions
+                    registered = any(
+                        c.get(&#39;type&#39;) == &#39;Registered&#39; and
+                        c.get(&#39;status&#39;) == &#39;True&#39;
+                        for c in conditions
+                    )
+                    cache_ready = any(
+                        c.get(&#39;type&#39;) == &#39;CacheReady&#39; and
+                        c.get(&#39;status&#39;) == &#39;True&#39;
+                        for c in conditions
+                    )
+                    agent_ready = any(
+                        c.get(&#39;type&#39;) == &#39;AgentReady&#39; and
+                        c.get(&#39;status&#39;) == &#39;True&#39;
+                        for c in conditions
+                    )
+
+                    if registered and cache_ready and agent_ready:
+                        ippool_status.get(
+                            &#39;status&#39;, {}
+                        ).get(&#39;ipv4&#39;, {}).get(&#39;available&#39;, 0)
+                        break
+
+                sleep(5)
+            else:
+                print(
+                    f&#34;DHCP IP pool failed to become fully Ready &#34;
+                    f&#34;within {wait_timeout} seconds&#34;
+                )
+
+            # Step 3: Create a VM with the network that has the IP pool
+            vm_name = f&#34;dhcp-test-vm-{unique_name}&#34;
+
+            # Check if image exists, create if not
+            code, data = api_client.images.get(image_opensuse.name)
+            if code == 404:
+                code, data = api_client.images.create_by_url(
+                    image_opensuse.name, image_opensuse.url
+                )
+                assert 201 == code, f&#34;Failed to create image: {code}, {data}&#34;
+
+                # Wait for image download to complete
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime &gt; datetime.now():
+                    code, data = api_client.images.get(image_opensuse.name)
+                    if (200 == code and
+                            data.get(&#39;status&#39;, {}).get(&#39;progress&#39;) == 100):
+                        break
+                    sleep(5)
+                else:
+                    raise AssertionError(
+                        f&#34;Image download timed out after {wait_timeout} &#34;
+                        &#34;seconds&#34;
+                    )
+
+            spec = api_client.vms.Spec(1, 2)  # 1 CPU, 2GB RAM
+            spec.add_image(image_opensuse.name,
+                           f&#34;default/{image_opensuse.name}&#34;)
+
+            # Add the DHCP-enabled network
+            spec.add_network(&#34;dhcp-net&#34;, network_id)
+
+            code, vm_data = api_client.vms.create(vm_name, spec)
+            assert 201 == code, f&#34;Failed to create VM: {code}, {vm_data}&#34;
+
+            vm_namespace = vm_data.get(&#39;metadata&#39;, {}).get(
+                &#39;namespace&#39;, &#39;default&#39;
+            )
+
+            # Wait for VM to be in running state
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                code, vm_status = api_client.vms.get_status(
+                    vm_name, namespace=vm_namespace
+                )
+                if 200 == code:
+                    vm_state = vm_status.get(&#39;status&#39;, {}).get(&#39;phase&#39;, &#39;&#39;)
+                    if vm_state == &#39;Running&#39;:
+                        break
+                sleep(5)
+            else:
+                raise AssertionError(
+                    f&#34;VM {vm_name} did not reach Running state within &#34;
+                    f&#34;{wait_timeout} seconds&#34;
+                )
+
+            # Step 4: Verify the VM gets an IP from the defined pool range
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            vm_ip = None
+
+            while endtime &gt; datetime.now():
+                code, data = api_client.vms.get_status(
+                    vm_name, namespace=vm_namespace
+                )
+                assert 200 == code, (
+                    f&#34;Failed to get VM status: {code}, {data}&#34;
+                )
+
+                interfaces = data.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;, [])
+
+                # Check if VM has received ANY IP (on default interface)
+                default_has_ip = False
+                dhcp_net_has_ip = False
+
+                for iface in interfaces:
+                    if (iface.get(&#39;name&#39;) == &#39;default&#39; and
+                            &#39;ipAddress&#39; in iface and iface[&#39;ipAddress&#39;]):
+                        default_has_ip = True
+
+                    if iface.get(&#39;name&#39;) == &#39;dhcp-net&#39;:
+                        if &#39;ipAddress&#39; in iface and iface[&#39;ipAddress&#39;]:
+                            vm_ip = iface[&#39;ipAddress&#39;]
+                            dhcp_net_has_ip = True
+                            break
+
+                # If VM has IP on default but not on dhcp-net,
+                # fail immediately
+                if default_has_ip and not dhcp_net_has_ip:
+                    raise AssertionError(
+                        f&#34;DHCP IP assignment failed but VM has IP on default &#34;
+                        f&#34;VM Status interfaces: {interfaces}&#34;
+                    )
+
+                if dhcp_net_has_ip:
+                    break
+
+                sleep(5)
+            else:
+                raise AssertionError(
+                    &#34;DHCP IP assignment failed: VM did not receive IP &#34;
+                    f&#34;VM Status: {data}&#34;
+                )
+
+            # Validate IP address format
+            assert vm_ip, f&#34;VM {vm_name} IP address is empty&#34;
+            ip_parts = vm_ip.split(&#39;.&#39;)
+            assert len(ip_parts) == 4, f&#34;Invalid IP address format: {vm_ip}&#34;
+
+            # Verify all octets are numeric
+            for part in ip_parts:
+                assert part.isdigit(), (
+                    f&#34;Invalid IP address format: {vm_ip}&#34;
+                )
+                assert 0 &lt;= int(part) &lt;= 255, (
+                    f&#34;Invalid IP octet value in: {vm_ip}&#34;
+                )
+
+            # Validate IP is within the configured pool range
+            def ip_to_int(ip_str):
+                &#34;&#34;&#34;Convert IP address string to integer for comparison&#34;&#34;&#34;
+                parts = [int(p) for p in ip_str.split(&#39;.&#39;)]
+                return ((parts[0] &lt;&lt; 24) + (parts[1] &lt;&lt; 16) +
+                        (parts[2] &lt;&lt; 8) + parts[3])
+
+            vm_ip_int = ip_to_int(vm_ip)
+            start_ip_int = ip_to_int(ippool_start)
+            end_ip_int = ip_to_int(ippool_end)
+
+            assert start_ip_int &lt;= vm_ip_int &lt;= end_ip_int, (
+                f&#34;VM IP {vm_ip} is NOT within the configured IP pool &#34;
+                f&#34;range {ippool_start} - {ippool_end}&#34;)
+
+        finally:
+            # Step 5: Clean up resources
+            # Delete VM
+            try:
+                code, data = api_client.vms.delete(
+                    vm_name, namespace=vm_namespace
+                )
+            except Exception as e:
+                print(f&#34;Exception during VM deletion: {e}&#34;)
+
+            # Delete DHCP IP pool using kubectl
+            try:
+                result = subprocess.run(
+                    [&#39;kubectl&#39;, &#39;delete&#39;, &#39;ippools.network&#39;, ippool_name],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=30
+                )
+            except Exception as e:
+                print(
+                    f&#34;Exception during DHCP IP pool deletion: {e}&#34;
+                )
+
+            # Delete network
+            try:
+                code, data = api_client.networks.delete(network_name)
+            except Exception as e:
+                print(f&#34;Exception during network deletion: {e}&#34;)
+
+    @pytest.mark.dependency(depends=[&#34;vmdhcp_verify_enabled&#34;])
+    def test_disable_vm_dhcp_addon(self, api_client, wait_timeout):
+        &#34;&#34;&#34;
+        Test disabling VM DHCP Controller addon
+
+        Steps:
+            1. Disable the harvester-vm-dhcp-controller addon
+            2. Wait for addon to be disabled
+            3. Verify addon status changes to disabled
+
+        Expected Result:
+            - Addon should be disabled
+            - Status should contain &#39;Disabled&#39;
+        &#34;&#34;&#34;
+        code, data = api_client.addons.disable(self.addon_id)
+
+        assert 200 == code, (code, data)
+        assert not data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, True), (code, data)
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.addons.get(self.addon_id)
+            if &#34;Disabled&#34; in data.get(&#39;status&#39;, {}).get(&#39;status&#39;, &#34;&#34;):
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f&#34;Failed to disable addon {self.addon_id} with &#34;
+                f&#34;API Status({code}): {data}&#34;
+            )</code></pre>
+</details>
+<div class="desc"><p>Test VM DHCP Controller Addon functionality</p>
+<p>Note: This is an experimental addon which is not installed in Harvester
+by default.
+Reference: <a href="https://docs.harvesterhci.io/v1.6/advanced/addons/managed-dhcp">https://docs.harvesterhci.io/v1.6/advanced/addons/managed-dhcp</a>
+Installation: Download from
+<a href="https://raw.githubusercontent.com/harvester/experimental-addons/">https://raw.githubusercontent.com/harvester/experimental-addons/</a></p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.addon_id"><code class="name">var <span class="ident">addon_id</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.addon_url"><code class="name">var <span class="ident">addon_url</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_disable_vm_dhcp_addon"><code class="name flex">
+<span>def <span class="ident">test_disable_vm_dhcp_addon</span></span>(<span>self, api_client, wait_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;vmdhcp_verify_enabled&#34;])
+def test_disable_vm_dhcp_addon(self, api_client, wait_timeout):
+    &#34;&#34;&#34;
+    Test disabling VM DHCP Controller addon
+
+    Steps:
+        1. Disable the harvester-vm-dhcp-controller addon
+        2. Wait for addon to be disabled
+        3. Verify addon status changes to disabled
+
+    Expected Result:
+        - Addon should be disabled
+        - Status should contain &#39;Disabled&#39;
+    &#34;&#34;&#34;
+    code, data = api_client.addons.disable(self.addon_id)
+
+    assert 200 == code, (code, data)
+    assert not data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, True), (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.addons.get(self.addon_id)
+        if &#34;Disabled&#34; in data.get(&#39;status&#39;, {}).get(&#39;status&#39;, &#34;&#34;):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Failed to disable addon {self.addon_id} with &#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
+<div class="desc"><p>Test disabling VM DHCP Controller addon</p>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>Disable the harvester-vm-dhcp-controller addon</li>
+<li>Wait for addon to be disabled</li>
+<li>Verify addon status changes to disabled</li>
+</ol>
+<p>Expected Result:
+- Addon should be disabled
+- Status should contain 'Disabled'</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_download_and_install_vm_dhcp_addon"><code class="name flex">
+<span>def <span class="ident">test_download_and_install_vm_dhcp_addon</span></span>(<span>self, api_client, wait_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;vmdhcp_download&#34;)
+def test_download_and_install_vm_dhcp_addon(
+        self, api_client, wait_timeout):
+    &#34;&#34;&#34;
+    Test downloading and installing VM DHCP Controller experimental addon
+
+    Steps:
+        1. Check if addon already exists
+        2. If not exists, download addon manifest from experimental repo
+        3. Apply the addon manifest using kubectl
+        4. Wait for addon to be available
+
+    Expected Result:
+        - Addon should be created in Harvester
+        - Addon should be in disabled state initially
+
+    Note: Requires kubectl configured to access the Harvester cluster.
+          Experimental addons cannot be created via Harvester API
+    &#34;&#34;&#34;
+    # Check if addon already exists
+    code, data = api_client.addons.get(self.addon_id)
+    if code == 200:
+        return
+
+    # Download addon manifest
+    try:
+        response = requests.get(self.addon_url, timeout=30)
+        response.raise_for_status()
+        addon_manifest_text = response.text
+    except Exception as e:
+        pytest.skip(f&#34;Failed to download experimental addon: {e}&#34;)
+
+    # Apply addon manifest using kubectl
+    manifest_file = None
+    try:
+        with tempfile.NamedTemporaryFile(
+                mode=&#39;w&#39;, suffix=&#39;.yaml&#39;, delete=False) as f:
+            f.write(addon_manifest_text)
+            manifest_file = f.name
+
+        result = subprocess.run(
+            [&#39;kubectl&#39;, &#39;apply&#39;, &#39;-f&#39;, manifest_file],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            timeout=60
+        )
+
+        if result.returncode != 0:
+            pytest.skip(
+                f&#34;Failed to apply addon manifest: {result.stderr}\n&#34;
+                &#34;Ensure kubectl is configured to access the Harvester cluster&#34;
+            )
+
+    except FileNotFoundError:
+        pytest.skip(
+            &#34;kubectl command not found. Please install kubectl to run this test&#34;)
+    except Exception as e:
+        pytest.skip(f&#34;Failed to install experimental addon: {e}&#34;)
+    finally:
+        # Clean up temp file
+        if manifest_file:
+            try:
+                os.unlink(manifest_file)
+            except Exception:
+                pass
+
+    # Wait for addon to be available
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.addons.get(self.addon_id)
+        if code == 200:
+            assert not data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, True), (
+                &#34;Newly installed addon should be disabled by default&#34;
+            )
+            return
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Addon &#39;{self.addon_id}&#39; did not become available within &#34;
+            f&#34;{wait_timeout} seconds after installation&#34;
+        )</code></pre>
+</details>
+<div class="desc"><p>Test downloading and installing VM DHCP Controller experimental addon</p>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>Check if addon already exists</li>
+<li>If not exists, download addon manifest from experimental repo</li>
+<li>Apply the addon manifest using kubectl</li>
+<li>Wait for addon to be available</li>
+</ol>
+<p>Expected Result:
+- Addon should be created in Harvester
+- Addon should be in disabled state initially</p>
+<p>Note: Requires kubectl configured to access the Harvester cluster.
+Experimental addons cannot be created via Harvester API</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_enable_vm_dhcp_addon"><code class="name flex">
+<span>def <span class="ident">test_enable_vm_dhcp_addon</span></span>(<span>self, api_client, wait_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;vmdhcp_enable&#34;, depends=[&#34;vmdhcp_download&#34;])
+def test_enable_vm_dhcp_addon(self, api_client, wait_timeout):
+    &#34;&#34;&#34;
+    Test enabling VM DHCP Controller addon
+
+    Steps:
+        1. Enable the harvester-vm-dhcp-controller addon
+        2. Wait for addon to be deployed successfully
+        3. Verify addon status changes to deployed
+
+    Expected Result:
+        - Addon should be enabled
+        - Status should be &#39;deployed&#39; or &#39;AddonDeploySuccessful&#39;
+        - DHCP controller should be ready to manage VM IP allocations
+    &#34;&#34;&#34;
+    code, data = api_client.addons.enable(self.addon_id)
+
+    assert 200 == code, (code, data)
+    assert data.get(&#39;spec&#39;, {}).get(&#39;enabled&#39;, False), (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.addons.get(self.addon_id)
+        status = data.get(&#39;status&#39;, {}).get(&#39;status&#39;, &#34;&#34;)
+        if status in (&#34;deployed&#34;, &#34;AddonDeploySuccessful&#34;):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Failed to enable addon {self.addon_id} with &#34;
+            f&#34;{wait_timeout} timed out\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )</code></pre>
+</details>
+<div class="desc"><p>Test enabling VM DHCP Controller addon</p>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>Enable the harvester-vm-dhcp-controller addon</li>
+<li>Wait for addon to be deployed successfully</li>
+<li>Verify addon status changes to deployed</li>
+</ol>
+<p>Expected Result:
+- Addon should be enabled
+- Status should be 'deployed' or 'AddonDeploySuccessful'
+- DHCP controller should be ready to manage VM IP allocations</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_verify_vm_dhcp_controller"><code class="name flex">
+<span>def <span class="ident">test_verify_vm_dhcp_controller</span></span>(<span>self, request, api_client, image_opensuse, unique_name, vlan_id, wait_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">    @pytest.mark.dependency(name=&#34;vmdhcp_verify_enabled&#34;,
+                            depends=[&#34;vmdhcp_enable&#34;])
+    def test_verify_vm_dhcp_controller(
+            self, request, api_client, image_opensuse, unique_name,
+            vlan_id, wait_timeout):
+        &#34;&#34;&#34;
+        Test verifying VM DHCP Controller functionality.
+        Test requires IP pool configuration in config.yml
+
+        Steps:
+            1. Create a VM network (VLAN)
+            2. Configure an IP pool with specific subnet and IP range
+            3. Create a VM with the network that has the IP pool
+            4. Verify the VM gets an IP from the defined pool range
+            5. Clean up resources (VM, IP pool, network)
+
+        Expected Result:
+            - VM should receive an IP address from the IP pool
+            - IP should be within the configured pool range
+        &#34;&#34;&#34;
+        # Get IP pool configuration from config
+        ippool_subnet = request.config.getoption(&#39;--ip-pool-subnet&#39;)
+        ippool_start = request.config.getoption(&#39;--ip-pool-start&#39;)
+        ippool_end = request.config.getoption(&#39;--ip-pool-end&#39;)
+
+        # Validate IP pool configuration
+        if not ippool_subnet or not ippool_start or not ippool_end:
+            pytest.skip(
+                &#34;IP pool configuration is required for DHCP test. &#34;
+                &#34;Please set ip-pool-subnet, ip-pool-start, and &#34;
+                &#34;ip-pool-end in config.yml&#34;
+            )
+
+        # Step 1: Create a VM network (VLAN)
+        network_name = f&#34;dhcp-test-net-{unique_name}&#34;
+        code, network_data = api_client.networks.create(
+            network_name, vlan_id, cluster_network=&#39;mgmt&#39;
+        )
+        assert 201 == code, (
+            f&#34;Failed to create network: {code}, {network_data}&#34;
+        )
+
+        network_id = f&#34;default/{network_name}&#34;
+
+        # Step 2: Configure a DHCP IP pool with specific subnet and range
+        ippool_name = f&#34;dhcp-test-pool-{unique_name}&#34;
+
+        server_ip_parts = ippool_start.split(&#39;.&#39;)
+        server_ip_parts[3] = str(max(1, int(server_ip_parts[3]) - 1))
+        server_ip = &#39;.&#39;.join(server_ip_parts)
+
+        # Gateway/router is typically the first IP in the subnet
+        gateway_parts = ippool_subnet.split(&#39;/&#39;)[0].split(&#39;.&#39;)
+        gateway_parts[3] = &#39;1&#39;
+        gateway_ip = &#39;.&#39;.join(gateway_parts)
+
+        try:
+            # Create DHCP IPPool using kubectl
+            # (API doesn&#39;t support network.harvesterhci.io IPPools)
+            ippool_yaml = f&#34;&#34;&#34;apiVersion: network.harvesterhci.io/v1alpha1
+kind: IPPool
+metadata:
+  name: {ippool_name}
+  namespace: default
+spec:
+  ipv4Config:
+    serverIP: {server_ip}
+    cidr: {ippool_subnet}
+    pool:
+      start: {ippool_start}
+      end: {ippool_end}
+    router: {gateway_ip}
+    dns:
+      - 8.8.8.8
+    leaseTime: 300
+  networkName: {network_id}
+&#34;&#34;&#34;
+
+            manifest_file = None
+            try:
+                with tempfile.NamedTemporaryFile(
+                        mode=&#39;w&#39;, suffix=&#39;.yaml&#39;, delete=False) as f:
+                    f.write(ippool_yaml)
+                    manifest_file = f.name
+
+                # Apply the DHCP IPPool manifest
+                result = subprocess.run(
+                    [&#39;kubectl&#39;, &#39;apply&#39;, &#39;-f&#39;, manifest_file],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=30
+                )
+
+                if result.returncode != 0:
+                    raise AssertionError(
+                        f&#34;Failed to create DHCP IPPool: {result.stderr}&#34;
+                    )
+
+            finally:
+                if manifest_file:
+                    try:
+                        os.unlink(manifest_file)
+                    except Exception:
+                        pass
+
+            # Wait for DHCP IP pool to become Ready
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                result = subprocess.run(
+                    [&#39;kubectl&#39;, &#39;get&#39;, &#39;ippools.network&#39;,
+                     ippool_name, &#39;-o&#39;, &#39;json&#39;],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=30
+                )
+
+                if result.returncode == 0:
+                    ippool_status = json.loads(result.stdout)
+                    conditions = ippool_status.get(
+                        &#39;status&#39;, {}
+                    ).get(&#39;conditions&#39;, [])
+
+                    # Check for Registered, CacheReady, and AgentReady
+                    # conditions
+                    registered = any(
+                        c.get(&#39;type&#39;) == &#39;Registered&#39; and
+                        c.get(&#39;status&#39;) == &#39;True&#39;
+                        for c in conditions
+                    )
+                    cache_ready = any(
+                        c.get(&#39;type&#39;) == &#39;CacheReady&#39; and
+                        c.get(&#39;status&#39;) == &#39;True&#39;
+                        for c in conditions
+                    )
+                    agent_ready = any(
+                        c.get(&#39;type&#39;) == &#39;AgentReady&#39; and
+                        c.get(&#39;status&#39;) == &#39;True&#39;
+                        for c in conditions
+                    )
+
+                    if registered and cache_ready and agent_ready:
+                        ippool_status.get(
+                            &#39;status&#39;, {}
+                        ).get(&#39;ipv4&#39;, {}).get(&#39;available&#39;, 0)
+                        break
+
+                sleep(5)
+            else:
+                print(
+                    f&#34;DHCP IP pool failed to become fully Ready &#34;
+                    f&#34;within {wait_timeout} seconds&#34;
+                )
+
+            # Step 3: Create a VM with the network that has the IP pool
+            vm_name = f&#34;dhcp-test-vm-{unique_name}&#34;
+
+            # Check if image exists, create if not
+            code, data = api_client.images.get(image_opensuse.name)
+            if code == 404:
+                code, data = api_client.images.create_by_url(
+                    image_opensuse.name, image_opensuse.url
+                )
+                assert 201 == code, f&#34;Failed to create image: {code}, {data}&#34;
+
+                # Wait for image download to complete
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime &gt; datetime.now():
+                    code, data = api_client.images.get(image_opensuse.name)
+                    if (200 == code and
+                            data.get(&#39;status&#39;, {}).get(&#39;progress&#39;) == 100):
+                        break
+                    sleep(5)
+                else:
+                    raise AssertionError(
+                        f&#34;Image download timed out after {wait_timeout} &#34;
+                        &#34;seconds&#34;
+                    )
+
+            spec = api_client.vms.Spec(1, 2)  # 1 CPU, 2GB RAM
+            spec.add_image(image_opensuse.name,
+                           f&#34;default/{image_opensuse.name}&#34;)
+
+            # Add the DHCP-enabled network
+            spec.add_network(&#34;dhcp-net&#34;, network_id)
+
+            code, vm_data = api_client.vms.create(vm_name, spec)
+            assert 201 == code, f&#34;Failed to create VM: {code}, {vm_data}&#34;
+
+            vm_namespace = vm_data.get(&#39;metadata&#39;, {}).get(
+                &#39;namespace&#39;, &#39;default&#39;
+            )
+
+            # Wait for VM to be in running state
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime &gt; datetime.now():
+                code, vm_status = api_client.vms.get_status(
+                    vm_name, namespace=vm_namespace
+                )
+                if 200 == code:
+                    vm_state = vm_status.get(&#39;status&#39;, {}).get(&#39;phase&#39;, &#39;&#39;)
+                    if vm_state == &#39;Running&#39;:
+                        break
+                sleep(5)
+            else:
+                raise AssertionError(
+                    f&#34;VM {vm_name} did not reach Running state within &#34;
+                    f&#34;{wait_timeout} seconds&#34;
+                )
+
+            # Step 4: Verify the VM gets an IP from the defined pool range
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            vm_ip = None
+
+            while endtime &gt; datetime.now():
+                code, data = api_client.vms.get_status(
+                    vm_name, namespace=vm_namespace
+                )
+                assert 200 == code, (
+                    f&#34;Failed to get VM status: {code}, {data}&#34;
+                )
+
+                interfaces = data.get(&#39;status&#39;, {}).get(&#39;interfaces&#39;, [])
+
+                # Check if VM has received ANY IP (on default interface)
+                default_has_ip = False
+                dhcp_net_has_ip = False
+
+                for iface in interfaces:
+                    if (iface.get(&#39;name&#39;) == &#39;default&#39; and
+                            &#39;ipAddress&#39; in iface and iface[&#39;ipAddress&#39;]):
+                        default_has_ip = True
+
+                    if iface.get(&#39;name&#39;) == &#39;dhcp-net&#39;:
+                        if &#39;ipAddress&#39; in iface and iface[&#39;ipAddress&#39;]:
+                            vm_ip = iface[&#39;ipAddress&#39;]
+                            dhcp_net_has_ip = True
+                            break
+
+                # If VM has IP on default but not on dhcp-net,
+                # fail immediately
+                if default_has_ip and not dhcp_net_has_ip:
+                    raise AssertionError(
+                        f&#34;DHCP IP assignment failed but VM has IP on default &#34;
+                        f&#34;VM Status interfaces: {interfaces}&#34;
+                    )
+
+                if dhcp_net_has_ip:
+                    break
+
+                sleep(5)
+            else:
+                raise AssertionError(
+                    &#34;DHCP IP assignment failed: VM did not receive IP &#34;
+                    f&#34;VM Status: {data}&#34;
+                )
+
+            # Validate IP address format
+            assert vm_ip, f&#34;VM {vm_name} IP address is empty&#34;
+            ip_parts = vm_ip.split(&#39;.&#39;)
+            assert len(ip_parts) == 4, f&#34;Invalid IP address format: {vm_ip}&#34;
+
+            # Verify all octets are numeric
+            for part in ip_parts:
+                assert part.isdigit(), (
+                    f&#34;Invalid IP address format: {vm_ip}&#34;
+                )
+                assert 0 &lt;= int(part) &lt;= 255, (
+                    f&#34;Invalid IP octet value in: {vm_ip}&#34;
+                )
+
+            # Validate IP is within the configured pool range
+            def ip_to_int(ip_str):
+                &#34;&#34;&#34;Convert IP address string to integer for comparison&#34;&#34;&#34;
+                parts = [int(p) for p in ip_str.split(&#39;.&#39;)]
+                return ((parts[0] &lt;&lt; 24) + (parts[1] &lt;&lt; 16) +
+                        (parts[2] &lt;&lt; 8) + parts[3])
+
+            vm_ip_int = ip_to_int(vm_ip)
+            start_ip_int = ip_to_int(ippool_start)
+            end_ip_int = ip_to_int(ippool_end)
+
+            assert start_ip_int &lt;= vm_ip_int &lt;= end_ip_int, (
+                f&#34;VM IP {vm_ip} is NOT within the configured IP pool &#34;
+                f&#34;range {ippool_start} - {ippool_end}&#34;)
+
+        finally:
+            # Step 5: Clean up resources
+            # Delete VM
+            try:
+                code, data = api_client.vms.delete(
+                    vm_name, namespace=vm_namespace
+                )
+            except Exception as e:
+                print(f&#34;Exception during VM deletion: {e}&#34;)
+
+            # Delete DHCP IP pool using kubectl
+            try:
+                result = subprocess.run(
+                    [&#39;kubectl&#39;, &#39;delete&#39;, &#39;ippools.network&#39;, ippool_name],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    timeout=30
+                )
+            except Exception as e:
+                print(
+                    f&#34;Exception during DHCP IP pool deletion: {e}&#34;
+                )
+
+            # Delete network
+            try:
+                code, data = api_client.networks.delete(network_name)
+            except Exception as e:
+                print(f&#34;Exception during network deletion: {e}&#34;)</code></pre>
+</details>
+<div class="desc"><p>Test verifying VM DHCP Controller functionality.
+Test requires IP pool configuration in config.yml</p>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>Create a VM network (VLAN)</li>
+<li>Configure an IP pool with specific subnet and IP range</li>
+<li>Create a VM with the network that has the IP pool</li>
+<li>Verify the VM gets an IP from the defined pool range</li>
+<li>Clean up resources (VM, IP pool, network)</li>
+</ol>
+<p>Expected Result:
+- VM should receive an IP address from the IP pool
+- IP should be within the configured pool range</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="harvester_e2e_tests.integrations" href="index.html">harvester_e2e_tests.integrations</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon" href="#harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon">TestVMDHCPControllerAddon</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.addon_id" href="#harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.addon_id">addon_id</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.addon_url" href="#harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.addon_url">addon_url</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.pytestmark" href="#harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_disable_vm_dhcp_addon" href="#harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_disable_vm_dhcp_addon">test_disable_vm_dhcp_addon</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_download_and_install_vm_dhcp_addon" href="#harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_download_and_install_vm_dhcp_addon">test_download_and_install_vm_dhcp_addon</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_enable_vm_dhcp_addon" href="#harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_enable_vm_dhcp_addon">test_enable_vm_dhcp_addon</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_verify_vm_dhcp_controller" href="#harvester_e2e_tests.integrations.test_9_addons.TestVMDHCPControllerAddon.test_verify_vm_dhcp_controller">test_verify_vm_dhcp_controller</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>
