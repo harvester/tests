@@ -421,7 +421,7 @@ class TestResourceQuota:
         assert 200 == code, (code, data)
 
         ns_quota = loads(data['metadata']['annotations']['field.cattle.io/resourceQuota'])['limit']
-        ns_quota['limitsCpu'] = f"{(cpu - 1) * 1000}m"
+        ns_quota['limitsCpu'] = f"{(cpu -1) * 1000}m"
         anno = {'field.cattle.io/resourceQuota': dumps({"limit": ns_quota})}
         rancher_api_client.set_retries(status_forcelist=(502, 504))
         code, data = ns_mgr.update(unique_name, dict(annotations=anno))
