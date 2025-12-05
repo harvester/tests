@@ -2051,7 +2051,7 @@ class TestResourceQuota:
         assert 200 == code, (code, data)
 
         ns_quota = loads(data[&#39;metadata&#39;][&#39;annotations&#39;][&#39;field.cattle.io/resourceQuota&#39;])[&#39;limit&#39;]
-        ns_quota[&#39;limitsCpu&#39;] = f&#34;{(cpu -1) * 1000}m&#34;
+        ns_quota[&#39;limitsCpu&#39;] = f&#34;{(cpu - 1) * 1000}m&#34;
         anno = {&#39;field.cattle.io/resourceQuota&#39;: dumps({&#34;limit&#34;: ns_quota})}
         rancher_api_client.set_retries(status_forcelist=(502, 504))
         code, data = ns_mgr.update(unique_name, dict(annotations=anno))
@@ -2231,7 +2231,7 @@ def test_decrease_quota_when_vm_used(
     assert 200 == code, (code, data)
 
     ns_quota = loads(data[&#39;metadata&#39;][&#39;annotations&#39;][&#39;field.cattle.io/resourceQuota&#39;])[&#39;limit&#39;]
-    ns_quota[&#39;limitsCpu&#39;] = f&#34;{(cpu -1) * 1000}m&#34;
+    ns_quota[&#39;limitsCpu&#39;] = f&#34;{(cpu - 1) * 1000}m&#34;
     anno = {&#39;field.cattle.io/resourceQuota&#39;: dumps({&#34;limit&#34;: ns_quota})}
     rancher_api_client.set_retries(status_forcelist=(502, 504))
     code, data = ns_mgr.update(unique_name, dict(annotations=anno))
