@@ -202,7 +202,6 @@ class TestVMDHCPControllerAddon:
 
         server_ip_parts = ippool_start.split('.')
         server_ip_parts[3] = str(max(1, int(server_ip_parts[3]) - 1))
-        server_ip = '.'.join(server_ip_parts)
 
         # Gateway/router is typically the first IP in the subnet
         gateway_parts = ippool_subnet.split('/')[0].split('.')
@@ -212,23 +211,19 @@ class TestVMDHCPControllerAddon:
         try:
             # Create DHCP IPPool using kubectl
             # (API doesn't support network.harvesterhci.io IPPools)
-            ippool_yaml = f"""apiVersion: network.harvesterhci.io/v1alpha1
+            ippool_yaml = f"""apiVersion: loadbalancer.harvesterhci.io/v1beta1
 kind: IPPool
 metadata:
   name: {ippool_name}
   namespace: default
 spec:
-  ipv4Config:
-    serverIP: {server_ip}
-    cidr: {ippool_subnet}
-    pool:
-      start: {ippool_start}
-      end: {ippool_end}
-    router: {gateway_ip}
-    dns:
-      - 8.8.8.8
-    leaseTime: 300
-  networkName: {network_id}
+  ranges:
+    - gateway: {gateway_ip}
+      rangeEnd: {ippool_end}
+      rangeStart: {ippool_start}
+      subnet: {ippool_subnet}
+  selector:
+    network: {network_id}
 """
 
             manifest_file = None
@@ -263,7 +258,7 @@ spec:
             endtime = datetime.now() + timedelta(seconds=wait_timeout)
             while endtime > datetime.now():
                 result = subprocess.run(
-                    ['kubectl', 'get', 'ippools.network',
+                    ['kubectl', 'get', 'ippools.loadbalancer',
                      ippool_name, '-o', 'json'],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
@@ -277,25 +272,13 @@ spec:
                         'status', {}
                     ).get('conditions', [])
 
-                    # Check for Registered, CacheReady, and AgentReady
-                    # conditions
+                    # Check for Registered conditions
                     registered = any(
-                        c.get('type') == 'Registered' and
+                        c.get('type') == 'Ready' and
                         c.get('status') == 'True'
                         for c in conditions
                     )
-                    cache_ready = any(
-                        c.get('type') == 'CacheReady' and
-                        c.get('status') == 'True'
-                        for c in conditions
-                    )
-                    agent_ready = any(
-                        c.get('type') == 'AgentReady' and
-                        c.get('status') == 'True'
-                        for c in conditions
-                    )
-
-                    if registered and cache_ready and agent_ready:
+                    if registered:
                         ippool_status.get(
                             'status', {}
                         ).get('ipv4', {}).get('available', 0)
@@ -453,7 +436,7 @@ spec:
             # Delete DHCP IP pool using kubectl
             try:
                 result = subprocess.run(
-                    ['kubectl', 'delete', 'ippools.network', ippool_name],
+                    ['kubectl', 'delete', 'ippools.loadbalancer', ippool_name],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     universal_newlines=True,
