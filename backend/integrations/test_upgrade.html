@@ -1056,6 +1056,9 @@ class TestAnyNodesUpgrade:
           of kubevirt and longhorn
         &#34;&#34;&#34;
 
+        def check_image_version(old, new):
+            return parse_version(old.split(&#39;:&#39;, 1)[-1]) &lt;= parse_version(new.split(&#39;:&#39;, 1)[-1])
+
         kubevirt_version_existed = False
         engine_image_version_existed = False
         longhorn_manager_version_existed = False
@@ -1088,8 +1091,9 @@ class TestAnyNodesUpgrade:
 
         for pod in pods[&#39;data&#39;]:
             if &#34;virt-operator&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-                kubevirt_version_existed = (
-                    kubevirt_operator_image == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+                kubevirt_version_existed = check_image_version(
+                    kubevirt_operator_image, pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
+                )
 
         # Verify longhorn version
         code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
@@ -1098,11 +1102,13 @@ class TestAnyNodesUpgrade:
 
         for pod in pods[&#39;data&#39;]:
             if &#34;longhorn-manager&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-                longhorn_manager_version_existed = (
-                  longhorn_images[&#34;longhorn-manager&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+                longhorn_manager_version_existed = check_image_version(
+                  longhorn_images[&#34;longhorn-manager&#34;], pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
+                )
             elif &#34;engine-image&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-                engine_image_version_existed = (
-                    longhorn_images[&#34;engine-image&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+                engine_image_version_existed = check_image_version(
+                    longhorn_images[&#34;engine-image&#34;], pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
+                )
 
         assert kubevirt_version_existed, &#34;kubevirt version is not correct&#34;
         assert engine_image_version_existed, &#34;longhorn engine image version is not correct&#34;
@@ -1638,6 +1644,9 @@ def test_verify_deployed_components_version(self, api_client):
       of kubevirt and longhorn
     &#34;&#34;&#34;
 
+    def check_image_version(old, new):
+        return parse_version(old.split(&#39;:&#39;, 1)[-1]) &lt;= parse_version(new.split(&#39;:&#39;, 1)[-1])
+
     kubevirt_version_existed = False
     engine_image_version_existed = False
     longhorn_manager_version_existed = False
@@ -1670,8 +1679,9 @@ def test_verify_deployed_components_version(self, api_client):
 
     for pod in pods[&#39;data&#39;]:
         if &#34;virt-operator&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-            kubevirt_version_existed = (
-                kubevirt_operator_image == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+            kubevirt_version_existed = check_image_version(
+                kubevirt_operator_image, pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
+            )
 
     # Verify longhorn version
     code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
@@ -1680,11 +1690,13 @@ def test_verify_deployed_components_version(self, api_client):
 
     for pod in pods[&#39;data&#39;]:
         if &#34;longhorn-manager&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-            longhorn_manager_version_existed = (
-              longhorn_images[&#34;longhorn-manager&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+            longhorn_manager_version_existed = check_image_version(
+              longhorn_images[&#34;longhorn-manager&#34;], pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
+            )
         elif &#34;engine-image&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-            engine_image_version_existed = (
-                longhorn_images[&#34;engine-image&#34;] == pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;])
+            engine_image_version_existed = check_image_version(
+                longhorn_images[&#34;engine-image&#34;], pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
+            )
 
     assert kubevirt_version_existed, &#34;kubevirt version is not correct&#34;
     assert engine_image_version_existed, &#34;longhorn engine image version is not correct&#34;

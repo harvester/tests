@@ -365,9 +365,10 @@ class TestVMNetwork:
         )
         vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
                      if iface[&#39;name&#39;] == &#39;default&#39;)
-        code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
-        host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
-                       if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+        hostname = data[&#39;status&#39;][&#39;nodeName&#39;]
+        code, data = api_client.hosts.get()
+        host_ip = next(addr[&#39;address&#39;] for n in data[&#39;data&#39;] for addr in n[&#39;status&#39;][&#39;addresses&#39;]
+                       if addr[&#39;type&#39;] == &#39;InternalIP&#39; and hostname != n[&#39;id&#39;])
         with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
             cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
             assert cloud_inited and not err, (out, err)
@@ -527,9 +528,10 @@ def test_add_vlan(
     )
     vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
                  if iface[&#39;name&#39;] == &#39;default&#39;)
-    code, data = api_client.hosts.get(data[&#39;status&#39;][&#39;nodeName&#39;])
-    host_ip = next(addr[&#39;address&#39;] for addr in data[&#39;status&#39;][&#39;addresses&#39;]
-                   if addr[&#39;type&#39;] == &#39;InternalIP&#39;)
+    hostname = data[&#39;status&#39;][&#39;nodeName&#39;]
+    code, data = api_client.hosts.get()
+    host_ip = next(addr[&#39;address&#39;] for n in data[&#39;data&#39;] for addr in n[&#39;status&#39;][&#39;addresses&#39;]
+                   if addr[&#39;type&#39;] == &#39;InternalIP&#39; and hostname != n[&#39;id&#39;])
     with vm_shell_from_host(host_ip, vm_ip, ssh_user, pkey=pri_key) as sh:
         cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
         assert cloud_inited and not err, (out, err)
