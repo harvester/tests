@@ -14,6 +14,13 @@ pytest_plugins = [
     "harvester_e2e_tests.fixtures.networks",
 ]
 
+@pytest.fixture(scope="class")
+def generate_kubeconfig_tempfile(api_client):
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp_config:
+        tmp_config.write(api_client.generate_kubeconfig())
+        kubeconfig_path = tmp_config.name
+
+    return kubeconfig_path
 
 @pytest.mark.p1
 @pytest.mark.experimental
@@ -38,7 +45,7 @@ class TestVMDHCPControllerAddon:
 
     @pytest.mark.dependency(name="vmdhcp_download")
     def test_download_and_install_vm_dhcp_addon(
-            self, api_client, wait_timeout):
+            self, api_client, wait_timeout, generate_kubeconfig_tempfile):
         """
         Test downloading and installing VM DHCP Controller experimental addon
 
@@ -77,7 +84,7 @@ class TestVMDHCPControllerAddon:
                 manifest_file = f.name
 
             result = subprocess.run(
-                ['kubectl', 'apply', '-f', manifest_file],
+                ['kubectl', '--kubeconfig', generate_kubeconfig_tempfile, 'apply', '-f', manifest_file],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 universal_newlines=True,
@@ -157,7 +164,7 @@ class TestVMDHCPControllerAddon:
                             depends=["vmdhcp_enable"])
     def test_verify_vm_dhcp_controller(
             self, request, api_client, image_opensuse, unique_name,
-            vlan_id, wait_timeout):
+            vlan_id, wait_timeout, generate_kubeconfig_tempfile):
         """
         Test verifying VM DHCP Controller functionality.
         Test requires IP pool configuration in config.yml
@@ -240,7 +247,7 @@ spec:
 
                 # Apply the DHCP IPPool manifest
                 result = subprocess.run(
-                    ['kubectl', 'apply', '-f', manifest_file],
+                    ['kubectl', '--kubeconfig', generate_kubeconfig_tempfile, 'apply', '-f', manifest_file],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     universal_newlines=True,
@@ -263,7 +270,7 @@ spec:
             endtime = datetime.now() + timedelta(seconds=wait_timeout)
             while endtime > datetime.now():
                 result = subprocess.run(
-                    ['kubectl', 'get', 'ippools.network',
+                    ['kubectl', '--kubeconfig', generate_kubeconfig_tempfile, 'get', 'ippools.network',
                      ippool_name, '-o', 'json'],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
@@ -453,7 +460,7 @@ spec:
             # Delete DHCP IP pool using kubectl
             try:
                 result = subprocess.run(
-                    ['kubectl', 'delete', 'ippools.network', ippool_name],
+                    ['kubectl', '--kubeconfig', generate_kubeconfig_tempfile, 'delete', 'ippools.network', ippool_name],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     universal_newlines=True,
