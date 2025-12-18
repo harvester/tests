@@ -269,7 +269,7 @@ def test_delete_volume_when_exporting(api_client, unique_name, ubuntu_image, pol
     {"size": "999999Ti", "error_msg": "exceeds cluster capacity"},
     ],
     ids=['zero_size', 'negative_size', 'not_number', 'too_large_size'])
-def test_create_volume_invalid_specifications(api_client, unique_name, invalid_spec, polling_for):
+def test_create_volume_invalid_specifications(api_client, gen_unique_name, invalid_spec):
     """
     Negative testing for volume creation with invalid specifications
     1. Attempt to create volume with invalid size specification
@@ -284,6 +284,8 @@ def test_create_volume_invalid_specifications(api_client, unique_name, invalid_s
     - Excessively large volumes should be rejected
     """
     spec = api_client.volumes.Spec(invalid_spec["size"])
+
+    unique_name = gen_unique_name()
 
     code, data = api_client.volumes.create(unique_name, spec)
 
