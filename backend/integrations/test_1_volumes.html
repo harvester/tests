@@ -298,7 +298,7 @@ Ref. <a href="https://github.com/harvester/tests/issues/1121">https://github.com
 </ol></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_1_volumes.test_create_volume_invalid_specifications"><code class="name flex">
-<span>def <span class="ident">test_create_volume_invalid_specifications</span></span>(<span>api_client, unique_name, invalid_spec, polling_for)</span>
+<span>def <span class="ident">test_create_volume_invalid_specifications</span></span>(<span>api_client, gen_unique_name, invalid_spec)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -315,7 +315,7 @@ Ref. <a href="https://github.com/harvester/tests/issues/1121">https://github.com
     {&#34;size&#34;: &#34;999999Ti&#34;, &#34;error_msg&#34;: &#34;exceeds cluster capacity&#34;},
     ],
     ids=[&#39;zero_size&#39;, &#39;negative_size&#39;, &#39;not_number&#39;, &#39;too_large_size&#39;])
-def test_create_volume_invalid_specifications(api_client, unique_name, invalid_spec, polling_for):
+def test_create_volume_invalid_specifications(api_client, gen_unique_name, invalid_spec):
     &#34;&#34;&#34;
     Negative testing for volume creation with invalid specifications
     1. Attempt to create volume with invalid size specification
@@ -330,6 +330,8 @@ def test_create_volume_invalid_specifications(api_client, unique_name, invalid_s
     - Excessively large volumes should be rejected
     &#34;&#34;&#34;
     spec = api_client.volumes.Spec(invalid_spec[&#34;size&#34;])
+
+    unique_name = gen_unique_name()
 
     code, data = api_client.volumes.create(unique_name, spec)
 
