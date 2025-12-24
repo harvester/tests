@@ -680,7 +680,8 @@ class TestVMSnapshot:
         assert data.get(&#34;status&#34;, {}).get(&#34;readyToUse&#34;) is True
 
     @pytest.mark.sanity
-    @pytest.mark.dependency(name=&#34;cleaned_up_after_vm_delete&#34;)
+    @pytest.mark.dependency(name=&#34;cleaned_up_after_vm_delete&#34;,
+                            depends=[&#34;source_vm_snapshot&#34;])
     def test_vm_snapshots_are_cleaned_up_after_source_vm_deleted(self, api_client,
                                                                  source_vm, vm_snapshot_name,
                                                                  wait_timeout):
@@ -1091,7 +1092,8 @@ A virtual machine has been created and is running.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.sanity
-@pytest.mark.dependency(name=&#34;cleaned_up_after_vm_delete&#34;)
+@pytest.mark.dependency(name=&#34;cleaned_up_after_vm_delete&#34;,
+                        depends=[&#34;source_vm_snapshot&#34;])
 def test_vm_snapshots_are_cleaned_up_after_source_vm_deleted(self, api_client,
                                                              source_vm, vm_snapshot_name,
                                                              wait_timeout):
