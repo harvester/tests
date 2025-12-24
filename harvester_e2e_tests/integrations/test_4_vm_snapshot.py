@@ -501,7 +501,8 @@ class TestVMSnapshot:
         assert data.get("status", {}).get("readyToUse") is True
 
     @pytest.mark.sanity
-    @pytest.mark.dependency(name="cleaned_up_after_vm_delete")
+    @pytest.mark.dependency(name="cleaned_up_after_vm_delete",
+                            depends=["source_vm_snapshot"])
     def test_vm_snapshots_are_cleaned_up_after_source_vm_deleted(self, api_client,
                                                                  source_vm, vm_snapshot_name,
                                                                  wait_timeout):
