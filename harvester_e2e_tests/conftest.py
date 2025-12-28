@@ -15,6 +15,7 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import os
 import pytest
 import yaml
 from datetime import datetime
@@ -49,9 +50,36 @@ def check_depends(self, depends, item):
 DepMgr.checkDepend, DepMgr._check_depend = check_depends, DepMgr.checkDepend
 
 
+def merge_config():
+    """
+    Merge two config files. The user config takes precedence over the default
+    config.
+    """
+
+    paths = [
+        os.path.join(os.getcwd(), 'config.yml'),
+        os.getenv('HARVESTER_TESTS_CONFIG', None),
+        os.path.join(os.getenv('HOME'), '.config', 'harvester', 'tests',
+                     'config.yml')
+    ]
+
+    config = {}
+    for path in paths:
+        if path:
+            try:
+                with open(path, 'r') as cnf:
+                    data = yaml.safe_load(cnf)
+            except FileNotFoundError:
+                data = {}
+
+            config.update(data)
+
+    return config
+
+
 def pytest_addoption(parser):
-    with open('config.yml') as f:
-        config_data = yaml.safe_load(f)
+    config_data = merge_config()
+
     parser.addoption(
         '--endpoint',
         action='store',
@@ -451,3 +479,18 @@ def pytest_html_results_table_header(cells):
 
 def pytest_html_results_table_row(report, cells):
     cells.insert(1, f'<td class="col-time">{datetime.utcnow()}</td>')
+
+
+def pytest_report_header(config):
+    if config.getoption("verbose") > 0:
+        return [
+            f"Harvester Endpoint:          {config.getoption('endpoint')}",
+            f"Harvester Username:          {config.getoption('username')}",
+            f"Harvester Password:          {config.getoption('password')}",
+            f"Host Password:     {config.getoption('host_password')}",
+            f"Host Private Key:  {config.getoption('host_private_key')}",
+            f"VLAN ID:           {config.getoption('vlan_id')}",
+            f"VLAN NIC:          {config.getoption('vlan_nic')}",
+            f"Rancher Endpoint: {config.getoption('rancher_endpoint')}",
+            f"Rancher Password: {config.getoption('rancher_admin_password')}",
+        ]
