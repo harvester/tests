@@ -1,6 +1,7 @@
 import re
 import json
 import yaml
+import logging
 from time import sleep
 from hashlib import sha512
 from operator import add
@@ -10,6 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 from pkg_resources import parse_version
+from packaging.version import InvalidVersion
 from paramiko.ssh_exception import SSHException, NoValidConnectionsError
 from harvester_api.managers import DEFAULT_HARVESTER_NAMESPACE, DEFAULT_LONGHORN_NAMESPACE
 
@@ -22,6 +24,8 @@ pytest_plugins = [
 
 UPGRADE_STATE_LABEL = "harvesterhci.io/upgradeState"
 NODE_INTERNAL_IP_ANNOTATION = "rke2.io/internal-ip"
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="module")
@@ -1082,8 +1086,27 @@ class TestAnyNodesUpgrade:
           of kubevirt and longhorn
         """
 
-        def check_image_version(old, new):
-            return parse_version(old.split(':', 1)[-1]) <= parse_version(new.split(':', 1)[-1])
+        def _check_image_version(old, new):
+            def _sanitized_ver(img: str):
+                try:
+                    # PEP 440 compliant: N(.N)*[-+]?[{a|alpha|b|beta|c|rc}N][.postN][.devN]
+                    ver_str = img.split(':', 1)[-1]
+                    ver_obj = parse_version(ver_str)
+                    return ver_obj
+                except InvalidVersion as e:
+                    if "-" in ver_str:
+                        # Conform to PEP 440 by replacing the first '-' with '+'
+                        # e.g. 1.2.3-4.5.6 -> 1.2.3+4.5.6, v1.10.1-hotfix-2 -> v1.10.1+hotfix
+                        ver_obj = parse_version("+".join(ver_str.split("-")[:2]))
+                        logger.warning(f"Convert {img} to {ver_obj} for comparison")
+                        return ver_obj
+                    raise e
+
+            old_le_new = (_sanitized_ver(old) <= _sanitized_ver(new))
+            if not old_le_new:
+                logger.error(f"Old image {old} does not less or equal to the new {new}")
+
+            return old_le_new
 
         kubevirt_version_existed = False
         engine_image_version_existed = False
@@ -1117,7 +1140,7 @@ class TestAnyNodesUpgrade:
 
         for pod in pods['data']:
             if "virt-operator" in pod['metadata']['name']:
-                kubevirt_version_existed = check_image_version(
+                kubevirt_version_existed = _check_image_version(
                     kubevirt_operator_image, pod['spec']['containers'][0]['image']
                 )
 
@@ -1128,11 +1151,11 @@ class TestAnyNodesUpgrade:
 
         for pod in pods['data']:
             if "longhorn-manager" in pod['metadata']['name']:
-                longhorn_manager_version_existed = check_image_version(
+                longhorn_manager_version_existed = _check_image_version(
                   longhorn_images["longhorn-manager"], pod['spec']['containers'][0]['image']
                 )
             elif "engine-image" in pod['metadata']['name']:
-                engine_image_version_existed = check_image_version(
+                engine_image_version_existed = _check_image_version(
                     longhorn_images["engine-image"], pod['spec']['containers'][0]['image']
                 )
 
