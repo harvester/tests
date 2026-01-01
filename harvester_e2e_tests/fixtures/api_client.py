@@ -122,7 +122,7 @@ def gen_unique_name():
 def ssh_keypair():
     private_key = asymmetric.rsa.generate_private_key(
         public_exponent=65537,
-        key_size=1024,
+        key_size=4096,
         backend=backends.default_backend()
     )
     private_key_pem = private_key.private_bytes(
