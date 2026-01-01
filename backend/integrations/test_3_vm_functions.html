@@ -3004,12 +3004,12 @@ class TestVMResource:
         unique_vm_name, ssh_user = stopped_vm
 
         # make sure VM stopped and configure as minimal resource
-        vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+        vm_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
         assert vm_stopped, (code, data)
+        sleep(1)  # to avoid code 409 conflict: &#39;object has been modified&#39;
         code, data = api_client.vms.get(unique_vm_name)
         vm_spec = api_client.vms.Spec.from_dict(data)
         vm_spec.cpu_cores, vm_spec.memory = 1, 2
-        sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
         code, data = api_client.vms.update(unique_vm_name, vm_spec)
         assert 200 == code, (code, data)
 
@@ -3528,12 +3528,12 @@ def test_update_schedule_on_maximum(
     unique_vm_name, ssh_user = stopped_vm
 
     # make sure VM stopped and configure as minimal resource
-    vm_stopped, (code, data) = vm_checker.wait_stopped(unique_vm_name)
+    vm_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
     assert vm_stopped, (code, data)
+    sleep(1)  # to avoid code 409 conflict: &#39;object has been modified&#39;
     code, data = api_client.vms.get(unique_vm_name)
     vm_spec = api_client.vms.Spec.from_dict(data)
     vm_spec.cpu_cores, vm_spec.memory = 1, 2
-    sleep(1)  # to prevent update too fast cause code 409 conflict: &#39;object has been modified&#39;
     code, data = api_client.vms.update(unique_vm_name, vm_spec)
     assert 200 == code, (code, data)
 
