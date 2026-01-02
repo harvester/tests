@@ -10,7 +10,7 @@ title: Check Free disk space percent before upgrade
 
 ## Verification Steps
 1. Create a new Harvester cluster. Each node's disk space should be 250G.
-1. Use dd to write files to make sure one of the node's free disk space is 20G, ff every node's /usr/local free space is more than 30G
+1. Use dd to write files to make sure one of the node's free disk space is 20G, if every node's /usr/local free space is more than 30G
     ```
     dd if=/dev/zero of=/usr/local/test.img bs=1G count=93 .
     ```

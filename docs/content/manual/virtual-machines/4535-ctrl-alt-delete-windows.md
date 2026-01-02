@@ -10,10 +10,10 @@ title: Click ctrl-alt-delete in Windows
 ## Verification Steps
 1. Create windows server 2022 iso image
 1. Create a VM, add the second SATA disk
-1. Install windows server 2002 with desktop
+1. Install windows server 2022 with desktop
 1. After installation complete
 1. Open the web console
-1. In the windows login page, click the Shortcut KeysClick Ctrl , Alt, Del in sequence
+1. In the windows login page, click the Shortcut Keys then click Ctrl , Alt, Del in sequence
 1. After login to desktop
 1. Click Ctrl , Alt, Del in sequence again
 

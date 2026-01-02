@@ -23,14 +23,14 @@ title: Create load balancer on different roles pools in RKE2 cluster
 
 1. Prepare three nodes Harvester and import with Rancher
 1. Provision a RKE2 guest cluster in Rancher
-1. Create the first pool, specif the `control plane` role only
+1. Create the first pool, specify the `control plane` role only
 1. Create the second pool, specify the `etcd` role only
 1. Create the third pool, specify the `worker` role only
 1. Repeat the steps 13 - 17 to create load balancer service
 
 1. Prepare three nodes Harvester and import with Rancher
 1. Provision a RKE2 guest cluster in Rancher
-1. Create the only one pool, specif the control plane, etcd and workers roles
+1. Create the only one pool, specify the control plane, etcd and workers roles
 
 
 ## Expected Results
