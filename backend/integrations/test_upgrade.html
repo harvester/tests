@@ -1056,8 +1056,27 @@ class TestAnyNodesUpgrade:
           of kubevirt and longhorn
         &#34;&#34;&#34;
 
-        def check_image_version(old, new):
-            return parse_version(old.split(&#39;:&#39;, 1)[-1]) &lt;= parse_version(new.split(&#39;:&#39;, 1)[-1])
+        def _check_image_version(old, new):
+            def _sanitized_ver(img: str):
+                try:
+                    # PEP 440 compliant: N(.N)*[-+]?[{a|alpha|b|beta|c|rc}N][.postN][.devN]
+                    ver_str = img.split(&#39;:&#39;, 1)[-1]
+                    ver_obj = parse_version(ver_str)
+                    return ver_obj
+                except InvalidVersion as e:
+                    if &#34;-&#34; in ver_str:
+                        # Conform to PEP 440 by replacing the first &#39;-&#39; with &#39;+&#39;
+                        # e.g. 1.2.3-4.5.6 -&gt; 1.2.3+4.5.6, v1.10.1-hotfix-2 -&gt; v1.10.1+hotfix
+                        ver_obj = parse_version(&#34;+&#34;.join(ver_str.split(&#34;-&#34;)[:2]))
+                        logger.warning(f&#34;Convert {img} to {ver_obj} for comparison&#34;)
+                        return ver_obj
+                    raise e
+
+            old_le_new = (_sanitized_ver(old) &lt;= _sanitized_ver(new))
+            if not old_le_new:
+                logger.error(f&#34;Old image {old} does not less or equal to the new {new}&#34;)
+
+            return old_le_new
 
         kubevirt_version_existed = False
         engine_image_version_existed = False
@@ -1091,7 +1110,7 @@ class TestAnyNodesUpgrade:
 
         for pod in pods[&#39;data&#39;]:
             if &#34;virt-operator&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-                kubevirt_version_existed = check_image_version(
+                kubevirt_version_existed = _check_image_version(
                     kubevirt_operator_image, pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
                 )
 
@@ -1102,11 +1121,11 @@ class TestAnyNodesUpgrade:
 
         for pod in pods[&#39;data&#39;]:
             if &#34;longhorn-manager&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-                longhorn_manager_version_existed = check_image_version(
+                longhorn_manager_version_existed = _check_image_version(
                   longhorn_images[&#34;longhorn-manager&#34;], pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
                 )
             elif &#34;engine-image&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-                engine_image_version_existed = check_image_version(
+                engine_image_version_existed = _check_image_version(
                     longhorn_images[&#34;engine-image&#34;], pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
                 )
 
@@ -1644,8 +1663,27 @@ def test_verify_deployed_components_version(self, api_client):
       of kubevirt and longhorn
     &#34;&#34;&#34;
 
-    def check_image_version(old, new):
-        return parse_version(old.split(&#39;:&#39;, 1)[-1]) &lt;= parse_version(new.split(&#39;:&#39;, 1)[-1])
+    def _check_image_version(old, new):
+        def _sanitized_ver(img: str):
+            try:
+                # PEP 440 compliant: N(.N)*[-+]?[{a|alpha|b|beta|c|rc}N][.postN][.devN]
+                ver_str = img.split(&#39;:&#39;, 1)[-1]
+                ver_obj = parse_version(ver_str)
+                return ver_obj
+            except InvalidVersion as e:
+                if &#34;-&#34; in ver_str:
+                    # Conform to PEP 440 by replacing the first &#39;-&#39; with &#39;+&#39;
+                    # e.g. 1.2.3-4.5.6 -&gt; 1.2.3+4.5.6, v1.10.1-hotfix-2 -&gt; v1.10.1+hotfix
+                    ver_obj = parse_version(&#34;+&#34;.join(ver_str.split(&#34;-&#34;)[:2]))
+                    logger.warning(f&#34;Convert {img} to {ver_obj} for comparison&#34;)
+                    return ver_obj
+                raise e
+
+        old_le_new = (_sanitized_ver(old) &lt;= _sanitized_ver(new))
+        if not old_le_new:
+            logger.error(f&#34;Old image {old} does not less or equal to the new {new}&#34;)
+
+        return old_le_new
 
     kubevirt_version_existed = False
     engine_image_version_existed = False
@@ -1679,7 +1717,7 @@ def test_verify_deployed_components_version(self, api_client):
 
     for pod in pods[&#39;data&#39;]:
         if &#34;virt-operator&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-            kubevirt_version_existed = check_image_version(
+            kubevirt_version_existed = _check_image_version(
                 kubevirt_operator_image, pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
             )
 
@@ -1690,11 +1728,11 @@ def test_verify_deployed_components_version(self, api_client):
 
     for pod in pods[&#39;data&#39;]:
         if &#34;longhorn-manager&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-            longhorn_manager_version_existed = check_image_version(
+            longhorn_manager_version_existed = _check_image_version(
               longhorn_images[&#34;longhorn-manager&#34;], pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
             )
         elif &#34;engine-image&#34; in pod[&#39;metadata&#39;][&#39;name&#39;]:
-            engine_image_version_existed = check_image_version(
+            engine_image_version_existed = _check_image_version(
                 longhorn_images[&#34;engine-image&#34;], pod[&#39;spec&#39;][&#39;containers&#39;][0][&#39;image&#39;]
             )
 
