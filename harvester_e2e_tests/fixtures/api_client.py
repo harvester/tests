@@ -191,32 +191,6 @@ def expected_settings():
 
 
 @pytest.fixture(autouse=True)
-def skip_version_before(request, api_client):
-    mark = request.node.get_closest_marker("skip_version_before")
-    if mark:
-        cluster_ver = api_client.cluster_version
-        for target_ver in mark.args:
-            if '-head' not in cluster_ver.public and parse_version(target_ver) > cluster_ver:
-                return pytest.skip(
-                    f"Cluster Version `{api_client.cluster_version}` is not included"
-                    f" in the supported version (most >= `{target_ver}`)"
-                )
-
-
-@pytest.fixture(autouse=True)
-def skip_version_after(request, api_client):
-    mark = request.node.get_closest_marker("skip_version_after")
-    if mark:
-        cluster_ver = api_client.cluster_version
-        for target_ver in mark.args:
-            if not hasattr(cluster_ver, 'major') or parse_version(target_ver) <= cluster_ver:
-                return pytest.skip(
-                    f"Cluster Version `{api_client.cluster_version}` is not included"
-                    f" in the supported version (most < `{target_ver}`)"
-                )
-
-
-@pytest.fixture(autouse=True)
 def skip_version_if(request, api_client):
     ''' To mark test case should be skip when hit the condition string.
 
