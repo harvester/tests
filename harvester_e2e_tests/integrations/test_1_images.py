@@ -275,7 +275,9 @@ class TestBackendImages:
                          image_info.image_checksum, wait_timeout)
 
     @pytest.mark.sanity
-    @pytest.mark.skip_version_if("> v1.2.0", "<= v1.4.0", reason="Issue#4293 fix after `v1.4.0`")
+    @pytest.mark.skip_version_if(
+        "> v1.2.0", "<= v1.4.0",
+        reason="https://github.com/harvester/harvester/issues/4293 fix after `v1.4.0`")
     @pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
     def test_delete_image_recreate(
         self,
@@ -877,6 +879,8 @@ class TestImageEnhancements:
         delete_image(api_client, original_image, wait_timeout)
         delete_image(api_client, exported_image_id, wait_timeout)
 
+    @pytest.mark.skip_version_if(
+            ">= v1.7.0", "< v1.9.0", reason="https://github.com/harvester/harvester/issues/9515")
     @pytest.mark.p1
     @pytest.mark.images
     @pytest.mark.negative

@@ -78,7 +78,7 @@ def cluster_network(request, api_client, unique_name):
 @pytest.mark.smoke
 @pytest.mark.settings
 @pytest.mark.networks
-@pytest.mark.skip_version_before('v1.0.3')
+@pytest.mark.skip_version_if("< v1.0.3")
 def test_enable_storage_network(
     api_client, cluster_network, vlan_id, unique_name, wait_timeout,
     setting_checker, network_checker
@@ -151,7 +151,7 @@ def test_enable_storage_network(
 @pytest.mark.smoke
 @pytest.mark.settings
 @pytest.mark.networks
-@pytest.mark.skip_version_before('v1.0.3')
+@pytest.mark.skip_version_if("< v1.0.3")
 def test_disable_storage_network(api_client, setting_checker):
     disable_spec = api_client.settings.StorageNetworkSpec.disable()
     code, data = api_client.settings.update('storage-network', disable_spec)

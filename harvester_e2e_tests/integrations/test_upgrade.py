@@ -409,7 +409,9 @@ def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, imag
 @pytest.mark.negative
 @pytest.mark.any_nodes
 class TestInvalidUpgrade:
-    @pytest.mark.skip_version_if("< v1.5.0", reason="Issue#7654 fix after `v1.5.0`")
+    @pytest.mark.skip_version_if(
+            "< v1.5.0",
+            reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
     def test_iso_url(self, api_client, unique_name, upgrade_checker):
         """
         Steps:
@@ -439,10 +441,11 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
-    @pytest.mark.skip_version_if("< v1.5.0", reason="Issue#7654 fix after `v1.5.0`")
+    @pytest.mark.skip_version_if(
+            "< v1.5.0",
+            reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
     @pytest.mark.parametrize(
-        "resort", [slice(None, None, -1), slice(None, None, 2)], ids=("mismatched", "invalid")
-    )
+        "resort", [slice(None, None, -1), slice(None, None, 2)], ids=("mismatched", "invalid"))
     def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade_checker):
         version, url, checksum = upgrade_target
         version = f"{version}-{unique_name}"
@@ -472,7 +475,7 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
-    @pytest.mark.skip("https://github.com/harvester/harvester/issues/5494")
+    @pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/5494")
     def test_version_compatibility(
         self, api_client, unique_name, upgrade_target, upgrade_timeout
     ):

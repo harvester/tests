@@ -191,54 +191,37 @@ def expected_settings():
 
 
 @pytest.fixture(autouse=True)
-def skip_version_before(request, api_client):
-    mark = request.node.get_closest_marker("skip_version_before")
-    if mark:
-        cluster_ver = api_client.cluster_version
-        for target_ver in mark.args:
-            if '-head' not in cluster_ver.public and parse_version(target_ver) > cluster_ver:
-                return pytest.skip(
-                    f"Cluster Version `{api_client.cluster_version}` is not included"
-                    f" in the supported version (most >= `{target_ver}`)"
-                )
-
-
-@pytest.fixture(autouse=True)
-def skip_version_after(request, api_client):
-    mark = request.node.get_closest_marker("skip_version_after")
-    if mark:
-        cluster_ver = api_client.cluster_version
-        for target_ver in mark.args:
-            if not hasattr(cluster_ver, 'major') or parse_version(target_ver) <= cluster_ver:
-                return pytest.skip(
-                    f"Cluster Version `{api_client.cluster_version}` is not included"
-                    f" in the supported version (most < `{target_ver}`)"
-                )
-
-
-@pytest.fixture(autouse=True)
 def skip_version_if(request, api_client):
     ''' To mark test case should be skip when hit the condition string.
 
     Args:
         *args: Version string prefixing with one of operators: `!=`, `==`, `>=`, `<=`, `>`, `<`
     Keyword Args:
-        reason: The reason string for `pytest.skip`, default is:
-            "Cluster Version `{cluster_version}` is not included in versions: {versions}"
+        reason: The reason string for `pytest.skip`
         condition: Condition callable function to check compare result(bool), default is `all`
     '''
     default_reason = (
-        "Cluster Version `{cluster_version}` is not included in versions: {versions}"
+        "Cluster version {cluster_version} satisfies {condition} condition(s) in {versions}"
     )
+    cond_str = {
+        all: "all",
+        any: "some",
+    }
+
     mark = request.node.get_closest_marker("skip_version_if")
     if mark:
         cluster_ver = api_client.cluster_version
         checks = [version_check(vstr, cluster_ver) for vstr in mark.args]
         reason = mark.kwargs.get('reason', default_reason)
-        if mark.kwargs.get('condition', all)(r for *_, r in checks):
+        cond = mark.kwargs.get('condition', all)
+        if cond(r for *_, r in checks):
             versions = [f"{op} {v}" for op, v, _ in checks]
             return pytest.skip(
-                reason.format(cluster_version=cluster_ver, versions=versions)
+                reason.format(
+                    cluster_version=cluster_ver,
+                    condition=cond_str.get(cond, str(cond)),
+                    versions=versions
+                )
             )
 
 

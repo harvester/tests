@@ -639,7 +639,7 @@ class TestBackupRestore:
         )
 
 
-@pytest.mark.skip("https://github.com/harvester/harvester/issues/1473")
+@pytest.mark.xfail(reason="https://github.com/harvester/harvester/issues/1473")
 @pytest.mark.p0
 @pytest.mark.sanity
 @pytest.mark.backup_target
