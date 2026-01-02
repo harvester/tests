@@ -15,6 +15,7 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import re
 import pytest
 import yaml
 from datetime import datetime
@@ -292,10 +293,6 @@ def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
         ("skip_version_if", "Mark test skipped when cluster version hit the condition"),
-        ("skip_version_before", (
-            "mark test skipped when cluster version < provided version")),
-        ("skip_version_after", (
-            "mark test skipped when cluster version >= provided version")),
         ("smoke", "{_r} smoke testing"),
         ("sanity", "{_r} sanity testing"),
         ('p0', ("mark the test's priority is p0")),
@@ -451,3 +448,29 @@ def pytest_html_results_table_header(cells):
 
 def pytest_html_results_table_row(report, cells):
     cells.insert(1, f'<td class="col-time">{datetime.utcnow()}</td>')
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    item_html = item.config.pluginmanager.getplugin('html')
+    outcome = yield
+    report = outcome.get_result()
+    extras = getattr(report, 'extras', [])
+
+    if report.skipped:
+        if hasattr(report, 'wasxfail'):
+            reason_text = report.wasxfail
+        else:
+            reason_text = report.longrepr[2] if isinstance(report.longrepr, tuple) else "Skipped"
+
+        m_url = re.search(r"https?://\S*\w", reason_text)
+        if m_url:
+            url = m_url.group()
+            name = url.split("/", 4)[-1] if "github.com" in url else url
+            extras.append(item_html.extras.url(m_url.group(), name=name))
+        elif "depends on" in reason_text:
+            extras.append(item_html.extras.text(reason_text, name="byPriorCase"))
+        elif "condition(s) in" in reason_text:
+            extras.append(item_html.extras.text(reason_text, name="byVersion"))
+
+    report.extras = extras

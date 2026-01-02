@@ -266,8 +266,10 @@ def test_delete_volume_when_exporting(api_client, unique_name, ubuntu_image, pol
     {"size": "0Gi", "error_msg": "must be greater than zero"},
     {"size": "-5Gi", "error_msg": "must be greater than zero"},
     {"size": "invalid_size", "error_msg": "quantities must match"},
-    {"size": "999999Ti", "error_msg": "exceeds cluster capacity"},
-    ],
+    pytest.param(
+        {"size": "999999Ti", "error_msg": "exceeds cluster capacity"},
+        marks=pytest.mark.xfail(reason="https://github.com/harvester/harvester/issues/9268")
+    )],
     ids=['zero_size', 'negative_size', 'not_number', 'too_large_size'])
 def test_create_volume_invalid_specifications(api_client, gen_unique_name, invalid_spec):
     """

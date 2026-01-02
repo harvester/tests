@@ -239,7 +239,8 @@ class TestSupportBundle:
 @pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if("< v1.6.0", reason="Issue#7835 new feature in v1.6.0")
+@pytest.mark.skip_version_if(
+    "< v1.6.0", reason="https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0")
 class TestSupportBundleInvalidExtraCollectionNamespaces:
     def test_create_invalid_extra_collection_namespaces(
         self, api_client, unique_name, support_bundle_state
@@ -275,7 +276,8 @@ class TestSupportBundleInvalidExtraCollectionNamespaces:
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if("< v1.6.0", reason="Issue#7835 new feature in v1.6.0")
+@pytest.mark.skip_version_if(
+    "< v1.6.0", reason="https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0")
 class TestSupportBundleTimeout:
     @pytest.mark.dependency(name="create support bundle")
     def test_create(self, api_client, unique_name, support_bundle_state):
@@ -308,7 +310,8 @@ class TestSupportBundleTimeout:
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if("< v1.6.0", reason="Issue#7835 new feature in v1.6.0")
+@pytest.mark.skip_version_if(
+    "< v1.6.0", reason="https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0")
 class TestSupportBundleExpiration:
     @pytest.mark.dependency(name="create support bundle")
     def test_create(self, api_client, unique_name, support_bundle_state):
@@ -341,7 +344,8 @@ class TestSupportBundleExpiration:
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if("< v1.6.0", reason="Issue#7835 new feature in v1.6.0")
+@pytest.mark.skip_version_if(
+    "< v1.6.0", reason="https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0")
 class TestSupportBundleExtraNamespaces:
     @pytest.mark.dependency(name="create support bundle")
     def test_create(self, api_client, unique_name, support_bundle_state):

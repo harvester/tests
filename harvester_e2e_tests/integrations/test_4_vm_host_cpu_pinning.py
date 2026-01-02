@@ -240,6 +240,8 @@ class TestPinCPUonVM:
             f"API Status({code}): {data}"
         )
 
+    @pytest.mark.skip_version_if(
+            ">= v1.7.0", "< v1.8.0", reason="https://github.com/harvester/harvester/issues/9557")
     @pytest.mark.negative
     @pytest.mark.dependency(depends=["pin_cpu_on_vm"])
     def test_disable_cpu_manager_when_vm_on_it(self, api_client, unique_name, wait_timeout):
