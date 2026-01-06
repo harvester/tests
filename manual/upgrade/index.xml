@@ -8,6 +8,13 @@
     <language>en-us</language>
     <atom:link href="https://harvester.github.io/tests/manual/upgrade/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Check Free disk space percent before upgrade</title>
+      <link>https://harvester.github.io/tests/manual/upgrade/4461-check-space-before-upgrade/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://harvester.github.io/tests/manual/upgrade/4461-check-space-before-upgrade/</guid>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;Related issues: &lt;a href=&#34;https://github.com/harvester/harvester/issues/4611&#34;&gt;#4611&lt;/a&gt; [ENHANCEMENT] Check free disk space percent before upgrade&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;category&#34;&gt;Category:&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Upgrade Harvester&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;verification-steps&#34;&gt;Verification Steps&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Create a new Harvester cluster. Each node&amp;rsquo;s disk space should be 250G.&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Use dd to write files to make sure one of the node&amp;rsquo;s free disk space is 20G, if every node&amp;rsquo;s /usr/local free space is more than 30G&lt;/p&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;dd if=/dev/zero of=/usr/local/test.img bs=1G count=93 .&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Ensure /usr/local did not have enough spaces&lt;/p&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;rancher@n1-240104:~&amp;gt; df -h /usr/local&#xA;Filesystem      Size  Used Avail Use% Mounted on&#xA;/dev/vda5       147G   28G  112G  21% /usr/local&#xA;rancher@n1-240104:~&amp;gt; sudo dd if=/dev/zero of=/usr/local/test.img bs=1G count=93&#xA;93+0 records in&#xA;93+0 records out&#xA;99857989632 bytes (100 GB, 93 GiB) copied, 327.656 s, 305 MB/s&#xA;rancher@n1-240104:~&amp;gt; df -h /usr/local&#xA;Filesystem      Size  Used Avail Use% Mounted on&#xA;/dev/vda5       147G  116G   24G  84% /usr/local&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;Create a test version&lt;/p&gt;</description>
+    </item>
+    <item>
       <title>Rejoin node machine after Harvester upgrade</title>
       <link>https://harvester.github.io/tests/manual/upgrade/rejoin-node-after-upgrade/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

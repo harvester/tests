@@ -270,6 +270,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/misc/1520-check-title-and-favicon/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/upgrade/4461-check-space-before-upgrade/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/misc/3902-elemental-cloud-init-harvester-crds/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/1697-ipam-load-balancer/</loc>
@@ -302,6 +304,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2920-volume-status-after-upgrade/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/virtual-machines/4535-ctrl-alt-delete-windows/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2562-clone-image/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/clone-vm-and-dont-select-start-after-creation/</loc>
@@ -331,6 +335,8 @@
     <loc>https://harvester.github.io/tests/manual/_incoming/2647_collect_system_logs/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2646_config_logging_in_harvester_dashboard/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/deployment/4480-config-sftp-dynamically/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/1647-configure-vlan-interface-on-iso-installer/</loc>
   </url><url>
@@ -385,6 +391,8 @@
     <loc>https://harvester.github.io/tests/manual/volumes/create-image-from-volume/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/images/create-images-with-valid-image-url/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/harvester-rancher/4678-load-balancer-different-roles-pool/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/virtual-machines/create-multiple-instances-vm-with-iso-image/</loc>
   </url><url>
@@ -850,6 +858,8 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/node_labeling/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/virtual-machines/4588-node-pool-anti-affinity/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2325-node-promotion-for-topology-label/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/hosts/nodes-with-cordoned-status-should-not-be-in-vm-migration-list/</loc>
@@ -937,6 +947,8 @@
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/restore-last-backup-chained-backup/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/restore-middle-backup-chained-backup/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/backup-and-restore/4604-restore-snapshot-restored-from-backup/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2968_restored_vm_can_not_be_cloned/</loc>
   </url><url>
@@ -1168,9 +1180,15 @@
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2734-vlan-upgrade-test/</loc>
   </url><url>
+    <loc>https://harvester.github.io/tests/manual/backup-and-restore/4907-vm-backup-restore-longhorn-1.5-plus/</loc>
+  </url><url>
     <loc>https://harvester.github.io/tests/manual/backup-and-restore/vm_backup_metadata/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/_incoming/2906-vm-boot-stress-test-/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/virtual-machines/4625-vm-without-cpu-memory/</loc>
+  </url><url>
+    <loc>https://harvester.github.io/tests/manual/backup-and-restore/4954-cannot-resotre-new-vm-have-snapshot/</loc>
   </url><url>
     <loc>https://harvester.github.io/tests/manual/advanced/addons/5846-vm-import-enhancement/</loc>
   </url><url>
