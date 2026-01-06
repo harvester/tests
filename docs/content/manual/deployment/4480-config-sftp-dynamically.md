@@ -55,9 +55,9 @@ title: Config sftp dynamically
     ```
 1. After reboot machine, the sftp service and corresponding file exists 
     ```
-    harvester@localhost:~/Harvester/ipxe-examples/vagrant-pxe-harvester> ssh rancher@192.168.0.32
+    harvester@localhost:~/Harvester/ipxe-examples/vagrant-pxe-harvester> ssh rancher@192.168.0.131
     Password: 
-    rancher@harvester-node-2:~> sudo tail -n5 /etc/ssh/sshd_config
+    $ sudo tail -n5 /etc/ssh/sshd_config
     AllowAgentForwarding no
     X11Forwarding no
     AllowTcpForwarding no
@@ -65,10 +65,10 @@ title: Config sftp dynamically
     Include /etc/ssh/sshd_config.d/*.conf
     rancher@harvester-node-2:~> exit
     logout
-    Connection to 192.168.0.32 closed.
-    harvester@localhost:~/Harvester/ipxe-examples/vagrant-pxe-harvester> sftp rancher@192.168.0.32
+    Connection to 192.168.0.131 closed.
+    harvester@localhost:~/Harvester/ipxe-examples/vagrant-pxe-harvester> sftp rancher@192.168.0.131
     Password: 
-    Connected to 192.168.0.32.
+    Connected to 192.168.0.131.
     ```
 1. After upgrade, the sftp service and corresponding file exists
     ```
