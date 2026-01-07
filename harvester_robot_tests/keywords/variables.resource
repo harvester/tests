@@ -6,9 +6,9 @@ Library          DateTime
 
 *** Variables ***
 # Harvester Cluster
-${HARVESTER_ENDPOINT}           %{HARVESTER_ENDPOINT=https://10.115.252.130}
+${HARVESTER_ENDPOINT}           %{HARVESTER_ENDPOINT=https://localhost}
 ${HARVESTER_USERNAME}           %{HARVESTER_USERNAME=admin}
-${HARVESTER_PASSWORD}           %{HARVESTER_PASSWORD=password1234}
+${HARVESTER_PASSWORD}           %{HARVESTER_PASSWORD=password}
 
 # Timeouts and Intervals
 ${WAIT_TIMEOUT}                 600
