@@ -162,7 +162,7 @@ def created_invalid_secret(
 
 
 @pytest.mark.p0
-@pytest.mark.skip_version_if("< v1.4.0", reason="New feature after v1.4.0")
+@pytest.mark.skip_if_version("< v1.4.0", reason="New feature after v1.4.0")
 class TestEncryptedBackingImage:
     """
     Integration tests for encrypted and decrypted backing images.
@@ -281,7 +281,7 @@ class TestEncryptedBackingImage:
 
 
 @pytest.mark.p0
-@pytest.mark.skip_version_if("< v1.4.0", reason="New feature after v1.4.0")
+@pytest.mark.skip_if_version("< v1.4.0", reason="New feature after v1.4.0")
 class TestInvalidEncryptionSecret:
     """
     Test creating invalid encryption secrets and verify error handling.

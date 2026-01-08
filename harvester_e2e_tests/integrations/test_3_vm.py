@@ -393,7 +393,7 @@ def test_migrate_vm_with_multiple_volumes(
 @pytest.mark.networks
 @pytest.mark.settings
 @pytest.mark.virtualmachines
-@pytest.mark.skip_version_if("< v1.0.3")
+@pytest.mark.skip_if_version("< v1.0.3")
 class TestVMWithStorageNetwork:
     def test_enable_storage_network_with_api_stopped_vm(
         self, api_client, minimal_vm, storage_network, setting_checker, vm_checker, volume_checker

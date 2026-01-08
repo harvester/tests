@@ -409,7 +409,7 @@ def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, imag
 @pytest.mark.negative
 @pytest.mark.any_nodes
 class TestInvalidUpgrade:
-    @pytest.mark.skip_version_if(
+    @pytest.mark.skip_if_version(
             "< v1.5.0",
             reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
     def test_iso_url(self, api_client, unique_name, upgrade_checker):
@@ -441,7 +441,7 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
-    @pytest.mark.skip_version_if(
+    @pytest.mark.skip_if_version(
             "< v1.5.0",
             reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
     @pytest.mark.parametrize(
@@ -1089,8 +1089,8 @@ class TestAnyNodesUpgrade:
           of kubevirt and longhorn
         """
 
-        def _check_image_version(old, new):
-            def _sanitized_ver(img: str):
+        def check_image_version(old, new):
+            def sanitized_ver(img: str):
                 try:
                     # PEP 440 compliant: N(.N)*[-+]?[{a|alpha|b|beta|c|rc}N][.postN][.devN]
                     ver_str = img.split(':', 1)[-1]
@@ -1105,7 +1105,7 @@ class TestAnyNodesUpgrade:
                         return ver_obj
                     raise e
 
-            old_le_new = (_sanitized_ver(old) <= _sanitized_ver(new))
+            old_le_new = (sanitized_ver(old) <= sanitized_ver(new))
             if not old_le_new:
                 logger.error(f"Old image {old} does not less or equal to the new {new}")
 
@@ -1143,7 +1143,7 @@ class TestAnyNodesUpgrade:
 
         for pod in pods['data']:
             if "virt-operator" in pod['metadata']['name']:
-                kubevirt_version_existed = _check_image_version(
+                kubevirt_version_existed = check_image_version(
                     kubevirt_operator_image, pod['spec']['containers'][0]['image']
                 )
 
@@ -1154,11 +1154,11 @@ class TestAnyNodesUpgrade:
 
         for pod in pods['data']:
             if "longhorn-manager" in pod['metadata']['name']:
-                longhorn_manager_version_existed = _check_image_version(
+                longhorn_manager_version_existed = check_image_version(
                   longhorn_images["longhorn-manager"], pod['spec']['containers'][0]['image']
                 )
             elif "engine-image" in pod['metadata']['name']:
-                engine_image_version_existed = _check_image_version(
+                engine_image_version_existed = check_image_version(
                     longhorn_images["engine-image"], pod['spec']['containers'][0]['image']
                 )
 

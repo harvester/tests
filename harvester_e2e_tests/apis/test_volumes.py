@@ -62,7 +62,7 @@ class TestVolumesNegative:
         assert 422 == code, (code, data)
         assert "Invalid" == data.get("code"), (code, data)
 
-    @pytest.mark.skip_version_if(
+    @pytest.mark.skip_if_version(
             ">= v1.4.0",
             reason="https://github.com/harvester/harvester/issues/7030, breaking changes")
     def test_create_without_name(self, api_client):

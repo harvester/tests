@@ -191,7 +191,7 @@ def expected_settings():
 
 
 @pytest.fixture(autouse=True)
-def skip_version_if(request, api_client):
+def skip_if_version(request, api_client):
     ''' To mark test case should be skip when hit the condition string.
 
     Args:
@@ -200,32 +200,42 @@ def skip_version_if(request, api_client):
         reason: The reason string for `pytest.skip`
         condition: Condition callable function to check compare result(bool), default is `all`
     '''
-    default_reason = (
-        "Cluster version {cluster_version} satisfies {condition} condition(s) in {versions}"
-    )
-    cond_str = {
-        all: "all",
-        any: "some",
-    }
-
-    mark = request.node.get_closest_marker("skip_version_if")
+    mark = request.node.get_closest_marker("skip_if_version")
     if mark:
         cluster_ver = api_client.cluster_version
-        checks = [version_check(vstr, cluster_ver) for vstr in mark.args]
-        reason = mark.kwargs.get('reason', default_reason)
-        cond = mark.kwargs.get('condition', all)
-        if cond(r for *_, r in checks):
-            versions = [f"{op} {v}" for op, v, _ in checks]
-            return pytest.skip(
-                reason.format(
-                    cluster_version=cluster_ver,
-                    condition=cond_str.get(cond, str(cond)),
-                    versions=versions
-                )
-            )
+        return _action_if_version(cluster_ver, mark, pytest.skip)
 
 
-def version_check(vstring, version):
+@pytest.fixture(autouse=True)
+def xfail_if_version(request, api_client):
+    ''' To mark test case should be xfail when hit the condition string.
+
+    Args:
+        *args: Version string prefixing with one of operators: `!=`, `==`, `>=`, `<=`, `>`, `<`
+    Keyword Args:
+        reason: The reason string for `pytest.xfail`
+        condition: Condition callable function to check compare result(bool), default is `all`
+    '''
+    mark = request.node.get_closest_marker("xfail_if_version")
+    if mark:
+        cluster_ver = api_client.cluster_version
+        return _action_if_version(cluster_ver, mark, pytest.xfail)
+
+
+def _action_if_version(cluster_ver, mark, pytest_act: Callable):
+    default_reason = "Cluster version {cluster_ver} matches {cond} condition(s) in {versions}"
+    checks = [_version_check(vstr, cluster_ver) for vstr in mark.args]
+    reason = mark.kwargs.get('reason', default_reason)
+    cond = mark.kwargs.get('condition', all)
+
+    if cond(r for *_, r in checks):
+        versions = [f"{op} {v}" for op, v, _ in checks]
+        return pytest_act(
+            reason.format(cluster_ver=cluster_ver, cond=cond.__name__, versions=versions)
+        )
+
+
+def _version_check(vstring, version):
     from operator import le, lt, ge, gt, ne, eq
     ops = {"<=": le, "<": lt, ">=": ge, ">": gt, "!=": ne, "==": eq}
 

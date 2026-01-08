@@ -46,7 +46,7 @@ class TestNetworksNegative:
         assert "NotFound" == data.get("reason"), (code, data)
 
     @pytest.mark.parametrize("vlan_id", [0, 4095])
-    @pytest.mark.skip_version_if(
+    @pytest.mark.skip_if_version(
             ">= v1.0.3", reason="https://github.com/harvester/harvester/issues/3151")
     def test_create_with_invalid_id_103(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
@@ -61,7 +61,7 @@ class TestNetworksNegative:
         assert "Invalid" == data.get("reason"), (code, data)
 
     @pytest.mark.parametrize("vlan_id", [4095])
-    @pytest.mark.skip_version_if(
+    @pytest.mark.skip_if_version(
             "< v1.1.0", reason="https://github.com/harvester/harvester/issues/3151")
     def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
@@ -76,13 +76,13 @@ class TestNetworksNegative:
 class TestNetworks:
 
     @pytest.mark.dependency(name="create_network_103")
-    @pytest.mark.skip_version_if(">= v1.0.3")
+    @pytest.mark.skip_if_version(">= v1.0.3")
     def test_create_103(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
         assert 201 == code, (code, data)
 
     @pytest.mark.dependency(name="create_network")
-    @pytest.mark.skip_version_if(
+    @pytest.mark.skip_if_version(
             "< v1.1.0", reason="https://github.com/harvester/harvester/issues/3151")
     def test_create(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID, cluster_network='mgmt')

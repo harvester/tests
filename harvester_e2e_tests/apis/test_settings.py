@@ -41,7 +41,7 @@ def test_get_all_settings(api_client, expected_settings):
 
 @pytest.mark.p0
 @pytest.mark.settings
-@pytest.mark.skip_version_if("< v1.1.0")
+@pytest.mark.skip_if_version("< v1.1.0")
 def test_get_all_settings_v110(api_client, expected_settings):
     expected_settings = expected_settings['default'] | expected_settings['1.1.0']
     code, data = api_client.settings.get()
@@ -173,9 +173,9 @@ class TestUpdateInvalidBackupTarget:
 @pytest.mark.sanity
 @pytest.mark.settings
 class TestUpdateKubeconfigDefaultToken:
-    @pytest.mark.skip_version_if(
-            "< v1.3.2",
-            reason="https://github.com/harvester/harvester/issues/5891 fixed after v1.3.2")
+    @pytest.mark.skip_if_version(
+            "< v1.3.1",
+            reason="https://github.com/harvester/harvester/issues/5891 fixed after v1.3.1")
     def test_invalid_kubeconfig_ttl_min(self, api_client):
         KubeconfigTTLMinSpec = api_client.settings.KubeconfigDefaultTokenTTLSpec.TTL
         spec = KubeconfigTTLMinSpec(99999999999999)
@@ -185,7 +185,7 @@ class TestUpdateKubeconfigDefaultToken:
             f"API Status({code}): {data}"
         )
 
-    @pytest.mark.skip_version_if("< v1.3.1")
+    @pytest.mark.skip_if_version("< v1.3.1")
     def test_valid_kubeconfig_ttl_min(self, api_client):
         KubeconfigTTLMinSpec = api_client.settings.KubeconfigDefaultTokenTTLSpec.TTL
         spec = KubeconfigTTLMinSpec(172800)

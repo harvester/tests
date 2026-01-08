@@ -275,8 +275,8 @@ class TestBackendImages:
                          image_info.image_checksum, wait_timeout)
 
     @pytest.mark.sanity
-    @pytest.mark.skip_version_if(
-        "> v1.2.0", "<= v1.4.0",
+    @pytest.mark.skip_if_version(
+        ">= v1.2.0", "< v1.4.0",
         reason="https://github.com/harvester/harvester/issues/4293 fix after `v1.4.0`")
     @pytest.mark.dependency(name="delete_image_recreate", depends=["create_image_url"])
     def test_delete_image_recreate(
@@ -419,7 +419,7 @@ class TestBackendImages:
 @pytest.mark.images
 @pytest.mark.settings
 @pytest.mark.networks
-@pytest.mark.skip_version_if("< v1.0.3")
+@pytest.mark.skip_if_version("< v1.0.3")
 @pytest.mark.usefixtures("storage_network")
 class TestImageWithStorageNetwork:
     @pytest.mark.dependency(name="create_image_by_file")
@@ -879,8 +879,8 @@ class TestImageEnhancements:
         delete_image(api_client, original_image, wait_timeout)
         delete_image(api_client, exported_image_id, wait_timeout)
 
-    @pytest.mark.skip_version_if(
-            ">= v1.7.0", "< v1.9.0", reason="https://github.com/harvester/harvester/issues/9515")
+    @pytest.mark.xfail_if_version(
+            ">= v1.7.0", reason="https://github.com/harvester/harvester/issues/9515 since v1.7.0")
     @pytest.mark.p1
     @pytest.mark.images
     @pytest.mark.negative

@@ -101,7 +101,7 @@ def vm_force_reset_policy(api_client):
 @pytest.mark.sanity
 @pytest.mark.p1
 class TestHostState:
-    @pytest.mark.skip_version_if(
+    @pytest.mark.skip_if_version(
         ">= v1.7.0", "< v1.8.0", reason="https://github.com/harvester/harvester/issues/9759")
     @pytest.mark.dependency(name="host_poweroff")
     def test_poweroff_state(self, api_client, host_state, wait_timeout, available_node_names):

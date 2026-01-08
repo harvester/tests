@@ -239,7 +239,7 @@ class TestSupportBundle:
 @pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if(
+@pytest.mark.skip_if_version(
     "< v1.6.0", reason="https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0")
 class TestSupportBundleInvalidExtraCollectionNamespaces:
     def test_create_invalid_extra_collection_namespaces(
@@ -276,7 +276,7 @@ class TestSupportBundleInvalidExtraCollectionNamespaces:
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if(
+@pytest.mark.skip_if_version(
     "< v1.6.0", reason="https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0")
 class TestSupportBundleTimeout:
     @pytest.mark.dependency(name="create support bundle")
@@ -310,7 +310,7 @@ class TestSupportBundleTimeout:
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if(
+@pytest.mark.skip_if_version(
     "< v1.6.0", reason="https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0")
 class TestSupportBundleExpiration:
     @pytest.mark.dependency(name="create support bundle")
@@ -344,7 +344,7 @@ class TestSupportBundleExpiration:
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if(
+@pytest.mark.skip_if_version(
     "< v1.6.0", reason="https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0")
 class TestSupportBundleExtraNamespaces:
     @pytest.mark.dependency(name="create support bundle")

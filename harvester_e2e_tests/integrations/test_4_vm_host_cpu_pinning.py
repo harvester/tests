@@ -240,7 +240,7 @@ class TestPinCPUonVM:
             f"API Status({code}): {data}"
         )
 
-    @pytest.mark.skip_version_if(
+    @pytest.mark.skip_if_version(
             ">= v1.7.0", "< v1.8.0", reason="https://github.com/harvester/harvester/issues/9557")
     @pytest.mark.negative
     @pytest.mark.dependency(depends=["pin_cpu_on_vm"])
