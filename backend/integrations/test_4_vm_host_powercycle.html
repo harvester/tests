@@ -648,6 +648,8 @@ def vm_force_reset_policy(api_client):
 @pytest.mark.sanity
 @pytest.mark.p1
 class TestHostState:
+    @pytest.mark.skip_version_if(
+        &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9759&#34;)
     @pytest.mark.dependency(name=&#34;host_poweroff&#34;)
     def test_poweroff_state(self, api_client, host_state, wait_timeout, available_node_names):
         &#34;&#34;&#34;
@@ -737,7 +739,9 @@ class TestHostState:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(name=&#34;host_poweroff&#34;)
+<pre><code class="python">@pytest.mark.skip_version_if(
+    &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9759&#34;)
+@pytest.mark.dependency(name=&#34;host_poweroff&#34;)
 def test_poweroff_state(self, api_client, host_state, wait_timeout, available_node_names):
     &#34;&#34;&#34;
     Test the hosts are the nodes which make the cluster

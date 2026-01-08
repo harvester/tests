@@ -60,13 +60,14 @@ el.replaceWith(d);
 class TestNetworks:
 
     @pytest.mark.dependency(name=&#34;create_network_103&#34;)
-    @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)
+    @pytest.mark.skip_version_if(&#34;&gt;= v1.0.3&#34;)
     def test_create_103(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID)
         assert 201 == code, (code, data)
 
     @pytest.mark.dependency(name=&#34;create_network&#34;)
-    @pytest.mark.skip_version_before(&#34;v1.1.0&#34;)
+    @pytest.mark.skip_version_if(
+            &#34;&lt; v1.1.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/3151&#34;)
     def test_create(self, api_client, unique_name):
         code, data = api_client.networks.create(unique_name, VLAN_ID, cluster_network=&#39;mgmt&#39;)
         assert 201 == code, (code, data)
@@ -122,7 +123,8 @@ class TestNetworks:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.dependency(name=&#34;create_network&#34;)
-@pytest.mark.skip_version_before(&#34;v1.1.0&#34;)
+@pytest.mark.skip_version_if(
+        &#34;&lt; v1.1.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/3151&#34;)
 def test_create(self, api_client, unique_name):
     code, data = api_client.networks.create(unique_name, VLAN_ID, cluster_network=&#39;mgmt&#39;)
     assert 201 == code, (code, data)</code></pre>
@@ -138,7 +140,7 @@ def test_create(self, api_client, unique_name):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.dependency(name=&#34;create_network_103&#34;)
-@pytest.mark.skip_version_after(&#34;v1.0.3&#34;)
+@pytest.mark.skip_version_if(&#34;&gt;= v1.0.3&#34;)
 def test_create_103(self, api_client, unique_name):
     code, data = api_client.networks.create(unique_name, VLAN_ID)
     assert 201 == code, (code, data)</code></pre>
@@ -226,7 +228,8 @@ class TestNetworksNegative:
         assert &#34;NotFound&#34; == data.get(&#34;reason&#34;), (code, data)
 
     @pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
-    @pytest.mark.skip_version_after(&#34;v1.0.3&#34;)  # ref to harvester/issues/3151
+    @pytest.mark.skip_version_if(
+            &#34;&gt;= v1.0.3&#34;, reason=&#34;https://github.com/harvester/harvester/issues/3151&#34;)
     def test_create_with_invalid_id_103(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
@@ -240,7 +243,8 @@ class TestNetworksNegative:
         assert &#34;Invalid&#34; == data.get(&#34;reason&#34;), (code, data)
 
     @pytest.mark.parametrize(&#34;vlan_id&#34;, [4095])
-    @pytest.mark.skip_version_before(&#34;v1.1.0&#34;)  # ref to harvester/issues/3151
+    @pytest.mark.skip_version_if(
+            &#34;&lt; v1.1.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/3151&#34;)
     def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
         code, data = api_client.networks.create(unique_name, vlan_id)
 
@@ -266,7 +270,8 @@ class TestNetworksNegative:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.parametrize(&#34;vlan_id&#34;, [4095])
-@pytest.mark.skip_version_before(&#34;v1.1.0&#34;)  # ref to harvester/issues/3151
+@pytest.mark.skip_version_if(
+        &#34;&lt; v1.1.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/3151&#34;)
 def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
     code, data = api_client.networks.create(unique_name, vlan_id)
 
@@ -284,7 +289,8 @@ def test_create_with_invalid_id(self, api_client, unique_name, vlan_id):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.parametrize(&#34;vlan_id&#34;, [0, 4095])
-@pytest.mark.skip_version_after(&#34;v1.0.3&#34;)  # ref to harvester/issues/3151
+@pytest.mark.skip_version_if(
+        &#34;&gt;= v1.0.3&#34;, reason=&#34;https://github.com/harvester/harvester/issues/3151&#34;)
 def test_create_with_invalid_id_103(self, api_client, unique_name, vlan_id):
     code, data = api_client.networks.create(unique_name, vlan_id)
 

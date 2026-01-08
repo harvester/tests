@@ -457,10 +457,6 @@ def pytest_collection_modifyitems(session, config, items):
     # Register marker as the format (marker, (description))
     markers = [
         (&#34;skip_version_if&#34;, &#34;Mark test skipped when cluster version hit the condition&#34;),
-        (&#34;skip_version_before&#34;, (
-            &#34;mark test skipped when cluster version &lt; provided version&#34;)),
-        (&#34;skip_version_after&#34;, (
-            &#34;mark test skipped when cluster version &gt;= provided version&#34;)),
         (&#34;smoke&#34;, &#34;{_r} smoke testing&#34;),
         (&#34;sanity&#34;, &#34;{_r} sanity testing&#34;),
         (&#39;p0&#39;, (&#34;mark the test&#39;s priority is p0&#34;)),
@@ -527,6 +523,41 @@ def pytest_collection_modifyitems(session, config, items):
 </details>
 <div class="desc"></div>
 </dd>
+<dt id="harvester_e2e_tests.conftest.pytest_runtest_makereport"><code class="name flex">
+<span>def <span class="ident">pytest_runtest_makereport</span></span>(<span>item, call)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    item_html = item.config.pluginmanager.getplugin(&#39;html&#39;)
+    outcome = yield
+    report = outcome.get_result()
+    extras = getattr(report, &#39;extras&#39;, [])
+
+    if report.skipped:
+        if hasattr(report, &#39;wasxfail&#39;):
+            reason_text = report.wasxfail
+        else:
+            reason_text = report.longrepr[2] if isinstance(report.longrepr, tuple) else &#34;Skipped&#34;
+
+        m_url = re.search(r&#34;https?://\S*\w&#34;, reason_text)
+        if m_url:
+            url = m_url.group()
+            name = url.split(&#34;/&#34;, 4)[-1] if &#34;github.com&#34; in url else url
+            extras.append(item_html.extras.url(m_url.group(), name=name))
+        elif &#34;depends on&#34; in reason_text:
+            extras.append(item_html.extras.text(reason_text, name=&#34;byPriorCase&#34;))
+        elif &#34;condition(s) in&#34; in reason_text:
+            extras.append(item_html.extras.text(reason_text, name=&#34;byVersion&#34;))
+
+    report.extras = extras</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 </dl>
 </section>
 <section>
@@ -550,6 +581,7 @@ def pytest_collection_modifyitems(session, config, items):
 <li><code><a title="harvester_e2e_tests.conftest.pytest_configure" href="#harvester_e2e_tests.conftest.pytest_configure">pytest_configure</a></code></li>
 <li><code><a title="harvester_e2e_tests.conftest.pytest_html_results_table_header" href="#harvester_e2e_tests.conftest.pytest_html_results_table_header">pytest_html_results_table_header</a></code></li>
 <li><code><a title="harvester_e2e_tests.conftest.pytest_html_results_table_row" href="#harvester_e2e_tests.conftest.pytest_html_results_table_row">pytest_html_results_table_row</a></code></li>
+<li><code><a title="harvester_e2e_tests.conftest.pytest_runtest_makereport" href="#harvester_e2e_tests.conftest.pytest_runtest_makereport">pytest_runtest_makereport</a></code></li>
 </ul>
 </li>
 </ul>

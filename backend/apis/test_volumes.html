@@ -319,7 +319,9 @@ class TestVolumesNegative:
         assert 422 == code, (code, data)
         assert &#34;Invalid&#34; == data.get(&#34;code&#34;), (code, data)
 
-    @pytest.mark.skip_version_if(&#34;&gt;= v1.4.0&#34;, reason=&#34;issue#7030, breaking changes&#34;)
+    @pytest.mark.skip_version_if(
+            &#34;&gt;= v1.4.0&#34;,
+            reason=&#34;https://github.com/harvester/harvester/issues/7030, breaking changes&#34;)
     def test_create_without_name(self, api_client):
         &#34;&#34;&#34;
         1. Tries to create a volume without a name
@@ -349,7 +351,9 @@ class TestVolumesNegative:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip_version_if(&#34;&gt;= v1.4.0&#34;, reason=&#34;issue#7030, breaking changes&#34;)
+<pre><code class="python">@pytest.mark.skip_version_if(
+        &#34;&gt;= v1.4.0&#34;,
+        reason=&#34;https://github.com/harvester/harvester/issues/7030, breaking changes&#34;)
 def test_create_without_name(self, api_client):
     &#34;&#34;&#34;
     1. Tries to create a volume without a name

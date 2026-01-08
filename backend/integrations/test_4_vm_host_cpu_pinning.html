@@ -421,6 +421,8 @@ class TestPinCPUonVM:
             f&#34;API Status({code}): {data}&#34;
         )
 
+    @pytest.mark.skip_version_if(
+            &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9557&#34;)
     @pytest.mark.negative
     @pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
     def test_disable_cpu_manager_when_vm_on_it(self, api_client, unique_name, wait_timeout):
@@ -463,7 +465,9 @@ class TestPinCPUonVM:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.negative
+<pre><code class="python">@pytest.mark.skip_version_if(
+        &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9557&#34;)
+@pytest.mark.negative
 @pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
 def test_disable_cpu_manager_when_vm_on_it(self, api_client, unique_name, wait_timeout):
     unique_vm_name = f&#34;pin-cpu-{unique_name}&#34;

@@ -519,7 +519,8 @@ def test_secret_file_exists(self, support_bundle_state):
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if(&#34;&lt; v1.6.0&#34;, reason=&#34;Issue#7835 new feature in v1.6.0&#34;)
+@pytest.mark.skip_version_if(
+    &#34;&lt; v1.6.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0&#34;)
 class TestSupportBundleExpiration:
     @pytest.mark.dependency(name=&#34;create support bundle&#34;)
     def test_create(self, api_client, unique_name, support_bundle_state):
@@ -628,7 +629,8 @@ def test_get(self, api_client, support_bundle_state):
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if(&#34;&lt; v1.6.0&#34;, reason=&#34;Issue#7835 new feature in v1.6.0&#34;)
+@pytest.mark.skip_version_if(
+    &#34;&lt; v1.6.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0&#34;)
 class TestSupportBundleExtraNamespaces:
     @pytest.mark.dependency(name=&#34;create support bundle&#34;)
     def test_create(self, api_client, unique_name, support_bundle_state):
@@ -848,7 +850,8 @@ def test_logfile_exists(self, api_client, support_bundle_state):
 @pytest.mark.sanity
 @pytest.mark.negative
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if(&#34;&lt; v1.6.0&#34;, reason=&#34;Issue#7835 new feature in v1.6.0&#34;)
+@pytest.mark.skip_version_if(
+    &#34;&lt; v1.6.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0&#34;)
 class TestSupportBundleInvalidExtraCollectionNamespaces:
     def test_create_invalid_extra_collection_namespaces(
         self, api_client, unique_name, support_bundle_state
@@ -1028,7 +1031,8 @@ class TestSupportBundleNegative:
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.support_bundle
-@pytest.mark.skip_version_if(&#34;&lt; v1.6.0&#34;, reason=&#34;Issue#7835 new feature in v1.6.0&#34;)
+@pytest.mark.skip_version_if(
+    &#34;&lt; v1.6.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/7835 new feature in v1.6.0&#34;)
 class TestSupportBundleTimeout:
     @pytest.mark.dependency(name=&#34;create support bundle&#34;)
     def test_create(self, api_client, unique_name, support_bundle_state):

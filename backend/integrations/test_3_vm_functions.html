@@ -518,11 +518,9 @@ Expected Result:<ul>
 @pytest.mark.sanity
 @pytest.mark.virtualmachines
 @pytest.mark.skip_version_if(
-    &#34;&gt; v1.3.0&#34;, reason=&#34;`pc type removed, ref: https://github.com/harvester/harvester/issues/5437&#34;
-)
+    &#34;&gt; v1.3.0&#34;, reason=&#34;`pc type removed, ref: https://github.com/harvester/harvester/issues/5437&#34;)
 @pytest.mark.parametrize(
-    &#34;machine_types&#34;, [(&#34;q35&#34;, &#34;pc&#34;), (&#34;pc&#34;, &#34;q35&#34;)], ids=[&#39;q35_to_pc&#39;, &#39;pc_to_q35&#39;]
-)
+    &#34;machine_types&#34;, [(&#34;q35&#34;, &#34;pc&#34;), (&#34;pc&#34;, &#34;q35&#34;)], ids=[&#39;q35_to_pc&#39;, &#39;pc_to_q35&#39;])
 def test_update_vm_machine_type(
     api_client, image, unique_vm_name, wait_timeout, machine_types, sleep_timeout
 ):

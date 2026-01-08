@@ -2123,7 +2123,9 @@ Criteria:
 @pytest.mark.negative
 @pytest.mark.any_nodes
 class TestInvalidUpgrade:
-    @pytest.mark.skip_version_if(&#34;&lt; v1.5.0&#34;, reason=&#34;Issue#7654 fix after `v1.5.0`&#34;)
+    @pytest.mark.skip_version_if(
+            &#34;&lt; v1.5.0&#34;,
+            reason=&#34;https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`&#34;)
     def test_iso_url(self, api_client, unique_name, upgrade_checker):
         &#34;&#34;&#34;
         Steps:
@@ -2153,10 +2155,11 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
-    @pytest.mark.skip_version_if(&#34;&lt; v1.5.0&#34;, reason=&#34;Issue#7654 fix after `v1.5.0`&#34;)
+    @pytest.mark.skip_version_if(
+            &#34;&lt; v1.5.0&#34;,
+            reason=&#34;https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`&#34;)
     @pytest.mark.parametrize(
-        &#34;resort&#34;, [slice(None, None, -1), slice(None, None, 2)], ids=(&#34;mismatched&#34;, &#34;invalid&#34;)
-    )
+        &#34;resort&#34;, [slice(None, None, -1), slice(None, None, 2)], ids=(&#34;mismatched&#34;, &#34;invalid&#34;))
     def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade_checker):
         version, url, checksum = upgrade_target
         version = f&#34;{version}-{unique_name}&#34;
@@ -2186,7 +2189,7 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
-    @pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/5494&#34;)
+    @pytest.mark.skip(reason=&#34;https://github.com/harvester/harvester/issues/5494&#34;)
     def test_version_compatibility(
         self, api_client, unique_name, upgrade_target, upgrade_timeout
     ):
@@ -2294,10 +2297,11 @@ class TestInvalidUpgrade:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip_version_if(&#34;&lt; v1.5.0&#34;, reason=&#34;Issue#7654 fix after `v1.5.0`&#34;)
+<pre><code class="python">@pytest.mark.skip_version_if(
+        &#34;&lt; v1.5.0&#34;,
+        reason=&#34;https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`&#34;)
 @pytest.mark.parametrize(
-    &#34;resort&#34;, [slice(None, None, -1), slice(None, None, 2)], ids=(&#34;mismatched&#34;, &#34;invalid&#34;)
-)
+    &#34;resort&#34;, [slice(None, None, -1), slice(None, None, 2)], ids=(&#34;mismatched&#34;, &#34;invalid&#34;))
 def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade_checker):
     version, url, checksum = upgrade_target
     version = f&#34;{version}-{unique_name}&#34;
@@ -2417,7 +2421,9 @@ degraded state.
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip_version_if(&#34;&lt; v1.5.0&#34;, reason=&#34;Issue#7654 fix after `v1.5.0`&#34;)
+<pre><code class="python">@pytest.mark.skip_version_if(
+        &#34;&lt; v1.5.0&#34;,
+        reason=&#34;https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`&#34;)
 def test_iso_url(self, api_client, unique_name, upgrade_checker):
     &#34;&#34;&#34;
     Steps:
@@ -2460,7 +2466,7 @@ def test_iso_url(self, api_client, unique_name, upgrade_checker):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip(&#34;https://github.com/harvester/harvester/issues/5494&#34;)
+<pre><code class="python">@pytest.mark.skip(reason=&#34;https://github.com/harvester/harvester/issues/5494&#34;)
 def test_version_compatibility(
     self, api_client, unique_name, upgrade_target, upgrade_timeout
 ):
