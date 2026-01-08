@@ -292,7 +292,8 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
-        ("skip_version_if", "Mark test skipped when cluster version hit the condition"),
+        ("skip_if_version", "Mark test skip when cluster version hit the condition"),
+        ("xfail_if_version", "Mark test xfail when cluster version hit the condition"),
         ("smoke", "{_r} smoke testing"),
         ("sanity", "{_r} sanity testing"),
         ('p0', ("mark the test's priority is p0")),

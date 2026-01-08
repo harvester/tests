@@ -1652,7 +1652,7 @@ def test_create_vm_no_available_resources(resource, api_client, image,
 @pytest.mark.p0
 @pytest.mark.sanity
 @pytest.mark.virtualmachines
-@pytest.mark.skip_version_if(
+@pytest.mark.skip_if_version(
     "> v1.3.0", reason="`pc type removed, ref: https://github.com/harvester/harvester/issues/5437")
 @pytest.mark.parametrize(
     "machine_types", [("q35", "pc"), ("pc", "q35")], ids=['q35_to_pc', 'pc_to_q35'])
