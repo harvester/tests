@@ -192,8 +192,8 @@ class TestImages:
                 f"Still got {code} with {data}"
             )
 
-    @pytest.mark.skip_version_if(
-            "> v1.2.0", "<= v1.4.0",
+    @pytest.mark.skip_if_version(
+            ">= v1.2.0", "< v1.4.0",
             reason="https://github.com/harvester/harvester/issues/4293 fix after `v1.4.0`")
     @pytest.mark.dependency(depends=["create_image", "get_image", "delete_image"])
     @parametrize_with_cases("unique_name", cases=CasesImages, has_tag='unique-name')

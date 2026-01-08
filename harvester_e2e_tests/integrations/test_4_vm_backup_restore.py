@@ -527,7 +527,7 @@ class TestBackupRestore:
         assert 422 == code, (code, data)
 
     @pytest.mark.negative
-    @pytest.mark.skip_version_if('< v1.1.2', '< v1.2.1')
+    @pytest.mark.skip_if_version('< v1.1.2', '< v1.2.1')
     @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
     def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with_data):
         # RFC1123 DNS Subdomain name rules:
@@ -562,7 +562,7 @@ class TestBackupRestore:
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 422 == code, (code, data)
 
-    @pytest.mark.skip_version_if('< v1.2.2')
+    @pytest.mark.skip_if_version('< v1.2.2')
     @pytest.mark.dependency(depends=["TestBackupRestore::tests_backup_vm"], param=True)
     def test_restore_replace_with_vm_shutdown_command(
         self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker,
