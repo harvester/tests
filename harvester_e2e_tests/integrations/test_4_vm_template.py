@@ -76,6 +76,7 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_name):
 @pytest.mark.templates
 @pytest.mark.virtualmachines
 class TestVMTemplate:
+    @pytest.mark.xfail(reason="test issue https://github.com/harvester/tests/issues/2388")
     def test_create_template_with_data(
         self, api_client, vm_shell_from_host, vm_checker, ssh_keypair, wait_timeout, stopped_vm
     ):
