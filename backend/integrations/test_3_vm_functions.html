@@ -293,9 +293,18 @@ Expected Result:<ul>
 @pytest.mark.sanity
 @pytest.mark.virtualmachines
 @pytest.mark.negative
-@pytest.mark.parametrize(&#34;resource&#34;, [dict(cpu=MAX), dict(mem=MAX), dict(disk=MAX),
-                                      dict(mem=MAX, cpu=MAX), dict(mem=MAX, cpu=MAX, disk=MAX)],
-                         ids=[&#39;cpu&#39;, &#39;mem&#39;, &#39;disk&#39;, &#39;mem-and-cpu&#39;, &#39;mem-cpu-and-disk&#39;])
+@pytest.mark.parametrize(&#34;resource&#34;, [
+    dict(cpu=MAX),
+    dict(mem=MAX),
+    pytest.param(
+        dict(disk=MAX),
+        marks=pytest.mark.xfail_if_version(
+            &#34;&gt;= v1.7.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9850 since v1.7.0&#34;
+        )
+    ),
+    dict(mem=MAX, cpu=MAX),
+    dict(mem=MAX, cpu=MAX, disk=MAX)],
+    ids=[&#39;cpu&#39;, &#39;mem&#39;, &#39;disk&#39;, &#39;mem-and-cpu&#39;, &#39;mem-cpu-and-disk&#39;])
 def test_create_vm_no_available_resources(resource, api_client, image,
                                           wait_timeout, unique_vm_name, sleep_timeout):
     &#34;&#34;&#34;Creates a VM with outlandish resources for varying elements (purposefully negative test)
