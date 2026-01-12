@@ -637,7 +637,7 @@ class TestBackupRestore:
         assert 422 == code, (code, data)
 
     @pytest.mark.negative
-    @pytest.mark.skip_version_if(&#39;&lt; v1.1.2&#39;, &#39;&lt; v1.2.1&#39;)
+    @pytest.mark.skip_if_version(&#39;&lt; v1.1.2&#39;, &#39;&lt; v1.2.1&#39;)
     @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
     def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with_data):
         # RFC1123 DNS Subdomain name rules:
@@ -672,7 +672,7 @@ class TestBackupRestore:
         code, data = api_client.backups.restore(unique_vm_name, spec)
         assert 422 == code, (code, data)
 
-    @pytest.mark.skip_version_if(&#39;&lt; v1.2.2&#39;)
+    @pytest.mark.skip_if_version(&#39;&lt; v1.2.2&#39;)
     @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
     def test_restore_replace_with_vm_shutdown_command(
         self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker,
@@ -873,7 +873,7 @@ def test_restore_replace_with_delete_vols(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip_version_if(&#39;&lt; v1.2.2&#39;)
+<pre><code class="python">@pytest.mark.skip_if_version(&#39;&lt; v1.2.2&#39;)
 @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
 def test_restore_replace_with_vm_shutdown_command(
     self, api_client, vm_shell_from_host, ssh_keypair, wait_timeout, vm_checker,
@@ -967,7 +967,7 @@ def test_restore_replace_with_vm_shutdown_command(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.negative
-@pytest.mark.skip_version_if(&#39;&lt; v1.1.2&#39;, &#39;&lt; v1.2.1&#39;)
+@pytest.mark.skip_if_version(&#39;&lt; v1.1.2&#39;, &#39;&lt; v1.2.1&#39;)
 @pytest.mark.dependency(depends=[&#34;TestBackupRestore::tests_backup_vm&#34;], param=True)
 def test_restore_with_invalid_name(self, api_client, backup_config, base_vm_with_data):
     # RFC1123 DNS Subdomain name rules:

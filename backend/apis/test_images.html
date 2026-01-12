@@ -363,8 +363,8 @@ class TestImages:
                 f&#34;Still got {code} with {data}&#34;
             )
 
-    @pytest.mark.skip_version_if(
-            &#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;,
+    @pytest.mark.skip_if_version(
+            &#34;&gt;= v1.2.0&#34;, &#34;&lt; v1.4.0&#34;,
             reason=&#34;https://github.com/harvester/harvester/issues/4293 fix after `v1.4.0`&#34;)
     @pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
     @parametrize_with_cases(&#34;unique_name&#34;, cases=CasesImages, has_tag=&#39;unique-name&#39;)
@@ -432,8 +432,8 @@ def test_create(self, api_client, unique_name, fake_image_file):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip_version_if(
-        &#34;&gt; v1.2.0&#34;, &#34;&lt;= v1.4.0&#34;,
+<pre><code class="python">@pytest.mark.skip_if_version(
+        &#34;&gt;= v1.2.0&#34;, &#34;&lt; v1.4.0&#34;,
         reason=&#34;https://github.com/harvester/harvester/issues/4293 fix after `v1.4.0`&#34;)
 @pytest.mark.dependency(depends=[&#34;create_image&#34;, &#34;get_image&#34;, &#34;delete_image&#34;])
 @parametrize_with_cases(&#34;unique_name&#34;, cases=CasesImages, has_tag=&#39;unique-name&#39;)

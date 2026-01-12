@@ -219,7 +219,7 @@ def shared_image(api_client, image_ubuntu, unique_name, image_checker):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
-@pytest.mark.skip_version_if(&#34;&lt; v1.4.0&#34;, reason=&#34;New feature after v1.4.0&#34;)
+@pytest.mark.skip_if_version(&#34;&lt; v1.4.0&#34;, reason=&#34;New feature after v1.4.0&#34;)
 class TestEncryptedBackingImage:
     &#34;&#34;&#34;
     Integration tests for encrypted and decrypted backing images.
@@ -508,7 +508,7 @@ def test_create_encrypted_image_success(
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.p0
-@pytest.mark.skip_version_if(&#34;&lt; v1.4.0&#34;, reason=&#34;New feature after v1.4.0&#34;)
+@pytest.mark.skip_if_version(&#34;&lt; v1.4.0&#34;, reason=&#34;New feature after v1.4.0&#34;)
 class TestInvalidEncryptionSecret:
     &#34;&#34;&#34;
     Test creating invalid encryption secrets and verify error handling.

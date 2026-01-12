@@ -517,7 +517,7 @@ Expected Result:<ul>
 <pre><code class="python">@pytest.mark.p0
 @pytest.mark.sanity
 @pytest.mark.virtualmachines
-@pytest.mark.skip_version_if(
+@pytest.mark.skip_if_version(
     &#34;&gt; v1.3.0&#34;, reason=&#34;`pc type removed, ref: https://github.com/harvester/harvester/issues/5437&#34;)
 @pytest.mark.parametrize(
     &#34;machine_types&#34;, [(&#34;q35&#34;, &#34;pc&#34;), (&#34;pc&#34;, &#34;q35&#34;)], ids=[&#39;q35_to_pc&#39;, &#39;pc_to_q35&#39;])

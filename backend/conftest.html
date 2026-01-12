@@ -456,7 +456,8 @@ def pytest_collection_modifyitems(session, config, items):
 <pre><code class="python">def pytest_configure(config):
     # Register marker as the format (marker, (description))
     markers = [
-        (&#34;skip_version_if&#34;, &#34;Mark test skipped when cluster version hit the condition&#34;),
+        (&#34;skip_if_version&#34;, &#34;Mark test skip when cluster version hit the condition&#34;),
+        (&#34;xfail_if_version&#34;, &#34;Mark test xfail when cluster version hit the condition&#34;),
         (&#34;smoke&#34;, &#34;{_r} smoke testing&#34;),
         (&#34;sanity&#34;, &#34;{_r} sanity testing&#34;),
         (&#39;p0&#39;, (&#34;mark the test&#39;s priority is p0&#34;)),
