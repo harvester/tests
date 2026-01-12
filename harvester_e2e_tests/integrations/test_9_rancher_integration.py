@@ -377,6 +377,7 @@ class TestResourceQuota:
         assert ns_quota['limitsCpu'] == spec.namespace_quota.cpu_limit
         assert ns_quota['limitsMemory'] == spec.namespace_quota.mem_limit
 
+    @pytest.mark.xfail(reason="test issue https://github.com/harvester/tests/issues/2376")
     @pytest.mark.dependency(name="create_namespace", depends=["create_project"])
     def test_create_namespace_on_project(
         self, api_client, rancher_api_client, unique_name, harvester_mgmt_cluster
