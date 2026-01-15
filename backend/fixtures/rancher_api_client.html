@@ -102,6 +102,10 @@ def rancher_api_client(request, harvester_metadata):
 </summary>
 <pre><code class="python">@pytest.fixture(scope=&#39;session&#39;)
 def rke1_version(request, rancher_api_client, harvester_metadata):
+    if rancher_api_client.cluster_version &gt;= parse_version(&#34;v2.12.0&#34;):
+        pytest.skip(reason=f&#34;Rancher version {rancher_api_client.cluster_version} &#34;
+                    &#34;matches RKE1 has reached EOL condition(s) in v2.12.0&#34;)
+
     target_ver = request.config.getoption(&#34;--k8s-version&#34;)
 
     code, data = rancher_api_client.settings.get(&#34;k8s-versions-current&#34;)
