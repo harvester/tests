@@ -1,4 +1,4 @@
-from .virtualmachines import VMSpec
+from .virtualmachines import VMSpec, VMSpec140
 
 
 class TemplateSpec(VMSpec):
@@ -37,3 +37,7 @@ class TemplateSpec(VMSpec):
         vd['type'] = "kubevirt.io.virtualmachine"
         vd['spec']['template']['spec']['hostname'] = ""
         return super().from_dict(vd)
+
+
+class TemplateSpec140(TemplateSpec, VMSpec140):
+    pass
