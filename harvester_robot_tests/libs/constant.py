@@ -95,3 +95,14 @@ DEFAULT_RETRY_INTERVAL = 3
 DEFAULT_TIMEOUT_SHORT = 300
 DEFAULT_TIMEOUT = 600
 DEFAULT_TIMEOUT_LONG = 1500
+
+# Addon Names
+ADDON_RANCHER_MONITORING = "rancher-monitoring"
+ADDON_RANCHER_LOGGING = "rancher-logging"
+ADDON_VM_IMPORT_CONTROLLER = "vm-import-controller"
+
+# Monitoring Namespace
+MONITORING_NAMESPACE = "cattle-monitoring-system"
+
+# Addon-related resource plurals
+ADDON_PLURAL = "addons"
