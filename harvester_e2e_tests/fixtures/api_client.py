@@ -223,9 +223,10 @@ def xfail_if_version(request, api_client):
 
 
 def _action_if_version(cluster_ver, mark, pytest_act: Callable):
-    default_reason = "Cluster version {cluster_ver} matches {cond} condition(s) in {versions}"
+    base_reason = "Cluster version {cluster_ver} matches {cond} condition(s) in {versions}"
+    extra_reason = mark.kwargs.get('reason', "")
+    reason = f"{base_reason}. {extra_reason}" if extra_reason else base_reason
     checks = [_version_check(vstr, cluster_ver) for vstr in mark.args]
-    reason = mark.kwargs.get('reason', default_reason)
     cond = mark.kwargs.get('condition', all)
 
     if cond(r for *_, r in checks):
