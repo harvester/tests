@@ -465,13 +465,22 @@ def pytest_runtest_makereport(item, call):
             reason_text = report.longrepr[2] if isinstance(report.longrepr, tuple) else "Skipped"
 
         m_url = re.search(r"https?://\S*\w", reason_text)
-        if m_url:
-            url = m_url.group()
-            name = url.split("/", 4)[-1] if "github.com" in url else url
-            extras.append(item_html.extras.url(m_url.group(), name=name))
-        elif "depends on" in reason_text:
-            extras.append(item_html.extras.text(reason_text, name="byPriorCase"))
-        elif "condition(s) in" in reason_text:
-            extras.append(item_html.extras.text(reason_text, name="byVersion"))
+        url = m_url.group() if m_url else ""
+        url_name = f"{url.split('/', 4)[-1] if 'github.com' in url else 'Ref.'}\N{LINK SYMBOL}"
+
+        if hasattr(report, 'wasxfail'):
+            if url:
+                extras.append(item_html.extras.url(url, name=url_name))
+            else:
+                extras.append(item_html.extras.text(reason_text, name="n/a"))
+        else:
+            if "depends on" in reason_text:
+                extras.append(item_html.extras.text(reason_text, name="byPriorCase"))
+            elif "condition(s) in" in reason_text:
+                extras.append(item_html.extras.text(reason_text, name="byVersion"))
+            elif url:
+                extras.append(item_html.extras.url(url, name=url_name))
+            else:
+                extras.append(item_html.extras.text(reason_text, name="n/a"))
 
     report.extras = extras
