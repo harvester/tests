@@ -408,7 +408,7 @@ class TestResourceQuota:
         assert found_quota, (
             f"Timeout waiting for resourceQuota annotation "
             f"in namespace {unique_name}. Data: {data}")
-        
+
         ns_quota = loads(data['metadata']['annotations']['field.cattle.io/resourceQuota'])['limit']
         assert ns_quota['limitsCpu'] == proj_spec.namespace_quota.cpu_limit
         assert ns_quota['limitsMemory'] == proj_spec.namespace_quota.mem_limit
