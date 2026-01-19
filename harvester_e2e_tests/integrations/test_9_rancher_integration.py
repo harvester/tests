@@ -377,7 +377,6 @@ class TestResourceQuota:
         assert ns_quota['limitsCpu'] == spec.namespace_quota.cpu_limit
         assert ns_quota['limitsMemory'] == spec.namespace_quota.mem_limit
 
-    @pytest.mark.xfail(reason="test issue https://github.com/harvester/tests/issues/2376")
     @pytest.mark.dependency(name="create_namespace", depends=["create_project"])
     def test_create_namespace_on_project(
         self, api_client, rancher_api_client, unique_name, harvester_mgmt_cluster, wait_timeout
@@ -406,7 +405,9 @@ class TestResourceQuota:
 
             sleep(3)
 
-        assert found_quota, f"Timeout waiting for resourceQuota annotation in namespace {unique_name}. Data: {data}"
+        assert found_quota, (
+            f"Timeout waiting for resourceQuota annotation "
+            f"in namespace {unique_name}. Data: {data}")
         
         ns_quota = loads(data['metadata']['annotations']['field.cattle.io/resourceQuota'])['limit']
         assert ns_quota['limitsCpu'] == proj_spec.namespace_quota.cpu_limit
