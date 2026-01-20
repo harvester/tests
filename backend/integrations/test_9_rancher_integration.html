@@ -2007,10 +2007,9 @@ class TestResourceQuota:
         assert ns_quota[&#39;limitsCpu&#39;] == spec.namespace_quota.cpu_limit
         assert ns_quota[&#39;limitsMemory&#39;] == spec.namespace_quota.mem_limit
 
-    @pytest.mark.xfail(reason=&#34;test issue https://github.com/harvester/tests/issues/2376&#34;)
     @pytest.mark.dependency(name=&#34;create_namespace&#34;, depends=[&#34;create_project&#34;])
     def test_create_namespace_on_project(
-        self, api_client, rancher_api_client, unique_name, harvester_mgmt_cluster
+        self, api_client, rancher_api_client, unique_name, harvester_mgmt_cluster, wait_timeout
     ):
         cluster_api = rancher_api_client.clusters.explore(harvester_mgmt_cluster[&#39;id&#39;])
         code, data = cluster_api.projects.get_by_name(unique_name)
@@ -2024,8 +2023,22 @@ class TestResourceQuota:
         code, data = ns_mgr.create(unique_name, labels=labels, annotations=annotations)
         assert 201 == code, (code, data)
 
-        code, data = ns_mgr.get(unique_name)
-        assert 200 == code, (code, data)
+        # Check the data first to avoid race condition
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        found_quota = False
+        while endtime &gt; datetime.now():
+            code, data = ns_mgr.get(unique_name)
+            assert 200 == code, (code, data)
+            if &#39;field.cattle.io/resourceQuota&#39; in data.get(&#39;metadata&#39;, {}).get(&#39;annotations&#39;, {}):
+                found_quota = True
+                break
+
+            sleep(3)
+
+        assert found_quota, (
+            f&#34;Timeout waiting for resourceQuota annotation &#34;
+            f&#34;in namespace {unique_name}. Data: {data}&#34;)
+
         ns_quota = loads(data[&#39;metadata&#39;][&#39;annotations&#39;][&#39;field.cattle.io/resourceQuota&#39;])[&#39;limit&#39;]
         assert ns_quota[&#39;limitsCpu&#39;] == proj_spec.namespace_quota.cpu_limit
         assert ns_quota[&#39;limitsMemory&#39;] == proj_spec.namespace_quota.mem_limit
@@ -2142,17 +2155,16 @@ class TestResourceQuota:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_9_rancher_integration.TestResourceQuota.test_create_namespace_on_project"><code class="name flex">
-<span>def <span class="ident">test_create_namespace_on_project</span></span>(<span>self, api_client, rancher_api_client, unique_name, harvester_mgmt_cluster)</span>
+<span>def <span class="ident">test_create_namespace_on_project</span></span>(<span>self,<br>api_client,<br>rancher_api_client,<br>unique_name,<br>harvester_mgmt_cluster,<br>wait_timeout)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.xfail(reason=&#34;test issue https://github.com/harvester/tests/issues/2376&#34;)
-@pytest.mark.dependency(name=&#34;create_namespace&#34;, depends=[&#34;create_project&#34;])
+<pre><code class="python">@pytest.mark.dependency(name=&#34;create_namespace&#34;, depends=[&#34;create_project&#34;])
 def test_create_namespace_on_project(
-    self, api_client, rancher_api_client, unique_name, harvester_mgmt_cluster
+    self, api_client, rancher_api_client, unique_name, harvester_mgmt_cluster, wait_timeout
 ):
     cluster_api = rancher_api_client.clusters.explore(harvester_mgmt_cluster[&#39;id&#39;])
     code, data = cluster_api.projects.get_by_name(unique_name)
@@ -2166,8 +2178,22 @@ def test_create_namespace_on_project(
     code, data = ns_mgr.create(unique_name, labels=labels, annotations=annotations)
     assert 201 == code, (code, data)
 
-    code, data = ns_mgr.get(unique_name)
-    assert 200 == code, (code, data)
+    # Check the data first to avoid race condition
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    found_quota = False
+    while endtime &gt; datetime.now():
+        code, data = ns_mgr.get(unique_name)
+        assert 200 == code, (code, data)
+        if &#39;field.cattle.io/resourceQuota&#39; in data.get(&#39;metadata&#39;, {}).get(&#39;annotations&#39;, {}):
+            found_quota = True
+            break
+
+        sleep(3)
+
+    assert found_quota, (
+        f&#34;Timeout waiting for resourceQuota annotation &#34;
+        f&#34;in namespace {unique_name}. Data: {data}&#34;)
+
     ns_quota = loads(data[&#39;metadata&#39;][&#39;annotations&#39;][&#39;field.cattle.io/resourceQuota&#39;])[&#39;limit&#39;]
     assert ns_quota[&#39;limitsCpu&#39;] == proj_spec.namespace_quota.cpu_limit
     assert ns_quota[&#39;limitsMemory&#39;] == proj_spec.namespace_quota.mem_limit</code></pre>
