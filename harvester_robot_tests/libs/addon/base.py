@@ -56,3 +56,13 @@ class Base(ABC):
     def stop_port_forward(self):
         """Stop port forwarding"""
         pass
+
+    @abstractmethod
+    def query_prometheus(self, query, prometheus_url):
+        """Query Prometheus for metrics"""
+        pass
+
+    @abstractmethod
+    def verify_prometheus_metric_exists(self, query, prometheus_url):
+        """Verify that a Prometheus metric exists"""
+        pass

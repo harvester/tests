@@ -15,11 +15,10 @@ Suite Teardown   Suite Teardown For Addon Tests
 *** Variables ***
 ${ADDON_NAME}                rancher-monitoring
 ${MONITORING_NAMESPACE}      cattle-monitoring-system
-${PROMETHEUS_POD_PREFIX}     prometheus-rancher-monitoring
 ${LOCAL_PROMETHEUS_PORT}     9090
 
 *** Test Cases ***
-Test Rancher-Monitoring Addon Enable Disable And Functionality
+Test Rancher Monitoring Addon Lifecycle And Functionality
     [Tags]    p0    coretest
     [Documentation]    Test complete lifecycle of rancher-monitoring addon
     ...               Steps:
@@ -82,7 +81,7 @@ Suite Teardown For Addon Tests
     Run Keyword And Ignore Error    Stop Port Forward
     
     # Restore addon to initial state
-    Run Keyword If    '${INITIAL_ADDON_STATE}' != '${NONE}'
+    Run Keyword If    ${INITIAL_ADDON_STATE} != ${None}
     ...    Restore Addon State    ${ADDON_NAME}    ${INITIAL_ADDON_STATE}
     
     # Standard cleanup
@@ -105,7 +104,7 @@ Get Prometheus Pod Name
     Should Not Be Empty    ${pod_name}    Prometheus pod name should not be empty
     
     Log    Found Prometheus pod: ${pod_name}
-    [Return]    ${pod_name}
+    RETURN    ${pod_name}
 
 Verify Essential Harvester Metrics
     [Documentation]    Verify that essential Harvester metrics are available in Prometheus

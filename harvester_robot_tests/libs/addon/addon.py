@@ -1,8 +1,12 @@
 """
 Addon Component - delegates to CRD or REST implementation
 Layer 4: Selects implementation based on strategy
+
+The implementation is selected based on the HARVESTER_OPERATION_STRATEGY 
+environment variable. Valid values are 'crd' or 'rest'. Defaults to 'crd' if not set.
 """
 
+import os
 from constant import HarvesterOperationStrategy
 from addon.rest import Rest
 from addon.crd import CRD
@@ -14,15 +18,20 @@ class Addon(Base):
     Addon component that delegates to CRD or REST implementation
 
     The implementation is selected based on:
-    - HARVESTER_OPERATION_STRATEGY environment variable
+    - HARVESTER_OPERATION_STRATEGY environment variable ('crd' or 'rest')
     - Defaults to 'crd' if not set
     """
 
-    # Set desired operation strategy here
-    _strategy = HarvesterOperationStrategy.CRD
-
     def __init__(self):
         """Initialize Addon component"""
+        # Get strategy from environment variable, default to CRD
+        strategy_str = os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower()
+        try:
+            self._strategy = HarvesterOperationStrategy(strategy_str)
+        except ValueError:
+            # If invalid value, default to CRD
+            self._strategy = HarvesterOperationStrategy.CRD
+        
         if self._strategy == HarvesterOperationStrategy.CRD:
             self.addon = CRD()
         else:
@@ -67,3 +76,11 @@ class Addon(Base):
     def stop_port_forward(self):
         """Stop port forwarding - delegates to implementation"""
         return self.addon.stop_port_forward()
+
+    def query_prometheus(self, query, prometheus_url):
+        """Query Prometheus for metrics - delegates to implementation"""
+        return self.addon.query_prometheus(query, prometheus_url)
+
+    def verify_prometheus_metric_exists(self, query, prometheus_url):
+        """Verify that a Prometheus metric exists - delegates to implementation"""
+        return self.addon.verify_prometheus_metric_exists(query, prometheus_url)

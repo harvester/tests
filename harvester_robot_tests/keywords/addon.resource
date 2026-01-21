@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation    Addon Keywords - Reusable keywords for addon operations
 Library          ../libs/keywords/addon_keywords.py
+Resource         variables.resource
 
 *** Keywords ***
 Get Addon Initial State
@@ -13,7 +14,7 @@ Get Addon Initial State
     Log    Getting initial state of addon: ${addon_name}
     ${initial_state}=    get_addon_initial_state    ${addon_name}
     Log    Addon ${addon_name} initial state: ${initial_state}
-    [Return]    ${initial_state}
+    RETURN    ${initial_state}
 
 Enable Addon
     [Arguments]    ${addon_name}
@@ -61,7 +62,7 @@ Is Addon Enabled
     ...               Returns:
     ...                   bool: True if enabled, False otherwise
     ${is_enabled}=    is_addon_enabled    ${addon_name}
-    [Return]    ${is_enabled}
+    RETURN    ${is_enabled}
 
 Wait For Monitoring Pods Running
     [Arguments]    ${namespace}    ${timeout}=${WAIT_TIMEOUT}
@@ -101,7 +102,7 @@ Query Prometheus
     Log    Querying Prometheus: ${query}
     ${result}=    query_prometheus    ${query}    ${prometheus_url}
     Log    Prometheus query successful
-    [Return]    ${result}
+    RETURN    ${result}
 
 Verify Prometheus Metric Exists
     [Arguments]    ${query}    ${prometheus_url}=http://localhost:9090
