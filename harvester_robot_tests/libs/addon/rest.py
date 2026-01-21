@@ -4,7 +4,6 @@ Layer 4: Makes actual REST API calls for addon operations
 """
 
 import time
-import requests
 import subprocess
 import signal
 from utility.utility import logging, get_retry_count_and_interval, get_harvester_api_client
@@ -325,7 +324,69 @@ class Rest(Base):
                 logging(f"Error stopping port forward: {e}", level='WARNING')
                 try:
                     self.port_forward_process.kill()
-                except Exception:
-                    pass
+                except Exception as kill_err:
+                    logging(f"Error force-killing port forward process: {kill_err}", level='WARNING')
             finally:
                 self.port_forward_process = None
+
+    def query_prometheus(self, query, prometheus_url='http://localhost:9090'):
+        """
+        Query Prometheus for metrics
+
+        Args:
+            query: PromQL query string
+            prometheus_url: Prometheus URL (default: http://localhost:9090)
+
+        Returns:
+            dict: Query result
+        """
+        import requests
+        
+        logging(f'Querying Prometheus: {query}')
+        try:
+            response = requests.get(
+                f'{prometheus_url}/api/v1/query',
+                params={'query': query},
+                timeout=10
+            )
+            response.raise_for_status()
+            result = response.json()
+            
+            if result.get('status') != 'success':
+                error_msg = result.get('error', result)
+                raise Exception(f"Prometheus query failed: {error_msg}")
+            
+            logging(f'Prometheus query successful')
+            return result
+        except Exception as e:
+            raise Exception(f"Failed to query Prometheus: {e}")
+
+    def verify_prometheus_metric_exists(self, query, prometheus_url='http://localhost:9090'):
+        """
+        Verify that a Prometheus metric exists
+
+        Args:
+            query: PromQL query string
+            prometheus_url: Prometheus URL (default: http://localhost:9090)
+
+        Returns:
+            bool: True if metric exists and has data
+
+        Raises:
+            AssertionError: If the metric query succeeds but returns no data
+            Exception: If there is an error querying Prometheus
+        """
+        logging(f'Verifying Prometheus metric: {query}')
+        try:
+            result = self.query_prometheus(query, prometheus_url)
+            data = result.get('data', {}).get('result', [])
+            
+            if len(data) > 0:
+                logging(f'Metric {query} exists with {len(data)} results')
+                return True
+            else:
+                logging(f'Metric {query} has no data', level='WARNING')
+                raise AssertionError(f"Prometheus metric '{query}' has no data (empty result set)")
+        except Exception as e:
+            logging(f'Failed to verify metric {query}: {e}', level='ERROR')
+            raise Exception(f"Error verifying Prometheus metric '{query}': {e}")

@@ -3,7 +3,6 @@ Addon Keywords - creates Addon() instance and delegates - NO direct API calls!
 Layer 3: Keyword wrappers for Robot Framework
 """
 
-import requests
 from utility.utility import logging
 from addon import Addon
 from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG
@@ -160,22 +159,7 @@ class addon_keywords:
             dict: Query result
         """
         logging(f'Querying Prometheus: {query}')
-        try:
-            response = requests.get(
-                f'{prometheus_url}/api/v1/query',
-                params={'query': query},
-                timeout=10
-            )
-            response.raise_for_status()
-            result = response.json()
-            
-            if result.get('status') != 'success':
-                raise Exception(f"Prometheus query failed: {result}")
-            
-            logging(f'Prometheus query successful')
-            return result
-        except Exception as e:
-            raise Exception(f"Failed to query Prometheus: {e}")
+        return self.addon.query_prometheus(query, prometheus_url)
 
     def verify_prometheus_metric_exists(self, query, prometheus_url='http://localhost:9090'):
         """
@@ -189,19 +173,7 @@ class addon_keywords:
             bool: True if metric exists and has data
         """
         logging(f'Verifying Prometheus metric: {query}')
-        try:
-            result = self.query_prometheus(query, prometheus_url)
-            data = result.get('data', {}).get('result', [])
-            
-            if len(data) > 0:
-                logging(f'Metric {query} exists with {len(data)} results')
-                return True
-            else:
-                logging(f'Metric {query} has no data', level='WARNING')
-                return False
-        except Exception as e:
-            logging(f'Failed to verify metric {query}: {e}', level='ERROR')
-            return False
+        return self.addon.verify_prometheus_metric_exists(query, prometheus_url)
 
     def restore_addon_state(self, addon_name, initial_state):
         """
@@ -212,6 +184,12 @@ class addon_keywords:
             initial_state: Initial state (True for enabled, False for disabled)
         """
         logging(f'Restoring addon {addon_name} to initial state: {initial_state}')
+        
+        # Handle case where initial_state might be None
+        if initial_state is None:
+            logging(f'Initial state is None, skipping restore for addon {addon_name}')
+            return
+        
         current_state = self.addon.is_addon_enabled(addon_name)
         
         if current_state != initial_state:
