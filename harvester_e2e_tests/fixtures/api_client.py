@@ -46,7 +46,7 @@ def api_client(request, harvester_metadata):
     api.load_managers(api.cluster_version)
 
     harvester_metadata['Cluster Endpoint'] = endpoint
-    harvester_metadata['Cluster Version'] = api.cluster_version.raw
+    harvester_metadata['Cluster Version'] = api.raw_version
 
     return api
 
