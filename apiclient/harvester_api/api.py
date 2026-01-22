@@ -60,7 +60,8 @@ class HarvesterAPI:
                 kube_ver = data['items'][0]['status'].get('operatorVersion')
                 self._version = parse_version(kube_ver if '-' in ver and '-rc' not in ver else ver)
             # store the raw version returns from `server-version` for reference
-            self._version.raw = ver
+            # self._version.raw = ver
+            self.raw_version = ver
         return self._version
 
     def __repr__(self):
