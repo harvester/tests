@@ -33,6 +33,7 @@ class RancherAPI:
             self.set_retries()
 
         self._version = None
+        self.raw_version = None
 
         self.endpoint = endpoint
         self.users = UserManager(self)
@@ -59,7 +60,7 @@ class RancherAPI:
             # XXX: fix master-xxx-head to 8.8.8, need the API fix the problem
             self._version = parse_version('8.8.8' if 'master' in ver else ver)
 
-            self._version.raw = ver
+            self.raw_version = ver
         return self._version
 
     def __repr__(self):
