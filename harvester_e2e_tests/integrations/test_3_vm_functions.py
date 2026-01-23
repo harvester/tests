@@ -16,6 +16,7 @@ pytest_plugins = [
 
 # GLOBAL Vars:
 MAX = 999999
+RESERVED_MEM = 128  # Mi
 
 
 @pytest.fixture(scope='module')
@@ -151,6 +152,32 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
             break
         sleep(3)
 
+    for vol in vm_spec.volumes:
+        vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+        api_client.volumes.delete(vol_name)
+
+
+@pytest.fixture(scope="class")
+def configured_vm(api_client, image, unique_vm_name, vm_checker):
+    unique_vm_name = f"configured-{datetime.now().strftime('%m%S%f')}-{unique_vm_name}"
+    cpu, mem = 1, 2
+    # reserved memory
+    vm = api_client.vms.Spec(cpu, mem, reserved_mem=RESERVED_MEM)
+    vm.add_image("disk-0", image['id'])
+
+    code, data = api_client.vms.create(unique_vm_name, vm)
+    assert 201 == code, (code, data)
+    vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
+    assert vm_running, (
+        f"Failed to start VM({unique_vm_name}) with errors:\n"
+        f"Status({code}): {data}"
+    )
+
+    yield unique_vm_name, image['user']
+
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_checker.wait_deleted(unique_vm_name)
     for vol in vm_spec.volumes:
         vol_name = vol['volume']['persistentVolumeClaim']['claimName']
         api_client.volumes.delete(vol_name)
@@ -604,7 +631,7 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
         2. Save
     Expected Result:
         - VM should created
-        - VM should Stooped
+        - VM should Stopped
         - VMI should not exist
     """
     unique_vm_name, _ = stopped_vm
@@ -1008,16 +1035,7 @@ class TestVMClone:
         assert 204 == code, f"Failed to clone VM {unique_vm_name} into new VM {cloned_name}"
 
         # Check cloned VM is created
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get(cloned_name)
-            if 200 == code:
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"restored VM {cloned_name} is not created"
-            )
+        vm_checker.wait_getable(cloned_name)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(cloned_name, ['default'])
         assert vm_got_ips, (
             f"Failed to Start VM({cloned_name}) with errors:\n"
@@ -1066,21 +1084,17 @@ class TestVMClone:
                 f"Executed stderr: {err}"
             )
 
-        # Remove cloned VM and volumes
         code, data = api_client.vms.get(cloned_name)
+
+        # Verify configs on the cloned VM
+        annotations = data['metadata']['annotations']
+        assert "harvesterhci.io/reservedMemory" not in annotations, (
+            f"Cloned VM({cloned_name}) should not have reserved memory configuration"
+        )
+
+        # Remove cloned VM and volumes
         cloned_spec = api_client.vms.Spec.from_dict(data)
-        api_client.vms.delete(cloned_name)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get(cloned_name)
-            if 404 == code:
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Delete VM({cloned_name}) with errors:\n"
-                f"Status({code}): {data}"
-            )
+        vm_checker.wait_deleted(cloned_name)
         for vol in cloned_spec.volumes:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
@@ -1153,26 +1167,15 @@ class TestVMClone:
                 sh.exec_command('sync')
 
         # Stop the VM
-        code, data = api_client.vms.stop(unique_vm_name)
-        assert 204 == code, "`Stop` return unexpected status code"
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 404 == code:
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f"Failed to Stop VM({unique_vm_name}) with errors:\n"
-                f"Status({code}): {data}"
-            )
+        vm_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
+        assert vm_stopped, (code, data)
 
         # Clone VM into new VM
         cloned_name = f"cloned-{unique_vm_name}"
         code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
         assert 204 == code, f"Failed to clone VM {unique_vm_name} into new VM {cloned_name}"
 
-        # Check cloned VM is available and stooped
+        # Check cloned VM is available and stopped
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
             code, data = api_client.vms.get(cloned_name)
@@ -1236,22 +1239,71 @@ class TestVMClone:
                 f"Executed stderr: {err}"
             )
 
-        # Remove cloned VM and volumes
+        # Verify configs on the cloned VM
         code, data = api_client.vms.get(cloned_name)
+        annotations = data['metadata']['annotations']
+        assert "harvesterhci.io/reservedMemory" not in annotations, (
+            f"Cloned VM({cloned_name}) should not have reserved memory configuration"
+        )
+
+        # Remove cloned VM and volumes
         cloned_spec = api_client.vms.Spec.from_dict(data)
-        api_client.vms.delete(cloned_name)
+        vm_checker.wait_deleted(cloned_name)
+        for vol in cloned_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
+
+    @pytest.mark.parametrize("source_vm_status", ["Running", "Stopped"])
+    def test_configs_on_cloned_vm(
+        self, api_client, vm_checker, configured_vm, source_vm_status, wait_timeout, sleep_timeout
+    ):
+        """
+        Ref. https://github.com/harvester/tests/issues/813
+        """
+        unique_vm_name, _ = configured_vm
+        cloned_vm_name = f"cloned-{unique_vm_name}"
+
+        # Check source VM status
+        checker_map = {
+            "Running": vm_checker.wait_started,
+            "Stopped": vm_checker.wait_stopped,
+        }
+        wait_checker = checker_map.get(source_vm_status)
+        vm_status, (code, data) = wait_checker(unique_vm_name)
+        assert vm_status, (code, data)
+
+        # Clone VM
+        code, _ = api_client.vms.clone(unique_vm_name, cloned_vm_name)
+        assert 204 == code, f"Failed to clone VM {unique_vm_name} to new VM {cloned_vm_name}"
+        # status should be the same as the source VM
+        vm_checker.wait_getable(cloned_vm_name)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
-            code, data = api_client.vms.get(cloned_name)
-            if 404 == code:
+            code, data = api_client.vms.get(cloned_vm_name)
+            if 200 == code and source_vm_status == data.get('status', {}).get('printableStatus'):
                 break
-            sleep(3)
+            sleep(sleep_timeout)
         else:
             raise AssertionError(
-                f"Failed to Delete VM({cloned_name}) with errors:\n"
+                f"Cloned VM {cloned_vm_name} is not {source_vm_status} as source VM\n"
                 f"Status({code}): {data}"
             )
-        for vol in cloned_spec.volumes:
+
+        # Verify configs on the cloned VM
+        code, data = api_client.vms.get(cloned_vm_name)
+        annotations = data['metadata']['annotations']
+        # reserved memory
+        assert "harvesterhci.io/reservedMemory" in annotations, (
+            f"Cloned VM({cloned_vm_name})'s reserved memory is not set"
+        )
+        assert annotations["harvesterhci.io/reservedMemory"] == f"{RESERVED_MEM}Mi", (
+            f"Cloned VM({cloned_vm_name})'s reserved memory is not correct"
+        )
+
+        # Remove the cloned VM and volumes
+        cloned_vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_checker.wait_deleted(cloned_vm_name)
+        for vol in cloned_vm_spec.volumes:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
 
