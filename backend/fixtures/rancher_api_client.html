@@ -86,7 +86,7 @@ def rancher_api_client(request, harvester_metadata):
     api.session.verify = ssl_verify
 
     harvester_metadata[&#39;Rancher Endpoint&#39;] = endpoint
-    harvester_metadata[&#39;Rancher Version&#39;] = api.cluster_version.raw
+    harvester_metadata[&#39;Rancher Version&#39;] = api.raw_version
 
     return api</code></pre>
 </details>
