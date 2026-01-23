@@ -7,7 +7,6 @@ pytest-json-report
 pytest-dependency
 jinja2
 bcrypt
-requests
 paramiko
 pycryptodome
 sshpubkeys
@@ -19,8 +18,8 @@ scp
 requests
 urllib3
 lxml
-pyyaml
 pdoc3
+setuptools < 69
 tox
 dataclasses; python_version < '3.7'
 -e ./apiclient
