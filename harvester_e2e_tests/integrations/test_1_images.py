@@ -879,8 +879,8 @@ class TestImageEnhancements:
         delete_image(api_client, original_image, wait_timeout)
         delete_image(api_client, exported_image_id, wait_timeout)
 
-    @pytest.mark.xfail_if_version(
-            ">= v1.7.0", reason="https://github.com/harvester/harvester/issues/9515 since v1.7.0")
+    @pytest.mark.xfail(
+            reason="https://github.com/harvester/harvester/issues/9515")
     @pytest.mark.p1
     @pytest.mark.images
     @pytest.mark.negative
