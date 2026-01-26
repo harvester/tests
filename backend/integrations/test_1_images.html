@@ -1274,8 +1274,8 @@ def test_edit_image_in_use(self, api_client, unique_name, image_info, wait_timeo
         delete_image(api_client, original_image, wait_timeout)
         delete_image(api_client, exported_image_id, wait_timeout)
 
-    @pytest.mark.xfail_if_version(
-            &#34;&gt;= v1.7.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9515 since v1.7.0&#34;)
+    @pytest.mark.xfail(
+            reason=&#34;https://github.com/harvester/harvester/issues/9515&#34;)
     @pytest.mark.p1
     @pytest.mark.images
     @pytest.mark.negative
@@ -1842,8 +1842,8 @@ Steps:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.xfail_if_version(
-        &#34;&gt;= v1.7.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9515 since v1.7.0&#34;)
+<pre><code class="python">@pytest.mark.xfail(
+        reason=&#34;https://github.com/harvester/harvester/issues/9515&#34;)
 @pytest.mark.p1
 @pytest.mark.images
 @pytest.mark.negative
