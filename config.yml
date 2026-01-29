@@ -11,8 +11,8 @@ vlan-id: 1
 # Physical NIC for VLAN. Default is "mgmt"
 vlan-nic: 'mgmt'
 ip-pool-subnet: '192.168.0.0/24'
-ip-pool-start: ''
-ip-pool-end: ''
+ip-pool-start: '192.168.0.200'
+ip-pool-end: '192.168.0.210'
 
 # Wait time for polling operations
 wait-timeout: 600
