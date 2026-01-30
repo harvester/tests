@@ -1992,7 +1992,7 @@
 <h1 id="test-cases">Test Cases</h1>
 <p>These tests were ran on Ubuntu focal KVM live images</p>
 <p>The setup for the VMs were as follows</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb
 </span></span><span style="display:flex;"><span>sudo dpkg -i cuda-keyring_1.1-1_all.deb
 </span></span><span style="display:flex;"><span>sudo apt-get update
 </span></span><span style="display:flex;"><span>sudo apt-get -y install cuda nvidia-cuda-toolkit build-essential
@@ -2056,7 +2056,7 @@
 <li>Create a VM and select two vGPUs in vGPU devices</li>
 <li>Edit the yaml of the VM to add in the following yaml to one of the vGPUs</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">virtualGPUOptions</span>:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">virtualGPUOptions</span>:
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">display</span>:
 </span></span><span style="display:flex;"><span>     <span style="color:#f92672">ramFB</span>:
 </span></span><span style="display:flex;"><span>       <span style="color:#f92672">enabled</span>: <span style="color:#66d9ef">false</span>

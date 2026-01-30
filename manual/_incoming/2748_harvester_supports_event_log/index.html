@@ -1996,7 +1996,7 @@
 <li>New logs should be posted continuously.</li>
 </ol>
 <h3 id="code-snippets-to-setup-graylog">code snippets to setup Graylog</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --name mongo -d mongo:4.2.22-rc0
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --name mongo -d mongo:4.2.22-rc0
 </span></span><span style="display:flex;"><span>sysctl -w vm.max_map_count<span style="color:#f92672">=</span><span style="color:#ae81ff">262145</span>
 </span></span><span style="display:flex;"><span>docker run --name elasticsearch -p 9200:9200 -p 9300:9300 -e xpack.security.enabled<span style="color:#f92672">=</span>false  -e node.name<span style="color:#f92672">=</span>es01 -it docker.elastic.co/elasticsearch/elasticsearch:6.8.23
 </span></span><span style="display:flex;"><span>docker run --name graylog --link mongo --link elasticsearch -p 9000:9000 -p 12201:12201 -p 1514:1514 -p 5555:5555 -p 12202:12202 -p 12202:12202/udp -e GRAYLOG_PASSWORD_SECRET<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Graypass3WordMor!e&#34;</span> -e GRAYLOG_ROOT_PASSWORD_SHA2<span style="color:#f92672">=</span>899e9793de44cbb14f48b4fce810de122093d03705c0971752a5c15b0fa1ae03   -e GRAYLOG_HTTP_EXTERNAL_URI<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;http://127.0.0.1:9000/&#34;</span>  -d graylog/graylog:4.3.5

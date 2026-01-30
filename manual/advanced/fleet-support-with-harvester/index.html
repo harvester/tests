@@ -2017,7 +2017,7 @@
 <li>going into your repo&rsquo;s <code>settings -&gt; deploy keys</code> and adding that SSH Key you just built as a <code>deploy key</code></li>
 <li>you&rsquo;ll need to keep in mind that the <code>setup.yaml</code> and similar files will need to shift to reflect the fact you&rsquo;re utilizing a private GitHub Repository, those changes may look similar to (please note: <code>spec.clientSecretName</code> to reference your SSH Key that was added to the private repository&rsquo;s settings -&gt; deploy keys &amp;&amp; <code>spec.repo</code> shifts to hold your <code>git</code> based URL/URI not the <code>https</code> based one):</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">fleet.cattle.io/v1alpha1</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">fleet.cattle.io/v1alpha1</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepo</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">setup-harvester-cluster</span>
@@ -2047,7 +2047,7 @@
 <li>Build a file in the root directory called <code>test-gitrepo-is-successful-public.yaml</code></li>
 <li>Have it structured similar to:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">fleet.cattle.io/v1alpha1</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">fleet.cattle.io/v1alpha1</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">GitRepo</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">test-gitrepo-success-public</span>
@@ -2065,7 +2065,7 @@
 <li>Build a VM Image File in <code>/extra-vm-image</code> called <code>my-test-public-image.yaml</code></li>
 <li>Have that file structured similar to:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">harvesterhci.io/v1beta1</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">harvesterhci.io/v1beta1</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">VirtualMachineImage</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
 </span></span><span style="display:flex;"><span>        <span style="color:#f92672">annotations</span>:
@@ -2093,7 +2093,7 @@
 <ol>
 <li>With the same <code>/extra-vm-image/my-test-public-image.yaml</code> go ahead and modify it creating a description annotation adding the line of something like:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">annotations</span>:
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">harvesterhci.io/storageClassName</span>: <span style="color:#ae81ff">harvester-longhorn</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">field.cattle.io/description</span>: <span style="color:#e6db74">&#34;my new description for this VirtualMachineImage that&#39;s already been downloaded from the URL earlier for Harvester&#34;</span>
@@ -2108,7 +2108,7 @@
 <li>Hop in with your favorite editor or perhaps a patch file (take this as inspiration), run <code>kubectl edit GitRepo/test-gitrepo-success-public</code></li>
 <li>be mindful we&rsquo;re utilizing <a href="https://fleet.rancher.io/ref-gitrepo">Rancher Fleet GitRepo Object Properties</a>, but add a line in the yaml under <code>spec</code> like:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>  <span style="color:#f92672">forceSyncGeneration</span>: <span style="color:#ae81ff">1</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>  <span style="color:#f92672">forceSyncGeneration</span>: <span style="color:#ae81ff">1</span>
 </span></span></code></pre></div><ol start="5">
 <li>save that edited file</li>
 <li>watch over a period of time, that &ldquo;user-deleted&rdquo; VirtualMachineImage &ldquo;should&rdquo; come-back-to-life and exist once again in your Harvester cluster</li>

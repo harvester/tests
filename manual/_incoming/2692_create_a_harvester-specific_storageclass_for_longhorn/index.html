@@ -1972,7 +1972,7 @@
 <li>Login to <code>vm1</code> and use <code>fdisk</code> format volumes and mount to folders: <code>old</code> and <code>new</code></li>
 <li>Create file and move into both volumes as following commands:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>dd <span style="color:#66d9ef">if</span><span style="color:#f92672">=</span>/dev/zero of<span style="color:#f92672">=</span>file1 bs<span style="color:#f92672">=</span><span style="color:#ae81ff">10485760</span> count<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>dd <span style="color:#66d9ef">if</span><span style="color:#f92672">=</span>/dev/zero of<span style="color:#f92672">=</span>file1 bs<span style="color:#f92672">=</span><span style="color:#ae81ff">10485760</span> count<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>
 </span></span><span style="display:flex;"><span>cp file1 old <span style="color:#f92672">&amp;&amp;</span> cp file1 new
 </span></span></code></pre></div><ol>
 <li>Migrate <code>vm1</code> to another host, migration should success</li>

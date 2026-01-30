@@ -251,10 +251,10 @@ class TestVMDHCPControllerAddon:
                 &#34;ip-pool-end in config.yml&#34;
             )
 
-        # Step 1: Create a VM network (VLAN)
+        # Step 1: Create an untagged VM network (VLAN)
         network_name = f&#34;dhcp-test-net-{unique_name}&#34;
         code, network_data = api_client.networks.create(
-            network_name, vlan_id, cluster_network=&#39;mgmt&#39;
+            network_name, vlan_id=0, cluster_network=&#39;mgmt&#39;
         )
         assert 201 == code, (
             f&#34;Failed to create network: {code}, {network_data}&#34;
@@ -291,8 +291,10 @@ spec:
       end: {ippool_end}
     router: {gateway_ip}
     dns:
-      - 8.8.8.8
+      - 1.1.1.1
     leaseTime: 300
+    ntp:
+      - pool.ntp.org
   networkName: {network_id}
 &#34;&#34;&#34;
 
@@ -412,6 +414,7 @@ spec:
                            f&#34;default/{image_opensuse.name}&#34;)
 
             # Add the DHCP-enabled network
+            spec.mgmt_network = False
             spec.add_network(&#34;dhcp-net&#34;, network_id)
 
             code, vm_data = api_client.vms.create(vm_name, spec)
@@ -549,7 +552,7 @@ spec:
             except Exception as e:
                 print(f&#34;Exception during network deletion: {e}&#34;)
 
-    @pytest.mark.dependency(depends=[&#34;vmdhcp_verify_enabled&#34;])
+    @pytest.mark.dependency(depends=[&#34;vmdhcp_enable&#34;])
     def test_disable_vm_dhcp_addon(self, api_client, wait_timeout):
         &#34;&#34;&#34;
         Test disabling VM DHCP Controller addon
@@ -611,7 +614,7 @@ Installation: Download from
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.dependency(depends=[&#34;vmdhcp_verify_enabled&#34;])
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;vmdhcp_enable&#34;])
 def test_disable_vm_dhcp_addon(self, api_client, wait_timeout):
     &#34;&#34;&#34;
     Test disabling VM DHCP Controller addon
@@ -858,10 +861,10 @@ def test_enable_vm_dhcp_addon(self, api_client, wait_timeout):
                 &#34;ip-pool-end in config.yml&#34;
             )
 
-        # Step 1: Create a VM network (VLAN)
+        # Step 1: Create an untagged VM network (VLAN)
         network_name = f&#34;dhcp-test-net-{unique_name}&#34;
         code, network_data = api_client.networks.create(
-            network_name, vlan_id, cluster_network=&#39;mgmt&#39;
+            network_name, vlan_id=0, cluster_network=&#39;mgmt&#39;
         )
         assert 201 == code, (
             f&#34;Failed to create network: {code}, {network_data}&#34;
@@ -898,8 +901,10 @@ spec:
       end: {ippool_end}
     router: {gateway_ip}
     dns:
-      - 8.8.8.8
+      - 1.1.1.1
     leaseTime: 300
+    ntp:
+      - pool.ntp.org
   networkName: {network_id}
 &#34;&#34;&#34;
 
@@ -1019,6 +1024,7 @@ spec:
                            f&#34;default/{image_opensuse.name}&#34;)
 
             # Add the DHCP-enabled network
+            spec.mgmt_network = False
             spec.add_network(&#34;dhcp-net&#34;, network_id)
 
             code, vm_data = api_client.vms.create(vm_name, spec)
