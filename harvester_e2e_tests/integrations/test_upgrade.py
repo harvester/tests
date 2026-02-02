@@ -444,8 +444,12 @@ class TestInvalidUpgrade:
     @pytest.mark.skip_if_version(
             "< v1.5.0",
             reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
-    @pytest.mark.parametrize(
-        "resort", [slice(None, None, -1), slice(None, None, 2)], ids=("mismatched", "invalid"))
+    @pytest.mark.parametrize("resort", [
+        pytest.param(
+            slice(None, None, -1),
+            marks=pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/9990")),
+        slice(None, None, 2)
+        ], ids=("mismatched", "invalid"))
     def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade_checker):
         version, url, checksum = upgrade_target
         version = f"{version}-{unique_name}"
