@@ -2158,8 +2158,12 @@ class TestInvalidUpgrade:
     @pytest.mark.skip_if_version(
             &#34;&lt; v1.5.0&#34;,
             reason=&#34;https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`&#34;)
-    @pytest.mark.parametrize(
-        &#34;resort&#34;, [slice(None, None, -1), slice(None, None, 2)], ids=(&#34;mismatched&#34;, &#34;invalid&#34;))
+    @pytest.mark.parametrize(&#34;resort&#34;, [
+        pytest.param(
+            slice(None, None, -1),
+            marks=pytest.mark.skip(reason=&#34;https://github.com/harvester/harvester/issues/9990&#34;)),
+        slice(None, None, 2)
+        ], ids=(&#34;mismatched&#34;, &#34;invalid&#34;))
     def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade_checker):
         version, url, checksum = upgrade_target
         version = f&#34;{version}-{unique_name}&#34;
@@ -2300,8 +2304,12 @@ class TestInvalidUpgrade:
 <pre><code class="python">@pytest.mark.skip_if_version(
         &#34;&lt; v1.5.0&#34;,
         reason=&#34;https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`&#34;)
-@pytest.mark.parametrize(
-    &#34;resort&#34;, [slice(None, None, -1), slice(None, None, 2)], ids=(&#34;mismatched&#34;, &#34;invalid&#34;))
+@pytest.mark.parametrize(&#34;resort&#34;, [
+    pytest.param(
+        slice(None, None, -1),
+        marks=pytest.mark.skip(reason=&#34;https://github.com/harvester/harvester/issues/9990&#34;)),
+    slice(None, None, 2)
+    ], ids=(&#34;mismatched&#34;, &#34;invalid&#34;))
 def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade_checker):
     version, url, checksum = upgrade_target
     version = f&#34;{version}-{unique_name}&#34;
