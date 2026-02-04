@@ -117,7 +117,8 @@ def image(api_client, image_ubuntu, unique_name, wait_timeout):
         )
 
     yield dict(id=f"{data['metadata']['namespace']}/{unique_image_id}",
-               user=image_ubuntu.ssh_user)
+               user=image_ubuntu.ssh_user,
+               first_nic=image_ubuntu.first_nic)
 
     code, data = api_client.images.delete(unique_image_id)
 
