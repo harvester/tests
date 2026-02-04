@@ -601,13 +601,24 @@ class TestAnyNodesUpgrade:
         old_sc, new_sc = config_storageclass
         unique_vm_name = f&#34;ug-vm-{unique_name}&#34;
 
-        cpu, mem, size = 1, 2, 5
+        cpu, mem, size = 1, 2, 10
         vm_spec = api_client.vms.Spec(cpu, mem, mgmt_network=False)
         vm_spec.add_image(&#39;disk-0&#39;, image[&#39;id&#39;], size=size)
         vm_spec.add_network(&#39;nic-1&#39;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
         userdata = yaml.safe_load(vm_spec.user_data)
         userdata[&#39;ssh_authorized_keys&#39;] = [pub_key]
         vm_spec.user_data = yaml.dump(userdata)
+        # Ref. https://docs.harvesterhci.io/v1.7/vm/backup-restore#create-a-vm-backup
+        vm_spec.network_data = yaml.dump({
+            &#34;version&#34;: 2,
+            &#34;ethernets&#34;: {
+                image[&#34;first_nic&#34;]: {
+                    &#34;dhcp4&#34;: True,
+                    &#34;dhcp6&#34;: True,
+                    &#34;dhcp-identifier&#34;: &#34;mac&#34;
+                }
+            }
+        })
 
         code, data = api_client.vms.create(unique_vm_name, vm_spec)
         assert 201 == code, (code, data)
@@ -1386,13 +1397,24 @@ def test_preq_setup_vms(
     old_sc, new_sc = config_storageclass
     unique_vm_name = f&#34;ug-vm-{unique_name}&#34;
 
-    cpu, mem, size = 1, 2, 5
+    cpu, mem, size = 1, 2, 10
     vm_spec = api_client.vms.Spec(cpu, mem, mgmt_network=False)
     vm_spec.add_image(&#39;disk-0&#39;, image[&#39;id&#39;], size=size)
     vm_spec.add_network(&#39;nic-1&#39;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
     userdata = yaml.safe_load(vm_spec.user_data)
     userdata[&#39;ssh_authorized_keys&#39;] = [pub_key]
     vm_spec.user_data = yaml.dump(userdata)
+    # Ref. https://docs.harvesterhci.io/v1.7/vm/backup-restore#create-a-vm-backup
+    vm_spec.network_data = yaml.dump({
+        &#34;version&#34;: 2,
+        &#34;ethernets&#34;: {
+            image[&#34;first_nic&#34;]: {
+                &#34;dhcp4&#34;: True,
+                &#34;dhcp6&#34;: True,
+                &#34;dhcp-identifier&#34;: &#34;mac&#34;
+            }
+        }
+    })
 
     code, data = api_client.vms.create(unique_vm_name, vm_spec)
     assert 201 == code, (code, data)

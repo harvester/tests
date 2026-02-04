@@ -114,7 +114,7 @@ def image_opensuse(request, api_client):
         *_, image_name = url.path.rsplit(&#34;/&#34;, 1)
         url = urlparse(urljoin(f&#34;{image_server}/&#34;, image_name))
 
-    return ImageInfo(url, image_checksum, name=&#34;opensuse&#34;, ssh_user=&#34;opensuse&#34;)</code></pre>
+    return ImageInfo(url, image_checksum, name=&#34;opensuse&#34;, ssh_user=&#34;opensuse&#34;, first_nic=&#34;eth0&#34;)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -138,7 +138,7 @@ def image_ubuntu(request):
         *_, image_name = url.path.rsplit(&#34;/&#34;, 1)
         url = urlparse(urljoin(f&#34;{image_server}/&#34;, image_name))
 
-    return ImageInfo(url, image_checksum, name=&#34;ubuntu&#34;, ssh_user=&#34;ubuntu&#34;)</code></pre>
+    return ImageInfo(url, image_checksum, name=&#34;ubuntu&#34;, ssh_user=&#34;ubuntu&#34;, first_nic=&#34;enp1s0&#34;)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -149,7 +149,7 @@ def image_ubuntu(request):
 <dl>
 <dt id="harvester_e2e_tests.fixtures.images.ImageInfo"><code class="flex name class">
 <span>class <span class="ident">ImageInfo</span></span>
-<span>(</span><span>url_result, image_checksum=None, name='', ssh_user=None)</span>
+<span>(</span><span>url_result, image_checksum=None, name='', ssh_user=None, first_nic=None)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -157,7 +157,7 @@ def image_ubuntu(request):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ImageInfo:
-    def __init__(self, url_result, image_checksum=None, name=&#34;&#34;, ssh_user=None):
+    def __init__(self, url_result, image_checksum=None, name=&#34;&#34;, ssh_user=None, first_nic=None):
         self.url_result = url_result
         if name:
             self.name = name
@@ -165,6 +165,7 @@ def image_ubuntu(request):
             self.name = self.url.rsplit(&#34;/&#34;, 1)[-1]
         self.ssh_user = ssh_user
         self.image_checksum = image_checksum
+        self.first_nic = first_nic
 
     def __repr__(self):
         return f&#34;{__class__.__name__}({self.url_result})&#34;
