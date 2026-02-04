@@ -23,7 +23,7 @@ def image_opensuse(request, api_client):
         *_, image_name = url.path.rsplit("/", 1)
         url = urlparse(urljoin(f"{image_server}/", image_name))
 
-    return ImageInfo(url, image_checksum, name="opensuse", ssh_user="opensuse")
+    return ImageInfo(url, image_checksum, name="opensuse", ssh_user="opensuse", first_nic="eth0")
 
 
 @pytest.fixture(scope="session")
@@ -38,7 +38,7 @@ def image_ubuntu(request):
         *_, image_name = url.path.rsplit("/", 1)
         url = urlparse(urljoin(f"{image_server}/", image_name))
 
-    return ImageInfo(url, image_checksum, name="ubuntu", ssh_user="ubuntu")
+    return ImageInfo(url, image_checksum, name="ubuntu", ssh_user="ubuntu", first_nic="enp1s0")
 
 
 @pytest.fixture(scope="session")
@@ -51,7 +51,7 @@ def image_k3s(request):
 
 
 class ImageInfo:
-    def __init__(self, url_result, image_checksum=None, name="", ssh_user=None):
+    def __init__(self, url_result, image_checksum=None, name="", ssh_user=None, first_nic=None):
         self.url_result = url_result
         if name:
             self.name = name
@@ -59,6 +59,7 @@ class ImageInfo:
             self.name = self.url.rsplit("/", 1)[-1]
         self.ssh_user = ssh_user
         self.image_checksum = image_checksum
+        self.first_nic = first_nic
 
     def __repr__(self):
         return f"{__class__.__name__}({self.url_result})"
