@@ -160,12 +160,12 @@ class TestSupportBundle:
         patterns = [r&#34;^.*/logs/cattle-fleet-local-system/fleet-agent-.*/fleet-agent.log&#34;,
                     r&#34;^.*/logs/cattle-fleet-system/fleet-controller-.*/fleet-controller.log&#34;,
                     r&#34;^.*/logs/cattle-fleet-system/gitjob-.*/gitjob.log&#34;]
-        matches = []
+        matches = [[]] * len(patterns)
         for f in support_bundle_state.files:
-            for pattern in patterns:
-                matches.extend([f] if re.match(pattern, f) else [])
+            for i in range(len(patterns)):
+                matches[i].extend([f] if re.match(patterns[i], f) else [])
 
-        assert len(matches) == len(patterns), (
+        assert [] not in matches, (
             f&#34;Some file(s) not found, files: {matches}\npatterns: {patterns}&#34;
         )
 
@@ -424,12 +424,12 @@ def test_logfile_exists(self, support_bundle_state):
     patterns = [r&#34;^.*/logs/cattle-fleet-local-system/fleet-agent-.*/fleet-agent.log&#34;,
                 r&#34;^.*/logs/cattle-fleet-system/fleet-controller-.*/fleet-controller.log&#34;,
                 r&#34;^.*/logs/cattle-fleet-system/gitjob-.*/gitjob.log&#34;]
-    matches = []
+    matches = [[]] * len(patterns)
     for f in support_bundle_state.files:
-        for pattern in patterns:
-            matches.extend([f] if re.match(pattern, f) else [])
+        for i in range(len(patterns)):
+            matches[i].extend([f] if re.match(patterns[i], f) else [])
 
-    assert len(matches) == len(patterns), (
+    assert [] not in matches, (
         f&#34;Some file(s) not found, files: {matches}\npatterns: {patterns}&#34;
     )</code></pre>
 </details>
