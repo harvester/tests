@@ -124,12 +124,12 @@ class TestSupportBundle:
         patterns = [r"^.*/logs/cattle-fleet-local-system/fleet-agent-.*/fleet-agent.log",
                     r"^.*/logs/cattle-fleet-system/fleet-controller-.*/fleet-controller.log",
                     r"^.*/logs/cattle-fleet-system/gitjob-.*/gitjob.log"]
-        matches = []
+        matches = [[]] * len(patterns)
         for f in support_bundle_state.files:
-            for pattern in patterns:
-                matches.extend([f] if re.match(pattern, f) else [])
+            for i in range(len(patterns)):
+                matches[i].extend([f] if re.match(patterns[i], f) else [])
 
-        assert len(matches) == len(patterns), (
+        assert [] not in matches, (
             f"Some file(s) not found, files: {matches}\npatterns: {patterns}"
         )
 
