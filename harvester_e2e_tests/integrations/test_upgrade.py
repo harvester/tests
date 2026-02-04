@@ -638,13 +638,24 @@ class TestAnyNodesUpgrade:
         old_sc, new_sc = config_storageclass
         unique_vm_name = f"ug-vm-{unique_name}"
 
-        cpu, mem, size = 1, 2, 5
+        cpu, mem, size = 1, 2, 10
         vm_spec = api_client.vms.Spec(cpu, mem, mgmt_network=False)
         vm_spec.add_image('disk-0', image['id'], size=size)
         vm_spec.add_network('nic-1', f"{vm_network['namespace']}/{vm_network['name']}")
         userdata = yaml.safe_load(vm_spec.user_data)
         userdata['ssh_authorized_keys'] = [pub_key]
         vm_spec.user_data = yaml.dump(userdata)
+        # Ref. https://docs.harvesterhci.io/v1.7/vm/backup-restore#create-a-vm-backup
+        vm_spec.network_data = yaml.dump({
+            "version": 2,
+            "ethernets": {
+                image["first_nic"]: {
+                    "dhcp4": True,
+                    "dhcp6": True,
+                    "dhcp-identifier": "mac"
+                }
+            }
+        })
 
         code, data = api_client.vms.create(unique_vm_name, vm_spec)
         assert 201 == code, (code, data)
