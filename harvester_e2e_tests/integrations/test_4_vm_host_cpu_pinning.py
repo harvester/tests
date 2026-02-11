@@ -265,3 +265,9 @@ class TestPinCPUonVM:
         for vol in vm_spec.volumes:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                code, data = api_client.volumes.get(vol_name)
+                if 404 == code:
+                    break
+                sleep(3)
