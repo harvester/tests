@@ -119,6 +119,41 @@ def bogus_vlan_net(request, api_client):
 <dd>created bogus network attachment definition dictionary</dd>
 </dl></div>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.configured_vm"><code class="name flex">
+<span>def <span class="ident">configured_vm</span></span>(<span>api_client, image, unique_vm_name, vm_checker)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def configured_vm(api_client, image, unique_vm_name, vm_checker):
+    unique_vm_name = f&#34;configured-{datetime.now().strftime(&#39;%m%S%f&#39;)}-{unique_vm_name}&#34;
+    cpu, mem = 1, 2
+    # reserved memory
+    vm = api_client.vms.Spec(cpu, mem, reserved_mem=RESERVED_MEM)
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+
+    code, data = api_client.vms.create(unique_vm_name, vm)
+    assert 201 == code, (code, data)
+    vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
+    assert vm_running, (
+        f&#34;Failed to start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status({code}): {data}&#34;
+    )
+
+    yield unique_vm_name, image[&#39;user&#39;]
+
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_checker.wait_deleted(unique_vm_name)
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.image"><code class="name flex">
 <span>def <span class="ident">image</span></span>(<span>api_client, image_opensuse, unique_name, wait_timeout)</span>
 </code></dt>
@@ -246,7 +281,7 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
         2. Save
     Expected Result:
         - VM should created
-        - VM should Stooped
+        - VM should Stopped
         - VMI should not exist
     &#34;&#34;&#34;
     unique_vm_name, _ = stopped_vm
@@ -275,7 +310,7 @@ def test_create_stopped_vm(api_client, stopped_vm, wait_timeout):
 <li>Save
 Expected Result:<ul>
 <li>VM should created</li>
-<li>VM should Stooped</li>
+<li>VM should Stopped</li>
 <li>VMI should not exist</li>
 </ul>
 </li>
@@ -1372,16 +1407,7 @@ class TestVMClone:
         assert 204 == code, f&#34;Failed to clone VM {unique_vm_name} into new VM {cloned_name}&#34;
 
         # Check cloned VM is created
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.vms.get(cloned_name)
-            if 200 == code:
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f&#34;restored VM {cloned_name} is not created&#34;
-            )
+        vm_checker.wait_getable(cloned_name)
         vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(cloned_name, [&#39;default&#39;])
         assert vm_got_ips, (
             f&#34;Failed to Start VM({cloned_name}) with errors:\n&#34;
@@ -1430,21 +1456,17 @@ class TestVMClone:
                 f&#34;Executed stderr: {err}&#34;
             )
 
-        # Remove cloned VM and volumes
         code, data = api_client.vms.get(cloned_name)
+
+        # Verify configs on the cloned VM
+        annotations = data[&#39;metadata&#39;][&#39;annotations&#39;]
+        assert &#34;harvesterhci.io/reservedMemory&#34; not in annotations, (
+            f&#34;Cloned VM({cloned_name}) should not have reserved memory configuration&#34;
+        )
+
+        # Remove cloned VM and volumes
         cloned_spec = api_client.vms.Spec.from_dict(data)
-        api_client.vms.delete(cloned_name)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.vms.get(cloned_name)
-            if 404 == code:
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f&#34;Failed to Delete VM({cloned_name}) with errors:\n&#34;
-                f&#34;Status({code}): {data}&#34;
-            )
+        vm_checker.wait_deleted(cloned_name)
         for vol in cloned_spec.volumes:
             vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
             api_client.volumes.delete(vol_name)
@@ -1517,26 +1539,15 @@ class TestVMClone:
                 sh.exec_command(&#39;sync&#39;)
 
         # Stop the VM
-        code, data = api_client.vms.stop(unique_vm_name)
-        assert 204 == code, &#34;`Stop` return unexpected status code&#34;
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 404 == code:
-                break
-            sleep(3)
-        else:
-            raise AssertionError(
-                f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
-                f&#34;Status({code}): {data}&#34;
-            )
+        vm_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
+        assert vm_stopped, (code, data)
 
         # Clone VM into new VM
         cloned_name = f&#34;cloned-{unique_vm_name}&#34;
         code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
         assert 204 == code, f&#34;Failed to clone VM {unique_vm_name} into new VM {cloned_name}&#34;
 
-        # Check cloned VM is available and stooped
+        # Check cloned VM is available and stopped
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
             code, data = api_client.vms.get(cloned_name)
@@ -1600,22 +1611,71 @@ class TestVMClone:
                 f&#34;Executed stderr: {err}&#34;
             )
 
-        # Remove cloned VM and volumes
+        # Verify configs on the cloned VM
         code, data = api_client.vms.get(cloned_name)
+        annotations = data[&#39;metadata&#39;][&#39;annotations&#39;]
+        assert &#34;harvesterhci.io/reservedMemory&#34; not in annotations, (
+            f&#34;Cloned VM({cloned_name}) should not have reserved memory configuration&#34;
+        )
+
+        # Remove cloned VM and volumes
         cloned_spec = api_client.vms.Spec.from_dict(data)
-        api_client.vms.delete(cloned_name)
+        vm_checker.wait_deleted(cloned_name)
+        for vol in cloned_spec.volumes:
+            vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+            api_client.volumes.delete(vol_name)
+
+    @pytest.mark.parametrize(&#34;source_vm_status&#34;, [&#34;Running&#34;, &#34;Stopped&#34;])
+    def test_configs_on_cloned_vm(
+        self, api_client, vm_checker, configured_vm, source_vm_status, wait_timeout, sleep_timeout
+    ):
+        &#34;&#34;&#34;
+        Ref. https://github.com/harvester/tests/issues/813
+        &#34;&#34;&#34;
+        unique_vm_name, _ = configured_vm
+        cloned_vm_name = f&#34;cloned-{unique_vm_name}&#34;
+
+        # Check source VM status
+        checker_map = {
+            &#34;Running&#34;: vm_checker.wait_started,
+            &#34;Stopped&#34;: vm_checker.wait_stopped,
+        }
+        wait_checker = checker_map.get(source_vm_status)
+        vm_status, (code, data) = wait_checker(unique_vm_name)
+        assert vm_status, (code, data)
+
+        # Clone VM
+        code, _ = api_client.vms.clone(unique_vm_name, cloned_vm_name)
+        assert 204 == code, f&#34;Failed to clone VM {unique_vm_name} to new VM {cloned_vm_name}&#34;
+        # status should be the same as the source VM
+        vm_checker.wait_getable(cloned_vm_name)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime &gt; datetime.now():
-            code, data = api_client.vms.get(cloned_name)
-            if 404 == code:
+            code, data = api_client.vms.get(cloned_vm_name)
+            if 200 == code and source_vm_status == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;):
                 break
-            sleep(3)
+            sleep(sleep_timeout)
         else:
             raise AssertionError(
-                f&#34;Failed to Delete VM({cloned_name}) with errors:\n&#34;
+                f&#34;Cloned VM {cloned_vm_name} is not {source_vm_status} as source VM\n&#34;
                 f&#34;Status({code}): {data}&#34;
             )
-        for vol in cloned_spec.volumes:
+
+        # Verify configs on the cloned VM
+        code, data = api_client.vms.get(cloned_vm_name)
+        annotations = data[&#39;metadata&#39;][&#39;annotations&#39;]
+        # reserved memory
+        assert &#34;harvesterhci.io/reservedMemory&#34; in annotations, (
+            f&#34;Cloned VM({cloned_vm_name})&#39;s reserved memory is not set&#34;
+        )
+        assert annotations[&#34;harvesterhci.io/reservedMemory&#34;] == f&#34;{RESERVED_MEM}Mi&#34;, (
+            f&#34;Cloned VM({cloned_vm_name})&#39;s reserved memory is not correct&#34;
+        )
+
+        # Remove the cloned VM and volumes
+        cloned_vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_checker.wait_deleted(cloned_vm_name)
+        for vol in cloned_vm_spec.volumes:
             vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
             api_client.volumes.delete(vol_name)</code></pre>
 </details>
@@ -1710,16 +1770,7 @@ class TestVMClone:
     assert 204 == code, f&#34;Failed to clone VM {unique_vm_name} into new VM {cloned_name}&#34;
 
     # Check cloned VM is created
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get(cloned_name)
-        if 200 == code:
-            break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f&#34;restored VM {cloned_name} is not created&#34;
-        )
+    vm_checker.wait_getable(cloned_name)
     vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(cloned_name, [&#39;default&#39;])
     assert vm_got_ips, (
         f&#34;Failed to Start VM({cloned_name}) with errors:\n&#34;
@@ -1768,21 +1819,17 @@ class TestVMClone:
             f&#34;Executed stderr: {err}&#34;
         )
 
-    # Remove cloned VM and volumes
     code, data = api_client.vms.get(cloned_name)
+
+    # Verify configs on the cloned VM
+    annotations = data[&#39;metadata&#39;][&#39;annotations&#39;]
+    assert &#34;harvesterhci.io/reservedMemory&#34; not in annotations, (
+        f&#34;Cloned VM({cloned_name}) should not have reserved memory configuration&#34;
+    )
+
+    # Remove cloned VM and volumes
     cloned_spec = api_client.vms.Spec.from_dict(data)
-    api_client.vms.delete(cloned_name)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get(cloned_name)
-        if 404 == code:
-            break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f&#34;Failed to Delete VM({cloned_name}) with errors:\n&#34;
-            f&#34;Status({code}): {data}&#34;
-        )
+    vm_checker.wait_deleted(cloned_name)
     for vol in cloned_spec.volumes:
         vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
         api_client.volumes.delete(vol_name)</code></pre>
@@ -1878,26 +1925,15 @@ class TestVMClone:
             sh.exec_command(&#39;sync&#39;)
 
     # Stop the VM
-    code, data = api_client.vms.stop(unique_vm_name)
-    assert 204 == code, &#34;`Stop` return unexpected status code&#34;
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 404 == code:
-            break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f&#34;Failed to Stop VM({unique_vm_name}) with errors:\n&#34;
-            f&#34;Status({code}): {data}&#34;
-        )
+    vm_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
+    assert vm_stopped, (code, data)
 
     # Clone VM into new VM
     cloned_name = f&#34;cloned-{unique_vm_name}&#34;
     code, _ = api_client.vms.clone(unique_vm_name, cloned_name)
     assert 204 == code, f&#34;Failed to clone VM {unique_vm_name} into new VM {cloned_name}&#34;
 
-    # Check cloned VM is available and stooped
+    # Check cloned VM is available and stopped
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime &gt; datetime.now():
         code, data = api_client.vms.get(cloned_name)
@@ -1961,21 +1997,16 @@ class TestVMClone:
             f&#34;Executed stderr: {err}&#34;
         )
 
-    # Remove cloned VM and volumes
+    # Verify configs on the cloned VM
     code, data = api_client.vms.get(cloned_name)
+    annotations = data[&#39;metadata&#39;][&#39;annotations&#39;]
+    assert &#34;harvesterhci.io/reservedMemory&#34; not in annotations, (
+        f&#34;Cloned VM({cloned_name}) should not have reserved memory configuration&#34;
+    )
+
+    # Remove cloned VM and volumes
     cloned_spec = api_client.vms.Spec.from_dict(data)
-    api_client.vms.delete(cloned_name)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get(cloned_name)
-        if 404 == code:
-            break
-        sleep(3)
-    else:
-        raise AssertionError(
-            f&#34;Failed to Delete VM({cloned_name}) with errors:\n&#34;
-            f&#34;Status({code}): {data}&#34;
-        )
+    vm_checker.wait_deleted(cloned_name)
     for vol in cloned_spec.volumes:
         vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
         api_client.volumes.delete(vol_name)</code></pre>
@@ -1995,6 +2026,70 @@ class TestVMClone:
 - Cloned-VM should be available and stopped
 - Cloned-VM should able to start and becomes <code>Running</code>
 - Written data should available in Cloned-VM</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_configs_on_cloned_vm"><code class="name flex">
+<span>def <span class="ident">test_configs_on_cloned_vm</span></span>(<span>self,<br>api_client,<br>vm_checker,<br>configured_vm,<br>source_vm_status,<br>wait_timeout,<br>sleep_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.parametrize(&#34;source_vm_status&#34;, [&#34;Running&#34;, &#34;Stopped&#34;])
+def test_configs_on_cloned_vm(
+    self, api_client, vm_checker, configured_vm, source_vm_status, wait_timeout, sleep_timeout
+):
+    &#34;&#34;&#34;
+    Ref. https://github.com/harvester/tests/issues/813
+    &#34;&#34;&#34;
+    unique_vm_name, _ = configured_vm
+    cloned_vm_name = f&#34;cloned-{unique_vm_name}&#34;
+
+    # Check source VM status
+    checker_map = {
+        &#34;Running&#34;: vm_checker.wait_started,
+        &#34;Stopped&#34;: vm_checker.wait_stopped,
+    }
+    wait_checker = checker_map.get(source_vm_status)
+    vm_status, (code, data) = wait_checker(unique_vm_name)
+    assert vm_status, (code, data)
+
+    # Clone VM
+    code, _ = api_client.vms.clone(unique_vm_name, cloned_vm_name)
+    assert 204 == code, f&#34;Failed to clone VM {unique_vm_name} to new VM {cloned_vm_name}&#34;
+    # status should be the same as the source VM
+    vm_checker.wait_getable(cloned_vm_name)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(cloned_vm_name)
+        if 200 == code and source_vm_status == data.get(&#39;status&#39;, {}).get(&#39;printableStatus&#39;):
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f&#34;Cloned VM {cloned_vm_name} is not {source_vm_status} as source VM\n&#34;
+            f&#34;Status({code}): {data}&#34;
+        )
+
+    # Verify configs on the cloned VM
+    code, data = api_client.vms.get(cloned_vm_name)
+    annotations = data[&#39;metadata&#39;][&#39;annotations&#39;]
+    # reserved memory
+    assert &#34;harvesterhci.io/reservedMemory&#34; in annotations, (
+        f&#34;Cloned VM({cloned_vm_name})&#39;s reserved memory is not set&#34;
+    )
+    assert annotations[&#34;harvesterhci.io/reservedMemory&#34;] == f&#34;{RESERVED_MEM}Mi&#34;, (
+        f&#34;Cloned VM({cloned_vm_name})&#39;s reserved memory is not correct&#34;
+    )
+
+    # Remove the cloned VM and volumes
+    cloned_vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_checker.wait_deleted(cloned_vm_name)
+    for vol in cloned_vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
+<div class="desc"><p>Ref. <a href="https://github.com/harvester/tests/issues/813">https://github.com/harvester/tests/issues/813</a></p></div>
 </dd>
 </dl>
 </dd>
@@ -4230,6 +4325,7 @@ class TestVMWithVolumes:
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.bogus_vlan_net" href="#harvester_e2e_tests.integrations.test_3_vm_functions.bogus_vlan_net">bogus_vlan_net</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.configured_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.configured_vm">configured_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.image" href="#harvester_e2e_tests.integrations.test_3_vm_functions.image">image</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.small_volume" href="#harvester_e2e_tests.integrations.test_3_vm_functions.small_volume">small_volume</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.stopped_vm">stopped_vm</a></code></li>
@@ -4260,6 +4356,7 @@ class TestVMWithVolumes:
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.pytestmark" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_running_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_running_vm">test_clone_running_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_stopped_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_clone_stopped_vm">test_clone_stopped_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_configs_on_cloned_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.TestVMClone.test_configs_on_cloned_vm">test_configs_on_cloned_vm</a></code></li>
 </ul>
 </li>
 <li>
