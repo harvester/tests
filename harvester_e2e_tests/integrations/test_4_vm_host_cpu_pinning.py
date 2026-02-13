@@ -245,7 +245,8 @@ class TestPinCPUonVM:
     @pytest.mark.negative
     @pytest.mark.dependency(depends=["pin_cpu_on_vm"])
     def test_disable_cpu_manager_when_vm_on_it(
-        self, api_client, unique_name, wait_timeout, volume_checker):
+        self, api_client, unique_name, wait_timeout, volume_checker
+    ):
         unique_vm_name = f"pin-cpu-{unique_name}"
         code, data = api_client.vms.get_status(unique_vm_name)
         host = data['status']['nodeName']
