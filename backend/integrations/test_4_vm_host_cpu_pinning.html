@@ -425,7 +425,9 @@ class TestPinCPUonVM:
             &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9557&#34;)
     @pytest.mark.negative
     @pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
-    def test_disable_cpu_manager_when_vm_on_it(self, api_client, unique_name, wait_timeout):
+    def test_disable_cpu_manager_when_vm_on_it(
+        self, api_client, unique_name, wait_timeout, volume_checker
+    ):
         unique_vm_name = f&#34;pin-cpu-{unique_name}&#34;
         code, data = api_client.vms.get_status(unique_vm_name)
         host = data[&#39;status&#39;][&#39;nodeName&#39;]
@@ -443,9 +445,11 @@ class TestPinCPUonVM:
             if 404 == code:
                 break
             sleep(3)
-        for vol in vm_spec.volumes:
-            vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
-            api_client.volumes.delete(vol_name)</code></pre>
+
+        vol_names = [
+            vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;] for vol in vm_spec.volumes]
+        vm_volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted(vol_names)
+        assert vm_volumes_deleted, (code, data)</code></pre>
 </details>
 <div class="desc"><p>Ref: <a href="https://github.com/harvester/harvester/issues/2305">https://github.com/harvester/harvester/issues/2305</a></p></div>
 <h3>Class variables</h3>
@@ -458,7 +462,7 @@ class TestPinCPUonVM:
 <h3>Methods</h3>
 <dl>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.TestPinCPUonVM.test_disable_cpu_manager_when_vm_on_it"><code class="name flex">
-<span>def <span class="ident">test_disable_cpu_manager_when_vm_on_it</span></span>(<span>self, api_client, unique_name, wait_timeout)</span>
+<span>def <span class="ident">test_disable_cpu_manager_when_vm_on_it</span></span>(<span>self, api_client, unique_name, wait_timeout, volume_checker)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -469,7 +473,9 @@ class TestPinCPUonVM:
         &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9557&#34;)
 @pytest.mark.negative
 @pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
-def test_disable_cpu_manager_when_vm_on_it(self, api_client, unique_name, wait_timeout):
+def test_disable_cpu_manager_when_vm_on_it(
+    self, api_client, unique_name, wait_timeout, volume_checker
+):
     unique_vm_name = f&#34;pin-cpu-{unique_name}&#34;
     code, data = api_client.vms.get_status(unique_vm_name)
     host = data[&#39;status&#39;][&#39;nodeName&#39;]
@@ -487,9 +493,11 @@ def test_disable_cpu_manager_when_vm_on_it(self, api_client, unique_name, wait_t
         if 404 == code:
             break
         sleep(3)
-    for vol in vm_spec.volumes:
-        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
-        api_client.volumes.delete(vol_name)</code></pre>
+
+    vol_names = [
+        vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;] for vol in vm_spec.volumes]
+    vm_volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted(vol_names)
+    assert vm_volumes_deleted, (code, data)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
