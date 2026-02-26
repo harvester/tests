@@ -35,6 +35,7 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, image_checker):
     image_deleted, (code, data) = image_checker.wait_deleted(name)
     assert image_deleted, (code, data)
 
+
 @pytest.fixture(scope="module")
 def ubuntu_vm(api_client, unique_name, ubuntu_image, volume_checker, wait_timeout):
     cpu, mem, unique_vm_name = 1, 2, f"pin-cpu-{unique_name}"
@@ -78,6 +79,7 @@ def ubuntu_vm(api_client, unique_name, ubuntu_image, volume_checker, wait_timeou
             vol['volume']['persistentVolumeClaim']['claimName'] for vol in vm_spec.volumes]
         vm_volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted(vol_names)
         assert vm_volumes_deleted, (code, data)
+
 
 @pytest.fixture(scope="module")
 def cpu_managers(api_client, wait_timeout):
@@ -245,8 +247,9 @@ class TestPinCPUonVM:
     def test_pin_cpu_on_vm(self, api_client, ubuntu_vm, vm_checker):
         code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
         assert 200 == code, (
-        f"Can't get VMI {ubuntu_vm['namespace']}/{ubuntu_vm['name']} with error: {code}, {data}"
-    )
+            f"Can't get VMI {ubuntu_vm['namespace']}/{ubuntu_vm['name']} "
+            f"with error: {code}, {data}"
+        )
         vm_started, (code, vmi) = vm_checker.wait_started(ubuntu_vm['name'])
         assert vm_started, (code, vmi)
 
@@ -266,9 +269,11 @@ class TestPinCPUonVM:
 
     @pytest.mark.dependency(depends=["pin_cpu_on_vm"])
     def test_migrate_vm_with_cpu_pinned(self, api_client, unique_name, vm_checker, cpu_managers):
-        assert len(cpu_managers.nodes) >= len(cpu_managers.enabled) >= 2, (
-            "No enough nodes enabled cpu manager for migration"
-        )
+        if not len(cpu_managers.nodes) >= len(cpu_managers.enabled) >= 2:
+            pytest.skip(reason="No enough nodes enabled cpu manager for migration, "
+                        f"current: {len(cpu_managers.nodes)}, "
+                        f"require: {len(cpu_managers.enabled)}")
+
         unique_vm_name = f"pin-cpu-{unique_name}"
         code, data = api_client.vms.get_status(unique_vm_name)
         host = data['status']['nodeName']
