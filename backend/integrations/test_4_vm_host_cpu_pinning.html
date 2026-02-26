@@ -146,6 +146,60 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, image_checker):
 </details>
 <div class="desc"></div>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.ubuntu_vm"><code class="name flex">
+<span>def <span class="ident">ubuntu_vm</span></span>(<span>api_client, unique_name, ubuntu_image, volume_checker, wait_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;module&#34;)
+def ubuntu_vm(api_client, unique_name, ubuntu_image, volume_checker, wait_timeout):
+    cpu, mem, unique_vm_name = 1, 2, f&#34;pin-cpu-{unique_name}&#34;
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image(&#34;disk-0&#34;, ubuntu_image.id)
+    vm_spec.cpu_pinning = True
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    assert 201 == code, (
+        f&#34;Failed to create VM {unique_vm_name} with error: {code}, {data}&#34;
+    )
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if data.get(&#39;status&#39;, {}).get(&#39;ready&#39;, False):
+            code, data = api_client.vms.get_status(unique_vm_name)
+            if data[&#39;status&#39;][&#39;conditions&#39;][-1][&#39;status&#39;] == &#39;True&#39;:
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f&#34;Can&#39;t find VM {unique_vm_name} with {wait_timeout} timed out\n&#34;
+            f&#34;Got error: {code}, {data}&#34;
+        )
+
+    data[&#39;name&#39;] = data[&#39;metadata&#39;][&#39;name&#39;]
+    data[&#39;namespace&#39;] = data[&#39;metadata&#39;][&#39;namespace&#39;]
+    yield data
+
+    code, data = api_client.vms.get(unique_vm_name)
+    if 200 == code:  # ???: https://github.com/harvester/harvester/issues/4388
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        api_client.vms.delete(unique_vm_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, status_data = api_client.vms.get_status(unique_vm_name)
+            if 404 == code:
+                break
+            sleep(3)
+        vol_names = [
+            vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;] for vol in vm_spec.volumes]
+        vm_volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted(vol_names)
+        assert vm_volumes_deleted, (code, data)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
 </dl>
 </section>
 <section>
@@ -380,19 +434,17 @@ class TestPinCPUonVM:
             cpu_managers.wait_applied(node, &#39;true&#39;)
 
     @pytest.mark.dependency(name=&#34;pin_cpu_on_vm&#34;, depends=[&#34;enable_cpu_managers&#34;])
-    def test_pin_cpu_on_vm(self, api_client, unique_name, vm_checker, ubuntu_image):
-        cpu, mem, unique_vm_name = 1, 2, f&#34;pin-cpu-{unique_name}&#34;
-        vm = api_client.vms.Spec(cpu, mem)
-        vm.add_image(&#34;disk-0&#34;, ubuntu_image.id)
-        vm.cpu_pinning = True
-
-        code, data = api_client.vms.create(unique_vm_name, vm)
-        assert 201 == code, (code, data)
-        vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+    def test_pin_cpu_on_vm(self, api_client, ubuntu_vm, vm_checker):
+        code, data = api_client.vms.get_status(ubuntu_vm[&#39;name&#39;], ubuntu_vm[&#39;namespace&#39;])
+        assert 200 == code, (
+            f&#34;Can&#39;t get VMI {ubuntu_vm[&#39;namespace&#39;]}/{ubuntu_vm[&#39;name&#39;]} &#34;
+            f&#34;with error: {code}, {data}&#34;
+        )
+        vm_started, (code, vmi) = vm_checker.wait_started(ubuntu_vm[&#39;name&#39;])
         assert vm_started, (code, vmi)
 
         assert vmi[&#39;spec&#39;][&#39;domain&#39;][&#39;cpu&#39;].get(&#39;dedicatedCpuPlacement&#39;) is True, (
-            f&#34;The VM {unique_vm_name} started but CPU not pinned.&#34;
+            f&#34;The VM {ubuntu_vm[&#39;name&#39;]} started but CPU not pinned.&#34;
         )
 
     @pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
@@ -407,9 +459,11 @@ class TestPinCPUonVM:
 
     @pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
     def test_migrate_vm_with_cpu_pinned(self, api_client, unique_name, vm_checker, cpu_managers):
-        assert len(cpu_managers.nodes) &gt;= len(cpu_managers.enabled) &gt;= 2, (
-            &#34;No enough nodes enabled cpu manager for migration&#34;
-        )
+        if not len(cpu_managers.nodes) &gt;= len(cpu_managers.enabled) &gt;= 2:
+            pytest.skip(reason=&#34;No enough nodes enabled cpu manager for migration, &#34;
+                        f&#34;current: {len(cpu_managers.nodes)}, &#34;
+                        f&#34;require: {len(cpu_managers.enabled)}&#34;)
+
         unique_vm_name = f&#34;pin-cpu-{unique_name}&#34;
         code, data = api_client.vms.get_status(unique_vm_name)
         host = data[&#39;status&#39;][&#39;nodeName&#39;]
@@ -421,7 +475,7 @@ class TestPinCPUonVM:
             f&#34;API Status({code}): {data}&#34;
         )
 
-    @pytest.mark.skip_if_version(
+    @pytest.mark.xfail_if_version(
             &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9557&#34;)
     @pytest.mark.negative
     @pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
@@ -433,23 +487,7 @@ class TestPinCPUonVM:
         host = data[&#39;status&#39;][&#39;nodeName&#39;]
 
         code, data = api_client.hosts.cpu_manager(host, enable=False)
-        assert 400 == code and &#34;not be any running VM&#34; in data, (code, data)
-
-        # side-effect: teardown the VM
-        code, data = api_client.vms.get(unique_vm_name)
-        vm_spec = api_client.vms.Spec.from_dict(data)
-        api_client.vms.delete(unique_vm_name)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime &gt; datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 404 == code:
-                break
-            sleep(3)
-
-        vol_names = [
-            vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;] for vol in vm_spec.volumes]
-        vm_volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted(vol_names)
-        assert vm_volumes_deleted, (code, data)</code></pre>
+        assert 400 == code and &#34;not be any running VM&#34; in data, (code, data)</code></pre>
 </details>
 <div class="desc"><p>Ref: <a href="https://github.com/harvester/harvester/issues/2305">https://github.com/harvester/harvester/issues/2305</a></p></div>
 <h3>Class variables</h3>
@@ -469,7 +507,7 @@ class TestPinCPUonVM:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@pytest.mark.skip_if_version(
+<pre><code class="python">@pytest.mark.xfail_if_version(
         &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9557&#34;)
 @pytest.mark.negative
 @pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
@@ -481,23 +519,7 @@ def test_disable_cpu_manager_when_vm_on_it(
     host = data[&#39;status&#39;][&#39;nodeName&#39;]
 
     code, data = api_client.hosts.cpu_manager(host, enable=False)
-    assert 400 == code and &#34;not be any running VM&#34; in data, (code, data)
-
-    # side-effect: teardown the VM
-    code, data = api_client.vms.get(unique_vm_name)
-    vm_spec = api_client.vms.Spec.from_dict(data)
-    api_client.vms.delete(unique_vm_name)
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime &gt; datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 404 == code:
-            break
-        sleep(3)
-
-    vol_names = [
-        vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;] for vol in vm_spec.volumes]
-    vm_volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted(vol_names)
-    assert vm_volumes_deleted, (code, data)</code></pre>
+    assert 400 == code and &#34;not be any running VM&#34; in data, (code, data)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -552,9 +574,11 @@ def test_enable_cpu_mangers(self, api_client, wait_timeout, cpu_managers):
 </summary>
 <pre><code class="python">@pytest.mark.dependency(depends=[&#34;pin_cpu_on_vm&#34;])
 def test_migrate_vm_with_cpu_pinned(self, api_client, unique_name, vm_checker, cpu_managers):
-    assert len(cpu_managers.nodes) &gt;= len(cpu_managers.enabled) &gt;= 2, (
-        &#34;No enough nodes enabled cpu manager for migration&#34;
-    )
+    if not len(cpu_managers.nodes) &gt;= len(cpu_managers.enabled) &gt;= 2:
+        pytest.skip(reason=&#34;No enough nodes enabled cpu manager for migration, &#34;
+                    f&#34;current: {len(cpu_managers.nodes)}, &#34;
+                    f&#34;require: {len(cpu_managers.enabled)}&#34;)
+
     unique_vm_name = f&#34;pin-cpu-{unique_name}&#34;
     code, data = api_client.vms.get_status(unique_vm_name)
     host = data[&#39;status&#39;][&#39;nodeName&#39;]
@@ -569,7 +593,7 @@ def test_migrate_vm_with_cpu_pinned(self, api_client, unique_name, vm_checker, c
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.TestPinCPUonVM.test_pin_cpu_on_vm"><code class="name flex">
-<span>def <span class="ident">test_pin_cpu_on_vm</span></span>(<span>self, api_client, unique_name, vm_checker, ubuntu_image)</span>
+<span>def <span class="ident">test_pin_cpu_on_vm</span></span>(<span>self, api_client, ubuntu_vm, vm_checker)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -577,19 +601,17 @@ def test_migrate_vm_with_cpu_pinned(self, api_client, unique_name, vm_checker, c
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@pytest.mark.dependency(name=&#34;pin_cpu_on_vm&#34;, depends=[&#34;enable_cpu_managers&#34;])
-def test_pin_cpu_on_vm(self, api_client, unique_name, vm_checker, ubuntu_image):
-    cpu, mem, unique_vm_name = 1, 2, f&#34;pin-cpu-{unique_name}&#34;
-    vm = api_client.vms.Spec(cpu, mem)
-    vm.add_image(&#34;disk-0&#34;, ubuntu_image.id)
-    vm.cpu_pinning = True
-
-    code, data = api_client.vms.create(unique_vm_name, vm)
-    assert 201 == code, (code, data)
-    vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+def test_pin_cpu_on_vm(self, api_client, ubuntu_vm, vm_checker):
+    code, data = api_client.vms.get_status(ubuntu_vm[&#39;name&#39;], ubuntu_vm[&#39;namespace&#39;])
+    assert 200 == code, (
+        f&#34;Can&#39;t get VMI {ubuntu_vm[&#39;namespace&#39;]}/{ubuntu_vm[&#39;name&#39;]} &#34;
+        f&#34;with error: {code}, {data}&#34;
+    )
+    vm_started, (code, vmi) = vm_checker.wait_started(ubuntu_vm[&#39;name&#39;])
     assert vm_started, (code, vmi)
 
     assert vmi[&#39;spec&#39;][&#39;domain&#39;][&#39;cpu&#39;].get(&#39;dedicatedCpuPlacement&#39;) is True, (
-        f&#34;The VM {unique_vm_name} started but CPU not pinned.&#34;
+        f&#34;The VM {ubuntu_vm[&#39;name&#39;]} started but CPU not pinned.&#34;
     )</code></pre>
 </details>
 <div class="desc"></div>
@@ -633,6 +655,7 @@ def test_reboot_vm_with_cpu_pinned(self, api_client, unique_name, vm_checker):
 <ul class="">
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.cpu_managers" href="#harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.cpu_managers">cpu_managers</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.ubuntu_image" href="#harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.ubuntu_image">ubuntu_image</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.ubuntu_vm" href="#harvester_e2e_tests.integrations.test_4_vm_host_cpu_pinning.ubuntu_vm">ubuntu_vm</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
