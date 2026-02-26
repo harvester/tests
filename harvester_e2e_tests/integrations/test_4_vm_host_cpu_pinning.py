@@ -35,6 +35,49 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, image_checker):
     image_deleted, (code, data) = image_checker.wait_deleted(name)
     assert image_deleted, (code, data)
 
+@pytest.fixture(scope="module")
+def ubuntu_vm(api_client, unique_name, ubuntu_image, volume_checker, wait_timeout):
+    cpu, mem, unique_vm_name = 1, 2, f"pin-cpu-{unique_name}"
+    vm_spec = api_client.vms.Spec(cpu, mem)
+    vm_spec.add_image("disk-0", ubuntu_image.id)
+    vm_spec.cpu_pinning = True
+    code, data = api_client.vms.create(unique_vm_name, vm_spec)
+    assert 201 == code, (
+        f"Failed to create VM {unique_vm_name} with error: {code}, {data}"
+    )
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if data.get('status', {}).get('ready', False):
+            code, data = api_client.vms.get_status(unique_vm_name)
+            if data['status']['conditions'][-1]['status'] == 'True':
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Can't find VM {unique_vm_name} with {wait_timeout} timed out\n"
+            f"Got error: {code}, {data}"
+        )
+
+    data['name'] = data['metadata']['name']
+    data['namespace'] = data['metadata']['namespace']
+    yield data
+
+    code, data = api_client.vms.get(unique_vm_name)
+    if 200 == code:  # ???: https://github.com/harvester/harvester/issues/4388
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        api_client.vms.delete(unique_vm_name)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, status_data = api_client.vms.get_status(unique_vm_name)
+            if 404 == code:
+                break
+            sleep(3)
+        vol_names = [
+            vol['volume']['persistentVolumeClaim']['claimName'] for vol in vm_spec.volumes]
+        vm_volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted(vol_names)
+        assert vm_volumes_deleted, (code, data)
 
 @pytest.fixture(scope="module")
 def cpu_managers(api_client, wait_timeout):
@@ -199,19 +242,16 @@ class TestPinCPUonVM:
             cpu_managers.wait_applied(node, 'true')
 
     @pytest.mark.dependency(name="pin_cpu_on_vm", depends=["enable_cpu_managers"])
-    def test_pin_cpu_on_vm(self, api_client, unique_name, vm_checker, ubuntu_image):
-        cpu, mem, unique_vm_name = 1, 2, f"pin-cpu-{unique_name}"
-        vm = api_client.vms.Spec(cpu, mem)
-        vm.add_image("disk-0", ubuntu_image.id)
-        vm.cpu_pinning = True
-
-        code, data = api_client.vms.create(unique_vm_name, vm)
-        assert 201 == code, (code, data)
-        vm_started, (code, vmi) = vm_checker.wait_started(unique_vm_name)
+    def test_pin_cpu_on_vm(self, api_client, ubuntu_vm, vm_checker):
+        code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
+        assert 200 == code, (
+        f"Can't get VMI {ubuntu_vm['namespace']}/{ubuntu_vm['name']} with error: {code}, {data}"
+    )
+        vm_started, (code, vmi) = vm_checker.wait_started(ubuntu_vm['name'])
         assert vm_started, (code, vmi)
 
         assert vmi['spec']['domain']['cpu'].get('dedicatedCpuPlacement') is True, (
-            f"The VM {unique_vm_name} started but CPU not pinned."
+            f"The VM {ubuntu_vm['name']} started but CPU not pinned."
         )
 
     @pytest.mark.dependency(depends=["pin_cpu_on_vm"])
@@ -253,19 +293,3 @@ class TestPinCPUonVM:
 
         code, data = api_client.hosts.cpu_manager(host, enable=False)
         assert 400 == code and "not be any running VM" in data, (code, data)
-
-        # side-effect: teardown the VM
-        code, data = api_client.vms.get(unique_vm_name)
-        vm_spec = api_client.vms.Spec.from_dict(data)
-        api_client.vms.delete(unique_vm_name)
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            if 404 == code:
-                break
-            sleep(3)
-
-        vol_names = [
-            vol['volume']['persistentVolumeClaim']['claimName'] for vol in vm_spec.volumes]
-        vm_volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted(vol_names)
-        assert vm_volumes_deleted, (code, data)
