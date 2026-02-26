@@ -595,9 +595,9 @@ class TestAnyNodesUpgrade:
     ):
         # create new storage class, make it default
         # create 3 VMs:
-        # - having the new storage class
-        # - the VM that have some data written, take backup
-        # - the VM restored from the backup
+        # - VM with test data written, take backup and snapshot
+        # - VM restored from the backup
+        # - VM with additional volume using new storage class
         pub_key, pri_key = ssh_keypair
         old_sc, new_sc = config_storageclass
         unique_vm_name = f&#34;ug-vm-{unique_name}&#34;
@@ -665,6 +665,20 @@ class TestAnyNodesUpgrade:
             raise AssertionError(
                 f&#39;Timed-out waiting for the backup \&#39;{unique_vm_name}\&#39; to be ready.&#39;
             )
+        # Take snapshot then check it&#39;s ready
+        snapshot_name = f&#34;{unique_vm_name}-snapshot&#34;
+        code, data = api_client.vm_snapshots.create(unique_vm_name, snapshot_name)
+        assert 201 == code, (code, data)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, snapshot = api_client.vm_snapshots.get(snapshot_name)
+            if 200 == code and snapshot.get(&#39;status&#39;, {}).get(&#39;readyToUse&#39;):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#39;Timed-out waiting for the snapshot \&#39;{snapshot_name}\&#39; to be ready.&#39;
+            )
         # restore into new VM
         restored_vm_name = f&#34;r-{unique_vm_name}&#34;
         spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
@@ -724,7 +738,9 @@ class TestAnyNodesUpgrade:
 
         # store into cluster&#39;s state
         names = [unique_vm_name, f&#34;r-{unique_vm_name}&#34;, f&#34;sc-{unique_vm_name}&#34;]
-        cluster_state.vms = dict(md5=vm1_md5, names=names, ssh_user=image[&#39;user&#39;], pkey=pri_key)
+        cluster_state.vms = dict(
+            md5=vm1_md5, names=names, ssh_user=image[&#39;user&#39;], pkey=pri_key,
+            snapshot_name=snapshot_name)
 
     @pytest.mark.dependency(name=&#34;any_nodes_upgrade&#34;)
     def test_perform_upgrade(
@@ -979,6 +995,72 @@ class TestAnyNodesUpgrade:
                 sleep(5)
         else:
             raise AssertionError(&#34;Unable to login to restored VM to check data consistency&#34;)
+
+        # teardown: remove the VM
+        code, data = api_client.vms.get(restored_vm_name)
+        spec = api_client.vms.Spec.from_dict(data)
+        _ = vm_checker.wait_deleted(restored_vm_name)
+        for vol in spec.volumes:
+            vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+            api_client.volumes.delete(vol_name)
+
+    @pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;, &#34;preq_setup_vms&#34;])
+    def test_verify_restore_vm_from_snapshot(
+        self, api_client, cluster_state, vm_shell, vm_checker, wait_timeout
+    ):
+        &#34;&#34;&#34; Verify VM restored from snapshot taken before upgrade
+        Criteria:
+        - VM should able to start from snapshot after upgrade
+        - data in VM should not lost
+        &#34;&#34;&#34;
+
+        snapshot_name = cluster_state.vms[&#39;snapshot_name&#39;]
+        restored_vm_name = f&#34;snap-r-{cluster_state.vms[&#39;names&#39;][0]}&#34;
+
+        # Restore VM from snapshot and check networking is good
+        restore_spec = api_client.vm_snapshots.RestoreSpec.for_new(restored_vm_name)
+        code, data = api_client.vm_snapshots.restore(snapshot_name, restore_spec)
+        assert code == 201, f&#34;Unable to restore snapshot {snapshot_name} after upgrade&#34;
+        # Check restore VM is created
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            code, data = api_client.vms.get(restored_vm_name)
+            if 200 == code:
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f&#34;VM restored from snapshot {restored_vm_name} is not created&#34;
+            )
+        vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(restored_vm_name, [&#34;nic-1&#34;])
+        assert vm_got_ips, (
+            f&#34;Failed to Start VM({restored_vm_name}) from snapshot with errors:\n&#34;
+            f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+            f&#34;API Status({code}): {data}&#34;
+        )
+
+        # Check data in restored VM is consistent
+        pri_key, ssh_user = cluster_state.vms[&#39;pkey&#39;], cluster_state.vms[&#39;ssh_user&#39;]
+        vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                     if iface[&#39;name&#39;] == &#39;nic-1&#39;)
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime &gt; datetime.now():
+            try:
+                with vm_shell.login(vm_ip, ssh_user, pkey=pri_key) as sh:
+                    cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+                    assert cloud_inited and not err, (out, err)
+                    out, err = sh.exec_command(&#34;md5sum -c ./generate_file.md5&#34;)
+                    assert not err, (out, err)
+                    md5, err = sh.exec_command(&#34;cat ./generate_file.md5&#34;)
+                    assert not err, (md5, err)
+                    assert md5 == cluster_state.vms[&#39;md5&#39;]
+                    break
+            except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
+                sleep(5)
+        else:
+            raise AssertionError(
+                &#34;Unable to login to VM restored from snapshot to check data consistency&#34;
+            )
 
         # teardown: remove the VM
         code, data = api_client.vms.get(restored_vm_name)
@@ -1391,9 +1473,9 @@ def test_preq_setup_vms(
 ):
     # create new storage class, make it default
     # create 3 VMs:
-    # - having the new storage class
-    # - the VM that have some data written, take backup
-    # - the VM restored from the backup
+    # - VM with test data written, take backup and snapshot
+    # - VM restored from the backup
+    # - VM with additional volume using new storage class
     pub_key, pri_key = ssh_keypair
     old_sc, new_sc = config_storageclass
     unique_vm_name = f&#34;ug-vm-{unique_name}&#34;
@@ -1461,6 +1543,20 @@ def test_preq_setup_vms(
         raise AssertionError(
             f&#39;Timed-out waiting for the backup \&#39;{unique_vm_name}\&#39; to be ready.&#39;
         )
+    # Take snapshot then check it&#39;s ready
+    snapshot_name = f&#34;{unique_vm_name}-snapshot&#34;
+    code, data = api_client.vm_snapshots.create(unique_vm_name, snapshot_name)
+    assert 201 == code, (code, data)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, snapshot = api_client.vm_snapshots.get(snapshot_name)
+        if 200 == code and snapshot.get(&#39;status&#39;, {}).get(&#39;readyToUse&#39;):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#39;Timed-out waiting for the snapshot \&#39;{snapshot_name}\&#39; to be ready.&#39;
+        )
     # restore into new VM
     restored_vm_name = f&#34;r-{unique_vm_name}&#34;
     spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
@@ -1520,7 +1616,9 @@ def test_preq_setup_vms(
 
     # store into cluster&#39;s state
     names = [unique_vm_name, f&#34;r-{unique_vm_name}&#34;, f&#34;sc-{unique_vm_name}&#34;]
-    cluster_state.vms = dict(md5=vm1_md5, names=names, ssh_user=image[&#39;user&#39;], pkey=pri_key)</code></pre>
+    cluster_state.vms = dict(
+        md5=vm1_md5, names=names, ssh_user=image[&#39;user&#39;], pkey=pri_key,
+        snapshot_name=snapshot_name)</code></pre>
 </details>
 <div class="desc"></div>
 </dd>
@@ -1950,6 +2048,85 @@ def test_verify_restore_vm(
 <div class="desc"><p>Verify VM restored from the backup
 Criteria:
 - VM should able to start
+- data in VM should not lost</p></div>
+</dd>
+<dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm_from_snapshot"><code class="name flex">
+<span>def <span class="ident">test_verify_restore_vm_from_snapshot</span></span>(<span>self, api_client, cluster_state, vm_shell, vm_checker, wait_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;any_nodes_upgrade&#34;, &#34;preq_setup_vms&#34;])
+def test_verify_restore_vm_from_snapshot(
+    self, api_client, cluster_state, vm_shell, vm_checker, wait_timeout
+):
+    &#34;&#34;&#34; Verify VM restored from snapshot taken before upgrade
+    Criteria:
+    - VM should able to start from snapshot after upgrade
+    - data in VM should not lost
+    &#34;&#34;&#34;
+
+    snapshot_name = cluster_state.vms[&#39;snapshot_name&#39;]
+    restored_vm_name = f&#34;snap-r-{cluster_state.vms[&#39;names&#39;][0]}&#34;
+
+    # Restore VM from snapshot and check networking is good
+    restore_spec = api_client.vm_snapshots.RestoreSpec.for_new(restored_vm_name)
+    code, data = api_client.vm_snapshots.restore(snapshot_name, restore_spec)
+    assert code == 201, f&#34;Unable to restore snapshot {snapshot_name} after upgrade&#34;
+    # Check restore VM is created
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        code, data = api_client.vms.get(restored_vm_name)
+        if 200 == code:
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f&#34;VM restored from snapshot {restored_vm_name} is not created&#34;
+        )
+    vm_got_ips, (code, data) = vm_checker.wait_ip_addresses(restored_vm_name, [&#34;nic-1&#34;])
+    assert vm_got_ips, (
+        f&#34;Failed to Start VM({restored_vm_name}) from snapshot with errors:\n&#34;
+        f&#34;Status: {data.get(&#39;status&#39;)}\n&#34;
+        f&#34;API Status({code}): {data}&#34;
+    )
+
+    # Check data in restored VM is consistent
+    pri_key, ssh_user = cluster_state.vms[&#39;pkey&#39;], cluster_state.vms[&#39;ssh_user&#39;]
+    vm_ip = next(iface[&#39;ipAddress&#39;] for iface in data[&#39;status&#39;][&#39;interfaces&#39;]
+                 if iface[&#39;name&#39;] == &#39;nic-1&#39;)
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime &gt; datetime.now():
+        try:
+            with vm_shell.login(vm_ip, ssh_user, pkey=pri_key) as sh:
+                cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+                assert cloud_inited and not err, (out, err)
+                out, err = sh.exec_command(&#34;md5sum -c ./generate_file.md5&#34;)
+                assert not err, (out, err)
+                md5, err = sh.exec_command(&#34;cat ./generate_file.md5&#34;)
+                assert not err, (md5, err)
+                assert md5 == cluster_state.vms[&#39;md5&#39;]
+                break
+        except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
+            sleep(5)
+    else:
+        raise AssertionError(
+            &#34;Unable to login to VM restored from snapshot to check data consistency&#34;
+        )
+
+    # teardown: remove the VM
+    code, data = api_client.vms.get(restored_vm_name)
+    spec = api_client.vms.Spec.from_dict(data)
+    _ = vm_checker.wait_deleted(restored_vm_name)
+    for vol in spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
+<div class="desc"><p>Verify VM restored from snapshot taken before upgrade
+Criteria:
+- VM should able to start from snapshot after upgrade
 - data in VM should not lost</p></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version"><code class="name flex">
@@ -2576,6 +2753,7 @@ def test_version_compatibility(
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_network" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_network">test_verify_network</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_os_version">test_verify_os_version</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm">test_verify_restore_vm</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm_from_snapshot" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_restore_vm_from_snapshot">test_verify_restore_vm_from_snapshot</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_rke2_version">test_verify_rke2_version</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_storage_class">test_verify_storage_class</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_upgradelog" href="#harvester_e2e_tests.integrations.test_upgrade.TestAnyNodesUpgrade.test_verify_upgradelog">test_verify_upgradelog</a></code></li>
