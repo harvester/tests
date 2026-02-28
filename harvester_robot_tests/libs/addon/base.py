@@ -63,6 +63,6 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def verify_prometheus_metric_exists(self, query, prometheus_url):
-        """Verify that a Prometheus metric exists"""
+    def verify_prometheus_metric_exists(self, query, prometheus_url, retries=3, retry_interval=5):
+        """Verify that a Prometheus metric exists with retry logic"""
         pass

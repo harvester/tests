@@ -2,18 +2,30 @@
 Addon Keywords - creates Addon() instance and delegates - NO direct API calls!
 Layer 3: Keyword wrappers for Robot Framework
 """
+import os
+import sys
 
-from utility.utility import logging
-from addon import Addon
-from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG
+# Add the path to the utility module
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
+from utility.utility import logging  # noqa E402
+from addon import Addon  # noqa E402
+from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG  # noqa E402
 
 
 class addon_keywords:
     """Addon keyword wrapper - creates Addon component and delegates"""
 
     def __init__(self):
-        """Initialize addon keywords"""
-        self.addon = Addon()
+        """Initialize addon keywords with lazy loading"""
+        self._addon = None
+
+    @property
+    def addon(self):
+        """Lazy initialize addon to allow API client setup first"""
+        if self._addon is None:
+            self._addon = Addon()
+        return self._addon
 
     def get_addon(self, addon_name):
         """
@@ -161,19 +173,21 @@ class addon_keywords:
         logging(f'Querying Prometheus: {query}')
         return self.addon.query_prometheus(query, prometheus_url)
 
-    def verify_prometheus_metric_exists(self, query, prometheus_url='http://localhost:9090'):
+    def verify_prometheus_metric_exists(self, query, prometheus_url='http://localhost:9090', retries=3, retry_interval=5):
         """
-        Verify that a Prometheus metric exists
+        Verify that a Prometheus metric exists with retry logic
 
         Args:
             query: PromQL query string
             prometheus_url: Prometheus URL (default: http://localhost:9090)
+            retries: Number of retry attempts (default: 3)
+            retry_interval: Seconds to wait between retries (default: 5)
 
         Returns:
             bool: True if metric exists and has data
         """
         logging(f'Verifying Prometheus metric: {query}')
-        return self.addon.verify_prometheus_metric_exists(query, prometheus_url)
+        return self.addon.verify_prometheus_metric_exists(query, prometheus_url, retries, retry_interval)
 
     def restore_addon_state(self, addon_name, initial_state):
         """

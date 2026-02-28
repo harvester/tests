@@ -81,6 +81,6 @@ class Addon(Base):
         """Query Prometheus for metrics - delegates to implementation"""
         return self.addon.query_prometheus(query, prometheus_url)
 
-    def verify_prometheus_metric_exists(self, query, prometheus_url):
+    def verify_prometheus_metric_exists(self, query, prometheus_url, retries=3, retry_interval=5):
         """Verify that a Prometheus metric exists - delegates to implementation"""
-        return self.addon.verify_prometheus_metric_exists(query, prometheus_url)
+        return self.addon.verify_prometheus_metric_exists(query, prometheus_url, retries, retry_interval)

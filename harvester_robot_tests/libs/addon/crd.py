@@ -33,6 +33,48 @@ class CRD(Base):
         self.addon_version = HARVESTER_API_VERSION
         self.addon_plural = ADDON_PLURAL
         self.port_forward_process = None
+        # Common namespaces where addons are located
+        self.addon_namespaces = [
+            'cattle-monitoring-system',
+            'cattle-logging-system',
+            'harvester-system',
+            'kube-system'
+        ]
+
+    def _find_addon_namespace(self, addon_name):
+        """
+        Find the namespace where the addon is located
+        
+        Args:
+            addon_name: Name of the addon
+            
+        Returns:
+            str: Namespace of the addon, or None if not found
+        """
+        # Try each known addon namespace
+        for namespace in self.addon_namespaces:
+            try:
+                addon = self.custom_api.get_namespaced_custom_object(
+                    group=self.addon_group,
+                    version=self.addon_version,
+                    namespace=namespace,
+                    plural=self.addon_plural,
+                    name=addon_name
+                )
+                if addon:
+                    logging(f"Found addon {addon_name} in namespace {namespace}")
+                    return namespace
+            except ApiException as e:
+                if e.status == 404:
+                    # Addon not in this namespace, try next one
+                    continue
+                else:
+                    # Some other error, log it but continue searching
+                    logging(f"Error checking namespace {namespace}: {e}", level='WARNING')
+                    continue
+        
+        logging(f"Addon {addon_name} not found in any known namespace", level='WARNING')
+        return None
 
     def get_addon(self, addon_name):
         """
@@ -44,11 +86,17 @@ class CRD(Base):
         Returns:
             dict: Addon object
         """
+        # First find which namespace the addon is in
+        namespace = self._find_addon_namespace(addon_name)
+        if not namespace:
+            logging(f"Addon {addon_name} not found", level='WARNING')
+            return None
+            
         try:
             addon = get_cr(
                 group=self.addon_group,
                 version=self.addon_version,
-                namespace=HARVESTER_NAMESPACE,
+                namespace=namespace,
                 plural=self.addon_plural,
                 name=addon_name
             )
@@ -68,6 +116,12 @@ class CRD(Base):
             addon_name: Name of the addon to enable
         """
         logging(f"Enabling addon {addon_name}")
+        
+        # First find which namespace the addon is in
+        namespace = self._find_addon_namespace(addon_name)
+        if not namespace:
+            raise Exception(f"Addon {addon_name} not found in any namespace")
+        
         patch_body = {
             "spec": {
                 "enabled": True
@@ -77,7 +131,7 @@ class CRD(Base):
             patch_cr(
                 group=self.addon_group,
                 version=self.addon_version,
-                namespace=HARVESTER_NAMESPACE,
+                namespace=namespace,
                 plural=self.addon_plural,
                 name=addon_name,
                 body=patch_body
@@ -94,6 +148,12 @@ class CRD(Base):
             addon_name: Name of the addon to disable
         """
         logging(f"Disabling addon {addon_name}")
+        
+        # First find which namespace the addon is in
+        namespace = self._find_addon_namespace(addon_name)
+        if not namespace:
+            raise Exception(f"Addon {addon_name} not found in any namespace")
+        
         patch_body = {
             "spec": {
                 "enabled": False
@@ -103,7 +163,7 @@ class CRD(Base):
             patch_cr(
                 group=self.addon_group,
                 version=self.addon_version,
-                namespace=HARVESTER_NAMESPACE,
+                namespace=namespace,
                 plural=self.addon_plural,
                 name=addon_name,
                 body=patch_body
@@ -135,14 +195,14 @@ class CRD(Base):
                     # Check if enabled in spec
                     if spec_enabled:
                         # Check deployment status
-                        deployed = False
+                        completed = False
                         for condition in status_conditions:
-                            if condition.get('type') == 'Deployed':
+                            if condition.get('type') == 'Completed':
                                 if condition.get('status') == 'True':
-                                    deployed = True
+                                    completed = True
                                     break
 
-                        if deployed:
+                        if completed:
                             logging(f"Addon {addon_name} is enabled and deployed")
                             return True
 
@@ -355,32 +415,48 @@ class CRD(Base):
         except Exception as e:
             raise Exception(f"Failed to query Prometheus: {e}")
 
-    def verify_prometheus_metric_exists(self, query, prometheus_url='http://localhost:9090'):
+    def verify_prometheus_metric_exists(self, query, prometheus_url='http://localhost:9090', retries=3, retry_interval=5):
         """
-        Verify that a Prometheus metric exists
+        Verify that a Prometheus metric exists with retry logic
 
         Args:
             query: PromQL query string
             prometheus_url: Prometheus URL (default: http://localhost:9090)
+            retries: Number of retry attempts (default: 3)
+            retry_interval: Seconds to wait between retries (default: 5)
 
         Returns:
             bool: True if metric exists and has data
 
         Raises:
-            AssertionError: If the metric query succeeds but returns no data
+            AssertionError: If the metric query succeeds but returns no data after all retries
             Exception: If there is an error querying Prometheus
         """
         logging(f'Verifying Prometheus metric: {query}')
-        try:
-            result = self.query_prometheus(query, prometheus_url)
-            data = result.get('data', {}).get('result', [])
-            
-            if len(data) > 0:
-                logging(f'Metric {query} exists with {len(data)} results')
-                return True
-            else:
-                logging(f'Metric {query} has no data', level='WARNING')
-                raise AssertionError(f"Prometheus metric '{query}' has no data (empty result set)")
-        except Exception as e:
-            logging(f'Failed to verify metric {query}: {e}', level='ERROR')
-            raise Exception(f"Error verifying Prometheus metric '{query}': {e}")
+        
+        for attempt in range(retries):
+            try:
+                result = self.query_prometheus(query, prometheus_url)
+                data = result.get('data', {}).get('result', [])
+                
+                if len(data) > 0:
+                    logging(f'Metric {query} exists with {len(data)} results')
+                    return True
+                else:
+                    if attempt < retries - 1:
+                        logging(f'Metric {query} has no data, retrying in {retry_interval}s... ({attempt+1}/{retries})')
+                        time.sleep(retry_interval)
+                    else:
+                        logging(f'Metric {query} has no data after {retries} attempts', level='WARNING')
+                        raise AssertionError(f"Prometheus metric '{query}' has no data (empty result set)")
+            except AssertionError:
+                raise
+            except Exception as e:
+                if attempt < retries - 1:
+                    logging(f'Error querying metric {query}, retrying... ({attempt+1}/{retries}): {e}', level='WARNING')
+                    time.sleep(retry_interval)
+                else:
+                    logging(f'Failed to verify metric {query}: {e}', level='ERROR')
+                    raise Exception(f"Error verifying Prometheus metric '{query}': {e}")
+        
+        return False

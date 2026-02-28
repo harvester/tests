@@ -20,6 +20,37 @@ class Rest(Base):
         """Initialize REST client"""
         self.api_client = get_harvester_api_client()
         self.port_forward_process = None
+        # Common namespaces where addons are located
+        self.addon_namespaces = [
+            'cattle-monitoring-system',
+            'cattle-logging-system',
+            'harvester-system',
+            'kube-system'
+        ]
+
+    def _find_addon_namespace(self, addon_name):
+        """
+        Find the namespace where the addon is located
+        
+        Args:
+            addon_name: Name of the addon
+            
+        Returns:
+            str: Namespace of the addon, or None if not found
+        """
+        for namespace in self.addon_namespaces:
+            try:
+                code, data = self.api_client.get(
+                    f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}"
+                )
+                if code == 200:
+                    logging(f"Found addon {addon_name} in namespace {namespace}")
+                    return namespace
+            except Exception:
+                continue
+        
+        logging(f"Addon {addon_name} not found in any known namespace", level='WARNING')
+        return None
 
     def get_addon(self, addon_name):
         """
@@ -33,8 +64,12 @@ class Rest(Base):
         """
         try:
             logging(f"Getting addon {addon_name}")
-            code, data = self.api_client._get(
-                f"v1/harvester/harvesterhci.io.addons/{HARVESTER_NAMESPACE}/{addon_name}"
+            namespace = self._find_addon_namespace(addon_name)
+            if not namespace:
+                return None
+            
+            code, data = self.api_client.get(
+                f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}"
             )
             if code == 200:
                 logging(f"Retrieved addon {addon_name}")
@@ -56,6 +91,10 @@ class Rest(Base):
         """
         logging(f"Enabling addon {addon_name}")
         try:
+            namespace = self._find_addon_namespace(addon_name)
+            if not namespace:
+                raise Exception(f"Addon {addon_name} not found")
+            
             # Get current addon
             addon = self.get_addon(addon_name)
             if not addon:
@@ -65,9 +104,9 @@ class Rest(Base):
             addon['spec']['enabled'] = True
 
             # Send update
-            code, data = self.api_client._put(
-                f"v1/harvester/harvesterhci.io.addons/{HARVESTER_NAMESPACE}/{addon_name}",
-                json=addon
+            code, data = self.api_client.put(
+                f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
+                data=addon
             )
 
             if code not in [200, 201]:
@@ -86,6 +125,10 @@ class Rest(Base):
         """
         logging(f"Disabling addon {addon_name}")
         try:
+            namespace = self._find_addon_namespace(addon_name)
+            if not namespace:
+                raise Exception(f"Addon {addon_name} not found")
+            
             # Get current addon
             addon = self.get_addon(addon_name)
             if not addon:
@@ -95,9 +138,9 @@ class Rest(Base):
             addon['spec']['enabled'] = False
 
             # Send update
-            code, data = self.api_client._put(
-                f"v1/harvester/harvesterhci.io.addons/{HARVESTER_NAMESPACE}/{addon_name}",
-                json=addon
+            code, data = self.api_client.put(
+                f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
+                data=addon
             )
 
             if code not in [200, 201]:
@@ -129,15 +172,15 @@ class Rest(Base):
 
                     # Check if enabled in spec
                     if spec_enabled:
-                        # Check deployment status
-                        deployed = False
+                        # Check deployment status - addon uses 'Completed' condition
+                        completed = False
                         for condition in status_conditions:
-                            if condition.get('type') == 'Deployed':
+                            if condition.get('type') == 'Completed':
                                 if condition.get('status') == 'True':
-                                    deployed = True
+                                    completed = True
                                     break
 
-                        if deployed:
+                        if completed:
                             logging(f"Addon {addon_name} is enabled and deployed")
                             return True
 
@@ -219,26 +262,38 @@ class Rest(Base):
 
         Args:
             namespace: Kubernetes namespace
-            label_selector: Label selector to filter pods
+            label_selector: Label selector to filter pods (e.g., 'app.kubernetes.io/name=prometheus')
             timeout: Timeout in seconds
         """
         logging(f"Waiting for pods with selector '{label_selector}' in namespace '{namespace}' to be running")
         retry_count, retry_interval = get_retry_count_and_interval()
         max_retries = int(timeout / retry_interval)
+        
+        # Parse label selector (e.g., 'app.kubernetes.io/name=prometheus')
+        label_key, label_value = label_selector.split('=', 1) if '=' in label_selector else (label_selector, None)
 
         for i in range(max_retries):
             try:
-                # Use Kubernetes API through the REST client
-                code, data = self.api_client._get(
-                    f"v1/pods/{namespace}?labelSelector={label_selector}"
-                )
+                # Rancher API doesn't support labelSelector query param - get all pods and filter client-side
+                code, data = self.api_client.get(f"v1/pods/{namespace}")
 
                 if code != 200:
                     logging(f"Failed to list pods: HTTP {code}", level='WARNING')
                     time.sleep(retry_interval)
                     continue
 
-                pods = data.get('data', []) if isinstance(data, dict) else data
+                all_pods = data.get('data', []) if isinstance(data, dict) else data
+                
+                # Filter pods by label selector
+                pods = []
+                for pod in all_pods:
+                    labels = pod.get('metadata', {}).get('labels', {})
+                    if label_value:
+                        if labels.get(label_key) == label_value:
+                            pods.append(pod)
+                    else:
+                        if label_key in labels:
+                            pods.append(pod)
                 
                 if not pods or len(pods) == 0:
                     logging(f"No pods found with selector '{label_selector}', retrying... ({i+1}/{max_retries})")
@@ -361,32 +416,48 @@ class Rest(Base):
         except Exception as e:
             raise Exception(f"Failed to query Prometheus: {e}")
 
-    def verify_prometheus_metric_exists(self, query, prometheus_url='http://localhost:9090'):
+    def verify_prometheus_metric_exists(self, query, prometheus_url='http://localhost:9090', retries=3, retry_interval=5):
         """
-        Verify that a Prometheus metric exists
+        Verify that a Prometheus metric exists with retry logic
 
         Args:
             query: PromQL query string
             prometheus_url: Prometheus URL (default: http://localhost:9090)
+            retries: Number of retry attempts (default: 3)
+            retry_interval: Seconds to wait between retries (default: 5)
 
         Returns:
             bool: True if metric exists and has data
 
         Raises:
-            AssertionError: If the metric query succeeds but returns no data
+            AssertionError: If the metric query succeeds but returns no data after all retries
             Exception: If there is an error querying Prometheus
         """
         logging(f'Verifying Prometheus metric: {query}')
-        try:
-            result = self.query_prometheus(query, prometheus_url)
-            data = result.get('data', {}).get('result', [])
-            
-            if len(data) > 0:
-                logging(f'Metric {query} exists with {len(data)} results')
-                return True
-            else:
-                logging(f'Metric {query} has no data', level='WARNING')
-                raise AssertionError(f"Prometheus metric '{query}' has no data (empty result set)")
-        except Exception as e:
-            logging(f'Failed to verify metric {query}: {e}', level='ERROR')
-            raise Exception(f"Error verifying Prometheus metric '{query}': {e}")
+        
+        for attempt in range(retries):
+            try:
+                result = self.query_prometheus(query, prometheus_url)
+                data = result.get('data', {}).get('result', [])
+                
+                if len(data) > 0:
+                    logging(f'Metric {query} exists with {len(data)} results')
+                    return True
+                else:
+                    if attempt < retries - 1:
+                        logging(f'Metric {query} has no data, retrying in {retry_interval}s... ({attempt+1}/{retries})')
+                        time.sleep(retry_interval)
+                    else:
+                        logging(f'Metric {query} has no data after {retries} attempts', level='WARNING')
+                        raise AssertionError(f"Prometheus metric '{query}' has no data (empty result set)")
+            except AssertionError:
+                raise
+            except Exception as e:
+                if attempt < retries - 1:
+                    logging(f'Error querying metric {query}, retrying... ({attempt+1}/{retries}): {e}', level='WARNING')
+                    time.sleep(retry_interval)
+                else:
+                    logging(f'Failed to verify metric {query}: {e}', level='ERROR')
+                    raise Exception(f"Error verifying Prometheus metric '{query}': {e}")
+        
+        return False

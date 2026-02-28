@@ -18,55 +18,72 @@ ${MONITORING_NAMESPACE}      cattle-monitoring-system
 ${LOCAL_PROMETHEUS_PORT}     9090
 
 *** Test Cases ***
-Test Rancher Monitoring Addon Lifecycle And Functionality
+Test Rancher Monitoring Addon Deploys And Accessibility
     [Tags]    p0    coretest
-    [Documentation]    Test complete lifecycle of rancher-monitoring addon
-    ...               Steps:
-    ...               1. Store the initial state of the monitoring addon
-    ...               2. Enable the rancher-monitoring addon and wait for it to deploy
-    ...               3. Verify that key monitoring pods (Prometheus, Grafana) are running
-    ...               4. Port-forward to the Prometheus pod
-    ...               5. Query Prometheus for essential Harvester metrics
-    ...               6. Verify that all metric queries are successful
-    ...               7. Restore the addon to its initial state (teardown)
-    ...               Expected Result:
-    ...               - Addon can be enabled and disabled successfully
-    ...               - Monitoring pods deploy and become ready
-    ...               - Prometheus is accessible and returns Harvester metrics
-    ...               - Addon state is restored after test
+    [Documentation]    Verify rancher-monitoring addon can be enabled and Prometheus metrics are accessible
+    ...               Given: The initial addon state is captured
+    ...               When: The rancher-monitoring addon is enabled
+    ...               Then: Monitoring pods are running and Prometheus metrics are queryable
 
-    # Step 1: Store initial state
-    Log    Step 1: Getting initial state of addon
-    ${initial_state}=    Get Addon Initial State    ${ADDON_NAME}
-    Log    Initial addon state: ${initial_state}
-    Set Suite Variable    ${INITIAL_ADDON_STATE}    ${initial_state}
+    # Given: Capture initial addon state for teardown restoration
+    Given Initial Addon State Is Captured    ${ADDON_NAME}
 
-    # Step 2: Enable addon if not already enabled
-    Log    Step 2: Enabling rancher-monitoring addon
-    ${is_enabled}=    Is Addon Enabled    ${ADDON_NAME}
-    Run Keyword If    not ${is_enabled}    Enable Addon    ${ADDON_NAME}
-    Wait For Addon Enabled    ${ADDON_NAME}    timeout=900
+    # When: Enable the monitoring addon
+    When Monitoring Addon Is Enabled    ${ADDON_NAME}
 
-    # Step 3: Verify monitoring pods are running
-    Log    Step 3: Verifying monitoring pods are running
-    Wait For Monitoring Pods Running    ${MONITORING_NAMESPACE}    timeout=900
+    # Then: Verify deployment and metrics
+    Then Monitoring Pods Should Be Running    ${MONITORING_NAMESPACE}
+    And Prometheus Should Be Accessible    ${MONITORING_NAMESPACE}
+    And Essential Harvester Metrics Should Exist
 
-    # Step 4: Get Prometheus pod name and setup port-forward
-    Log    Step 4: Setting up port-forward to Prometheus
-    ${prometheus_pod}=    Get Prometheus Pod Name
-    Port Forward To Prometheus    ${MONITORING_NAMESPACE}    ${prometheus_pod}    ${LOCAL_PROMETHEUS_PORT}
-    Sleep    5s    Wait for port-forward to stabilize
-
-    # Step 5 & 6: Query Prometheus for essential metrics
-    Log    Step 5-6: Querying Prometheus for Harvester metrics
-    Verify Essential Harvester Metrics
-
-    # Cleanup port-forward
-    Stop Port Forward
-
-    Log    Test completed successfully
+    # Cleanup
+    [Teardown]    Addon - Stop Port Forward
 
 *** Keywords ***
+# BDD Keywords
+Initial Addon State Is Captured
+    [Arguments]    ${addon_name}
+    [Documentation]    Capture and store the initial state of the addon
+    ${initial_state}=    Addon - Get Initial State    ${addon_name}
+    Set Suite Variable    ${INITIAL_ADDON_STATE}    ${initial_state}
+    Log    Captured initial addon state: ${initial_state}
+
+Monitoring Addon Is Enabled
+    [Arguments]    ${addon_name}
+    [Documentation]    Enable the monitoring addon and wait for deployment
+    ${is_enabled}=    Addon - Is Enabled    ${addon_name}
+    Run Keyword If    not ${is_enabled}    Addon - Enable    ${addon_name}
+    Addon - Wait For Enabled    ${addon_name}    timeout=900
+    Log    Monitoring addon ${addon_name} is enabled
+
+Monitoring Pods Should Be Running
+    [Arguments]    ${namespace}
+    [Documentation]    Verify monitoring pods are running
+    Addon - Wait For Monitoring Pods Running    ${namespace}    timeout=900
+    Log    All monitoring pods are running in ${namespace}
+
+Prometheus Should Be Accessible
+    [Arguments]    ${namespace}
+    [Documentation]    Setup port-forward and verify Prometheus is accessible
+    ${prometheus_pod}=    Get Prometheus Pod Name
+    Addon - Port Forward To Prometheus    ${namespace}    ${prometheus_pod}    ${LOCAL_PROMETHEUS_PORT}
+    Sleep    5s    Wait for port-forward to stabilize
+    Log    Prometheus is accessible via port ${LOCAL_PROMETHEUS_PORT}
+
+Essential Harvester Metrics Should Exist
+    [Documentation]    Verify essential Harvester metrics are available in Prometheus
+    @{metrics}=    Create List
+    ...    up
+    ...    node_cpu_seconds_total
+    ...    node_memory_MemTotal_bytes
+    ...    kubevirt_vmi_info
+    ...    kubevirt_info
+    FOR    ${metric}    IN    @{metrics}
+        Addon - Verify Prometheus Metric Exists    ${metric}
+    END
+    Log    All essential Harvester metrics verified
+
+# Setup/Teardown Keywords
 Suite Setup For Addon Tests
     [Documentation]    Initialize test environment for addon tests
     Log    Setting up test environment for addon tests
@@ -78,11 +95,11 @@ Suite Teardown For Addon Tests
     Log    Running suite teardown for addon tests
     
     # Stop port forward if still running
-    Run Keyword And Ignore Error    Stop Port Forward
+    Run Keyword And Ignore Error    Addon - Stop Port Forward
     
     # Restore addon to initial state
-    Run Keyword If    ${INITIAL_ADDON_STATE} != ${None}
-    ...    Restore Addon State    ${ADDON_NAME}    ${INITIAL_ADDON_STATE}
+    Run Keyword If    '${INITIAL_ADDON_STATE}' != 'None'
+    ...    Addon - Restore State    ${ADDON_NAME}    ${INITIAL_ADDON_STATE}
     
     # Standard cleanup
     Cleanup test resources
@@ -93,11 +110,8 @@ Get Prometheus Pod Name
     Log    Getting Prometheus pod name
     
     # Use kubectl to get pod name
-    ${result}=    Run Process    kubectl    get    pods
-    ...    -n    ${MONITORING_NAMESPACE}
-    ...    -l    app.kubernetes.io/name=prometheus
-    ...    -o    jsonpath={.items[0].metadata.name}
-    ...    shell=False
+    @{args}=    Create List    get    pods    -n    ${MONITORING_NAMESPACE}    -l    app.kubernetes.io/name=prometheus    -o    jsonpath={.items[0].metadata.name}
+    ${result}=    Run Process    kubectl    @{args}
     
     Should Be Equal As Numbers    ${result.rc}    0    Failed to get Prometheus pod name
     ${pod_name}=    Set Variable    ${result.stdout}
@@ -105,23 +119,3 @@ Get Prometheus Pod Name
     
     Log    Found Prometheus pod: ${pod_name}
     RETURN    ${pod_name}
-
-Verify Essential Harvester Metrics
-    [Documentation]    Verify that essential Harvester metrics are available in Prometheus
-    Log    Verifying essential Harvester metrics
-    
-    # Define essential Harvester metrics to verify
-    @{metrics}=    Create List
-    ...    up
-    ...    node_cpu_seconds_total
-    ...    node_memory_MemTotal_bytes
-    ...    kubevirt_vmi_info
-    ...    kubevirt_vm_container_cpu_usage_seconds_total
-    
-    # Query and verify each metric
-    FOR    ${metric}    IN    @{metrics}
-        Log    Verifying metric: ${metric}
-        Verify Prometheus Metric Exists    ${metric}
-    END
-    
-    Log    All essential metrics verified successfully
