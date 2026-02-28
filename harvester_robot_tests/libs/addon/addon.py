@@ -2,7 +2,7 @@
 Addon Component - delegates to CRD or REST implementation
 Layer 4: Selects implementation based on strategy
 
-The implementation is selected based on the HARVESTER_OPERATION_STRATEGY 
+The implementation is selected based on the HARVESTER_OPERATION_STRATEGY
 environment variable. Valid values are 'crd' or 'rest'. Defaults to 'crd' if not set.
 """
 
@@ -31,7 +31,7 @@ class Addon(Base):
         except ValueError:
             # If invalid value, default to CRD
             self._strategy = HarvesterOperationStrategy.CRD
-        
+
         if self._strategy == HarvesterOperationStrategy.CRD:
             self.addon = CRD()
         else:
@@ -81,6 +81,8 @@ class Addon(Base):
         """Query Prometheus for metrics - delegates to implementation"""
         return self.addon.query_prometheus(query, prometheus_url)
 
-    def verify_prometheus_metric_exists(self, query, prometheus_url):
+    def verify_prometheus_metric_exists(self, query, prometheus_url, retries=3, retry_interval=5):
         """Verify that a Prometheus metric exists - delegates to implementation"""
-        return self.addon.verify_prometheus_metric_exists(query, prometheus_url)
+        return self.addon.verify_prometheus_metric_exists(
+            query, prometheus_url, retries, retry_interval
+        )
