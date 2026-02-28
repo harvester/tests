@@ -4,7 +4,7 @@ Library          ../libs/keywords/addon_keywords.py
 Resource         variables.resource
 
 *** Keywords ***
-Get Addon Initial State
+Addon - Get Initial State
     [Arguments]    ${addon_name}
     [Documentation]    Get initial state of addon (enabled/disabled)
     ...               Args:
@@ -16,7 +16,7 @@ Get Addon Initial State
     Log    Addon ${addon_name} initial state: ${initial_state}
     RETURN    ${initial_state}
 
-Enable Addon
+Addon - Enable
     [Arguments]    ${addon_name}
     [Documentation]    Enable an addon
     ...               Args:
@@ -25,7 +25,7 @@ Enable Addon
     enable_addon    ${addon_name}
     Log    Addon ${addon_name} enable request sent
 
-Disable Addon
+Addon - Disable
     [Arguments]    ${addon_name}
     [Documentation]    Disable an addon
     ...               Args:
@@ -34,7 +34,7 @@ Disable Addon
     disable_addon    ${addon_name}
     Log    Addon ${addon_name} disable request sent
 
-Wait For Addon Enabled
+Addon - Wait For Enabled
     [Arguments]    ${addon_name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait until addon is enabled
     ...               Args:
@@ -44,7 +44,7 @@ Wait For Addon Enabled
     wait_for_addon_enabled    ${addon_name}    ${timeout}
     Log    Addon ${addon_name} is now enabled
 
-Wait For Addon Disabled
+Addon - Wait For Disabled
     [Arguments]    ${addon_name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait until addon is disabled
     ...               Args:
@@ -54,7 +54,7 @@ Wait For Addon Disabled
     wait_for_addon_disabled    ${addon_name}    ${timeout}
     Log    Addon ${addon_name} is now disabled
 
-Is Addon Enabled
+Addon - Is Enabled
     [Arguments]    ${addon_name}
     [Documentation]    Check if addon is enabled
     ...               Args:
@@ -64,7 +64,7 @@ Is Addon Enabled
     ${is_enabled}=    is_addon_enabled    ${addon_name}
     RETURN    ${is_enabled}
 
-Wait For Monitoring Pods Running
+Addon - Wait For Monitoring Pods Running
     [Arguments]    ${namespace}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait for monitoring pods (Prometheus, Grafana) to be running
     ...               Args:
@@ -74,7 +74,7 @@ Wait For Monitoring Pods Running
     wait_for_monitoring_pods_running    ${namespace}    ${timeout}
     Log    Monitoring pods are now running
 
-Port Forward To Prometheus
+Addon - Port Forward To Prometheus
     [Arguments]    ${namespace}    ${pod_name}    ${local_port}=9090
     [Documentation]    Port forward to Prometheus pod
     ...               Args:
@@ -85,13 +85,13 @@ Port Forward To Prometheus
     port_forward_to_prometheus    ${namespace}    ${pod_name}    ${local_port}
     Log    Port forward established
 
-Stop Port Forward
+Addon - Stop Port Forward
     [Documentation]    Stop port forwarding
     Log    Stopping port forward
     stop_port_forward
     Log    Port forward stopped
 
-Query Prometheus
+Addon - Query Prometheus
     [Arguments]    ${query}    ${prometheus_url}=http://localhost:9090
     [Documentation]    Query Prometheus for metrics
     ...               Args:
@@ -104,7 +104,7 @@ Query Prometheus
     Log    Prometheus query successful
     RETURN    ${result}
 
-Verify Prometheus Metric Exists
+Addon - Verify Prometheus Metric Exists
     [Arguments]    ${query}    ${prometheus_url}=http://localhost:9090
     [Documentation]    Verify that a Prometheus metric exists
     ...               Args:
@@ -117,7 +117,7 @@ Verify Prometheus Metric Exists
     Should Be True    ${exists}    Metric ${query} should exist
     Log    Metric ${query} verified successfully
 
-Restore Addon State
+Addon - Restore State
     [Arguments]    ${addon_name}    ${initial_state}
     [Documentation]    Restore addon to its initial state
     ...               Args:
