@@ -137,7 +137,8 @@ def cpu_managers(api_client, wait_timeout):
         name = node['metadata']['name']
         status = json.loads(node['metadata']['labels'].get("cpumanager", 'false'))
         if status != origin[name]:
-            wait_applied(name, origin[name])
+            api_client.hosts.cpu_manager(name, enable=origin[name])
+            wait_applied(name, json.dumps(origin[name]))
 
 
 @pytest.mark.p0
