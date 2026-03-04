@@ -148,6 +148,7 @@ class TestFeatureName:
 
 8. **Code Quality**:
    - Follow PEP 8 guidelines (max line length: 99 characters)
+   - Make sure that code will pass flake8 code quality check
    - Use meaningful variable names
    - Add comments for complex logic
    - Handle exceptions appropriately
