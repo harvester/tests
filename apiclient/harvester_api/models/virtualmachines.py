@@ -389,11 +389,22 @@ class VMSpec140(VMSpec):
     # ref: https://github.com/harvester/tests/issues/1201
     eviction_strategy = "LiveMigrateIfPossible"
     cpu_pinning = False
+    tpm_enabled = False
+    tpm_persistent = False
 
     def to_dict(self, name, namespace, hostname=""):
         data = super().to_dict(name, namespace, hostname)
         if self.cpu_pinning:
             data['spec']['template']['spec']['domain']['cpu']['dedicatedCpuPlacement'] = True
+
+        # Error handling for only enabling tpm_persistent case
+        if self.tpm_persistent:
+            self.tpm_enable = True
+        if self.tpm_enable:
+            tpm_payload = {}
+            if self.tpm_persistent:
+                tpm_payload["persistent"] = True
+            data['spec']['template']['spec']['domain']['devices']['tpm'] = tpm_payload
         return data
 
     @classmethod
@@ -401,4 +412,12 @@ class VMSpec140(VMSpec):
         obj = super().from_dict(data)
         is_pinned = data['spec']['template']['spec']['domain']['cpu'].get("dedicatedCpuPlacement")
         obj.cpu_pinning = is_pinned
+
+        devices = data['spec']['template']['spec']['domain'].get("devices")
+        if "tpm" in devices:
+            obj.tpm_enable = True
+            obj.tpm_persistent = devices['tpm'].get('persistent', False)
+        else:
+            obj.tpm_enable = False
+            obj.tpm_persistent = False
         return obj

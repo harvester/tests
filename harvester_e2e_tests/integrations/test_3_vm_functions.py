@@ -1984,6 +1984,175 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
     )
 
 
+@pytest.mark.virtualmachines
+def test_vm_with_vtpm_uefi(
+    api_client, image, unique_vm_name, wait_timeout, sleep_timeout
+):
+    """Create a VM with vTPM and UEFI on
+
+    Prerequisite:
+        Setting opensuse-image-url set to a valid URL for
+        an opensuse image.
+
+    Manual Test Doc(s):
+        - N/A
+
+
+    To cover test:
+        - https://github.com/harvester/tests/issues/2422
+
+    Args:
+        api_client (HarvesterAPI): HarvesterAPI client
+        image (str): corresponding image from fixture
+        wait_timeout (int): seconds for wait timeout from fixture
+        unique_vm_name (str): fixture at module level based unique vm name
+
+    Raises:
+        AssertionError: failure to create, stop, or start
+
+    Steps:
+        1. build vm with vTPM and UEFI on
+        2. power down the vm
+        3. power up thevm
+        4. delete the vm and volumes
+
+    Expected Result:
+        - building a vm with vTPM and UEFI on to be successful
+        - powering down the vm with vTPM and UEFI on to be successful
+        - powering up the vm to be successful
+        - deleting the vm to be successful
+    """
+    cpu, mem = 1, 2
+    vm = api_client.vms.Spec(cpu, mem)
+
+    vm.add_image("disk-0", image['id'])
+    vm.efi_boot = True
+    vm.tpm_enabled = True
+    vm.tpm_persistent = True
+
+    # ==========================================
+    # Step 1: Create VM and wait for Running
+    # ==========================================
+    code, vm_create_data = api_client.vms.create(unique_vm_name, vm)
+    assert 201 == code, (code, vm_create_data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    # Check the VM is running and the data is correct
+    while endtime > datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 200 == code and "Running" == data.get('status', {}).get('phase'):
+            # 1. Check TPM Persistent state
+            devices = data['spec']['domain']['devices']
+            assert 'tpm' in devices, "TPM device is missing from VM spec"
+            assert devices['tpm'].get('persistent') is True, "TPM is not set to persistent"
+
+            # 2. Check EFI state
+            firmware = data['spec']['domain']['firmware']
+            assert 'efi' in firmware.get('bootloader', {}), "EFI bootloader is not enabled"
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f"Failed to create VM({cpu} core, {mem} RAM) with errors:\n"
+            f"Phase: {data.get('status', {}).get('phase', '')}\t"
+            f"Status: {data.get('status', {})}\n"
+            f"API Status({code}): {data}"
+        )
+
+    # ==========================================
+    # Step 2: Stop VM
+    # ==========================================
+    code, data = api_client.vms.stop(unique_vm_name)
+    assert 204 == code, f"`Stop` returned unexpected status code: {code}, {data}"
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get_status(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f"Failed to Stop VM({unique_vm_name}) with errors:\n"
+            f"Status({code}): {data}"
+        )
+
+    code, data = api_client.vms.get(unique_vm_name)
+    assert "Halted" == data['spec']['runStrategy']
+    assert "Stopped" == data['status']['printableStatus']
+
+    # ==========================================
+    # Step 3: Start VM
+    # ==========================================
+    code, data = api_client.vms.start(unique_vm_name)
+    assert 204 == code, f"`Start` return unexpected status code: {code}"
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        strategy = data.get('spec', {}).get('runStrategy')
+        pstats = data.get('status', {}).get('printableStatus')
+        if "Halted" != strategy and "Running" == pstats:
+            # 儲存 spec 以便後續刪除 volumes 使用
+            spec = api_client.vms.Spec.from_dict(data)
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status({code}): {data}"
+        )
+
+    # ==========================================
+    # Step 4: Delete VM
+    # ==========================================
+    code, data = api_client.vms.delete(unique_vm_name)
+    assert 200 == code, (code, data)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(unique_vm_name)
+        if 404 == code:
+            break
+        sleep(sleep_timeout)
+    else:
+        raise AssertionError(
+            f"Failed to Delete VM({unique_vm_name}) with errors:\n"
+            f"Status({code}): {data}"
+        )
+
+    # ==========================================
+    # Step 5: Clean up Volumes
+    # ==========================================
+    fails, check = [], dict()
+    for vol in spec.volumes:
+        vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+        check[vol_name] = api_client.volumes.delete(vol_name)
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        l_check = dict()
+        for vol_name, (code, data) in check.items():
+            if 200 != code:
+                fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
+            else:
+                code, data = api_client.volumes.get(vol_name)
+                if 404 != code:
+                    l_check[vol_name] = (code, data)
+        check = l_check
+        if not check:
+            break
+        sleep(sleep_timeout)
+    else:
+        for vol_name, (code, data) in check.items():
+            fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
+
+    assert not fails, (
+        f"Failed to delete VM({unique_vm_name})'s volumes with errors:\n"
+        "\n".join(f"Volume({n}): {r}" for n, r in fails)
+    )
+
+
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.virtualmachines
