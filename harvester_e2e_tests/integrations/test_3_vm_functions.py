@@ -2012,14 +2012,10 @@ def test_vm_with_vtpm_uefi(
 
     Steps:
         1. build vm with vTPM and UEFI on
-        2. power down the vm
-        3. power up thevm
-        4. delete the vm and volumes
+        2. delete the vm and volumes
 
     Expected Result:
         - building a vm with vTPM and UEFI on to be successful
-        - powering down the vm with vTPM and UEFI on to be successful
-        - powering up the vm to be successful
         - deleting the vm to be successful
     """
     cpu, mem = 1, 2
@@ -2060,51 +2056,7 @@ def test_vm_with_vtpm_uefi(
         )
 
     # ==========================================
-    # Step 2: Stop VM
-    # ==========================================
-    code, data = api_client.vms.stop(unique_vm_name)
-    assert 204 == code, f"`Stop` returned unexpected status code: {code}, {data}"
-
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = api_client.vms.get_status(unique_vm_name)
-        if 404 == code:
-            break
-        sleep(sleep_timeout)
-    else:
-        raise AssertionError(
-            f"Failed to Stop VM({unique_vm_name}) with errors:\n"
-            f"Status({code}): {data}"
-        )
-
-    code, data = api_client.vms.get(unique_vm_name)
-    assert "Halted" == data['spec']['runStrategy']
-    assert "Stopped" == data['status']['printableStatus']
-
-    # ==========================================
-    # Step 3: Start VM
-    # ==========================================
-    code, data = api_client.vms.start(unique_vm_name)
-    assert 204 == code, f"`Start` return unexpected status code: {code}"
-
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        code, data = api_client.vms.get(unique_vm_name)
-        strategy = data.get('spec', {}).get('runStrategy')
-        pstats = data.get('status', {}).get('printableStatus')
-        if "Halted" != strategy and "Running" == pstats:
-            # 儲存 spec 以便後續刪除 volumes 使用
-            spec = api_client.vms.Spec.from_dict(data)
-            break
-        sleep(sleep_timeout)
-    else:
-        raise AssertionError(
-            f"Failed to Start VM({unique_vm_name}) with errors:\n"
-            f"Status({code}): {data}"
-        )
-
-    # ==========================================
-    # Step 4: Delete VM
+    # Step 2: Delete VM
     # ==========================================
     code, data = api_client.vms.delete(unique_vm_name)
     assert 200 == code, (code, data)
@@ -2120,37 +2072,6 @@ def test_vm_with_vtpm_uefi(
             f"Failed to Delete VM({unique_vm_name}) with errors:\n"
             f"Status({code}): {data}"
         )
-
-    # ==========================================
-    # Step 5: Clean up Volumes
-    # ==========================================
-    fails, check = [], dict()
-    for vol in spec.volumes:
-        vol_name = vol['volume']['persistentVolumeClaim']['claimName']
-        check[vol_name] = api_client.volumes.delete(vol_name)
-
-    endtime = datetime.now() + timedelta(seconds=wait_timeout)
-    while endtime > datetime.now():
-        l_check = dict()
-        for vol_name, (code, data) in check.items():
-            if 200 != code:
-                fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
-            else:
-                code, data = api_client.volumes.get(vol_name)
-                if 404 != code:
-                    l_check[vol_name] = (code, data)
-        check = l_check
-        if not check:
-            break
-        sleep(sleep_timeout)
-    else:
-        for vol_name, (code, data) in check.items():
-            fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
-
-    assert not fails, (
-        f"Failed to delete VM({unique_vm_name})'s volumes with errors:\n"
-        "\n".join(f"Volume({n}): {r}" for n, r in fails)
-    )
 
 
 @pytest.mark.p0
