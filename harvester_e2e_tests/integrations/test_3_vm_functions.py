@@ -1984,6 +1984,84 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
     )
 
 
+@pytest.mark.xfail_if_version(
+        ">= v1.7.0", "< v1.7.1", reason="https://github.com/harvester/harvester/issues/9919")
+@pytest.mark.virtualmachines
+def test_vm_with_vtpm_uefi(
+    api_client, image, unique_vm_name, vm_checker, wait_timeout, sleep_timeout
+):
+    """Create a VM with vTPM and UEFI on
+
+    Prerequisite:
+        Setting opensuse-image-url set to a valid URL for
+        an opensuse image.
+
+    Manual Test Doc(s):
+        - N/A
+
+
+    To cover test:
+        - https://github.com/harvester/tests/issues/2422
+
+    Args:
+        api_client (HarvesterAPI): HarvesterAPI client
+        image (str): corresponding image from fixture
+        wait_timeout (int): seconds for wait timeout from fixture
+        unique_vm_name (str): fixture at module level based unique vm name
+
+    Raises:
+        AssertionError: failure to create, stop, or start
+
+    Steps:
+        1. build vm with vTPM and UEFI on
+        2. delete the vm and volumes
+
+    Expected Result:
+        - building a vm with vTPM and UEFI on to be successful
+        - deleting the vm to be successful
+    """
+    cpu, mem = 1, 2
+    vm = api_client.vms.Spec(cpu, mem)
+
+    vm.add_image("disk-0", image['id'])
+    vm.efi_boot = True
+    vm.tpm_enabled = True
+    vm.tpm_persistent = True
+
+    # ==========================================
+    # Step 1: Create VM and wait for Running
+    # ==========================================
+    code, vm_create_data = api_client.vms.create(unique_vm_name, vm)
+    assert 201 == code, (code, vm_create_data)
+
+    vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
+    assert vm_running, (
+        f"Failed to start VM({unique_vm_name}) with errors:\n"
+        f"Status({code}): {data}"
+    )
+
+    code, data = api_client.vms.get_status(unique_vm_name)
+    # Check TPM Persistent state
+    devices = data['spec']['domain']['devices']
+    assert 'tpm' in devices, "TPM device is missing from VM spec"
+    assert devices['tpm'].get('persistent') is True, "TPM is not set to persistent"
+
+    # Check EFI state
+    firmware = data['spec']['domain']['firmware']
+    assert 'efi' in firmware.get('bootloader', {}), "EFI bootloader is not enabled"
+
+    # ==========================================
+    # Step 2: Delete VM
+    # ==========================================
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_checker.wait_deleted(unique_vm_name)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+        api_client.volumes.delete(vol_name)
+
+
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.virtualmachines
