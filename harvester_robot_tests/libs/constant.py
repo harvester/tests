@@ -90,7 +90,7 @@ RUN_STRATEGY_MANUAL = "Manual"
 RUN_STRATEGY_RERUN_ON_FAILURE = "RerunOnFailure"
 
 # Storage Class
-DEFAULT_STORAGE_CLASS = "longhorn"
+DEFAULT_STORAGE_CLASS = "harvester-longhorn"
 
 # Retry and Timeout Defaults
 DEFAULT_RETRY_COUNT = 100
@@ -116,3 +116,41 @@ ADDON_PCIDEVICES = "pcidevices-controller"
 PCIDEVICES_NAMESPACE = "harvester-system"
 PCIDEVICES_CONTROLLER_LABEL = "app.kubernetes.io/name=harvester-pcidevices-controller"
 PCIDEVICES_WEBHOOK_SERVICE = "pcidevices-webhook"
+
+# Rancher Integration Constants
+RANCHER_WAIT_TIMEOUT = 1800  # 30 minutes for cluster operations
+RANCHER_NAMESPACE = "fleet-default"
+
+# Cloud-init user data for RKE2 nodes
+DEFAULT_RKE2_USER_DATA = """#cloud-config
+password: password
+chpasswd:
+  expire: false
+ssh_pwauth: true
+package_update: true
+packages:
+  - qemu-guest-agent
+runcmd:
+  - - systemctl
+    - enable
+    - '--now'
+    - qemu-guest-agent.service
+"""
+
+# RKE2 Kubernetes versions (defaults)
+DEFAULT_RKE2_VERSION = "v1.33"
+
+# Rancher API groups and versions
+RANCHER_MGMT_GROUP = "management.cattle.io"
+RANCHER_MGMT_VERSION = "v3"
+RANCHER_PROVISIONING_GROUP = "provisioning.cattle.io"
+RANCHER_PROVISIONING_VERSION = "v1"
+
+# Harvester cloud provider deployments
+HARVESTER_CLOUD_PROVIDER_DEPLOYMENT = "harvester-cloud-provider"
+HARVESTER_CSI_DRIVER_DEPLOYMENT = "harvester-csi-driver-controllers"
+
+# Default VM config for RKE2 nodes
+DEFAULT_RKE2_NODE_CPUS = 4
+DEFAULT_RKE2_NODE_MEMORY = 8  # GB
+DEFAULT_RKE2_NODE_DISK = 80  # GB
