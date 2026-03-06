@@ -127,7 +127,11 @@ def harvester_mgmt_cluster(api_client, rancher_api_client, unique_name, polling_
     }
 
     rancher_api_client.mgmt_clusters.delete(cluster_name)
-    updates = dict(value="")
+    # Use JSON format for Harvester 1.8+, old string format for earlier versions
+    if api_client.cluster_version.release >= (1, 8, 0):
+        updates = dict(value=dumps({"url": "", "insecureSkipTLSVerify": False}))
+    else:
+        updates = dict(value="")
     api_client.settings.update("cluster-registration-url", updates)
 
 
@@ -287,7 +291,10 @@ def test_import_harvester(api_client, rancher_api_client, harvester_mgmt_cluster
     )
 
     # Set cluster-registration-url on Harvester
-    updates = dict(value=data['manifestUrl'])
+    if api_client.cluster_version.release >= (1, 8, 0):
+        updates = dict(value=dumps({"url": data['manifestUrl'], "insecureSkipTLSVerify": True}))
+    else:
+        updates = dict(value=data['manifestUrl'])
     code, data = api_client.settings.update("cluster-registration-url", updates)
     assert 200 == code, (
         f"Failed to update Harvester's settings `cluster-registration-url`"
