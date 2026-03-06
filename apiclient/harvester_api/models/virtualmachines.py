@@ -399,8 +399,8 @@ class VMSpec140(VMSpec):
 
         # Error handling for only enabling tpm_persistent case
         if self.tpm_persistent:
-            self.tpm_enable = True
-        if self.tpm_enable:
+            self.tpm_enabled = True
+        if self.tpm_enabled:
             tpm_payload = {}
             if self.tpm_persistent:
                 tpm_payload["persistent"] = True
