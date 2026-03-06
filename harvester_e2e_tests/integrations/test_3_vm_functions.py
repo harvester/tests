@@ -1984,6 +1984,8 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
     )
 
 
+@pytest.mark.xfail_if_version(
+        ">= v1.7.0", "< v1.7.1", reason="https://github.com/harvester/harvester/issues/9919")
 @pytest.mark.virtualmachines
 def test_vm_with_vtpm_uefi(
     api_client, image, unique_vm_name, wait_timeout, sleep_timeout
