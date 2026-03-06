@@ -909,6 +909,124 @@ that has a bogus vlan vm network (no dhcp)
 - assert 'ipAddresses' not in the status of running vm's interfaces
 - assert can delete vm and volumes</p></div>
 </dd>
+<dt id="harvester_e2e_tests.integrations.test_3_vm_functions.test_vm_with_vtpm_uefi"><code class="name flex">
+<span>def <span class="ident">test_vm_with_vtpm_uefi</span></span>(<span>api_client, image, unique_vm_name, vm_checker, wait_timeout, sleep_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.xfail_if_version(
+        &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.7.1&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9919&#34;)
+@pytest.mark.virtualmachines
+def test_vm_with_vtpm_uefi(
+    api_client, image, unique_vm_name, vm_checker, wait_timeout, sleep_timeout
+):
+    &#34;&#34;&#34;Create a VM with vTPM and UEFI on
+
+    Prerequisite:
+        Setting opensuse-image-url set to a valid URL for
+        an opensuse image.
+
+    Manual Test Doc(s):
+        - N/A
+
+
+    To cover test:
+        - https://github.com/harvester/tests/issues/2422
+
+    Args:
+        api_client (HarvesterAPI): HarvesterAPI client
+        image (str): corresponding image from fixture
+        wait_timeout (int): seconds for wait timeout from fixture
+        unique_vm_name (str): fixture at module level based unique vm name
+
+    Raises:
+        AssertionError: failure to create, stop, or start
+
+    Steps:
+        1. build vm with vTPM and UEFI on
+        2. delete the vm and volumes
+
+    Expected Result:
+        - building a vm with vTPM and UEFI on to be successful
+        - deleting the vm to be successful
+    &#34;&#34;&#34;
+    cpu, mem = 1, 2
+    vm = api_client.vms.Spec(cpu, mem)
+
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm.efi_boot = True
+    vm.tpm_enabled = True
+    vm.tpm_persistent = True
+
+    # ==========================================
+    # Step 1: Create VM and wait for Running
+    # ==========================================
+    code, vm_create_data = api_client.vms.create(unique_vm_name, vm)
+    assert 201 == code, (code, vm_create_data)
+
+    vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
+    assert vm_running, (
+        f&#34;Failed to start VM({unique_vm_name}) with errors:\n&#34;
+        f&#34;Status({code}): {data}&#34;
+    )
+
+    code, data = api_client.vms.get_status(unique_vm_name)
+    # Check TPM Persistent state
+    devices = data[&#39;spec&#39;][&#39;domain&#39;][&#39;devices&#39;]
+    assert &#39;tpm&#39; in devices, &#34;TPM device is missing from VM spec&#34;
+    assert devices[&#39;tpm&#39;].get(&#39;persistent&#39;) is True, &#34;TPM is not set to persistent&#34;
+
+    # Check EFI state
+    firmware = data[&#39;spec&#39;][&#39;domain&#39;][&#39;firmware&#39;]
+    assert &#39;efi&#39; in firmware.get(&#39;bootloader&#39;, {}), &#34;EFI bootloader is not enabled&#34;
+
+    # ==========================================
+    # Step 2: Delete VM
+    # ==========================================
+    code, data = api_client.vms.get(unique_vm_name)
+    vm_spec = api_client.vms.Spec.from_dict(data)
+    vm_checker.wait_deleted(unique_vm_name)
+
+    for vol in vm_spec.volumes:
+        vol_name = vol[&#39;volume&#39;][&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;]
+        api_client.volumes.delete(vol_name)</code></pre>
+</details>
+<div class="desc"><p>Create a VM with vTPM and UEFI on</p>
+<h2 id="prerequisite">Prerequisite</h2>
+<p>Setting opensuse-image-url set to a valid URL for
+an opensuse image.</p>
+<p>Manual Test Doc(s):
+- N/A</p>
+<p>To cover test:
+- <a href="https://github.com/harvester/tests/issues/2422">https://github.com/harvester/tests/issues/2422</a></p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>api_client</code></strong> :&ensp;<code>HarvesterAPI</code></dt>
+<dd>HarvesterAPI client</dd>
+<dt><strong><code>image</code></strong> :&ensp;<code>str</code></dt>
+<dd>corresponding image from fixture</dd>
+<dt><strong><code>wait_timeout</code></strong> :&ensp;<code>int</code></dt>
+<dd>seconds for wait timeout from fixture</dd>
+<dt><strong><code>unique_vm_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>fixture at module level based unique vm name</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>AssertionError</code></dt>
+<dd>failure to create, stop, or start</dd>
+</dl>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>build vm with vTPM and UEFI on</li>
+<li>delete the vm and volumes</li>
+</ol>
+<p>Expected Result:
+- building a vm with vTPM and UEFI on to be successful
+- deleting the vm to be successful</p></div>
+</dd>
 <dt id="harvester_e2e_tests.integrations.test_3_vm_functions.unique_vm_name"><code class="name flex">
 <span>def <span class="ident">unique_vm_name</span></span>(<span>unique_name)</span>
 </code></dt>
@@ -4334,6 +4452,7 @@ class TestVMWithVolumes:
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_minimal_vm" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_minimal_vm">test_minimal_vm</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_update_vm_machine_type" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_update_vm_machine_type">test_update_vm_machine_type</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_vm_with_bogus_vlan" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_vm_with_bogus_vlan">test_vm_with_bogus_vlan</a></code></li>
+<li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.test_vm_with_vtpm_uefi" href="#harvester_e2e_tests.integrations.test_3_vm_functions.test_vm_with_vtpm_uefi">test_vm_with_vtpm_uefi</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.unique_vm_name" href="#harvester_e2e_tests.integrations.test_3_vm_functions.unique_vm_name">unique_vm_name</a></code></li>
 <li><code><a title="harvester_e2e_tests.integrations.test_3_vm_functions.unset_cpu_memory_overcommit" href="#harvester_e2e_tests.integrations.test_3_vm_functions.unset_cpu_memory_overcommit">unset_cpu_memory_overcommit</a></code></li>
 </ul>
