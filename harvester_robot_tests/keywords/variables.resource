@@ -29,7 +29,7 @@ ${DEFAULT_VM_MEMORY}            4Gi
 ${DEFAULT_VM_REPLICAS}          3
 
 # Storage
-${DEFAULT_STORAGE_CLASS}        longhorn
+${DEFAULT_STORAGE_CLASS}        harvester-longhorn
 ${DEFAULT_VOLUME_SIZE}          10Gi
 
 # Test Execution
@@ -45,4 +45,19 @@ ${NVIDIA_TOOLKIT_IMAGE_REPO}    %{NVIDIA_TOOLKIT_IMAGE_REPO=nvidia/driver-toolki
 ${NVIDIA_TOOLKIT_IMAGE_TAG}     %{NVIDIA_TOOLKIT_IMAGE_TAG=v1.7-20260209}
 ${NVIDIA_TOOLKIT_DRIVER_LOCATION}   %{NVIDIA_TOOLKIT_DRIVER_LOCATION=http://HTTPENDPOINT/NVIDIA-Linux-x86_64-VERSION-vgpu-kvm.run}
 
+# Rancher Integration
+${RANCHER_ENDPOINT}             %{RANCHER_ENDPOINT=https://rancher.localhost}
+${RANCHER_USERNAME}             %{RANCHER_USERNAME=admin}
+${RANCHER_PASSWORD}             %{RANCHER_PASSWORD=password}
+${RANCHER_WAIT_TIMEOUT}         1800
 
+# RKE2 Version Configuration
+${RKE2_VERSION}                %{RKE2_VERSION=v1.34}
+
+# Ingress Controller: traefik (default, recommended by Rancher) or nginx
+${INGRESS_CONTROLLER}           %{INGRESS_CONTROLLER=traefik}
+
+# IP Pool for LoadBalancer tests
+${IP_POOL_SUBNET}               %{IP_POOL_SUBNET=192.168.1.0/24}
+${IP_POOL_START}                %{IP_POOL_START=192.168.1.100}
+${IP_POOL_END}                  %{IP_POOL_END=192.168.1.200}
