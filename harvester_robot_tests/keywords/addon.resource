@@ -74,6 +74,27 @@ Addon - Wait For Monitoring Pods Running
     wait_for_monitoring_pods_running    ${namespace}    ${timeout}
     Log    Monitoring pods are now running
 
+Addon - Wait For Pods Running
+    [Arguments]    ${namespace}    ${label}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for pods matching label to be running in namespace
+    ...               Args:
+    ...                   namespace: Kubernetes namespace
+    ...                   label: Label selector for pods
+    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
+    Log    Waiting for pods with label ${label} in namespace ${namespace} to be running
+    wait_for_pods_running    ${namespace}    ${label}    ${timeout}
+    Log    Pods with label ${label} are running in ${namespace}
+
+Addon - Wait For Service Running
+    [Arguments]    ${namespace}    ${service_name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for service to be running in namespace
+    ...               Args:
+    ...                   namespace: Kubernetes namespace
+    ...                   service_name: Name of the service
+    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
+    Log    Waiting for service ${service_name} in namespace ${namespace} to be running
+    wait_for_service_running    ${namespace}    ${service_name}    ${timeout}
+    Log    Service ${service_name} is running in ${namespace}
 Addon - Port Forward To Prometheus
     [Arguments]    ${namespace}    ${pod_name}    ${local_port}=9090
     [Documentation]    Port forward to Prometheus pod

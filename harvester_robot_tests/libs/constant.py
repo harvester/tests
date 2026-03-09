@@ -106,3 +106,8 @@ MONITORING_NAMESPACE = "cattle-monitoring-system"
 
 # Addon-related resource plurals
 ADDON_PLURAL = "addons"
+# PCI Devices Controller Addon Constants
+ADDON_PCIDEVICES = "pcidevices-controller"
+PCIDEVICES_NAMESPACE = "harvester-system"
+PCIDEVICES_CONTROLLER_LABEL = "app.kubernetes.io/name=harvester-pcidevices-controller"
+PCIDEVICES_WEBHOOK_SERVICE = "pcidevices-webhook"

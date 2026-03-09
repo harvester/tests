@@ -20,6 +20,7 @@ from addon.base import Base
 
 
 class CRD(Base):
+
     """
     CRD implementation for Addon operations using Kubernetes API
     """
@@ -342,6 +343,52 @@ class CRD(Base):
         raise TimeoutError(
             f"Timeout waiting for pods with selector '{label_selector}' "
             f"to be running after {timeout}s"
+        )
+
+    def wait_for_service_running(self, namespace, service_name, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a service to be running in a namespace
+
+        Args:
+            namespace: Kubernetes namespace
+            service_name: Name of the service
+            timeout: Timeout in seconds
+        """
+        logging(
+            f"Waiting for service '{service_name}' in namespace '{namespace}' to be running"
+        )
+        retry_count, retry_interval = get_retry_count_and_interval()
+        max_retries = int(timeout / retry_interval)
+
+        for i in range(max_retries):
+            try:
+                svc = self.core_api.read_namespaced_service(
+                    name=service_name,
+                    namespace=namespace
+                )
+                if svc:
+                    logging(f"Service '{service_name}' is running in namespace '{namespace}'")
+                    return True
+            except ApiException as e:
+                if e.status == 404:
+                    logging(
+                        f"Service '{service_name}' not found, retrying... ({i+1}/{max_retries})"
+                    )
+                    time.sleep(retry_interval)
+                    continue
+                else:
+                    logging(f"Error checking service: {e}", level='WARNING')
+                    time.sleep(retry_interval)
+                    continue
+
+            logging(
+                f"Service '{service_name}' not yet running, retrying... ({i+1}/{max_retries})"
+            )
+            time.sleep(retry_interval)
+
+        raise TimeoutError(
+            f"Timeout waiting for service '{service_name}' in namespace \
+                '{namespace}' after {timeout}s"
         )
 
     def port_forward(self, namespace, pod_name, local_port, remote_port):

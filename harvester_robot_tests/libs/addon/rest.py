@@ -344,6 +344,45 @@ class Rest(Base):
             f"to be running after {timeout}s"
         )
 
+    def wait_for_service_running(self, namespace, service_name, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a service to be running in a namespace (REST)
+
+        Args:
+            namespace: Kubernetes namespace
+            service_name: Name of the service
+            timeout: Timeout in seconds
+        """
+        logging(
+            f"Waiting for service '{service_name}' in namespace '{namespace}' to be running (REST)"
+        )
+        retry_count, retry_interval = get_retry_count_and_interval()
+        max_retries = int(timeout / retry_interval)
+
+        for i in range(max_retries):
+            try:
+                code, svc = self.api_client.get(
+                    f"v1/services/{namespace}/{service_name}"
+                )
+                if code == 200 and svc:
+                    logging(f"Service '{service_name}' is running in namespace \
+                            '{namespace}' (REST)")
+                    return True
+            except Exception as e:
+                logging(f"Error checking service (REST): {e}", level='WARNING')
+                time.sleep(retry_interval)
+                continue
+
+            logging(
+                f"Service '{service_name}' not yet running, retrying... ({i+1}/{max_retries})"
+            )
+            time.sleep(retry_interval)
+
+        raise TimeoutError(
+            f"Timeout waiting for service '{service_name}' in namespace \
+                '{namespace}' after {timeout}s (REST)"
+        )
+
     def port_forward(self, namespace, pod_name, local_port, remote_port):
         """
         Port forward to a pod

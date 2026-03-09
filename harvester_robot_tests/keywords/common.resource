@@ -14,7 +14,7 @@ Cleanup test resources
     [Documentation]    Clean up all resources created during tests
     Log    Cleaning up test resources
     Run Keyword And Ignore Error    common_keywords.Cleanup VMs
-    Run Keyword And Ignore Error    common_keywords.Cleanup images
     Run Keyword And Ignore Error    common_keywords.Cleanup volumes
+    Run Keyword And Ignore Error    common_keywords.Cleanup images
     Run Keyword And Ignore Error    common_keywords.Cleanup networks
     Run Keyword And Ignore Error    common_keywords.Cleanup backups

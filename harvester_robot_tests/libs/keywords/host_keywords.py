@@ -4,12 +4,12 @@ Layer 3: Host Keywords - creates Host() instance and delegates - NO direct API c
 """
 import os
 import sys
-# Add the path to the utility module
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from utility.utility import logging
-from host import Host
-from constant import DEFAULT_TIMEOUT_SHORT, DEFAULT_TIMEOUT
+# Add the path to the utility module
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
+from utility.utility import logging # noqa E402
+from host import Host # noqa E402
+from constant import DEFAULT_TIMEOUT_SHORT, DEFAULT_TIMEOUT # noqa E402
 
 
 class host_keywords:

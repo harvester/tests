@@ -15,11 +15,11 @@ from addon.base import Base
 
 class Addon(Base):
     """
-    Addon component that delegates to CRD or REST implementation
+        Addon component that delegates to CRD or REST implementation
 
-    The implementation is selected based on:
-    - HARVESTER_OPERATION_STRATEGY environment variable ('crd' or 'rest')
-    - Defaults to 'crd' if not set
+        The implementation is selected based on:
+        - HARVESTER_OPERATION_STRATEGY environment variable ('crd' or 'rest')
+        - Defaults to 'crd' if not set
     """
 
     def __init__(self):
@@ -72,6 +72,10 @@ class Addon(Base):
     def port_forward(self, namespace, pod_name, local_port, remote_port):
         """Port forward to a pod - delegates to implementation"""
         return self.addon.port_forward(namespace, pod_name, local_port, remote_port)
+
+    def wait_for_service_running(self, namespace, service_name, timeout):
+        """Wait for service to be running - delegates to implementation"""
+        return self.addon.wait_for_service_running(namespace, service_name, timeout)
 
     def stop_port_forward(self):
         """Stop port forwarding - delegates to implementation"""

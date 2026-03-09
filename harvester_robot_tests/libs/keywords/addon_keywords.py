@@ -6,8 +6,7 @@ import os
 import sys
 
 # Add the path to the utility module
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
 from utility.utility import logging  # noqa E402
 from addon import Addon  # noqa E402
 from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG  # noqa E402
@@ -120,6 +119,30 @@ class addon_keywords:
         """
         return self.addon.is_addon_enabled(addon_name)
 
+    def wait_for_pods_running(self, namespace, label, timeout=DEFAULT_TIMEOUT_LONG):
+        """
+        Wait for pods matching label to be running in namespace
+
+        Args:
+            namespace: Kubernetes namespace
+            label: Label selector for pods
+            timeout: Timeout in seconds
+        """
+        logging(f'Waiting for pods with label {label} in namespace {namespace} to be running')
+        self.addon.wait_for_pods_running(namespace, label, int(timeout))
+
+    def wait_for_service_running(self, namespace, service_name, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for service to be running in namespace
+
+        Args:
+            namespace: Kubernetes namespace
+            service_name: Name of the service
+            timeout: Timeout in seconds
+        """
+        logging(f'Waiting for service {service_name} in namespace {namespace} to be running')
+        self.addon.wait_for_service_running(namespace, service_name, int(timeout))
+
     def wait_for_monitoring_pods_running(self, namespace, timeout=DEFAULT_TIMEOUT_LONG):
         """
         Wait for monitoring pods to be running
@@ -174,7 +197,7 @@ class addon_keywords:
         return self.addon.query_prometheus(query, prometheus_url)
 
     def verify_prometheus_metric_exists(
-        self, query, prometheus_url='http://localhost:9090', retries=3, retry_interval=5
+        self, query, prometheus_url='http://localhost:9090', retries=12, retry_interval=5
     ):
         """
         Verify that a Prometheus metric exists with retry logic
