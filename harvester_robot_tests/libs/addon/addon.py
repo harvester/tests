@@ -90,3 +90,23 @@ class Addon(Base):
         return self.addon.verify_prometheus_metric_exists(
             query, prometheus_url, retries, retry_interval
         )
+
+    def configure_nvidia_toolkit(self, addon_name, image_repo, image_tag, driver_location):
+        """
+        Configure the nvidia-driver-toolkit addon with image repo, tag, and driver location
+        Delegates to the selected implementation (CRD or REST)
+        """
+        return self.addon.configure_nvidia_toolkit(addon_name, image_repo,
+                                                   image_tag, driver_location)
+
+    def verify_nvidia_toolkit_configuration(
+        self, addon_name, image_repo, image_tag, driver_location
+    ):
+        """Verify nvidia-driver-toolkit addon configuration - delegates to implementation"""
+        return self.addon.verify_nvidia_toolkit_configuration(
+            addon_name, image_repo, image_tag, driver_location
+        )
+
+    def get_nvidia_toolkit_configuration(self, addon_name):
+        """Get nvidia-driver-toolkit addon configuration - delegates to implementation"""
+        return self.addon.get_nvidia_toolkit_configuration(addon_name)

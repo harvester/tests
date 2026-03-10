@@ -6,6 +6,7 @@ Layer 4: Makes actual kubectl/K8s API calls for addon operations
 import time
 import subprocess
 import signal
+import yaml
 from kubernetes import client
 from kubernetes.client.rest import ApiException
 from crd import get_cr, patch_cr
@@ -20,7 +21,6 @@ from addon.base import Base
 
 
 class CRD(Base):
-
     """
     CRD implementation for Addon operations using Kubernetes API
     """
@@ -110,67 +110,97 @@ class CRD(Base):
 
     def enable_addon(self, addon_name):
         """
-        Enable an addon
+        Enable an addon with retry logic for transient state conflicts
 
         Args:
             addon_name: Name of the addon to enable
         """
         logging(f"Enabling addon {addon_name}")
 
-        # First find which namespace the addon is in
-        namespace = self._find_addon_namespace(addon_name)
-        if not namespace:
-            raise Exception(f"Addon {addon_name} not found in any namespace")
+        max_retries = 10
+        retry_delay = 2  # Start with 2 seconds
 
-        patch_body = {
-            "spec": {
-                "enabled": True
-            }
-        }
-        try:
-            patch_cr(
-                group=self.addon_group,
-                version=self.addon_version,
-                namespace=namespace,
-                plural=self.addon_plural,
-                name=addon_name,
-                body=patch_body
-            )
-            logging(f"Addon {addon_name} enable request sent")
-        except ApiException as e:
-            raise Exception(f"Failed to enable addon {addon_name}: {e}")
+        for attempt in range(max_retries):
+            try:
+                # First find which namespace the addon is in
+                namespace = self._find_addon_namespace(addon_name)
+                if not namespace:
+                    raise Exception(f"Addon {addon_name} not found in any namespace")
+
+                patch_body = {
+                    "spec": {
+                        "enabled": True
+                    }
+                }
+                patch_cr(
+                    group=self.addon_group,
+                    version=self.addon_version,
+                    namespace=namespace,
+                    plural=self.addon_plural,
+                    name=addon_name,
+                    body=patch_body
+                )
+                logging(f"Addon {addon_name} enable request sent")
+                return
+            except ApiException as e:
+                # Check if it's a conflict/update error (409 or 422)
+                if e.status in [409, 422, 400] and attempt < max_retries - 1:
+                    logging(
+                        f"Addon {addon_name} is transitioning, retrying in {retry_delay}s... "
+                        f"({attempt+1}/{max_retries})",
+                        level='WARNING'
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay = min(retry_delay * 2, 16)  # Exponential backoff, max 16s
+                else:
+                    raise Exception(f"Failed to enable addon {addon_name}: {e}")
 
     def disable_addon(self, addon_name):
         """
-        Disable an addon
+        Disable an addon with retry logic for transient update conflicts
 
         Args:
             addon_name: Name of the addon to disable
         """
         logging(f"Disabling addon {addon_name}")
 
-        # First find which namespace the addon is in
-        namespace = self._find_addon_namespace(addon_name)
-        if not namespace:
-            raise Exception(f"Addon {addon_name} not found in any namespace")
+        max_retries = 5
+        retry_delay = 2  # Start with 2 seconds
 
-        patch_body = {
-            "spec": {
-                "enabled": False
-            }
-        }
-        try:
-            patch_cr(
-                group=self.addon_group,
-                version=self.addon_version,
-                namespace=namespace,
-                plural=self.addon_plural,
-                name=addon_name,
-                body=patch_body
-            )
-            logging(f"Addon {addon_name} disable request sent")
-        except ApiException as e:
-            raise Exception(f"Failed to disable addon {addon_name}: {e}")
+        for attempt in range(max_retries):
+            try:
+                # First find which namespace the addon is in
+                namespace = self._find_addon_namespace(addon_name)
+                if not namespace:
+                    raise Exception(f"Addon {addon_name} not found in any namespace")
+
+                patch_body = {
+                    "spec": {
+                        "enabled": False
+                    }
+                }
+                patch_cr(
+                    group=self.addon_group,
+                    version=self.addon_version,
+                    namespace=namespace,
+                    plural=self.addon_plural,
+                    name=addon_name,
+                    body=patch_body
+                )
+                logging(f"Addon {addon_name} disable request sent")
+                return
+            except ApiException as e:
+                # Check if it's a conflict/update error (409 or 422)
+                if e.status in [409, 422, 400] and attempt < max_retries - 1:
+                    logging(
+                        f"Addon {addon_name} is updating, retrying in {retry_delay}s... "
+                        f"({attempt+1}/{max_retries})",
+                        level='WARNING'
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay = min(retry_delay * 2, 16)  # Exponential backoff, max 16s
+                else:
+                    raise Exception(f"Failed to disable addon {addon_name}: {e}")
 
     def wait_for_addon_enabled(self, addon_name, timeout=DEFAULT_TIMEOUT):
         """
@@ -538,3 +568,99 @@ class CRD(Base):
                     raise Exception(f"Error verifying Prometheus metric '{query}': {e}")
 
         return False
+
+    def configure_nvidia_toolkit(self, addon_name, image_repo, image_tag, driver_location):
+        """
+        Configure the nvidia-driver-toolkit addon with image repo, tag, and driver location (CRD)
+        """
+        logging(f"Configuring nvidia-driver-toolkit addon (CRD): repo={image_repo}, \
+                tag={image_tag}, driver={driver_location}")
+        namespace = self._find_addon_namespace(addon_name)
+        if not namespace:
+            raise Exception(f"Addon {addon_name} not found in any known namespace")
+        # 1. Define the internal values as a dictionary
+        values_dict = {
+            "image": {
+                "tag": image_tag,
+                "repo": image_repo
+            },
+            "driverLocation": driver_location
+            }
+        # 2. Convert that dictionary into a YAML string
+        # Using default_flow_style=False ensures it looks like standard YAML
+        values_string = yaml.dump(values_dict, default_flow_style=False)
+        patch_body = {
+            "spec": {
+                "valuesContent": values_string
+            }
+        }
+        try:
+            self.custom_api.patch_namespaced_custom_object(
+                group=self.addon_group,
+                version=self.addon_version,
+                namespace=namespace,
+                plural=self.addon_plural,
+                name=addon_name,
+                body=patch_body
+            )
+            logging(f"Patched nvidia-driver-toolkit addon {addon_name} in {namespace}")
+        except ApiException as e:
+            logging(f"Failed to patch nvidia-driver-toolkit addon: {e}", level='ERROR')
+            raise
+
+    def verify_nvidia_toolkit_configuration(
+        self, addon_name, image_repo, image_tag, driver_location
+    ):
+        """Verify nvidia-driver-toolkit addon configuration values (CRD)."""
+        current_config = self.get_nvidia_toolkit_configuration(addon_name)
+        current_repo = current_config.get('image_repo')
+        current_tag = current_config.get('image_tag')
+        current_driver_location = current_config.get('driver_location')
+
+        is_configured = (
+            current_repo == image_repo
+            and current_tag == image_tag
+            and current_driver_location == driver_location
+        )
+
+        if not is_configured:
+            logging(
+                "Nvidia-toolkit config mismatch (CRD): "
+                f"expected repo={image_repo}, tag={image_tag}, driver={driver_location}; "
+                f"actual repo={current_repo}, tag={current_tag}, driver={current_driver_location}",
+                level='WARNING'
+            )
+            return False
+
+        logging("Nvidia-toolkit configuration verified successfully (CRD)")
+        return True
+
+    def get_nvidia_toolkit_configuration(self, addon_name):
+        """Get nvidia-driver-toolkit addon configuration values (CRD)."""
+        addon = self.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+
+        spec = addon.get('spec', {})
+        values_content = spec.get('valuesContent', '')
+        parsed_values = {}
+        if values_content:
+            try:
+                parsed_values = yaml.safe_load(values_content) or {}
+            except Exception as e:
+                logging(
+                    f"Failed to parse valuesContent for addon {addon_name}: {e}",
+                    level='WARNING'
+                )
+
+        image_values = parsed_values.get('image', {}) if isinstance(parsed_values, dict) else {}
+        return {
+            'image_repo': (
+                image_values.get('repo')
+                or image_values.get('repository')
+                or spec.get('image/repo')
+                or spec.get('image/repository')
+            ),
+            'image_tag': image_values.get('tag') or spec.get('image/tag'),
+            'driver_location': parsed_values.get('driverLocation') or spec.get('driverLocation')
+        }

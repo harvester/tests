@@ -14,7 +14,6 @@ from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG  # noqa E402
 
 class addon_keywords:
     """Addon keyword wrapper - creates Addon component and delegates"""
-
     def __init__(self):
         """Initialize addon keywords with lazy loading"""
         self._addon = None
@@ -205,7 +204,7 @@ class addon_keywords:
         Args:
             query: PromQL query string
             prometheus_url: Prometheus URL (default: http://localhost:9090)
-            retries: Number of retry attempts (default: 3)
+            retries: Number of retry attempts (default: 12)
             retry_interval: Seconds to wait between retries (default: 5)
 
         Returns:
@@ -242,3 +241,54 @@ class addon_keywords:
                 self.wait_for_addon_disabled(addon_name)
         else:
             logging(f'Addon {addon_name} already in desired state')
+
+    def configure_nvidia_toolkit_addon(self, addon_name, image_repo, image_tag, driver_location):
+        """
+        Configure the nvidia-driver-toolkit addon with image repo, tag, and driver location
+
+        Args:
+            addon_name: Name of the addon (nvidia-driver-toolkit)
+            image_repo: Image repository
+            image_tag: Image tag
+            driver_location: Driver location path
+        """
+        logging(f'Configuring nvidia-driver-toolkit addon: repo={image_repo}, tag={image_tag}, \
+                driver={driver_location}')
+        self.addon.configure_nvidia_toolkit(addon_name, image_repo, image_tag, driver_location)
+        logging('Nvidia-driver-toolkit addon configured')
+
+    def verify_nvidia_toolkit_addon_config(
+        self, addon_name, image_repo, image_tag, driver_location
+    ):
+        """
+        Verify nvidia-driver-toolkit addon configuration values
+
+        Args:
+            addon_name: Name of the addon (nvidia-driver-toolkit)
+            image_repo: Expected image repository
+            image_tag: Expected image tag
+            driver_location: Expected driver location path
+
+        Returns:
+            bool: True if configuration matches expected values
+        """
+        logging(
+            f'Verifying nvidia-driver-toolkit addon configuration: '
+            f'repo={image_repo}, tag={image_tag}, driver={driver_location}'
+        )
+        return self.addon.verify_nvidia_toolkit_configuration(
+            addon_name, image_repo, image_tag, driver_location
+        )
+
+    def get_nvidia_toolkit_addon_config(self, addon_name):
+        """
+        Get current nvidia-driver-toolkit addon configuration values
+
+        Args:
+            addon_name: Name of the addon (nvidia-driver-toolkit)
+
+        Returns:
+            dict: {'image_repo': str, 'image_tag': str, 'driver_location': str}
+        """
+        logging(f'Getting nvidia-driver-toolkit addon configuration for {addon_name}')
+        return self.addon.get_nvidia_toolkit_configuration(addon_name)

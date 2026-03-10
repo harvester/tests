@@ -58,6 +58,11 @@ IMAGE_STATE_FAILED = "Failed"
 VOLUME_FRONTEND_BLOCKDEV = "blockdev"
 VOLUME_FRONTEND_ISCSI = "iscsi"
 
+# NVIDIA Driver Toolkit Addon Defaults
+NVIDIA_TOOLKIT_IMAGE_REPO = "nvidia/driver-toolkit"
+NVIDIA_TOOLKIT_IMAGE_TAG = "latest"
+NVIDIA_TOOLKIT_DRIVER_LOCATION = "/drivers"
+
 # Access Modes
 ACCESS_MODE_RWO = "ReadWriteOnce"
 ACCESS_MODE_RWX = "ReadWriteMany"

@@ -21,7 +21,7 @@ ${PCIDEVICES_NAMESPACE}       harvester-system
 ${PCIDEVICES_CONTROLLER_LABEL}    app.kubernetes.io/name=harvester-pcidevices-controller
 ${PCIDEVICES_WEBHOOK_SERVICE}     pcidevices-webhook
 ${INITIAL_STATE_MONITORING}     Initial state of monitoring addon (captured at runtime)
-${INITIAL_STATE_PCIDEVICES}     Initial state of pcidevices-controller addon (captured at runtime)
+${INITIAL_STATE_PCIDEVICES}     ${None}
 
 *** Test Cases ***
 Test Rancher Monitoring Addon Deploys And Accessibility
@@ -190,7 +190,7 @@ Suite Setup For PCI Devices Addon Tests
 Suite Teardown For PCI Devices Addon Tests
     [Documentation]    Cleanup and restore addon state after tests
     Log    Running suite teardown for PCI Devices addon tests
-    Run Keyword If    '${INITIAL_STATE_PCIDEVICES}' != 'None'
+    Run Keyword If    '${INITIAL_STATE_PCIDEVICES}' != ${None}
     ...    Addon - Restore State    ${ADDON_PCIDEVICES}    ${INITIAL_STATE_PCIDEVICES}
     Cleanup test resources
     Log    Suite teardown completed
