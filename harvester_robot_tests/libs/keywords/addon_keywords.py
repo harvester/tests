@@ -252,8 +252,10 @@ class addon_keywords:
             image_tag: Image tag
             driver_location: Driver location path
         """
-        logging(f'Configuring nvidia-driver-toolkit addon: repo={image_repo}, tag={image_tag}, \
-                driver={driver_location}')
+        logging(
+            f'Configuring nvidia-driver-toolkit addon: '
+            f'repo={image_repo}, tag={image_tag}, driver={driver_location}'
+        )
         self.addon.configure_nvidia_toolkit(addon_name, image_repo, image_tag, driver_location)
         logging('Nvidia-driver-toolkit addon configured')
 
