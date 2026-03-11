@@ -75,3 +75,40 @@ class ChartSpec:
         }
 
         return data
+
+
+class LBServiceSpec:
+    """ Data model for Load Balancer Service
+    """
+    def __init__(self, namespace: str, name: str, ipam: str, selector: dict):
+        self.namespace = namespace
+        self.name = name
+        self.ipam = ipam    # dhcp or pool
+        self.selector = selector
+
+    def to_dict(self):
+        data = {
+            "type": "service",
+            "metadata": {
+                "namespace": self.namespace,
+                "name": self.name,
+                "annotations": {
+                    "cloudprovider.harvesterhci.io/ipam": self.ipam
+                }
+            },
+            "spec": {
+                "type": "LoadBalancer",
+                "sessionAffinity": None,
+                "ports": [
+                    {
+                        "name": "http",
+                        "port": 8080,
+                        "protocol": "TCP",
+                        "targetPort": 80
+                    }
+                ],
+                "selector": self.selector
+            }
+        }
+
+        return data

@@ -5,7 +5,7 @@ from weakref import ref
 from collections.abc import Mapping
 from urllib.parse import urlencode
 
-from .models import UserSpec, ChartSpec
+from .models import UserSpec, ChartSpec, LBServiceSpec
 
 
 DEFAULT_NAMESPACE = "default"
@@ -280,6 +280,10 @@ class MgmtClusterManager(BaseManager):
             raw=raw
         )
 
+    def update(self, name, data, *, raw=False, as_json=True, **kwargs):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=f"/{FLEET_DEFAULT_NAMESPACE}")
+        return self._update(path, data, raw=raw, as_json=as_json, **kwargs)
+
     def delete(self, name, namespace=FLEET_DEFAULT_NAMESPACE, *, raw=False):
         return self._delete(self.PATH_fmt.format(uid=f"/{name}", ns=f"/{namespace}"))
 
@@ -469,8 +473,13 @@ class ClusterServiceManager(BaseManager):
                 url = f"{url}/{name}"
         return self._get(url, raw=raw)
 
-    def create(self, cluster_id, data, raw=False):
+    def create(
+        self, cluster_id, name, ipam, selector=None, namespace=DEFAULT_NAMESPACE, raw=False
+    ):
+        if selector is None:
+            selector = {}
         url = self.PATH_fmt.format(cluster_id=cluster_id)
+        data = LBServiceSpec(namespace, name, ipam, selector).to_dict()
         return self._create(url, json=data, raw=raw)
 
     def delete(self, cluster_id, name, namespace=DEFAULT_NAMESPACE, raw=False):
