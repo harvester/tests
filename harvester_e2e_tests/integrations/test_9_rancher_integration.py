@@ -28,6 +28,8 @@ pytest_plugins = [
     "harvester_e2e_tests.fixtures.images",
 ]
 
+IPAMS = ["dhcp", "pool"]
+
 
 @pytest.fixture(scope='module')
 def vlan_network(request, api_client):
@@ -165,8 +167,7 @@ def harvester_cloud_credential(api_client, rancher_api_client,
     rancher_api_client.cloud_credentials.delete(data['id'])
 
 
-@pytest.fixture(scope="module",
-                params=[1, 3])
+@pytest.fixture(scope="module", params=[1, 3])
 def machine_count(request):
     return request.param
 
@@ -186,11 +187,24 @@ def rke1_cluster(unique_name, rancher_api_client, machine_count, rke1_version):
 
 @pytest.fixture(scope='class')
 def rke2_cluster(unique_name, rancher_api_client, machine_count, rke2_version):
-    name = f"rke2-{unique_name}-{machine_count}"
+    name = f"rke2-{unique_name}-{machine_count}node{'s' * (machine_count != 1)}"
     yield {
         "name": name,
         "id": "",    # set in Test_RKE2::test_create_rke2, e.g. c-m-n6bsktxb
         "machine_count": machine_count,
+        "k8s_version": rke2_version
+    }
+
+    rancher_api_client.mgmt_clusters.delete(name)
+
+
+@pytest.fixture(scope='class')
+def scaling_rke2(unique_name, rancher_api_client, rke2_version):
+    name = f"rke2-{unique_name}-scaling"
+    yield {
+        "name": name,
+        "id": "",    # set in TestRKE2Scaling::test_create_rke2, e.g. c-m-n6bsktxb
+        "machine_count": 1,
         "k8s_version": rke2_version
     }
 
@@ -234,49 +248,12 @@ def unset_cpu_memory_overcommit(api_client):
     api_client.settings.update('overcommit-config', spec)
 
 
-@pytest.fixture(scope='function', params=["dhcp", "pool"])
-def lb_service(request, api_client, unique_name, nginx_deployment, ip_pool):
-    namespace = "default"
-    name = f"lb-{unique_name}-{request.param}"
-    data = {
-        "type": "service",
-        "metadata": {
-            "namespace": namespace,
-            "name": name,
-            "annotations": {
-                "cloudprovider.harvesterhci.io/ipam": request.param
-            }
-        },
-        "spec": {
-            "type": "LoadBalancer",
-            "sessionAffinity": None,
-            "ports": [
-                {
-                    "name": "http",
-                    "port": 8080,
-                    "protocol": "TCP",
-                    "targetPort": 80
-                }
-            ],
-            "selector": {
-                "name": nginx_deployment["name"]
-            }
-        }
-    }
-
+@pytest.fixture(scope='class')
+def lb_service(unique_name, ip_pool):
     yield {
-        "namespace": namespace,
-        "name": name,
-        "data": data
+        "dhcp": f"lb-nginx-dhcp-{unique_name}",
+        "pool": f"lb-nginx-pool-{unique_name}"
     }
-
-    code, data = api_client.loadbalancers.get()
-    assert 200 == code, (code, data)
-    lbs = data["data"]
-    for lb in lbs:
-        if name in lb["id"]:
-            api_client.loadbalancers.delete(lb["id"])
-            break
 
 
 @pytest.mark.p0
@@ -591,14 +568,18 @@ class TestRKE2:
             f"Failed to create RKE2 MgmtCluster {unique_name} with error: {code}, {data}"
         )
 
-        code, data = polling_for(
-            f"cluster {rke2_cluster['name']} to be ready",
-            lambda code, data:
-                "active" == data['metadata']['state']['name'] and
-                "Ready" in data['metadata']['state']['message'],
-            rancher_api_client.mgmt_clusters.get, rke2_cluster['name'],
-            timeout=rancher_wait_timeout
-        )
+        for _ in range(3):
+            # trick to reduce false negative result caused by:
+            # * cluster state sometimes unstable when just entering Active (may back to Inactive)
+            sleep(20)
+            code, data = polling_for(
+                f"cluster {rke2_cluster['name']} to be ready",
+                lambda code, data:
+                    "active" == data['metadata']['state']['name'] and
+                    "Ready" in data['metadata']['state']['message'],
+                rancher_api_client.mgmt_clusters.get, rke2_cluster['name'],
+                timeout=rancher_wait_timeout
+            )
 
         # update fixture value
         rke2_cluster['id'] = data["status"]["clusterName"]
@@ -614,7 +595,7 @@ class TestRKE2:
                 rke2_cluster['id'], "kube-system", testees
         )
 
-    @pytest.mark.dependency(depends=["create_rke2"])
+    @pytest.mark.dependency(depends=["create_rke2"], scope='class')
     def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
                         unique_name, polling_for):
         cluster_id = harvester_mgmt_cluster['id']
@@ -673,7 +654,7 @@ class TestRKE2:
         # teardown
         capi.pvcs.delete(unique_name)
 
-    @pytest.mark.dependency(depends=["create_rke2"], name="csi_deployment")
+    @pytest.mark.dependency(depends=["create_rke2"], name="csi_deployment", scope='class')
     def test_csi_deployment(self, rancher_api_client, rke2_cluster, csi_deployment, polling_for):
         # create pvc
         code, data = rancher_api_client.pvcs.create(rke2_cluster['id'], csi_deployment['pvc'])
@@ -709,7 +690,7 @@ class TestRKE2:
                 rke2_cluster['id'], csi_deployment['namespace'], csi_deployment['name']
         )
 
-    @pytest.mark.dependency(depends=["csi_deployment"])
+    @pytest.mark.dependency(depends=["csi_deployment"], scope='class')
     def test_delete_deployment(self, rancher_api_client, rke2_cluster, csi_deployment,
                                polling_for):
         code, data = rancher_api_client.cluster_deployments.delete(
@@ -730,7 +711,7 @@ class TestRKE2:
         # teardown
         rancher_api_client.pvcs.delete(rke2_cluster['id'], csi_deployment['pvc'])
 
-    @pytest.mark.dependency(depends=["create_rke2"], name="deploy_nginx")
+    @pytest.mark.dependency(depends=["create_rke2"], name="deploy_nginx", scope='class')
     def test_deploy_nginx(self, rancher_api_client, rke2_cluster, nginx_deployment, polling_for):
         code, data = rancher_api_client.cluster_deployments.create(
             rke2_cluster['id'], nginx_deployment['namespace'],
@@ -750,48 +731,65 @@ class TestRKE2:
                 rke2_cluster['id'], nginx_deployment['namespace'], nginx_deployment['name']
         )
 
-    @pytest.mark.dependency(depends=["deploy_nginx"])
-    def test_load_balancer_service(self, rancher_api_client, rke2_cluster, nginx_deployment,
-                                   lb_service, polling_for):
+    @pytest.mark.dependency(depends=["deploy_nginx"], name="lb_service", scope='class')
+    @pytest.mark.parametrize("ipam", IPAMS)
+    def test_create_lb_service(self, rancher_api_client, rke2_cluster, nginx_deployment,
+                               lb_service, ipam, polling_for):
         # create LB service
         code, data = rancher_api_client.cluster_services.create(
-            rke2_cluster['id'], lb_service["data"]
+            rke2_cluster['id'], lb_service[ipam], ipam,
+            selector={"name": nginx_deployment['name']},
         )
         assert 201 == code, (
-            f"Fail to create {lb_service['name']} for {nginx_deployment['name']}\n"
+            f"Fail to create {lb_service[ipam]} for {nginx_deployment['name']}\n"
             f"API Response: {code}, {data}"
         )
 
         # check service active
         code, data = polling_for(
-            f"service {lb_service['name']} to be ready",
+            f"service {lb_service[ipam]} to be ready",
             lambda code, data:
                 200 == code and
                 "active" == data.get("metadata", {}).get("state", {}).get("name"),
-            rancher_api_client.cluster_services.get, rke2_cluster['id'], lb_service['name']
+            rancher_api_client.cluster_services.get, rke2_cluster['id'], lb_service[ipam]
         )
 
-        # check Nginx can be queired via LB
+        # check Nginx can be queried via LB
         try:
             ingress = data["status"]["loadBalancer"]["ingress"][0]
             ingress_url = f"http://{ingress['ip']}:{ingress['ports'][0]['port']}"
         except Exception as e:
             raise AssertionError(
-                f"Fail to get ingress info from {lb_service['name']}\n"
+                f"Fail to get ingress info from {lb_service[ipam]}\n"
                 f"Got error: {e}\n"
                 f"Service data: {data}"
             )
         resp = rancher_api_client.session.get(ingress_url)
         assert resp.ok and "Welcome to nginx" in resp.text, (
-            f"Fail to query load balancer {lb_service['name']}\n"
+            f"Fail to query load balancer {lb_service[ipam]}\n"
             f"Got error: {resp.status_code}, {resp.text}\n"
             f"Service data: {data}"
         )
 
-        # teardown
-        rancher_api_client.cluster_services.delete(rke2_cluster['id'], lb_service["name"])
+    @pytest.mark.dependency(depends=["lb_service"], scope='class')
+    @pytest.mark.parametrize("ipam", IPAMS)
+    def test_delete_lb_service(
+        self, rancher_api_client, lb_service, ipam, rke2_cluster, polling_for
+    ):
+        code, data = rancher_api_client.cluster_services.delete(
+            rke2_cluster['id'], lb_service[ipam]
+        )
+        assert code in (200, 204), (
+            f"Failed to delete service {lb_service[ipam]} with error: {code}, {data}"
+        )
 
-    @pytest.mark.dependency(depends=["create_rke2"])
+        code, data = polling_for(
+            f"service {lb_service[ipam]} to be deleted",
+            lambda code, data: 404 == code,
+            rancher_api_client.cluster_services.get, rke2_cluster['id'], lb_service[ipam]
+        )
+
+    @pytest.mark.dependency(depends=["create_rke2"], scope='class')
     def test_delete_rke2(self, api_client, rancher_api_client, rke2_cluster,
                          rancher_wait_timeout, polling_for):
         code, data = rancher_api_client.mgmt_clusters.delete(rke2_cluster['name'])
@@ -815,6 +813,408 @@ class TestRKE2:
         assert 0 == remaining_vm_cnt, (f"Still have {remaining_vm_cnt} RKE2 VMs")
 
 
+@pytest.mark.p1
+@pytest.mark.rancher
+@pytest.mark.rke2
+@pytest.mark.scaling
+class TestRKE2Scaling:
+    """ RKE2 cluster scaling test
+    """
+    @pytest.mark.dependency(depends=["import_harvester"], name="create_rke2")
+    def test_create_rke2(
+        self, rancher_api_client, unique_name, harvester_mgmt_cluster, harvester_cloud_credential,
+        ubuntu_image, vlan_network, rancher_wait_timeout, scaling_rke2, polling_for
+    ):
+        # Create Harvester kubeconfig for this RKE2 cluster
+        code, data = rancher_api_client.kube_configs.create(
+            scaling_rke2['name'],
+            harvester_mgmt_cluster['id']
+        )
+        assert 200 == code, (
+            f"Failed to create harvester kubeconfig for rke2 with error: {code}, {data}"
+        )
+        assert "" != data, (
+            f"Harvester kubeconfig for rke2 should not be empty: {code}, {data}"
+        )
+        kubeconfig = data
+
+        # Create credential for this RKE2 cluster
+        code, data = rancher_api_client.secrets.create(
+            name=unique_name,
+            data={
+                "credential": kubeconfig[1:-1].replace("\\n", "\n")
+            },
+            annotations={
+                "v2prov-secret-authorized-for-cluster": scaling_rke2['name'],
+                "v2prov-authorized-secret-deletes-on-cluster-removal": "true"
+            }
+        )
+        assert 201 == code, (
+            f"Failed to create secret with error: {code}, {data}"
+        )
+        cloud_provider_config_id = f"{data['metadata']['namespace']}:{data['metadata']['name']}"
+
+        # Create RKE2 cluster spec
+        code, data = rancher_api_client.harvester_configs.create(
+            name=unique_name,
+            cpus="2",
+            mems="4",
+            disks="40",
+            image_id=ubuntu_image['id'],
+            network_id=vlan_network['name'],
+            ssh_user=ubuntu_image['ssh_user'],
+            user_data=(
+                "#cloud-config\n"
+                "password: test\n"
+                "chpasswd:\n"
+                "    expire: false\n"
+                "ssh_pwauth: true\n"
+            ),
+        )
+        assert 201 == code, (
+            f"Failed to create harvester config with error: {code}, {data}"
+        )
+
+        # Create RKE2 cluster
+        code, data = rancher_api_client.mgmt_clusters.create(
+            name=scaling_rke2['name'],
+            cloud_provider_config_id=cloud_provider_config_id,
+            hostname_prefix=f"{scaling_rke2['name']}-",
+            harvester_config_name=unique_name,
+            k8s_version=scaling_rke2['k8s_version'],
+            cloud_credential_id=harvester_cloud_credential['id'],
+            quantity=scaling_rke2['machine_count']
+        )
+        assert 201 == code, (
+            f"Failed to create RKE2 MgmtCluster {unique_name} with error: {code}, {data}"
+        )
+
+        code, data = polling_for(
+            f"cluster {scaling_rke2['name']} to be ready",
+            lambda code, data:
+                "active" == data['metadata']['state']['name'] and
+                "Ready" in data['metadata']['state']['message'],
+            rancher_api_client.mgmt_clusters.get, scaling_rke2['name'],
+            timeout=rancher_wait_timeout
+        )
+
+        # update fixture value
+        scaling_rke2['id'] = data["status"]["clusterName"]
+
+        # Check deployments
+        testees = ["harvester-cloud-provider", "harvester-csi-driver-controllers"]
+        polling_for(
+            f"harvester deployments on {scaling_rke2['name']} to be ready",
+            lambda code, data:
+                200 == code and
+                "active" == data.get("metadata", {}).get("state", {}).get("name"),
+            rancher_api_client.cluster_deployments.get,
+                scaling_rke2['id'], "kube-system", testees
+        )
+
+    @pytest.mark.dependency(depends=["create_rke2"], scope='class')
+    def test_create_pvc(
+        self, rancher_api_client, harvester_mgmt_cluster, unique_name, polling_for
+    ):
+        cluster_id = harvester_mgmt_cluster['id']
+        capi = rancher_api_client.clusters.explore(cluster_id)
+
+        # Create PVC
+        size = "1Gi"
+        spec = capi.pvcs.Spec(size)
+        code, data = capi.pvcs.create(unique_name, spec)
+        assert 201 == code, (code, data)
+
+        # Verify PVC is created
+        code, data = polling_for(
+            f"PVC {unique_name} to be in Bound phase",
+            lambda code, data: "Bound" == data['status'].get('phase'),
+            capi.pvcs.get, unique_name
+        )
+
+        # Verify the PV for created PVC
+        pv_code, pv_data = capi.pvs.get(data['spec']['volumeName'])
+        assert 200 == pv_code, (
+            f"Relevant PV is NOT available for created PVC's PV({data['spec']['volumeName']})\n"
+            f"Response data of PV: {data}"
+        )
+
+        # Verify size of the PV is aligned to requested size of PVC
+        assert size == pv_data['spec']['capacity']['storage'], (
+            "Size of the PV is NOT aligned to requested size of PVC,"
+            f" expected: {size}, PV's size: {pv_data['spec']['capacity']['storage']}\n"
+            f"Response data of PV: {data}"
+        )
+
+        # Verify PVC's size
+        created_spec = capi.pvcs.Spec.from_dict(data)
+        assert size == spec.size, (
+            f"Size is NOT correct in created PVC, expected: {size}, created: {spec.size}\n"
+            f"Response data: {data}"
+        )
+
+        # Verify the storage class exists
+        sc_code, sc_data = capi.scs.get(created_spec.storage_cls)
+        assert 200 == sc_code, (
+            f"Storage Class is NOT exists for created PVC\n"
+            f"Created PVC Spec: {data}\n"
+            f"SC Status({sc_code}): {sc_data}"
+        )
+
+        # verify the storage class is marked `default`
+        assert 'true' == sc_data['metadata']['annotations'][capi.scs.DEFAULT_KEY], (
+            f"Storage Class is NOT the DEFAULT for created PVC\n"
+            f"Requested Storage Class: {spec.storage_cls!r}"
+            f"Created PVC Spec: {data}\n"
+            f"SC Status({sc_code}): {sc_data}"
+        )
+
+        # teardown
+        capi.pvcs.delete(unique_name)
+
+    @pytest.mark.dependency(depends=["create_rke2"], name="csi_deployment", scope='class')
+    def test_csi_deployment(self, rancher_api_client, csi_deployment, scaling_rke2, polling_for):
+        # create pvc
+        code, data = rancher_api_client.pvcs.create(scaling_rke2['id'], csi_deployment['pvc'])
+        assert 201 == code, (
+            f"Fail to create {csi_deployment['pvc']} on {scaling_rke2['name']}\n"
+            f"API Response: {code}, {data}"
+        )
+
+        polling_for(
+            f"PVC {csi_deployment['pvc']} to be ready",
+            lambda code, data:
+                200 == code and
+                "bound" == data.get("metadata", {}).get("state", {}).get("name"),
+            rancher_api_client.pvcs.get, scaling_rke2['id'], csi_deployment['pvc']
+        )
+
+        # deployment with csi
+        code, data = rancher_api_client.cluster_deployments.create(
+            scaling_rke2['id'], csi_deployment['namespace'],
+            csi_deployment['name'], csi_deployment['image'], csi_deployment['pvc']
+        )
+        assert 201 == code, (
+            f"Fail to deploy {csi_deployment['name']} on {scaling_rke2['name']}\n"
+            f"API Response: {code}, {data}"
+        )
+
+        polling_for(
+            f"deployment {csi_deployment['name']} to be ready",
+            lambda code, data:
+                200 == code and
+                "active" == data.get("metadata", {}).get("state", {}).get("name"),
+            rancher_api_client.cluster_deployments.get,
+                scaling_rke2['id'], csi_deployment['namespace'], csi_deployment['name']
+        )
+
+    @pytest.mark.dependency(depends=["create_rke2"], name="deploy_nginx", scope='class')
+    def test_deploy_nginx(self, rancher_api_client, nginx_deployment, scaling_rke2, polling_for):
+        code, data = rancher_api_client.cluster_deployments.create(
+            scaling_rke2['id'], nginx_deployment['namespace'],
+            nginx_deployment['name'], nginx_deployment['image']
+        )
+        assert 201 == code, (
+            f"Fail to deploy {nginx_deployment['name']} on {scaling_rke2['name']}\n"
+            f"API Response: {code}, {data}"
+        )
+
+        polling_for(
+            f"deployment {nginx_deployment['name']} to be ready",
+            lambda code, data:
+                200 == code and
+                "active" == data.get("metadata", {}).get("state", {}).get("name"),
+            rancher_api_client.cluster_deployments.get,
+                scaling_rke2['id'], nginx_deployment['namespace'], nginx_deployment['name']
+        )
+
+    @pytest.mark.dependency(depends=["deploy_nginx"], name="lb_service", scope='class')
+    @pytest.mark.parametrize("ipam", IPAMS)
+    def test_create_lb_service(
+        self, rancher_api_client, nginx_deployment, lb_service, ipam, scaling_rke2, polling_for
+    ):
+        # create LB service
+        code, data = rancher_api_client.cluster_services.create(
+            scaling_rke2['id'], lb_service[ipam], ipam,
+            selector={"name": nginx_deployment['name']},
+        )
+        assert 201 == code, (
+            f"Fail to create {lb_service[ipam]} for {nginx_deployment['name']}\n"
+            f"API Response: {code}, {data}"
+        )
+
+        # check service active
+        code, data = polling_for(
+            f"service {lb_service[ipam]} to be ready",
+            lambda code, data:
+                200 == code and
+                "active" == data.get("metadata", {}).get("state", {}).get("name"),
+            rancher_api_client.cluster_services.get, scaling_rke2['id'], lb_service[ipam]
+        )
+
+        # check Nginx can be queried via LB
+        try:
+            ingress = data["status"]["loadBalancer"]["ingress"][0]
+            ingress_url = f"http://{ingress['ip']}:{ingress['ports'][0]['port']}"
+        except Exception as e:
+            raise AssertionError(
+                f"Fail to get ingress info from {lb_service[ipam]}\n"
+                f"Got error: {e}\n"
+                f"Service data: {data}"
+            )
+        resp = rancher_api_client.session.get(ingress_url)
+        assert resp.ok and "Welcome to nginx" in resp.text, (
+            f"Fail to query load balancer {lb_service[ipam]}\n"
+            f"Got error: {resp.status_code}, {resp.text}\n"
+            f"Service data: {data}"
+        )
+
+    @pytest.mark.dependency(depends=["lb_service"], scope='class')
+    @pytest.mark.parametrize("fromsize, tosize", [(1, 2), (2, 3), (3, 2)])
+    def test_rke2_scaling(
+        self, rancher_api_client, csi_deployment, nginx_deployment, fromsize, tosize, lb_service,
+        rancher_wait_timeout, scaling_rke2, polling_for
+    ):
+        # checking before scaling
+        code, cluster = rancher_api_client.mgmt_clusters.get(scaling_rke2['name'])
+        assert 200 == code, (code, cluster)
+        assert "active" == cluster['metadata']['state']['name'], (code, cluster)
+        assert "Ready" in cluster['metadata']['state']['message'], (code, cluster)
+        assert fromsize == cluster["spec"]["rkeConfig"]["machinePools"][0]["quantity"]
+
+        # scaling
+        cluster["spec"]["rkeConfig"]["machinePools"][0]["quantity"] = tosize
+        code, cluster = rancher_api_client.mgmt_clusters.update(scaling_rke2['name'], cluster)
+        assert 200 == code, (code, cluster)
+        for _ in range(3):
+            # trick to reduce false negative result caused by:
+            # * cluster state is not updated immediately after scaling
+            # * cluster state sometimes unstable when just entering Active (may back to Inactive)
+            sleep(20)
+            code, data = polling_for(
+                f"cluster {scaling_rke2['name']} to be ready",
+                lambda code, data:
+                    "active" == data['metadata']['state']['name'] and
+                    "Ready" in data['metadata']['state']['message'] and
+                    tosize == data["spec"]["rkeConfig"]["machinePools"][0]["quantity"],
+                rancher_api_client.mgmt_clusters.get, scaling_rke2['name'],
+                timeout=rancher_wait_timeout
+            )
+        # update fixture value
+        scaling_rke2['machine_count'] = tosize
+
+        # check deployments
+        testees = ["harvester-cloud-provider", "harvester-csi-driver-controllers"]
+        polling_for(
+            f"harvester deployments on {scaling_rke2['name']} to be ready",
+            lambda code, data:
+                200 == code and "active" == data.get("metadata", {}).get("state", {}).get("name"),
+            rancher_api_client.cluster_deployments.get,
+                scaling_rke2['id'], "kube-system", testees
+        )
+
+        testees = [csi_deployment['name'], nginx_deployment['name']]
+        polling_for(
+            "test deployments to be ready",
+            lambda code, data:
+                200 == code and "active" == data.get("metadata", {}).get("state", {}).get("name"),
+            rancher_api_client.cluster_deployments.get,
+                scaling_rke2['id'], "default", testees
+        )
+
+        # check services
+        for ipam in IPAMS:
+            code, data = polling_for(
+                f"service {lb_service[ipam]} to be ready",
+                lambda code, data:
+                    200 == code and
+                    "active" == data.get("metadata", {}).get("state", {}).get("name"),
+                rancher_api_client.cluster_services.get, scaling_rke2['id'], lb_service[ipam]
+            )
+
+            # Nginx can be queried via LB
+            try:
+                ingress = data["status"]["loadBalancer"]["ingress"][0]
+                ingress_url = f"http://{ingress['ip']}:{ingress['ports'][0]['port']}"
+            except Exception as e:
+                raise AssertionError(
+                    f"Fail to get ingress info from {lb_service[ipam]}\n"
+                    f"Got error: {e}\n"
+                    f"Service data: {data}"
+                )
+            resp = rancher_api_client.session.get(ingress_url)
+            assert resp.ok and "Welcome to nginx" in resp.text, (
+                f"Fail to query load balancer {lb_service[ipam]}\n"
+                f"Got error: {resp.status_code}, {resp.text}\n"
+                f"Service data: {data}"
+            )
+
+    @pytest.mark.dependency(depends=["csi_deployment"], scope='class')
+    def test_delete_deployment(
+        self, rancher_api_client, csi_deployment, scaling_rke2, polling_for
+    ):
+        code, data = rancher_api_client.cluster_deployments.delete(
+            scaling_rke2['id'], csi_deployment['namespace'], csi_deployment['name']
+        )
+        assert code in (200, 204), (
+            f"Failed to delete deployment {csi_deployment['name']} with error: {code}, {data}"
+        )
+
+        polling_for(
+            f"deployment {csi_deployment['name']} to be deleted",
+            lambda code, data:
+                code == 404,
+            rancher_api_client.cluster_deployments.get,
+                scaling_rke2['id'], csi_deployment['namespace'], csi_deployment['name']
+        )
+
+        # teardown
+        rancher_api_client.pvcs.delete(scaling_rke2['id'], csi_deployment['pvc'])
+
+    @pytest.mark.dependency(depends=["lb_service"], scope='class')
+    @pytest.mark.parametrize("ipam", IPAMS)
+    def test_delete_lb_service(
+        self, rancher_api_client, lb_service, ipam, scaling_rke2, polling_for
+    ):
+        code, data = rancher_api_client.cluster_services.delete(
+            scaling_rke2['id'], lb_service[ipam]
+        )
+        assert code in (200, 204), (
+            f"Failed to delete service {lb_service[ipam]} with error: {code}, {data}"
+        )
+
+        code, data = polling_for(
+            f"service {lb_service[ipam]} to be deleted",
+            lambda code, data: 404 == code,
+            rancher_api_client.cluster_services.get, scaling_rke2['id'], lb_service[ipam]
+        )
+
+    @pytest.mark.dependency(depends=["create_rke2"], scope='class')
+    def test_delete_rke2(
+        self, api_client, rancher_api_client, scaling_rke2, rancher_wait_timeout, polling_for
+    ):
+        code, data = rancher_api_client.mgmt_clusters.delete(scaling_rke2['name'])
+        assert 200 == code, (
+            f"Failed to delete RKE2 MgmtCluster {scaling_rke2['name']} with error: {code}, {data}"
+        )
+
+        polling_for(
+            f"cluster {scaling_rke2['name']} to be deleted",
+            lambda code, data: 404 == code,
+            rancher_api_client.mgmt_clusters.get, scaling_rke2['name'],
+            timeout=rancher_wait_timeout
+        )
+
+        code, data = api_client.vms.get()
+        remaining_vm_cnt = 0
+        for d in data.get('data', []):
+            vm_name = d.get('metadata', {}).get('name', "")
+            if vm_name.startswith(f"{scaling_rke2['name']}-"):
+                remaining_vm_cnt += 1
+        assert 0 == remaining_vm_cnt, (f"Still have {remaining_vm_cnt} RKE2 VMs")
+
+
+# Skipped since Rancher v2.12.0, see harvester_e2e_tests/fixtures/rancher_api_client.py.
 @pytest.mark.p0
 @pytest.mark.rancher
 @pytest.mark.rke1
@@ -894,7 +1294,7 @@ class TestRKE1:
             timeout=rancher_wait_timeout
         )
 
-    @pytest.mark.dependency(depends=["create_rke1"])
+    @pytest.mark.dependency(depends=["create_rke1"], scope='class')
     def test_create_pvc(self, rancher_api_client, harvester_mgmt_cluster,
                         unique_name, polling_for):
         cluster_id = harvester_mgmt_cluster['id']
@@ -954,7 +1354,7 @@ class TestRKE1:
         capi.pvcs.delete(unique_name)
 
     # harvester-cloud-provider
-    @pytest.mark.dependency(depends=["create_rke1"], name="cloud_provider_chart")
+    @pytest.mark.dependency(depends=["create_rke1"], name="cloud_provider_chart", scope='class')
     def test_cloud_provider_chart(self, rancher_api_client, rke1_cluster, polling_for):
         chart, deployment = "harvester-cloud-provider", "harvester-cloud-provider"
         polling_for(
@@ -986,7 +1386,7 @@ class TestRKE1:
                 rke1_cluster['id'], "kube-system", deployment
         )
 
-    @pytest.mark.dependency(depends=["cloud_provider_chart"], name="deploy_nginx")
+    @pytest.mark.dependency(depends=["cloud_provider_chart"], name="deploy_nginx", scope='class')
     def test_deploy_nginx(self, rancher_api_client, rke1_cluster, nginx_deployment, polling_for):
         code, data = rancher_api_client.cluster_deployments.create(
             rke1_cluster['id'], nginx_deployment['namespace'],
@@ -1006,50 +1406,52 @@ class TestRKE1:
                 rke1_cluster['id'], nginx_deployment['namespace'], nginx_deployment['name']
         )
 
-    @pytest.mark.dependency(depends=["deploy_nginx"])
+    @pytest.mark.dependency(depends=["deploy_nginx"], scope='class')
+    @pytest.mark.parametrize("ipam", IPAMS)
     def test_load_balancer_service(self, rancher_api_client, rke1_cluster, nginx_deployment,
-                                   lb_service, polling_for):
+                                   lb_service, ipam, polling_for):
         # create LB service
         code, data = rancher_api_client.cluster_services.create(
-            rke1_cluster['id'], lb_service["data"]
+            rke1_cluster['id'], lb_service[ipam], ipam,
+            selector={"name": nginx_deployment['name']},
         )
         assert 201 == code, (
-            f"Fail to create {lb_service['name']} for {nginx_deployment['name']}\n"
+            f"Fail to create {lb_service[ipam]} for {nginx_deployment['name']}\n"
             f"API Response: {code}, {data}"
         )
 
         # check service active
         code, data = polling_for(
-            f"service {lb_service['name']} to be ready",
+            f"service {lb_service[ipam]} to be ready",
             lambda code, data:
                 200 == code and
                 "active" == data.get("metadata", {}).get("state", {}).get("name"),
-            rancher_api_client.cluster_services.get, rke1_cluster['id'], lb_service['name']
+            rancher_api_client.cluster_services.get, rke1_cluster['id'], lb_service[ipam]
         )
 
-        # check Nginx can be queired via LB
+        # check Nginx can be queried via LB
         try:
             ingress_ip = data["status"]["loadBalancer"]["ingress"][0]['ip']
             ingress_port = data['spec']['ports'][0]['port']
             ingress_url = f"http://{ingress_ip}:{ingress_port}"
         except Exception as e:
             raise AssertionError(
-                f"Fail to get ingress info from {lb_service['name']}\n"
+                f"Fail to get ingress info from {lb_service[ipam]}\n"
                 f"Got error: {e}\n"
                 f"Service data: {data}"
             )
         resp = rancher_api_client.session.get(ingress_url)
         assert resp.ok and "Welcome to nginx" in resp.text, (
-            f"Fail to query load balancer {lb_service['name']}\n"
+            f"Fail to query load balancer {lb_service[ipam]}\n"
             f"Got error: {resp.status_code}, {resp.text}\n"
             f"Service data: {data}"
         )
 
         # teardown
-        rancher_api_client.cluster_services.delete(rke1_cluster['id'], lb_service["name"])
+        rancher_api_client.cluster_services.delete(rke1_cluster['id'], lb_service[ipam])
 
     # harvester-csi-driver
-    @pytest.mark.dependency(depends=["create_rke1"], name="csi_driver_chart")
+    @pytest.mark.dependency(depends=["create_rke1"], name="csi_driver_chart", scope='class')
     def test_csi_driver_chart(self, rancher_api_client, rke1_cluster, polling_for):
         chart, deployment = "harvester-csi-driver", "harvester-csi-driver-controllers"
         polling_for(
@@ -1081,7 +1483,7 @@ class TestRKE1:
                 rke1_cluster['id'], "kube-system", deployment
         )
 
-    @pytest.mark.dependency(depends=["csi_driver_chart"], name="csi_deployment")
+    @pytest.mark.dependency(depends=["csi_driver_chart"], name="csi_deployment", scope='class')
     def test_csi_deployment(self, rancher_api_client, rke1_cluster, csi_deployment, polling_for):
         # create pvc
         code, data = rancher_api_client.pvcs.create(rke1_cluster['id'], csi_deployment['pvc'])
@@ -1117,7 +1519,7 @@ class TestRKE1:
                 rke1_cluster['id'], csi_deployment['namespace'], csi_deployment['name']
         )
 
-    @pytest.mark.dependency(depends=["csi_deployment"])
+    @pytest.mark.dependency(depends=["csi_deployment"], scope='class')
     def test_delete_deployment(self, rancher_api_client, rke1_cluster, csi_deployment,
                                polling_for):
         code, data = rancher_api_client.cluster_deployments.delete(
@@ -1138,7 +1540,7 @@ class TestRKE1:
         # teardown
         rancher_api_client.pvcs.delete(rke1_cluster['id'], csi_deployment['pvc'])
 
-    @pytest.mark.dependency(depends=["create_rke1"])
+    @pytest.mark.dependency(depends=["create_rke1"], scope='class')
     def test_delete_rke1(self, api_client, rancher_api_client, rke1_cluster,
                          rancher_wait_timeout, polling_for):
         code, data = rancher_api_client.mgmt_clusters.delete(rke1_cluster['id'])
