@@ -2,10 +2,14 @@
 """
 Image Keywords - creates Image() instance and delegates - NO direct API calls!
 """
+import os
+import sys
 
-from utility.utility import logging
-from image import Image
-from constant import DEFAULT_TIMEOUT
+# Add the path to the utility module
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
+from utility.utility import logging # noqa E402
+from image import Image # noqa E402
+from constant import DEFAULT_TIMEOUT # noqa E402
 
 
 class image_keywords:

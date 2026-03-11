@@ -2,10 +2,14 @@
 """
 Layer 3: Volume Keywords - creates Volume() instance and delegates - NO direct API calls!
 """
+import os
+import sys
 
-from utility.utility import logging
-from volume import Volume
-from constant import DEFAULT_TIMEOUT_SHORT
+# Add the path to the utility module
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
+from utility.utility import logging # noqa E402
+from volume import Volume # noqa E402
+from constant import DEFAULT_TIMEOUT_SHORT # noqa E402
 
 
 class volume_keywords:

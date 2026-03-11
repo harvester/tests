@@ -6,6 +6,7 @@ Layer 4: Makes actual REST API calls for addon operations
 import time
 import subprocess
 import signal
+import yaml
 from utility.utility import logging, get_retry_count_and_interval, get_harvester_api_client
 from constant import DEFAULT_TIMEOUT
 from addon.base import Base
@@ -83,71 +84,123 @@ class Rest(Base):
 
     def enable_addon(self, addon_name):
         """
-        Enable an addon
+        Enable an addon with retry logic for transient state conflicts
 
         Args:
             addon_name: Name of the addon to enable
         """
         logging(f"Enabling addon {addon_name}")
-        try:
-            namespace = self._find_addon_namespace(addon_name)
-            if not namespace:
-                raise Exception(f"Addon {addon_name} not found")
 
-            # Get current addon
-            addon = self.get_addon(addon_name)
-            if not addon:
-                raise Exception(f"Addon {addon_name} not found")
+        max_retries = 10
+        retry_delay = 2  # Start with 2 seconds
 
-            # Update enabled field
-            addon['spec']['enabled'] = True
+        for attempt in range(max_retries):
+            try:
+                namespace = self._find_addon_namespace(addon_name)
+                if not namespace:
+                    raise Exception(f"Addon {addon_name} not found")
 
-            # Send update
-            code, data = self.api_client.put(
-                f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
-                data=addon
-            )
+                # Get current addon
+                addon = self.get_addon(addon_name)
+                if not addon:
+                    raise Exception(f"Addon {addon_name} not found")
 
-            if code not in [200, 201]:
-                raise Exception(f"Failed to enable addon: HTTP {code}, {data}")
+                # Update enabled field
+                addon['spec']['enabled'] = True
 
-            logging(f"Addon {addon_name} enable request sent")
-        except Exception as e:
-            raise Exception(f"Failed to enable addon {addon_name}: {e}")
+                # Send update
+                code, data = self.api_client.put(
+                    f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
+                    data=addon
+                )
+
+                # Check for conflict/update errors (409 or 422)
+                if code in [409, 422, 400] and attempt < max_retries - 1:
+                    logging(
+                        f"Addon {addon_name} is transitioning, retrying in {retry_delay}s... "
+                        f"({attempt+1}/{max_retries})",
+                        level='WARNING'
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay = min(retry_delay * 2, 16)  # Exponential backoff, max 16s
+                    continue
+
+                if code not in [200, 201]:
+                    raise Exception(f"Failed to enable addon: HTTP {code}, {data}")
+
+                logging(f"Addon {addon_name} enable request sent")
+                return
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    logging(
+                        f"Error enabling addon {addon_name}, retrying in {retry_delay}s... "
+                        f"({attempt+1}/{max_retries}): {e}",
+                        level='WARNING'
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay = min(retry_delay * 2, 16)  # Exponential backoff, max 16s
+                else:
+                    raise Exception(f"Failed to enable addon {addon_name}: {e}")
 
     def disable_addon(self, addon_name):
         """
-        Disable an addon
+        Disable an addon with retry logic for transient update conflicts
 
         Args:
             addon_name: Name of the addon to disable
         """
         logging(f"Disabling addon {addon_name}")
-        try:
-            namespace = self._find_addon_namespace(addon_name)
-            if not namespace:
-                raise Exception(f"Addon {addon_name} not found")
 
-            # Get current addon
-            addon = self.get_addon(addon_name)
-            if not addon:
-                raise Exception(f"Addon {addon_name} not found")
+        max_retries = 5
+        retry_delay = 2  # Start with 2 seconds
 
-            # Update enabled field
-            addon['spec']['enabled'] = False
+        for attempt in range(max_retries):
+            try:
+                namespace = self._find_addon_namespace(addon_name)
+                if not namespace:
+                    raise Exception(f"Addon {addon_name} not found")
 
-            # Send update
-            code, data = self.api_client.put(
-                f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
-                data=addon
-            )
+                # Get current addon
+                addon = self.get_addon(addon_name)
+                if not addon:
+                    raise Exception(f"Addon {addon_name} not found")
 
-            if code not in [200, 201]:
-                raise Exception(f"Failed to disable addon: HTTP {code}, {data}")
+                # Update enabled field
+                addon['spec']['enabled'] = False
 
-            logging(f"Addon {addon_name} disable request sent")
-        except Exception as e:
-            raise Exception(f"Failed to disable addon {addon_name}: {e}")
+                # Send update
+                code, data = self.api_client.put(
+                    f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
+                    data=addon
+                )
+
+                # Check for conflict/update errors (409 or 422)
+                if code in [409, 422, 400] and attempt < max_retries - 1:
+                    logging(
+                        f"Addon {addon_name} is updating, retrying in {retry_delay}s... "
+                        f"({attempt+1}/{max_retries})",
+                        level='WARNING'
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay = min(retry_delay * 2, 16)  # Exponential backoff, max 16s
+                    continue
+
+                if code not in [200, 201]:
+                    raise Exception(f"Failed to disable addon: HTTP {code}, {data}")
+
+                logging(f"Addon {addon_name} disable request sent")
+                return
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    logging(
+                        f"Error disabling addon {addon_name}, retrying in {retry_delay}s... "
+                        f"({attempt+1}/{max_retries}): {e}",
+                        level='WARNING'
+                    )
+                    time.sleep(retry_delay)
+                    retry_delay = min(retry_delay * 2, 16)  # Exponential backoff, max 16s
+                else:
+                    raise Exception(f"Failed to disable addon {addon_name}: {e}")
 
     def wait_for_addon_enabled(self, addon_name, timeout=DEFAULT_TIMEOUT):
         """
@@ -344,6 +397,45 @@ class Rest(Base):
             f"to be running after {timeout}s"
         )
 
+    def wait_for_service_running(self, namespace, service_name, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a service to be running in a namespace (REST)
+
+        Args:
+            namespace: Kubernetes namespace
+            service_name: Name of the service
+            timeout: Timeout in seconds
+        """
+        logging(
+            f"Waiting for service '{service_name}' in namespace '{namespace}' to be running (REST)"
+        )
+        retry_count, retry_interval = get_retry_count_and_interval()
+        max_retries = int(timeout / retry_interval)
+
+        for i in range(max_retries):
+            try:
+                code, svc = self.api_client.get(
+                    f"v1/services/{namespace}/{service_name}"
+                )
+                if code == 200 and svc:
+                    logging(f"Service '{service_name}' is running in namespace \
+                            '{namespace}' (REST)")
+                    return True
+            except Exception as e:
+                logging(f"Error checking service (REST): {e}", level='WARNING')
+                time.sleep(retry_interval)
+                continue
+
+            logging(
+                f"Service '{service_name}' not yet running, retrying... ({i+1}/{max_retries})"
+            )
+            time.sleep(retry_interval)
+
+        raise TimeoutError(
+            f"Timeout waiting for service '{service_name}' in namespace \
+                '{namespace}' after {timeout}s (REST)"
+        )
+
     def port_forward(self, namespace, pod_name, local_port, remote_port):
         """
         Port forward to a pod
@@ -492,3 +584,104 @@ class Rest(Base):
                     raise Exception(f"Error verifying Prometheus metric '{query}': {e}")
 
         return False
+
+    def configure_nvidia_toolkit(self, addon_name, image_repo, image_tag, driver_location):
+        """
+        Configure the nvidia-driver-toolkit addon with image repo, tag, and driver location (REST)
+        """
+        logging(f"Configuring nvidia-driver-toolkit addon (REST): repo={image_repo}, \
+                tag={image_tag}, driver={driver_location}")
+        try:
+            namespace = self._find_addon_namespace(addon_name)
+            if not namespace:
+                raise Exception(f"Addon {addon_name} not found")
+
+            # Get current addon
+            addon = self.get_addon(addon_name)
+            if not addon:
+                raise Exception(f"Addon {addon_name} not found")
+
+            # Build valuesContent YAML string
+            values_dict = {
+                "image": {
+                    "repo": image_repo,
+                    "tag": image_tag
+                },
+                "driverLocation": driver_location
+            }
+            values_string = yaml.dump(values_dict, default_flow_style=False)
+
+            # Update spec with valuesContent
+            if 'spec' not in addon:
+                addon['spec'] = {}
+            addon['spec']['valuesContent'] = values_string
+
+            # Send update
+            code, data = self.api_client.put(
+                f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
+                data=addon
+            )
+
+            if code not in [200, 201]:
+                raise Exception(f"Failed to configure nvidia-driver-toolkit addon: \
+                                HTTP {code}, {data}")
+
+            logging(f"Configured nvidia-driver-toolkit addon {addon_name} in {namespace}")
+        except Exception as e:
+            logging(f"Failed to configure nvidia-driver-toolkit addon: {e}", level='ERROR')
+            raise
+
+    def verify_nvidia_toolkit_configuration(
+        self, addon_name, image_repo, image_tag, driver_location
+    ):
+        """Verify nvidia-driver-toolkit addon configuration values (REST)."""
+        current_config = self.get_nvidia_toolkit_configuration(addon_name)
+        current_repo = current_config.get('image_repo')
+        current_tag = current_config.get('image_tag')
+        current_driver_location = current_config.get('driver_location')
+
+        is_configured = (
+            current_repo == image_repo
+            and current_tag == image_tag
+            and current_driver_location == driver_location
+        )
+
+        if not is_configured:
+            logging(
+                "Nvidia-toolkit config mismatch (REST): "
+                f"expected repo={image_repo}, tag={image_tag}, driver={driver_location}; "
+                f"actual repo={current_repo}, tag={current_tag}, driver={current_driver_location}",
+                level='WARNING'
+            )
+            return False
+
+        logging("Nvidia-toolkit configuration verified successfully (REST)")
+        return True
+
+    def get_nvidia_toolkit_configuration(self, addon_name):
+        """Get nvidia-driver-toolkit addon configuration values (REST)."""
+        addon = self.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+
+        spec = addon.get('spec', {})
+        values_content = spec.get('valuesContent', '')
+        parsed_values = {}
+        if values_content:
+            try:
+                parsed_values = yaml.safe_load(values_content) or {}
+            except Exception as e:
+                logging(
+                    f"Failed to parse valuesContent for addon {addon_name}: {e}",
+                    level='WARNING'
+                )
+
+        image_values = parsed_values.get('image', {}) if isinstance(parsed_values, dict) else {}
+        return {
+            'image_repo': (
+                image_values.get('repo')
+                or image_values.get('repository')
+            ),
+            'image_tag': image_values.get('tag') or spec.get('image/tag'),
+            'driver_location': parsed_values.get('driverLocation') or spec.get('driverLocation')
+        }

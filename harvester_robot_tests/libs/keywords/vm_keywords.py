@@ -2,10 +2,14 @@
 """
 VM Keywords - creates VM() instance and delegates - NO direct API calls!
 """
+import os
+import sys
 
-from utility.utility import logging
-from vm import VM
-from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG
+# Add the path to the utility module
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
+from utility.utility import logging # noqa E402
+from vm import VM # noqa E402
+from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG # noqa E402
 
 
 class vm_keywords:

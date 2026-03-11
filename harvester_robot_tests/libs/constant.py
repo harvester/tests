@@ -58,6 +58,11 @@ IMAGE_STATE_FAILED = "Failed"
 VOLUME_FRONTEND_BLOCKDEV = "blockdev"
 VOLUME_FRONTEND_ISCSI = "iscsi"
 
+# NVIDIA Driver Toolkit Addon Defaults
+NVIDIA_TOOLKIT_IMAGE_REPO = "nvidia/driver-toolkit"
+NVIDIA_TOOLKIT_IMAGE_TAG = "latest"
+NVIDIA_TOOLKIT_DRIVER_LOCATION = "/drivers"
+
 # Access Modes
 ACCESS_MODE_RWO = "ReadWriteOnce"
 ACCESS_MODE_RWX = "ReadWriteMany"
@@ -106,3 +111,8 @@ MONITORING_NAMESPACE = "cattle-monitoring-system"
 
 # Addon-related resource plurals
 ADDON_PLURAL = "addons"
+# PCI Devices Controller Addon Constants
+ADDON_PCIDEVICES = "pcidevices-controller"
+PCIDEVICES_NAMESPACE = "harvester-system"
+PCIDEVICES_CONTROLLER_LABEL = "app.kubernetes.io/name=harvester-pcidevices-controller"
+PCIDEVICES_WEBHOOK_SERVICE = "pcidevices-webhook"

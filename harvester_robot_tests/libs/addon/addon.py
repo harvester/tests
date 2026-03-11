@@ -15,11 +15,11 @@ from addon.base import Base
 
 class Addon(Base):
     """
-    Addon component that delegates to CRD or REST implementation
+        Addon component that delegates to CRD or REST implementation
 
-    The implementation is selected based on:
-    - HARVESTER_OPERATION_STRATEGY environment variable ('crd' or 'rest')
-    - Defaults to 'crd' if not set
+        The implementation is selected based on:
+        - HARVESTER_OPERATION_STRATEGY environment variable ('crd' or 'rest')
+        - Defaults to 'crd' if not set
     """
 
     def __init__(self):
@@ -73,6 +73,10 @@ class Addon(Base):
         """Port forward to a pod - delegates to implementation"""
         return self.addon.port_forward(namespace, pod_name, local_port, remote_port)
 
+    def wait_for_service_running(self, namespace, service_name, timeout):
+        """Wait for service to be running - delegates to implementation"""
+        return self.addon.wait_for_service_running(namespace, service_name, timeout)
+
     def stop_port_forward(self):
         """Stop port forwarding - delegates to implementation"""
         return self.addon.stop_port_forward()
@@ -86,3 +90,23 @@ class Addon(Base):
         return self.addon.verify_prometheus_metric_exists(
             query, prometheus_url, retries, retry_interval
         )
+
+    def configure_nvidia_toolkit(self, addon_name, image_repo, image_tag, driver_location):
+        """
+        Configure the nvidia-driver-toolkit addon with image repo, tag, and driver location
+        Delegates to the selected implementation (CRD or REST)
+        """
+        return self.addon.configure_nvidia_toolkit(addon_name, image_repo,
+                                                   image_tag, driver_location)
+
+    def verify_nvidia_toolkit_configuration(
+        self, addon_name, image_repo, image_tag, driver_location
+    ):
+        """Verify nvidia-driver-toolkit addon configuration - delegates to implementation"""
+        return self.addon.verify_nvidia_toolkit_configuration(
+            addon_name, image_repo, image_tag, driver_location
+        )
+
+    def get_nvidia_toolkit_configuration(self, addon_name):
+        """Get nvidia-driver-toolkit addon configuration - delegates to implementation"""
+        return self.addon.get_nvidia_toolkit_configuration(addon_name)

@@ -39,3 +39,10 @@ ${RETRY_COUNT}                  100
 # Namespaces and Labels
 ${DEFAULT_NAMESPACE}            default
 ${LABEL_TEST}                   test-harvester
+
+# NVIDIA Driver Toolkit Addon
+${NVIDIA_TOOLKIT_IMAGE_REPO}    %{NVIDIA_TOOLKIT_IMAGE_REPO=nvidia/driver-toolkit}
+${NVIDIA_TOOLKIT_IMAGE_TAG}     %{NVIDIA_TOOLKIT_IMAGE_TAG=v1.7-20260209}
+${NVIDIA_TOOLKIT_DRIVER_LOCATION}   %{NVIDIA_TOOLKIT_DRIVER_LOCATION=http://HTTPENDPOINT/NVIDIA-Linux-x86_64-VERSION-vgpu-kvm.run}
+
+
