@@ -418,3 +418,83 @@ class TestSupportBundleExtraNamespaces:
 
         # After download, the support bundle will be deleted automatically
         assert 404 == code, (code, data)
+
+
+@pytest.fixture(scope="class")
+def custom_filename_setting(api_client):
+    """Setup and teardown for custom support bundle filename pattern"""
+    # Get original setting
+    code, data = api_client.settings.get("support-bundle-file-name")
+    assert 200 == code, (code, data)
+
+    original_pattern = data.get("value", data.get('default', ''))
+
+    # Set custom pattern
+    custom_pattern = "testing"
+    updates = {"value": custom_pattern}
+    code, data = api_client.settings.update("support-bundle-file-name", updates)
+    assert 200 == code, (code, data)
+
+    yield custom_pattern
+
+    # Restore original setting regardless of test outcome
+    updates = {"value": original_pattern}
+    code, data = api_client.settings.update("support-bundle-file-name", updates)
+    assert 200 == code, (code, data)
+
+
+@pytest.mark.p0
+@pytest.mark.smoke
+@pytest.mark.support_bundle
+@pytest.mark.skip_if_version(
+    "< v1.8.0", reason="https://github.com/harvester/harvester/issues/9257 new feature in v1.8.0")
+@pytest.mark.usefixtures("custom_filename_setting")
+class TestSupportBundleCustomFileName:
+    @pytest.mark.dependency(name="create support bundle with custom filename")
+    def test_create(self, api_client, unique_name, support_bundle_state):
+        code, data = api_client.supportbundle.create(unique_name)
+
+        assert 201 == code, (code, data)
+
+        support_bundle_state.uid = data['metadata']['name']
+
+    @pytest.mark.dependency(
+        name="get support bundle with custom filename",
+        depends=["create support bundle with custom filename"]
+    )
+    def test_get(self, api_client, support_bundle_state):
+        code, data = api_client.supportbundle.get(support_bundle_state.uid)
+
+        assert 200 == code, (code, data)
+
+    @pytest.mark.dependency(
+        name="download support bundle with custom filename",
+        depends=["get support bundle with custom filename"]
+    )
+    def test_download_with_custom_filename(self, api_client, support_bundle_state, wait_timeout):
+        """Verify support bundle is created with custom filename pattern"""
+        wait_for_support_bundle_ready(api_client, support_bundle_state.uid, wait_timeout)
+
+        code, ctx = api_client.supportbundle.download(support_bundle_state.uid)
+
+        assert 200 == code, (code, ctx)
+
+        with ZipFile(BytesIO(ctx), 'r') as zf:
+            files = zf.namelist()
+
+        assert 0 != len(files)
+
+        # Get the root folder name which should match the custom pattern
+        root_folder = files[0].split('/')[0] if files else ''
+
+        # Verify the filename contains expected pattern elements
+        assert 'testing' in root_folder, (
+            f"Support bundle filename should have 'testing' in it, got: {root_folder}"
+        )
+
+    @pytest.mark.dependency(depends=["download support bundle with custom filename"])
+    def test_delete(self, api_client, support_bundle_state):
+        """Cleanup: delete support bundle"""
+        code, data = api_client.supportbundle.delete(support_bundle_state.uid)
+        # Support bundle may already be deleted automatically after download
+        assert code in [200, 404], (code, data)
