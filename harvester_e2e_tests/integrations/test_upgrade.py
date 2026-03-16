@@ -410,6 +410,7 @@ def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, imag
 @pytest.mark.negative
 @pytest.mark.any_nodes
 class TestInvalidUpgrade:
+    @pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/10220")
     @pytest.mark.skip_if_version(
             "< v1.5.0",
             reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
@@ -442,6 +443,7 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
+    @pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/10220")
     @pytest.mark.skip_if_version(
             "< v1.5.0",
             reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
