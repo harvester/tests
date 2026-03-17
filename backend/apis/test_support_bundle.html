@@ -44,6 +44,38 @@ el.replaceWith(d);
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.custom_filename_setting"><code class="name flex">
+<span>def <span class="ident">custom_filename_setting</span></span>(<span>api_client)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.fixture(scope=&#34;class&#34;)
+def custom_filename_setting(api_client):
+    &#34;&#34;&#34;Setup and teardown for custom support bundle filename pattern&#34;&#34;&#34;
+    # Get original setting
+    code, data = api_client.settings.get(&#34;support-bundle-file-name&#34;)
+    assert 200 == code, (code, data)
+
+    original_pattern = data.get(&#34;value&#34;, data.get(&#39;default&#39;, &#39;&#39;))
+
+    # Set custom pattern
+    custom_pattern = &#34;testing&#34;
+    updates = {&#34;value&#34;: custom_pattern}
+    code, data = api_client.settings.update(&#34;support-bundle-file-name&#34;, updates)
+    assert 200 == code, (code, data)
+
+    yield custom_pattern
+
+    # Restore original setting regardless of test outcome
+    updates = {&#34;value&#34;: original_pattern}
+    code, data = api_client.settings.update(&#34;support-bundle-file-name&#34;, updates)
+    assert 200 == code, (code, data)</code></pre>
+</details>
+<div class="desc"><p>Setup and teardown for custom support bundle filename pattern</p></div>
+</dd>
 <dt id="harvester_e2e_tests.apis.test_support_bundle.wait_for_support_bundle_condition"><code class="name flex">
 <span>def <span class="ident">wait_for_support_bundle_condition</span></span>(<span>api_client, uid, condition_check, wait_timeout, timeout_message)</span>
 </code></dt>
@@ -505,6 +537,171 @@ def test_secret_file_exists(self, support_bundle_state):
     )</code></pre>
 </details>
 <div class="desc"><p>ref: <a href="https://github.com/harvester/tests/issues/603">https://github.com/harvester/tests/issues/603</a></p></div>
+</dd>
+</dl>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName"><code class="flex name class">
+<span>class <span class="ident">TestSupportBundleCustomFileName</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.p0
+@pytest.mark.smoke
+@pytest.mark.support_bundle
+@pytest.mark.skip_if_version(
+    &#34;&lt; v1.8.0&#34;, reason=&#34;https://github.com/harvester/harvester/issues/9257 new feature in v1.8.0&#34;)
+@pytest.mark.usefixtures(&#34;custom_filename_setting&#34;)
+class TestSupportBundleCustomFileName:
+    @pytest.mark.dependency(name=&#34;create support bundle with custom filename&#34;)
+    def test_create(self, api_client, unique_name, support_bundle_state):
+        code, data = api_client.supportbundle.create(unique_name)
+
+        assert 201 == code, (code, data)
+
+        support_bundle_state.uid = data[&#39;metadata&#39;][&#39;name&#39;]
+
+    @pytest.mark.dependency(
+        name=&#34;get support bundle with custom filename&#34;,
+        depends=[&#34;create support bundle with custom filename&#34;]
+    )
+    def test_get(self, api_client, support_bundle_state):
+        code, data = api_client.supportbundle.get(support_bundle_state.uid)
+
+        assert 200 == code, (code, data)
+
+    @pytest.mark.dependency(
+        name=&#34;download support bundle with custom filename&#34;,
+        depends=[&#34;get support bundle with custom filename&#34;]
+    )
+    def test_download_with_custom_filename(self, api_client, support_bundle_state, wait_timeout):
+        &#34;&#34;&#34;Verify support bundle is created with custom filename pattern&#34;&#34;&#34;
+        wait_for_support_bundle_ready(api_client, support_bundle_state.uid, wait_timeout)
+
+        code, ctx = api_client.supportbundle.download(support_bundle_state.uid)
+
+        assert 200 == code, (code, ctx)
+
+        with ZipFile(BytesIO(ctx), &#39;r&#39;) as zf:
+            files = zf.namelist()
+
+        assert 0 != len(files)
+
+        # Get the root folder name which should match the custom pattern
+        root_folder = files[0].split(&#39;/&#39;)[0] if files else &#39;&#39;
+
+        # Verify the filename contains expected pattern elements
+        assert &#39;testing&#39; in root_folder, (
+            f&#34;Support bundle filename should have &#39;testing&#39; in it, got: {root_folder}&#34;
+        )
+
+    @pytest.mark.dependency(depends=[&#34;download support bundle with custom filename&#34;])
+    def test_delete(self, api_client, support_bundle_state):
+        &#34;&#34;&#34;Cleanup: delete support bundle&#34;&#34;&#34;
+        code, data = api_client.supportbundle.delete(support_bundle_state.uid)
+        # Support bundle may already be deleted automatically after download
+        assert code in [200, 404], (code, data)</code></pre>
+</details>
+<div class="desc"></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.pytestmark"><code class="name">var <span class="ident">pytestmark</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_create"><code class="name flex">
+<span>def <span class="ident">test_create</span></span>(<span>self, api_client, unique_name, support_bundle_state)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(name=&#34;create support bundle with custom filename&#34;)
+def test_create(self, api_client, unique_name, support_bundle_state):
+    code, data = api_client.supportbundle.create(unique_name)
+
+    assert 201 == code, (code, data)
+
+    support_bundle_state.uid = data[&#39;metadata&#39;][&#39;name&#39;]</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_delete"><code class="name flex">
+<span>def <span class="ident">test_delete</span></span>(<span>self, api_client, support_bundle_state)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;download support bundle with custom filename&#34;])
+def test_delete(self, api_client, support_bundle_state):
+    &#34;&#34;&#34;Cleanup: delete support bundle&#34;&#34;&#34;
+    code, data = api_client.supportbundle.delete(support_bundle_state.uid)
+    # Support bundle may already be deleted automatically after download
+    assert code in [200, 404], (code, data)</code></pre>
+</details>
+<div class="desc"><p>Cleanup: delete support bundle</p></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_download_with_custom_filename"><code class="name flex">
+<span>def <span class="ident">test_download_with_custom_filename</span></span>(<span>self, api_client, support_bundle_state, wait_timeout)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(
+    name=&#34;download support bundle with custom filename&#34;,
+    depends=[&#34;get support bundle with custom filename&#34;]
+)
+def test_download_with_custom_filename(self, api_client, support_bundle_state, wait_timeout):
+    &#34;&#34;&#34;Verify support bundle is created with custom filename pattern&#34;&#34;&#34;
+    wait_for_support_bundle_ready(api_client, support_bundle_state.uid, wait_timeout)
+
+    code, ctx = api_client.supportbundle.download(support_bundle_state.uid)
+
+    assert 200 == code, (code, ctx)
+
+    with ZipFile(BytesIO(ctx), &#39;r&#39;) as zf:
+        files = zf.namelist()
+
+    assert 0 != len(files)
+
+    # Get the root folder name which should match the custom pattern
+    root_folder = files[0].split(&#39;/&#39;)[0] if files else &#39;&#39;
+
+    # Verify the filename contains expected pattern elements
+    assert &#39;testing&#39; in root_folder, (
+        f&#34;Support bundle filename should have &#39;testing&#39; in it, got: {root_folder}&#34;
+    )</code></pre>
+</details>
+<div class="desc"><p>Verify support bundle is created with custom filename pattern</p></div>
+</dd>
+<dt id="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_get"><code class="name flex">
+<span>def <span class="ident">test_get</span></span>(<span>self, api_client, support_bundle_state)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(
+    name=&#34;get support bundle with custom filename&#34;,
+    depends=[&#34;create support bundle with custom filename&#34;]
+)
+def test_get(self, api_client, support_bundle_state):
+    code, data = api_client.supportbundle.get(support_bundle_state.uid)
+
+    assert 200 == code, (code, data)</code></pre>
+</details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -1155,6 +1352,7 @@ def test_process_timeout(self, api_client, support_bundle_state, wait_timeout):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.custom_filename_setting" href="#harvester_e2e_tests.apis.test_support_bundle.custom_filename_setting">custom_filename_setting</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.wait_for_support_bundle_condition" href="#harvester_e2e_tests.apis.test_support_bundle.wait_for_support_bundle_condition">wait_for_support_bundle_condition</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.wait_for_support_bundle_error" href="#harvester_e2e_tests.apis.test_support_bundle.wait_for_support_bundle_error">wait_for_support_bundle_error</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.wait_for_support_bundle_ready" href="#harvester_e2e_tests.apis.test_support_bundle.wait_for_support_bundle_ready">wait_for_support_bundle_ready</a></code></li>
@@ -1174,6 +1372,16 @@ def test_process_timeout(self, api_client, support_bundle_state, wait_timeout):
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_logfile_exists">test_logfile_exists</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_plan_secrets_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_plan_secrets_exists">test_plan_secrets_exists</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_secret_file_exists" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundle.test_secret_file_exists">test_secret_file_exists</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName">TestSupportBundleCustomFileName</a></code></h4>
+<ul class="">
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.pytestmark" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.pytestmark">pytestmark</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_create" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_create">test_create</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_delete" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_delete">test_delete</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_download_with_custom_filename" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_download_with_custom_filename">test_download_with_custom_filename</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_get" href="#harvester_e2e_tests.apis.test_support_bundle.TestSupportBundleCustomFileName.test_get">test_get</a></code></li>
 </ul>
 </li>
 <li>
