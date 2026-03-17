@@ -780,26 +780,29 @@ class TestVolumeWithVM:
     def test_delete_volume_on_existing_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         &#34;&#34;&#34;
         1. Create a VM with volume
-        2. Delete volume should reply 422
+        2. Delete volume should reply 422 or 409
         3. Pause VM
-        4. Delete volume should reply 422 too
+        4. Delete volume should reply 422 or 409
         5. Stop VM
-        6. Delete volume should reply 422 too
+        6. Delete volume should reply 422 or 409
         Ref. https://github.com/harvester/tests/issues/905
+             https://github.com/harvester/harvester/issues/10222
         &#34;&#34;&#34;
         vol_name = (ubuntu_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
                              [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
 
+        # Expect failure - common error codes for invalid operations
+        expected_error_codes = [422, 409]
         code, data = api_client.volumes.delete(vol_name)
-        assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
+        assert code in expected_error_codes, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
         self.pause_vm(api_client, ubuntu_vm, polling_for)
         code, data = api_client.volumes.delete(vol_name)
-        assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
+        assert code in expected_error_codes, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
         self.stop_vm(api_client, ubuntu_vm, polling_for)
         code, data = api_client.volumes.delete(vol_name)
-        assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
+        assert code in expected_error_codes, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
         # Check Volume
         code, data = api_client.volumes.get(vol_name)
@@ -959,26 +962,29 @@ Ref. <a href="https://github.com/harvester/tests/issues/652">https://github.com/
 <pre><code class="python">def test_delete_volume_on_existing_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
     &#34;&#34;&#34;
     1. Create a VM with volume
-    2. Delete volume should reply 422
+    2. Delete volume should reply 422 or 409
     3. Pause VM
-    4. Delete volume should reply 422 too
+    4. Delete volume should reply 422 or 409
     5. Stop VM
-    6. Delete volume should reply 422 too
+    6. Delete volume should reply 422 or 409
     Ref. https://github.com/harvester/tests/issues/905
+         https://github.com/harvester/harvester/issues/10222
     &#34;&#34;&#34;
     vol_name = (ubuntu_vm[&#34;spec&#34;][&#34;template&#34;][&#34;spec&#34;][&#34;volumes&#34;][0]
                          [&#39;persistentVolumeClaim&#39;][&#39;claimName&#39;])
 
+    # Expect failure - common error codes for invalid operations
+    expected_error_codes = [422, 409]
     code, data = api_client.volumes.delete(vol_name)
-    assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
+    assert code in expected_error_codes, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
     self.pause_vm(api_client, ubuntu_vm, polling_for)
     code, data = api_client.volumes.delete(vol_name)
-    assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
+    assert code in expected_error_codes, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
     self.stop_vm(api_client, ubuntu_vm, polling_for)
     code, data = api_client.volumes.delete(vol_name)
-    assert 422 == code, f&#34;Should fail to delete volume\n{code}, {data}&#34;
+    assert code in expected_error_codes, f&#34;Should fail to delete volume\n{code}, {data}&#34;
 
     # Check Volume
     code, data = api_client.volumes.get(vol_name)
@@ -994,12 +1000,13 @@ Ref. <a href="https://github.com/harvester/tests/issues/652">https://github.com/
 </details>
 <div class="desc"><ol>
 <li>Create a VM with volume</li>
-<li>Delete volume should reply 422</li>
+<li>Delete volume should reply 422 or 409</li>
 <li>Pause VM</li>
-<li>Delete volume should reply 422 too</li>
+<li>Delete volume should reply 422 or 409</li>
 <li>Stop VM</li>
-<li>Delete volume should reply 422 too
-Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/harvester/tests/issues/905</a></li>
+<li>Delete volume should reply 422 or 409
+Ref. <a href="https://github.com/harvester/tests/issues/905">https://github.com/harvester/tests/issues/905</a>
+<a href="https://github.com/harvester/harvester/issues/10222">https://github.com/harvester/harvester/issues/10222</a></li>
 </ol></div>
 </dd>
 </dl>
