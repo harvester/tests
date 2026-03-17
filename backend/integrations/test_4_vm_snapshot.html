@@ -562,10 +562,12 @@ class TestVMSnapshot:
 
     @pytest.mark.smoke
     @pytest.mark.dependency(name=&#34;replaced_source_vm&#34;, depends=[&#34;source_vm_snapshot&#34;])
+    @pytest.mark.xfail_if_version(
+        &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.7.1&#34;, reason=&#34;https://github.com/harvester/harvester/issues/10012&#34;)
     def test_replace_vm_with_vm_snapshot(self, api_client,
                                          source_vm, vm_snapshot_name,
                                          ssh_keypair, host_shell,
-                                         vm_shell, wait_timeout):
+                                         vm_shell, wait_timeout, vm_checker):
         &#34;&#34;&#34;
         Test that the original virtual machine can be replaced
         from its original snapshot (`vm-snapshot`) and that
@@ -589,7 +591,7 @@ class TestVMSnapshot:
         # Just to wait for `sync`
         sleep(2)
 
-        stop_vm(name, api_client, wait_timeout)
+        vm_checker.wait_stopped(name)
 
         spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=False)
         code, data = api_client.vm_snapshots.restore(vm_snapshot_name, spec)
@@ -870,7 +872,7 @@ def test_replace_is_rejected_when_deletepolicy_is_retain(self, api_client,
 <div class="desc"></div>
 </dd>
 <dt id="harvester_e2e_tests.integrations.test_4_vm_snapshot.TestVMSnapshot.test_replace_vm_with_vm_snapshot"><code class="name flex">
-<span>def <span class="ident">test_replace_vm_with_vm_snapshot</span></span>(<span>self,<br>api_client,<br>source_vm,<br>vm_snapshot_name,<br>ssh_keypair,<br>host_shell,<br>vm_shell,<br>wait_timeout)</span>
+<span>def <span class="ident">test_replace_vm_with_vm_snapshot</span></span>(<span>self,<br>api_client,<br>source_vm,<br>vm_snapshot_name,<br>ssh_keypair,<br>host_shell,<br>vm_shell,<br>wait_timeout,<br>vm_checker)</span>
 </code></dt>
 <dd>
 <details class="source">
@@ -879,10 +881,12 @@ def test_replace_is_rejected_when_deletepolicy_is_retain(self, api_client,
 </summary>
 <pre><code class="python">@pytest.mark.smoke
 @pytest.mark.dependency(name=&#34;replaced_source_vm&#34;, depends=[&#34;source_vm_snapshot&#34;])
+@pytest.mark.xfail_if_version(
+    &#34;&gt;= v1.7.0&#34;, &#34;&lt; v1.7.1&#34;, reason=&#34;https://github.com/harvester/harvester/issues/10012&#34;)
 def test_replace_vm_with_vm_snapshot(self, api_client,
                                      source_vm, vm_snapshot_name,
                                      ssh_keypair, host_shell,
-                                     vm_shell, wait_timeout):
+                                     vm_shell, wait_timeout, vm_checker):
     &#34;&#34;&#34;
     Test that the original virtual machine can be replaced
     from its original snapshot (`vm-snapshot`) and that
@@ -906,7 +910,7 @@ def test_replace_vm_with_vm_snapshot(self, api_client,
     # Just to wait for `sync`
     sleep(2)
 
-    stop_vm(name, api_client, wait_timeout)
+    vm_checker.wait_stopped(name)
 
     spec = api_client.backups.RestoreSpec.for_existing(delete_volumes=False)
     code, data = api_client.vm_snapshots.restore(vm_snapshot_name, spec)
