@@ -578,26 +578,29 @@ class TestVolumeWithVM:
     def test_delete_volume_on_existing_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         """
         1. Create a VM with volume
-        2. Delete volume should reply 422
+        2. Delete volume should reply 422 or 409
         3. Pause VM
-        4. Delete volume should reply 422 too
+        4. Delete volume should reply 422 or 409
         5. Stop VM
-        6. Delete volume should reply 422 too
+        6. Delete volume should reply 422 or 409
         Ref. https://github.com/harvester/tests/issues/905
+             https://github.com/harvester/harvester/issues/10222
         """
         vol_name = (ubuntu_vm["spec"]["template"]["spec"]["volumes"][0]
                              ['persistentVolumeClaim']['claimName'])
 
+        # Expect failure - common error codes for invalid operations
+        expected_error_codes = [422, 409]
         code, data = api_client.volumes.delete(vol_name)
-        assert 422 == code, f"Should fail to delete volume\n{code}, {data}"
+        assert code in expected_error_codes, f"Should fail to delete volume\n{code}, {data}"
 
         self.pause_vm(api_client, ubuntu_vm, polling_for)
         code, data = api_client.volumes.delete(vol_name)
-        assert 422 == code, f"Should fail to delete volume\n{code}, {data}"
+        assert code in expected_error_codes, f"Should fail to delete volume\n{code}, {data}"
 
         self.stop_vm(api_client, ubuntu_vm, polling_for)
         code, data = api_client.volumes.delete(vol_name)
-        assert 422 == code, f"Should fail to delete volume\n{code}, {data}"
+        assert code in expected_error_codes, f"Should fail to delete volume\n{code}, {data}"
 
         # Check Volume
         code, data = api_client.volumes.get(vol_name)
