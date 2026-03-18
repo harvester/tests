@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="module")
-def cluster_state(request, unique_name, api_client):
+def cluster_state(request, unique_name):
     class ClusterState:
         vm1 = None
         vm2 = None
@@ -970,15 +970,6 @@ class TestAnyNodesUpgrade:
 
         assert not fails, "\n".join(fails)
 
-        # Teardown: remove all VMs
-        for name in cluster_state.vms['names']:
-            code, data = api_client.vms.get(name)
-            spec = api_client.vms.Spec.from_dict(data)
-            _ = vm_checker.wait_deleted(name)
-            for vol in spec.volumes:
-                vol_name = vol['volume']['persistentVolumeClaim']['claimName']
-                api_client.volumes.delete(vol_name)
-
     @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_vms"])
     def test_verify_restore_vm(
         self, api_client, cluster_state, vm_shell, vm_checker, wait_timeout
@@ -1108,6 +1099,23 @@ class TestAnyNodesUpgrade:
         for vol in spec.volumes:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_vms"])
+    def test_verify_delete_vms(self, api_client, cluster_state, vm_checker):
+        """ Verify VMs can be deleted after upgrade
+        Criteria:
+        - VMs should able to be deleted
+        - related volumes should able to be deleted
+        """
+        for name in cluster_state.vms['names']:
+            code, data = api_client.vms.get(name)
+            assert code == 200, f"Failed to get VM {name}: {code}, {data}"
+            spec = api_client.vms.Spec.from_dict(data)
+            vm_deleted, (code, data) = vm_checker.wait_deleted(name)
+            assert vm_deleted, (code, data)
+            for vol in spec.volumes:
+                vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+                api_client.volumes.delete(vol_name)
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_storageclass"])
     def test_verify_storage_class(self, api_client, cluster_state):
