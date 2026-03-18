@@ -58,6 +58,7 @@ el.replaceWith(d);
 @pytest.mark.smoke
 @pytest.mark.volumes
 class TestVolumes:
+    @pytest.mark.dependency(name=&#34;create_volume&#34;)
     def test_create(self, api_client, unique_name):
         &#34;&#34;&#34;
         1. Create a new image from the default entries in the spec
@@ -68,6 +69,7 @@ class TestVolumes:
 
         assert 201 == code, (code, data)
 
+    @pytest.mark.dependency(depends=[&#34;create_volume&#34;])
     def test_get(self, api_client, unique_name):
         &#34;&#34;&#34;
         1. Runs a get command on the volume created in the previous test
@@ -86,6 +88,24 @@ class TestVolumes:
         assert 200 == code, (code, data)
         assert unique_name == data[&#39;metadata&#39;][&#39;name&#39;], (code, data)
 
+    @pytest.mark.dependency(depends=[&#34;create_volume&#34;])
+    def test_snapshot(self, api_client, unique_name):
+        &#34;&#34;&#34;
+        1. Runs a snapshot command on the volume created in the previous test
+        note: this will skip if you run it by itself
+        2. It will fail if it doesn&#39;t return a 204
+        3. Check the snapshot exist, it will fail if it doesn&#39;t return 200
+        &#34;&#34;&#34;
+        snapshot_name = f&#34;{unique_name}-snapshot&#34;
+        code, _ = api_client.volumes.snapshot(unique_name, snapshot_name)
+
+        assert 204 == code, (f&#34;Failed to create snapshot of volume {unique_name}&#34;)
+
+        code, data = api_client.vol_snapshots.get(snapshot_name)
+
+        assert 200 == code, (code, data)
+
+    @pytest.mark.dependency(depends=[&#34;create_volume&#34;])
     def test_update_size(self, api_client, unique_name, wait_timeout):
         &#34;&#34;&#34;
         1. Updates the volume created in the previous test to 10GB
@@ -111,6 +131,7 @@ class TestVolumes:
 
         assert 200 == code, (f&#34;Failed to update volume with error: {code}, {data}&#34;)
 
+    @pytest.mark.dependency(depends=[&#34;create_volume&#34;])
     def test_delete(self, api_client, unique_name, wait_timeout):
         &#34;&#34;&#34;
         1. Deletes the volume created in the previous test
@@ -151,7 +172,8 @@ class TestVolumes:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_create(self, api_client, unique_name):
+<pre><code class="python">@pytest.mark.dependency(name=&#34;create_volume&#34;)
+def test_create(self, api_client, unique_name):
     &#34;&#34;&#34;
     1. Create a new image from the default entries in the spec
     2. Check that the create command gets a 201 response
@@ -174,7 +196,8 @@ class TestVolumes:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_delete(self, api_client, unique_name, wait_timeout):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_volume&#34;])
+def test_delete(self, api_client, unique_name, wait_timeout):
     &#34;&#34;&#34;
     1. Deletes the volume created in the previous test
     note: this will fail if you run it by itself
@@ -210,7 +233,8 @@ note: this will fail if you run it by itself</li>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_get(self, api_client, unique_name):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_volume&#34;])
+def test_get(self, api_client, unique_name):
     &#34;&#34;&#34;
     1. Runs a get command on the volume created in the previous test
     note: this will fail if you run it by itself
@@ -234,6 +258,38 @@ note: this will fail if you run it by itself</li>
 <li>It will fail if it doesn't return a 200</li>
 </ol></div>
 </dd>
+<dt id="harvester_e2e_tests.apis.test_volumes.TestVolumes.test_snapshot"><code class="name flex">
+<span>def <span class="ident">test_snapshot</span></span>(<span>self, api_client, unique_name)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_volume&#34;])
+def test_snapshot(self, api_client, unique_name):
+    &#34;&#34;&#34;
+    1. Runs a snapshot command on the volume created in the previous test
+    note: this will skip if you run it by itself
+    2. It will fail if it doesn&#39;t return a 204
+    3. Check the snapshot exist, it will fail if it doesn&#39;t return 200
+    &#34;&#34;&#34;
+    snapshot_name = f&#34;{unique_name}-snapshot&#34;
+    code, _ = api_client.volumes.snapshot(unique_name, snapshot_name)
+
+    assert 204 == code, (f&#34;Failed to create snapshot of volume {unique_name}&#34;)
+
+    code, data = api_client.vol_snapshots.get(snapshot_name)
+
+    assert 200 == code, (code, data)</code></pre>
+</details>
+<div class="desc"><ol>
+<li>Runs a snapshot command on the volume created in the previous test
+note: this will skip if you run it by itself</li>
+<li>It will fail if it doesn't return a 204</li>
+<li>Check the snapshot exist, it will fail if it doesn't return 200</li>
+</ol></div>
+</dd>
 <dt id="harvester_e2e_tests.apis.test_volumes.TestVolumes.test_update_size"><code class="name flex">
 <span>def <span class="ident">test_update_size</span></span>(<span>self, api_client, unique_name, wait_timeout)</span>
 </code></dt>
@@ -242,7 +298,8 @@ note: this will fail if you run it by itself</li>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_update_size(self, api_client, unique_name, wait_timeout):
+<pre><code class="python">@pytest.mark.dependency(depends=[&#34;create_volume&#34;])
+def test_update_size(self, api_client, unique_name, wait_timeout):
     &#34;&#34;&#34;
     1. Updates the volume created in the previous test to 10GB
     note: this will fail if you run it by itself
@@ -460,11 +517,12 @@ def test_create_without_name(self, api_client):
 <ul>
 <li>
 <h4><code><a title="harvester_e2e_tests.apis.test_volumes.TestVolumes" href="#harvester_e2e_tests.apis.test_volumes.TestVolumes">TestVolumes</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="harvester_e2e_tests.apis.test_volumes.TestVolumes.pytestmark" href="#harvester_e2e_tests.apis.test_volumes.TestVolumes.pytestmark">pytestmark</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_volumes.TestVolumes.test_create" href="#harvester_e2e_tests.apis.test_volumes.TestVolumes.test_create">test_create</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_volumes.TestVolumes.test_delete" href="#harvester_e2e_tests.apis.test_volumes.TestVolumes.test_delete">test_delete</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_volumes.TestVolumes.test_get" href="#harvester_e2e_tests.apis.test_volumes.TestVolumes.test_get">test_get</a></code></li>
+<li><code><a title="harvester_e2e_tests.apis.test_volumes.TestVolumes.test_snapshot" href="#harvester_e2e_tests.apis.test_volumes.TestVolumes.test_snapshot">test_snapshot</a></code></li>
 <li><code><a title="harvester_e2e_tests.apis.test_volumes.TestVolumes.test_update_size" href="#harvester_e2e_tests.apis.test_volumes.TestVolumes.test_update_size">test_update_size</a></code></li>
 </ul>
 </li>
