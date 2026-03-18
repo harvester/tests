@@ -47,3 +47,9 @@ class VolumeManager(BaseManager):
         params = dict(action="clone")
         spec = dict(name=cloned_name)
         return self._create(path, params=params, json=spec, raw=raw)
+
+    def snapshot(self, name, snapshot_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="snapshot")
+        spec = dict(name=snapshot_name)
+        return self._create(path, params=params, json=spec, raw=raw)

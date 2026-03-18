@@ -81,6 +81,7 @@ class TestVolumesNegative:
 @pytest.mark.smoke
 @pytest.mark.volumes
 class TestVolumes:
+    @pytest.mark.dependency(name="create_volume")
     def test_create(self, api_client, unique_name):
         """
         1. Create a new image from the default entries in the spec
@@ -91,6 +92,7 @@ class TestVolumes:
 
         assert 201 == code, (code, data)
 
+    @pytest.mark.dependency(depends=["create_volume"])
     def test_get(self, api_client, unique_name):
         """
         1. Runs a get command on the volume created in the previous test
@@ -109,6 +111,24 @@ class TestVolumes:
         assert 200 == code, (code, data)
         assert unique_name == data['metadata']['name'], (code, data)
 
+    @pytest.mark.dependency(depends=["create_volume"])
+    def test_snapshot(self, api_client, unique_name):
+        """
+        1. Runs a snapshot command on the volume created in the previous test
+        note: this will skip if you run it by itself
+        2. It will fail if it doesn't return a 204
+        3. Check the snapshot exist, it will fail if it doesn't return 200
+        """
+        snapshot_name = f"{unique_name}-snapshot"
+        code, _ = api_client.volumes.snapshot(unique_name, snapshot_name)
+
+        assert 204 == code, (f"Failed to create snapshot of volume {unique_name}")
+
+        code, data = api_client.vol_snapshots.get(snapshot_name)
+
+        assert 200 == code, (code, data)
+
+    @pytest.mark.dependency(depends=["create_volume"])
     def test_update_size(self, api_client, unique_name, wait_timeout):
         """
         1. Updates the volume created in the previous test to 10GB
@@ -134,6 +154,7 @@ class TestVolumes:
 
         assert 200 == code, (f"Failed to update volume with error: {code}, {data}")
 
+    @pytest.mark.dependency(depends=["create_volume"])
     def test_delete(self, api_client, unique_name, wait_timeout):
         """
         1. Deletes the volume created in the previous test
