@@ -1,4 +1,5 @@
 from copy import deepcopy
+from math import ceil
 
 
 class VolumeSpec:
@@ -11,10 +12,10 @@ class VolumeSpec:
         self.size = size
         self.storage_cls = storage_cls
         self.description = description
-        self.annotations = annotations
+        self.annotations = annotations or dict()
 
     def to_dict(self, name, namespace, image_id=None):
-        annotations = self.annotations or dict()
+        annotations = self.annotations
         size = f"{self.size}Gi" if isinstance(self.size, (int, float)) else self.size
         data = {
             "type": "persistentvolumeclaim",
@@ -61,3 +62,24 @@ class VolumeSpec:
         obj._data = data
 
         return obj
+
+    @classmethod
+    def for_image(cls, image_info, size=None, description=None, annotations=None):
+        size = size or ceil(image_info['status']['virtualSize'] / 1024 ** 3)  # convert to GiB
+        image_id = f"{image_info['metadata']['namespace']}/{image_info['metadata']['name']}"
+        anno = annotations or dict()
+        anno.update({"harvesterhci.io/imageId": image_id})
+        storage_cls = image_info['status']['storageClassName']
+        return cls(size, storage_cls, description, anno)
+
+
+class VolumeSpec180(VolumeSpec):
+    # ref: https://github.com/harvester/harvester/issues/5165
+
+    def to_dict(self, name, namespace, image_id=None, image_uid=None):
+        if image_id is not None:
+            self.annotations.update({"harvesterhci.io/imageId": image_id})
+            image_id = None
+        if image_uid is not None:
+            self.storage_cls = f"lh-{image_uid}"
+        return super().to_dict(name, namespace, image_id)
