@@ -1,5 +1,5 @@
 from harvester_api.models.volumes import VolumeSpec, VolumeSpec180
-from .base import DEFAULT_NAMESPACE, BaseManager
+from .base import DEFAULT_NAMESPACE, BaseManager, merge_dict
 
 
 class VolumeManager(BaseManager):
@@ -20,8 +20,9 @@ class VolumeManager(BaseManager):
             volume_spec = volume_spec.to_dict(name, namespace, image_id)
 
         path = self.PATH_fmt.format(uid="", ns=namespace)
-        kwargs.pop('image_uid', None)  # forward compatibility for 180
-        return self._create(path, raw=raw, json=volume_spec, **kwargs)
+        kws = merge_dict(kwargs, dict(json=volume_spec))
+        kws.pop('image_uid', None)  # forward compatibility for 180
+        return self._create(path, raw=raw, **kws)
 
     def update(self, name, volume_spec, namespace=DEFAULT_NAMESPACE, *,
                raw=False, as_json=True, **kwargs):

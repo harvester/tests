@@ -94,8 +94,11 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
             f"Status({code}): {data}"
         )
 
-    yield dict(id=f"{data['metadata']['namespace']}/{unique_image_id}",
-               user=image_opensuse.ssh_user)
+    yield dict(
+        id=f"{data['metadata']['namespace']}/{unique_image_id}",
+        user=image_opensuse.ssh_user,
+        info=dict(metadata=data['metadata'], status=data['status'])
+    )
 
     code, data = api_client.images.delete(unique_image_id)
 
@@ -1545,9 +1548,9 @@ class TestVMWithVolumes:
         image
     ):
         # Create the volume from image
-        vol_name, size = f"vm-image-vol-{unique_name}", 10
-        vol_spec = api_client.volumes.Spec(size)
-        code, data = api_client.volumes.create(vol_name, vol_spec, image_id=image['id'])
+        vol_name = f"vm-image-vol-{unique_name}"
+        vol_spec = api_client.volumes.Spec.for_image(image['info'])
+        code, data = api_client.volumes.create(vol_name, vol_spec)
         assert 201 == code, (code, data)
 
         # Create VM using the image volume

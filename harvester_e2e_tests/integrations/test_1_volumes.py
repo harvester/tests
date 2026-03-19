@@ -37,7 +37,10 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
 
     namespace = data['metadata']['namespace']
     name = data['metadata']['name']
-    yield dict(ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}", display_name=image_name)
+    yield dict(
+        ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}", display_name=image_name,
+        info=dict(metadata=data['metadata'], status=data['status'])
+    )
 
     code, data = api_client.images.get(image_name)
     if 200 == code:
@@ -72,7 +75,10 @@ def ubuntu_image_bad_checksum(api_client, unique_name, image_ubuntu, polling_for
                              api_client.images.get, image_name)
     namespace = data['metadata']['namespace']
     name = data['metadata']['name']
-    yield dict(ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}", display_name=image_name)
+    yield dict(
+        ssh_user=image_ubuntu.ssh_user, id=f"{namespace}/{name}", display_name=image_name,
+        info=dict(metadata=data['metadata'], status=data['status'])
+    )
     code, data = api_client.images.get(image_name)
     if 200 == code:
         code, data = api_client.images.delete(image_name)
@@ -137,18 +143,18 @@ def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_
     9. Delete volume should reply 404 after delete
     Ref.
     """
-    image_id, storage_cls = None, None
     if source_type == "VM Image":
-        image_id, storage_cls = ubuntu_image['id'], f"longhorn-{ubuntu_image['display_name']}"
+        spec = api_client.volumes.Spec.for_image(ubuntu_image['info'])
+    else:
+        spec = api_client.volumes.Spec("10Gi")
 
-    spec = api_client.volumes.Spec("10Gi", storage_cls)
     if create_as == 'yaml':
         kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
-                   data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
+                   data=yaml.dump(spec.to_dict(unique_name, 'default')))
     else:
         kws = dict()
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-    assert 201 == code, (code, unique_name, data, image_id)
+    code, data = api_client.volumes.create(unique_name, spec, **kws)
+    assert 201 == code, (code, unique_name, data, spec.to_dict(unique_name, 'default'))
 
     polling_for("volume do created",
                 lambda code, data: 200 == code and data['status']['phase'] == "Bound",
@@ -169,7 +175,7 @@ def test_create_volume(api_client, unique_name, ubuntu_image, create_as, source_
     assert data['status']['phase'] == "Bound", (code, data)
     # source
     if source_type == "VM Image":
-        assert image_id == annotations['harvesterhci.io/imageId'], (code, data)
+        assert ubuntu_image['id'] == annotations['harvesterhci.io/imageId'], (code, data)
     else:
         assert not annotations.get('harvesterhci.io/imageId'), (code, data)
     # teardown
@@ -195,19 +201,21 @@ def test_create_volume_bad_checksum(api_client, unique_name, ubuntu_image_bad_ch
     7. Delete volume should reply 404 after delete
     Ref. https://github.com/harvester/tests/issues/1121
     """
-    image_id, storage_cls = None, None
-    if source_type == "VM Image":
-        image_id, storage_cls = ubuntu_image_bad_checksum['id'], \
-            f"longhorn-{ubuntu_image_bad_checksum['display_name']}"
+    options = dict()
+    spec = api_client.volumes.Spec("10Gi")
 
-    spec = api_client.volumes.Spec("10Gi", storage_cls)
+    if source_type == "VM Image":
+        options.update(
+            image_id=ubuntu_image_bad_checksum['id'],
+            image_uid=ubuntu_image_bad_checksum['info']['metadata']['uid']
+        )
     if create_as == 'yaml':
         kws = dict(headers={'Content-Type': 'application/yaml'}, json=None,
-                   data=yaml.dump(spec.to_dict(unique_name, 'default', image_id=image_id)))
+                   data=yaml.dump(spec.to_dict(unique_name, 'default', **options)))
     else:
         kws = dict()
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-    assert 201 == code, (code, unique_name, data, image_id)
+    code, data = api_client.volumes.create(unique_name, spec, **options, **kws)
+    assert 201 == code, (code, unique_name, data, options)
 
     polling_for("volume do created",
                 lambda code, data: 200 == code and data['status']['phase'] == "Bound",
@@ -237,9 +245,9 @@ def test_delete_volume_when_exporting(api_client, unique_name, ubuntu_image, pol
     # ref: https://github.com/harvester/tests/issues/1057
 
     # image id must follow RFC1123 which ends with alphanumeric char
-    spec = api_client.volumes.Spec('10Gi')
+    spec = api_client.volumes.Spec.for_image(ubuntu_image['info'])
     # create volume from image
-    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image['id'])
+    code, data = api_client.volumes.create(unique_name, spec)
     assert 201 == code, (code, data)
     polling_for("volume do created",
                 lambda code, data: 200 == code and data['status']['phase'] == "Bound",
@@ -332,8 +340,8 @@ def test_concurrent_volume_creation(api_client, ubuntu_image, concurrent_count, 
 
     def create_single_volume(vol_name):
         try:
-            spec = api_client.volumes.Spec("5Gi")  # Smaller size for faster creation
-            code, data = api_client.volumes.create(vol_name, spec, image_id=ubuntu_image['id'])
+            spec = api_client.volumes.Spec.for_image(ubuntu_image['info'])
+            code, data = api_client.volumes.create(vol_name, spec)
 
             if code == 201:
                 # Wait for volume to be bound
@@ -411,7 +419,8 @@ def test_volume_resize_operations(api_client, unique_name, ubuntu_image, polling
 
     # Create initial volume
     spec = api_client.volumes.Spec(initial_size)
-    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image['id'])
+    options = dict(image_id=ubuntu_image['id'], image_uid=ubuntu_image['info']['metadata']['uid'])
+    code, data = api_client.volumes.create(unique_name, spec, **options)
     assert 201 == code, f"Initial volume creation failed: {code}, {data}"
 
     # Wait for initial volume to be bound
@@ -492,12 +501,11 @@ def test_volume_shrink_not_allowed(api_client, unique_name, ubuntu_image, pollin
     4. Verify operation fails with appropriate error
     5. Confirm volume size remains unchanged
     """
-    initial_size = "5Gi"
-    shrink_size = "1Gi"
-
     # Create initial volume
-    spec = api_client.volumes.Spec(initial_size)
-    code, data = api_client.volumes.create(unique_name, spec, image_id=ubuntu_image['id'])
+    spec = api_client.volumes.Spec.for_image(ubuntu_image['info'])
+    initial_size, shrink_size = f"{spec.size}Gi", f"{spec.size // 2}Gi"
+
+    code, data = api_client.volumes.create(unique_name, spec)
     assert 201 == code, f"Initial volume creation failed: {code}, {data}"
 
     # Wait for volume to be bound
