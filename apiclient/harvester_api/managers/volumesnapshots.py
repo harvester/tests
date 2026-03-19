@@ -18,3 +18,9 @@ class VolumeSnapshotManager(BaseManager):
                 if d['metadata']['ownerReferences'][0]['kind'] == "PersistentVolumeClaim"
             ]
         return rv
+
+    def restore(self, name, vol_name, namespace=DEFAULT_NAMESPACE, *, raw=False):
+        path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
+        params = dict(action="restore")
+        spec = dict(name=vol_name)
+        return self._create(path, params=params, json=spec, raw=raw)
