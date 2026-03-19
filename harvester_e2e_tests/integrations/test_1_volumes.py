@@ -1,6 +1,7 @@
 import copy
 import yaml
-
+from datetime import datetime, timedelta
+from time import sleep
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from hashlib import sha512
 
@@ -648,3 +649,78 @@ class TestVolumeWithVM:
         polling_for("Volume do deleted",
                     lambda c, d: 404 == c,
                     api_client.volumes.get, vol_name)
+
+
+@pytest.mark.p1
+@pytest.mark.sanity
+@pytest.mark.volumes
+@pytest.mark.parametrize("source_type", ["Empty", "VM Image"])
+def test_create_volume_snapshot_and_restore(
+    api_client, unique_name, ubuntu_image, source_type, volume_checker, wait_timeout
+):
+    """
+    1. Create a volume from source_type(Empty or VM Image)
+    2. Wait the volume become ready
+    3. Create a snapshot of the volume
+    4. Wait the snapshot become ready
+    5. Restore the snapshot
+    6. Wait the restored volume become ready, check the data resource as expected
+    7. Delete source volume, the snapshot should be deleted
+    Ref. https://github.com/harvester/harvester/issues/2294
+    """
+    image_id, storage_cls = None, None
+    if source_type == "VM Image":
+        image_id, storage_cls = ubuntu_image['id'], f"longhorn-{ubuntu_image['display_name']}"
+        unique_name = f"{unique_name}-image"
+
+    # Create a volume from source_type(Empty or VM Image)
+    spec = api_client.volumes.Spec("10Gi", storage_cls)
+    kws = dict()
+    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
+    assert 201 == code, (code, unique_name, data, image_id)
+
+    # Wait the volume become ready
+    volumes_ready, (code, data) = volume_checker.wait_volumes_ready([unique_name])
+    assert volumes_ready, (code, data)
+
+    # Create a snapshot of the volume
+    snapshot_name = f"{unique_name}-snapshot"
+    code, _ = api_client.volumes.snapshot(unique_name, snapshot_name)
+    assert 204 == code, (f"Failed to create snapshot of volume {unique_name}")
+
+    # Wait the snapshot become ready
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vol_snapshots.get(snapshot_name)
+        if code == 200 and data.get('status', {}).get('readyToUse', False):
+            break
+        sleep(3)
+    else:
+        raise AssertionError(
+            f"Timeout in waiting the snapshot {snapshot_name} to be ready.\n"
+            f"Last API Status({code}): {data}"
+            )
+
+    # Restore the snapshot
+    restore_vol_name = f"{snapshot_name}-restore"
+    code, _ = api_client.vol_snapshots.restore(snapshot_name, restore_vol_name)
+    assert 204 == code, (
+        f"Failed to restore snapshot {snapshot_name} to volume {restore_vol_name}")
+
+    # Wait the restored volume become ready, check the data resource as expected
+    volumes_ready, (code, data) = volume_checker.wait_volumes_ready([restore_vol_name])
+    assert volumes_ready, (code, data)
+    data_source = data.get('spec', {}).get('dataSource', {}).get('name')
+    assert snapshot_name == data_source, (
+        f"Data source mismatch. Expected {snapshot_name}, got {data_source}")
+
+    # Delete source volume, check the snapshot is deleted
+    volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted([unique_name])
+    assert volumes_deleted, (code, data)
+
+    code, data = api_client.vol_snapshots.get(snapshot_name)
+    assert 404 == code, (code, data)
+
+    # Teardown: delete the restore volume
+    volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted([restore_vol_name])
+    assert volumes_deleted, (code, data)

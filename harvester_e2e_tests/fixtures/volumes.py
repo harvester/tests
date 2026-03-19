@@ -15,6 +15,20 @@ def volume_checker(api_client, wait_timeout, sleep_timeout):
             self.lhvolumes = api_client.lhvolumes
 
         @wait_until(wait_timeout, sleep_timeout)
+        def wait_volumes_ready(self, vol_names):
+            for vol_name in vol_names:
+                code, data = self.volumes.get(name=vol_name)
+                if not (code == 200):
+                    return False, (code, data)
+
+                pvc_name = data.get("spec", {}).get("volumeName")
+                phase = data.get("status", {}).get("phase")
+                if phase != "Bound" or not pvc_name:
+                    return False, (code, data)
+
+            return True, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
         def wait_volumes_detached(self, vol_names):
             for vol_name in vol_names:
                 code, data = self.volumes.get(name=vol_name)
