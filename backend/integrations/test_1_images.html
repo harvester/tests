@@ -495,12 +495,9 @@ class TestBackendImages:
         code, data = api_client.images.get(name=image_name)
         assert 200 == code, (code, data)
 
-        image_size_gb = data[&#34;status&#34;][&#34;virtualSize&#34;] // 1024**3 + 1
-        image_id = f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{image_name}&#34;
-
         # Create volume from image_id
-        spec = api_client.volumes.Spec(image_size_gb)
-        code, data = api_client.volumes.create(volume_name, spec, image_id=image_id)
+        spec = api_client.volumes.Spec.for_image(data)
+        code, data = api_client.volumes.create(volume_name, spec)
         assert 201 == code, (code, data)
 
         # Check volume ready
@@ -798,12 +795,9 @@ def test_edit_image_in_use(self, api_client, unique_name, image_info, wait_timeo
     code, data = api_client.images.get(name=image_name)
     assert 200 == code, (code, data)
 
-    image_size_gb = data[&#34;status&#34;][&#34;virtualSize&#34;] // 1024**3 + 1
-    image_id = f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{image_name}&#34;
-
     # Create volume from image_id
-    spec = api_client.volumes.Spec(image_size_gb)
-    code, data = api_client.volumes.create(volume_name, spec, image_id=image_id)
+    spec = api_client.volumes.Spec.for_image(data)
+    code, data = api_client.volumes.create(volume_name, spec)
     assert 201 == code, (code, data)
 
     # Check volume ready
@@ -1224,11 +1218,8 @@ def test_edit_image_in_use(self, api_client, unique_name, image_info, wait_timeo
         code, data = api_client.images.get(original_image)
         assert 200 == code, (code, data)
 
-        image_size_gb = data[&#34;status&#34;][&#34;virtualSize&#34;] // 1024**3 + 1
-        image_id = f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{original_image}&#34;
-
-        spec = api_client.volumes.Spec(image_size_gb)
-        code, data = api_client.volumes.create(test_volume, spec, image_id=image_id)
+        spec = api_client.volumes.Spec.for_image(data)
+        code, data = api_client.volumes.create(test_volume, spec)
         assert 201 == code, (code, data)
 
         # Wait for volume to be bound
@@ -1490,11 +1481,8 @@ def test_image_complete_lifecycle(self, api_client, image_info, unique_name, wai
     code, data = api_client.images.get(original_image)
     assert 200 == code, (code, data)
 
-    image_size_gb = data[&#34;status&#34;][&#34;virtualSize&#34;] // 1024**3 + 1
-    image_id = f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{original_image}&#34;
-
-    spec = api_client.volumes.Spec(image_size_gb)
-    code, data = api_client.volumes.create(test_volume, spec, image_id=image_id)
+    spec = api_client.volumes.Spec.for_image(data)
+    code, data = api_client.volumes.create(test_volume, spec)
     assert 201 == code, (code, data)
 
     # Wait for volume to be bound
