@@ -368,12 +368,9 @@ class TestBackendImages:
         code, data = api_client.images.get(name=image_name)
         assert 200 == code, (code, data)
 
-        image_size_gb = data["status"]["virtualSize"] // 1024**3 + 1
-        image_id = f"{data['metadata']['namespace']}/{image_name}"
-
         # Create volume from image_id
-        spec = api_client.volumes.Spec(image_size_gb)
-        code, data = api_client.volumes.create(volume_name, spec, image_id=image_id)
+        spec = api_client.volumes.Spec.for_image(data)
+        code, data = api_client.volumes.create(volume_name, spec)
         assert 201 == code, (code, data)
 
         # Check volume ready
@@ -829,11 +826,8 @@ class TestImageEnhancements:
         code, data = api_client.images.get(original_image)
         assert 200 == code, (code, data)
 
-        image_size_gb = data["status"]["virtualSize"] // 1024**3 + 1
-        image_id = f"{data['metadata']['namespace']}/{original_image}"
-
-        spec = api_client.volumes.Spec(image_size_gb)
-        code, data = api_client.volumes.create(test_volume, spec, image_id=image_id)
+        spec = api_client.volumes.Spec.for_image(data)
+        code, data = api_client.volumes.create(test_volume, spec)
         assert 201 == code, (code, data)
 
         # Wait for volume to be bound
