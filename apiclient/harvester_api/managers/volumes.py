@@ -1,5 +1,5 @@
-from harvester_api.models.volumes import VolumeSpec
-from .base import DEFAULT_NAMESPACE, BaseManager, merge_dict
+from harvester_api.models.volumes import VolumeSpec, VolumeSpec180
+from .base import DEFAULT_NAMESPACE, BaseManager
 
 
 class VolumeManager(BaseManager):
@@ -20,8 +20,8 @@ class VolumeManager(BaseManager):
             volume_spec = volume_spec.to_dict(name, namespace, image_id)
 
         path = self.PATH_fmt.format(uid="", ns=namespace)
-        kws = merge_dict(kwargs, dict(json=volume_spec))
-        return self._create(path, raw=raw, **kws)
+        kwargs.pop('image_uid', None)  # forward compatibility for 180
+        return self._create(path, raw=raw, json=volume_spec, **kwargs)
 
     def update(self, name, volume_spec, namespace=DEFAULT_NAMESPACE, *,
                raw=False, as_json=True, **kwargs):
@@ -53,3 +53,18 @@ class VolumeManager(BaseManager):
         params = dict(action="snapshot")
         spec = dict(name=snapshot_name)
         return self._create(path, params=params, json=spec, raw=raw)
+
+
+class VolManager180(VolumeManager):
+    support_to = "v1.8.0"
+    Spec = VolumeSpec180
+
+    def create(
+        self, name, volume_spec, namespace=DEFAULT_NAMESPACE, image_id=None,
+        *, raw=False, image_uid=None, **kwargs
+    ):
+        if isinstance(volume_spec, self.Spec):
+            volume_spec = volume_spec.to_dict(name, namespace, image_id, image_uid)
+        return super().create(
+            name, volume_spec, namespace, image_id, raw=raw, **kwargs
+        )
