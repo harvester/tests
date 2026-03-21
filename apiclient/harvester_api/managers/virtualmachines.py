@@ -1,4 +1,4 @@
-from harvester_api.models.virtualmachines import VMSpec, VMSpec140
+from harvester_api.models.virtualmachines import VMSpec, VMSpec140, VMSpec180
 from .base import DEFAULT_NAMESPACE, BaseManager
 
 
@@ -144,3 +144,9 @@ class VMManager140(VirtualMachineManager):
         path = self.PATH_fmt.format(uid=f"/{name}", ns=namespace)
         params = dict(action="findMigratableNodes")
         return self._create(path, params=params, raw=raw)
+
+
+class VMManager180(VMManager140):
+    # ref: https://github.com/harvester/harvester/pull/9392
+    support_to = "v1.8.0"
+    Spec = VMSpec180

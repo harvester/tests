@@ -4,7 +4,7 @@ from json import dumps, loads
 import yaml
 
 from .base import MGMT_NETID, DEFAULT_STORAGE_CLS
-from .volumes import VolumeSpec
+from .volumes import VolumeSpec, VolumeSpec180
 
 
 class VMSpec:
@@ -421,3 +421,66 @@ class VMSpec140(VMSpec):
             obj.tpm_enable = False
             obj.tpm_persistent = False
         return obj
+
+
+class VMSpec180(VMSpec140):
+    # ref: https://github.com/harvester/harvester/pull/9392
+    # After v1.8.0, the `longhorn-{image_name}` storage classes are no longer auto-created.
+    # For image-based volumes, must use lh-{image_uid} storage class.
+
+    def add_cd_rom(self, name, image_id, size=10, bus="SATA", image_uid=None):
+        vol_spec = VolumeSpec180(size, storage_cls=None,
+                                 annotations={"harvesterhci.io/imageId": image_id})
+
+        vol = {
+            "claim": vol_spec,
+            "image_id": image_id,
+            "image_uid": image_uid,  # Store for _update_volume_spec
+            "disk": {
+                "name": name,
+                "cdrom": dict(bus=bus),
+                "bootOrder": 1
+            },
+            "volume": {
+                "name": name,
+                "persistentVolumeClaim": dict(claimName="")
+            }
+        }
+
+        self.volumes.append(vol)
+        return vol
+
+    def add_image(self, name, image_id, size=10, bus="virtio", type="disk", image_uid=None):
+        vol_spec = VolumeSpec180(size, storage_cls=None,
+                                 annotations={"harvesterhci.io/imageId": image_id})
+
+        vol = {
+            "claim": vol_spec,
+            "image_id": image_id,
+            "image_uid": image_uid,  # Store for _update_volume_spec
+            "disk": {
+                type: dict(bus=bus),
+                "name": name,
+                "bootOrder": 1
+            },
+            "volume": {
+                "name": name,
+                "persistentVolumeClaim": dict(claimName="")
+            }
+        }
+        self.volumes.append(vol)
+        return vol
+
+    def _update_volume_spec(self, name, namespace):
+        """Override to inject image_uid for VolumeSpec180"""
+        volumes = []
+        for v in deepcopy(self.volumes):
+            if 'claim' in v:
+                disk_name = v['volume']['name']
+                image_uid = v.get('image_uid')
+                v['claim'] = v['claim'].to_dict(
+                    f"{name}-{disk_name}", namespace, image_uid=image_uid
+                )
+                v['volume']['persistentVolumeClaim']['claimName'] = f"{name}-{disk_name}"
+            volumes.append(v)
+        return volumes

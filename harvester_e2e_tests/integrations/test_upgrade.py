@@ -117,6 +117,7 @@ def image(api_client, image_ubuntu, unique_name, wait_timeout):
         )
 
     yield dict(id=f"{data['metadata']['namespace']}/{unique_image_id}",
+               uid=data['metadata']['uid'],
                user=image_ubuntu.ssh_user,
                first_nic=image_ubuntu.first_nic)
 
@@ -372,7 +373,7 @@ def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, imag
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image("disk-0", image['id'])
+    vm_spec.add_image("disk-0", image['id'], image_uid=image.get('uid'))
     vm_spec.run_strategy = "Halted"
 
     userdata = yaml.safe_load(vm_spec.user_data)
@@ -482,7 +483,6 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
-    @pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/5494")
     def test_version_compatibility(
         self, api_client, unique_name, upgrade_target, upgrade_timeout
     ):
@@ -643,7 +643,7 @@ class TestAnyNodesUpgrade:
 
         cpu, mem, size = 1, 2, 10
         vm_spec = api_client.vms.Spec(cpu, mem, mgmt_network=False)
-        vm_spec.add_image('disk-0', image['id'], size=size)
+        vm_spec.add_image('disk-0', image['id'], size=size, image_uid=image.get('uid'))
         vm_spec.add_network('nic-1', f"{vm_network['namespace']}/{vm_network['name']}")
         userdata = yaml.safe_load(vm_spec.user_data)
         userdata['ssh_authorized_keys'] = [pub_key]
