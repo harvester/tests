@@ -388,13 +388,13 @@ def test_create_volume_snapshot_and_restore(
     7. Delete source volume, the snapshot should be deleted
     Ref. https://github.com/harvester/harvester/issues/2294
     &#34;&#34;&#34;
-    image_id, storage_cls = None, None
+    image_id = None
     if source_type == &#34;VM Image&#34;:
-        image_id, storage_cls = ubuntu_image[&#39;id&#39;], f&#34;longhorn-{ubuntu_image[&#39;display_name&#39;]}&#34;
+        image_id = ubuntu_image[&#39;id&#39;]
         unique_name = f&#34;{unique_name}-image&#34;
 
     # Create a volume from source_type(Empty or VM Image)
-    spec = api_client.volumes.Spec(&#34;10Gi&#34;, storage_cls)
+    spec = api_client.volumes.Spec(&#34;10Gi&#34;, storage_cls=None)
     kws = dict()
     code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
     assert 201 == code, (code, unique_name, data, image_id)
