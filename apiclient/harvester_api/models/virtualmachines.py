@@ -140,7 +140,7 @@ class VMSpec:
     def network_data(self, val):
         self._cloudinit_vol['volume']['cloudInitNoCloud']['networkData'] = val
 
-    def add_cd_rom(self, name, image_id, size=10, bus="SATA"):
+    def add_cd_rom(self, name, image_id, size=10, bus="SATA", image_uid=None):
         vol_spec = VolumeSpec(size, storage_cls=f"longhorn-{image_id.split('/')[1]}",
                               annotations={"harvesterhci.io/imageId": image_id})
 
@@ -160,7 +160,7 @@ class VMSpec:
         self.volumes.append(vol)
         return vol
 
-    def add_image(self, name, image_id, size=10, bus="virtio", type="disk"):
+    def add_image(self, name, image_id, size=10, bus="virtio", type="disk", image_uid=None):
         vol_spec = VolumeSpec(size, storage_cls=f"longhorn-{image_id.split('/')[1]}",
                               annotations={"harvesterhci.io/imageId": image_id})
 
