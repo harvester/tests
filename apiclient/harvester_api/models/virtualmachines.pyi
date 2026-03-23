@@ -96,7 +96,8 @@ class VMSpec:
         name: str,
         image_id: str,
         size: int | float | United_S = ...,
-        bus: str = ...
+        bus: str = ...,
+        image_uid: Optional[str] = ...
     ) -> dict:
         """
         """
@@ -106,7 +107,8 @@ class VMSpec:
         image_id: str,
         size: int | float | United_S = ...,
         bus: str = ...,
-        type: str = ...
+        type: str = ...,
+        image_uid: Optional[str] = ...
     ) -> dict:
         """
         """
