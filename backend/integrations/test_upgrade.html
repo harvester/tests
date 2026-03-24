@@ -2396,6 +2396,7 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
+    @pytest.mark.skip(reason=&#34;https://github.com/harvester/harvester/issues/10220&#34;)
     def test_version_compatibility(
         self, api_client, unique_name, upgrade_target, upgrade_timeout
     ):
@@ -2421,6 +2422,7 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(data[&#39;metadata&#39;][&#39;name&#39;])
         api_client.versions.delete(version)
 
+    @pytest.mark.skip(reason=&#34;https://github.com/harvester/harvester/issues/10220&#34;)
     def test_degraded_volume(
         self, api_client, unique_name, vm_shell_from_host, upgrade_target, stopped_vm,
         vm_checker, volume_checker, upgrade_checker
@@ -2552,7 +2554,8 @@ def test_checksum(self, api_client, unique_name, upgrade_target, resort, upgrade
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_degraded_volume(
+<pre><code class="python">@pytest.mark.skip(reason=&#34;https://github.com/harvester/harvester/issues/10220&#34;)
+def test_degraded_volume(
     self, api_client, unique_name, vm_shell_from_host, upgrade_target, stopped_vm,
     vm_checker, volume_checker, upgrade_checker
 ):
@@ -2678,7 +2681,8 @@ def test_iso_url(self, api_client, unique_name, upgrade_checker):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_version_compatibility(
+<pre><code class="python">@pytest.mark.skip(reason=&#34;https://github.com/harvester/harvester/issues/10220&#34;)
+def test_version_compatibility(
     self, api_client, unique_name, upgrade_target, upgrade_timeout
 ):
     version, url, checksum = upgrade_target
