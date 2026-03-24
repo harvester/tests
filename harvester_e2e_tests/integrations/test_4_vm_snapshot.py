@@ -597,3 +597,101 @@ class TestVMSnapshot:
             sleep(1)
         else:
             raise AssertionError(f"timed out waiting for {volumesnapshotname} to be deleted")
+
+
+@pytest.mark.p0
+@pytest.mark.virtualmachines
+@pytest.mark.volumes
+class TestVolumeSnapshotWithVM:
+    def test_snapshot_of_volume_on_vm(self, api_client,
+                                      source_vm, vm_checker,
+                                      volume_checker, wait_timeout,
+                                      host_shell, vm_shell,
+                                      ssh_keypair, polling_for):
+        """
+        1. Create a VM with volume
+        2. Write some data on the VM
+        3. Create snapshot of the volume of the VM
+        4. Restore the snapshot to a new volume
+        5. Create new VM and use the restored volume
+        6. Check the data in the new VM
+        Ref. https://github.com/harvester/harvester/issues/2294
+        """
+        vm_name, ssh_user = source_vm
+
+        _, data = api_client.vms.get(vm_name)
+
+        vol_name = (data["spec"]["template"]["spec"]["volumes"][0]
+                        ['persistentVolumeClaim']['claimName'])
+
+        vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
+        assert vm_started, (code, vmi)
+
+        # Write 123 into test.txt
+        def action(sh):
+            _, _ = sh.exec_command("echo 123 > test.txt")  # nosec B601
+            _, _ = sh.exec_command("sync")  # nosec B601
+
+        vm_shell_do(vm_name, api_client,
+                    host_shell, vm_shell,
+                    ssh_user, ssh_keypair,
+                    action, wait_timeout)
+
+        # Create a snapshot of the volume
+        snapshot_name = f"{vol_name[:60]}-snapshot"
+        code, _ = api_client.volumes.snapshot(vol_name, snapshot_name)
+        assert 204 == code, (f"Failed to create snapshot of volume {vol_name}")
+
+        # Wait the snapshot become ready
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vol_snapshots.get(snapshot_name)
+            if code == 200 and data.get('status', {}).get('readyToUse', False):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Timeout in waiting the snapshot {snapshot_name} to be ready.\n"
+                f"Last API Status({code}): {data}"
+                )
+
+        # Restore the snapshot
+        restore_vol_name = f"{snapshot_name[:60]}-restore"
+        code, _ = api_client.vol_snapshots.restore(snapshot_name, restore_vol_name)
+        assert 204 == code, (
+            f"Failed to restore snapshot {snapshot_name} to volume {restore_vol_name}")
+
+        # Wait the restored volume become ready, check the data resource as expected
+        volumes_ready, (code, data) = volume_checker.wait_volumes_ready([restore_vol_name])
+        assert volumes_ready, (code, data)
+        data_source = data.get('spec', {}).get('dataSource', {}).get('name')
+        assert snapshot_name == data_source, (
+            f"Data source mismatch. Expected {snapshot_name}, got {data_source}")
+
+        # Create new VM and use the restored volume
+        vm_with_restore_vol_name = f"{restore_vol_name[:60]}-vm"
+        vm_spec = api_client.vms.Spec(1, 2)
+        vm_spec.add_existing_volume(vm_with_restore_vol_name, restore_vol_name)
+        code, data = api_client.vms.create(vm_with_restore_vol_name, vm_spec)
+        assert 201 == code, f"Fail to create VM\n{code}, {data}"
+        code, data = polling_for(
+            "VM do created",
+            lambda c, d: 200 == c and d.get('status', {}).get('printableStatus') == "Running",
+            api_client.vms.get, vm_with_restore_vol_name
+        )
+
+        # Check the data in the new VM
+        def actassert(sh):
+            out, _ = sh.exec_command("cat test.txt")  # nosec B601
+            assert "123" in out
+
+        vm_shell_do(vm_with_restore_vol_name, api_client,
+                    host_shell, vm_shell,
+                    ssh_user, ssh_keypair,
+                    actassert, wait_timeout)
+
+        # Teardown: delete the restore volume
+        vm_deleted, (code, data) = vm_checker.wait_deleted(vm_with_restore_vol_name)
+        assert vm_deleted, (code, data)
+        volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted([restore_vol_name])
+        assert volumes_deleted, (code, data)
