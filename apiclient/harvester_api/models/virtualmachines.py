@@ -451,7 +451,7 @@ class VMSpec180(VMSpec140):
         return vol
 
     def add_image(self, name, image_id, size=10, bus="virtio", type="disk", image_uid=None):
-        vol_spec = VolumeSpec180(size, storage_cls=None,
+        vol_spec = VolumeSpec180(size, storage_cls=f"lh-{image_uid}",
                                  annotations={"harvesterhci.io/imageId": image_id})
 
         vol = {
@@ -470,17 +470,3 @@ class VMSpec180(VMSpec140):
         }
         self.volumes.append(vol)
         return vol
-
-    def _update_volume_spec(self, name, namespace):
-        """Override to inject image_uid for VolumeSpec180"""
-        volumes = []
-        for v in deepcopy(self.volumes):
-            if 'claim' in v:
-                disk_name = v['volume']['name']
-                image_uid = v.get('image_uid')
-                v['claim'] = v['claim'].to_dict(
-                    f"{name}-{disk_name}", namespace, image_uid=image_uid
-                )
-                v['volume']['persistentVolumeClaim']['claimName'] = f"{name}-{disk_name}"
-            volumes.append(v)
-        return volumes
