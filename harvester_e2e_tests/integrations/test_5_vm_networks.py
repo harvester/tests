@@ -59,8 +59,11 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
             f"Status({code}): {data}"
         )
 
-    yield dict(id=f"{data['metadata']['namespace']}/{unique_image_id}",
-               user=image_opensuse.ssh_user)
+    yield dict(
+        id=f"{data['metadata']['namespace']}/{unique_image_id}",
+        user=image_opensuse.ssh_user,
+        info=dict(metadata=data['metadata'], status=data['status'])
+    )
 
     code, data = api_client.images.delete(unique_image_id)
 
@@ -166,7 +169,7 @@ def minimal_vm(api_client, ssh_keypair, wait_timeout, unique_name, vm_checker, i
     cpu, mem = 1, 2
     pub_key, _ = ssh_keypair
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image("disk-0", image['id'])
+    vm_spec.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
 
     userdata = yaml.safe_load(vm_spec.user_data)
     userdata['ssh_authorized_keys'] = [pub_key]
@@ -191,7 +194,7 @@ def two_mirror_vms(api_client, ssh_keypair, unique_name, vm_checker, image, vm_n
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image("disk-0", image['id'])
+    vm_spec.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
     vm_spec.mgmt_network = False
     vm_spec.add_network('nic-1', f"{vm_network['namespace']}/{vm_network['name']}")
 

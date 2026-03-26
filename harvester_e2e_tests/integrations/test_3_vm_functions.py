@@ -127,7 +127,7 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image("disk-0", image['id'])
+    vm_spec.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
     vm_spec.run_strategy = "Halted"
 
     userdata = yaml.safe_load(vm_spec.user_data)
@@ -166,7 +166,7 @@ def configured_vm(api_client, image, unique_vm_name, vm_checker):
     cpu, mem = 1, 2
     # reserved memory
     vm = api_client.vms.Spec(cpu, mem, reserved_mem=RESERVED_MEM)
-    vm.add_image("disk-0", image['id'])
+    vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
 
     code, data = api_client.vms.create(unique_vm_name, vm)
     assert 201 == code, (code, data)
@@ -222,7 +222,7 @@ def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
     """
     cpu, mem = 1, 2
     vm = api_client.vms.Spec(cpu, mem)
-    vm.add_image("disk-0", image['id'])
+    vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
 
     code, data = api_client.vms.create(unique_vm_name, vm)
 
@@ -675,7 +675,7 @@ class TestVMResource:
 
         # Calculate the maximum resource
         vm_spec, namespace = api_client.vms.Spec(1, 2), 'default'
-        vm_spec.add_image("disk-0", image['id'])
+        vm_spec.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
         data = vm_spec.to_dict(unique_vm_name, namespace)
 
         if res_type == 'cpu':
@@ -877,7 +877,7 @@ class TestVMResource:
     def test_update_enable_usb(self, api_client, unique_vm_name, vm_checker, image):
         cpu, mem = 1, 2
         vm_spec = api_client.vms.Spec(cpu, mem)
-        vm_spec.add_image("disk-0", image['id'])
+        vm_spec.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
         vm_spec.run_strategy = "Halted"
         vm_spec.usbtablet = False
 
@@ -918,7 +918,7 @@ class TestVMResource:
     def test_update_enable_user_data(self, api_client, unique_vm_name, vm_checker, image):
         cpu, mem = 1, 2
         vm_spec = api_client.vms.Spec(cpu, mem)
-        vm_spec.add_image("disk-0", image['id'])
+        vm_spec.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
         vm_spec.run_strategy = "Halted"
         vm_spec.guest_agent = False
 
@@ -1641,7 +1641,10 @@ def test_create_vm_no_available_resources(resource, api_client, image,
     overall_vm_obj.update(resource)
 
     vm = api_client.vms.Spec(overall_vm_obj['cpu'], overall_vm_obj['mem'])
-    vm.add_image("disk-0", image['id'], size=overall_vm_obj.get('disk'))
+    vm.add_image(
+        "disk-0", image['id'], size=overall_vm_obj.get('disk'),
+        image_uid=image['info']['metadata']['uid']
+    )
     code, data = api_client.vms.create(unique_name_for_vm, vm)
     assert 201 == code, (code, data)
 
@@ -1762,7 +1765,7 @@ def test_update_vm_machine_type(
     vm = api_client.vms.Spec(cpu, mem)
     vm.machine_type = starting_machine_type
 
-    vm.add_image("disk-0", image['id'])
+    vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
     unique_name_for_vm = f"{''.join(starting_machine_type)}-{unique_vm_name}"
 
     code, vm_create_data = api_client.vms.create(unique_name_for_vm, vm)
@@ -1912,7 +1915,7 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
     net_uid = f"{bvn['metadata']['namespace']}/{bvn['metadata']['name']}"
     vm = api_client.vms.Spec(cpu, mem)
     vm.add_network('no-dhcp', net_uid)
-    vm.add_image("disk-0", image['id'])
+    vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
     code, data = api_client.vms.create(unique_vm_name, vm)
 
     assert 201 == code, (code, data)
@@ -2026,7 +2029,7 @@ def test_vm_with_vtpm_uefi(
     cpu, mem = 1, 2
     vm = api_client.vms.Spec(cpu, mem)
 
-    vm.add_image("disk-0", image['id'])
+    vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
     vm.efi_boot = True
     vm.tpm_enabled = True
     vm.tpm_persistent = True

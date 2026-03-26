@@ -32,7 +32,8 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, image_checker):
     yield SimpleNamespace(
         name=name,
         id=f"{namespace}/{name}",
-        ssh_user=image_ubuntu.ssh_user
+        ssh_user=image_ubuntu.ssh_user,
+        uid=data['metadata']['uid']
     )
 
     # teardown
@@ -86,7 +87,7 @@ def minimal_vm(api_client, unique_name, ubuntu_image, ssh_keypair, vm_checker):
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image("disk-0", ubuntu_image.id)
+    vm_spec.add_image("disk-0", ubuntu_image.id, image_uid=ubuntu_image.uid)
 
     userdata = yaml.safe_load(vm_spec.user_data)
     userdata['ssh_authorized_keys'] = [pub_key]
@@ -156,7 +157,7 @@ def test_multiple_migrations(
         pytest.skip("Require 2+ nodes for migration testing.")
 
     vm_spec = api_client.vms.Spec(1, 1)
-    vm_spec.add_image('disk-0', ubuntu_image.id)
+    vm_spec.add_image('disk-0', ubuntu_image.id, image_uid=ubuntu_image.uid)
     vm_names = [f"migrate-1-{unique_name}", f"migrate-2-{unique_name}"]
     volumes = []
     for vm_name in vm_names:
@@ -257,7 +258,7 @@ def test_migrate_vm_with_user_data(
         pytest.skip("Require 2+ nodes for migration testing.")
 
     vm_spec = api_client.vms.Spec(1, 1)
-    vm_spec.add_image('disk-0', ubuntu_image.id)
+    vm_spec.add_image('disk-0', ubuntu_image.id, image_uid=ubuntu_image.uid)
     vm_spec.user_data += (
         "password: test\n"
         "chpasswd:\n"
@@ -330,7 +331,7 @@ def test_migrate_vm_with_multiple_volumes(
         pytest.skip("Require 2+ nodes for migration testing.")
 
     vm_spec = api_client.vms.Spec(1, 1)
-    vm_spec.add_image('disk-0', ubuntu_image.id)
+    vm_spec.add_image('disk-0', ubuntu_image.id, image_uid=ubuntu_image.uid)
     vm_spec.add_volume('disk-1', 1)
     code, vm_data = api_client.vms.create(unique_name, vm_spec)
     assert code == 201, (

@@ -100,7 +100,8 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
 
     yield {
         "ssh_user": "ubuntu",
-        "id": f"{namespace}/{name}"
+        "id": f"{namespace}/{name}",
+        "uid": data['metadata']['uid']
     }
 
     api_client.images.delete(name)
@@ -407,7 +408,7 @@ class TestResourceQuota:
         cpu = int(self.ns_quota['cpu'] / 1000 - 1)
         mem = int(self.ns_quota['mem'] / 1000 - 1)
         vm = api_client.vms.Spec(cpu, mem)
-        vm.add_image("disk-0", ubuntu_image['id'])
+        vm.add_image("disk-0", ubuntu_image['id'], image_uid=ubuntu_image['uid'])
         code, data = api_client.vms.create(unique_name, vm, namespace=unique_name)
         assert 201 == code, (code, data)
         vm_started, (code, vmi) = vm_checker.wait_started(unique_name, namespace=unique_name)

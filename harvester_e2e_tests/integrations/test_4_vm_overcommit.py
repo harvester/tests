@@ -38,8 +38,11 @@ def image(api_client, unique_name, wait_timeout, image_opensuse):
             f"Status({code}): {data}"
         )
 
-    yield dict(id=f"{data['metadata']['namespace']}/{unique_image_id}",
-               user=image_opensuse.ssh_user)
+    yield dict(
+        id=f"{data['metadata']['namespace']}/{unique_image_id}",
+        user=image_opensuse.ssh_user,
+        info=dict(metadata=data['metadata'], status=data['status'])
+    )
 
     code, data = api_client.images.delete(unique_image_id)
 
@@ -95,7 +98,7 @@ class TestVMOverCommit:
         occ, _ = set_cpu_memory_overcommit
 
         vm_spec = api_client.vms.Spec(occ.cpu // 100, occ.memory // 100)
-        vm_spec.add_image("disk-0", image['id'])
+        vm_spec.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
 
         # create VM and wait it started
         code, data = api_client.vms.create(unique_vm_name, vm_spec)
@@ -130,7 +133,7 @@ class TestVMOverCommit:
     ):
 
         vm_spec = api_client.vms.Spec(1, 1)
-        vm_spec.add_image("disk-0", image['id'])
+        vm_spec.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
 
         # create VM and wait it started
         code, data = api_client.vms.create(unique_vm_name, vm_spec)
