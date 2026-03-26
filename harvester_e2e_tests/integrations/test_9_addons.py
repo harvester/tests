@@ -359,8 +359,10 @@ spec:
                     )
 
             spec = api_client.vms.Spec(1, 2)  # 1 CPU, 2GB RAM
-            spec.add_image(image_opensuse.name,
-                           f"default/{image_opensuse.name}")
+            spec.add_image(
+                image_opensuse.name, f"default/{image_opensuse.name}",
+                image_uid=data['metadata']['uid']
+            )
 
             # Add the DHCP-enabled network
             spec.mgmt_network = False
