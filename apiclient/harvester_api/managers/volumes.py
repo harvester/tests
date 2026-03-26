@@ -57,7 +57,7 @@ class VolumeManager(BaseManager):
 
 
 class VolManager180(VolumeManager):
-    support_to = "v1.8.0"
+    support_to = "v1.8.0rc1"
     Spec = VolumeSpec180
 
     def create(

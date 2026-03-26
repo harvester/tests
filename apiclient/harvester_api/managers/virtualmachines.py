@@ -148,5 +148,5 @@ class VMManager140(VirtualMachineManager):
 
 class VMManager180(VMManager140):
     # ref: https://github.com/harvester/harvester/pull/9392
-    support_to = "v1.8.0"
+    support_to = "v1.8.0rc1"
     Spec = VMSpec180
