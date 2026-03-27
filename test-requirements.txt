@@ -1,6 +1,3 @@
-pytest == 7.*
-pytest-cases == 3.8.5
-pytest-drop-dup-tests
 pytest-ordering
 pytest-html
 pytest-json-report
@@ -22,5 +19,3 @@ lxml
 pyyaml
 pdoc3
 tox
-dataclasses; python_version < '3.7'
--e ./apiclient

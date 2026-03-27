@@ -2,18 +2,21 @@
 
 set -e
 
-USAGE="${0}: [<version>] 
+USAGE="${0}: [<version>] [<checksum>]
 Where:
-  <version>: version of to dowload. If absent, it will download the latest.
+  <version>: version of to dowload. If absent, it will download the last one set.
+  <checksum>: SHA256 checksum of the Terraform binary.
 "
 
 DOWNLOAD_URL=
 if [ $# -eq 0 ] ; then
 	# lookup the latest release download URL
-	VER=$(curl -s https://releases.hashicorp.com/terraform/ | grep -Po "href=\"/terraform/\K(.[^-]+?)(?=/)" | head -1)
-	DOWNLOAD_URL="https://releases.hashicorp.com/terraform/${VER}/terraform_${VER}_linux_amd64.zip"
+    VER=1.14.8
+    TERRAFORM_CHECKSUM=56a5d12f47cbc1c6bedb8f5426ae7d5df984d1929572c24b56f4c82e9f9bf709
+?	DOWNLOAD_URL="https://releases.hashicorp.com/terraform/${VER}/terraform_${VER}_linux_amd64.zip"
 elif [ $# -eq 1 ] ; then
 	VER=$1
+    TERRAFORM_CHECKSUM=$2
 	DOWNLOAD_URL="https://releases.hashicorp.com/terraform/${VER}/terraform_${VER}_linux_amd64.zip"
 else
       echo "$USAGE"
@@ -37,6 +40,8 @@ unzip -o terraform_bin.zip
 terraform_bin=${TERDIR}/bin
 
 mkdir -p "${terraform_bin}"
-mv terraform ${terraform_bin}
+echo "${TERRAFORM_CHECKSUM}  terraform" | sha256sum -c \
+    && chmod +x terraform \
+    && mv terraform ${terraform_bin}
 rm -rf terraform_bin.zip
 popd
