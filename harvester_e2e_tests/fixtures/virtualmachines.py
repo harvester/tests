@@ -228,7 +228,9 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
 
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
-                ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws))
+                # Use get (VM) but not only get_status (VMI) because the VM controller handles
+                # resource relations includes snapshot PVC.
+                ctx = ResponseContext('vm.get', *self.vms.get(vm_name, **kws))
                 if 404 == ctx.code and callback(ctx):
                     break
                 sleep(self.snooze)
