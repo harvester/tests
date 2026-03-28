@@ -2,13 +2,14 @@ pytest-ordering
 pytest-html
 pytest-json-report
 pytest-dependency
+paramiko
+pytest == 7.*
+pytest-cases == 3.8.5
+pytest-drop-dup-tests
 jinja2
 bcrypt
-requests
-paramiko
 pycryptodome
 sshpubkeys
-pyyaml
 polling2
 cryptography
 boto3
