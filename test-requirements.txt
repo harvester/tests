@@ -19,3 +19,5 @@ lxml
 pyyaml
 pdoc3
 tox
+dataclasses; python_version < '3.7'
+-e ./apiclient
