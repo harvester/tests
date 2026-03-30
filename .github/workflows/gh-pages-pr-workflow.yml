@@ -25,13 +25,8 @@ jobs:
           git fetch --depth=1 origin gh-pages
       - name: Install Hugo
         run: |
-          # Adapted from https://gist.github.com/steinwaywhw/a4cd19cda655b8249d908261a62687f8
-          curl -s https://api.github.com/repos/gohugoio/hugo/releases/tag/$HUGO_VERSION | \
-            grep -E 'browser_download_url.*hugo_[0-9]+.*Linux-64bit.tar.gz' | \
-            cut -d : -f 2,3 | \
-            tr -d \" | \
-            xargs -n 1 curl -Lo hugo.tar.gz
-          echo "$HUGO_CHECKSUM  hugo.tar.gz" | sha256sum -c \
+          wget https://github.com/gohugoio/hugo/releases/download/v${{env.HUGO_VERSION}}/hugo_${{env.HUGO_VERSION}}_Linux-64bit.tar.gz -O hugo.tar.gz
+          echo "${{env.HUGO_CHECKSUM}}  hugo.tar.gz" | sha256sum -c \
           && tar -xf hugo.tar.gz -C /usr/local/bin/ hugo
         env:
           HUGO_VERSION: 0.159.1
