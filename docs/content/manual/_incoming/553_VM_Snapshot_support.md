@@ -7,7 +7,7 @@ Ref: https://github.com/harvester/harvester/issues/553
 
 
 ### Verify Steps:
-1. Install Harvester with any nodes
+1. Install Harvester with any nodes 
 1. Create an Image for VM creation
 1. Create `vm1` with the image and an additional data volume `disk-1`
 1. Login to `vm1`, execute following commands:
