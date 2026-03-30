@@ -26,12 +26,16 @@ jobs:
       - name: Install Hugo
         run: |
           # Adapted from https://gist.github.com/steinwaywhw/a4cd19cda655b8249d908261a62687f8
-          curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest | \
+          curl -s https://api.github.com/repos/gohugoio/hugo/releases/tag/$HUGO_VERSION | \
             grep -E 'browser_download_url.*hugo_[0-9]+.*Linux-64bit.tar.gz' | \
             cut -d : -f 2,3 | \
             tr -d \" | \
             xargs -n 1 curl -Lo hugo.tar.gz
-          tar -xf hugo.tar.gz -C /usr/local/bin/ hugo
+          echo "$HUGO_CHECKSUM  hugo.tar.gz" | sha256sum -c \
+          && tar -xf hugo.tar.gz -C /usr/local/bin/ hugo
+        env:
+          HUGO_VERSION: 0.159.1
+          HUGO_CHECKSUM: 297e18fa21e4796d80a3270c1234873f5a979cb9a329a0c93d9888a1b39f106c
       - name: Run Hugo
         run: |
           hugo
