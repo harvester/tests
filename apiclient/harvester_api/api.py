@@ -1,11 +1,23 @@
 from urllib.parse import urljoin
 
+import re
 import requests
 from pkg_resources import parse_version
 from requests.packages.urllib3.util.retry import Retry
 
 from . import managers as mgrs
 from .managers.base import DEFAULT_NAMESPACE
+
+
+def _normalize_version(version):
+    # XXX: https://github.com/harvester/harvester/issues/3137
+    # release-[any]-head => [any]-head
+    # master-SHA-head => v8.8-SHA-head
+    # [version]-SHA-head => [version]+SHA-head
+    ver = re.sub(r"^(?:release-v?(.+head))$", r"v\1", version)
+    ver = re.sub(r"^master(-.+)$", r"v8.8\1", ver)
+    ver = re.sub(r"(.+)-([^-]+?-head)$", r"\1+\2", ver)
+    return ver
 
 
 class HarvesterAPI:
@@ -42,24 +54,17 @@ class HarvesterAPI:
             resp = self._get("apis/{API_VERSION}/settings/server-version")
             ver = resp.json()['value']
             try:
-                # XXX: https://github.com/harvester/harvester/issues/3137
-                # Fixed as:
-                # 1. va.b-xxx-head => va.b.99
-                # 2. master-xxx-head => v8.8.99
-                # release-1.3-1bda61b3-head => v1.3-1bda61b3-head
-                if ver.startswith('release-'):
-                    ver = ver.replace('release-', 'v')
-                cur, _, _ = ver.split('-')
-                cur = "v8.8" if "master" in cur else cur
-                self._version = parse_version(f"{cur}.99")
-            except ValueError:
-                # TL;DR: use KubeVirt version if '-' in ver and '-rc' not in ver
-                # 1. va.b.c[-rc?] => valid version
-                # 2. 3874194f-dirty (customized build)
-                #    Use KubeVirt version as the customized version
+                version = parse_version(_normalize_version(ver))
+                assert version.major
+                self._version = version
+            except AttributeError:
+                # Use KubeVirt version as the customized version
+                # Set the invalid version for local version
+                # Final format: <KubeVirt_Ver>+<normalized_Ver>
                 data = self._get('apis/kubevirt.io/v1/kubevirts').json()
                 kube_ver = data['items'][0]['status'].get('operatorVersion')
-                self._version = parse_version(kube_ver if '-' in ver and '-rc' not in ver else ver)
+                self._version = parse_version(f"{kube_ver}+{version}")
+
             # store the raw version returns from `server-version` for reference
             self.raw_version = ver
         return self._version
