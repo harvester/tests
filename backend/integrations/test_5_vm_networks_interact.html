@@ -205,7 +205,7 @@ def cluster_network(vlan_nic, api_client, unique_name):
 
         assert 200 == code, (code, data)
         if image_status.get(&#39;progress&#39;) == 100:
-            break
+            return data
         sleep(5)
     else:
         raise AssertionError(
@@ -303,7 +303,9 @@ class TestBackendNetwork:
         code, data = api_client.images.get(image_opensuse.name)
 
         if code == 404:
-            create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+            data = create_image_url(
+                api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+            )
 
         # Update AllowTcpForwarding for ssh jumpstart
 
@@ -313,7 +315,10 @@ class TestBackendNetwork:
 
         vm_name = unique_name + &#34;-mgmt&#34;
         # Create VM
-        spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+        spec.add_image(
+            image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+            image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+        )
 
         code, data = api_client.vms.create(vm_name, spec)
         assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -394,13 +399,18 @@ class TestBackendNetwork:
         code, data = api_client.images.get(image_opensuse.name)
 
         if code == 404:
-            create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+            data = create_image_url(
+                api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+            )
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
         spec.user_data += cloud_user_data.format(password=vm_credential[&#34;password&#34;])
 
         # Create VM
-        spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+        spec.add_image(
+            image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+            image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+        )
 
         spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
@@ -482,13 +492,18 @@ class TestBackendNetwork:
         code, data = api_client.images.get(image_opensuse.name)
 
         if code == 404:
-            create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+            data = create_image_url(
+                api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+            )
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
         spec.user_data += cloud_user_data.format(password=vm_credential[&#34;password&#34;])
 
         # Create VM
-        spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+        spec.add_image(
+            image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+            image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+        )
 
         spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
@@ -623,13 +638,18 @@ class TestBackendNetwork:
         code, data = api_client.images.get(image_opensuse.name)
 
         if code == 404:
-            create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+            data = create_image_url(
+                api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+            )
 
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential[&#34;password&#34;])
         vm_name = unique_name + &#34;-mgmt-vlan&#34;
         # Create VM
-        spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+        spec.add_image(
+            image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+            image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+        )
         code, data = api_client.vms.create(vm_name, spec)
         assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
 
@@ -759,14 +779,19 @@ class TestBackendNetwork:
         code, data = api_client.images.get(image_opensuse.name)
 
         if code == 404:
-            create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+            data = create_image_url(
+                api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+            )
 
         spec = api_client.vms.Spec(1, 2, mgmt_network=False)
         spec.user_data += cloud_user_data.format(password=vm_passwd)
         vm_name = unique_name + &#34;-vlan-mgmt&#34;
 
         # Create VM
-        spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+        spec.add_image(
+            image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+            image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+        )
         spec.add_network(&#34;default&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
         code, data = api_client.vms.create(vm_name, spec)
@@ -885,7 +910,9 @@ class TestBackendNetwork:
         code, data = api_client.images.get(image_opensuse.name)
 
         if code == 404:
-            create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+            data = create_image_url(
+                api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+            )
 
         spec = api_client.vms.Spec(1, 2)
         spec.user_data += cloud_user_data.format(password=vm_credential[&#34;password&#34;])
@@ -896,7 +923,10 @@ class TestBackendNetwork:
         vm_name = unique_name + &#34;-delete-vlan&#34;
 
         # Add image
-        spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+        spec.add_image(
+            image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+            image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+        )
 
         # Add external vlan network
         spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
@@ -1127,7 +1157,9 @@ class TestBackendNetwork:
     code, data = api_client.images.get(image_opensuse.name)
 
     if code == 404:
-        create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+        data = create_image_url(
+            api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+        )
 
     spec = api_client.vms.Spec(1, 2)
     spec.user_data += cloud_user_data.format(password=vm_credential[&#34;password&#34;])
@@ -1138,7 +1170,10 @@ class TestBackendNetwork:
     vm_name = unique_name + &#34;-delete-vlan&#34;
 
     # Add image
-    spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+    spec.add_image(
+        image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+        image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+    )
 
     # Add external vlan network
     spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
@@ -1290,7 +1325,9 @@ class TestBackendNetwork:
     code, data = api_client.images.get(image_opensuse.name)
 
     if code == 404:
-        create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+        data = create_image_url(
+            api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+        )
 
     # Update AllowTcpForwarding for ssh jumpstart
 
@@ -1300,7 +1337,10 @@ class TestBackendNetwork:
 
     vm_name = unique_name + &#34;-mgmt&#34;
     # Create VM
-    spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+    spec.add_image(
+        image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+        image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+    )
 
     code, data = api_client.vms.create(vm_name, spec)
     assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
@@ -1401,13 +1441,18 @@ class TestBackendNetwork:
     code, data = api_client.images.get(image_opensuse.name)
 
     if code == 404:
-        create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+        data = create_image_url(
+            api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+        )
 
     spec = api_client.vms.Spec(1, 2)
     spec.user_data += cloud_user_data.format(password=vm_credential[&#34;password&#34;])
     vm_name = unique_name + &#34;-mgmt-vlan&#34;
     # Create VM
-    spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+    spec.add_image(
+        image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+        image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+    )
     code, data = api_client.vms.create(vm_name, spec)
     assert 201 == code, (f&#34;Failed to create vm with error: {code}, {data}&#34;)
 
@@ -1555,13 +1600,18 @@ def test_reboot_vlan_connection(self, api_client, request, unique_name,
     code, data = api_client.images.get(image_opensuse.name)
 
     if code == 404:
-        create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+        data = create_image_url(
+            api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+        )
 
     spec = api_client.vms.Spec(1, 2, mgmt_network=False)
     spec.user_data += cloud_user_data.format(password=vm_credential[&#34;password&#34;])
 
     # Create VM
-    spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+    spec.add_image(
+        image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+        image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+    )
 
     spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
@@ -1715,13 +1765,18 @@ def test_vlan_network_connection(self, api_client, request, client, unique_name,
     code, data = api_client.images.get(image_opensuse.name)
 
     if code == 404:
-        create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+        data = create_image_url(
+            api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+        )
 
     spec = api_client.vms.Spec(1, 2, mgmt_network=False)
     spec.user_data += cloud_user_data.format(password=vm_credential[&#34;password&#34;])
 
     # Create VM
-    spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+    spec.add_image(
+        image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+        image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+    )
 
     spec.add_network(&#34;nic-1&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
@@ -1821,14 +1876,19 @@ def test_vlan_network_connection(self, api_client, request, client, unique_name,
     code, data = api_client.images.get(image_opensuse.name)
 
     if code == 404:
-        create_image_url(api_client, image_opensuse.name, image_opensuse.url, wait_timeout)
+        data = create_image_url(
+            api_client, image_opensuse.name, image_opensuse.url, wait_timeout
+        )
 
     spec = api_client.vms.Spec(1, 2, mgmt_network=False)
     spec.user_data += cloud_user_data.format(password=vm_passwd)
     vm_name = unique_name + &#34;-vlan-mgmt&#34;
 
     # Create VM
-    spec.add_image(image_opensuse.name, &#34;default/&#34; + image_opensuse.name)
+    spec.add_image(
+        image_opensuse.name, &#34;default/&#34; + image_opensuse.name,
+        image_uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+    )
     spec.add_network(&#34;default&#34;, f&#34;{vm_network[&#39;namespace&#39;]}/{vm_network[&#39;name&#39;]}&#34;)
 
     code, data = api_client.vms.create(vm_name, spec)

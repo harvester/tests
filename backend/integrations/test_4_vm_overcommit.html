@@ -73,8 +73,11 @@ def image(api_client, unique_name, wait_timeout, image_opensuse):
             f&#34;Status({code}): {data}&#34;
         )
 
-    yield dict(id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
-               user=image_opensuse.ssh_user)
+    yield dict(
+        id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
+        user=image_opensuse.ssh_user,
+        info=dict(metadata=data[&#39;metadata&#39;], status=data[&#39;status&#39;])
+    )
 
     code, data = api_client.images.delete(unique_image_id)</code></pre>
 </details>
@@ -176,7 +179,7 @@ class TestVMOverCommit:
         occ, _ = set_cpu_memory_overcommit
 
         vm_spec = api_client.vms.Spec(occ.cpu // 100, occ.memory // 100)
-        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
 
         # create VM and wait it started
         code, data = api_client.vms.create(unique_vm_name, vm_spec)
@@ -211,7 +214,7 @@ class TestVMOverCommit:
     ):
 
         vm_spec = api_client.vms.Spec(1, 1)
-        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
 
         # create VM and wait it started
         code, data = api_client.vms.create(unique_vm_name, vm_spec)
@@ -291,7 +294,7 @@ class TestVMOverCommit:
     occ, _ = set_cpu_memory_overcommit
 
     vm_spec = api_client.vms.Spec(occ.cpu // 100, occ.memory // 100)
-    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
 
     # create VM and wait it started
     code, data = api_client.vms.create(unique_vm_name, vm_spec)
@@ -336,7 +339,7 @@ class TestVMOverCommit:
 ):
 
     vm_spec = api_client.vms.Spec(1, 1)
-    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
 
     # create VM and wait it started
     code, data = api_client.vms.create(unique_vm_name, vm_spec)

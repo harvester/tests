@@ -413,7 +413,8 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, polling_for):
 
     yield {
         &#34;ssh_user&#34;: &#34;ubuntu&#34;,
-        &#34;id&#34;: f&#34;{namespace}/{name}&#34;
+        &#34;id&#34;: f&#34;{namespace}/{name}&#34;,
+        &#34;uid&#34;: data[&#39;metadata&#39;][&#39;uid&#39;]
     }
 
     api_client.images.delete(name)</code></pre>
@@ -3003,7 +3004,7 @@ class TestResourceQuota:
         cpu = int(self.ns_quota[&#39;cpu&#39;] / 1000 - 1)
         mem = int(self.ns_quota[&#39;mem&#39;] / 1000 - 1)
         vm = api_client.vms.Spec(cpu, mem)
-        vm.add_image(&#34;disk-0&#34;, ubuntu_image[&#39;id&#39;])
+        vm.add_image(&#34;disk-0&#34;, ubuntu_image[&#39;id&#39;], image_uid=ubuntu_image[&#39;uid&#39;])
         code, data = api_client.vms.create(unique_name, vm, namespace=unique_name)
         assert 201 == code, (code, data)
         vm_started, (code, vmi) = vm_checker.wait_started(unique_name, namespace=unique_name)
@@ -3197,7 +3198,7 @@ def test_decrease_quota_when_vm_used(
     cpu = int(self.ns_quota[&#39;cpu&#39;] / 1000 - 1)
     mem = int(self.ns_quota[&#39;mem&#39;] / 1000 - 1)
     vm = api_client.vms.Spec(cpu, mem)
-    vm.add_image(&#34;disk-0&#34;, ubuntu_image[&#39;id&#39;])
+    vm.add_image(&#34;disk-0&#34;, ubuntu_image[&#39;id&#39;], image_uid=ubuntu_image[&#39;uid&#39;])
     code, data = api_client.vms.create(unique_name, vm, namespace=unique_name)
     assert 201 == code, (code, data)
     vm_started, (code, vmi) = vm_checker.wait_started(unique_name, namespace=unique_name)

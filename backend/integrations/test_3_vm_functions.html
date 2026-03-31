@@ -133,7 +133,7 @@ def configured_vm(api_client, image, unique_vm_name, vm_checker):
     cpu, mem = 1, 2
     # reserved memory
     vm = api_client.vms.Spec(cpu, mem, reserved_mem=RESERVED_MEM)
-    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
 
     code, data = api_client.vms.create(unique_vm_name, vm)
     assert 201 == code, (code, data)
@@ -229,7 +229,7 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_vm_name):
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
     vm_spec.run_strategy = &#34;Halted&#34;
 
     userdata = yaml.safe_load(vm_spec.user_data)
@@ -385,7 +385,10 @@ def test_create_vm_no_available_resources(resource, api_client, image,
     overall_vm_obj.update(resource)
 
     vm = api_client.vms.Spec(overall_vm_obj[&#39;cpu&#39;], overall_vm_obj[&#39;mem&#39;])
-    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], size=overall_vm_obj.get(&#39;disk&#39;))
+    vm.add_image(
+        &#34;disk-0&#34;, image[&#39;id&#39;], size=overall_vm_obj.get(&#39;disk&#39;),
+        image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;]
+    )
     code, data = api_client.vms.create(unique_name_for_vm, vm)
     assert 201 == code, (code, data)
 
@@ -521,7 +524,7 @@ def test_minimal_vm(api_client, image, unique_vm_name, wait_timeout):
     &#34;&#34;&#34;
     cpu, mem = 1, 2
     vm = api_client.vms.Spec(cpu, mem)
-    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
 
     code, data = api_client.vms.create(unique_vm_name, vm)
 
@@ -610,7 +613,7 @@ def test_update_vm_machine_type(
     vm = api_client.vms.Spec(cpu, mem)
     vm.machine_type = starting_machine_type
 
-    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
     unique_name_for_vm = f&#34;{&#39;&#39;.join(starting_machine_type)}-{unique_vm_name}&#34;
 
     code, vm_create_data = api_client.vms.create(unique_name_for_vm, vm)
@@ -804,7 +807,7 @@ def test_vm_with_bogus_vlan(api_client, image, unique_vm_name,
     net_uid = f&#34;{bvn[&#39;metadata&#39;][&#39;namespace&#39;]}/{bvn[&#39;metadata&#39;][&#39;name&#39;]}&#34;
     vm = api_client.vms.Spec(cpu, mem)
     vm.add_network(&#39;no-dhcp&#39;, net_uid)
-    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
     code, data = api_client.vms.create(unique_vm_name, vm)
 
     assert 201 == code, (code, data)
@@ -959,7 +962,7 @@ def test_vm_with_vtpm_uefi(
     cpu, mem = 1, 2
     vm = api_client.vms.Spec(cpu, mem)
 
-    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
     vm.efi_boot = True
     vm.tpm_enabled = True
     vm.tpm_persistent = True
@@ -3173,7 +3176,7 @@ class TestVMResource:
 
         # Calculate the maximum resource
         vm_spec, namespace = api_client.vms.Spec(1, 2), &#39;default&#39;
-        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
         data = vm_spec.to_dict(unique_vm_name, namespace)
 
         if res_type == &#39;cpu&#39;:
@@ -3375,7 +3378,7 @@ class TestVMResource:
     def test_update_enable_usb(self, api_client, unique_vm_name, vm_checker, image):
         cpu, mem = 1, 2
         vm_spec = api_client.vms.Spec(cpu, mem)
-        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
         vm_spec.run_strategy = &#34;Halted&#34;
         vm_spec.usbtablet = False
 
@@ -3416,7 +3419,7 @@ class TestVMResource:
     def test_update_enable_user_data(self, api_client, unique_vm_name, vm_checker, image):
         cpu, mem = 1, 2
         vm_spec = api_client.vms.Spec(cpu, mem)
-        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+        vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
         vm_spec.run_strategy = &#34;Halted&#34;
         vm_spec.guest_agent = False
 
@@ -3491,7 +3494,7 @@ def test_create_schedule_on_maximum(
 
     # Calculate the maximum resource
     vm_spec, namespace = api_client.vms.Spec(1, 2), &#39;default&#39;
-    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
     data = vm_spec.to_dict(unique_vm_name, namespace)
 
     if res_type == &#39;cpu&#39;:
@@ -3641,7 +3644,7 @@ def test_create_schedule_on_maximum(
 <pre><code class="python">def test_update_enable_usb(self, api_client, unique_vm_name, vm_checker, image):
     cpu, mem = 1, 2
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
     vm_spec.run_strategy = &#34;Halted&#34;
     vm_spec.usbtablet = False
 
@@ -3692,7 +3695,7 @@ def test_create_schedule_on_maximum(
 <pre><code class="python">def test_update_enable_user_data(self, api_client, unique_vm_name, vm_checker, image):
     cpu, mem = 1, 2
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
     vm_spec.run_strategy = &#34;Halted&#34;
     vm_spec.guest_agent = False
 

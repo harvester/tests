@@ -75,7 +75,10 @@ def focal_image(api_client, unique_name, image_ubuntu, wait_timeout):
     namespace = data[&#39;metadata&#39;][&#39;namespace&#39;]
     name = data[&#39;metadata&#39;][&#39;name&#39;]
 
-    yield dict(ssh_user=image_ubuntu.ssh_user, id=f&#34;{namespace}/{name}&#34;)
+    yield dict(
+        ssh_user=image_ubuntu.ssh_user, id=f&#34;{namespace}/{name}&#34;,
+        uid=data[&#39;metadata&#39;][&#39;uid&#39;]
+    )
 
     api_client.images.delete(name, namespace)</code></pre>
 </details>
@@ -93,7 +96,7 @@ def focal_image(api_client, unique_name, image_ubuntu, wait_timeout):
 def focal_vm(api_client, focal_image, wait_timeout):
     unique_name = f&#39;vm-{datetime.now().strftime(&#34;%Hh%Mm%Ss%f-%m-%d&#34;)}&#39;
     vm_spec = api_client.vms.Spec(1, 1)
-    vm_spec.add_image(&#39;disk-0&#39;, focal_image[&#39;id&#39;])
+    vm_spec.add_image(&#39;disk-0&#39;, focal_image[&#39;id&#39;], image_uid=focal_image[&#39;uid&#39;])
     code, data = api_client.vms.create(unique_name, vm_spec)
     assert 201 == code, (
         f&#34;Failed to create VM {unique_name} with error: {code}, {data}&#34;

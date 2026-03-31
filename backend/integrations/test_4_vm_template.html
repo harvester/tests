@@ -73,8 +73,11 @@ def image(api_client, image_opensuse, unique_name, wait_timeout):
             f&#34;Status({code}): {data}&#34;
         )
 
-    yield dict(id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
-               user=image_opensuse.ssh_user)
+    yield dict(
+        id=f&#34;{data[&#39;metadata&#39;][&#39;namespace&#39;]}/{unique_image_id}&#34;,
+        user=image_opensuse.ssh_user,
+        info=dict(metadata=data[&#39;metadata&#39;], status=data[&#39;status&#39;])
+    )
 
     code, data = api_client.images.delete(unique_image_id)</code></pre>
 </details>
@@ -94,7 +97,7 @@ def stopped_vm(api_client, ssh_keypair, wait_timeout, image, unique_name):
     cpu, mem = 1, 2
     pub_key, pri_key = ssh_keypair
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;])
+    vm_spec.add_image(&#34;disk-0&#34;, image[&#39;id&#39;], image_uid=image[&#39;info&#39;][&#39;metadata&#39;][&#39;uid&#39;])
     vm_spec.run_strategy = &#34;Halted&#34;
 
     userdata = yaml.safe_load(vm_spec.user_data)
