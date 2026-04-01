@@ -68,7 +68,7 @@ The makefile allows you to do the following
 - `make all`
      - This will create all of the docs sites and put them into `docs/public/`
 - `make run-docs`
-     - This will clean out all of the directories, then generate backend and frontend docs, then generate a hugo server that outputs at `/tmp/hugo/` and run a local web server that you can use to look at all of the docs locally. 
+     - This will clean out all of the directories, then generate backend and frontend docs, then generate a hugo server that outputs at `/tmp/hugo/` and run a local web server that you can use to look at all of the docs locally.
      - It will auto-regenerate any hugo manual tests, but won't update with the backend and frontend in real time. You will have to run it again.
 - `make backend`
      - this will generate the docs for the Python e2e tests. They will generate at `harvester_e2e_tests/harvester_e2e_tests/`
@@ -99,7 +99,7 @@ The (e2e) tests are expected to be ran against a given Harvester cluster. In add
 ## Configure Options in config.yml <a name="configure_options" />
 The section is targeting to explain configure options and test cases depends on.
 Notice that configuration options in [config.yml](config.yml) can be overwritten by command line parameters.
-For example, to overwrite the `endpoint` option, we can use the `--endpoint` parameter while running the tests. 
+For example, to overwrite the `endpoint` option, we can use the `--endpoint` parameter while running the tests.
 
 ### Deprecated Config Options <a name="deprecated_config" />
 - `do-not-cleanup`
@@ -292,3 +292,9 @@ There is a test skel spec to use as a template in `tests/cypress/skel/`.
 [terraform]: https://www.terraform.io/
 [AWS S3]: https://aws.amazon.com/s3/
 [Harvester manual test cases]: https://github.com/harvester/tests/tree/main/docs/content/manual
+
+
+# Build `requirements.txt` for Robot or `test-requirements.txt` for base tests:
+- `pip3 install pip-tools==7.5.3` locally
+- `pip-compile --generate-hashes test-requirements.in -o test-requirements.txt`
+- same for lint requirements like `pip-compile --generate-hashes lint-requirements.in -o lint-requirements.txt` so flake8 is happy

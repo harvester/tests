@@ -24,3 +24,7 @@ test_result.json
 public
 *.hugo_build.lock
 *.package-lock.json
+
+# building wheel removal
+apiclient/build
+apiclient/build/*
