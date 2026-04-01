@@ -7,7 +7,6 @@ cffi==2.0.0
 charset-normalizer==3.4.6
 colorama==0.4.6
 cryptography==46.0.6
-dataclasses==0.6
 decopatch==1.4.10
 distlib==0.4.0
 ecdsa==0.19.2
@@ -52,5 +51,4 @@ tomli_w==1.2.0
 tox==4.52.0
 urllib3==2.6.3
 virtualenv==21.2.0
-dataclasses;
 -e ./apiclient
