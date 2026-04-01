@@ -1,24 +1,23 @@
-pytest-ordering
-pytest-html
-pytest-json-report
-pytest-dependency
-paramiko
-pytest == 7.*
-pytest-cases == 3.8.5
-pytest-drop-dup-tests
-jinja2
-bcrypt
-pycryptodome
-sshpubkeys
-polling2
-cryptography
-boto3
-scp
-requests
-urllib3
-lxml
-pyyaml
-pdoc3
-tox
-dataclasses; python_version < '3.7'
+bcrypt==5.0.0
+boto3==1.42.75
+cryptography==46.0.5
+Jinja2==3.1.6
+lxml==6.0.2
+paramiko==4.0.0
+pdoc3==0.11.6
+polling2==0.5.0
+pycryptodome==3.23.0
+pytest==7.4.4
+pytest-cases==3.8.5
+pytest-dependency==0.6.1
+pytest-drop-dup-tests==1.0.0
+pytest-html==4.2.0
+pytest-json-report==1.5.0
+pytest-ordering==0.6
+PyYAML==6.0.3
+requests==2.32.5
+scp==0.15.0
+sshpubkeys==3.3.1
+tox==4.50.3
+urllib3==2.6.3
 -e ./apiclient
