@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from hashlib import sha512
-
+from paramiko.ssh_exception import ChannelException
 
 import pytest
 
@@ -90,11 +90,15 @@ def ubuntu_image_bad_checksum(api_client, unique_name, image_ubuntu, polling_for
 
 
 @pytest.fixture(scope="class")
-def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
+def ubuntu_vm(api_client, ssh_keypair, unique_name, ubuntu_image, polling_for):
     vm_name = f"vm-{unique_name}"
+    pubkey, _ = ssh_keypair
 
     vm_spec = api_client.vms.Spec(1, 2)
     vm_spec.add_image(vm_name, ubuntu_image["id"])
+    userdata = yaml.safe_load(vm_spec.user_data)
+    userdata["ssh_authorized_keys"] = [pubkey]
+    vm_spec.user_data = yaml.dump(userdata)
     code, data = api_client.vms.create(vm_name, vm_spec)
     assert 201 == code, f"Fail to create VM\n{code}, {data}"
     code, data = polling_for(
@@ -560,6 +564,50 @@ def test_volume_shrink_not_allowed(api_client, unique_name, ubuntu_image, pollin
 @pytest.mark.volumes
 @pytest.mark.virtualmachines
 class TestVolumeWithVM:
+
+    def vm_shell_do(self, name, api_client, host_shell, vm_shell,
+                    user, ssh_keypair, action, wait_timeout):
+        _, privatekey = ssh_keypair
+
+        deadline = datetime.now() + timedelta(seconds=wait_timeout)
+        while deadline > datetime.now():
+            code, data = api_client.vms.get_status(name)
+            if 200 == code:
+                phase = data.get("status", {}).get("phase")
+                conds = data.get("status", {}).get("conditions", [{}])
+                if ("Running" == phase
+                        and "AgentConnected" == conds[-1].get("type")
+                        and data["status"].get("interfaces")):
+                    break
+            sleep(3)
+        else:
+            raise TimeoutError(f"Wait timeout for VM {name} to be ready")
+
+        vm_ip = next(iface["ipAddress"] for iface in data["status"]["interfaces"]
+                     if iface["name"] == "default")
+
+        code, data = api_client.hosts.get(data["status"]["nodeName"])
+        host_ip = next(addr["address"] for addr in data["status"]["addresses"]
+                       if addr["type"] == "InternalIP")
+
+        with host_shell.login(host_ip, jumphost=True) as h:
+            vm_sh = vm_shell(user, pkey=privatekey)
+
+            deadline = datetime.now() + timedelta(seconds=wait_timeout)
+            while deadline > datetime.now():
+                try:
+                    vm_sh.connect(vm_ip, jumphost=h.client)
+                except ChannelException as e:
+                    print(e)
+                    sleep(3)
+                else:
+                    break
+            else:
+                raise AssertionError(f"Unable to login to {name}")
+
+            with vm_sh as sh:
+                action(sh)
+
     def pause_vm(self, api_client, ubuntu_vm, polling_for):
         vm_name = ubuntu_vm['metadata']['name']
         code, data = api_client.vms.pause(vm_name)
@@ -623,6 +671,95 @@ class TestVolumeWithVM:
         # source
         assert ubuntu_image["id"] == annotations['harvesterhci.io/imageId'], (code, data)
 
+    def test_snapshot_of_volume_on_vm(self, api_client, ubuntu_vm, ubuntu_image,
+                                      vm_checker, volume_checker,
+                                      wait_timeout, host_shell,
+                                      vm_shell, ssh_keypair, polling_for):
+        """
+        1. Create a VM with volume
+        2. Write some data on the VM
+        3. Create snapshot of the volume of the VM
+        4. Restore the snapshot to a new volume
+        5. Create new VM and use the restored volume
+        6. Check the data in the new VM
+        Ref. https://github.com/harvester/harvester/issues/2294
+        """
+        vm_name = ubuntu_vm['metadata']['name']
+        vol_name = (ubuntu_vm["spec"]["template"]["spec"]["volumes"][0]
+                             ['persistentVolumeClaim']['claimName'])
+
+        vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
+        assert vm_started, (code, vmi)
+
+        # Write 123 into test.txt
+        def action(sh):
+            _, _ = sh.exec_command("echo 123 > test.txt")  # nosec B601
+            _, _ = sh.exec_command("sync")  # nosec B601
+
+        self.vm_shell_do(vm_name, api_client,
+                         host_shell, vm_shell,
+                         ubuntu_image['ssh_user'], ssh_keypair,
+                         action, wait_timeout)
+
+        # Create a snapshot of the volume
+        snapshot_name = f"{vol_name[:60]}-snapshot"
+        code, _ = api_client.volumes.snapshot(vol_name, snapshot_name)
+        assert 204 == code, (f"Failed to create snapshot of volume {vol_name}")
+
+        # Wait the snapshot become ready
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, data = api_client.vol_snapshots.get(snapshot_name)
+            if code == 200 and data.get('status', {}).get('readyToUse', False):
+                break
+            sleep(3)
+        else:
+            raise AssertionError(
+                f"Timeout in waiting the snapshot {snapshot_name} to be ready.\n"
+                f"Last API Status({code}): {data}"
+                )
+
+        # Restore the snapshot
+        restore_vol_name = f"{snapshot_name[:60]}-restore"
+        code, _ = api_client.vol_snapshots.restore(snapshot_name, restore_vol_name)
+        assert 204 == code, (
+            f"Failed to restore snapshot {snapshot_name} to volume {restore_vol_name}")
+
+        # Wait the restored volume become ready, check the data resource as expected
+        volumes_ready, (code, data) = volume_checker.wait_volumes_ready([restore_vol_name])
+        assert volumes_ready, (code, data)
+        data_source = data.get('spec', {}).get('dataSource', {}).get('name')
+        assert snapshot_name == data_source, (
+            f"Data source mismatch. Expected {snapshot_name}, got {data_source}")
+
+        # Create new VM and use the restored volume
+        vm_with_restore_vol_name = f"{restore_vol_name[:60]}-vm"
+        vm_spec = api_client.vms.Spec(1, 2)
+        vm_spec.add_existing_volume(vm_with_restore_vol_name, restore_vol_name)
+        code, data = api_client.vms.create(vm_with_restore_vol_name, vm_spec)
+        assert 201 == code, f"Fail to create VM\n{code}, {data}"
+        code, data = polling_for(
+            "VM do created",
+            lambda c, d: 200 == c and d.get('status', {}).get('printableStatus') == "Running",
+            api_client.vms.get, vm_with_restore_vol_name
+        )
+
+        # Check the data in the new VM
+        def actassert(sh):
+            out, _ = sh.exec_command("cat test.txt")  # nosec B601
+            assert "123" in out
+
+        self.vm_shell_do(vm_with_restore_vol_name, api_client,
+                         host_shell, vm_shell,
+                         ubuntu_image['ssh_user'], ssh_keypair,
+                         actassert, wait_timeout)
+
+        # Teardown: delete the restore volume
+        vm_deleted, (code, data) = vm_checker.wait_deleted(vm_with_restore_vol_name)
+        assert vm_deleted, (code, data)
+        volumes_deleted, (code, data) = volume_checker.wait_volumes_deleted([restore_vol_name])
+        assert volumes_deleted, (code, data)
+
     def test_delete_volume_on_deleted_vm(self, api_client, ubuntu_image, ubuntu_vm, polling_for):
         """
         1. Create a VM with volume
@@ -668,16 +805,15 @@ def test_create_volume_snapshot_and_restore(
     7. Delete source volume, the snapshot should be deleted
     Ref. https://github.com/harvester/harvester/issues/2294
     """
-    image_id = None
     if source_type == "VM Image":
-        image_id = ubuntu_image['id']
-        unique_name = f"{unique_name}-image"
+        spec = api_client.volumes.Spec.for_image(ubuntu_image['info'])
+    else:
+        spec = api_client.volumes.Spec("10Gi")
 
     # Create a volume from source_type(Empty or VM Image)
-    spec = api_client.volumes.Spec("10Gi", storage_cls=None)
     kws = dict()
-    code, data = api_client.volumes.create(unique_name, spec, image_id=image_id, **kws)
-    assert 201 == code, (code, unique_name, data, image_id)
+    code, data = api_client.volumes.create(unique_name, spec, **kws)
+    assert 201 == code, (code, unique_name, data, spec.to_dict(unique_name, 'default'))
 
     # Wait the volume become ready
     volumes_ready, (code, data) = volume_checker.wait_volumes_ready([unique_name])
