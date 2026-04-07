@@ -1,6 +1,0 @@
----
-
-- name: pki | _install_openssl_on_Debian | Install OpenSSL package
-  apt:
-    name: openssl
-    state: latest
