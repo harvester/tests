@@ -37,7 +37,8 @@ jobs:
         working-directory: ./docs/
       - name: install requirements
         run: |
-          pip install -r test-requirements.txt
+          pip install --no-deps -e${{github.workspace}}/apiclient
+          pip install -r test-requirements.txt --require-hashes
       - name: Run pdoc3
         run: |
           pdoc --html -o . .
