@@ -94,7 +94,11 @@ def ubuntu_vm(api_client, unique_name, ubuntu_image, polling_for):
     vm_name = f"vm-{unique_name}"
 
     vm_spec = api_client.vms.Spec(1, 2)
-    vm_spec.add_image(vm_name, ubuntu_image["id"])
+    vm_spec.add_image(
+        vm_name,
+        ubuntu_image["id"],
+        image_uid=ubuntu_image['info']['metadata']['uid']
+        )
     code, data = api_client.vms.create(vm_name, vm_spec)
     assert 201 == code, f"Fail to create VM\n{code}, {data}"
     code, data = polling_for(
