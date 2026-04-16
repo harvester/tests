@@ -468,7 +468,7 @@ class TestVMOperations:
             f"Last API Status({code}): {data}"
         )
 
-    def test_migrate(self, api_client, unique_vm_name, wait_timeout):
+    def test_migrate(self, api_client, unique_vm_name, vm_checker):
         """
         To cover test:
         - https://harvester.github.io/tests/manual/live-migration/migrate-turned-on-vm-to-another-host/ # noqa
@@ -493,21 +493,11 @@ class TestVMOperations:
         except StopIteration:
             pytest.skip("Require 2+ nodes for migration testing.")
 
-        code, data = api_client.vms.migrate(unique_vm_name, new_host)
-        assert 204 == code, (code, data)
-
-        endtime = datetime.now() + timedelta(seconds=wait_timeout)
-        while endtime > datetime.now():
-            code, data = api_client.vms.get_status(unique_vm_name)
-            migrating = data['metadata']['annotations'].get("harvesterhci.io/migrationState")
-            if not migrating and new_host == data['status']['nodeName']:
-                break
-            sleep(5)
-        else:
-            raise AssertionError(
-                f"Failed to Migrate VM({unique_vm_name}) from {cur_host} to {new_host}\n"
-                f"API Status({code}): {data}"
-            )
+        vm_migrated, (code, data) = vm_checker.wait_migrated(unique_vm_name, new_host)
+        assert vm_migrated, (
+            f"Failed to Migrate VM({unique_vm_name}) from {cur_host} to {new_host}\n"
+            f"API Status({code}): {data}"
+        )
 
     def test_abort_migrate(self, api_client, unique_vm_name, wait_timeout):
         """
