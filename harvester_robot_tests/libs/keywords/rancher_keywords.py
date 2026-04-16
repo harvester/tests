@@ -698,7 +698,8 @@ class rancher_keywords:
         logging(f"Creating LoadBalancer service {name} in cluster {cluster_id}")
 
         service_data = {
-            "type": "service",
+            "apiVersion": "v1",
+            "kind": "Service",
             "metadata": {
                 "namespace": namespace,
                 "name": name,
@@ -708,7 +709,7 @@ class rancher_keywords:
             },
             "spec": {
                 "type": "LoadBalancer",
-                "sessionAffinity": None,
+                "sessionAffinity": "None",
                 "ports": [
                     {
                         "name": "http",
@@ -792,6 +793,60 @@ class rancher_keywords:
         """
         logging(f"Waiting for Harvester deployments in cluster {cluster_id}")
         self.rancher.wait_for_harvester_deployments_ready(cluster_id, int(timeout))
+
+    # Cluster Network Operations
+    def create_cluster_network(self, name):
+        """
+        Create cluster network
+
+        Args:
+            name: Cluster network name
+        """
+        logging(f"Creating cluster network: {name}")
+        return self.rancher.create_cluster_network(name)
+
+    def delete_cluster_network(self, name):
+        """
+        Delete cluster network
+
+        Args:
+            name: Cluster network name
+        """
+        logging(f"Deleting cluster network: {name}")
+        self.rancher.delete_cluster_network(name)
+
+    def create_vlan_config(self, name, cluster_network, nic):
+        """
+        Create VLAN config to bind NIC to cluster network
+
+        Args:
+            name: VLAN config name
+            cluster_network: Cluster network name
+            nic: NIC name (e.g., eno50)
+        """
+        logging(f"Creating VLAN config: {name}")
+        return self.rancher.create_vlan_config(name, cluster_network, nic)
+
+    def delete_vlan_config(self, name):
+        """
+        Delete VLAN config
+
+        Args:
+            name: VLAN config name
+        """
+        logging(f"Deleting VLAN config: {name}")
+        self.rancher.delete_vlan_config(name)
+
+    def wait_for_cluster_network_ready(self, name, timeout=120):
+        """
+        Wait for cluster network to become ready
+
+        Args:
+            name: Cluster network name
+            timeout: Wait timeout in seconds
+        """
+        logging(f"Waiting for cluster network {name} to be ready")
+        return self.rancher.wait_for_cluster_network_ready(name, int(timeout))
 
     # VLAN Network Operations
     def create_vlan_network(self, name, vlan_id, cluster_network):
@@ -898,3 +953,269 @@ class rancher_keywords:
         """
         logging(f"Deleting image: {name}")
         self.rancher.delete_image(name)
+
+    # Import Existing Cluster Operations
+    def create_import_cluster(self, name):
+        """
+        Create a minimal provisioning cluster for importing an existing cluster.
+
+        Args:
+            name: Cluster name
+
+        Returns:
+            dict: Cluster data
+        """
+        logging(f"Creating import cluster: {name}")
+        return self.rancher.create_import_cluster(name)
+
+    def wait_for_import_cluster_ready(self, cluster_name,
+                                      timeout=DEFAULT_TIMEOUT_LONG):
+        """
+        Wait for an imported cluster to become active in Rancher.
+
+        Args:
+            cluster_name: Name of the provisioning cluster
+            timeout: Timeout in seconds
+
+        Returns:
+            dict: Cluster data when ready
+        """
+        logging(f"Waiting for import cluster {cluster_name} to be ready")
+        return self.rancher.wait_for_import_cluster_ready(
+            cluster_name, int(timeout)
+        )
+
+    # Custom RKE2 Cluster Operations
+    def create_custom_rke2_cluster(self, name, cloud_provider_config_id,
+                                   k8s_version, cloud_credential_id,
+                                   ingress="traefik"):
+        """
+        Create a custom RKE2 cluster without machinePools.
+
+        Nodes are registered externally via the registration command.
+        The Harvester cloud provider is configured.
+
+        Args:
+            name: Cluster name
+            cloud_provider_config_id: Cloud provider config secret ID
+            k8s_version: Kubernetes version
+            cloud_credential_id: Cloud credential ID
+            ingress: Ingress controller (default: traefik)
+
+        Returns:
+            dict: Cluster data
+        """
+        logging(f"Creating custom RKE2 cluster: {name}")
+        return self.rancher.create_custom_rke2_cluster(
+            name, cloud_provider_config_id, k8s_version,
+            cloud_credential_id, ingress
+        )
+
+    def update_cluster_chart_name(self, cluster_name, mgmt_cluster_id):
+        """
+        Patch a custom cluster's cloud provider clusterName with the
+        real management cluster ID so the cloud provider can match VMs.
+
+        Args:
+            cluster_name: Provisioning cluster name
+            mgmt_cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        logging(f"Updating chart clusterName to {mgmt_cluster_id}")
+        return self.rancher.update_cluster_chart_name(
+            cluster_name, mgmt_cluster_id
+        )
+
+    def fix_cloud_provider_cluster_name(self, cluster_id):
+        """
+        Fix the cloud-provider --cluster-name arg on the guest cluster.
+
+        Rancher deploys the cloud-provider chart with the provisioning
+        name, but the cloud provider needs the management cluster ID
+        to match VMs. This patches the deployment and waits for rollout.
+
+        Args:
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        logging(f"Fixing cloud provider clusterName to {cluster_id}")
+        return self.rancher.fix_cloud_provider_cluster_name(cluster_id)
+
+    def get_cluster_registration_command(self, cluster_name,
+                                         timeout=DEFAULT_TIMEOUT_LONG):
+        """
+        Get the insecure node registration command for a custom cluster.
+
+        Args:
+            cluster_name: Name of the provisioning cluster
+            timeout: Timeout in seconds
+
+        Returns:
+            str: The insecure node command to run on VMs
+        """
+        logging(f"Getting registration command for: {cluster_name}")
+        return self.rancher.get_cluster_registration_command(
+            cluster_name, int(timeout)
+        )
+
+    # Harvester VM Operations (for custom cluster nodes)
+    def create_harvester_vm(self, name, image_id, network_id, cpus=2,
+                            memory=4, disk_size=40, ssh_user="ubuntu",
+                            user_data="", network_data=""):
+        """
+        Create a VM on Harvester.
+
+        Args:
+            name: VM name
+            image_id: Image ID (namespace/name format)
+            network_id: Network ID (namespace/name format)
+            cpus: Number of CPU cores (default: 2)
+            memory: Memory in GiB (default: 4)
+            disk_size: Disk size in GiB (default: 40)
+            ssh_user: SSH username (default: ubuntu)
+            user_data: Cloud-init user data string
+            network_data: Cloud-init network data string (NoCloud network config v2)
+
+        Returns:
+            dict: VM data
+        """
+        logging(f"Creating Harvester VM: {name}")
+        return self.rancher.create_harvester_vm(
+            name, image_id, network_id, int(cpus), int(memory),
+            int(disk_size), ssh_user, user_data, network_data
+        )
+
+    def wait_for_harvester_vm_ready(self, name, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a Harvester VM to be running.
+
+        Args:
+            name: VM name
+            timeout: Timeout in seconds
+
+        Returns:
+            dict: VM data when running
+        """
+        logging(f"Waiting for VM {name} to be running")
+        return self.rancher.wait_for_harvester_vm_ready(name, int(timeout))
+
+    def delete_harvester_vm(self, name):
+        """
+        Delete a Harvester VM.
+
+        Args:
+            name: VM name
+        """
+        logging(f"Deleting Harvester VM: {name}")
+        self.rancher.delete_harvester_vm(name)
+
+    # Chart Install Keywords
+    def install_chart(self, cluster_id, repo_name, chart_name, version,
+                      release_name, namespace, values=None):
+        """
+        Install a Helm chart on a guest cluster via Rancher catalog API.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            repo_name: Chart repository name
+            chart_name: Chart name
+            version: Chart version (empty string for latest)
+            release_name: Helm release name
+            namespace: Target namespace
+            values: Optional dict of chart values overrides
+        """
+        if not version:
+            versions = self.rancher.get_chart_versions(
+                repo_name, chart_name, cluster_id
+            )
+            if not versions:
+                raise Exception(
+                    f"No versions found for chart {chart_name} "
+                    f"in {repo_name}"
+                )
+            version = versions[0]
+            logging(f"Using latest chart version: {version}")
+
+        logging(f"Installing chart {chart_name} v{version} as "
+                f"{release_name} in {namespace}")
+        return self.rancher.install_chart(
+            cluster_id, repo_name, chart_name, version,
+            release_name, namespace, values
+        )
+
+    def get_chart_versions(self, repo_name, chart_name, cluster_id=None):
+        """
+        Get available versions for a chart from a Rancher chart repository.
+
+        Args:
+            repo_name: Chart repository name
+            chart_name: Chart name
+            cluster_id: Optional guest cluster ID to query via proxy
+
+        Returns:
+            list: Available versions sorted newest first
+        """
+        logging(f"Getting versions for chart {chart_name} from {repo_name}")
+        return self.rancher.get_chart_versions(
+            repo_name, chart_name, cluster_id
+        )
+
+    def create_cluster_repo(self, cluster_id, repo_name, git_url, git_branch):
+        """
+        Create a ClusterRepo on a guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            repo_name: Name for the ClusterRepo resource
+            git_url: Git repository URL
+            git_branch: Git branch name
+        """
+        logging(f"Creating ClusterRepo {repo_name} (branch={git_branch})")
+        return self.rancher.create_cluster_repo(
+            cluster_id, repo_name, git_url, git_branch
+        )
+
+    def wait_for_cluster_repo_ready(self, cluster_id, repo_name,
+                                    timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a ClusterRepo to finish downloading on a guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            repo_name: ClusterRepo name
+            timeout: Maximum wait time in seconds
+        """
+        logging(f"Waiting for ClusterRepo {repo_name} to be ready")
+        return self.rancher.wait_for_cluster_repo_ready(
+            cluster_id, repo_name, timeout
+        )
+
+    def create_cloud_config_secret(self, cluster_id, secret_name,
+                                   namespace, kubeconfig):
+        """
+        Create a cloud-provider-config secret on a guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            secret_name: Name for the secret
+            namespace: Target namespace
+            kubeconfig: Harvester cloud-provider kubeconfig content
+        """
+        logging(f"Creating cloud config secret {secret_name}")
+        return self.rancher.create_cloud_config_secret(
+            cluster_id, secret_name, namespace, kubeconfig
+        )
+
+    def wait_for_chart_app_ready(self, cluster_id, release_name,
+                                 namespace, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a chart app to be deployed and ready.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            release_name: Helm release name
+            namespace: Namespace where chart was installed
+            timeout: Timeout in seconds
+        """
+        logging(f"Waiting for chart app {release_name} to be ready")
+        return self.rancher.wait_for_chart_app_ready(
+            cluster_id, release_name, namespace, int(timeout)
+        )

@@ -49,13 +49,17 @@ ${NVIDIA_TOOLKIT_DRIVER_LOCATION}   %{NVIDIA_TOOLKIT_DRIVER_LOCATION=http://HTTP
 ${RANCHER_ENDPOINT}             %{RANCHER_ENDPOINT=https://rancher.localhost}
 ${RANCHER_USERNAME}             %{RANCHER_USERNAME=admin}
 ${RANCHER_PASSWORD}             %{RANCHER_PASSWORD=password}
-${RANCHER_WAIT_TIMEOUT}         1800
+${RANCHER_WAIT_TIMEOUT}         1200
 
 # RKE2 Version Configuration
 ${RKE2_VERSION}                %{RKE2_VERSION=v1.34}
 
 # Ingress Controller: traefik (default, recommended by Rancher) or nginx
 ${INGRESS_CONTROLLER}           %{INGRESS_CONTROLLER=traefik}
+
+# Chart Repository for import clusters
+${CHART_REPO_URL}               %{CHART_REPO_URL=https://github.com/rancher/charts}
+${CHART_REPO_BRANCH}            %{CHART_REPO_BRANCH=release-v2.14}
 
 # IP Pool for LoadBalancer tests
 ${IP_POOL_SUBNET}               %{IP_POOL_SUBNET=192.168.1.0/24}

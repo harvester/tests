@@ -54,6 +54,32 @@ class CRD(Base):
             self, vm_name, cpu, memory, image_id, namespace, **kwargs):
         """Create VM matching Harvester's exact structure."""
 
+        # Look up the image's actual storage class from Harvester.
+        # Since v1.8.0 (harvester#5165), storage classes use lh-<uid>
+        # instead of longhorn-<image_name>. We read status.storageClassName
+        # which works for both old and new Harvester versions.
+        try:
+            img_obj = self.obj_api.get_namespaced_custom_object(
+                group="harvesterhci.io",
+                version="v1beta1",
+                namespace=namespace,
+                plural="virtualmachineimages",
+                name=image_id
+            )
+            storage_class = img_obj.get("status", {}).get(
+                "storageClassName", ""
+            )
+            if not storage_class:
+                raise Exception(
+                    f"Image {image_id} has no storageClassName in status"
+                )
+            logging(f"Resolved storage class for image {image_id}: "
+                    f"{storage_class}")
+        except ApiException as e:
+            raise Exception(
+                f"Failed to look up image {image_id} for storage class: {e}"
+            )
+
         # Build volumeClaimTemplates annotation for Harvester
         volume_claim_templates = [
             {
@@ -67,7 +93,7 @@ class CRD(Base):
                     "accessModes": ["ReadWriteMany"],
                     "resources": {"requests": {"storage": "10Gi"}},
                     "volumeMode": "Block",
-                    "storageClassName": f"longhorn-{image_id}"
+                    "storageClassName": storage_class
                 }
             }
         ]

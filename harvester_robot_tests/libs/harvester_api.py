@@ -291,18 +291,29 @@ class VMManager(ResourceManager):
             self.numberOfReplicas = 3
             self.running = True
 
-        def add_image(self, name: str, image_id: str):
-            """Add image disk"""
+        def add_image(self, name: str, image_id: str,
+                      image_uid: str = None):
+            """Add image disk.
+
+            Args:
+                name: Disk name
+                image_id: Image ID (namespace/name format)
+                image_uid: Image UID. Required for Harvester v1.8.0+ where
+                    the storage class is named lh-<uid> instead of
+                    longhorn-<image-name>.
+            """
             self.disks.append({
                 'name': name,
                 'disk': {'bus': 'virtio'},
                 'bootOrder': 1
             })
+            dv_name = f"{name}-dv"
+            dv: Dict = {'name': dv_name}
+            if image_uid:
+                dv['storageClassName'] = f"lh-{image_uid}"
             self.volumes.append({
                 'name': name,
-                'dataVolume': {
-                    'name': f"{name}-dv"
-                }
+                'dataVolume': dv
             })
 
         def add_network(self, name: str):
