@@ -535,6 +535,53 @@ Rancher - Wait For Harvester Deployments Ready
     Log    Waiting for Harvester deployments in cluster ${cluster_id}
     wait_for_harvester_deployments_ready    ${cluster_id}    ${timeout}
 
+# Cluster Network Operations
+Rancher - Create Cluster Network
+    [Arguments]    ${name}
+    [Documentation]    Create cluster network
+    ...               Args:
+    ...                   name: Cluster network name
+    Log    Creating cluster network: ${name}
+    ${cn}=    create_cluster_network    ${name}
+    RETURN    ${cn}
+
+Rancher - Delete Cluster Network
+    [Arguments]    ${name}
+    [Documentation]    Delete cluster network
+    ...               Args:
+    ...                   name: Cluster network name
+    Log    Deleting cluster network: ${name}
+    delete_cluster_network    ${name}
+
+Rancher - Create VLAN Config
+    [Arguments]    ${name}    ${cluster_network}    ${nic}
+    [Documentation]    Create VLAN config to bind NIC to cluster network
+    ...               Args:
+    ...                   name: VLAN config name
+    ...                   cluster_network: Cluster network name
+    ...                   nic: NIC name (e.g., eno50)
+    Log    Creating VLAN config: ${name}
+    ${vc}=    create_vlan_config    ${name}    ${cluster_network}    ${nic}
+    RETURN    ${vc}
+
+Rancher - Delete VLAN Config
+    [Arguments]    ${name}
+    [Documentation]    Delete VLAN config
+    ...               Args:
+    ...                   name: VLAN config name
+    Log    Deleting VLAN config: ${name}
+    delete_vlan_config    ${name}
+
+Rancher - Wait For Cluster Network Ready
+    [Arguments]    ${name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for cluster network to become ready
+    ...               Args:
+    ...                   name: Cluster network name
+    ...                   timeout: Wait timeout in seconds
+    Log    Waiting for cluster network ${name} to be ready
+    ${cn}=    wait_for_cluster_network_ready    ${name}    ${timeout}
+    RETURN    ${cn}
+
 # VLAN Network Operations
 Rancher - Create VLAN Network
     [Arguments]    ${name}    ${vlan_id}    ${cluster_network}
@@ -624,6 +671,207 @@ Rancher - Delete Image
     Log    Deleting image: ${name}
     delete_image    ${name}
 
+# Custom RKE2 Cluster Operations
+Rancher - Create Custom RKE2 Cluster
+    [Arguments]    ${name}    ${cloud_provider_config_id}    ${k8s_version}
+    ...            ${cloud_credential_id}    ${ingress}=${INGRESS_CONTROLLER}
+    [Documentation]    Create a custom RKE2 cluster without machinePools.
+    ...               Nodes are registered externally. The Harvester cloud
+    ...               provider is configured.
+    ...               Args:
+    ...                   name: Cluster name
+    ...                   cloud_provider_config_id: Cloud provider config secret ID
+    ...                   k8s_version: Kubernetes version
+    ...                   cloud_credential_id: Cloud credential ID
+    ...                   ingress: Ingress controller (default: INGRESS_CONTROLLER)
+    ...               Returns:
+    ...                   dict: Cluster data
+    Log    Creating custom RKE2 cluster: ${name}
+    ${cluster}=    create_custom_rke2_cluster    ${name}    ${cloud_provider_config_id}
+    ...            ${k8s_version}    ${cloud_credential_id}    ${ingress}
+    RETURN    ${cluster}
+
+Rancher - Update Cluster Chart Name
+    [Arguments]    ${cluster_name}    ${mgmt_cluster_id}
+    [Documentation]    Patch the cloud provider clusterName in a custom cluster's
+    ...               chartValues with the real management cluster ID.
+    ...               Args:
+    ...                   cluster_name: Provisioning cluster name
+    ...                   mgmt_cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    Log    Updating chart clusterName to ${mgmt_cluster_id} for ${cluster_name}
+    update_cluster_chart_name    ${cluster_name}    ${mgmt_cluster_id}
+
+Rancher - Fix Cloud Provider Cluster Name
+    [Arguments]    ${cluster_id}
+    [Documentation]    Fix the cloud-provider --cluster-name arg on the guest cluster.
+    ...               Rancher deploys the chart with the provisioning name, but
+    ...               the cloud provider needs the management cluster ID to match
+    ...               VMs. Patches the deployment and waits for rollout.
+    ...               Args:
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    Log    Fixing cloud provider clusterName on cluster ${cluster_id}    console=yes
+    fix_cloud_provider_cluster_name    ${cluster_id}
+
+Rancher - Get Cluster Registration Command
+    [Arguments]    ${cluster_name}    ${timeout}=${RANCHER_WAIT_TIMEOUT}
+    [Documentation]    Get the insecure node registration command for a custom cluster.
+    ...               Args:
+    ...                   cluster_name: Name of the provisioning cluster
+    ...                   timeout: Timeout in seconds
+    ...               Returns:
+    ...                   str: The insecure node command to run on VMs
+    Log    Getting registration command for: ${cluster_name}
+    ${command}=    get_cluster_registration_command    ${cluster_name}    ${timeout}
+    RETURN    ${command}
+
+# Harvester VM Operations (for custom cluster nodes)
+Rancher - Create Harvester VM
+    [Arguments]    ${name}    ${image_id}    ${network_id}    ${cpus}=2    ${memory}=4
+    ...            ${disk_size}=40    ${ssh_user}=ubuntu    ${user_data}=${EMPTY}
+    ...            ${network_data}=${EMPTY}
+    [Documentation]    Create a VM on Harvester for custom cluster nodes.
+    ...               Args:
+    ...                   name: VM name
+    ...                   image_id: Image ID (namespace/name format)
+    ...                   network_id: Network ID (namespace/name format)
+    ...                   cpus: Number of CPU cores (default: 2)
+    ...                   memory: Memory in GiB (default: 4)
+    ...                   disk_size: Disk size in GiB (default: 40)
+    ...                   ssh_user: SSH username (default: ubuntu)
+    ...                   user_data: Cloud-init user data string
+    ...                   network_data: Cloud-init network data string (v2 format)
+    ...               Returns:
+    ...                   dict: VM data
+    Log    Creating Harvester VM: ${name}
+    ${vm}=    create_harvester_vm    ${name}    ${image_id}    ${network_id}
+    ...       ${cpus}    ${memory}    ${disk_size}    ${ssh_user}    ${user_data}
+    ...       ${network_data}
+    RETURN    ${vm}
+
+Rancher - Wait For Harvester VM Ready
+    [Arguments]    ${name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for a Harvester VM to be running.
+    ...               Args:
+    ...                   name: VM name
+    ...                   timeout: Timeout in seconds
+    ...               Returns:
+    ...                   dict: VM data when running
+    Log    Waiting for VM ${name} to be running
+    ${vm}=    wait_for_harvester_vm_ready    ${name}    ${timeout}
+    RETURN    ${vm}
+
+Rancher - Delete Harvester VM
+    [Arguments]    ${name}
+    [Documentation]    Delete a Harvester VM.
+    ...               Args:
+    ...                   name: VM name
+    Log    Deleting Harvester VM: ${name}
+    delete_harvester_vm    ${name}
+
+# Chart Install Operations
+Rancher - Install Chart
+    [Arguments]    ${cluster_id}    ${repo_name}    ${chart_name}    ${version}
+    ...            ${release_name}    ${namespace}    ${values}=${None}
+    [Documentation]    Install a Helm chart on a guest cluster via Rancher catalog API.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   repo_name: Chart repository name
+    ...                   chart_name: Chart name
+    ...                   version: Chart version (empty string for latest)
+    ...                   release_name: Helm release name
+    ...                   namespace: Target namespace
+    ...                   values: Optional dict of chart values overrides
+    Log    Installing chart ${chart_name} v${version} on cluster ${cluster_id}
+    ${result}=    install_chart    ${cluster_id}    ${repo_name}    ${chart_name}
+    ...    ${version}    ${release_name}    ${namespace}    ${values}
+    RETURN    ${result}
+
+Rancher - Get Chart Versions
+    [Arguments]    ${repo_name}    ${chart_name}    ${cluster_id}=${None}
+    [Documentation]    Get available versions for a chart from a Rancher chart repo.
+    ...               Args:
+    ...                   repo_name: Chart repository name
+    ...                   chart_name: Chart name
+    ...                   cluster_id: Optional guest cluster ID to query via proxy
+    ${versions}=    get_chart_versions    ${repo_name}    ${chart_name}    ${cluster_id}
+    RETURN    ${versions}
+
+Rancher - Create Cluster Repo
+    [Arguments]    ${cluster_id}    ${repo_name}    ${git_url}    ${git_branch}
+    [Documentation]    Create a ClusterRepo on a guest cluster.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   repo_name: Name for the ClusterRepo resource
+    ...                   git_url: Git repository URL
+    ...                   git_branch: Git branch name
+    Log    Creating ClusterRepo ${repo_name} (branch=${git_branch}) on cluster ${cluster_id}
+    ${result}=    create_cluster_repo    ${cluster_id}    ${repo_name}    ${git_url}    ${git_branch}
+    RETURN    ${result}
+
+Rancher - Wait For Cluster Repo Ready
+    [Arguments]    ${cluster_id}    ${repo_name}    ${timeout}=${RANCHER_WAIT_TIMEOUT}
+    [Documentation]    Wait for a ClusterRepo to finish downloading on a guest cluster.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   repo_name: ClusterRepo name
+    ...                   timeout: Timeout in seconds
+    Log    Waiting for ClusterRepo ${repo_name} to be ready
+    ${result}=    wait_for_cluster_repo_ready    ${cluster_id}    ${repo_name}    ${timeout}
+    RETURN    ${result}
+
+Rancher - Create Cloud Config Secret
+    [Arguments]    ${cluster_id}    ${secret_name}    ${namespace}    ${kubeconfig}
+    [Documentation]    Create a cloud-provider-config secret on a guest cluster.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   secret_name: Secret name
+    ...                   namespace: Target namespace
+    ...                   kubeconfig: Harvester cloud-provider kubeconfig content
+    Log    Creating cloud config secret ${secret_name} on cluster ${cluster_id}
+    ${result}=    create_cloud_config_secret    ${cluster_id}    ${secret_name}
+    ...    ${namespace}    ${kubeconfig}
+    RETURN    ${result}
+
+Rancher - Wait For Chart App Ready
+    [Arguments]    ${cluster_id}    ${release_name}    ${namespace}    ${timeout}=${RANCHER_WAIT_TIMEOUT}
+    [Documentation]    Wait for a chart app to be deployed and ready.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   release_name: Helm release name
+    ...                   namespace: Namespace where chart was installed
+    ...                   timeout: Timeout in seconds
+    Log    Waiting for chart app ${release_name} to be ready
+    ${result}=    wait_for_chart_app_ready    ${cluster_id}    ${release_name}
+    ...    ${namespace}    ${timeout}
+    RETURN    ${result}
+
+# Import Existing Cluster Operations
+Rancher - Create Import Cluster
+    [Arguments]    ${name}
+    [Documentation]    Create a minimal provisioning cluster for importing an
+    ...               existing cluster. The cluster has an empty spec; the actual
+    ...               RKE2 cluster is running externally.
+    ...               Args:
+    ...                   name: Cluster name
+    ...               Returns:
+    ...                   dict: Cluster data
+    Log    Creating import cluster: ${name}
+    ${cluster}=    create_import_cluster    ${name}
+    RETURN    ${cluster}
+
+Rancher - Wait For Import Cluster Ready
+    [Arguments]    ${cluster_name}    ${timeout}=${RANCHER_WAIT_TIMEOUT}
+    [Documentation]    Wait for an imported cluster to become active in Rancher.
+    ...               Does not check machinePools or cluster.x-k8s.io machines.
+    ...               Args:
+    ...                   cluster_name: Name of the provisioning cluster
+    ...                   timeout: Timeout in seconds
+    ...               Returns:
+    ...                   dict: Cluster data when ready
+    Log    Waiting for import cluster ${cluster_name} to be ready
+    ${cluster}=    wait_for_import_cluster_ready    ${cluster_name}    ${timeout}
+    RETURN    ${cluster}
+
 # ============================================================
 # BDD Keywords - Given (Preconditions)
 # ============================================================
@@ -649,6 +897,15 @@ Single node RKE2 cluster is created
     Set Suite Variable    ${SINGLE_CLUSTER_ID}    ${cluster_id}
     Log    Single-node cluster created: ${SINGLE_CLUSTER_NAME} (${cluster_id})    console=yes
 
+Single node custom RKE2 cluster is created
+    [Documentation]    Create a single-node custom RKE2 cluster with Harvester cloud
+    ...               provider and store its ID. Nodes are registered via cloud-init.
+    Log    Creating custom cluster: ${CUSTOM_CLUSTER_NAME}    console=yes
+    ${cluster_id}=    Create Custom RKE2 Cluster With Full Setup
+    ...    ${CUSTOM_CLUSTER_NAME}    ${RKE2_VERSION}    1
+    Set Suite Variable    ${CUSTOM_CLUSTER_ID}    ${cluster_id}
+    Log    Custom cluster created: ${CUSTOM_CLUSTER_NAME} (${cluster_id})    console=yes
+
 Basic workloads are deployed on single node cluster
     [Documentation]    Deploy CSI, Whoami, and LB services on the single-node cluster.
     # CSI workload
@@ -667,6 +924,24 @@ Basic workloads are deployed on single node cluster
     ${lb_pool}=    Set Variable    lb-${SINGLE_CLUSTER_NAME}-pool
     Rancher - Create LB Service    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
     Rancher - Wait For LB Service Ready    ${SINGLE_CLUSTER_ID}    ${lb_pool}
+
+Basic workloads are deployed on single node custom cluster
+    [Documentation]    Deploy CSI, Whoami, and LB services on the custom cluster.
+    # CSI workload
+    ${pvc_name}=    Set Variable    pvc-${CUSTOM_CLUSTER_NAME}
+    ${csi_deploy}=    Set Variable    csi-${CUSTOM_CLUSTER_NAME}
+    Rancher - Create PVC    ${CUSTOM_CLUSTER_ID}    ${pvc_name}    1Gi
+    Rancher - Create Deployment    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:latest    ${pvc_name}
+    # Whoami workload
+    ${whoami_deploy}=    Set Variable    whoami-${CUSTOM_CLUSTER_NAME}
+    Rancher - Create Deployment    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
+    # TODO: LB disabled for custom clusters — https://github.com/harvester/harvester/issues/10399
+    # ${lb_dhcp}=    Set Variable    lb-${CUSTOM_CLUSTER_NAME}-dhcp
+    # Rancher - Create LB Service    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_dhcp}    ${whoami_deploy}    ipam=dhcp
+    # Rancher - Wait For LB Service Ready    ${CUSTOM_CLUSTER_ID}    ${lb_dhcp}
+    # ${lb_pool}=    Set Variable    lb-${CUSTOM_CLUSTER_NAME}-pool
+    # Rancher - Create LB Service    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
+    # Rancher - Wait For LB Service Ready    ${CUSTOM_CLUSTER_ID}    ${lb_pool}
 
 Multi node RKE2 cluster is created
     [Documentation]    Create a 3-node RKE2 cluster and store its ID.
@@ -746,6 +1021,45 @@ Single node RKE2 cluster is deleted
     Rancher - Delete RKE2 Cluster    ${SINGLE_CLUSTER_NAME}
     Rancher - Wait For RKE2 Cluster Deleted    ${SINGLE_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
 
+Single node custom RKE2 cluster is deleted
+    [Documentation]    Delete the custom RKE2 cluster, its VMs, and wait for removal.
+    Log    Deleting custom cluster: ${CUSTOM_CLUSTER_NAME}    console=yes
+    Rancher - Delete RKE2 Cluster    ${CUSTOM_CLUSTER_NAME}
+    Rancher - Wait For RKE2 Cluster Deleted    ${CUSTOM_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
+    Run Keyword And Ignore Error    Rancher - Delete Harvester VM    ${CUSTOM_CLUSTER_NAME}-vm-0
+
+Single node import RKE2 cluster is created
+    [Documentation]    Create a single-node import RKE2 cluster where RKE2 is deployed
+    ...               via cloud-init on a Harvester VM and the cluster is imported
+    ...               into Rancher. Store its ID.
+    Log    Creating import cluster: ${IMPORT_CLUSTER_NAME}    console=yes
+    ${cluster_id}=    Create Import RKE2 Cluster With Full Setup
+    ...    ${IMPORT_CLUSTER_NAME}    1
+    Set Suite Variable    ${IMPORT_CLUSTER_ID}    ${cluster_id}
+    Log    Import cluster created: ${IMPORT_CLUSTER_NAME} (${cluster_id})    console=yes
+
+Basic workloads are deployed on single node import cluster
+    [Documentation]    Deploy CSI, Whoami workloads on the import cluster.
+    ...               Harvester CSI driver and Cloud Provider are installed
+    ...               during cluster setup via Rancher Apps.
+    # CSI workload
+    ${pvc_name}=    Set Variable    pvc-${IMPORT_CLUSTER_NAME}
+    ${csi_deploy}=    Set Variable    csi-${IMPORT_CLUSTER_NAME}
+    Rancher - Create PVC    ${IMPORT_CLUSTER_ID}    ${pvc_name}    1Gi
+    Rancher - Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:latest    ${pvc_name}
+    # Whoami workload
+    ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
+    Rancher - Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
+    # TODO: LB creation disabled — No cloud provider in the charts available for Harvester 1.8
+    # # LB DHCP
+    # ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
+    # Rancher - Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_dhcp}    ${whoami_deploy}    ipam=dhcp
+    # Rancher - Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}
+    # # LB Pool
+    # ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
+    # Rancher - Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
+    # Rancher - Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_pool}
+
 Multi node RKE2 cluster is deleted
     [Documentation]    Delete the multi-node RKE2 cluster and wait for removal.
     Log    Deleting: ${MULTI_CLUSTER_NAME}    console=yes
@@ -758,7 +1072,13 @@ Multi node RKE2 cluster is deleted
 Harvester deployments should be ready
     [Arguments]    ${cluster_id}
     [Documentation]    Verify harvester-cloud-provider and CSI driver are active.
-    Rancher - Wait For Harvester Deployments Ready    ${cluster_id}
+    Rancher - Wait For Deployment Ready    ${cluster_id}    kube-system    harvester-csi-driver-controllers
+    Rancher - Wait For Deployment Ready    ${cluster_id}    kube-system    harvester-cloud-provider
+
+Harvester CSI driver should be ready
+    [Arguments]    ${cluster_id}
+    [Documentation]    Verify only harvester-csi-driver is active (cloud provider skipped).
+    Rancher - Wait For Deployment Ready    ${cluster_id}    kube-system    harvester-csi-driver-controllers
 
 Basic workloads should be active on single node cluster
     [Documentation]    Verify CSI, Whoami, and both LB services are functional on the single-node cluster.
@@ -773,6 +1093,36 @@ Basic workloads should be active on single node cluster
     Rancher - Verify LB Via Cluster    ${SINGLE_CLUSTER_ID}    ${lb_dhcp}    Hostname:
     Rancher - Verify LB Via Cluster    ${SINGLE_CLUSTER_ID}    ${lb_pool}    Hostname:
     Log    All basic workloads verified on single-node cluster    console=yes
+
+Basic workloads should be active on single node custom cluster
+    [Documentation]    Verify CSI, Whoami, and both LB services are functional on the custom cluster.
+    ${pvc_name}=    Set Variable    pvc-${CUSTOM_CLUSTER_NAME}
+    ${csi_deploy}=    Set Variable    csi-${CUSTOM_CLUSTER_NAME}
+    ${whoami_deploy}=    Set Variable    whoami-${CUSTOM_CLUSTER_NAME}
+    ${lb_dhcp}=    Set Variable    lb-${CUSTOM_CLUSTER_NAME}-dhcp
+    ${lb_pool}=    Set Variable    lb-${CUSTOM_CLUSTER_NAME}-pool
+    Rancher - Wait For PVC Bound    ${CUSTOM_CLUSTER_ID}    ${pvc_name}
+    Rancher - Wait For Deployment Ready    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}
+    Rancher - Wait For Deployment Ready    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}
+    # TODO: LB verification disabled — https://github.com/harvester/harvester/issues/10399
+    # Rancher - Verify LB Via Cluster    ${CUSTOM_CLUSTER_ID}    ${lb_dhcp}    Hostname:
+    # Rancher - Verify LB Via Cluster    ${CUSTOM_CLUSTER_ID}    ${lb_pool}    Hostname:
+    Log    All basic workloads verified on custom cluster    console=yes
+
+Basic workloads should be active on single node import cluster
+    [Documentation]    Verify Whoami, CSI PVC/deployment and both LB services are functional on the import cluster.
+    ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
+    ${pvc_name}=    Set Variable    pvc-${IMPORT_CLUSTER_NAME}
+    ${csi_deploy}=    Set Variable    csi-${IMPORT_CLUSTER_NAME}
+    ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
+    ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
+    Rancher - Wait For PVC Bound    ${IMPORT_CLUSTER_ID}    ${pvc_name}
+    Rancher - Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}
+    Rancher - Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}
+    # TODO: LB verification disabled — https://github.com/harvester/harvester/issues/10399
+    # Rancher - Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}    Hostname:
+    # Rancher - Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_pool}    Hostname:
+    Log    All basic workloads verified on import cluster    console=yes
 
 CSI deployment and PVC should be active
     [Documentation]    Verify the CSI PVC is bound and deployment is running.
@@ -846,6 +1196,22 @@ Cleanup upgrade test resources
     Run Keyword And Ignore Error    Rancher - Scale RKE2 Cluster    ${MULTI_CLUSTER_NAME}    0    ${MULTI_CONFIG_NAME}
     Run Keyword And Ignore Error    Rancher - Wait For RKE2 Cluster Ready    ${MULTI_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
 
+Cleanup custom cluster test resources
+    [Documentation]    Clean up all resources created by the custom cluster test.
+    ...               Deletes the RKE2 cluster, waits for deletion, then removes
+    ...               the Harvester VM that was created for the node.
+    Run Keyword And Ignore Error    Rancher - Delete RKE2 Cluster    ${CUSTOM_CLUSTER_NAME}
+    Run Keyword And Ignore Error    Rancher - Wait For RKE2 Cluster Deleted    ${CUSTOM_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
+    Run Keyword And Ignore Error    Rancher - Delete Harvester VM    ${CUSTOM_CLUSTER_NAME}-vm-0
+
+Cleanup import cluster test resources
+    [Documentation]    Clean up all resources created by the import cluster test.
+    ...               Deletes the provisioning cluster, waits for deletion, then
+    ...               removes the Harvester VM that was created for the node.
+    Run Keyword And Ignore Error    Rancher - Delete RKE2 Cluster    ${IMPORT_CLUSTER_NAME}
+    Run Keyword And Ignore Error    Rancher - Wait For RKE2 Cluster Deleted    ${IMPORT_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
+    Run Keyword And Ignore Error    Rancher - Delete Harvester VM    ${IMPORT_CLUSTER_NAME}-vm-0
+
 # ============================================================
 # Shared cluster creation keyword
 # ============================================================
@@ -887,6 +1253,214 @@ Create RKE2 Cluster With Full Setup
     RETURN    ${cluster_id}
 
 # ============================================================
+# Shared custom cluster creation keyword
+# ============================================================
+Create Custom RKE2 Cluster With Full Setup
+    [Arguments]    ${cluster_name}    ${rke2_version}    ${machine_count}
+    ...            ${ingress}=${INGRESS_CONTROLLER}
+    [Documentation]    Create a custom RKE2 cluster with Harvester cloud provider.
+    ...               VMs are created on Harvester with cloud-init that runs the
+    ...               registration command to join the cluster.
+    ...               Uses shared cloud credential from suite setup.
+    ...               Returns cluster ID.
+
+    # Cloud provider secret (per-cluster)
+    ${secret}=    Rancher - Create Cloud Provider Secret    ${cluster_name}    ${CP_KUBECONFIG}    ${cluster_name}
+    ${cloud_provider_config_id}=    Set Variable    ${secret}[metadata][namespace]:${secret}[metadata][name]
+
+    # Create custom RKE2 cluster (no machinePools)
+    Rancher - Create Custom RKE2 Cluster
+    ...    ${cluster_name}
+    ...    ${cloud_provider_config_id}
+    ...    ${rke2_version}
+    ...    ${CLOUD_CREDENTIAL_ID}
+    ...    ${ingress}
+
+    # Wait for cluster to get its management ID
+    ${cluster}=    Rancher - Wait For Cluster ID    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
+    ${mgmt_cluster_id}=    Set Variable    ${cluster}[status][clusterName]
+    Log    Custom cluster management ID: ${mgmt_cluster_id}    console=yes
+
+    # Patch chartValues with the real management cluster ID so the cloud
+    # provider can correctly identify VMs belonging to this cluster.
+    # At creation time only the provisioning name is known; the management
+    # ID (c-m-xxxxx) is assigned by Rancher afterwards.
+    Rancher - Update Cluster Chart Name    ${cluster_name}    ${mgmt_cluster_id}
+
+    # Get the registration command
+    ${reg_command}=    Rancher - Get Cluster Registration Command    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
+    Log    Got registration command for ${cluster_name}    console=yes
+
+    # Build cloud-init userData with the registration command
+    # The reg_command from Rancher contains single-quoted values like
+    # --label 'cattle.io/os=linux', so we must use double quotes for
+    # the outer shell command to avoid broken YAML.
+    ${user_data}=    Catenate    SEPARATOR=\n
+    ...    \#cloud-config
+    ...    password: password
+    ...    chpasswd:
+    ...    ${SPACE}${SPACE}expire: false
+    ...    ssh_pwauth: true
+    ...    package_update: true
+    ...    packages:
+    ...    ${SPACE}${SPACE}- qemu-guest-agent
+    ...    ${SPACE}${SPACE}- curl
+    ...    runcmd:
+    ...    ${SPACE}${SPACE}- [systemctl, enable, --now, qemu-guest-agent.service]
+    ...    ${SPACE}${SPACE}- [/bin/sh, -c, "${reg_command} --etcd --controlplane --worker"]
+
+    # Create VMs on Harvester with the registration command
+    # With a single bridge interface on the VLAN, DHCP works automatically
+    # on the first NIC — no explicit network_data needed.
+    FOR    ${i}    IN RANGE    ${machine_count}
+        ${vm_name}=    Set Variable    ${cluster_name}-vm-${i}
+        Rancher - Create Harvester VM
+        ...    ${vm_name}
+        ...    ${DEFAULT_NAMESPACE}/${IMAGE_NAME}
+        ...    ${DEFAULT_NAMESPACE}/${VLAN_NETWORK_NAME}
+        ...    cpus=4
+        ...    memory=8
+        ...    disk_size=40
+        ...    ssh_user=ubuntu
+        ...    user_data=${user_data}
+        Rancher - Wait For Harvester VM Ready    ${vm_name}    ${WAIT_TIMEOUT}
+    END
+
+    # Wait for RKE2 cluster to become ready
+    ${cluster}=    Rancher - Wait For RKE2 Cluster Ready    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
+    ${cluster_id}=    Set Variable    ${cluster}[status][clusterName]
+    Log    Custom cluster ready: ${cluster_name} (ID: ${cluster_id})    console=yes
+
+    # Fix cloud provider clusterName on the guest cluster.
+    # Rancher deploys the chart with the provisioning name, but the
+    # cloud provider needs the management cluster ID (c-m-xxxxx) to
+    # match VMs via the harvesterhci.io/owned-by label.
+    Rancher - Fix Cloud Provider Cluster Name    ${cluster_id}
+
+    RETURN    ${cluster_id}
+
+# ============================================================
+# Shared import cluster creation keyword
+# ============================================================
+Install Harvester Charts On Import Cluster
+    [Arguments]    ${cluster_id}    ${cluster_name}    ${chart_repo_branch}=${CHART_REPO_BRANCH}
+    [Documentation]    Install Harvester Cloud Provider and CSI Driver on an
+    ...               imported cluster via Rancher's chart catalog API.
+    ...               Creates the rancher-charts ClusterRepo on the guest cluster,
+    ...               creates a cloud-config secret, and installs both charts.
+    ...               The chart_repo_branch argument defaults to the CHART_REPO_BRANCH
+    ...               variable (e.g. release-v2.14) but can be overridden per call.
+    Log    Installing Harvester charts on import cluster ${cluster_name}    console=yes
+
+    # Create rancher-charts ClusterRepo on the guest cluster
+    ${repo_name}=    Set Variable    rancher-charts
+    Rancher - Create Cluster Repo
+    ...    ${cluster_id}    ${repo_name}    ${CHART_REPO_URL}    ${chart_repo_branch}
+    Rancher - Wait For Cluster Repo Ready    ${cluster_id}    ${repo_name}
+    Log    ClusterRepo ${repo_name} (branch=${chart_repo_branch}) is ready    console=yes
+
+    # Create cloud-provider-config secret on the guest cluster
+    ${secret_name}=    Set Variable    harvester-cloud-provider-config
+    Rancher - Create Cloud Config Secret
+    ...    ${cluster_id}    ${secret_name}    kube-system    ${CP_KUBECONFIG}
+
+    # Get latest chart versions from the guest cluster's repo
+    # TODO: Cloud provider chart (harvester-cloud-provider) not available on
+    #       rancher-charts repo for this Rancher version. Skipping until resolved.
+    # ${cp_versions}=    Rancher - Get Chart Versions    ${repo_name}    harvester-cloud-provider    ${cluster_id}
+    # ${cp_version}=    Get From List    ${cp_versions}    0
+    ${csi_versions}=    Rancher - Get Chart Versions    ${repo_name}    harvester-csi-driver    ${cluster_id}
+    ${csi_version}=    Get From List    ${csi_versions}    0
+    Log    CSI version: ${csi_version}    console=yes
+
+    # TODO: Cloud provider install disabled — chart not available on rancher-charts
+    # ${cp_values}=    Evaluate    {"cloudConfigPath": "", "global": {"cattle": {"clusterName": "${cluster_name}"}}}
+    # Rancher - Install Chart
+    # ...    ${cluster_id}    ${repo_name}    harvester-cloud-provider
+    # ...    ${cp_version}    harvester-cloud-provider    kube-system    ${cp_values}
+    # Rancher - Wait For Chart App Ready    ${cluster_id}    harvester-cloud-provider    kube-system
+
+    # Build values for CSI driver chart — use secret instead of hostPath
+    ${csi_values}=    Evaluate    {"cloudConfig": {"hostPath": "", "secretName": "${secret_name}"}}
+
+    # Install Harvester CSI Driver
+    Rancher - Install Chart
+    ...    ${cluster_id}    ${repo_name}    harvester-csi-driver
+    ...    ${csi_version}    harvester-csi-driver    kube-system    ${csi_values}
+    Rancher - Wait For Chart App Ready    ${cluster_id}    harvester-csi-driver    kube-system
+
+    Log    Harvester charts installed on import cluster    console=yes
+
+Create Import RKE2 Cluster With Full Setup
+    [Arguments]    ${cluster_name}    ${machine_count}
+    [Documentation]    Create a minimal import cluster in Rancher, deploy RKE2
+    ...               on Harvester VMs via cloud-init, and import the cluster
+    ...               using the Rancher registration manifest.
+    ...               Installs Harvester cloud provider and CSI driver.
+    ...               Returns management cluster ID.
+
+    # Create a minimal provisioning cluster in Rancher (import mode)
+    Rancher - Create Import Cluster    ${cluster_name}
+
+    # Wait for the cluster to get its management ID
+    ${cluster}=    Rancher - Wait For Cluster ID    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
+    ${mgmt_cluster_id}=    Set Variable    ${cluster}[status][clusterName]
+    Log    Import cluster management ID: ${mgmt_cluster_id}    console=yes
+
+    # Get the manifest URL for importing
+    ${manifest_url}=    Rancher - Get Cluster Registration URL
+    ...    ${mgmt_cluster_id}    ${RANCHER_ENDPOINT}    ${RANCHER_WAIT_TIMEOUT}
+    Log    Got manifest URL for ${cluster_name}    console=yes
+
+    # Build cloud-init: install RKE2, start it, wait for ready, apply import manifest
+    ${import_cmd}=    Set Variable    while [ ! -f /etc/rancher/rke2/rke2.yaml ]; do sleep 10; done && export KUBECONFIG=/etc/rancher/rke2/rke2.yaml && export PATH=$PATH:/var/lib/rancher/rke2/bin && while ! kubectl get nodes 2>/dev/null | grep -q Ready; do sleep 10; done && curl --insecure -sfL ${manifest_url} | kubectl apply -f -
+    ${user_data}=    Catenate    SEPARATOR=\n
+    ...    \#cloud-config
+    ...    password: password
+    ...    chpasswd:
+    ...    ${SPACE}${SPACE}expire: false
+    ...    ssh_pwauth: true
+    ...    package_update: true
+    ...    packages:
+    ...    ${SPACE}${SPACE}- qemu-guest-agent
+    ...    ${SPACE}${SPACE}- curl
+    ...    runcmd:
+    ...    ${SPACE}${SPACE}- [systemctl, enable, --now, qemu-guest-agent.service]
+    ...    ${SPACE}${SPACE}- [/bin/sh, -c, 'curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE=server sh -']
+    ...    ${SPACE}${SPACE}- [systemctl, enable, rke2-server.service]
+    ...    ${SPACE}${SPACE}- [systemctl, start, rke2-server.service]
+    ...    ${SPACE}${SPACE}- [/bin/sh, -c, '${import_cmd}']
+
+    # Create VMs on Harvester with the cloud-init
+    FOR    ${i}    IN RANGE    ${machine_count}
+        ${vm_name}=    Set Variable    ${cluster_name}-vm-${i}
+        Rancher - Create Harvester VM
+        ...    ${vm_name}
+        ...    ${DEFAULT_NAMESPACE}/${IMAGE_NAME}
+        ...    ${DEFAULT_NAMESPACE}/${VLAN_NETWORK_NAME}
+        ...    cpus=4
+        ...    memory=8
+        ...    disk_size=40
+        ...    ssh_user=ubuntu
+        ...    user_data=${user_data}
+        Rancher - Wait For Harvester VM Ready    ${vm_name}    ${WAIT_TIMEOUT}
+    END
+
+    # Wait for the imported cluster to become active in Rancher
+    ${cluster}=    Rancher - Wait For Import Cluster Ready    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
+    ${cluster_id}=    Set Variable    ${cluster}[status][clusterName]
+    Log    Import cluster ready: ${cluster_name} (ID: ${cluster_id})    console=yes
+
+    # Install Harvester cloud provider and CSI driver via Rancher Apps
+    Install Harvester Charts On Import Cluster    ${cluster_id}    ${cluster_name}
+
+    # Verify Harvester CSI deployment is ready (cloud provider skipped)
+    Rancher - Wait For Deployment Ready    ${cluster_id}    kube-system    harvester-csi-driver-controllers
+    Log    Harvester CSI driver ready on import cluster    console=yes
+
+    RETURN    ${cluster_id}
+
+# ============================================================
 # Setup and Teardown
 # ============================================================
 Suite Setup For Rancher Integration Tests
@@ -900,6 +1474,10 @@ Suite Setup For Rancher Integration Tests
     Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    hvst-${timestamp}
     Set Suite Variable    ${RKE2_CLUSTER_NAME}    rke2-${timestamp}
     Set Suite Variable    ${VLAN_NETWORK_NAME}    vlan-network-${VLAN_ID}
+    # Harvester enforces a 12-character max on ClusterNetwork and VlanConfig names.
+    ${ts_short}=    Evaluate    '${timestamp}'[-7:]
+    Set Suite Variable    ${CLUSTER_NETWORK_NAME}    cnet-${ts_short}
+    Set Suite Variable    ${VLAN_CONFIG_NAME}    vcfg-${ts_short}
     Set Suite Variable    ${IP_POOL_NAME}    ippool-vlan${VLAN_ID}
     Set Suite Variable    ${IMAGE_NAME}    ubuntu-${timestamp}
 
@@ -910,12 +1488,16 @@ Suite Setup For Rancher Integration Tests
     Set Suite Variable    ${MULTI_CLUSTER_NAME}     ${RKE2_CLUSTER_NAME}-${version_suffix}-multi
     Set Suite Variable    ${SINGLE_CONFIG_NAME}     ${RKE2_CLUSTER_NAME}-${version_suffix}-single-config
     Set Suite Variable    ${MULTI_CONFIG_NAME}      ${RKE2_CLUSTER_NAME}-${version_suffix}-multi-config
+    Set Suite Variable    ${CUSTOM_CLUSTER_NAME}    ${RKE2_CLUSTER_NAME}-${version_suffix}-custom
+    Set Suite Variable    ${IMPORT_CLUSTER_NAME}    ${RKE2_CLUSTER_NAME}-${version_suffix}-import
 
     # Cluster tracking
     Set Suite Variable    ${HARVESTER_CLUSTER_ID}    ${EMPTY}
     Set Suite Variable    ${CLOUD_CREDENTIAL_ID}    ${EMPTY}
     Set Suite Variable    ${SINGLE_CLUSTER_ID}      ${EMPTY}
     Set Suite Variable    ${MULTI_CLUSTER_ID}       ${EMPTY}
+    Set Suite Variable    ${CUSTOM_CLUSTER_ID}      ${EMPTY}
+    Set Suite Variable    ${IMPORT_CLUSTER_ID}      ${EMPTY}
     Set Suite Variable    ${LB_DHCP_NAME}           ${EMPTY}
     Set Suite Variable    ${LB_POOL_NAME}           ${EMPTY}
     Set Suite Variable    ${NEXT_RKE2_VERSION}      ${EMPTY}
@@ -953,7 +1535,10 @@ Suite Setup For Rancher Integration Tests
     Set Suite Variable    ${CLOUD_CREDENTIAL_ID}    ${credential}[id]
 
     # Create shared resources
-    Rancher - Create VLAN Network    ${VLAN_NETWORK_NAME}    ${VLAN_ID}    ${VLAN_NIC}
+    Rancher - Create Cluster Network    ${CLUSTER_NETWORK_NAME}
+    Rancher - Create VLAN Config    ${VLAN_CONFIG_NAME}    ${CLUSTER_NETWORK_NAME}    ${VLAN_NIC}
+    Rancher - Wait For Cluster Network Ready    ${CLUSTER_NETWORK_NAME}
+    Rancher - Create VLAN Network    ${VLAN_NETWORK_NAME}    ${VLAN_ID}    ${CLUSTER_NETWORK_NAME}
     Rancher - Create IP Pool
     ...    ${IP_POOL_NAME}
     ...    ${IP_POOL_SUBNET}
@@ -1003,6 +1588,8 @@ Suite Teardown For Rancher Integration Tests
     # Delete shared resources
     Run Keyword And Ignore Error    Rancher - Delete IP Pool    ${IP_POOL_NAME}
     Run Keyword And Ignore Error    Rancher - Delete VLAN Network    ${VLAN_NETWORK_NAME}
+    Run Keyword And Ignore Error    Rancher - Delete VLAN Config    ${VLAN_CONFIG_NAME}
+    Run Keyword And Ignore Error    Rancher - Delete Cluster Network    ${CLUSTER_NETWORK_NAME}
     Run Keyword And Ignore Error    Rancher - Delete Image    ${IMAGE_NAME}
     Run Keyword And Ignore Error    Rancher - Set Cluster Registration URL    ${EMPTY}
 
@@ -1017,3 +1604,11 @@ Cleanup Cluster By Name
     [Documentation]    Delete a specific RKE2 cluster by name (best effort).
     Run Keyword And Ignore Error    Rancher - Delete RKE2 Cluster    ${cluster_name}
     Run Keyword And Ignore Error    Rancher - Wait For RKE2 Cluster Deleted    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
+
+Cleanup Custom Cluster By Name
+    [Arguments]    ${cluster_name}
+    [Documentation]    Delete a custom RKE2 cluster and its VMs by name (best effort).
+    Run Keyword And Ignore Error    Rancher - Delete RKE2 Cluster    ${cluster_name}
+    Run Keyword And Ignore Error    Rancher - Wait For RKE2 Cluster Deleted    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
+    # Clean up VMs created for the custom cluster
+    Run Keyword And Ignore Error    Rancher - Delete Harvester VM    ${cluster_name}-vm-0

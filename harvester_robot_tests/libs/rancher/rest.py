@@ -75,7 +75,7 @@ class Rest(Base):
         self.rancher_session = session
         logging("Successfully authenticated with Rancher")
 
-    def _rancher_request(self, method, path, data=None):
+    def _rancher_request(self, method, path, data=None, content_type=None):
         """Make request to Rancher API"""
         # Ensure authenticated
         self._authenticate_rancher()
@@ -90,6 +90,13 @@ class Rest(Base):
                 response = self.rancher_session.post(url, json=data)
             elif method.upper() == "PUT":
                 response = self.rancher_session.put(url, json=data)
+            elif method.upper() == "PATCH":
+                headers = {}
+                if content_type:
+                    headers["Content-Type"] = content_type
+                response = self.rancher_session.patch(
+                    url, json=data, headers=headers
+                )
             elif method.upper() == "DELETE":
                 response = self.rancher_session.delete(url)
             else:
@@ -103,6 +110,12 @@ class Rest(Base):
             return response.status_code, response_data
         except Exception as e:
             raise Exception(f"Rancher API request failed: {e}")
+
+    def _rancher_proxy_request(self, method, cluster_id, path, data=None):
+        """Make a request to the Rancher proxy API for a guest cluster"""
+        return self._rancher_request(
+            method, f"k8s/clusters/{cluster_id}/{path.lstrip('/')}", data
+        )
 
     def create_harvester_mgmt_cluster(self, cluster_name):
         """Create Harvester management cluster entry in Rancher (Import Existing)"""
@@ -600,8 +613,11 @@ class Rest(Base):
                     # Count actual running machines via Rancher API
                     total_running = self._count_running_machines(cluster_name)
 
+                    # For custom clusters (no machinePools), require at least 1
+                    effective_desired = total_desired if total_desired > 0 else 1
+
                     if (ready and updated and provisioned
-                            and total_running >= total_desired > 0):
+                            and total_running >= effective_desired):
                         logging(f"RKE2 cluster {cluster_name} is fully ready "
                                 f"(machines: {total_running}/{total_desired})")
                         return cluster
@@ -1189,6 +1205,115 @@ class Rest(Base):
 
         logging("All Harvester deployments are ready")
 
+    def create_cluster_network(self, name):
+        """Create cluster network"""
+        logging(f"Creating cluster network: {name}")
+
+        code, data = self.harvester_api.post(
+            "v1/harvester/network.harvesterhci.io.clusternetworks",
+            data={
+                "apiVersion": "network.harvesterhci.io/v1beta1",
+                "kind": "ClusterNetwork",
+                "metadata": {
+                    "name": name
+                },
+                "type": "network.harvesterhci.io.clusternetwork"
+            }
+        )
+
+        if code not in [200, 201, 409]:
+            raise Exception(f"Failed to create cluster network: {code}, {data}")
+
+        logging(f"Created cluster network: {name}")
+        return data
+
+    def delete_cluster_network(self, name):
+        """Delete cluster network"""
+        logging(f"Deleting cluster network: {name}")
+
+        code, data = self.harvester_api.delete(
+            f"v1/harvester/network.harvesterhci.io.clusternetworks/{name}"
+        )
+
+        if code not in [200, 204, 404]:
+            raise Exception(f"Failed to delete cluster network: {code}, {data}")
+
+        logging(f"Deleted cluster network: {name}")
+
+    def create_vlan_config(self, name, cluster_network, nic):
+        """Create VLAN config to bind NIC to cluster network"""
+        logging(f"Creating VLAN config: {name} (nic={nic}, cluster_network={cluster_network})")
+
+        code, data = self.harvester_api.post(
+            "v1/harvester/network.harvesterhci.io.vlanconfigs",
+            data={
+                "apiVersion": "network.harvesterhci.io/v1beta1",
+                "kind": "VlanConfig",
+                "metadata": {
+                    "name": name,
+                    "labels": {
+                        "network.harvesterhci.io/clusternetwork": cluster_network
+                    }
+                },
+                "spec": {
+                    "clusterNetwork": cluster_network,
+                    "uplink": {
+                        "bondOptions": {
+                            "miimon": -1,
+                            "mode": "active-backup"
+                        },
+                        "linkAttributes": {
+                            "txQLen": -1
+                        },
+                        "nics": [nic]
+                    }
+                },
+                "type": "network.harvesterhci.io.vlanconfig"
+            }
+        )
+
+        if code not in [200, 201, 409]:
+            raise Exception(f"Failed to create VLAN config: {code}, {data}")
+
+        logging(f"Created VLAN config: {name}")
+        return data
+
+    def delete_vlan_config(self, name):
+        """Delete VLAN config"""
+        logging(f"Deleting VLAN config: {name}")
+
+        code, data = self.harvester_api.delete(
+            f"v1/harvester/network.harvesterhci.io.vlanconfigs/{name}"
+        )
+
+        if code not in [200, 204, 404]:
+            raise Exception(f"Failed to delete VLAN config: {code}, {data}")
+
+        logging(f"Deleted VLAN config: {name}")
+
+    def wait_for_cluster_network_ready(self, name, timeout=120):
+        """Wait for cluster network to become ready"""
+        logging(f"Waiting for cluster network {name} to be ready")
+        deadline = time.time() + int(timeout)
+
+        while time.time() < deadline:
+            try:
+                code, data = self.harvester_api.get(
+                    f"v1/harvester/network.harvesterhci.io.clusternetworks/{name}"
+                )
+                if code == 200:
+                    conditions = data.get("status", {}).get("conditions", [])
+                    for cond in conditions:
+                        if cond.get("type") == "ready" and cond.get("status") == "True":
+                            logging(f"Cluster network {name} is ready")
+                            return data
+            except Exception as e:
+                logging(f"Error polling cluster network {name}: {e}",
+                        level="WARNING")
+            time.sleep(5)
+
+        raise Exception(f"Cluster network {name} not ready within {timeout}s")
+
     def create_vlan_network(self, name, vlan_id, cluster_network):
         """Create VLAN network"""
         logging(f"Creating VLAN network: {name}")
@@ -1376,3 +1501,812 @@ class Rest(Base):
             raise Exception(f"Failed to delete image: {code}, {data}")
 
         logging(f"Deleted image: {name}")
+
+    # Import Existing Cluster Operations
+    def create_import_cluster(self, name):
+        """Create a minimal provisioning cluster for import."""
+        logging(f"Creating import cluster: {name}")
+
+        self._authenticate_rancher()
+
+        payload = {
+            "type": "provisioning.cattle.io.cluster",
+            "metadata": {
+                "name": name,
+                "namespace": "fleet-default"
+            },
+            "spec": {}
+        }
+
+        code, data = self._rancher_request(
+            "POST",
+            "v1/provisioning.cattle.io.clusters",
+            payload
+        )
+
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to create import cluster: {code}, {data}"
+            )
+
+        logging(f"Created import cluster: {name}")
+        return data
+
+    def wait_for_import_cluster_ready(self, cluster_name,
+                                      timeout=DEFAULT_TIMEOUT_LONG):
+        """Wait for an imported cluster to become active in Rancher.
+
+        Does NOT check machinePools or cluster.x-k8s.io machines.
+        """
+        logging(f"Waiting for import cluster {cluster_name} to be ready")
+        retry_count, retry_interval = get_retry_count_and_interval()
+
+        end_time = time.time() + int(timeout)
+        iteration = 0
+        while time.time() < end_time:
+            try:
+                cluster = self.get_rke2_cluster(cluster_name)
+                if cluster:
+                    metadata = cluster.get("metadata", {})
+                    status = cluster.get("status", {})
+
+                    generation = metadata.get("generation", 0)
+                    observed = status.get("observedGeneration", 0)
+                    if observed < generation:
+                        if iteration % 10 == 0:
+                            logging(
+                                f"Controller hasn't processed spec yet: "
+                                f"observed={observed}, "
+                                f"generation={generation}"
+                            )
+                        iteration += 1
+                        time.sleep(retry_interval)
+                        continue
+
+                    ready = status.get("ready") is True
+
+                    conditions = {
+                        c.get("type"): c.get("status")
+                        for c in status.get("conditions", [])
+                    }
+                    connected = conditions.get("Connected") == "True"
+                    ready_cond = conditions.get("Ready") == "True"
+
+                    if ready and (connected or ready_cond):
+                        logging(
+                            f"Import cluster {cluster_name} is ready"
+                        )
+                        return cluster
+
+                    if iteration % 10 == 0:
+                        logging(
+                            f"Import cluster not ready yet. "
+                            f"ready={ready}, connected={connected}, "
+                            f"ready_cond={ready_cond}"
+                        )
+
+            except Exception as e:
+                if iteration % 10 == 0:
+                    logging(
+                        f"Error checking import cluster status: {e}",
+                        level="WARNING"
+                    )
+
+            iteration += 1
+            time.sleep(retry_interval)
+
+        raise Exception(
+            f"Timeout waiting for import cluster {cluster_name} to be ready"
+        )
+
+    # Custom RKE2 Cluster Operations
+    def create_custom_rke2_cluster(self, name, cloud_provider_config_id,
+                                   k8s_version, cloud_credential_id,
+                                   ingress="traefik"):
+        """Create a custom RKE2 cluster without machinePools.
+
+        Nodes are registered externally via the registration command.
+        The Harvester cloud provider is still configured so that
+        harvester-cloud-provider and harvester-csi-driver function correctly.
+        """
+        logging(f"Creating custom RKE2 cluster: {name}")
+
+        machine_global_config = {
+            "cni": "calico",
+            "disable-kube-proxy": False,
+            "etcd-expose-metrics": False,
+            "ingress-controller": ingress
+        }
+
+        drain_options = {
+            "deleteEmptyDirData": True,
+            "disableEviction": False,
+            "enabled": False,
+            "force": False,
+            "gracePeriod": -1,
+            "ignoreDaemonSets": True,
+            "skipWaitForDeleteTimeoutSeconds": 0,
+            "timeout": 120
+        }
+
+        payload = {
+            "type": "provisioning.cattle.io.cluster",
+            "metadata": {
+                "name": name,
+                "namespace": "fleet-default"
+            },
+            "spec": {
+                "cloudCredentialSecretName": cloud_credential_id,
+                "kubernetesVersion": k8s_version,
+                "rkeConfig": {
+                    "chartValues": {
+                        "harvester-cloud-provider": {
+                            "cloudConfigPath": (
+                                "/var/lib/rancher/rke2/etc/config-files/"
+                                "cloud-provider-config"
+                            ),
+                            "global": {
+                                "cattle": {
+                                    "clusterName": name
+                                }
+                            }
+                        },
+                        "rke2-calico": {},
+                        "rke2-ingress-nginx": {},
+                        "rke2-traefik": {}
+                    },
+                    "etcd": {
+                        "snapshotRetention": 5,
+                        "snapshotScheduleCron": "0 */5 * * *"
+                    },
+                    "machineGlobalConfig": machine_global_config,
+                    "machineSelectorConfig": [
+                        {
+                            "config": {
+                                "cloud-provider-config": (
+                                    f"secret://{cloud_provider_config_id}"
+                                ),
+                                "cloud-provider-name": "harvester",
+                                "protect-kernel-defaults": False
+                            }
+                        }
+                    ],
+                    "networking": {},
+                    "registries": {},
+                    "upgradeStrategy": {
+                        "controlPlaneConcurrency": "1",
+                        "controlPlaneDrainOptions": drain_options,
+                        "workerConcurrency": "1",
+                        "workerDrainOptions": drain_options
+                    }
+                }
+            }
+        }
+
+        code, data = self._rancher_request(
+            "POST",
+            "v1/provisioning.cattle.io.clusters",
+            payload
+        )
+
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to create custom RKE2 cluster: {code}, {data}"
+            )
+
+        logging(f"Created custom RKE2 cluster: {name}")
+        return data
+
+    def update_cluster_chart_name(self, cluster_name, mgmt_cluster_id):
+        """Patch the custom cluster's chartValues with the real management ID."""
+        logging(f"Updating clusterName to {mgmt_cluster_id} for {cluster_name}")
+
+        self._authenticate_rancher()
+
+        patch = {
+            "spec": {
+                "rkeConfig": {
+                    "chartValues": {
+                        "harvester-cloud-provider": {
+                            "global": {
+                                "cattle": {
+                                    "clusterName": mgmt_cluster_id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        code, data = self._rancher_request(
+            "PATCH",
+            f"v1/provisioning.cattle.io.clusters/fleet-default/{cluster_name}",
+            patch,
+            content_type="application/merge-patch+json"
+        )
+
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to update clusterName for {cluster_name}: "
+                f"{code}, {data}"
+            )
+
+        logging(f"Updated clusterName to {mgmt_cluster_id}")
+
+    def fix_cloud_provider_cluster_name(self, cluster_id):
+        """Fix the cloud-provider --cluster-name arg on the guest cluster.
+
+        See crd.py docstring for full explanation.
+
+        Args:
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        logging(f"Fixing cloud provider clusterName to {cluster_id}")
+
+        # Wait for the cloud-provider deployment to exist
+        deploy = self.wait_for_deployment_ready(
+            cluster_id, "kube-system", "harvester-cloud-provider"
+        )
+
+        containers = deploy.get("spec", {}).get("template", {}).get(
+            "spec", {}).get("containers", [])
+
+        for idx, container in enumerate(containers):
+            if "cloud-provider" not in container.get("name", ""):
+                continue
+
+            args = container.get("args", [])
+            json_patch = None
+
+            for arg_idx, arg in enumerate(args):
+                if arg.startswith("--cluster-name"):
+                    current = arg.split("=", 1)[1] if "=" in arg else ""
+                    if current == cluster_id:
+                        logging(f"clusterName already correct: {cluster_id}")
+                        return
+                    json_patch = [{
+                        "op": "replace",
+                        "path": (
+                            f"/spec/template/spec/containers/{idx}"
+                            f"/args/{arg_idx}"
+                        ),
+                        "value": f"--cluster-name={cluster_id}"
+                    }]
+                    break
+
+            if json_patch is None:
+                json_patch = [{
+                    "op": "add",
+                    "path": (
+                        f"/spec/template/spec/containers/{idx}/args/-"
+                    ),
+                    "value": f"--cluster-name={cluster_id}"
+                }]
+
+            code, data = self._rancher_request(
+                "PATCH",
+                f"k8s/clusters/{cluster_id}/apis/apps/v1"
+                f"/namespaces/kube-system"
+                f"/deployments/harvester-cloud-provider",
+                data=json_patch,
+                content_type="application/json-patch+json"
+            )
+
+            if code not in [200, 201]:
+                raise Exception(
+                    f"Failed to patch cloud-provider: {code}"
+                )
+
+            logging(f"Patched --cluster-name to {cluster_id}")
+
+            # Wait for the rolling update to complete
+            self.wait_for_deployment_ready(
+                cluster_id, "kube-system", "harvester-cloud-provider"
+            )
+            logging("Cloud provider deployment rolled out with "
+                    "correct clusterName")
+            return
+
+        raise Exception(
+            "Could not find cloud-provider container in deployment"
+        )
+
+    def get_cluster_registration_command(self, cluster_name, timeout=300):
+        """Get the insecure node registration command for a custom cluster."""
+        logging(f"Getting registration command for cluster: {cluster_name}")
+
+        self._authenticate_rancher()
+
+        # First, get the management cluster ID
+        cluster = self.get_rke2_cluster(cluster_name)
+        if not cluster:
+            raise Exception(f"Cluster {cluster_name} not found")
+
+        cluster_id = cluster.get("status", {}).get("clusterName", "")
+        if not cluster_id:
+            raise Exception(
+                f"Cluster {cluster_name} has no management cluster ID yet"
+            )
+
+        logging(f"Management cluster ID: {cluster_id}")
+
+        retry_count, retry_interval = get_retry_count_and_interval()
+        end_time = time.time() + int(timeout)
+        attempt = 0
+
+        while time.time() < end_time:
+            attempt += 1
+            code, data = self._rancher_request(
+                "GET",
+                f"v3/clusterRegistrationTokens/{cluster_id}:default-token"
+            )
+
+            if attempt % 5 == 1 or code not in [200, 404]:
+                logging(f"Attempt {attempt}: Response status {code}")
+
+            if code == 200:
+                node_cmd = data.get("insecureNodeCommand", "")
+                if node_cmd:
+                    logging("Got cluster registration command")
+                    return node_cmd
+                elif attempt % 5 == 1:
+                    logging("insecureNodeCommand not yet available, waiting...")
+            elif code == 404:
+                if attempt % 5 == 1:
+                    logging("Registration token not yet created, waiting...")
+            else:
+                logging(
+                    f"Unexpected response {code}: {data}", level="WARNING"
+                )
+
+            time.sleep(retry_interval)
+
+        raise Exception(
+            f"Timeout waiting for registration command for {cluster_name} "
+            f"after {attempt} attempts"
+        )
+
+    # Harvester VM Operations (for custom cluster nodes)
+    def create_harvester_vm(self, name, image_id, network_id, cpus, memory,
+                            disk_size, ssh_user, user_data, network_data=""):
+        """Create a VM on Harvester using the Harvester REST API.
+
+        Builds the VirtualMachine manifest directly (same pattern as vm/crd.py)
+        to avoid relying on VMManager.Spec from libs/harvester_api.py, which
+        does not properly build the Harvester manifest structure.
+        """
+        logging(f"Creating Harvester VM: {name}")
+
+        disk_name = f"{name}-disk-0"
+        disk_size_gi = f"{disk_size}Gi"
+        memory_gi = f"{memory}Gi" if str(memory).isdigit() else str(memory)
+
+        # Look up the image's actual storage class from Harvester.
+        # Harvester dynamically creates a storage class (lh-<uuid>) per image;
+        # the name cannot be guessed — it must be read from the image status.
+        image_ns, image_name = (
+            image_id.split("/", 1) if "/" in image_id
+            else (DEFAULT_NAMESPACE, image_id)
+        )
+        img_path = f"/v1/harvesterhci.io.virtualmachineimages/{image_ns}/{image_name}"
+        img_code, img_data = self.harvester_api.get(img_path)
+        if img_code != 200:
+            raise Exception(
+                f"Failed to look up image {image_id}: {img_code}, {img_data}"
+            )
+        storage_class = img_data.get("status", {}).get("storageClassName", "")
+        if not storage_class:
+            raise Exception(
+                f"Image {image_id} has no storageClassName in status"
+            )
+        logging(f"Resolved storage class for image {image_id}: {storage_class}")
+
+        volume_claim_templates = [
+            {
+                "metadata": {
+                    "name": disk_name,
+                    "annotations": {
+                        "harvesterhci.io/imageId": image_id
+                    }
+                },
+                "spec": {
+                    "accessModes": ["ReadWriteMany"],
+                    "resources": {"requests": {"storage": disk_size_gi}},
+                    "volumeMode": "Block",
+                    "storageClassName": storage_class
+                }
+            }
+        ]
+        # Build network interfaces: when a VLAN network is provided, use only
+        # the bridge interface on the VLAN (matching Harvester UI behaviour).
+        # This gives the VM a routable VLAN IP as its primary address.
+        # Fall back to masquerade/pod network when no VLAN is specified.
+        if network_id:
+            interfaces = [
+                {"bridge": {}, "model": "virtio", "name": "default"}
+            ]
+            networks = [
+                {"name": "default", "multus": {"networkName": network_id}}
+            ]
+        else:
+            interfaces = [
+                {"masquerade": {}, "model": "virtio", "name": "default"}
+            ]
+            networks = [{"name": "default", "pod": {}}]
+
+        volumes = [
+            {"name": "rootdisk",
+             "persistentVolumeClaim": {"claimName": disk_name}},
+            {
+                "name": "cloudinitdisk",
+                "cloudInitNoCloud": {
+                    "userData": user_data or "#cloud-config\n",
+                    **({
+                        "networkData": network_data
+                    } if network_data else {})
+                }
+            }
+        ]
+
+        disks = [
+            {"name": "rootdisk", "disk": {"bus": "virtio"}, "bootOrder": 1},
+            {"name": "cloudinitdisk", "disk": {"bus": "virtio"}}
+        ]
+
+        vm_dict = {
+            "apiVersion": "kubevirt.io/v1",
+            "kind": "VirtualMachine",
+            "metadata": {
+                "name": name,
+                "namespace": DEFAULT_NAMESPACE,
+                "annotations": {
+                    "harvesterhci.io/vmRunStrategy": "RerunOnFailure",
+                    "harvesterhci.io/volumeClaimTemplates": (
+                        json.dumps(volume_claim_templates)
+                    ),
+                    "harvesterhci.io/sshNames": "[]"
+                },
+                "labels": {
+                    "harvesterhci.io/creator": "robot-framework",
+                    "harvesterhci.io/os": "linux"
+                }
+            },
+            "spec": {
+                "runStrategy": "RerunOnFailure",
+                "template": {
+                    "metadata": {
+                        "annotations": {"harvesterhci.io/sshNames": "[]"},
+                        "labels": {"harvesterhci.io/vmName": name}
+                    },
+                    "spec": {
+                        "affinity": {},
+                        "architecture": "amd64",
+                        "domain": {
+                            "cpu": {
+                                "cores": int(cpus),
+                                "sockets": 1,
+                                "threads": 1
+                            },
+                            "devices": {
+                                "inputs": [
+                                    {"bus": "usb", "name": "tablet",
+                                     "type": "tablet"}
+                                ],
+                                "interfaces": interfaces,
+                                "disks": disks
+                            },
+                            "features": {"acpi": {"enabled": True}},
+                            "machine": {"type": "q35"},
+                            "memory": {"guest": memory_gi},
+                            "resources": {
+                                "limits": {
+                                    "cpu": str(cpus),
+                                    "memory": memory_gi
+                                },
+                                "requests": {
+                                    "cpu": "125m",
+                                    "memory": "2730Mi"
+                                }
+                            }
+                        },
+                        "evictionStrategy": "LiveMigrateIfPossible",
+                        "hostname": name,
+                        "networks": networks,
+                        "terminationGracePeriodSeconds": 120,
+                        "volumes": volumes
+                    }
+                }
+            }
+        }
+
+        path = f"/v1/kubevirt.io.virtualmachines/{DEFAULT_NAMESPACE}"
+        code, data = self.harvester_api.post(path, data=vm_dict)
+        if code not in [200, 201]:
+            raise Exception(f"Failed to create VM {name}: {code}, {data}")
+
+        logging(f"Created Harvester VM: {name}")
+        return data
+
+    def wait_for_harvester_vm_ready(self, name, timeout=600):
+        """Wait for a Harvester VM to be running."""
+        logging(f"Waiting for VM {name} to be running")
+        retry_count, retry_interval = get_retry_count_and_interval()
+
+        end_time = time.time() + int(timeout)
+        while time.time() < end_time:
+            try:
+                code, data = self.harvester_api.vms.get_status(name)
+                if code == 200:
+                    phase = data.get("status", {}).get("phase", "")
+                    if phase == "Running":
+                        logging(f"VM {name} is running")
+                        return data
+                    logging(f"VM {name} phase: {phase}", level="DEBUG")
+            except Exception as e:
+                logging(f"Error checking VM status: {e}", level="WARNING")
+
+            time.sleep(retry_interval)
+
+        raise Exception(f"Timeout waiting for VM {name} to be running")
+
+    def delete_harvester_vm(self, name):
+        """Delete a Harvester VM and its associated volume."""
+        logging(f"Deleting Harvester VM: {name}")
+
+        code, data = self.harvester_api.vms.delete(name)
+        if code not in [200, 204, 404]:
+            raise Exception(f"Failed to delete VM {name}: {code}, {data}")
+
+        logging(f"Deleted Harvester VM: {name}")
+
+        # Delete the volume (PVC) created by volumeClaimTemplates
+        disk_pvc = f"{name}-disk-0"
+        logging(f"Deleting VM volume: {disk_pvc}")
+        code, data = self.harvester_api.volumes.delete(disk_pvc)
+        if code in [200, 204, 404]:
+            logging(f"Deleted VM volume: {disk_pvc}")
+        else:
+            logging(f"Failed to delete volume {disk_pvc}: {code}",
+                    level="WARNING")
+
+    # Chart Install Operations (for import clusters)
+    def install_chart(self, cluster_id, repo_name, chart_name, version,
+                      release_name, namespace, values=None):
+        """Install a Helm chart on a guest cluster via Rancher catalog API."""
+        logging(f"Installing chart {chart_name} v{version} as {release_name} "
+                f"in {namespace} on cluster {cluster_id}")
+
+        payload = {
+            "charts": [
+                {
+                    "chartName": chart_name,
+                    "version": version,
+                    "releaseName": release_name,
+                    "annotations": {
+                        "catalog.cattle.io/ui-source-repo": repo_name,
+                        "catalog.cattle.io/ui-source-repo-type": "cluster"
+                    },
+                    "values": values or {}
+                }
+            ],
+            "namespace": namespace
+        }
+
+        code, data = self._rancher_request(
+            "POST",
+            f"k8s/clusters/{cluster_id}"
+            f"/v1/catalog.cattle.io.clusterrepos/{repo_name}"
+            f"?action=install",
+            data=payload
+        )
+
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to install chart {chart_name}: "
+                f"{code}, {str(data)[:500]}"
+            )
+
+        logging(f"Chart install initiated: {chart_name} v{version}")
+        return data
+
+    def create_cluster_repo(self, cluster_id, repo_name, git_url, git_branch):
+        """Create a ClusterRepo on a guest cluster via Rancher proxy."""
+        logging(f"Creating ClusterRepo {repo_name} on cluster {cluster_id} "
+                f"(branch={git_branch})")
+
+        payload = {
+            "type": "catalog.cattle.io.clusterrepo",
+            "metadata": {
+                "name": repo_name
+            },
+            "spec": {
+                "gitRepo": git_url,
+                "gitBranch": git_branch
+            }
+        }
+
+        code, data = self._rancher_proxy_request(
+            "POST", cluster_id,
+            "v1/catalog.cattle.io.clusterrepos",
+            payload
+        )
+
+        if code == 409:
+            logging(f"ClusterRepo {repo_name} already exists")
+            return data
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to create ClusterRepo {repo_name}: "
+                f"{code}, {str(data)[:500]}"
+            )
+
+        logging(f"Created ClusterRepo {repo_name}")
+        return data
+
+    def wait_for_cluster_repo_ready(self, cluster_id, repo_name,
+                                    timeout=DEFAULT_TIMEOUT):
+        """Wait for a ClusterRepo to finish downloading on a guest cluster.
+
+        Requires Downloaded=True on two consecutive polls to avoid the
+        false-positive that occurs briefly after initial creation.
+        """
+        logging(f"Waiting for ClusterRepo {repo_name} to be ready")
+        end_time = time.time() + int(timeout)
+        consecutive_ready = 0
+
+        while time.time() < end_time:
+            code, data = self._rancher_proxy_request(
+                "GET", cluster_id,
+                f"v1/catalog.cattle.io.clusterrepos/{repo_name}"
+            )
+            downloaded = False
+            if code == 200 and data:
+                conditions = data.get("status", {}).get("conditions", [])
+                for c in conditions:
+                    if (c.get("type") == "Downloaded" and
+                            c.get("status") == "True"):
+                        downloaded = True
+                        break
+
+            if downloaded:
+                consecutive_ready += 1
+                if consecutive_ready >= 2:
+                    logging(f"ClusterRepo {repo_name} is ready "
+                            f"(stable after {consecutive_ready} checks)")
+                    return data
+            else:
+                consecutive_ready = 0
+
+            time.sleep(5)
+
+        raise Exception(
+            f"ClusterRepo {repo_name} not ready after {timeout}s"
+        )
+
+    def get_chart_versions(self, repo_name, chart_name, cluster_id=None):
+        """Get available versions for a chart from a Rancher chart repo.
+
+        When cluster_id is given, retries up to 60s for the chart index
+        to be populated (it can lag behind the Downloaded condition).
+        """
+        logging(f"Getting versions for chart {chart_name} from {repo_name}")
+
+        max_attempts = 12 if cluster_id else 1
+        for attempt in range(max_attempts):
+            if cluster_id:
+                code, data = self._rancher_proxy_request(
+                    "GET", cluster_id,
+                    f"v1/catalog.cattle.io.clusterrepos/{repo_name}"
+                    f"?link=index"
+                )
+            else:
+                code, data = self._rancher_request(
+                    "GET",
+                    f"v1/catalog.cattle.io.clusterrepos/{repo_name}"
+                    f"?link=index"
+                )
+
+            if code != 200:
+                if attempt < max_attempts - 1:
+                    logging(f"Chart index not available yet, retrying "
+                            f"({attempt + 1}/{max_attempts})...")
+                    time.sleep(5)
+                    continue
+                raise Exception(
+                    f"Failed to get chart index: {code}"
+                )
+
+            entries = data.get("entries", {})
+            chart_entries = entries.get(chart_name, [])
+            versions = [e.get("version", "") for e in chart_entries]
+
+            if versions or attempt >= max_attempts - 1:
+                logging(f"Found {len(versions)} versions for {chart_name}: "
+                        f"{versions[:5]}")
+                return versions
+
+            logging(f"Chart {chart_name} not in index yet, retrying "
+                    f"({attempt + 1}/{max_attempts})...")
+            time.sleep(5)
+
+        return []
+
+    def create_cloud_config_secret(self, cluster_id, secret_name,
+                                   namespace, kubeconfig):
+        """Create a cloud-provider-config secret on a guest cluster."""
+        logging(f"Creating cloud config secret {secret_name} in "
+                f"{namespace} on cluster {cluster_id}")
+
+        import base64
+        encoded = base64.b64encode(
+            kubeconfig.encode("utf-8")
+        ).decode("utf-8")
+
+        secret_data = {
+            "apiVersion": "v1",
+            "kind": "Secret",
+            "metadata": {
+                "name": secret_name,
+                "namespace": namespace
+            },
+            "type": "Opaque",
+            "data": {
+                "cloud-provider-config": encoded
+            }
+        }
+
+        code, data = self._rancher_proxy_request(
+            "POST", cluster_id,
+            f"api/v1/namespaces/{namespace}/secrets",
+            secret_data
+        )
+
+        if code not in [200, 201]:
+            if code == 409:
+                logging(f"Secret {secret_name} already exists")
+                return secret_data
+            raise Exception(
+                f"Failed to create cloud config secret: {code}, "
+                f"{str(data)[:300]}"
+            )
+
+        logging(f"Created cloud config secret: {secret_name}")
+        return data
+
+    def wait_for_chart_app_ready(self, cluster_id, release_name,
+                                 namespace, timeout=DEFAULT_TIMEOUT):
+        """Wait for a chart app to be deployed and ready."""
+        logging(f"Waiting for chart app {release_name} to be ready "
+                f"in {namespace}")
+        retry_count, retry_interval = get_retry_count_and_interval()
+
+        end_time = time.time() + int(timeout)
+        iteration = 0
+        while time.time() < end_time:
+            try:
+                code, data = self._rancher_proxy_request(
+                    "GET", cluster_id,
+                    f"v1/catalog.cattle.io.apps/{namespace}/{release_name}"
+                )
+                if code == 200 and data:
+                    info = data.get("spec", {}).get("info", {})
+                    status = info.get("status", "")
+                    if status == "deployed":
+                        logging(f"Chart app {release_name} is deployed")
+                        return data
+
+                    if iteration % 10 == 0:
+                        logging(f"Chart app {release_name} status: "
+                                f"{status}")
+            except Exception as e:
+                if iteration % 10 == 0:
+                    logging(f"Error checking chart app: {e}",
+                            level="WARNING")
+
+            iteration += 1
+            time.sleep(retry_interval)
+
+        raise Exception(
+            f"Timeout waiting for chart app {release_name} to be ready"
+        )

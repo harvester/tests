@@ -215,6 +215,27 @@ class Rancher(Base):
         """Wait for harvester-cloud-provider and harvester-csi-driver to be ready"""
         return self.rancher.wait_for_harvester_deployments_ready(cluster_id, timeout)
 
+    # Cluster Network Operations
+    def create_cluster_network(self, name):
+        """Create cluster network"""
+        return self.rancher.create_cluster_network(name)
+
+    def delete_cluster_network(self, name):
+        """Delete cluster network"""
+        return self.rancher.delete_cluster_network(name)
+
+    def create_vlan_config(self, name, cluster_network, nic):
+        """Create VLAN config to bind NIC to cluster network"""
+        return self.rancher.create_vlan_config(name, cluster_network, nic)
+
+    def delete_vlan_config(self, name):
+        """Delete VLAN config"""
+        return self.rancher.delete_vlan_config(name)
+
+    def wait_for_cluster_network_ready(self, name, timeout=120):
+        """Wait for cluster network to become ready"""
+        return self.rancher.wait_for_cluster_network_ready(name, timeout)
+
     # VLAN Network Operations
     def create_vlan_network(self, name, vlan_id, cluster_network):
         """Create VLAN network"""
@@ -249,3 +270,99 @@ class Rancher(Base):
     def delete_image(self, name):
         """Delete image"""
         return self.rancher.delete_image(name)
+
+    # Import Existing Cluster Operations
+    def create_import_cluster(self, name):
+        """Create a minimal provisioning cluster for import"""
+        return self.rancher.create_import_cluster(name)
+
+    def wait_for_import_cluster_ready(self, cluster_name, timeout):
+        """Wait for an imported cluster to become active"""
+        return self.rancher.wait_for_import_cluster_ready(
+            cluster_name, timeout
+        )
+
+    # Custom RKE2 Cluster Operations
+    def create_custom_rke2_cluster(self, name, cloud_provider_config_id,
+                                   k8s_version, cloud_credential_id,
+                                   ingress="traefik"):
+        """Create a custom RKE2 cluster without machinePools"""
+        return self.rancher.create_custom_rke2_cluster(
+            name, cloud_provider_config_id, k8s_version,
+            cloud_credential_id, ingress
+        )
+
+    def update_cluster_chart_name(self, cluster_name, mgmt_cluster_id):
+        """Patch custom cluster's chartValues with the real management ID"""
+        return self.rancher.update_cluster_chart_name(
+            cluster_name, mgmt_cluster_id
+        )
+
+    def fix_cloud_provider_cluster_name(self, cluster_id):
+        """Fix cloud-provider --cluster-name arg on the guest cluster"""
+        return self.rancher.fix_cloud_provider_cluster_name(cluster_id)
+
+    def get_cluster_registration_command(self, cluster_name, timeout):
+        """Get the node registration command for a custom cluster"""
+        return self.rancher.get_cluster_registration_command(
+            cluster_name, timeout
+        )
+
+    # Harvester VM Operations (for custom cluster nodes)
+    def create_harvester_vm(self, name, image_id, network_id, cpus, memory,
+                            disk_size, ssh_user, user_data, network_data=""):
+        """Create a VM on Harvester"""
+        return self.rancher.create_harvester_vm(
+            name, image_id, network_id, cpus, memory,
+            disk_size, ssh_user, user_data, network_data
+        )
+
+    def wait_for_harvester_vm_ready(self, name, timeout):
+        """Wait for a Harvester VM to be running"""
+        return self.rancher.wait_for_harvester_vm_ready(name, timeout)
+
+    def delete_harvester_vm(self, name):
+        """Delete a Harvester VM"""
+        return self.rancher.delete_harvester_vm(name)
+
+    # Chart Install Operations
+    def install_chart(self, cluster_id, repo_name, chart_name, version,
+                      release_name, namespace, values=None):
+        """Install a Helm chart on a guest cluster"""
+        return self.rancher.install_chart(
+            cluster_id, repo_name, chart_name, version,
+            release_name, namespace, values
+        )
+
+    def create_cluster_repo(self, cluster_id, repo_name, git_url, git_branch):
+        """Create a ClusterRepo on a guest cluster"""
+        return self.rancher.create_cluster_repo(
+            cluster_id, repo_name, git_url, git_branch
+        )
+
+    def wait_for_cluster_repo_ready(self, cluster_id, repo_name,
+                                    timeout=600):
+        """Wait for a ClusterRepo to finish downloading"""
+        return self.rancher.wait_for_cluster_repo_ready(
+            cluster_id, repo_name, timeout
+        )
+
+    def get_chart_versions(self, repo_name, chart_name, cluster_id=None):
+        """Get available versions for a chart"""
+        return self.rancher.get_chart_versions(
+            repo_name, chart_name, cluster_id
+        )
+
+    def create_cloud_config_secret(self, cluster_id, secret_name,
+                                   namespace, kubeconfig):
+        """Create cloud-provider-config secret on guest cluster"""
+        return self.rancher.create_cloud_config_secret(
+            cluster_id, secret_name, namespace, kubeconfig
+        )
+
+    def wait_for_chart_app_ready(self, cluster_id, release_name,
+                                 namespace, timeout):
+        """Wait for chart app to be deployed"""
+        return self.rancher.wait_for_chart_app_ready(
+            cluster_id, release_name, namespace, timeout
+        )

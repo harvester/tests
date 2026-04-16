@@ -23,7 +23,18 @@ class Rest(Base):
         vm_spec = api.vms.Spec(cpu, memory)
 
         if image_id:
-            vm_spec.add_image("disk-0", image_id)
+            # Look up image UID for v1.8.0+ storage class naming (lh-<uid>)
+            image_uid = None
+            try:
+                code_img, img_data = api.images.get(image_id)
+                if code_img == 200:
+                    image_uid = img_data.get(
+                        "metadata", {}
+                    ).get("uid")
+            except Exception as e:
+                logging(f"Could not look up image UID for {image_id}: {e}",
+                        level="WARNING")
+            vm_spec.add_image("disk-0", image_id, image_uid=image_uid)
 
         code, data = api.vms.create(vm_name, vm_spec)
         assert code == 201, f"Failed to create VM: {code}, {data}"
