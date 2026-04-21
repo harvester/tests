@@ -332,7 +332,6 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
             return True, (ctx.stdout, ctx.stderr)
 
         def wait_migrated(self, vm_name, new_host, endtime=None, callback=default_cb, **kws):
-            # ref: https://github.com/harvester/tests/pull/2582
             ctx = ResponseContext('vm.migrate', *self.vms.migrate(vm_name, new_host, **kws))
             if 404 == ctx.code and callback(ctx):
                 return False, ctx
@@ -340,10 +339,20 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
             endtime = endtime or self._endtime()
             while endtime > datetime.now():
                 ctx = ResponseContext('vm.get_status', *self.vms.get_status(vm_name, **kws))
+
+                pod_name = ctx.data.get('status', {}).get('migrationState', {}).get('sourcePod')
+                pod_migrated = next(
+                    (r.get('state') for r in ctx.data.get('metadata', {}).get('relationships', [])
+                     if r.get('toId', "").endswith(pod_name or "Pod unavailable")),
+                    "SourcePod Migrate State"
+                )
+
+                # ref: https://github.com/harvester/tests/pull/2582#discussion_r3098266646
                 if (
                     not ctx.data['metadata']['annotations'].get("harvesterhci.io/migrationState")
                     and new_host == ctx.data['status']['nodeName']
                     and "AgentConnected" == ctx.data['status']['conditions'][-1].get('type')
+                    and 'succeeded' == pod_migrated
                     and callback(ctx)
                 ):
                     break
