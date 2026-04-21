@@ -41,7 +41,7 @@ def ubuntu_image(api_client, unique_name, image_ubuntu, image_checker):
 def ubuntu_vm(api_client, unique_name, ubuntu_image, volume_checker, wait_timeout):
     cpu, mem, unique_vm_name = 1, 2, f"pin-cpu-{unique_name}"
     vm_spec = api_client.vms.Spec(cpu, mem)
-    vm_spec.add_image("disk-0", ubuntu_image.id, ubuntu_image.uid)
+    vm_spec.add_image("disk-0", ubuntu_image.id, image_uid=ubuntu_image.uid)
     vm_spec.cpu_pinning = True
     code, data = api_client.vms.create(unique_vm_name, vm_spec)
     assert 201 == code, (
