@@ -372,7 +372,7 @@ Rancher - Create Cloud Provider Secret
 
 # Deployment Operations
 Rancher - Create Deployment
-    [Arguments]    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc}=${NONE}
+    [Arguments]    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc}=${NONE}    ${command}=${NONE}
     [Documentation]    Create deployment in guest cluster
     ...               Args:
     ...                   cluster_id: Cluster ID
@@ -380,10 +380,11 @@ Rancher - Create Deployment
     ...                   name: Deployment name
     ...                   image: Container image
     ...                   pvc: PVC name to mount (optional)
+    ...                   command: Container command override (optional)
     ...               Returns:
     ...                   dict: Deployment data
     Log    Creating deployment ${name} in cluster ${cluster_id}
-    ${deployment}=    create_deployment    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc}
+    ${deployment}=    create_deployment    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc}    ${command}
     RETURN    ${deployment}
 
 Rancher - Delete Deployment
@@ -728,7 +729,7 @@ Rancher - Get Cluster Registration Command
 Rancher - Create Harvester VM
     [Arguments]    ${name}    ${image_id}    ${network_id}    ${cpus}=2    ${memory}=4
     ...            ${disk_size}=40    ${ssh_user}=ubuntu    ${user_data}=${EMPTY}
-    ...            ${network_data}=${EMPTY}
+    ...            ${network_data}=${EMPTY}    ${guest_cluster_id}=${EMPTY}
     [Documentation]    Create a VM on Harvester for custom cluster nodes.
     ...               Args:
     ...                   name: VM name
@@ -740,12 +741,13 @@ Rancher - Create Harvester VM
     ...                   ssh_user: SSH username (default: ubuntu)
     ...                   user_data: Cloud-init user data string
     ...                   network_data: Cloud-init network data string (v2 format)
+    ...                   guest_cluster_id: Management cluster ID (c-m-xxxxx) for LB labels
     ...               Returns:
     ...                   dict: VM data
     Log    Creating Harvester VM: ${name}
     ${vm}=    create_harvester_vm    ${name}    ${image_id}    ${network_id}
     ...       ${cpus}    ${memory}    ${disk_size}    ${ssh_user}    ${user_data}
-    ...       ${network_data}
+    ...       ${network_data}    ${guest_cluster_id}
     RETURN    ${vm}
 
 Rancher - Wait For Harvester VM Ready
@@ -911,8 +913,9 @@ Basic workloads are deployed on single node cluster
     # CSI workload
     ${pvc_name}=    Set Variable    pvc-${SINGLE_CLUSTER_NAME}
     ${csi_deploy}=    Set Variable    csi-${SINGLE_CLUSTER_NAME}
+    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${SINGLE_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:latest    ${pvc_name}
+    Rancher - Create Deployment    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    busybox:stable    ${pvc_name}    ${busybox_cmd}
     # Whoami workload
     ${whoami_deploy}=    Set Variable    whoami-${SINGLE_CLUSTER_NAME}
     Rancher - Create Deployment    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
@@ -930,18 +933,20 @@ Basic workloads are deployed on single node custom cluster
     # CSI workload
     ${pvc_name}=    Set Variable    pvc-${CUSTOM_CLUSTER_NAME}
     ${csi_deploy}=    Set Variable    csi-${CUSTOM_CLUSTER_NAME}
+    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${CUSTOM_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:latest    ${pvc_name}
+    Rancher - Create Deployment    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    busybox:stable    ${pvc_name}    ${busybox_cmd}
     # Whoami workload
     ${whoami_deploy}=    Set Variable    whoami-${CUSTOM_CLUSTER_NAME}
     Rancher - Create Deployment    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
-    # TODO: LB disabled for custom clusters — https://github.com/harvester/harvester/issues/10399
-    # ${lb_dhcp}=    Set Variable    lb-${CUSTOM_CLUSTER_NAME}-dhcp
-    # Rancher - Create LB Service    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_dhcp}    ${whoami_deploy}    ipam=dhcp
-    # Rancher - Wait For LB Service Ready    ${CUSTOM_CLUSTER_ID}    ${lb_dhcp}
-    # ${lb_pool}=    Set Variable    lb-${CUSTOM_CLUSTER_NAME}-pool
-    # Rancher - Create LB Service    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
-    # Rancher - Wait For LB Service Ready    ${CUSTOM_CLUSTER_ID}    ${lb_pool}
+    # LB DHCP
+    ${lb_dhcp}=    Set Variable    lb-${CUSTOM_CLUSTER_NAME}-dhcp
+    Rancher - Create LB Service    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_dhcp}    ${whoami_deploy}    ipam=dhcp
+    Rancher - Wait For LB Service Ready    ${CUSTOM_CLUSTER_ID}    ${lb_dhcp}
+    # LB Pool
+    ${lb_pool}=    Set Variable    lb-${CUSTOM_CLUSTER_NAME}-pool
+    Rancher - Create LB Service    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
+    Rancher - Wait For LB Service Ready    ${CUSTOM_CLUSTER_ID}    ${lb_pool}
 
 Multi node RKE2 cluster is created
     [Documentation]    Create a 3-node RKE2 cluster and store its ID.
@@ -952,11 +957,12 @@ Multi node RKE2 cluster is created
     Log    Multi-node cluster created: ${MULTI_CLUSTER_NAME} (${cluster_id})    console=yes
 
 CSI workload with PVC is deployed
-    [Documentation]    Create a PVC and nginx deployment using Harvester CSI.
+    [Documentation]    Create a PVC and busybox deployment using Harvester CSI.
     ${pvc_name}=    Set Variable    pvc-${MULTI_CLUSTER_NAME}
     ${deploy_name}=    Set Variable    csi-${MULTI_CLUSTER_NAME}
+    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${MULTI_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    nginx:latest    ${pvc_name}
+    Rancher - Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    busybox:stable    ${pvc_name}    ${busybox_cmd}
 
 Whoami workload is deployed
     [Documentation]    Deploy a Whoami workload for load balancer testing.
@@ -994,11 +1000,12 @@ Multi node cluster is upgraded to next version
 
 New CSI workload is deployed
     [Arguments]    ${suffix}
-    [Documentation]    Create a new PVC and nginx deployment for post-operation verification.
+    [Documentation]    Create a new PVC and busybox deployment for post-operation verification.
     ${pvc_name}=    Set Variable    pvc-${suffix}-${MULTI_CLUSTER_NAME}
     ${deploy_name}=    Set Variable    csi-${suffix}-${MULTI_CLUSTER_NAME}
+    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${MULTI_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    nginx:latest    ${pvc_name}
+    Rancher - Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    busybox:stable    ${pvc_name}    ${busybox_cmd}
 
 All test workloads are removed from cluster
     [Documentation]    Delete all test deployments, PVCs, and LB services.
@@ -1045,20 +1052,20 @@ Basic workloads are deployed on single node import cluster
     # CSI workload
     ${pvc_name}=    Set Variable    pvc-${IMPORT_CLUSTER_NAME}
     ${csi_deploy}=    Set Variable    csi-${IMPORT_CLUSTER_NAME}
+    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${IMPORT_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:latest    ${pvc_name}
+    Rancher - Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    busybox:stable    ${pvc_name}    ${busybox_cmd}
     # Whoami workload
     ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
     Rancher - Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
-    # TODO: LB creation disabled — No cloud provider in the charts available for Harvester 1.8
-    # # LB DHCP
-    # ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
-    # Rancher - Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_dhcp}    ${whoami_deploy}    ipam=dhcp
-    # Rancher - Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}
-    # # LB Pool
-    # ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
-    # Rancher - Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
-    # Rancher - Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_pool}
+    # LB DHCP
+    ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
+    Rancher - Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_dhcp}    ${whoami_deploy}    ipam=dhcp
+    Rancher - Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}
+    # LB Pool
+    ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
+    Rancher - Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
+    Rancher - Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_pool}
 
 Multi node RKE2 cluster is deleted
     [Documentation]    Delete the multi-node RKE2 cluster and wait for removal.
@@ -1104,9 +1111,8 @@ Basic workloads should be active on single node custom cluster
     Rancher - Wait For PVC Bound    ${CUSTOM_CLUSTER_ID}    ${pvc_name}
     Rancher - Wait For Deployment Ready    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}
     Rancher - Wait For Deployment Ready    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}
-    # TODO: LB verification disabled — https://github.com/harvester/harvester/issues/10399
-    # Rancher - Verify LB Via Cluster    ${CUSTOM_CLUSTER_ID}    ${lb_dhcp}    Hostname:
-    # Rancher - Verify LB Via Cluster    ${CUSTOM_CLUSTER_ID}    ${lb_pool}    Hostname:
+    Rancher - Verify LB Via Cluster    ${CUSTOM_CLUSTER_ID}    ${lb_dhcp}    Hostname:
+    Rancher - Verify LB Via Cluster    ${CUSTOM_CLUSTER_ID}    ${lb_pool}    Hostname:
     Log    All basic workloads verified on custom cluster    console=yes
 
 Basic workloads should be active on single node import cluster
@@ -1119,9 +1125,8 @@ Basic workloads should be active on single node import cluster
     Rancher - Wait For PVC Bound    ${IMPORT_CLUSTER_ID}    ${pvc_name}
     Rancher - Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}
     Rancher - Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}
-    # TODO: LB verification disabled — https://github.com/harvester/harvester/issues/10399
-    # Rancher - Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}    Hostname:
-    # Rancher - Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_pool}    Hostname:
+    Rancher - Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}    Hostname:
+    Rancher - Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_pool}    Hostname:
     Log    All basic workloads verified on import cluster    console=yes
 
 CSI deployment and PVC should be active
@@ -1323,6 +1328,7 @@ Create Custom RKE2 Cluster With Full Setup
         ...    disk_size=40
         ...    ssh_user=ubuntu
         ...    user_data=${user_data}
+        ...    guest_cluster_id=${mgmt_cluster_id}
         Rancher - Wait For Harvester VM Ready    ${vm_name}    ${WAIT_TIMEOUT}
     END
 
@@ -1365,20 +1371,18 @@ Install Harvester Charts On Import Cluster
     ...    ${cluster_id}    ${secret_name}    kube-system    ${CP_KUBECONFIG}
 
     # Get latest chart versions from the guest cluster's repo
-    # TODO: Cloud provider chart (harvester-cloud-provider) not available on
-    #       rancher-charts repo for this Rancher version. Skipping until resolved.
-    # ${cp_versions}=    Rancher - Get Chart Versions    ${repo_name}    harvester-cloud-provider    ${cluster_id}
-    # ${cp_version}=    Get From List    ${cp_versions}    0
+    ${cp_versions}=    Rancher - Get Chart Versions    ${repo_name}    harvester-cloud-provider    ${cluster_id}
+    ${cp_version}=    Get From List    ${cp_versions}    0
     ${csi_versions}=    Rancher - Get Chart Versions    ${repo_name}    harvester-csi-driver    ${cluster_id}
     ${csi_version}=    Get From List    ${csi_versions}    0
     Log    CSI version: ${csi_version}    console=yes
 
-    # TODO: Cloud provider install disabled — chart not available on rancher-charts
-    # ${cp_values}=    Evaluate    {"cloudConfigPath": "", "global": {"cattle": {"clusterName": "${cluster_name}"}}}
-    # Rancher - Install Chart
-    # ...    ${cluster_id}    ${repo_name}    harvester-cloud-provider
-    # ...    ${cp_version}    harvester-cloud-provider    kube-system    ${cp_values}
-    # Rancher - Wait For Chart App Ready    ${cluster_id}    harvester-cloud-provider    kube-system
+    # Install Harvester Cloud Provider
+    ${cp_values}=    Evaluate    {"cloudConfigPath": "", "global": {"cattle": {"clusterName": "${cluster_id}"}}}
+    Rancher - Install Chart
+    ...    ${cluster_id}    ${repo_name}    harvester-cloud-provider
+    ...    ${cp_version}    harvester-cloud-provider    kube-system    ${cp_values}
+    Rancher - Wait For Chart App Ready    ${cluster_id}    harvester-cloud-provider    kube-system
 
     # Build values for CSI driver chart — use secret instead of hostPath
     ${csi_values}=    Evaluate    {"cloudConfig": {"hostPath": "", "secretName": "${secret_name}"}}
@@ -1443,6 +1447,7 @@ Create Import RKE2 Cluster With Full Setup
         ...    disk_size=40
         ...    ssh_user=ubuntu
         ...    user_data=${user_data}
+        ...    guest_cluster_id=${mgmt_cluster_id}
         Rancher - Wait For Harvester VM Ready    ${vm_name}    ${WAIT_TIMEOUT}
     END
 

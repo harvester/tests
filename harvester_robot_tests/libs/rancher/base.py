@@ -170,7 +170,8 @@ class Base(ABC):
 
     # Deployment Operations
     @abstractmethod
-    def create_deployment(self, cluster_id, namespace, name, image, pvc=None):
+    def create_deployment(self, cluster_id, namespace, name, image, pvc=None,
+                          command=None):
         """Create deployment in guest cluster"""
         pass
 
@@ -388,7 +389,8 @@ class Base(ABC):
     # Harvester VM Operations (for custom cluster nodes)
     @abstractmethod
     def create_harvester_vm(self, name, image_id, network_id, cpus, memory,
-                            disk_size, ssh_user, user_data, network_data=""):
+                            disk_size, ssh_user, user_data, network_data="",
+                            guest_cluster_id=""):
         """Create a VM on Harvester.
 
         Args:
@@ -401,6 +403,10 @@ class Base(ABC):
             ssh_user: SSH username
             user_data: Cloud-init user data string
             network_data: Cloud-init network data string (optional)
+            guest_cluster_id: Management cluster ID (c-m-xxxxx) for LB
+                labels. When set, adds harvesterhci.io/creator and
+                guestcluster.harvesterhci.io/name labels so the
+                Harvester LB webhook can discover the VMs.
         """
         pass
 

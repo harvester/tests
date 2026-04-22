@@ -115,11 +115,9 @@ Test Delete RKE2 Clusters
 Test Create Single Node Custom RKE2 Cluster with Basic Workloads
     [Tags]     rancher    rke2    custom    p2
     [Documentation]    Create a single-node custom RKE2 cluster with Harvester
-    ...               cloud provider and verify basic workloads (CSI, Whoami)
-    ...               are functional. LB tests are disabled due to
-    ...               https://github.com/harvester/harvester/issues/10399.
-    ...               Unlike the node driver cluster, nodes are registered
-    ...               via cloud-init with the Rancher registration command.
+    ...               cloud provider and verify basic workloads (CSI, Whoami, LB)
+    ...               are functional. Unlike the node driver cluster, nodes are
+    ...               registered via cloud-init with the Rancher registration command.
     Given Single node custom RKE2 cluster is created
     Then Harvester deployments should be ready    ${CUSTOM_CLUSTER_ID}
     When Basic workloads are deployed on single node custom cluster
@@ -127,7 +125,7 @@ Test Create Single Node Custom RKE2 Cluster with Basic Workloads
     [Teardown]    Cleanup custom cluster test resources
 
 Test Import Existing RKE2 Cluster with Basic Workloads
-    [Tags]     rancher    rke2    import    p2
+    [Tags]     rancher    rke2    import    p2    chart
     [Documentation]    Deploy RKE2 on a Harvester VM via cloud-init, import
     ...               the existing cluster into Rancher, install Harvester
     ...               Cloud Provider and CSI Driver via Rancher Apps, and
@@ -137,4 +135,3 @@ Test Import Existing RKE2 Cluster with Basic Workloads
     When Basic workloads are deployed on single node import cluster
     Then Basic workloads should be active on single node import cluster
     [Teardown]    Cleanup import cluster test resources
-

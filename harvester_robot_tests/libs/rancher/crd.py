@@ -1193,9 +1193,19 @@ class CRD(Base):
         logging(f"Created secret: {name}")
         return {"metadata": {"namespace": "fleet-default", "name": name}}
 
-    def create_deployment(self, cluster_id, namespace, name, image, pvc=None):
+    def create_deployment(self, cluster_id, namespace, name, image, pvc=None,
+                          command=None):
         """Create deployment in guest cluster"""
         logging(f"Creating deployment {name} in cluster {cluster_id}")
+
+        container = {
+            "name": name,
+            "image": image,
+        }
+        if command:
+            container["command"] = list(command)
+        else:
+            container["ports"] = [{"containerPort": 80}]
 
         deployment_spec = {
             "apiVersion": "apps/v1",
@@ -1218,13 +1228,7 @@ class CRD(Base):
                         }
                     },
                     "spec": {
-                        "containers": [
-                            {
-                                "name": name,
-                                "image": image,
-                                "ports": [{"containerPort": 80}]
-                            }
-                        ]
+                        "containers": [container]
                     }
                 }
             }
@@ -2267,7 +2271,8 @@ class CRD(Base):
 
     # Harvester VM Operations (for custom cluster nodes)
     def create_harvester_vm(self, name, image_id, network_id, cpus, memory,
-                            disk_size, ssh_user, user_data, network_data=""):
+                            disk_size, ssh_user, user_data, network_data="",
+                            guest_cluster_id=""):
         """Create a VM on Harvester using the Kubernetes custom API.
 
         Builds the VirtualMachine manifest directly (same pattern as vm/crd.py)
@@ -2360,6 +2365,30 @@ class CRD(Base):
 
         memory_gi = f"{memory}Gi" if str(memory).isdigit() else str(memory)
 
+        # VM-level labels
+        vm_labels = {
+            "harvesterhci.io/creator": "robot-framework",
+            "harvesterhci.io/os": "linux"
+        }
+        # Pod template labels
+        pod_labels = {"harvesterhci.io/vmName": name}
+
+        # When a guest cluster ID is provided, add the labels the
+        # Harvester LB webhook requires to discover guest-cluster VMs.
+        if guest_cluster_id:
+            vm_labels["harvesterhci.io/creator"] = (
+                "docker-machine-driver-harvester"
+            )
+            vm_labels["guestcluster.harvesterhci.io/name"] = (
+                guest_cluster_id
+            )
+            pod_labels["harvesterhci.io/creator"] = (
+                "docker-machine-driver-harvester"
+            )
+            pod_labels["guestcluster.harvesterhci.io/name"] = (
+                guest_cluster_id
+            )
+
         vm_dict = {
             "apiVersion": "kubevirt.io/v1",
             "kind": "VirtualMachine",
@@ -2373,17 +2402,14 @@ class CRD(Base):
                     ),
                     "harvesterhci.io/sshNames": "[]"
                 },
-                "labels": {
-                    "harvesterhci.io/creator": "robot-framework",
-                    "harvesterhci.io/os": "linux"
-                }
+                "labels": vm_labels
             },
             "spec": {
                 "runStrategy": "RerunOnFailure",
                 "template": {
                     "metadata": {
                         "annotations": {"harvesterhci.io/sshNames": "[]"},
-                        "labels": {"harvesterhci.io/vmName": name}
+                        "labels": pod_labels
                     },
                     "spec": {
                         "affinity": {},
