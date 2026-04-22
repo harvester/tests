@@ -1,4 +1,4 @@
-from .virtualmachines import VMSpec, VMSpec140
+from .virtualmachines import VMSpec, VMSpec140, VMSpec180
 
 
 class TemplateSpec(VMSpec):
@@ -40,4 +40,8 @@ class TemplateSpec(VMSpec):
 
 
 class TemplateSpec140(TemplateSpec, VMSpec140):
+    pass
+
+
+class TemplateSpec180(TemplateSpec, VMSpec180):
     pass

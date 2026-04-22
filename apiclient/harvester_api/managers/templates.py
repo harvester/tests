@@ -1,4 +1,4 @@
-from harvester_api.models.templates import TemplateSpec, TemplateSpec140
+from harvester_api.models.templates import TemplateSpec, TemplateSpec140, TemplateSpec180
 from .base import DEFAULT_NAMESPACE, BaseManager
 
 
@@ -54,3 +54,8 @@ class TemplateManager(BaseManager):
 class TemplateManager140(TemplateManager):
     support_to = "v1.4.0"
     Spec = TemplateSpec140
+
+
+class TemplateManager180(TemplateManager):
+    support_to = "v1.8.0rc1"
+    Spec = TemplateSpec180
