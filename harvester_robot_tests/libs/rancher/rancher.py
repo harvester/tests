@@ -146,9 +146,11 @@ class Rancher(Base):
         return self.rancher.create_secret(name, data, annotations)
 
     # Deployment Operations
-    def create_deployment(self, cluster_id, namespace, name, image, pvc=None):
+    def create_deployment(self, cluster_id, namespace, name, image, pvc=None,
+                          command=None):
         """Create deployment in guest cluster"""
-        return self.rancher.create_deployment(cluster_id, namespace, name, image, pvc)
+        return self.rancher.create_deployment(cluster_id, namespace, name,
+                                              image, pvc, command)
 
     def get_deployment(self, cluster_id, namespace, name):
         """Get deployment details"""
@@ -310,11 +312,13 @@ class Rancher(Base):
 
     # Harvester VM Operations (for custom cluster nodes)
     def create_harvester_vm(self, name, image_id, network_id, cpus, memory,
-                            disk_size, ssh_user, user_data, network_data=""):
+                            disk_size, ssh_user, user_data, network_data="",
+                            guest_cluster_id=""):
         """Create a VM on Harvester"""
         return self.rancher.create_harvester_vm(
             name, image_id, network_id, cpus, memory,
-            disk_size, ssh_user, user_data, network_data
+            disk_size, ssh_user, user_data, network_data,
+            guest_cluster_id
         )
 
     def wait_for_harvester_vm_ready(self, name, timeout):

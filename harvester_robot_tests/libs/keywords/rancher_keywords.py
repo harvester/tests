@@ -569,7 +569,8 @@ class rancher_keywords:
         return self.rancher.create_secret(name, data, annotations)
 
     # Deployment Operations
-    def create_deployment(self, cluster_id, namespace, name, image, pvc=None):
+    def create_deployment(self, cluster_id, namespace, name, image, pvc=None,
+                          command=None):
         """
         Create deployment in guest cluster
 
@@ -579,12 +580,14 @@ class rancher_keywords:
             name: Deployment name
             image: Container image
             pvc: PVC name to mount (optional)
+            command: Container command override (optional)
 
         Returns:
             dict: Deployment data
         """
         logging(f"Creating deployment {name} in cluster {cluster_id}")
-        return self.rancher.create_deployment(cluster_id, namespace, name, image, pvc)
+        return self.rancher.create_deployment(cluster_id, namespace, name,
+                                              image, pvc, command)
 
     def delete_deployment(self, cluster_id, namespace, name):
         """
@@ -1059,7 +1062,8 @@ class rancher_keywords:
     # Harvester VM Operations (for custom cluster nodes)
     def create_harvester_vm(self, name, image_id, network_id, cpus=2,
                             memory=4, disk_size=40, ssh_user="ubuntu",
-                            user_data="", network_data=""):
+                            user_data="", network_data="",
+                            guest_cluster_id=""):
         """
         Create a VM on Harvester.
 
@@ -1073,6 +1077,8 @@ class rancher_keywords:
             ssh_user: SSH username (default: ubuntu)
             user_data: Cloud-init user data string
             network_data: Cloud-init network data string (NoCloud network config v2)
+            guest_cluster_id: Management cluster ID (c-m-xxxxx). When set
+                adds LB-required labels to the VM.
 
         Returns:
             dict: VM data
@@ -1080,7 +1086,8 @@ class rancher_keywords:
         logging(f"Creating Harvester VM: {name}")
         return self.rancher.create_harvester_vm(
             name, image_id, network_id, int(cpus), int(memory),
-            int(disk_size), ssh_user, user_data, network_data
+            int(disk_size), ssh_user, user_data, network_data,
+            guest_cluster_id
         )
 
     def wait_for_harvester_vm_ready(self, name, timeout=DEFAULT_TIMEOUT):
