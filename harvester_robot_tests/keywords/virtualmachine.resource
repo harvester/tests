@@ -5,6 +5,12 @@ Resource         common.resource
 Library          ../libs/keywords/vm_keywords.py
 
 *** Keywords ***
+List VMs by prefix
+    [Arguments]    ${prefix}    ${namespace}=default
+    [Documentation]    List VMs whose names start with the given prefix
+    ${vms}=    list vms    namespace=${namespace}    name_prefix=${prefix}
+    RETURN    ${vms}
+
 Create VM with name
     [Arguments]    ${vm_name}    &{config}
     [Documentation]    Create a virtual machine with provided name

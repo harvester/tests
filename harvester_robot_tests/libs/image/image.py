@@ -17,7 +17,7 @@ class Image:
         else:
             self.image = Rest()
 
-    def create_from_url(self, image_name, image_url, checksum, **kwargs):
+    def create_from_url(self, image_name, image_url, checksum="", **kwargs):
         return self.image.create_from_url(image_name, image_url, checksum, **kwargs)
 
     def wait_for_downloaded(self, image_name, timeout):
@@ -26,7 +26,7 @@ class Image:
     def wait_for_ready(self, image_name, timeout):
         return self.image.wait_for_ready(image_name, timeout)
 
-    def delete(self, image_name, namespace):
+    def delete(self, image_name, namespace="default"):
         return self.image.delete(image_name, namespace)
 
     def wait_for_deleted(self, image_name, timeout):

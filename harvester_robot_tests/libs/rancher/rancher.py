@@ -146,11 +146,10 @@ class Rancher(Base):
         return self.rancher.create_secret(name, data, annotations)
 
     # Deployment Operations
-    def create_deployment(self, cluster_id, namespace, name, image, pvc=None,
-                          command=None):
+    def create_deployment(self, cluster_id, namespace, name, image, pvc=None):
         """Create deployment in guest cluster"""
         return self.rancher.create_deployment(cluster_id, namespace, name,
-                                              image, pvc, command)
+                                              image, pvc)
 
     def get_deployment(self, cluster_id, namespace, name):
         """Get deployment details"""
@@ -216,62 +215,6 @@ class Rancher(Base):
     def wait_for_harvester_deployments_ready(self, cluster_id, timeout):
         """Wait for harvester-cloud-provider and harvester-csi-driver to be ready"""
         return self.rancher.wait_for_harvester_deployments_ready(cluster_id, timeout)
-
-    # Cluster Network Operations
-    def create_cluster_network(self, name):
-        """Create cluster network"""
-        return self.rancher.create_cluster_network(name)
-
-    def delete_cluster_network(self, name):
-        """Delete cluster network"""
-        return self.rancher.delete_cluster_network(name)
-
-    def create_vlan_config(self, name, cluster_network, nic):
-        """Create VLAN config to bind NIC to cluster network"""
-        return self.rancher.create_vlan_config(name, cluster_network, nic)
-
-    def delete_vlan_config(self, name):
-        """Delete VLAN config"""
-        return self.rancher.delete_vlan_config(name)
-
-    def wait_for_cluster_network_ready(self, name, timeout=120):
-        """Wait for cluster network to become ready"""
-        return self.rancher.wait_for_cluster_network_ready(name, timeout)
-
-    # VLAN Network Operations
-    def create_vlan_network(self, name, vlan_id, cluster_network):
-        """Create VLAN network"""
-        return self.rancher.create_vlan_network(name, vlan_id, cluster_network)
-
-    def delete_vlan_network(self, name):
-        """Delete VLAN network"""
-        return self.rancher.delete_vlan_network(name)
-
-    # IP Pool Operations
-    def get_ip_pool(self, name):
-        """Get IP pool by name"""
-        return self.rancher.get_ip_pool(name)
-
-    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id):
-        """Create IP pool"""
-        return self.rancher.create_ip_pool(name, subnet, start_ip, end_ip, network_id)
-
-    def delete_ip_pool(self, name):
-        """Delete IP pool"""
-        return self.rancher.delete_ip_pool(name)
-
-    # Image Operations
-    def create_image(self, name, url):
-        """Create image by URL"""
-        return self.rancher.create_image(name, url)
-
-    def wait_for_image_ready(self, name, timeout):
-        """Wait for image to be ready"""
-        return self.rancher.wait_for_image_ready(name, timeout)
-
-    def delete_image(self, name):
-        """Delete image"""
-        return self.rancher.delete_image(name)
 
     # Import Existing Cluster Operations
     def create_import_cluster(self, name):
@@ -369,4 +312,61 @@ class Rancher(Base):
         """Wait for chart app to be deployed"""
         return self.rancher.wait_for_chart_app_ready(
             cluster_id, release_name, namespace, timeout
+        )
+
+    # RWX Volume / StorageClass / StatefulSet Operations
+    def create_rwx_storage_class_on_host(self, name="longhorn-rwx"):
+        """Create an RWX-capable StorageClass on the host Harvester cluster"""
+        return self.rancher.create_rwx_storage_class_on_host(name)
+
+    def delete_rwx_storage_class_on_host(self, name="longhorn-rwx"):
+        """Delete the RWX StorageClass from the host Harvester cluster"""
+        return self.rancher.delete_rwx_storage_class_on_host(name)
+
+    def create_guest_storage_class(self, cluster_id, name,
+                                   host_storage_class="longhorn-rwx"):
+        """Create a StorageClass on the guest cluster referencing a host SC"""
+        return self.rancher.create_guest_storage_class(
+            cluster_id, name, host_storage_class
+        )
+
+    def delete_guest_storage_class(self, cluster_id, name):
+        """Delete a StorageClass from the guest cluster"""
+        return self.rancher.delete_guest_storage_class(cluster_id, name)
+
+    def create_pvc_rwx(self, cluster_id, name, size="1Gi", storage_class=None):
+        """Create a ReadWriteMany PVC in guest cluster"""
+        return self.rancher.create_pvc_rwx(cluster_id, name, size, storage_class)
+
+    def create_statefulset(self, cluster_id, namespace, name, image,
+                           pvc_name, replicas=2):
+        """Create a StatefulSet that mounts an existing PVC"""
+        return self.rancher.create_statefulset(
+            cluster_id, namespace, name, image, pvc_name, replicas
+        )
+
+    def get_statefulset(self, cluster_id, namespace, name):
+        """Get StatefulSet details"""
+        return self.rancher.get_statefulset(cluster_id, namespace, name)
+
+    def delete_statefulset(self, cluster_id, namespace, name):
+        """Delete StatefulSet"""
+        return self.rancher.delete_statefulset(cluster_id, namespace, name)
+
+    def wait_for_statefulset_ready(self, cluster_id, namespace, name, timeout):
+        """Wait for StatefulSet to have all replicas ready"""
+        return self.rancher.wait_for_statefulset_ready(
+            cluster_id, namespace, name, timeout
+        )
+
+    def exec_command_in_pod(self, cluster_id, namespace, pod_name, command):
+        """Execute a command inside a pod"""
+        return self.rancher.exec_command_in_pod(
+            cluster_id, namespace, pod_name, command
+        )
+
+    def get_pods_by_label(self, cluster_id, namespace, label_selector):
+        """Get pods matching a label selector"""
+        return self.rancher.get_pods_by_label(
+            cluster_id, namespace, label_selector
         )

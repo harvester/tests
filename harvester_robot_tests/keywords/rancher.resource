@@ -5,6 +5,10 @@ Library          Collections
 Library          String
 Resource         variables.resource
 Resource         common.resource
+Resource         storage_network.resource
+Resource         network.resource
+Resource         image.resource
+Resource         virtualmachine.resource
 
 *** Keywords ***
 # State Management
@@ -372,7 +376,7 @@ Rancher - Create Cloud Provider Secret
 
 # Deployment Operations
 Rancher - Create Deployment
-    [Arguments]    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc}=${NONE}    ${command}=${NONE}
+    [Arguments]    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc}=${NONE}
     [Documentation]    Create deployment in guest cluster
     ...               Args:
     ...                   cluster_id: Cluster ID
@@ -380,11 +384,10 @@ Rancher - Create Deployment
     ...                   name: Deployment name
     ...                   image: Container image
     ...                   pvc: PVC name to mount (optional)
-    ...                   command: Container command override (optional)
     ...               Returns:
     ...                   dict: Deployment data
     Log    Creating deployment ${name} in cluster ${cluster_id}
-    ${deployment}=    create_deployment    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc}    ${command}
+    ${deployment}=    create_deployment    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc}
     RETURN    ${deployment}
 
 Rancher - Delete Deployment
@@ -536,141 +539,80 @@ Rancher - Wait For Harvester Deployments Ready
     Log    Waiting for Harvester deployments in cluster ${cluster_id}
     wait_for_harvester_deployments_ready    ${cluster_id}    ${timeout}
 
-# Cluster Network Operations
+# Cluster Network Operations (delegated to network module)
 Rancher - Create Cluster Network
     [Arguments]    ${name}
-    [Documentation]    Create cluster network
-    ...               Args:
-    ...                   name: Cluster network name
-    Log    Creating cluster network: ${name}
-    ${cn}=    create_cluster_network    ${name}
+    [Documentation]    Create cluster network (delegates to Network module)
+    ${cn}=    Network - Create Cluster Network    ${name}
     RETURN    ${cn}
 
 Rancher - Delete Cluster Network
     [Arguments]    ${name}
-    [Documentation]    Delete cluster network
-    ...               Args:
-    ...                   name: Cluster network name
-    Log    Deleting cluster network: ${name}
-    delete_cluster_network    ${name}
+    [Documentation]    Delete cluster network (delegates to Network module)
+    Network - Delete Cluster Network    ${name}
 
 Rancher - Create VLAN Config
     [Arguments]    ${name}    ${cluster_network}    ${nic}
-    [Documentation]    Create VLAN config to bind NIC to cluster network
-    ...               Args:
-    ...                   name: VLAN config name
-    ...                   cluster_network: Cluster network name
-    ...                   nic: NIC name (e.g., eno50)
-    Log    Creating VLAN config: ${name}
-    ${vc}=    create_vlan_config    ${name}    ${cluster_network}    ${nic}
+    [Documentation]    Create VLAN config (delegates to Network module)
+    ${vc}=    Network - Create VLAN Config    ${name}    ${cluster_network}    ${nic}
     RETURN    ${vc}
 
 Rancher - Delete VLAN Config
     [Arguments]    ${name}
-    [Documentation]    Delete VLAN config
-    ...               Args:
-    ...                   name: VLAN config name
-    Log    Deleting VLAN config: ${name}
-    delete_vlan_config    ${name}
+    [Documentation]    Delete VLAN config (delegates to Network module)
+    Network - Delete VLAN Config    ${name}
 
 Rancher - Wait For Cluster Network Ready
     [Arguments]    ${name}    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait for cluster network to become ready
-    ...               Args:
-    ...                   name: Cluster network name
-    ...                   timeout: Wait timeout in seconds
-    Log    Waiting for cluster network ${name} to be ready
-    ${cn}=    wait_for_cluster_network_ready    ${name}    ${timeout}
+    [Documentation]    Wait for cluster network ready (delegates to Network module)
+    ${cn}=    Network - Wait For Cluster Network Ready    ${name}    ${timeout}
     RETURN    ${cn}
 
-# VLAN Network Operations
+# VLAN Network Operations (delegated to network module)
 Rancher - Create VLAN Network
     [Arguments]    ${name}    ${vlan_id}    ${cluster_network}
-    [Documentation]    Create VLAN network
-    ...               Args:
-    ...                   name: Network name
-    ...                   vlan_id: VLAN ID
-    ...                   cluster_network: Cluster network name
-    ...               Returns:
-    ...                   dict: Network data
-    Log    Creating VLAN network: ${name}
-    ${network}=    create_vlan_network    ${name}    ${vlan_id}    ${cluster_network}
+    [Documentation]    Create VLAN network (delegates to Network module)
+    ${network}=    Network - Create VLAN Network    ${name}    ${vlan_id}    ${cluster_network}
     RETURN    ${network}
 
 Rancher - Delete VLAN Network
     [Arguments]    ${name}
-    [Documentation]    Delete VLAN network
-    ...               Args:
-    ...                   name: Network name
-    Log    Deleting VLAN network: ${name}
-    delete_vlan_network    ${name}
+    [Documentation]    Delete VLAN network (delegates to Network module)
+    Network - Delete VLAN Network    ${name}
 
-# IP Pool Operations
+# IP Pool Operations (delegated to network module)
 Rancher - Get IP Pool
     [Arguments]    ${name}
-    [Documentation]    Get IP pool by name, returns None if not found
-    ...               Args:
-    ...                   name: IP pool name
-    ...               Returns:
-    ...                   dict: IP pool data or None
-    ${pool}=    get_ip_pool    ${name}
+    [Documentation]    Get IP pool (delegates to Network module)
+    ${pool}=    Network - Get IP Pool    ${name}
     RETURN    ${pool}
 
 Rancher - Create IP Pool
     [Arguments]    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}
-    [Documentation]    Create IP pool
-    ...               Args:
-    ...                   name: IP pool name
-    ...                   subnet: Subnet CIDR
-    ...                   start_ip: Start IP address
-    ...                   end_ip: End IP address
-    ...                   network_id: Network ID
-    ...               Returns:
-    ...                   dict: IP pool data
-    Log    Creating IP pool: ${name}
-    ${pool}=    create_ip_pool    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}
+    [Documentation]    Create IP pool (delegates to Network module)
+    ${pool}=    Network - Create IP Pool    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}
     RETURN    ${pool}
 
 Rancher - Delete IP Pool
     [Arguments]    ${name}
-    [Documentation]    Delete IP pool
-    ...               Args:
-    ...                   name: IP pool name
-    Log    Deleting IP pool: ${name}
-    delete_ip_pool    ${name}
+    [Documentation]    Delete IP pool (delegates to Network module)
+    Network - Delete IP Pool    ${name}
 
-# Image Operations
+# Image Operations (delegated to Image module)
 Rancher - Create Image
     [Arguments]    ${name}    ${url}
-    [Documentation]    Create image by URL
-    ...               Args:
-    ...                   name: Image name
-    ...                   url: URL to download image from
-    ...               Returns:
-    ...                   dict: Image data
-    Log    Creating image: ${name}
-    ${image}=    create_image    ${name}    ${url}
-    RETURN    ${image}
+    [Documentation]    Create image by URL (delegates to Image module)
+    Image - Create image from url with name    ${name}    ${url}
 
 Rancher - Wait For Image Ready
     [Arguments]    ${name}    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait for image to be ready
-    ...               Args:
-    ...                   name: Image name
-    ...                   timeout: Timeout in seconds
-    ...               Returns:
-    ...                   dict: Image data when ready
-    Log    Waiting for image ${name} to be ready
-    ${image}=    wait_for_image_ready    ${name}    ${timeout}
-    RETURN    ${image}
+    [Documentation]    Wait for image ready (delegates to Image module)
+    Image - Wait for image downloaded by name    ${name}    ${timeout}
 
 Rancher - Delete Image
     [Arguments]    ${name}
-    [Documentation]    Delete image
-    ...               Args:
-    ...                   name: Image name
-    Log    Deleting image: ${name}
-    delete_image    ${name}
+    [Documentation]    Delete image (delegates to Image module)
+    Image - Delete image by name    ${name}
 
 # Custom RKE2 Cluster Operations
 Rancher - Create Custom RKE2 Cluster
@@ -847,6 +789,175 @@ Rancher - Wait For Chart App Ready
     ...    ${namespace}    ${timeout}
     RETURN    ${result}
 
+# RWX Volume / StorageClass / StatefulSet Operations
+Rancher - Create RWX StorageClass On Host
+    [Arguments]    ${name}=longhorn-rwx
+    [Documentation]    Create an RWX-capable StorageClass on the host Harvester cluster.
+    ...               Uses Longhorn provisioner with NFS options for ReadWriteMany support.
+    ...               Args:
+    ...                   name: StorageClass name (default: longhorn-rwx)
+    ...               Returns:
+    ...                   dict: StorageClass data
+    Log    Creating RWX StorageClass on host: ${name}
+    ${sc}=    create_rwx_storage_class_on_host    ${name}
+    RETURN    ${sc}
+
+Rancher - Delete RWX StorageClass On Host
+    [Arguments]    ${name}=longhorn-rwx
+    [Documentation]    Delete the RWX StorageClass from the host Harvester cluster.
+    ...               Args:
+    ...                   name: StorageClass name (default: longhorn-rwx)
+    Log    Deleting RWX StorageClass from host: ${name}
+    delete_rwx_storage_class_on_host    ${name}
+
+Rancher - Create Guest StorageClass
+    [Arguments]    ${cluster_id}    ${name}    ${host_storage_class}=longhorn-rwx
+    [Documentation]    Create a StorageClass on the guest cluster referencing a host StorageClass.
+    ...               Uses the Harvester CSI driver provisioner with hostStorageClass parameter.
+    ...               Args:
+    ...                   cluster_id: Guest cluster ID
+    ...                   name: StorageClass name on the guest cluster
+    ...                   host_storage_class: Name of the host-side StorageClass to reference
+    ...               Returns:
+    ...                   dict: StorageClass data
+    Log    Creating guest StorageClass ${name} in cluster ${cluster_id}
+    ${sc}=    create_guest_storage_class    ${cluster_id}    ${name}    ${host_storage_class}
+    RETURN    ${sc}
+
+Rancher - Delete Guest StorageClass
+    [Arguments]    ${cluster_id}    ${name}
+    [Documentation]    Delete a StorageClass from the guest cluster.
+    ...               Args:
+    ...                   cluster_id: Guest cluster ID
+    ...                   name: StorageClass name
+    Log    Deleting guest StorageClass ${name} from cluster ${cluster_id}
+    delete_guest_storage_class    ${cluster_id}    ${name}
+
+Rancher - Create PVC RWX
+    [Arguments]    ${cluster_id}    ${name}    ${size}=1Gi    ${storage_class}=${NONE}
+    [Documentation]    Create a ReadWriteMany PVC in guest cluster
+    ...               Args:
+    ...                   cluster_id: Cluster ID
+    ...                   name: PVC name
+    ...                   size: Storage size (default: 1Gi)
+    ...                   storage_class: Storage class name (optional)
+    ...               Returns:
+    ...                   dict: PVC data
+    Log    Creating RWX PVC ${name} in cluster ${cluster_id}
+    ${pvc}=    create_pvc_rwx    ${cluster_id}    ${name}    ${size}    ${storage_class}
+    RETURN    ${pvc}
+
+Rancher - Create StatefulSet
+    [Arguments]    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc_name}
+    ...            ${replicas}=2
+    [Documentation]    Create a StatefulSet that mounts an existing PVC
+    ...               Args:
+    ...                   cluster_id: Cluster ID
+    ...                   namespace: Namespace
+    ...                   name: StatefulSet name
+    ...                   image: Container image
+    ...                   pvc_name: Existing PVC name to mount
+    ...                   replicas: Number of replicas (default: 2)
+    ...               Returns:
+    ...                   dict: StatefulSet data
+    Log    Creating StatefulSet ${name} in cluster ${cluster_id}
+    ${sts}=    create_statefulset    ${cluster_id}    ${namespace}    ${name}    ${image}    ${pvc_name}    ${replicas}
+    RETURN    ${sts}
+
+Rancher - Delete StatefulSet
+    [Arguments]    ${cluster_id}    ${namespace}    ${name}
+    [Documentation]    Delete StatefulSet from guest cluster
+    ...               Args:
+    ...                   cluster_id: Cluster ID
+    ...                   namespace: Namespace
+    ...                   name: StatefulSet name
+    Log    Deleting StatefulSet ${name} from cluster ${cluster_id}
+    delete_statefulset    ${cluster_id}    ${namespace}    ${name}
+
+Rancher - Wait For StatefulSet Ready
+    [Arguments]    ${cluster_id}    ${namespace}    ${name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for StatefulSet to have all replicas ready
+    ...               Args:
+    ...                   cluster_id: Cluster ID
+    ...                   namespace: Namespace
+    ...                   name: StatefulSet name
+    ...                   timeout: Timeout in seconds
+    ...               Returns:
+    ...                   dict: StatefulSet data when ready
+    Log    Waiting for StatefulSet ${name} to be ready
+    ${sts}=    wait_for_statefulset_ready    ${cluster_id}    ${namespace}    ${name}    ${timeout}
+    RETURN    ${sts}
+
+Rancher - Exec Command In Pod
+    [Arguments]    ${cluster_id}    ${namespace}    ${pod_name}    @{command}
+    [Documentation]    Execute a command inside a pod
+    ...               Args:
+    ...                   cluster_id: Cluster ID
+    ...                   namespace: Namespace
+    ...                   pod_name: Pod name
+    ...                   command: Command parts to execute
+    ...               Returns:
+    ...                   str: Command stdout
+    Log    Executing command in pod ${pod_name}
+    ${output}=    exec_command_in_pod    ${cluster_id}    ${namespace}    ${pod_name}    ${command}
+    RETURN    ${output}
+
+Rancher - Get Pods By Label
+    [Arguments]    ${cluster_id}    ${namespace}    ${label_selector}
+    [Documentation]    Get pods matching a label selector
+    ...               Args:
+    ...                   cluster_id: Cluster ID
+    ...                   namespace: Namespace
+    ...                   label_selector: Label selector string (e.g. 'name=myapp')
+    ...               Returns:
+    ...                   list: List of pod dicts
+    Log    Getting pods with label ${label_selector} in cluster ${cluster_id}
+    ${pods}=    get_pods_by_label    ${cluster_id}    ${namespace}    ${label_selector}
+    RETURN    ${pods}
+
+# Storage Network Operations (delegated to storage_network.resource)
+Rancher - Enable Storage Network
+    [Arguments]    ${vlan_id}    ${cluster_network}    ${ip_range}    ${share_rwx}=${FALSE}
+    [Documentation]    Enable the storage-network Harvester setting.
+    ...               Delegates to Storage Network module.
+    Storage Network - Enable    ${vlan_id}    ${cluster_network}    ${ip_range}    ${share_rwx}
+
+Rancher - Disable Storage Network
+    [Documentation]    Disable the storage-network Harvester setting.
+    ...               Delegates to Storage Network module.
+    Storage Network - Disable
+
+Rancher - Get Storage Network Status
+    [Documentation]    Get the current storage-network setting status.
+    ...               Delegates to Storage Network module.
+    ${status}=    Storage Network - Get Status
+    RETURN    ${status}
+
+Rancher - Wait For Storage Network Ready
+    [Arguments]    ${timeout}=${RANCHER_WAIT_TIMEOUT}
+    [Documentation]    Wait for storage-network to be applied and completed.
+    ...               Delegates to Storage Network module.
+    ${data}=    Storage Network - Wait For Ready    ${timeout}
+    RETURN    ${data}
+
+Rancher - Get Vlan Network CIDR
+    [Arguments]    ${vlan_id}    ${cluster_network}
+    [Documentation]    Get the CIDR for a VLAN network by creating a temp network.
+    ...               Delegates to Storage Network module.
+    ${cidr}=    Storage Network - Get Vlan Network CIDR    ${vlan_id}    ${cluster_network}
+    RETURN    ${cidr}
+
+Rancher - Enable Longhorn RWX Storage Network
+    [Documentation]    Set the Longhorn endpoint-network-for-rwx-volume setting.
+    ...               Uses the same NAD as Longhorn's storage-network (read dynamically).
+    ...               Delegates to Storage Network module.
+    Storage Network - Enable Longhorn RWX
+
+Rancher - Disable Longhorn RWX Storage Network
+    [Documentation]    Clear the Longhorn endpoint-network-for-rwx-volume setting.
+    ...               Delegates to Storage Network module.
+    Storage Network - Disable Longhorn RWX
+
 # Import Existing Cluster Operations
 Rancher - Create Import Cluster
     [Arguments]    ${name}
@@ -877,6 +988,10 @@ Rancher - Wait For Import Cluster Ready
 # ============================================================
 # BDD Keywords - Given (Preconditions)
 # ============================================================
+Single node cluster is available
+    [Documentation]    Verify single-node cluster exists before proceeding.
+    Skip If    '${SINGLE_CLUSTER_ID}' == ''    Single-node cluster not available
+
 Multi node cluster is available
     [Documentation]    Verify multi-node cluster exists before proceeding.
     Skip If    '${MULTI_CLUSTER_ID}' == ''    Multi-node cluster not available
@@ -913,9 +1028,8 @@ Basic workloads are deployed on single node cluster
     # CSI workload
     ${pvc_name}=    Set Variable    pvc-${SINGLE_CLUSTER_NAME}
     ${csi_deploy}=    Set Variable    csi-${SINGLE_CLUSTER_NAME}
-    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${SINGLE_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    busybox:stable    ${pvc_name}    ${busybox_cmd}
+    Rancher - Create Deployment    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:1.27    ${pvc_name}
     # Whoami workload
     ${whoami_deploy}=    Set Variable    whoami-${SINGLE_CLUSTER_NAME}
     Rancher - Create Deployment    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
@@ -933,9 +1047,8 @@ Basic workloads are deployed on single node custom cluster
     # CSI workload
     ${pvc_name}=    Set Variable    pvc-${CUSTOM_CLUSTER_NAME}
     ${csi_deploy}=    Set Variable    csi-${CUSTOM_CLUSTER_NAME}
-    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${CUSTOM_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    busybox:stable    ${pvc_name}    ${busybox_cmd}
+    Rancher - Create Deployment    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:1.27    ${pvc_name}
     # Whoami workload
     ${whoami_deploy}=    Set Variable    whoami-${CUSTOM_CLUSTER_NAME}
     Rancher - Create Deployment    ${CUSTOM_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
@@ -957,12 +1070,11 @@ Multi node RKE2 cluster is created
     Log    Multi-node cluster created: ${MULTI_CLUSTER_NAME} (${cluster_id})    console=yes
 
 CSI workload with PVC is deployed
-    [Documentation]    Create a PVC and busybox deployment using Harvester CSI.
+    [Documentation]    Create a PVC and nginx deployment using Harvester CSI.
     ${pvc_name}=    Set Variable    pvc-${MULTI_CLUSTER_NAME}
     ${deploy_name}=    Set Variable    csi-${MULTI_CLUSTER_NAME}
-    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${MULTI_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    busybox:stable    ${pvc_name}    ${busybox_cmd}
+    Rancher - Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    nginx:1.27    ${pvc_name}
 
 Whoami workload is deployed
     [Documentation]    Deploy a Whoami workload for load balancer testing.
@@ -985,6 +1097,113 @@ Load balancer is created in pool mode
     Rancher - Wait For LB Service Ready    ${MULTI_CLUSTER_ID}    ${lb_name}
     Set Suite Variable    ${LB_POOL_NAME}    ${lb_name}
 
+Storage network is configured for RWX
+    [Documentation]    Configure storage network with share-storage-network enabled.
+    ...               Discovers CIDR from VLAN network, enables storage-network
+    ...               setting in Harvester with share-storage-network: true,
+    ...               which makes Harvester automatically configure Longhorn's
+    ...               endpoint-network-for-rwx-volume setting.
+    Log    Configuring storage network for RWX support    console=yes
+    ${cluster_network}=    Set Variable    %{CLUSTER_NETWORK=mgmt}
+    ${cidr}=    Rancher - Get Vlan Network CIDR    ${VLAN_ID}    ${cluster_network}
+    Rancher - Enable Storage Network    ${VLAN_ID}    ${cluster_network}    ${cidr}    share_rwx=${TRUE}
+    Rancher - Wait For Storage Network Ready    ${RANCHER_WAIT_TIMEOUT}
+    Log    Storage network configured for RWX    console=yes
+
+Storage network is enabled for RWX
+    [Documentation]    Stop all running VMs, enable storage network with
+    ...               share-storage-network: true, then restart VMs.
+    ...               Harvester automatically configures Longhorn's
+    ...               endpoint-network-for-rwx-volume setting.
+    Log    Enabling storage network for RWX    console=yes
+
+    # Find and stop all VMs
+    ${vm_names}=    List VMs by prefix    ${EMPTY}
+    Log    Found VMs: ${vm_names}    console=yes
+    FOR    ${vm_name}    IN    @{vm_names}
+        Stop VM by name    ${vm_name}
+    END
+    FOR    ${vm_name}    IN    @{vm_names}
+        Wait for VM stopped by name    ${vm_name}
+    END
+    Log    All VMs stopped    console=yes
+
+    # Enable storage network with RWX sharing
+    ${cluster_network}=    Set Variable    %{CLUSTER_NETWORK=mgmt}
+    ${cidr}=    Rancher - Get Vlan Network CIDR    ${VLAN_ID}    ${cluster_network}
+    Rancher - Enable Storage Network    ${VLAN_ID}    ${cluster_network}    ${cidr}    share_rwx=${TRUE}
+    Rancher - Wait For Storage Network Ready    ${RANCHER_WAIT_TIMEOUT}
+    Log    Storage network enabled    console=yes
+
+    # Start VMs back up
+    FOR    ${vm_name}    IN    @{vm_names}
+        Start VM by name    ${vm_name}
+    END
+    FOR    ${vm_name}    IN    @{vm_names}
+        Wait for VM running by name    ${vm_name}
+    END
+    Log    All VMs restarted    console=yes
+
+Disable storage network for RWX
+    [Documentation]    Stop all running VMs, disable storage network, then restart VMs.
+    ...               Disabling storage-network automatically clears Longhorn's
+    ...               endpoint-network-for-rwx-volume when share-storage-network was used.
+    Log    Disabling storage network for RWX    console=yes
+
+    # Find and stop all VMs
+    ${vm_names}=    List VMs by prefix    ${EMPTY}
+    FOR    ${vm_name}    IN    @{vm_names}
+        Run Keyword And Ignore Error    Stop VM by name    ${vm_name}
+    END
+    FOR    ${vm_name}    IN    @{vm_names}
+        Run Keyword And Ignore Error    Wait for VM stopped by name    ${vm_name}
+    END
+
+    # Disable storage network settings
+    Run Keyword And Ignore Error    Rancher - Disable Storage Network
+
+    # Restart VMs
+    FOR    ${vm_name}    IN    @{vm_names}
+        Run Keyword And Ignore Error    Start VM by name    ${vm_name}
+    END
+    FOR    ${vm_name}    IN    @{vm_names}
+        Run Keyword And Ignore Error    Wait for VM running by name    ${vm_name}
+    END
+    Log    Storage network disabled and VMs restarted    console=yes
+
+RWX volume is created on single node cluster
+    [Documentation]    Create host RWX StorageClass, guest StorageClass referencing it,
+    ...               and a ReadWriteMany PVC on the single-node cluster.
+    ${host_sc}=    Set Variable    ${RWX_HOST_STORAGE_CLASS}
+    ${guest_sc}=    Set Variable    rwx-guest-sc-${SINGLE_CLUSTER_NAME}
+    ${pvc_name}=    Set Variable    pvc-rwx-${SINGLE_CLUSTER_NAME}
+    Rancher - Create RWX StorageClass On Host    ${host_sc}
+    Rancher - Create Guest StorageClass    ${SINGLE_CLUSTER_ID}    ${guest_sc}    ${host_sc}
+    Rancher - Create PVC RWX    ${SINGLE_CLUSTER_ID}    ${pvc_name}    1Gi    ${guest_sc}
+
+RWX StatefulSet with 2 replicas is deployed on single node cluster
+    [Documentation]    Create a StatefulSet with 2 replicas mounting the RWX PVC
+    ...               on the single-node cluster.
+    ${pvc_name}=    Set Variable    pvc-rwx-${SINGLE_CLUSTER_NAME}
+    ${sts_name}=    Set Variable    rwx-sts-${SINGLE_CLUSTER_NAME}
+    Rancher - Create StatefulSet    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${sts_name}    busybox:stable    ${pvc_name}    2
+
+RWX volume is created
+    [Documentation]    Create host RWX StorageClass, guest StorageClass referencing it,
+    ...               and a ReadWriteMany PVC using the guest StorageClass.
+    ${host_sc}=    Set Variable    ${RWX_HOST_STORAGE_CLASS}
+    ${guest_sc}=    Set Variable    rwx-guest-sc-${MULTI_CLUSTER_NAME}
+    ${pvc_name}=    Set Variable    pvc-rwx-${MULTI_CLUSTER_NAME}
+    Rancher - Create RWX StorageClass On Host    ${host_sc}
+    Rancher - Create Guest StorageClass    ${MULTI_CLUSTER_ID}    ${guest_sc}    ${host_sc}
+    Rancher - Create PVC RWX    ${MULTI_CLUSTER_ID}    ${pvc_name}    1Gi    ${guest_sc}
+
+RWX StatefulSet with 2 replicas is deployed
+    [Documentation]    Create a StatefulSet with 2 replicas mounting the RWX PVC.
+    ${pvc_name}=    Set Variable    pvc-rwx-${MULTI_CLUSTER_NAME}
+    ${sts_name}=    Set Variable    rwx-sts-${MULTI_CLUSTER_NAME}
+    Rancher - Create StatefulSet    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${sts_name}    busybox:stable    ${pvc_name}    2
+
 Worker pool with 1 node is added
     [Documentation]    Scale up the multi-node cluster by adding a worker pool.
     Rancher - Scale RKE2 Cluster    ${MULTI_CLUSTER_NAME}    1    ${MULTI_CONFIG_NAME}
@@ -1000,20 +1219,20 @@ Multi node cluster is upgraded to next version
 
 New CSI workload is deployed
     [Arguments]    ${suffix}
-    [Documentation]    Create a new PVC and busybox deployment for post-operation verification.
+    [Documentation]    Create a new PVC and nginx deployment for post-operation verification.
     ${pvc_name}=    Set Variable    pvc-${suffix}-${MULTI_CLUSTER_NAME}
     ${deploy_name}=    Set Variable    csi-${suffix}-${MULTI_CLUSTER_NAME}
-    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${MULTI_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    busybox:stable    ${pvc_name}    ${busybox_cmd}
+    Rancher - Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    nginx:1.27    ${pvc_name}
 
 All test workloads are removed from cluster
-    [Documentation]    Delete all test deployments, PVCs, and LB services.
+    [Documentation]    Delete all test deployments, PVCs, and LB services from the multi-node cluster.
     ${csi_deploy}=    Set Variable    csi-${MULTI_CLUSTER_NAME}
     ${whoami_deploy}=    Set Variable    whoami-${MULTI_CLUSTER_NAME}
     ${pvc_name}=    Set Variable    pvc-${MULTI_CLUSTER_NAME}
     ${lb_dhcp}=    Set Variable    lb-${MULTI_CLUSTER_NAME}-dhcp
     ${lb_pool}=    Set Variable    lb-${MULTI_CLUSTER_NAME}-pool
+    # Delete workloads
     Rancher - Delete Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}
     Rancher - Wait For Deployment Deleted    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}
     Rancher - Delete PVC    ${MULTI_CLUSTER_ID}    ${pvc_name}
@@ -1052,9 +1271,8 @@ Basic workloads are deployed on single node import cluster
     # CSI workload
     ${pvc_name}=    Set Variable    pvc-${IMPORT_CLUSTER_NAME}
     ${csi_deploy}=    Set Variable    csi-${IMPORT_CLUSTER_NAME}
-    ${busybox_cmd}=    Create List    sh    -c    sleep infinity
     Rancher - Create PVC    ${IMPORT_CLUSTER_ID}    ${pvc_name}    1Gi
-    Rancher - Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    busybox:stable    ${pvc_name}    ${busybox_cmd}
+    Rancher - Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:1.27    ${pvc_name}
     # Whoami workload
     ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
     Rancher - Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
@@ -1150,6 +1368,86 @@ DHCP load balancer should be serving traffic
 Pool load balancer should be serving traffic
     [Documentation]    Verify the pool load balancer responds via Rancher proxy.
     Rancher - Verify LB Via Cluster    ${MULTI_CLUSTER_ID}    ${LB_POOL_NAME}    Hostname:
+
+RWX StatefulSet should be ready
+    [Documentation]    Verify the RWX StatefulSet has all replicas ready and PVC is bound.
+    ${pvc_name}=    Set Variable    pvc-rwx-${MULTI_CLUSTER_NAME}
+    ${sts_name}=    Set Variable    rwx-sts-${MULTI_CLUSTER_NAME}
+    Rancher - Wait For PVC Bound    ${MULTI_CLUSTER_ID}    ${pvc_name}
+    Rancher - Wait For StatefulSet Ready    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${sts_name}
+    Log    RWX StatefulSet ready: ${sts_name}    console=yes
+
+RWX shared data should be accessible across pods
+    [Documentation]    Write data from one pod and read it from another pod to verify
+    ...               ReadWriteMany volume sharing works correctly.
+    ${sts_name}=    Set Variable    rwx-sts-${MULTI_CLUSTER_NAME}
+    ${label}=    Set Variable    name=${sts_name}
+    ${pods}=    Rancher - Get Pods By Label    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${label}
+    ${pod_count}=    Get Length    ${pods}
+    Should Be True    ${pod_count} >= 2    Expected at least 2 pods, got ${pod_count}
+    ${pod0_name}=    Set Variable    ${pods}[0][metadata][name]
+    ${pod1_name}=    Set Variable    ${pods}[1][metadata][name]
+    # Write from first pod
+    ${write_cmd}=    Create List    sh    -c    echo rwx-test-data > /data/rwx-verify.txt
+    Rancher - Exec Command In Pod    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${pod0_name}    @{write_cmd}
+    # Read from second pod
+    ${read_cmd}=    Create List    cat    /data/rwx-verify.txt
+    ${output}=    Rancher - Exec Command In Pod    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${pod1_name}    @{read_cmd}
+    Should Contain    ${output}    rwx-test-data    RWX data not found in second pod
+    Log    RWX volume sharing verified: data written by ${pod0_name}, read by ${pod1_name}    console=yes
+
+RWX StatefulSet should be ready on single node cluster
+    [Documentation]    Verify the RWX StatefulSet has all replicas ready and PVC is bound
+    ...               on the single-node cluster.
+    ${pvc_name}=    Set Variable    pvc-rwx-${SINGLE_CLUSTER_NAME}
+    ${sts_name}=    Set Variable    rwx-sts-${SINGLE_CLUSTER_NAME}
+    Rancher - Wait For PVC Bound    ${SINGLE_CLUSTER_ID}    ${pvc_name}
+    Rancher - Wait For StatefulSet Ready    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${sts_name}
+    Log    RWX StatefulSet ready on single cluster: ${sts_name}    console=yes
+
+RWX shared data should be accessible across pods on single node cluster
+    [Documentation]    Write data from one pod and read it from another pod to verify
+    ...               ReadWriteMany volume sharing works on the single-node cluster.
+    ${sts_name}=    Set Variable    rwx-sts-${SINGLE_CLUSTER_NAME}
+    ${label}=    Set Variable    name=${sts_name}
+    ${pods}=    Rancher - Get Pods By Label    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${label}
+    ${pod_count}=    Get Length    ${pods}
+    Should Be True    ${pod_count} >= 2    Expected at least 2 pods, got ${pod_count}
+    ${pod0_name}=    Set Variable    ${pods}[0][metadata][name]
+    ${pod1_name}=    Set Variable    ${pods}[1][metadata][name]
+    # Write from first pod
+    ${write_cmd}=    Create List    sh    -c    echo rwx-test-data > /data/rwx-verify.txt
+    Rancher - Exec Command In Pod    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${pod0_name}    @{write_cmd}
+    # Read from second pod
+    ${read_cmd}=    Create List    cat    /data/rwx-verify.txt
+    ${output}=    Rancher - Exec Command In Pod    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${pod1_name}    @{read_cmd}
+    Should Contain    ${output}    rwx-test-data    RWX data not found in second pod
+    Log    RWX volume sharing verified: data written by ${pod0_name}, read by ${pod1_name}    console=yes
+
+Cleanup RWX test resources on single node cluster
+    [Documentation]    Clean up RWX resources from the single-node cluster and disable
+    ...               storage network (stopping and restarting VMs as required).
+    Log    Cleaning up RWX test resources on single cluster    console=yes
+
+    # Delete RWX guest cluster resources
+    ${rwx_sts}=    Set Variable    rwx-sts-${SINGLE_CLUSTER_NAME}
+    ${rwx_pvc}=    Set Variable    pvc-rwx-${SINGLE_CLUSTER_NAME}
+    ${rwx_guest_sc}=    Set Variable    rwx-guest-sc-${SINGLE_CLUSTER_NAME}
+    Run Keyword And Ignore Error    Rancher - Delete StatefulSet    ${SINGLE_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${rwx_sts}
+    Run Keyword And Ignore Error    Rancher - Delete PVC    ${SINGLE_CLUSTER_ID}    ${rwx_pvc}
+    Run Keyword And Ignore Error    Rancher - Delete Guest StorageClass    ${SINGLE_CLUSTER_ID}    ${rwx_guest_sc}
+    Run Keyword And Ignore Error    Rancher - Delete RWX StorageClass On Host    ${RWX_HOST_STORAGE_CLASS}
+
+    # Disable storage network (stops/restarts all VMs)
+    Run Keyword And Ignore Error    Disable storage network for RWX
+
+    Log    RWX cleanup completed on single cluster    console=yes
+
+Single node cluster should be ready
+    [Documentation]    Wait for the single-node RKE2 cluster and Harvester deployments
+    ...               to recover after a disruptive operation (e.g. storage network change).
+    Rancher - Wait For RKE2 Cluster Ready    ${SINGLE_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
+    Rancher - Wait For Harvester Deployments Ready    ${SINGLE_CLUSTER_ID}
 
 Multi node cluster should be ready
     [Documentation]    Wait for the multi-node cluster to become active and ready.

@@ -369,6 +369,7 @@ class CRD(Base):
             self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
         """Wait for VM to be running."""
         endtime = time.time() + timeout
+        last_log_time = 0
 
         while time.time() < endtime:
             try:
@@ -386,9 +387,12 @@ class CRD(Base):
                     logging(f"VM {namespace}/{vm_name} is running")
                     return True
 
-                logging(
-                    f"Waiting for VM to run (current phase: {phase})..."
-                )
+                now = time.time()
+                if now - last_log_time >= 30:
+                    logging(
+                        f"Waiting for VM {vm_name} to run (current phase: {phase})..."
+                    )
+                    last_log_time = now
 
             except ApiException as e:
                 if e.status != 404:
@@ -404,6 +408,7 @@ class CRD(Base):
             self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
         """Wait for VM to be stopped."""
         endtime = time.time() + timeout
+        last_log_time = 0
 
         while time.time() < endtime:
             try:
@@ -416,9 +421,12 @@ class CRD(Base):
                 )
 
                 phase = vmi.get('status', {}).get('phase', 'Unknown')
-                logging(
-                    f"Waiting for VM to stop (current phase: {phase})..."
-                )
+                now = time.time()
+                if now - last_log_time >= 30:
+                    logging(
+                        f"Waiting for VM {vm_name} to stop (current phase: {phase})..."
+                    )
+                    last_log_time = now
 
             except ApiException as e:
                 if e.status == 404:

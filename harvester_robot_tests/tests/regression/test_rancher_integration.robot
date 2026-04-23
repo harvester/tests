@@ -10,13 +10,31 @@ Suite Teardown   Suite Teardown For Rancher Integration Tests
 
 *** Test Cases ***
 Test Create Single Node RKE2 Cluster with Basic Workloads
-    [Tags]    smoke    rancher    rke2    p0
+    [Tags]    smoke    rancher    rke2    p0    rwx
     [Documentation]    Create a single-node RKE2 cluster and verify basic workloads
     ...               (CSI, Whoami, LB DHCP, LB Pool) are functional.
     Given Single node RKE2 cluster is created
     Then Harvester deployments should be ready    ${SINGLE_CLUSTER_ID}
     When Basic workloads are deployed on single node cluster
     Then Basic workloads should be active on single node cluster
+
+Test RWX Volume On Single Node Cluster
+    [Tags]    rancher    rke2    p1    rwx
+    [Documentation]    Enable storage network on the single-node cluster (requires
+    ...               stopping and restarting the VM), create an RWX StorageClass,
+    ...               PVC, and StatefulSet with 2 replicas, then verify data written
+    ...               by one pod is readable from the other. Validates Harvester CSI
+    ...               driver RWX volume support end-to-end including the storage
+    ...               network lifecycle.
+    Given Single node cluster is available
+    And Storage network is enabled for RWX
+    And Single node cluster should be ready
+    And Basic workloads should be active on single node cluster
+    When RWX volume is created on single node cluster
+    And RWX StatefulSet with 2 replicas is deployed on single node cluster
+    Then RWX StatefulSet should be ready on single node cluster
+    And RWX shared data should be accessible across pods on single node cluster
+    [Teardown]    Cleanup RWX test resources on single node cluster
 
 Test Create Multi Node RKE2 Cluster
     [Tags]    rancher    rke2    p0
