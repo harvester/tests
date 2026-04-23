@@ -46,6 +46,13 @@ class Rest(Base):
         code, data = api.vms.delete(vm_name)
         assert code == 200, f"Failed to delete VM: {code}, {data}"
 
+    def list(self, namespace="default"):
+        """List VMs in a namespace"""
+        api = get_harvester_api_client()
+        code, data = api.vms.get(namespace=namespace)
+        assert code == 200, f"Failed to list VMs: {code}, {data}"
+        return data.get("data", [])
+
     def start(self, vm_name):
         """Start a VM"""
         api = get_harvester_api_client()

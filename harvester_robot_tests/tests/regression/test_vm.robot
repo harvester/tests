@@ -20,8 +20,8 @@ Test VM Basic Lifecycle
     ${image_name}=    Set Variable    image-0-${timestamp}
     ${vm_name}=    Set Variable    vm-0-${timestamp}
 
-    Given Create image from url with name    ${image_name}    ${OPENSUSE_IMAGE_URL}
-    And Wait for image downloaded by name    ${image_name}
+    Given Image - Create image from url with name    ${image_name}    ${OPENSUSE_IMAGE_URL}
+    And Image - Wait for image downloaded by name    ${image_name}
 
     When Create VM with name    ${vm_name}    cpu=2    memory=4Gi    image_id=${image_name}
 

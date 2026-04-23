@@ -170,8 +170,7 @@ class Base(ABC):
 
     # Deployment Operations
     @abstractmethod
-    def create_deployment(self, cluster_id, namespace, name, image, pvc=None,
-                          command=None):
+    def create_deployment(self, cluster_id, namespace, name, image, pvc=None):
         """Create deployment in guest cluster"""
         pass
 
@@ -252,49 +251,6 @@ class Base(ABC):
     @abstractmethod
     def wait_for_harvester_deployments_ready(self, cluster_id, timeout):
         """Wait for harvester-cloud-provider and harvester-csi-driver to be ready"""
-        pass
-
-    # VLAN Network Operations
-    @abstractmethod
-    def create_vlan_network(self, name, vlan_id, cluster_network):
-        """Create VLAN network"""
-        pass
-
-    @abstractmethod
-    def delete_vlan_network(self, name):
-        """Delete VLAN network"""
-        pass
-
-    # IP Pool Operations
-    @abstractmethod
-    def get_ip_pool(self, name):
-        """Get IP pool by name, returns None if not found"""
-        pass
-
-    @abstractmethod
-    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id):
-        """Create IP pool"""
-        pass
-
-    @abstractmethod
-    def delete_ip_pool(self, name):
-        """Delete IP pool"""
-        pass
-
-    # Image Operations
-    @abstractmethod
-    def create_image(self, name, url):
-        """Create image by URL"""
-        pass
-
-    @abstractmethod
-    def wait_for_image_ready(self, name, timeout):
-        """Wait for image to be ready"""
-        pass
-
-    @abstractmethod
-    def delete_image(self, name):
-        """Delete image"""
         pass
 
     # Import Existing Cluster Operations
@@ -460,4 +416,120 @@ class Base(ABC):
     def wait_for_chart_app_ready(self, cluster_id, release_name,
                                  namespace, timeout):
         """Wait for a chart app to be deployed and ready."""
+        pass
+
+    # RWX Volume / StorageClass / StatefulSet Operations
+    @abstractmethod
+    def create_rwx_storage_class_on_host(self, name="longhorn-rwx"):
+        """Create an RWX-capable StorageClass on the host Harvester cluster.
+
+        Uses Longhorn provisioner with NFS options for ReadWriteMany support.
+
+        Args:
+            name: StorageClass name (default: longhorn-rwx)
+        """
+        pass
+
+    @abstractmethod
+    def delete_rwx_storage_class_on_host(self, name="longhorn-rwx"):
+        """Delete the RWX StorageClass from the host Harvester cluster.
+
+        Args:
+            name: StorageClass name (default: longhorn-rwx)
+        """
+        pass
+
+    @abstractmethod
+    def create_guest_storage_class(self, cluster_id, name, host_storage_class="longhorn-rwx"):
+        """Create a StorageClass on the guest cluster referencing a host StorageClass.
+
+        Uses the Harvester CSI driver provisioner with hostStorageClass parameter.
+
+        Args:
+            cluster_id: Guest cluster ID
+            name: StorageClass name on the guest cluster
+            host_storage_class: Name of the host-side StorageClass to reference
+        """
+        pass
+
+    @abstractmethod
+    def delete_guest_storage_class(self, cluster_id, name):
+        """Delete a StorageClass from the guest cluster.
+
+        Args:
+            cluster_id: Guest cluster ID
+            name: StorageClass name
+        """
+        pass
+
+    @abstractmethod
+    def create_pvc_rwx(self, cluster_id, name, size="1Gi", storage_class=None):
+        """Create a ReadWriteMany PVC in guest cluster.
+
+        Args:
+            cluster_id: Cluster ID
+            name: PVC name
+            size: Storage size (default: 1Gi)
+            storage_class: Storage class name (optional)
+        """
+        pass
+
+    @abstractmethod
+    def create_statefulset(self, cluster_id, namespace, name, image,
+                           pvc_name, replicas=2):
+        """Create a StatefulSet that mounts an existing PVC.
+
+        Args:
+            cluster_id: Cluster ID
+            namespace: Namespace
+            name: StatefulSet name
+            image: Container image
+            pvc_name: Existing PVC name to mount
+            replicas: Number of replicas (default: 2)
+        """
+        pass
+
+    @abstractmethod
+    def get_statefulset(self, cluster_id, namespace, name):
+        """Get StatefulSet details."""
+        pass
+
+    @abstractmethod
+    def delete_statefulset(self, cluster_id, namespace, name):
+        """Delete StatefulSet."""
+        pass
+
+    @abstractmethod
+    def wait_for_statefulset_ready(self, cluster_id, namespace, name,
+                                   timeout):
+        """Wait for StatefulSet to have all replicas ready."""
+        pass
+
+    @abstractmethod
+    def exec_command_in_pod(self, cluster_id, namespace, pod_name, command):
+        """Execute a command inside a pod.
+
+        Args:
+            cluster_id: Cluster ID
+            namespace: Namespace
+            pod_name: Pod name
+            command: Command list to execute
+
+        Returns:
+            str: Command stdout
+        """
+        pass
+
+    @abstractmethod
+    def get_pods_by_label(self, cluster_id, namespace, label_selector):
+        """Get pods matching a label selector.
+
+        Args:
+            cluster_id: Cluster ID
+            namespace: Namespace
+            label_selector: Label selector string (e.g. 'name=myapp')
+
+        Returns:
+            list: List of pod dicts
+        """
         pass

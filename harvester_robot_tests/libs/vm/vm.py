@@ -24,6 +24,9 @@ class VM(Base):
     def delete(self, vm_name):
         return self.vm.delete(vm_name)
 
+    def list(self, namespace="default"):
+        return self.vm.list(namespace)
+
     def start(self, vm_name):
         return self.vm.start(vm_name)
 

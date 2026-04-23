@@ -53,6 +53,11 @@ class Base(ABC):
         pass
 
     @abstractmethod
+    def list(self, namespace="default"):
+        """List VMs in a namespace"""
+        pass
+
+    @abstractmethod
     def get_status(self, vm_name):
         """Get VM status"""
         pass
