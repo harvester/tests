@@ -30,7 +30,7 @@ class CRD(Base):
         self.obj_api = client.CustomObjectsApi()
         self.retry_count, self.retry_interval = get_retry_count_and_interval()
 
-    def create_from_url(self, image_name, image_url, checksum, **kwargs):
+    def create_from_url(self, image_name, image_url, checksum="", **kwargs):
         """
         Create a VirtualMachineImage from URL
 
@@ -145,6 +145,7 @@ class CRD(Base):
         """
         namespace = DEFAULT_NAMESPACE
         endtime = time.time() + timeout
+        last_log_time = 0
 
         while time.time() < endtime:
             try:
@@ -162,7 +163,10 @@ class CRD(Base):
                         if is_initialized and is_true:
                             logging(f"Image {namespace}/{image_name} downloaded successfully")
                             return True
-                logging(f"Waiting for image download: {download_percent}%...")
+                now = time.time()
+                if now - last_log_time >= 30:
+                    logging(f"Waiting for image download: {download_percent}%...")
+                    last_log_time = now
             except Exception as e:
                 logging(f"Error checking image status: {e}")
             time.sleep(self.retry_interval)

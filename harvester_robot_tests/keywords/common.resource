@@ -7,8 +7,8 @@ Library          ../libs/keywords/common_keywords.py
 Set up test environment
     [Documentation]    Initialize test environment
     Log    Setting up test environment
-    init harvester api client    ${HARVESTER_ENDPOINT}    ${HARVESTER_USERNAME}    ${HARVESTER_PASSWORD}
-    init k8s api client
+    common_keywords.init harvester api client    ${HARVESTER_ENDPOINT}    ${HARVESTER_USERNAME}    ${HARVESTER_PASSWORD}
+    common_keywords.init k8s api client
 
 Cleanup test resources
     [Documentation]    Clean up all resources created during tests

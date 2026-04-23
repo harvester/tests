@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from utility.utility import get_harvester_api_client
 from utility.utility import get_retry_count_and_interval
 from utility.utility import logging
+from constant import DEFAULT_NAMESPACE
 from image.base import Base
 
 
@@ -15,7 +16,7 @@ class Rest(Base):
     def __init__(self):
         self.retry_count, self.retry_interval = get_retry_count_and_interval()
 
-    def create_from_url(self, image_name, image_url, checksum, **kwargs):
+    def create_from_url(self, image_name, image_url, checksum="", **kwargs):
         """Create image from URL"""
         api = get_harvester_api_client()
 
@@ -30,6 +31,7 @@ class Rest(Base):
 
         endtime = datetime.now() + timedelta(seconds=timeout)
         last_percent = -1
+        last_log_time = time.time()
 
         while endtime > datetime.now():
             code, data = api.images.get(image_name)
@@ -38,10 +40,12 @@ class Rest(Base):
                 # Harvester uses 'progress' field, not 'downloadPercent'
                 download_percent = status.get('progress', 0)
 
-                # Log progress if it changed
-                if download_percent != last_percent:
+                # Log progress only when it changes or every 30s
+                now = time.time()
+                if download_percent != last_percent or now - last_log_time >= 30:
                     logging(f"Image {image_name} download progress: {download_percent}%")
                     last_percent = download_percent
+                    last_log_time = now
 
                 if download_percent == 100:
                     conditions = status.get('conditions', [])
@@ -52,8 +56,6 @@ class Rest(Base):
                         ):
                             logging(f"Image {image_name} downloaded successfully")
                             return True
-                    # If 100% but not initialized, log that
-                    logging("Image at 100% but waiting for Initialized condition...")
             elif code == 404:
                 logging(f"Image {image_name} not found yet, waiting...")
             else:
@@ -79,7 +81,7 @@ class Rest(Base):
 
         raise AssertionError(f"Image {image_name} was not ready within {timeout}s")
 
-    def delete(self, image_name, namespace):
+    def delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         """Delete an image"""
         api = get_harvester_api_client()
         code, data = api.images.delete(image_name, namespace)

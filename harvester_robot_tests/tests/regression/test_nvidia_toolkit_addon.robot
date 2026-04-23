@@ -74,28 +74,28 @@ Test Nvidia Driver Toolkit Addon End-to-End
 Initial Nvidia Addon State Is Captured
     [Arguments]    ${addon_name}
     [Documentation]    Capture and store the initial state of the nvidia-driver-toolkit addon
-    ${initial_state}=    Addon - Get Initial State    ${addon_name}
+    ${initial_state}=    addon.Get Initial State    ${addon_name}
     Set Suite Variable    ${INITIAL_STATE_NVIDIA_TOOLKIT}    ${initial_state}
     Log    Captured initial nvidia-driver-toolkit addon state: ${initial_state}
 
 Nvidia Addon Is Enabled
     [Arguments]    ${addon_name}
     [Documentation]    Enable the nvidia-driver-toolkit addon and wait for deployment
-    ${is_enabled}=    Addon - Is Enabled    ${addon_name}
-    Run Keyword If    not ${is_enabled}    Addon - Enable    ${addon_name}
-    Addon - Wait For Enabled    ${addon_name}    timeout=900
+    ${is_enabled}=    addon.Is Enabled    ${addon_name}
+    Run Keyword If    not ${is_enabled}    addon.Enable    ${addon_name}
+    addon.Wait For Enabled    ${addon_name}    timeout=900
     Log    Nvidia-driver-toolkit addon ${addon_name} is enabled
 
 Nvidia Toolkit Addon Is Configured
     [Arguments]    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
     [Documentation]    Set image repo, tag, and driver location for the nvidia-driver-toolkit addon
-    Addon - Configure Nvidia Toolkit    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
+    addon.Configure Nvidia Toolkit    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
     Log    Nvidia-driver-toolkit addon configured with repo: ${image_repo}, tag: ${image_tag}, driver: ${driver_location}
 
 Nvidia Toolkit Configuration Should Be Applied
     [Arguments]    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
     [Documentation]    Verify the nvidia-driver-toolkit addon configuration has been applied
-    Addon - Verify Nvidia Toolkit Configured    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
+    addon.Verify Nvidia Toolkit Configured    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
     Log    Nvidia-driver-toolkit addon configuration verified successfully
 
 Suite Setup For Nvidia Addon Tests
@@ -109,10 +109,10 @@ Suite Teardown For Nvidia Addon Tests
     Log    Running suite teardown for nvidia-driver-toolkit addon tests
     # Restore nvidia-driver-toolkit addon to initial state
     Run Keyword If    '${INITIAL_STATE_NVIDIA_TOOLKIT}' != ${None}
-    ...    Addon - Restore State    ${ADDON_NVIDIA_TOOLKIT}    ${INITIAL_STATE_NVIDIA_TOOLKIT}
+    ...    addon.Restore State    ${ADDON_NVIDIA_TOOLKIT}    ${INITIAL_STATE_NVIDIA_TOOLKIT}
     # Restore pcidevices-controller addon to initial state
     Run Keyword If    '${INITIAL_STATE_PCIDEVICES}' != 'None'
-    ...    Addon - Restore State    ${ADDON_PCIDEVICES}    ${INITIAL_STATE_PCIDEVICES}
+    ...    addon.Restore State    ${ADDON_PCIDEVICES}    ${INITIAL_STATE_PCIDEVICES}
     # Standard cleanup
     Cleanup test resources
     Log    Suite teardown completed
@@ -120,28 +120,28 @@ Suite Teardown For Nvidia Addon Tests
 Initial PCI Addon State Is Captured
     [Arguments]    ${addon_name}
     [Documentation]    Capture and store the initial state of the addon
-    ${initial_state}=    Addon - Get Initial State    ${addon_name}
+    ${initial_state}=    addon.Get Initial State    ${addon_name}
     Set Suite Variable    ${INITIAL_STATE_PCIDEVICES}    ${initial_state}
     Log    Captured initial addon state: ${initial_state}
 
 PCI Devices Addon Is Enabled
     [Arguments]    ${addon_name}
     [Documentation]    Enable the pcidevices-controller addon and wait for deployment
-    ${is_enabled}=    Addon - Is Enabled    ${addon_name}
-    Run Keyword If    not ${is_enabled}    Addon - Enable    ${addon_name}
-    Addon - Wait For Enabled    ${addon_name}    timeout=900
+    ${is_enabled}=    addon.Is Enabled    ${addon_name}
+    Run Keyword If    not ${is_enabled}    addon.Enable    ${addon_name}
+    addon.Wait For Enabled    ${addon_name}    timeout=900
     Log    PCI Devices addon ${addon_name} is enabled
 
 PCI Devices Controller Pods Should Be Running
     [Arguments]    ${namespace}    ${label}
     [Documentation]    Verify pcidevices-controller pods are running
-    Addon - Wait For Pods Running    ${namespace}    ${label}    timeout=900
+    addon.Wait For Pods Running    ${namespace}    ${label}    timeout=900
     Log    All pcidevices-controller pods are running in ${namespace}
 
 PCI Devices Webhook Service Should Be Running
     [Arguments]    ${namespace}    ${service_name}
     [Documentation]    Verify pcidevices-webhook service is running
-    Addon - Wait For Service Running    ${namespace}    ${service_name}    timeout=300
+    addon.Wait For Service Running    ${namespace}    ${service_name}    timeout=300
     Log    pcidevices-webhook service is running in ${namespace}
 
 Suite Setup For PCI Devices Addon Tests
@@ -154,6 +154,6 @@ Suite Teardown For PCI Devices Addon Tests
     [Documentation]    Cleanup and restore addon state after tests
     Log    Running suite teardown for PCI Devices addon tests
     Run Keyword If    '${INITIAL_STATE_PCIDEVICES}' != 'None'
-    ...    Addon - Restore State    ${ADDON_PCIDEVICES}    ${INITIAL_STATE_PCIDEVICES}
+    ...    addon.Restore State    ${ADDON_PCIDEVICES}    ${INITIAL_STATE_PCIDEVICES}
     Cleanup test resources
     Log    Suite teardown completed

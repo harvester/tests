@@ -2,7 +2,7 @@
 """
 VM Component - delegates to Rest implementation
 """
-from constant import HarvesterOperationStrategy
+from constant import HarvesterOperationStrategy, DEFAULT_NAMESPACE
 from vm.rest import Rest
 from vm.crd import CRD
 from vm.base import Base
@@ -23,6 +23,9 @@ class VM(Base):
 
     def delete(self, vm_name):
         return self.vm.delete(vm_name)
+
+    def list(self, namespace=DEFAULT_NAMESPACE):
+        return self.vm.list(namespace)
 
     def start(self, vm_name):
         return self.vm.start(vm_name)

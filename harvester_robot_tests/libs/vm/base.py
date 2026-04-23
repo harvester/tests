@@ -2,6 +2,7 @@
 Base class for VM operations (optional - for common patterns)
 """
 from abc import ABC, abstractmethod
+from constant import DEFAULT_NAMESPACE
 
 
 class Base(ABC):
@@ -50,6 +51,11 @@ class Base(ABC):
     @abstractmethod
     def wait_for_deleted(self, vm_name, timeout):
         """Wait for VM to be deleted"""
+        pass
+
+    @abstractmethod
+    def list(self, namespace=DEFAULT_NAMESPACE):
+        """List VMs in a namespace"""
         pass
 
     @abstractmethod

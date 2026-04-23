@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
 from utility.utility import logging # noqa E402
 from vm import VM # noqa E402
-from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG # noqa E402
+from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG, DEFAULT_NAMESPACE # noqa E402
 
 
 class vm_keywords:
@@ -31,6 +31,16 @@ class vm_keywords:
         """Delete a virtual machine"""
         logging(f'Deleting VM {vm_name}')
         self.vm.delete(vm_name)
+
+    def list_vms(self, namespace=DEFAULT_NAMESPACE, name_prefix=None):
+        """List VMs, optionally filtered by name prefix"""
+        logging(f'Listing VMs in namespace {namespace}'
+                + (f' with prefix {name_prefix}' if name_prefix else ''))
+        vms = self.vm.list(namespace)
+        if name_prefix:
+            vms = [vm for vm in vms
+                   if vm.get("metadata", {}).get("name", "").startswith(name_prefix)]
+        return [vm.get("metadata", {}).get("name") for vm in vms]
 
     def start_vm(self, vm_name):
         """Start a stopped VM"""

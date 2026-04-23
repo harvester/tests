@@ -1193,19 +1193,15 @@ class CRD(Base):
         logging(f"Created secret: {name}")
         return {"metadata": {"namespace": "fleet-default", "name": name}}
 
-    def create_deployment(self, cluster_id, namespace, name, image, pvc=None,
-                          command=None):
+    def create_deployment(self, cluster_id, namespace, name, image, pvc=None):
         """Create deployment in guest cluster"""
         logging(f"Creating deployment {name} in cluster {cluster_id}")
 
         container = {
             "name": name,
             "image": image,
+            "ports": [{"containerPort": 80}]
         }
-        if command:
-            container["command"] = list(command)
-        else:
-            container["ports"] = [{"containerPort": 80}]
 
         deployment_spec = {
             "apiVersion": "apps/v1",
@@ -1255,7 +1251,6 @@ class CRD(Base):
 
     def get_deployment(self, cluster_id, namespace, name):
         """Get deployment details from guest cluster via kubectl"""
-        logging(f"Getting deployment {name} from cluster {cluster_id}")
 
         rc, stdout, stderr = self._run_kubectl_guest(
             cluster_id,
@@ -1290,6 +1285,7 @@ class CRD(Base):
         retry_count, retry_interval = get_retry_count_and_interval()
 
         end_time = time.time() + int(timeout)
+        last_log_time = 0
         while time.time() < end_time:
             try:
                 deployment = self.get_deployment(cluster_id, namespace, name)
@@ -1300,6 +1296,10 @@ class CRD(Base):
                     if replicas > 0 and available >= replicas:
                         logging(f"Deployment {name} is ready")
                         return deployment
+                    now = time.time()
+                    if now - last_log_time >= 30:
+                        logging(f"Deployment {name}: {available}/{replicas} available")
+                        last_log_time = now
             except Exception as e:
                 logging(f"Error checking deployment status: {e}", level="WARNING")
 
@@ -1531,362 +1531,6 @@ class CRD(Base):
             self.wait_for_deployment_ready(cluster_id, "kube-system", deployment_name, timeout)
 
         logging("All Harvester deployments are ready")
-
-    def create_cluster_network(self, name):
-        """Create cluster network"""
-        logging(f"Creating cluster network: {name}")
-
-        spec = {
-            "apiVersion": "network.harvesterhci.io/v1beta1",
-            "kind": "ClusterNetwork",
-            "metadata": {
-                "name": name
-            }
-        }
-
-        try:
-            self.custom_api.create_cluster_custom_object(
-                group="network.harvesterhci.io",
-                version="v1beta1",
-                plural="clusternetworks",
-                body=spec
-            )
-            logging(f"Created cluster network: {name}")
-            return spec
-        except ApiException as e:
-            if e.status == 409:
-                logging(f"Cluster network {name} already exists")
-                return spec
-            raise Exception(f"Failed to create cluster network: {e}")
-
-    def delete_cluster_network(self, name):
-        """Delete cluster network"""
-        logging(f"Deleting cluster network: {name}")
-        try:
-            self.custom_api.delete_cluster_custom_object(
-                group="network.harvesterhci.io",
-                version="v1beta1",
-                plural="clusternetworks",
-                name=name
-            )
-            logging(f"Deleted cluster network: {name}")
-        except ApiException as e:
-            if e.status != 404:
-                raise Exception(f"Failed to delete cluster network: {e}")
-
-    def create_vlan_config(self, name, cluster_network, nic):
-        """Create VLAN config to bind NIC to cluster network"""
-        logging(f"Creating VLAN config: {name} (nic={nic}, cluster_network={cluster_network})")
-
-        spec = {
-            "apiVersion": "network.harvesterhci.io/v1beta1",
-            "kind": "VlanConfig",
-            "metadata": {
-                "name": name,
-                "labels": {
-                    "network.harvesterhci.io/clusternetwork": cluster_network
-                }
-            },
-            "spec": {
-                "clusterNetwork": cluster_network,
-                "uplink": {
-                    "bondOptions": {
-                        "miimon": -1,
-                        "mode": "active-backup"
-                    },
-                    "linkAttributes": {
-                        "txQLen": -1
-                    },
-                    "nics": [nic]
-                }
-            }
-        }
-
-        try:
-            self.custom_api.create_cluster_custom_object(
-                group="network.harvesterhci.io",
-                version="v1beta1",
-                plural="vlanconfigs",
-                body=spec
-            )
-            logging(f"Created VLAN config: {name}")
-            return spec
-        except ApiException as e:
-            if e.status == 409:
-                logging(f"VLAN config {name} already exists")
-                return spec
-            raise Exception(f"Failed to create VLAN config: {e}")
-
-    def delete_vlan_config(self, name):
-        """Delete VLAN config"""
-        logging(f"Deleting VLAN config: {name}")
-        try:
-            self.custom_api.delete_cluster_custom_object(
-                group="network.harvesterhci.io",
-                version="v1beta1",
-                plural="vlanconfigs",
-                name=name
-            )
-            logging(f"Deleted VLAN config: {name}")
-        except ApiException as e:
-            if e.status != 404:
-                raise Exception(f"Failed to delete VLAN config: {e}")
-
-    def wait_for_cluster_network_ready(self, name, timeout=120):
-        """Wait for cluster network to become ready"""
-        logging(f"Waiting for cluster network {name} to be ready")
-        deadline = time.time() + int(timeout)
-
-        while time.time() < deadline:
-            try:
-                cn = self.custom_api.get_cluster_custom_object(
-                    group="network.harvesterhci.io",
-                    version="v1beta1",
-                    plural="clusternetworks",
-                    name=name
-                )
-                conditions = cn.get("status", {}).get("conditions", [])
-                for cond in conditions:
-                    if cond.get("type") == "ready" and cond.get("status") == "True":
-                        logging(f"Cluster network {name} is ready")
-                        return cn
-            except ApiException:
-                pass
-            time.sleep(5)
-
-        raise Exception(f"Cluster network {name} not ready within {timeout}s")
-
-    def create_vlan_network(self, name, vlan_id, cluster_network):
-        """Create VLAN network"""
-        logging(f"Creating VLAN network: {name}")
-
-        network_spec = {
-            "apiVersion": "k8s.cni.cncf.io/v1",
-            "kind": "NetworkAttachmentDefinition",
-            "metadata": {
-                "name": name,
-                "namespace": DEFAULT_NAMESPACE,
-                "annotations": {
-                    "network.harvesterhci.io/route": '{"mode":"auto"}'
-                },
-                "labels": {
-                    "network.harvesterhci.io/clusternetwork": cluster_network,
-                    "network.harvesterhci.io/type": "L2VlanNetwork"
-                }
-            },
-            "spec": {
-                "config": json.dumps({
-                    "cniVersion": "0.3.1",
-                    "name": name,
-                    "type": "bridge",
-                    "bridge": f"{cluster_network}-br",
-                    "promiscMode": True,
-                    "vlan": int(vlan_id),
-                    "ipam": {}
-                })
-            }
-        }
-
-        try:
-            self.custom_api.create_namespaced_custom_object(
-                group="k8s.cni.cncf.io",
-                version="v1",
-                namespace=DEFAULT_NAMESPACE,
-                plural="network-attachment-definitions",
-                body=network_spec
-            )
-            logging(f"Created VLAN network: {name}")
-            return network_spec
-        except ApiException as e:
-            if e.status == 409:  # Already exists
-                logging(f"VLAN network {name} already exists")
-                return network_spec
-            raise Exception(f"Failed to create VLAN network: {e}")
-
-    def delete_vlan_network(self, name):
-        """Delete VLAN network"""
-        logging(f"Deleting VLAN network: {name}")
-        try:
-            self.custom_api.delete_namespaced_custom_object(
-                group="k8s.cni.cncf.io",
-                version="v1",
-                namespace=DEFAULT_NAMESPACE,
-                plural="network-attachment-definitions",
-                name=name
-            )
-            logging(f"Deleted VLAN network: {name}")
-        except ApiException as e:
-            if e.status != 404:
-                raise Exception(f"Failed to delete VLAN network: {e}")
-
-    def get_ip_pool(self, name):
-        """Get IP pool by name, returns None if not found"""
-        lb_group = "loadbalancer.harvesterhci.io"
-        lb_version = "v1beta1"
-        try:
-            return self.custom_api.get_cluster_custom_object(
-                group=lb_group,
-                version=lb_version,
-                plural="ippools",
-                name=name
-            )
-        except ApiException as e:
-            if e.status == 404:
-                return None
-            raise Exception(f"Failed to get IP pool: {e}")
-
-    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id):
-        """Create IP pool, reusing existing pool with the same name"""
-        logging(f"Creating IP pool: {name}")
-
-        existing = self.get_ip_pool(name)
-        if existing:
-            logging(f"IP pool {name} already exists, reusing")
-            return existing
-
-        lb_group = "loadbalancer.harvesterhci.io"
-        lb_version = "v1beta1"
-
-        ippool_spec = {
-            "apiVersion": f"{lb_group}/{lb_version}",
-            "kind": "IPPool",
-            "metadata": {
-                "name": name
-            },
-            "spec": {
-                "ranges": [{
-                    "subnet": subnet,
-                    "rangeStart": start_ip,
-                    "rangeEnd": end_ip,
-                    "gateway": "",
-                    "type": "range" if start_ip or end_ip else "cidr"
-                }],
-                "selector": {
-                    "network": network_id,
-                    "scope": [{
-                        "namespace": "*",
-                        "project": "*",
-                        "guestCluster": "*"
-                    }]
-                }
-            }
-        }
-
-        try:
-            self.custom_api.create_cluster_custom_object(
-                group=lb_group,
-                version=lb_version,
-                plural="ippools",
-                body=ippool_spec
-            )
-            logging(f"Created IP pool: {name}")
-            return ippool_spec
-        except ApiException as e:
-            if e.status == 409:  # Already exists
-                logging(f"IP pool {name} already exists")
-                return ippool_spec
-            raise Exception(f"Failed to create IP pool: {e}")
-
-    def delete_ip_pool(self, name):
-        """Delete IP pool"""
-        logging(f"Deleting IP pool: {name}")
-
-        lb_group = "loadbalancer.harvesterhci.io"
-        lb_version = "v1beta1"
-
-        try:
-            self.custom_api.delete_cluster_custom_object(
-                group=lb_group,
-                version=lb_version,
-                plural="ippools",
-                name=name
-            )
-            logging(f"Deleted IP pool: {name}")
-        except ApiException as e:
-            if e.status != 404:
-                raise Exception(f"Failed to delete IP pool: {e}")
-
-    def create_image(self, name, url):
-        """Create image by URL"""
-        logging(f"Creating image: {name}")
-
-        image_spec = {
-            "apiVersion": f"{self.harvester_group}/{self.harvester_version}",
-            "kind": "VirtualMachineImage",
-            "metadata": {
-                "name": name,
-                "namespace": DEFAULT_NAMESPACE
-            },
-            "spec": {
-                "displayName": name,
-                "sourceType": "download",
-                "url": url
-            }
-        }
-
-        try:
-            self.custom_api.create_namespaced_custom_object(
-                group=self.harvester_group,
-                version=self.harvester_version,
-                namespace=DEFAULT_NAMESPACE,
-                plural="virtualmachineimages",
-                body=image_spec
-            )
-            logging(f"Created image: {name}")
-            return image_spec
-        except ApiException as e:
-            raise Exception(f"Failed to create image: {e}")
-
-    def wait_for_image_ready(self, name, timeout=DEFAULT_TIMEOUT):
-        """Wait for image to be ready"""
-        logging(f"Waiting for image {name} to be ready")
-        retry_count, retry_interval = get_retry_count_and_interval()
-
-        end_time = time.time() + int(timeout)
-        last_logged_progress = -1
-        check_count = 0
-        while time.time() < end_time:
-            try:
-                image = self.custom_api.get_namespaced_custom_object(
-                    group=self.harvester_group,
-                    version=self.harvester_version,
-                    namespace=DEFAULT_NAMESPACE,
-                    plural="virtualmachineimages",
-                    name=name
-                )
-                progress = image.get("status", {}).get("progress", 0)
-                check_count += 1
-
-                if progress == 100:
-                    logging(f"Image {name} is ready")
-                    return image
-
-                # Only log if progress changed by 5% or more, or every 10th check
-                if (abs(progress - last_logged_progress) >= 5 or check_count % 10 == 1):
-                    logging(f"Image {name} progress: {progress}%", level="DEBUG")
-                    last_logged_progress = progress
-            except Exception as e:
-                logging(f"Error checking image status: {e}", level="WARNING")
-
-            time.sleep(retry_interval)
-
-        raise Exception(f"Timeout waiting for image {name} to be ready")
-
-    def delete_image(self, name):
-        """Delete image"""
-        logging(f"Deleting image: {name}")
-        try:
-            self.custom_api.delete_namespaced_custom_object(
-                group=self.harvester_group,
-                version=self.harvester_version,
-                namespace=DEFAULT_NAMESPACE,
-                plural="virtualmachineimages",
-                name=name
-            )
-            logging(f"Deleted image: {name}")
-        except ApiException as e:
-            if e.status != 404:
-                raise Exception(f"Failed to delete image: {e}")
 
     # Import Existing Cluster Operations
     def create_import_cluster(self, name):
@@ -2823,3 +2467,300 @@ class CRD(Base):
         raise Exception(
             f"Timeout waiting for chart app {release_name} to be ready"
         )
+
+    # RWX Volume / StorageClass / StatefulSet Operations
+    def create_rwx_storage_class_on_host(self, name="longhorn-rwx"):
+        """Create an RWX-capable StorageClass on the host Harvester cluster"""
+        logging(f"Creating RWX StorageClass on host: {name}")
+
+        sc_spec = {
+            "apiVersion": "storage.k8s.io/v1",
+            "kind": "StorageClass",
+            "metadata": {
+                "name": name
+            },
+            "provisioner": "driver.longhorn.io",
+            "allowVolumeExpansion": True,
+            "reclaimPolicy": "Delete",
+            "volumeBindingMode": "Immediate",
+            "parameters": {
+                "numberOfReplicas": "3",
+                "staleReplicaTimeout": "2880",
+                "fromBackup": "",
+                "fsType": "ext4",
+                "nfsOptions": "vers=4.2,noresvport,softerr,timeo=600,retrans=5"
+            }
+        }
+
+        rc, stdout, stderr = self._run_kubectl(
+            ["apply", "-f", "-"],
+            input_data=json.dumps(sc_spec)
+        )
+
+        if rc != 0:
+            if "AlreadyExists" not in stderr:
+                raise Exception(
+                    f"Failed to create RWX StorageClass on host: {stderr}"
+                )
+
+        logging(f"Created RWX StorageClass on host: {name}")
+        return sc_spec
+
+    def delete_rwx_storage_class_on_host(self, name="longhorn-rwx"):
+        """Delete the RWX StorageClass from the host Harvester cluster"""
+        logging(f"Deleting RWX StorageClass from host: {name}")
+
+        rc, stdout, stderr = self._run_kubectl(
+            ["delete", "storageclass", name, "--ignore-not-found"]
+        )
+
+        if rc != 0:
+            raise Exception(
+                f"Failed to delete RWX StorageClass from host: {stderr}"
+            )
+
+        logging(f"Deleted RWX StorageClass from host: {name}")
+
+    def create_guest_storage_class(self, cluster_id, name,
+                                   host_storage_class="longhorn-rwx"):
+        """Create a StorageClass on the guest cluster referencing a host SC"""
+        logging(f"Creating guest StorageClass {name} in cluster {cluster_id} "
+                f"(hostStorageClass={host_storage_class})")
+
+        sc_spec = {
+            "apiVersion": "storage.k8s.io/v1",
+            "kind": "StorageClass",
+            "metadata": {
+                "name": name
+            },
+            "provisioner": "driver.harvesterhci.io",
+            "allowVolumeExpansion": True,
+            "reclaimPolicy": "Delete",
+            "volumeBindingMode": "Immediate",
+            "parameters": {
+                "hostStorageClass": host_storage_class
+            }
+        }
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["apply", "-f", "-"],
+            input_data=json.dumps(sc_spec)
+        )
+
+        if rc != 0:
+            if "AlreadyExists" not in stderr:
+                raise Exception(
+                    f"Failed to create guest StorageClass: {stderr}"
+                )
+
+        logging(f"Created guest StorageClass: {name}")
+        return sc_spec
+
+    def delete_guest_storage_class(self, cluster_id, name):
+        """Delete a StorageClass from the guest cluster"""
+        logging(f"Deleting guest StorageClass {name} from cluster {cluster_id}")
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["delete", "storageclass", name, "--ignore-not-found"]
+        )
+
+        if rc != 0:
+            raise Exception(
+                f"Failed to delete guest StorageClass: {stderr}"
+            )
+
+        logging(f"Deleted guest StorageClass: {name}")
+
+    def create_pvc_rwx(self, cluster_id, name, size="1Gi", storage_class=None):
+        """Create a ReadWriteMany PVC in guest cluster via kubectl"""
+        logging(f"Creating RWX PVC {name} in cluster {cluster_id}")
+
+        pvc_spec = {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "name": name,
+                "namespace": DEFAULT_NAMESPACE
+            },
+            "spec": {
+                "accessModes": ["ReadWriteMany"],
+                "resources": {
+                    "requests": {
+                        "storage": size
+                    }
+                }
+            }
+        }
+        if storage_class:
+            pvc_spec["spec"]["storageClassName"] = storage_class
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["apply", "-f", "-"],
+            input_data=json.dumps(pvc_spec)
+        )
+        if rc != 0:
+            raise Exception(f"Failed to create RWX PVC: {stderr}")
+
+        logging(f"Created RWX PVC {name}")
+        return pvc_spec
+
+    def create_statefulset(self, cluster_id, namespace, name, image,
+                           pvc_name, replicas=2):
+        """Create a StatefulSet that mounts an existing PVC via kubectl"""
+        logging(f"Creating StatefulSet {name} in cluster {cluster_id}")
+
+        container = {
+            "name": name,
+            "image": image,
+            "command": ["sh", "-c", "sleep infinity"],
+        }
+
+        container["volumeMounts"] = [
+            {"name": "shared-data", "mountPath": "/data"}
+        ]
+
+        sts_spec = {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "metadata": {
+                "name": name,
+                "namespace": namespace
+            },
+            "spec": {
+                "replicas": int(replicas),
+                "serviceName": name,
+                "selector": {
+                    "matchLabels": {
+                        "name": name
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "name": name
+                        }
+                    },
+                    "spec": {
+                        "containers": [container],
+                        "volumes": [
+                            {
+                                "name": "shared-data",
+                                "persistentVolumeClaim": {
+                                    "claimName": pvc_name
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["apply", "-f", "-"],
+            input_data=json.dumps(sts_spec)
+        )
+        if rc != 0:
+            raise Exception(f"Failed to create StatefulSet: {stderr}")
+
+        logging(f"Created StatefulSet {name}")
+        return sts_spec
+
+    def get_statefulset(self, cluster_id, namespace, name):
+        """Get StatefulSet details from guest cluster via kubectl"""
+        logging(f"Getting StatefulSet {name} from cluster {cluster_id}")
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["get", "statefulset", name, "-n", namespace, "-o", "json"]
+        )
+
+        if rc != 0:
+            if "NotFound" in stderr or "not found" in stderr.lower():
+                return None
+            raise Exception(f"Failed to get StatefulSet: {stderr}")
+
+        return json.loads(stdout)
+
+    def delete_statefulset(self, cluster_id, namespace, name):
+        """Delete StatefulSet from guest cluster via kubectl"""
+        logging(f"Deleting StatefulSet {name} from cluster {cluster_id}")
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["delete", "statefulset", name, "-n", namespace,
+             "--ignore-not-found"]
+        )
+
+        if rc != 0:
+            raise Exception(f"Failed to delete StatefulSet: {stderr}")
+
+        logging(f"Deleted StatefulSet {name}")
+
+    def wait_for_statefulset_ready(self, cluster_id, namespace, name,
+                                   timeout=DEFAULT_TIMEOUT):
+        """Wait for StatefulSet to have all replicas ready"""
+        logging(f"Waiting for StatefulSet {name} to be ready")
+        retry_count, retry_interval = get_retry_count_and_interval()
+
+        end_time = time.time() + int(timeout)
+        while time.time() < end_time:
+            try:
+                sts = self.get_statefulset(cluster_id, namespace, name)
+                if sts:
+                    status = sts.get("status", {})
+                    replicas = sts.get("spec", {}).get("replicas", 0)
+                    ready = status.get("readyReplicas", 0)
+                    if replicas > 0 and ready >= replicas:
+                        logging(f"StatefulSet {name} is ready "
+                                f"({ready}/{replicas})")
+                        return sts
+            except Exception as e:
+                logging(f"Error checking StatefulSet status: {e}",
+                        level="WARNING")
+
+            time.sleep(retry_interval)
+
+        raise Exception(
+            f"Timeout waiting for StatefulSet {name} to be ready"
+        )
+
+    def exec_command_in_pod(self, cluster_id, namespace, pod_name, command):
+        """Execute a command inside a pod via kubectl exec"""
+        logging(f"Executing command in pod {pod_name}: {command}")
+
+        args = ["exec", pod_name, "-n", namespace, "--"]
+        args.extend(command)
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id, args
+        )
+
+        if rc != 0:
+            raise Exception(
+                f"Failed to exec in pod {pod_name}: {stderr}"
+            )
+
+        return stdout.strip()
+
+    def get_pods_by_label(self, cluster_id, namespace, label_selector):
+        """Get pods matching a label selector via kubectl"""
+        logging(f"Getting pods with label {label_selector} in "
+                f"cluster {cluster_id}")
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["get", "pods", "-n", namespace,
+             "-l", label_selector, "-o", "json"]
+        )
+
+        if rc != 0:
+            raise Exception(f"Failed to get pods: {stderr}")
+
+        data = json.loads(stdout)
+        items = data.get("items", [])
+        logging(f"Found {len(items)} pods with label {label_selector}")
+        return items

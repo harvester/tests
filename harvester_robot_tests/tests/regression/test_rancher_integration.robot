@@ -18,6 +18,25 @@ Test Create Single Node RKE2 Cluster with Basic Workloads
     When Basic workloads are deployed on single node cluster
     Then Basic workloads should be active on single node cluster
 
+Test RWX Volume On Single Node Cluster
+    [Tags]    rancher    rke2    p1    rwx
+    [Documentation]    Enable storage network on the single-node cluster (requires
+    ...               stopping and restarting the VM), create an RWX StorageClass,
+    ...               PVC, and StatefulSet with 2 replicas, then verify data written
+    ...               by one pod is readable from the other. Validates Harvester CSI
+    ...               driver RWX volume support end-to-end including the storage
+    ...               network lifecycle.
+    Skip    Reason: Requires two network interfaces, currently hangs during creation. Needs revisit.
+    Given Single node cluster is available
+    And Storage network is enabled for RWX
+    And Single node cluster should be ready
+    And Basic workloads should be active on single node cluster
+    When RWX volume is created on single node cluster
+    And RWX StatefulSet with 2 replicas is deployed on single node cluster
+    Then RWX StatefulSet should be ready on single node cluster
+    And RWX shared data should be accessible across pods on single node cluster
+    # [Teardown]    Cleanup RWX test resources on single node cluster
+
 Test Create Multi Node RKE2 Cluster
     [Tags]    rancher    rke2    p0
     [Documentation]    Create and verify a 3-node RKE2 cluster.
@@ -31,25 +50,22 @@ Test CSI Deployment
     When CSI workload with PVC is deployed
     Then CSI deployment and PVC should be active
 
-Test Whoami Deployment
-    [Tags]    rancher    rke2    p0
-    [Documentation]    Deploy a Whoami workload on the multi-node cluster.
-    Given Multi node cluster is available
-    When Whoami workload is deployed
-    Then Whoami deployment should be active
-
 Test Load Balancer DHCP Mode
     [Tags]    rancher    rke2    p0
-    [Documentation]    Create and verify a LoadBalancer service in DHCP mode.
+    [Documentation]    Deploy a Whoami workload and create a LoadBalancer service in DHCP mode.
     Given Multi node cluster is available
-    When Load balancer is created in DHCP mode
+    And Whoami workload is deployed    dhcp
+    And Whoami deployment should be active    dhcp
+    When Load balancer is created in DHCP mode    dhcp
     Then DHCP load balancer should be serving traffic
 
 Test Load Balancer Pool Mode
     [Tags]    rancher    rke2    p0
-    [Documentation]    Create and verify a LoadBalancer service in IP Pool mode.
+    [Documentation]    Deploy a Whoami workload and create a LoadBalancer service in IP Pool mode.
     Given Multi node cluster is available
-    When Load balancer is created in pool mode
+    And Whoami workload is deployed    pool
+    And Whoami deployment should be active    pool
+    When Load balancer is created in pool mode    pool
     Then Pool load balancer should be serving traffic
 
 Test Scale Up RKE2 Cluster

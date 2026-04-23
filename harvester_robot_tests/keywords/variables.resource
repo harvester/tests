@@ -20,8 +20,8 @@ ${OPENSUSE_IMAGE_URL}           https://download.opensuse.org/repositories/Cloud
 ${UBUNTU_IMAGE_URL}             https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img
 
 # Network
-${VLAN_ID}                      %{VLAN_ID=1}
-${VLAN_NIC}                     %{VLAN_NIC=mgmt}
+${VLAN_ID}                      %{VLAN_ID=2011}
+${VLAN_NIC}                     %{VLAN_NIC=eno50}
 
 # VM Defaults
 ${DEFAULT_VM_CPU}               2
@@ -31,6 +31,7 @@ ${DEFAULT_VM_REPLICAS}          3
 # Storage
 ${DEFAULT_STORAGE_CLASS}        harvester-longhorn
 ${DEFAULT_VOLUME_SIZE}          10Gi
+${RWX_HOST_STORAGE_CLASS}       %{RWX_HOST_STORAGE_CLASS=longhorn-rwx}
 
 # Test Execution
 ${LOOP_COUNT}                   3
