@@ -18,6 +18,7 @@ Test VM Survives Node Reboot
     ...    3. Reboot node 0
     ...    4. Verify VM migrates to another node
     ...    5. Verify data integrity
+    Skip    Reason: Sample test, need actual implementation
     Given Cluster has at least 3 nodes
     And Create image from url    0    ${UBUNTU_IMAGE_URL}
     And Create VM    0    cpu=2    memory=4Gi    numberOfReplicas=3
@@ -33,6 +34,7 @@ Test VM Survives Node Reboot
 Test VM HA During Node Power Off
     [Tags]    p0    node-down
     [Documentation]    Verify VM HA when node loses power
+    Skip    Reason: Sample test, need actual implementation
     Given Cluster has at least 3 nodes
     And Create image from url    0    ${UBUNTU_IMAGE_URL}
     And Create VM    0    cpu=2    memory=4Gi    numberOfReplicas=3

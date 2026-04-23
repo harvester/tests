@@ -8,12 +8,12 @@ class Base(ABC):
     """Base class for Image implementations"""
 
     @abstractmethod
-    def create_from_url(self, image_name, image_url, checksum, **kwargs):
+    def create_from_url(self, image_name, image_url, checksum="", **kwargs):
         """Create image from URL"""
         pass
 
     @abstractmethod
-    def delete(self, image_name, namespace):
+    def delete(self, image_name, namespace="default"):
         """Delete an image"""
         pass
 

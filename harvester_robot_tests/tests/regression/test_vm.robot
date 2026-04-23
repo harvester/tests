@@ -4,7 +4,6 @@ Test Tags        regression    virtualmachines
 
 Resource         ../../keywords/variables.resource
 Resource         ../../keywords/common.resource
-Resource         ../../keywords/image.resource
 Resource         ../../keywords/virtualmachine.resource
 
 Test Setup       Set up test environment
@@ -20,22 +19,13 @@ Test VM Basic Lifecycle
     ${image_name}=    Set Variable    image-0-${timestamp}
     ${vm_name}=    Set Variable    vm-0-${timestamp}
 
-    Given Create image from url with name    ${image_name}    ${OPENSUSE_IMAGE_URL}
-    And Wait for image downloaded by name    ${image_name}
-
-    When Create VM with name    ${vm_name}    cpu=2    memory=4Gi    image_id=${image_name}
-
-    Then Wait for VM running by name    ${vm_name}
-    And Wait for VM IP addresses by name    ${vm_name}    ${DEFAULT_NAMESPACE}
-
-    When Stop VM by name    ${vm_name}
-
-    Then Wait for VM stopped by name    ${vm_name}
-
-    When Start VM by name    ${vm_name}
-    
-    Then Wait for VM running by name    ${vm_name}
-    
-    When Delete VM by name    ${vm_name}
-    
-    Then Wait for VM deleted by name    ${vm_name}
+    Given Image is available for VM creation   ${image_name}    ${OPENSUSE_IMAGE_URL}
+    When VM is created    ${vm_name}    cpu=2    memory=4Gi    image_id=${image_name}
+    Then VM should be running    ${vm_name}
+    And VM should have IP addresses    ${vm_name}    ${DEFAULT_NAMESPACE}
+    When VM is stopped    ${vm_name}
+    Then VM should be stopped    ${vm_name}
+    When VM is started    ${vm_name}
+    Then VM should be running    ${vm_name}
+    When VM is deleted    ${vm_name}
+    Then VM should be deleted    ${vm_name}
