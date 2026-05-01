@@ -1,7 +1,7 @@
 name: DCO
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - main
       - master
@@ -14,7 +14,7 @@ permissions:
 jobs:
   check:
     name: DCO Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check if PR is from Copilot
         id: check-copilot
