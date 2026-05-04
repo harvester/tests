@@ -16,8 +16,8 @@ ${RETRY_INTERVAL}               3
 ${SLEEP_TIMEOUT}                3
 
 # Images
-${OPENSUSE_IMAGE_URL}           https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.6/images/openSUSE-Leap-15.6.x86_64-NoCloud.qcow2
-${UBUNTU_IMAGE_URL}             https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img
+${OPENSUSE_IMAGE_URL}           %{OPENSUSE_IMAGE_URL=https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.6/images/openSUSE-Leap-15.6.x86_64-NoCloud.qcow2}
+${UBUNTU_IMAGE_URL}             %{UBUNTU_IMAGE_URL=https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img}
 
 # Network
 ${VLAN_ID}                      %{VLAN_ID=1}
