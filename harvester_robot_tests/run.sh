@@ -4,6 +4,25 @@ set -e
 # Harvester Robot Framework Test Runner
 # Usage: ./run.sh [options]
 
+# Color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Load .env if exists
+if [ -f .env ]; then
+    echo -e "${GREEN}Loading .env file...${NC}"
+    # Export variables from .env, skip comments and empty lines
+    set -a
+    source .env
+    set +a
+    echo -e "${GREEN}Environment variables loaded from .env${NC}"
+else
+    echo -e "${YELLOW}Warning: .env file not found${NC}"
+    echo -e "${YELLOW}Copy .env.example to .env and configure: cp .env.example .env${NC}"
+fi
+
 # Default values
 TEST_CASE=""
 TEST_SUITE=""
@@ -11,14 +30,8 @@ TEST_FILE=""
 INCLUDE_TAG=""
 EXCLUDE_TAG=""
 VARIABLES=""
-LOG_LEVEL="INFO"
-OUTPUT_DIR=${OUTPUT_DIR:-/tmp/harvester-test-report}
-
-# Color codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+LOG_LEVEL=${ROBOT_LOG_LEVEL:-INFO}
+OUTPUT_DIR=${ROBOT_OUTPUT_DIR:-/tmp/harvester-test-report}
 
 show_help() {
     cat << EOF
@@ -86,19 +99,6 @@ if [[ -z "$VIRTUAL_ENV" ]]; then
     read -p "Continue? (y/N) " -n 1 -r
     echo
     [[ ! $REPLY =~ ^[Yy]$ ]] && exit 1
-fi
-
-# Load .env if exists
-if [ -f .env ]; then
-    echo -e "${GREEN}Loading .env file...${NC}"
-    # Export variables from .env, skip comments and empty lines
-    set -a
-    source .env
-    set +a
-    echo -e "${GREEN}Environment variables loaded from .env${NC}"
-else
-    echo -e "${YELLOW}Warning: .env file not found${NC}"
-    echo -e "${YELLOW}Copy .env.example to .env and configure: cp .env.example .env${NC}"
 fi
 
 # Check required variables
