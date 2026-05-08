@@ -16,6 +16,11 @@ class VMSpec:
     hostname = machine_type = ""
     usbtablet = True
     _data = None
+    # Since v1.4.0
+    eviction_strategy = "LiveMigrateIfPossible"
+    cpu_pinning = False
+    tpm_enabled = False
+    tpm_persistent = False
 
     # TODOs:
     # node selector(affinity)
@@ -331,6 +336,18 @@ class VMSpec:
             self._data['spec'].update(data['spec'])
             return deepcopy(self._data)
 
+        if self.cpu_pinning:
+            data['spec']['template']['spec']['domain']['cpu']['dedicatedCpuPlacement'] = True
+
+        # Error handling for only enabling tpm_persistent case
+        if self.tpm_persistent:
+            self.tpm_enabled = True
+        if self.tpm_enabled:
+            tpm_payload = {}
+            if self.tpm_persistent:
+                tpm_payload["persistent"] = True
+            data['spec']['template']['spec']['domain']['devices']['tpm'] = tpm_payload
+
         return deepcopy(data)
 
     @classmethod
@@ -359,6 +376,7 @@ class VMSpec:
         features = vm_spec['domain'].get('features', {})
         firmware = vm_spec['domain'].get('firmware', {})
         devices = vm_spec['domain']['devices']
+        is_pinned = vm_spec['domain']['cpu'].get("dedicatedCpuPlacement")
 
         obj = cls(cpu['cores'], mem, desc, reserved_mem, os_type)
         obj.cpu_sockets, obj.cpu_threads = cpu.get('sockets', 1), cpu.get('threads', 1)
@@ -372,6 +390,7 @@ class VMSpec:
 
         obj._features = features
         obj._firmwares = firmware
+        obj.cpu_pinning = is_pinned
         obj._cloudinit_vol = dict(disk=devices['disks'][-1], volume=volumes[-1])
         obj.networks = [dict(iface=i, network=n) for i, n in zip(devices['interfaces'], networks)]
         obj.volumes = [dict(disk=d, volume=v) for d, v in zip(devices['disks'][:-1], volumes[:-1])]
@@ -381,49 +400,18 @@ class VMSpec:
                 if vol_claims.get(claim):
                     v['claim'] = vol_claims[claim]
 
-        obj._data = data
-        return obj
-
-
-class VMSpec140(VMSpec):
-    # ref: https://github.com/harvester/tests/issues/1201
-    eviction_strategy = "LiveMigrateIfPossible"
-    cpu_pinning = False
-    tpm_enabled = False
-    tpm_persistent = False
-
-    def to_dict(self, name, namespace, hostname=""):
-        data = super().to_dict(name, namespace, hostname)
-        if self.cpu_pinning:
-            data['spec']['template']['spec']['domain']['cpu']['dedicatedCpuPlacement'] = True
-
-        # Error handling for only enabling tpm_persistent case
-        if self.tpm_persistent:
-            self.tpm_enabled = True
-        if self.tpm_enabled:
-            tpm_payload = {}
-            if self.tpm_persistent:
-                tpm_payload["persistent"] = True
-            data['spec']['template']['spec']['domain']['devices']['tpm'] = tpm_payload
-        return data
-
-    @classmethod
-    def from_dict(cls, data):
-        obj = super().from_dict(data)
-        is_pinned = data['spec']['template']['spec']['domain']['cpu'].get("dedicatedCpuPlacement")
-        obj.cpu_pinning = is_pinned
-
-        devices = data['spec']['template']['spec']['domain'].get("devices")
         if "tpm" in devices:
             obj.tpm_enable = True
             obj.tpm_persistent = devices['tpm'].get('persistent', False)
         else:
             obj.tpm_enable = False
             obj.tpm_persistent = False
+
+        obj._data = data
         return obj
 
 
-class VMSpec180(VMSpec140):
+class VMSpec180(VMSpec):
     # ref: https://github.com/harvester/harvester/pull/9392
     # After v1.8.0, the `longhorn-{image_name}` storage classes are no longer auto-created.
     # For image-based volumes, must use lh-{image_uid} storage class.

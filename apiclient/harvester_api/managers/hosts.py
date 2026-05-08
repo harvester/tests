@@ -32,10 +32,6 @@ class HostManager(BaseManager):
         payload = dict(force=str(force).lower())
         return self._create(self.PATH_fmt.format(uid=name), params=params, json=payload)
 
-
-class HostManager140(HostManager):
-    support_to = "v1.4.0"
-
     def cpu_manager(self, name, enable=True):
         action = "enable" if enable else "disable"
         params = dict(action=f"{action}CPUManager")
