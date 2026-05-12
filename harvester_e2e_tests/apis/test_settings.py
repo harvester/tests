@@ -199,8 +199,8 @@ class TestAdditionalGuestMemOverhead:
         code, data = api_client.settings.update(setting_name, {"value": ""})
         assert 200 == code, (f"Failed to {setting_name} setting with error: {code}, {data}")
         assert not data.get('value'), (
-            f"Setting {setting_name} not be updated to default value "
-            f"when update empty value to it, the updated value: {data['value']}"
+            f"Setting {setting_name} should remain empty when updated with an empty value, "
+            f"but the updated value was: {data['value']}"
         )
 
         # for teardown
@@ -218,8 +218,11 @@ class TestAdditionalGuestMemOverhead:
             assert 200 == code, (
                 f"Failed to update {setting_name} to value {val} with error: {code}, {data}"
             )
-            sleep(0.1)
-
+            code, data = api_client.settings.get(setting_name)
+            assert 200 == code and val == data.get('value', ""), (
+                f"Setting {setting_name} not be updated to value {val} successfully"
+            )
+            sleep(0.5)
         # for teardown
         api_client.settings.update(setting_name, {"value": original_value})
 
@@ -236,6 +239,11 @@ class TestAdditionalGuestMemOverhead:
             assert 422 == code, (
                 f"Setting {setting_name} be updated to the invalid value {val}"
             )
+            code, data = api_client.settings.get(setting_name)
+            assert 200 == code and val != data.get('value', ""), (
+                f"Setting {setting_name} be updated to invalid value {val} silently"
+            )
+            sleep(0.5)
 
         # for teardown
         api_client.settings.update(setting_name, {"value": original_value})

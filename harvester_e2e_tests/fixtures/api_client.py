@@ -164,7 +164,6 @@ def support_bundle_state():
 @pytest.fixture(scope="session")
 def expected_settings():
     return {
-        "1.1.0": {'storage-network', 'containerd-registry', 'ui-plugin-index'},
         "default": {
             'additional-ca',
             'auto-disk-provision-paths',
@@ -186,6 +185,12 @@ def expected_settings():
             'upgrade-checker-url',
             'vip-pools',
             'vm-force-reset-policy',
+            # v1.1.0
+            'storage-network',
+            'containerd-registry',
+            'ui-plugin-index',
+            # v1.4.0
+            'additional-guest-memory-overhead-ratio',
         }
     }
 
