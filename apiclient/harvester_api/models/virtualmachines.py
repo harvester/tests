@@ -12,7 +12,6 @@ class VMSpec:
     # defaults
     cpu_sockets = cpu_threads = 1
     run_strategy = "RerunOnFailure"
-    eviction_strategy = "LiveMigrate"
     hostname = machine_type = ""
     usbtablet = True
     _data = None
@@ -331,11 +330,6 @@ class VMSpec:
             r_mem = f"{r_mem}Mi" if isinstance(r_mem, (int, float)) else r_mem
             data['metadata']['annotations']["harvesterhci.io/reservedMemory"] = r_mem
 
-        if self._data:
-            self._data['metadata'].update(data['metadata'])
-            self._data['spec'].update(data['spec'])
-            return deepcopy(self._data)
-
         if self.cpu_pinning:
             data['spec']['template']['spec']['domain']['cpu']['dedicatedCpuPlacement'] = True
 
@@ -347,6 +341,11 @@ class VMSpec:
             if self.tpm_persistent:
                 tpm_payload["persistent"] = True
             data['spec']['template']['spec']['domain']['devices']['tpm'] = tpm_payload
+
+        if self._data:
+            self._data['metadata'].update(data['metadata'])
+            self._data['spec'].update(data['spec'])
+            return deepcopy(self._data)
 
         return deepcopy(data)
 
@@ -401,10 +400,10 @@ class VMSpec:
                     v['claim'] = vol_claims[claim]
 
         if "tpm" in devices:
-            obj.tpm_enable = True
+            obj.tpm_enabled = True
             obj.tpm_persistent = devices['tpm'].get('persistent', False)
         else:
-            obj.tpm_enable = False
+            obj.tpm_enabled = False
             obj.tpm_persistent = False
 
         obj._data = data
