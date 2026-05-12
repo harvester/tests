@@ -14,7 +14,8 @@
 #
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
-import warnings
+from time import sleep
+from random import uniform
 
 import pytest
 
@@ -37,30 +38,6 @@ def test_get_all_settings(api_client, expected_settings):
         "Some setting missing:\n"
         f"{expected_settings - available_settings}"
     )
-
-
-@pytest.mark.p0
-@pytest.mark.settings
-@pytest.mark.skip_if_version("< v1.1.0")
-def test_get_all_settings_v110(api_client, expected_settings):
-    expected_settings = expected_settings['default'] | expected_settings['1.1.0']
-    code, data = api_client.settings.get()
-
-    available_settings = {m['metadata']['name'] for m in data['items']}
-
-    assert 200 == code, (code, data)
-    assert expected_settings <= available_settings, (
-        "Some setting missing:\n"
-        f"{expected_settings - available_settings}"
-    )
-
-    removed = expected_settings - available_settings
-    added = available_settings - expected_settings
-
-    if removed:
-        warnings.warn(UserWarning(f"Few setting(s) been removed: {removed}."))
-    if added:
-        warnings.warn(UserWarning(f"New setting(s) added: {added}"))
 
 
 @pytest.mark.p0
@@ -194,3 +171,71 @@ class TestUpdateKubeconfigDefaultToken:
             f"Kubeconfig Default Token TTL Minutes be allowed to be set for 120 days\n"
             f"API Status({code}): {data}"
         )
+
+
+@pytest.mark.p0
+@pytest.mark.sanity
+@pytest.mark.settings
+class TestAdditionalGuestMemOverhead:
+    '''
+    Description on UI:
+      The ratio for kubevirt to adjust the VM overhead memory.
+      The value could be zero, empty value or floating number between 1.0 and 10.0, default to 1.5.
+    '''
+    def test_get(self, api_client):
+        code, data = api_client.settings.get('additional-guest-memory-overhead-ratio')
+        assert 200 == code, (
+            "Failed to get additional-guest-memory-overhead-ratio setting with error: "
+            f"{code}, {data}"
+        )
+
+    def test_empty_value(self, api_client):
+        setting_name = 'additional-guest-memory-overhead-ratio'
+
+        code, data = api_client.settings.get(setting_name)
+        assert 200 == code, (code, data)
+        original_value = data.get('value', "")
+
+        code, data = api_client.settings.update(setting_name, {"value": ""})
+        assert 200 == code, (f"Failed to {setting_name} setting with error: {code}, {data}")
+        assert not data.get('value'), (
+            f"Setting {setting_name} not be updated to default value "
+            f"when update empty value to it, the updated value: {data['value']}"
+        )
+
+        # for teardown
+        api_client.settings.update(setting_name, {"value": original_value})
+
+    def test_valid_values(self, api_client):
+        setting_name = 'additional-guest-memory-overhead-ratio'
+
+        code, data = api_client.settings.get(setting_name)
+        assert 200 == code, (code, data)
+        original_value = data.get('value', "")
+
+        for val in (str(round(uniform(1, 10), 1)) for _ in range(5)):
+            code, data = api_client.settings.update(setting_name, {"value": val})
+            assert 200 == code, (
+                f"Failed to update {setting_name} to value {val} with error: {code}, {data}"
+            )
+            sleep(0.1)
+
+        # for teardown
+        api_client.settings.update(setting_name, {"value": original_value})
+
+    @pytest.mark.negative
+    def test_invalid_values(self, api_client):
+        setting_name = 'additional-guest-memory-overhead-ratio'
+
+        code, data = api_client.settings.get(setting_name)
+        assert 200 == code, (code, data)
+        original_value = data.get('value', "")
+
+        for val in ("100", "0.1", "-1", "not_int"):
+            code, data = api_client.settings.update(setting_name, {"value": val})
+            assert 422 == code, (
+                f"Setting {setting_name} be updated to the invalid value {val}"
+            )
+
+        # for teardown
+        api_client.settings.update(setting_name, {"value": original_value})
