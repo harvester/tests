@@ -204,6 +204,22 @@ def unset_cpu_memory_overcommit(api_client):
     api_client.settings.update('overcommit-config', spec)
 
 
+@pytest.fixture(scope="class")
+def overhead_ratio(api_client):
+    setting_name = 'additional-guest-memory-overhead-ratio'
+    code, data = api_client.settings.get(setting_name)
+    assert 200 == code, (code, data)
+
+    origin_val = data.get('value', "")
+
+    code, data = api_client.settings.update(setting_name, {"value": "1.5"})
+    assert 200 == code, (code, data)
+
+    yield data
+
+    api_client.settings.update(setting_name, {"value": origin_val})
+
+
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.virtualmachines
@@ -2600,3 +2616,75 @@ class TestCpuMemHotPlug:
         for vol in vm_spec.volumes:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
+
+
+@pytest.mark.smoke
+@pytest.mark.virtualmachines
+class TestVMWithMemoryOverhead:
+    _mem = 2147483648  # 2Gi == 2 * 1024 * 2 ** 20 (stopped_vm)
+
+    @pytest.mark.dependency(name="default_ratio")
+    def test_overhead_default_ratio(self, api_client, vm_checker, stopped_vm, overhead_ratio):
+        vm_name, _ = stopped_vm
+        vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
+        assert vm_started, (code, vmi)
+
+        for i in vmi['metadata']['relationships']:
+            if i.get('toType') == "pod":
+                ns, name = i['toId'].split("/")
+                break
+        else:
+            raise AssertionError(
+                f"Unable to find the pod name of VM {vm_name}\n"
+                f"VMI info: {vmi}"
+            )
+
+        code, data = api_client.get_pods(name, ns)
+        assert 200 == code, (code, data)
+
+        pod_mem = int(data['spec']['containers'][0]['resources']['limits']['memory'])
+
+        overhead = pod_mem - self._mem
+        assert overhead >= 240 * 1.5 * 2 ** 20, (
+            f"Pod's memory overhead {overhead} is less than 240Mi\n"
+            f"pod memory: {pod_mem}"
+        )
+
+        overhead_ratio['_overhead'] = overhead  # side-effect for next test case
+        vm_checker.wait_stopped(vm_name)
+
+    @pytest.mark.dependency(depends=["default_ratio"])
+    def test_overhead_double_ratio(self, api_client, vm_checker, stopped_vm, overhead_ratio):
+        code, data = api_client.settings.update(
+            "additional-guest-memory-overhead-ratio",
+            dict(value="3")
+        )
+        assert 200 == code, (code, data)
+
+        vm_name, _ = stopped_vm
+        vm_started, (code, vmi) = vm_checker.wait_started(vm_name)
+        assert vm_started, (code, vmi)
+
+        for i in vmi['metadata']['relationships']:
+            if i.get('toType') == "pod":
+                ns, name = i['toId'].split("/")
+                break
+        else:
+            raise AssertionError(
+                f"Unable to find the pod name of VM {vm_name}\n"
+                f"VMI info: {vmi}"
+            )
+
+        code, data = api_client.get_pods(name, ns)
+        assert 200 == code, (code, data)
+
+        pod_mem = int(data['spec']['containers'][0]['resources']['limits']['memory'])
+
+        overhead = pod_mem - self._mem
+        expected_overhead = overhead_ratio['_overhead'] * 2
+        tolerance_bytes = 1 * 2 ** 20  # 1 MiB tolerance to avoid flaky byte-level comparisons
+        assert abs(overhead - expected_overhead) <= tolerance_bytes, (
+            "additional-guest-memory-overhead-ratio not working as expected after set to double\n"
+            f"expected overhead: {expected_overhead}, actual overhead: {overhead}, "
+            f"tolerance: {tolerance_bytes}"
+        )
