@@ -17,10 +17,13 @@ HARVESTER_API_GROUP = "harvesterhci.io"
 HARVESTER_API_VERSION = "v1beta1"
 KUBEVIRT_API_GROUP = "kubevirt.io"
 KUBEVIRT_API_VERSION = "v1"
+LONGHORN_API_GROUP = "longhorn.io"
+LONGHORN_API_VERSION = "v1beta2"
 
 # Harvester Namespace
 HARVESTER_NAMESPACE = "harvester-system"
 DEFAULT_NAMESPACE = "default"
+LONGHORN_NAMESPACE = "longhorn-system"
 
 # Harvester Resource Plurals
 VIRTUALMACHINE_PLURAL = "virtualmachines"
@@ -37,6 +40,8 @@ LABEL_TEST_VALUE = "robot-framework"
 KIBIBYTE = 1024
 MEBIBYTE = (KIBIBYTE * KIBIBYTE)
 GIBIBYTE = (MEBIBYTE * KIBIBYTE)
+TEBIBYTE = (GIBIBYTE * KIBIBYTE)
+LARGE_DISK_BYTE = TEBIBYTE
 
 # VM States
 VM_STATE_STOPPED = "Stopped"

@@ -39,6 +39,7 @@ ${RETRY_COUNT}                  100
 
 # Namespaces and Labels
 ${DEFAULT_NAMESPACE}            default
+${LONGHORN_NAMESPACE}           longhorn-system
 ${LABEL_TEST}                   test-harvester
 
 # NVIDIA Driver Toolkit Addon

@@ -1,7 +1,8 @@
 *** Settings ***
 Documentation    Common Keywords
-Resource         variables.resource
 Library          ../libs/keywords/common_keywords.py
+Resource         variables.resource
+
 
 *** Keywords ***
 Set up test environment
@@ -18,3 +19,16 @@ Cleanup test resources
     Run Keyword And Ignore Error    common_keywords.Cleanup images
     Run Keyword And Ignore Error    common_keywords.Cleanup networks
     Run Keyword And Ignore Error    common_keywords.Cleanup backups
+
+List Pods By Label
+    [Arguments]    ${namespace}    ${label_selector}   ${status}=${None}
+    [Documentation]    Get pods by label selector
+    ${pods}=    common_keywords.list_pods_by_label    ${namespace}    ${label_selector}    ${status}
+    RETURN    ${pods}
+
+Count Pods By Label
+    [Arguments]    ${namespace}    ${label_selector}   ${status}=${None}
+    [Documentation]    Get pods by label selector
+    ${pods}=    common_keywords.list_pods_by_label    ${namespace}    ${label_selector}    ${status}
+    ${count}=   Get Length    ${pods}
+    RETURN    ${count}

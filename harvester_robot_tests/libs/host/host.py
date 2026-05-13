@@ -35,6 +35,16 @@ class Host(Base):
     def get_control_plane_nodes(self):
         return self.host.get_control_plane_nodes()
 
+    def get_witness_nodes(self):
+        nodes = self.host.get_witness_nodes()
+        print(f"Witness nodes: {nodes}")
+        return nodes
+
+    def get_standard_nodes(self):
+        nodes = self.host.get_standard_nodes()
+        print(f"Standard nodes: {nodes}")
+        return nodes
+
     def get_node_status(self, node_name):
         return self.host.get_node_status(node_name)
 
@@ -67,3 +77,7 @@ class Host(Base):
 
     def cleanup(self):
         return self.host.cleanup()
+
+    # Longhorn Node
+    def get_lh_node(self, node_name):
+        return self.host.get_lh_node(node_name)

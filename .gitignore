@@ -5,6 +5,9 @@ __pycache__/
 *.log
 assets
 test_result.html
+log.html
+output.xml
+report.html
 *venv
 *.kube
 *provider.tf

@@ -123,3 +123,14 @@ Cleanup test resources and restore nodes
     [Documentation]    Clean up resources and ensure all nodes are restored
     Cleanup test resources
     Restore all nodes
+
+List Standard Nodes
+    [Documentation]    Get list of standard nodes
+    ${node_names}=    host_keywords.get_standard_nodes
+    RETURN    ${node_names}
+
+Count Standard Nodes
+    [Documentation]    Get list of standard nodes
+    ${node_names}=    host_keywords.get_standard_nodes
+    ${node_count}=    Get Length    ${node_names}
+    RETURN    ${node_count}
