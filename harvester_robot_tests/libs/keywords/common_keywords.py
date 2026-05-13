@@ -7,6 +7,7 @@ import sys
 
 # Add the path to the utility module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
+from utility.pod import get_pods_by_label    # noqa E402
 from utility.utility import generate_name_with_suffix   # noqa E402
 from utility.utility import init_harvester_api_client   # noqa E402
 from utility.utility import init_k8s_api_client  # noqa E402
@@ -52,3 +53,12 @@ class common_keywords:
     def cleanup_backups(self):
         """Cleanup backups"""
         logging('Cleanup backups requested')
+
+    def list_pods_by_label(self, namespace, label_selector, status=None):
+        """List pods by label"""
+        pods = get_pods_by_label(namespace, label_selector)
+        if status:
+            pods = [pod for pod in pods if pod.status.phase == status]
+        logging(f"Found {len(pods)} pods by label {label_selector} in namespace {namespace}: \
+                {[pod.metadata.name for pod in pods]}")
+        return pods

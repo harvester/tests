@@ -5,20 +5,30 @@ Uses Kubernetes Node resources for host/node operations
 import time
 from kubernetes import client
 from kubernetes.client.rest import ApiException
+from crd import get_cr
 from utility.utility import logging, get_retry_count_and_interval
-from constant import DEFAULT_TIMEOUT_SHORT, DEFAULT_TIMEOUT
+from constant import (
+    DEFAULT_TIMEOUT_SHORT, DEFAULT_TIMEOUT,
+    LONGHORN_API_GROUP, LONGHORN_API_VERSION, LONGHORN_NAMESPACE
+)
 from host.base import Base
 
 
 class CRD(Base):
     """
     Host CRD implementation
-    Uses Kubernetes Node resources (not CRDs, but native K8s resources)
     """
 
     def __init__(self):
         self.core_api = client.CoreV1Api()
+        self.custom_api = client.CustomObjectsApi()
         self.retry_count, self.retry_interval = get_retry_count_and_interval()
+        self.lh_nodes_parameters = {
+            "group": LONGHORN_API_GROUP,
+            "version": LONGHORN_API_VERSION,
+            "plural": "nodes",
+            "namespace": LONGHORN_NAMESPACE
+        }
 
     def list_nodes(self):
         """List all nodes in the cluster"""
@@ -109,6 +119,36 @@ class CRD(Base):
                 control_nodes.append(node['name'])
 
         return control_nodes
+
+    def get_witness_nodes(self):
+        """Get all witness node names"""
+        nodes = self.list_nodes()
+
+        witness_nodes = []
+        for node in nodes:
+            labels = node['labels']
+            is_witness_node = (
+                'node-role.harvesterhci.io/witness' in labels
+            )
+            if is_witness_node:
+                witness_nodes.append(node['name'])
+
+        return witness_nodes
+
+    def get_standard_nodes(self):
+        """Get all standard (non-witness) nodes names"""
+        nodes = self.list_nodes()
+
+        standard_nodes = []
+        for node in nodes:
+            labels = node['labels']
+            is_witness_node = (
+                'node-role.harvesterhci.io/witness' in labels
+            )
+            if not is_witness_node:
+                standard_nodes.append(node['name'])
+
+        return standard_nodes
 
     def get_node_status(self, node_name):
         """Get node status"""
@@ -354,3 +394,19 @@ class CRD(Base):
                 'container_runtime': node.status.node_info.container_runtime_version if node.status.node_info else ''   # NOQA
             }
         }
+
+    # Longhorn Node
+    def get_lh_node(self, node_name):
+        """Get Longhorn Node CR for a specific node
+        Note: This is a Longhorn-specific resource that represents the node in Longhorn's context
+        """
+        try:
+            return get_cr(
+                **self.lh_nodes_parameters,
+                name=node_name
+            )
+        except ApiException as e:
+            if e.status == 404:
+                logging(f"Can not find LH node {LONGHORN_NAMESPACE}/{node_name}", level='WARNING')
+                return None
+            raise Exception(f"Fail to get LH node {LONGHORN_NAMESPACE}/{node_name}: {e}")

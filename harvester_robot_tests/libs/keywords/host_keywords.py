@@ -52,6 +52,12 @@ class host_keywords:
         logging('Getting control-plane nodes')
         return self.host.get_control_plane_nodes()
 
+    def get_witness_nodes(self):
+        return self.host.get_witness_nodes()
+
+    def get_standard_nodes(self):
+        return self.host.get_standard_nodes()
+
     def get_node_status(self, node_name):
         """Get node status"""
         logging(f'Getting status for node {node_name}')
@@ -100,3 +106,8 @@ class host_keywords:
         """Get VMs on node"""
         logging(f'Getting VMs on node {node_name}')
         return self.host.get_node_vms(node_name)
+
+    # Longhorn Node
+    def get_lh_node(self, node_name):
+        """Get Longhorn-specific node details"""
+        return self.host.get_lh_node(node_name)
