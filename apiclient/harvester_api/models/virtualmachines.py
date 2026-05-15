@@ -410,7 +410,112 @@ class VMSpec:
         return obj
 
 
-class VMSpec180(VMSpec):
+class VMSpec160(VMSpec):
+    # ref: https://docs.harvesterhci.io/v1.6/vm/cpu-memory-hotplug
+    _cpu_mem_hotplug = False
+    _custom_max_cpu = _custom_max_mem = 0  # Init the value
+    _hotplug_ratio = 4  # Default value of max-hotplug-ratio setting
+
+    def set_cpu_mem_hotplug(self, enable, custom_max_cpu=0, custom_max_mem=0, hotplug_ratio=4):
+        self._cpu_mem_hotplug = enable
+        if enable:
+            self._custom_max_cpu = custom_max_cpu
+            self._custom_max_mem = custom_max_mem
+            self._hotplug_ratio = hotplug_ratio
+        else:
+            self._custom_max_cpu = self._custom_max_mem = 0
+            self._hotplug_ratio = 4
+
+    def to_dict(self, name, namespace, hostname=""):
+        data = super().to_dict(name, namespace, hostname)
+
+        if self._cpu_mem_hotplug:
+            # The behavior after enable the function
+            # Move cpu_cores value to cpu_sockets, and set cpu_cores = 1
+            self.cpu_sockets = self.cpu_cores
+            self.cpu_cores = 1
+            memory = int(str(self.memory).replace("Gi", ""))
+
+            if self._custom_max_cpu == 0:
+                max_cpu = int(self.cpu_sockets) * int(self._hotplug_ratio)
+            else:
+                max_cpu = self._custom_max_cpu
+            if self._custom_max_mem == 0:
+                max_mem = memory * int(self._hotplug_ratio)
+            else:
+                max_mem = self._custom_max_mem
+
+            data['metadata']['annotations']['harvesterhci.io/enableCPUAndMemoryHotplug'] = 'true'
+            domain = data['spec']['template']['spec']['domain']
+            domain['cpu']['cores'] = self.cpu_cores
+            domain['cpu']['sockets'] = self.cpu_sockets
+            domain['cpu']['maxSockets'] = int(max_cpu)
+            domain['resources'] = {
+                'limits': {
+                    'cpu': f'{max_cpu}',
+                    'memory': f'{max_mem}Gi'
+                }
+            }
+            domain['memory'] = {
+                'guest': f'{memory}Gi',
+                'maxGuest': f'{max_mem}Gi'
+            }
+        else:
+            # If the function is enabled before, change values back
+            if data['metadata']['annotations'].get(
+               'harvesterhci.io/enableCPUAndMemoryHotplug', 'false') == 'true':
+                self.cpu_cores = self.cpu_sockets
+                self.cpu_sockets = 1
+                memory = int(str(self.memory).replace("Gi", ""))
+                data['metadata']['annotations'].pop(
+                    'harvesterhci.io/enableCPUAndMemoryHotplug', None)
+                domain = data['spec']['template']['spec']['domain']
+                domain['cpu']['cores'] = self.cpu_cores
+                domain['cpu']['sockets'] = self.cpu_sockets
+                domain['cpu']['maxSockets'] = self.cpu_sockets
+                domain['resources'] = {
+                    'limits': {
+                        'cpu': f'{self.cpu_cores}',
+                        'memory': f'{memory}Gi'
+                    }
+                }
+                domain['memory'] = {
+                    'guest': f'{memory}Gi'
+                }
+            else:
+                # No change if the function is not enabled before
+                pass
+
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        obj = super().from_dict(data)
+        is_cpu_mem_hotplug = data['metadata']['annotations'].get(
+            'harvesterhci.io/enableCPUAndMemoryHotplug', 'false') == 'true'
+        obj._cpu_mem_hotplug = is_cpu_mem_hotplug
+
+        if obj._cpu_mem_hotplug:
+            domain = data['spec']['template']['spec']['domain']
+            max_cpu = int(domain['cpu']['maxSockets'])
+            max_mem = int(domain['memory']['maxGuest'].replace('Gi', ''))
+            mem = int(domain['memory']['guest'].replace('Gi', ''))
+            # Use the ratio to determine
+            if max_mem / mem == max_cpu / obj.cpu_sockets:
+                obj._hotplug_ratio = int(max_cpu / obj.cpu_sockets)
+            # Use the custom value to set
+            else:
+                obj._hotplug_ratio = 4  # Set default value if the ratio isn't correct
+                obj._custom_max_cpu = max_cpu
+                obj._custom_max_mem = max_mem
+        else:
+            obj._custom_max_cpu = obj._custom_max_mem = 0  # Init the value
+            obj._hotplug_ratio = 4
+
+        return obj
+
+
+class VMSpec180(VMSpec160):
     # ref: https://github.com/harvester/harvester/pull/9392
     # After v1.8.0, the `longhorn-{image_name}` storage classes are no longer auto-created.
     # For image-based volumes, must use lh-{image_uid} storage class.

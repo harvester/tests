@@ -1,4 +1,4 @@
-from harvester_api.models.virtualmachines import VMSpec, VMSpec180
+from harvester_api.models.virtualmachines import VMSpec, VMSpec160, VMSpec180
 from .base import DEFAULT_NAMESPACE, BaseManager
 
 
@@ -131,7 +131,13 @@ class VirtualMachineManager(BaseManager):
         return self._create(path, params=params, raw=raw)
 
 
-class VMManager180(VirtualMachineManager):
+class VMManager160(VirtualMachineManager):
+    # ref: https://github.com/harvester/tests/issues/1695
+    support_to = "v1.6.0"
+    Spec = VMSpec160
+
+
+class VMManager180(VMManager160):
     # ref: https://github.com/harvester/harvester/pull/9392
     support_to = "v1.8.0rc1"
     Spec = VMSpec180
