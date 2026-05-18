@@ -408,6 +408,45 @@ class Rest(Base):
             f"Available versions: {sorted_versions[:5]}"
         )
 
+    def configure_kdm_url(self, url):
+        """
+        Update the Rancher global setting rke-metadata-config to use a custom KDM URL.
+
+        Fetches the current setting value, updates the 'url' field and sets
+        'refresh-interval-minutes' to '0', then writes it back so Rancher fetches the
+        new data.json immediately.
+
+        Args:
+            url: URL of the custom KDM data.json file
+        """
+        logging(f"Configuring rke-metadata-config KDM URL: {url}")
+
+        code, data = self._rancher_request(
+            "GET", "v1/management.cattle.io.settings/rke-metadata-config"
+        )
+        if code != 200:
+            raise Exception(f"Failed to get rke-metadata-config setting: {code}, {data}")
+
+        current_value = data.get("value") or data.get("default", "{}")
+        try:
+            config = json.loads(current_value)
+        except (json.JSONDecodeError, TypeError):
+            config = {}
+
+        config["url"] = url
+        config["refresh-interval-minutes"] = "0"
+
+        updated_data = dict(data)
+        updated_data["value"] = json.dumps(config)
+
+        code, result = self._rancher_request(
+            "PUT", "v1/management.cattle.io.settings/rke-metadata-config", updated_data
+        )
+        if code not in [200, 201]:
+            raise Exception(f"Failed to update rke-metadata-config: {code}, {result}")
+
+        logging(f"rke-metadata-config updated: url={url}, refresh-interval-minutes=0")
+
     def create_cloud_credential(self, name, kubeconfig, cluster_id):
         """Create cloud credential for Harvester"""
         logging(f"Creating cloud credential: {name}")
@@ -1757,48 +1796,6 @@ class Rest(Base):
         logging(f"Created Harvester VM: {name}")
         return data
 
-    def wait_for_harvester_vm_ready(self, name, timeout=600):
-        """Wait for a Harvester VM to be running."""
-        logging(f"Waiting for VM {name} to be running")
-        retry_count, retry_interval = get_retry_count_and_interval()
-
-        end_time = time.time() + int(timeout)
-        while time.time() < end_time:
-            try:
-                code, data = self.harvester_api.vms.get_status(name)
-                if code == 200:
-                    phase = data.get("status", {}).get("phase", "")
-                    if phase == "Running":
-                        logging(f"VM {name} is running")
-                        return data
-                    logging(f"VM {name} phase: {phase}", level="DEBUG")
-            except Exception as e:
-                logging(f"Error checking VM status: {e}", level="WARNING")
-
-            time.sleep(retry_interval)
-
-        raise Exception(f"Timeout waiting for VM {name} to be running")
-
-    def delete_harvester_vm(self, name):
-        """Delete a Harvester VM and its associated volume."""
-        logging(f"Deleting Harvester VM: {name}")
-
-        code, data = self.harvester_api.vms.delete(name)
-        if code not in [200, 204, 404]:
-            raise Exception(f"Failed to delete VM {name}: {code}, {data}")
-
-        logging(f"Deleted Harvester VM: {name}")
-
-        # Delete the volume (PVC) created by volumeClaimTemplates
-        disk_pvc = f"{name}-disk-0"
-        logging(f"Deleting VM volume: {disk_pvc}")
-        code, data = self.harvester_api.volumes.delete(disk_pvc)
-        if code in [200, 204, 404]:
-            logging(f"Deleted VM volume: {disk_pvc}")
-        else:
-            logging(f"Failed to delete volume {disk_pvc}: {code}",
-                    level="WARNING")
-
     # Chart Install Operations (for import clusters)
     def install_chart(self, cluster_id, repo_name, chart_name, version,
                       release_name, namespace, values=None):
@@ -1961,6 +1958,33 @@ class Rest(Base):
 
         return []
 
+    def get_deployed_chart_version(self, cluster_id, release_name, namespace):
+        """Return the deployed version string of an installed chart app.
+
+        Reads the version via the Rancher proxy API.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            release_name: Helm release name (e.g. harvester-csi-driver)
+            namespace: Namespace where the chart was installed
+
+        Returns:
+            str: Deployed chart version (e.g. '0.1.18')
+        """
+        code, data = self._rancher_proxy_request(
+            "GET", cluster_id,
+            f"v1/catalog.cattle.io.apps/{namespace}/{release_name}"
+        )
+        if code != 200:
+            raise Exception(
+                f"Failed to get chart app {release_name}: {code}, {data}")
+        version = (data.get("spec", {})
+                       .get("chart", {})
+                       .get("metadata", {})
+                       .get("version", "unknown"))
+        logging(f"Deployed chart version for {release_name}: {version}")
+        return version
+
     def create_cloud_config_secret(self, cluster_id, secret_name,
                                    namespace, kubeconfig):
         """Create a cloud-provider-config secret on a guest cluster."""
@@ -2002,6 +2026,124 @@ class Rest(Base):
 
         logging(f"Created cloud config secret: {secret_name}")
         return data
+
+    def write_cloud_config_to_nodes(self, cluster_id, secret_name, namespace):
+        """Deploy a temporary privileged DaemonSet on the guest cluster that
+        copies the cloud-provider-config secret data to the node hostPath
+        (/var/lib/rancher/rke2/etc/config-files/cloud-provider-config).
+        The DaemonSet is deleted after all nodes are configured.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            secret_name: Name of the secret containing 'cloud-provider-config'
+            namespace: Namespace of the secret (typically kube-system)
+        """
+        ds_name = "harvester-cp-config-writer"
+        target_path = (
+            "/var/lib/rancher/rke2/etc/config-files/cloud-provider-config"
+        )
+        ds_spec = {
+            "apiVersion": "apps/v1",
+            "kind": "DaemonSet",
+            "metadata": {"name": ds_name, "namespace": namespace},
+            "spec": {
+                "selector": {
+                    "matchLabels": {"app": ds_name}
+                },
+                "template": {
+                    "metadata": {"labels": {"app": ds_name}},
+                    "spec": {
+                        "tolerations": [{"operator": "Exists"}],
+                        "initContainers": [{
+                            "name": "write-config",
+                            "image": "busybox:1.36.1",
+                            "securityContext": {"privileged": True},
+                            "command": [
+                                "sh", "-c",
+                                (
+                                    "mkdir -p /host/var/lib/rancher/rke2/etc/"
+                                    "config-files && "
+                                    "cp /config/cloud-provider-config "
+                                    "/host" + target_path + " && "
+                                    "chmod 0600 /host" + target_path
+                                )
+                            ],
+                            "volumeMounts": [
+                                {"name": "config", "mountPath": "/config"},
+                                {"name": "host-root", "mountPath": "/host"}
+                            ]
+                        }],
+                        "containers": [{
+                            "name": "pause",
+                            "image": "rancher/mirrored-pause:3.7"
+                        }],
+                        "volumes": [
+                            {
+                                "name": "config",
+                                "secret": {
+                                    "secretName": secret_name,
+                                    "items": [{
+                                        "key": "cloud-provider-config",
+                                        "path": "cloud-provider-config"
+                                    }]
+                                }
+                            },
+                            {
+                                "name": "host-root",
+                                "hostPath": {"path": "/"}
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        logging(f"Deploying DaemonSet {ds_name} to write cloud config on "
+                f"cluster {cluster_id}")
+        code, data = self._rancher_proxy_request(
+            "POST", cluster_id,
+            f"apis/apps/v1/namespaces/{namespace}/daemonsets",
+            ds_spec
+        )
+        if code not in [200, 201]:
+            if code == 409:
+                logging(f"DaemonSet {ds_name} already exists, proceeding")
+            else:
+                raise Exception(
+                    f"Failed to deploy cloud-config writer DaemonSet: "
+                    f"{code}, {str(data)[:300]}"
+                )
+
+        # Wait until all scheduled nodes have the initContainer completed
+        import time as _time
+        end_time = _time.time() + 300
+        while _time.time() < end_time:
+            code, ds_data = self._rancher_proxy_request(
+                "GET", cluster_id,
+                f"apis/apps/v1/namespaces/{namespace}/daemonsets/{ds_name}"
+            )
+            if code == 200 and ds_data:
+                status = ds_data.get("status", {})
+                desired = status.get("desiredNumberScheduled", 0)
+                ready = status.get("numberReady", 0)
+                if desired > 0 and desired == ready:
+                    logging(f"All {ready}/{desired} nodes configured")
+                    break
+            _time.sleep(10)
+        else:
+            raise Exception(
+                "Timed out waiting for cloud-config writer DaemonSet to finish"
+            )
+
+        # Clean up the DaemonSet
+        code, _ = self._rancher_proxy_request(
+            "DELETE", cluster_id,
+            f"apis/apps/v1/namespaces/{namespace}/daemonsets/{ds_name}"
+        )
+        if code not in [200, 204]:
+            logging(f"Warning: failed to delete DaemonSet {ds_name}: {code}")
+        else:
+            logging(f"Deleted DaemonSet {ds_name}")
 
     def wait_for_chart_app_ready(self, cluster_id, release_name,
                                  namespace, timeout=DEFAULT_TIMEOUT):

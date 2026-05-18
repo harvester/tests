@@ -131,7 +131,8 @@ class network_keywords:
         logging(f"Getting IP pool: {name}")
         return self.network.get_ip_pool(name)
 
-    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id):
+    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id,
+                       gateway):
         """
         Create IP pool.
 
@@ -141,13 +142,14 @@ class network_keywords:
             start_ip: Start IP address
             end_ip: End IP address
             network_id: Network ID
+            gateway: Gateway IP address
 
         Returns:
             dict: IP pool data
         """
         logging(f"Creating IP pool: {name}")
         return self.network.create_ip_pool(
-            name, subnet, start_ip, end_ip, network_id
+            name, subnet, start_ip, end_ip, network_id, gateway
         )
 
     def delete_ip_pool(self, name):

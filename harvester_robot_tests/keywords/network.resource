@@ -91,7 +91,7 @@ Get IP Pool
     RETURN    ${pool}
 
 Create IP Pool
-    [Arguments]    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}
+    [Arguments]    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}    ${gateway}
     [Documentation]    Create IP pool.
     ...               Args:
     ...                   name: IP pool name
@@ -99,10 +99,11 @@ Create IP Pool
     ...                   start_ip: Start IP address
     ...                   end_ip: End IP address
     ...                   network_id: Network ID
+    ...                   gateway: Gateway IP
     ...               Returns:
     ...                   dict: IP pool data
     Log    Creating IP pool: ${name}
-    ${pool}=    network_keywords.create_ip_pool    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}
+    ${pool}=    network_keywords.create_ip_pool    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}    ${gateway}
     RETURN    ${pool}
 
 Delete IP Pool

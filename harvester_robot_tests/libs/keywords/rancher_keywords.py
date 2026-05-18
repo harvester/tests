@@ -236,6 +236,16 @@ class rancher_keywords:
         self.set_state('rke2_version', version)
         return version
 
+    def configure_kdm_url(self, url):
+        """
+        Update the Rancher global setting rke-metadata-config to use a custom KDM URL.
+        Args:
+            url: URL of the custom KDM data.json file
+        """
+        logging(f"Configuring KDM URL: {url}")
+        self.rancher.configure_kdm_url(url)
+        logging("KDM URL configured successfully")
+
     def import_harvester_to_rancher(self, cluster_name, timeout=DEFAULT_TIMEOUT_LONG):
         """
         Full workflow to import Harvester to Rancher
@@ -927,30 +937,6 @@ class rancher_keywords:
             guest_cluster_id
         )
 
-    def wait_for_harvester_vm_ready(self, name, timeout=DEFAULT_TIMEOUT):
-        """
-        Wait for a Harvester VM to be running.
-
-        Args:
-            name: VM name
-            timeout: Timeout in seconds
-
-        Returns:
-            dict: VM data when running
-        """
-        logging(f"Waiting for VM {name} to be running")
-        return self.rancher.wait_for_harvester_vm_ready(name, int(timeout))
-
-    def delete_harvester_vm(self, name):
-        """
-        Delete a Harvester VM.
-
-        Args:
-            name: VM name
-        """
-        logging(f"Deleting Harvester VM: {name}")
-        self.rancher.delete_harvester_vm(name)
-
     # Chart Install Keywords
     def install_chart(self, cluster_id, repo_name, chart_name, version,
                       release_name, namespace, values=None):
@@ -1002,6 +988,22 @@ class rancher_keywords:
             repo_name, chart_name, cluster_id
         )
 
+    def get_deployed_chart_version(self, cluster_id, release_name, namespace):
+        """
+        Return the deployed version string of an installed chart app.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            release_name: Helm release name (e.g. harvester-csi-driver)
+            namespace: Namespace where the chart was installed
+
+        Returns:
+            str: Deployed chart version (e.g. '0.1.18')
+        """
+        return self.rancher.get_deployed_chart_version(
+            cluster_id, release_name, namespace
+        )
+
     def create_cluster_repo(self, cluster_id, repo_name, git_url, git_branch):
         """
         Create a ClusterRepo on a guest cluster.
@@ -1046,6 +1048,21 @@ class rancher_keywords:
         logging(f"Creating cloud config secret {secret_name}")
         return self.rancher.create_cloud_config_secret(
             cluster_id, secret_name, namespace, kubeconfig
+        )
+
+    def write_cloud_config_to_nodes(self, cluster_id, secret_name, namespace):
+        """
+        Write cloud-provider-config from secret to each node's hostPath
+        via a temporary privileged DaemonSet on the guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            secret_name: Name of the secret containing 'cloud-provider-config'
+            namespace: Namespace of the secret
+        """
+        logging(f"Writing cloud config to nodes on cluster {cluster_id}")
+        return self.rancher.write_cloud_config_to_nodes(
+            cluster_id, secret_name, namespace
         )
 
     def wait_for_chart_app_ready(self, cluster_id, release_name,

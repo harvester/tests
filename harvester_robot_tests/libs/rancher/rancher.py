@@ -75,6 +75,10 @@ class Rancher(Base):
         """Get RKE2 version from Rancher that matches target version"""
         return self.rancher.get_rke2_version(target_version, rancher_endpoint)
 
+    def configure_kdm_url(self, url):
+        """Update Rancher global rke-metadata-config to use a custom KDM URL"""
+        return self.rancher.configure_kdm_url(url)
+
     # Cloud Credential Operations
     def create_cloud_credential(self, name, kubeconfig, cluster_id):
         """Create cloud credential for Harvester"""
@@ -300,11 +304,23 @@ class Rancher(Base):
             repo_name, chart_name, cluster_id
         )
 
+    def get_deployed_chart_version(self, cluster_id, release_name, namespace):
+        """Return the deployed version of an installed chart app"""
+        return self.rancher.get_deployed_chart_version(
+            cluster_id, release_name, namespace
+        )
+
     def create_cloud_config_secret(self, cluster_id, secret_name,
                                    namespace, kubeconfig):
         """Create cloud-provider-config secret on guest cluster"""
         return self.rancher.create_cloud_config_secret(
             cluster_id, secret_name, namespace, kubeconfig
+        )
+
+    def write_cloud_config_to_nodes(self, cluster_id, secret_name, namespace):
+        """Write cloud-provider-config to each node hostPath via a DaemonSet"""
+        return self.rancher.write_cloud_config_to_nodes(
+            cluster_id, secret_name, namespace
         )
 
     def wait_for_chart_app_ready(self, cluster_id, release_name,

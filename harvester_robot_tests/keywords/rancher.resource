@@ -284,6 +284,40 @@ Get Next RKE2 Version
     ${version}=    rancher_keywords.get_next_rke2_version    ${current_version}    ${rancher_endpoint}
     RETURN    ${version}
 
+Configure KDM If Custom
+    [Documentation]    If KDM_URL is not 'default', update the Rancher global setting
+    ...               rke-metadata-config to use the given URL and set refresh-interval-minutes to 0.
+    ...               This allows custom KDM data.json files to provide RKE2 versions (e.g. rc builds).
+    ...               No action is taken when KDM_URL is 'default'.
+    IF    '${KDM_URL}' != 'default'
+        Log    Configuring KDM URL: ${KDM_URL}    console=yes
+        rancher_keywords.configure_kdm_url    ${KDM_URL}
+        Log    KDM configured. Rancher will use ${KDM_URL} with refresh-interval-minutes=0    console=yes
+        Wait For KDM Refresh    ${RKE2_VERSION}
+    ELSE
+        Log    KDM_URL is 'default' - keeping existing Rancher rke-metadata-config    console=yes
+    END
+
+Wait For KDM Refresh
+    [Arguments]    ${version_prefix}    ${timeout}=${RANCHER_WAIT_TIMEOUT}    ${interval}=${RETRY_INTERVAL}
+    [Documentation]    Wait until Rancher's version list contains an RKE2 version
+    ...               matching ${version_prefix}. This ensures the custom KDM
+    ...               data.json has been fetched and processed before cluster
+    ...               creation attempts to resolve versions.
+    Log    Waiting for KDM refresh — expecting versions matching ${version_prefix}    console=yes
+    Wait Until Keyword Succeeds    ${timeout}    ${interval}
+    ...    KDM Has Versions For    ${version_prefix}
+
+KDM Has Versions For
+    [Arguments]    ${version_prefix}
+    [Documentation]    Assert that Rancher exposes at least one RKE2 version starting with
+    ...               ${version_prefix}. Fails if no match found yet; intended for use
+    ...               with Wait Until Keyword Succeeds.
+    ${versions}=    rancher_keywords.get_all_rke2_versions    ${RANCHER_ENDPOINT}
+    ${matched}=    Evaluate    [v for v in ${versions} if v.startswith('${version_prefix}')]
+    Should Not Be Empty    ${matched}    KDM has not yet exposed versions matching ${version_prefix}
+    Log    KDM refreshed — found versions: ${matched}    console=yes
+
 Verify LB Response
     [Arguments]    ${url}    ${expected_text}=${NONE}
     [Documentation]    Verify LoadBalancer is responding with expected content
@@ -588,9 +622,9 @@ Get IP Pool
     RETURN    ${pool}
 
 Create IP Pool
-    [Arguments]    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}
+    [Arguments]    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}    ${gateway}
     [Documentation]    Create IP pool (delegates to Network module)
-    ${pool}=    network.Create IP Pool    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}
+    ${pool}=    network.Create IP Pool    ${name}    ${subnet}    ${start_ip}    ${end_ip}    ${network_id}    ${gateway}
     RETURN    ${pool}
 
 Delete IP Pool
@@ -695,22 +729,17 @@ Create Harvester VM
 Wait For Harvester VM Ready
     [Arguments]    ${name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait for a Harvester VM to be running.
-    ...               Args:
-    ...                   name: VM name
-    ...                   timeout: Timeout in seconds
-    ...               Returns:
-    ...                   dict: VM data when running
-    Log    Waiting for VM ${name} to be running
-    ${vm}=    rancher_keywords.wait_for_harvester_vm_ready    ${name}    ${timeout}
-    RETURN    ${vm}
+    vm_keywords.wait_for_vm_running    ${name}    ${timeout}
 
 Delete Harvester VM
     [Arguments]    ${name}
     [Documentation]    Delete a Harvester VM.
-    ...               Args:
-    ...                   name: VM name
-    Log    Deleting Harvester VM: ${name}
-    rancher_keywords.delete_harvester_vm    ${name}
+    vm_keywords.delete_vm    ${name}
+
+Wait For Harvester VM Deleted
+    [Arguments]    ${name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for a Harvester VM to be fully removed.
+    vm_keywords.wait_for_vm_deleted    ${name}    ${timeout}
 
 # Chart Install Operations
 Install Chart
@@ -788,6 +817,18 @@ Wait For Chart App Ready
     ${result}=    rancher_keywords.wait_for_chart_app_ready    ${cluster_id}    ${release_name}
     ...    ${namespace}    ${timeout}
     RETURN    ${result}
+
+Get Deployed Chart Version
+    [Arguments]    ${cluster_id}    ${release_name}    ${namespace}
+    [Documentation]    Return the deployed version of an installed chart app.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   release_name: Helm release name
+    ...                   namespace: Namespace where chart was installed
+    ...               Returns:
+    ...                   str: Deployed chart version string
+    ${version}=    rancher_keywords.get_deployed_chart_version    ${cluster_id}    ${release_name}    ${namespace}
+    RETURN    ${version}
 
 # RWX Volume / StorageClass / StatefulSet Operations
 Create RWX StorageClass On Host
@@ -1071,6 +1112,9 @@ Multi node RKE2 cluster is created
 
 CSI workload with PVC is deployed
     [Documentation]    Create a PVC and nginx deployment using Harvester CSI.
+    ${csi_ver}=    Get Deployed Chart Version
+    ...    ${MULTI_CLUSTER_ID}    harvester-csi-driver    kube-system
+    Log    Testing harvester-csi-driver version: ${csi_ver}    console=yes
     ${pvc_name}=    Set Variable    pvc-${MULTI_CLUSTER_NAME}
     ${deploy_name}=    Set Variable    csi-${MULTI_CLUSTER_NAME}
     Create PVC    ${MULTI_CLUSTER_ID}    ${pvc_name}    1Gi
@@ -1090,6 +1134,9 @@ Load balancer is created in DHCP mode
     [Documentation]    Create a LoadBalancer service using DHCP for IP assignment.
     ...               Args:
     ...                   suffix: Suffix matching the Whoami deployment
+    ${cp_ver}=    Get Deployed Chart Version
+    ...    ${MULTI_CLUSTER_ID}    harvester-cloud-provider    kube-system
+    Log    Testing harvester-cloud-provider version: ${cp_ver}    console=yes
     ${whoami_deploy}=    Set Variable    whoami-${suffix}-${MULTI_CLUSTER_NAME}
     ${lb_name}=    Set Variable    lb-${MULTI_CLUSTER_NAME}-dhcp
     Create LB Service    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_name}    ${whoami_deploy}    ipam=dhcp
@@ -1101,6 +1148,9 @@ Load balancer is created in pool mode
     [Documentation]    Create a LoadBalancer service using an IP pool for IP assignment.
     ...               Args:
     ...                   suffix: Suffix matching the Whoami deployment
+    ${cp_ver}=    Get Deployed Chart Version
+    ...    ${MULTI_CLUSTER_ID}    harvester-cloud-provider    kube-system
+    Log    Testing harvester-cloud-provider version: ${cp_ver}    console=yes
     ${whoami_deploy}=    Set Variable    whoami-${suffix}-${MULTI_CLUSTER_NAME}
     ${lb_name}=    Set Variable    lb-${MULTI_CLUSTER_NAME}-pool
     Create LB Service    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_name}    ${whoami_deploy}    ipam=pool
@@ -1264,6 +1314,7 @@ Single node custom RKE2 cluster is deleted
     Delete RKE2 Cluster    ${CUSTOM_CLUSTER_NAME}
     Wait For RKE2 Cluster Deleted    ${CUSTOM_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
     Run Keyword And Ignore Error    Delete Harvester VM    ${CUSTOM_CLUSTER_NAME}-vm-0
+    Run Keyword And Ignore Error    Wait For Harvester VM Deleted    ${CUSTOM_CLUSTER_NAME}-vm-0    ${RANCHER_WAIT_TIMEOUT}
 
 Single node import RKE2 cluster is created
     [Documentation]    Create a single-node import RKE2 cluster where RKE2 is deployed
@@ -1521,6 +1572,7 @@ Cleanup custom cluster test resources
     Run Keyword And Ignore Error    Delete RKE2 Cluster    ${CUSTOM_CLUSTER_NAME}
     Run Keyword And Ignore Error    Wait For RKE2 Cluster Deleted    ${CUSTOM_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
     Run Keyword And Ignore Error    Delete Harvester VM    ${CUSTOM_CLUSTER_NAME}-vm-0
+    Run Keyword And Ignore Error    Wait For Harvester VM Deleted    ${CUSTOM_CLUSTER_NAME}-vm-0    ${RANCHER_WAIT_TIMEOUT}
 
 Cleanup import cluster test resources
     [Documentation]    Clean up all resources created by the import cluster test.
@@ -1529,6 +1581,7 @@ Cleanup import cluster test resources
     Run Keyword And Ignore Error    Delete RKE2 Cluster    ${IMPORT_CLUSTER_NAME}
     Run Keyword And Ignore Error    Wait For RKE2 Cluster Deleted    ${IMPORT_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
     Run Keyword And Ignore Error    Delete Harvester VM    ${IMPORT_CLUSTER_NAME}-vm-0
+    Run Keyword And Ignore Error    Wait For Harvester VM Deleted    ${IMPORT_CLUSTER_NAME}-vm-0    ${RANCHER_WAIT_TIMEOUT}
 
 # ============================================================
 # Shared cluster creation keyword
@@ -1566,7 +1619,8 @@ Create RKE2 Cluster With Full Setup
     # Wait for ready
     ${cluster}=    Wait For RKE2 Cluster Ready    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
     ${cluster_id}=    Set Variable    ${cluster}[status][clusterName]
-    Log    Cluster ready: ${cluster_name} (ID: ${cluster_id})    console=yes
+    ${rke2_installed}=    Set Variable    ${cluster}[spec][kubernetesVersion]
+    Log    Cluster ready: ${cluster_name} (ID: ${cluster_id}) RKE2 version: ${rke2_installed}    console=yes
 
     RETURN    ${cluster_id}
 
@@ -1683,15 +1737,20 @@ Install Harvester Charts On Import Cluster
     Create Cloud Config Secret
     ...    ${cluster_id}    ${secret_name}    kube-system    ${CP_KUBECONFIG}
 
+    # file as a hostPath — the file must exist on the node before the pod starts.
+    Write Cloud Config To Nodes
+    ...    ${cluster_id}    ${secret_name}    kube-system
+
     # Get latest chart versions from the guest cluster's repo
     ${cp_versions}=    Get Chart Versions    ${repo_name}    harvester-cloud-provider    ${cluster_id}
     ${cp_version}=    Get From List    ${cp_versions}    0
     ${csi_versions}=    Get Chart Versions    ${repo_name}    harvester-csi-driver    ${cluster_id}
     ${csi_version}=    Get From List    ${csi_versions}    0
-    Log    CSI version: ${csi_version}    console=yes
+    Log    harvester-cloud-provider chart version: ${cp_version}    console=yes
+    Log    harvester-csi-driver chart version: ${csi_version}    console=yes
 
     # Install Harvester Cloud Provider
-    ${cp_values}=    Evaluate    {"cloudConfigPath": "", "global": {"cattle": {"clusterName": "${cluster_id}"}}}
+    ${cp_values}=    Evaluate    {"cloudConfigPath": "/var/lib/rancher/rke2/etc/config-files/cloud-provider-config", "global": {"cattle": {"clusterName": "${cluster_id}"}}}
     Install Chart
     ...    ${cluster_id}    ${repo_name}    harvester-cloud-provider
     ...    ${cp_version}    harvester-cloud-provider    kube-system    ${cp_values}
@@ -1708,8 +1767,19 @@ Install Harvester Charts On Import Cluster
 
     Log    Harvester charts installed on import cluster    console=yes
 
+Write Cloud Config To Nodes
+    [Arguments]    ${cluster_id}    ${secret_name}    ${namespace}
+    [Documentation]    Deploy a temporary privileged DaemonSet on the guest cluster
+    ...               that copies the cloud-provider-config secret to the node hostPath
+    ...               required by the harvester-cloud-provider chart.
+    ...               The DaemonSet is deleted once all nodes have been configured.
+    Log    Writing cloud config to nodes on cluster ${cluster_id}    console=yes
+    ${result}=    rancher_keywords.write_cloud_config_to_nodes
+    ...    ${cluster_id}    ${secret_name}    ${namespace}
+    RETURN    ${result}
+
 Create Import RKE2 Cluster With Full Setup
-    [Arguments]    ${cluster_name}    ${machine_count}
+    [Arguments]    ${cluster_name}    ${machine_count}    ${rke2_version}=${RKE2_VERSION}
     [Documentation]    Create a minimal import cluster in Rancher, deploy RKE2
     ...               on Harvester VMs via cloud-init, and import the cluster
     ...               using the Rancher registration manifest.
@@ -1731,6 +1801,15 @@ Create Import RKE2 Cluster With Full Setup
 
     # Build cloud-init: install RKE2, start it, wait for ready, apply import manifest
     ${import_cmd}=    Set Variable    while [ ! -f /etc/rancher/rke2/rke2.yaml ]; do sleep 10; done && export KUBECONFIG=/etc/rancher/rke2/rke2.yaml && export PATH=$PATH:/var/lib/rancher/rke2/bin && while ! kubectl get nodes 2>/dev/null | grep -q Ready; do sleep 10; done && curl --insecure -sfL ${manifest_url} | kubectl apply -f -
+    
+    ${is_exact}=    Evaluate    '+' in '${rke2_version}'
+    IF    ${is_exact}
+        ${rke2_env}=    Set Variable    INSTALL_RKE2_VERSION=${rke2_version} INSTALL_RKE2_TYPE=server
+        Log    RKE2 install: exact version ${rke2_version}    console=yes
+    ELSE
+        ${rke2_env}=    Set Variable    INSTALL_RKE2_CHANNEL=${rke2_version} INSTALL_RKE2_TYPE=server
+        Log    RKE2 install: channel ${rke2_version} (latest patch will be resolved at install time)    console=yes
+    END
     ${user_data}=    Catenate    SEPARATOR=\n
     ...    \#cloud-config
     ...    password: password
@@ -1743,7 +1822,8 @@ Create Import RKE2 Cluster With Full Setup
     ...    ${SPACE}${SPACE}- curl
     ...    runcmd:
     ...    ${SPACE}${SPACE}- [systemctl, enable, --now, qemu-guest-agent.service]
-    ...    ${SPACE}${SPACE}- [/bin/sh, -c, 'curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE=server sh -']
+    ...    ${SPACE}${SPACE}- [/bin/sh, -c, 'curl -sfL https://get.rke2.io | ${rke2_env} sh -']
+    ...    ${SPACE}${SPACE}- [/bin/sh, -c, 'mkdir -p /etc/rancher/rke2 && echo "disable-cloud-controller: true" > /etc/rancher/rke2/config.yaml']
     ...    ${SPACE}${SPACE}- [systemctl, enable, rke2-server.service]
     ...    ${SPACE}${SPACE}- [systemctl, start, rke2-server.service]
     ...    ${SPACE}${SPACE}- [/bin/sh, -c, '${import_cmd}']
@@ -1823,6 +1903,8 @@ Suite Setup For Rancher Integration Tests
     Set Suite Variable    ${NEXT_RKE2_VERSION}      ${EMPTY}
 
     # Resolve RKE2 version (prefix like v1.34 -> full version like v1.34.5+rke2r1)
+    # Apply custom KDM first so the version list reflects the KDM data.json content
+    Configure KDM If Custom
     ${is_full_version}=    Evaluate    '+' in '${RKE2_VERSION}'
     IF    not ${is_full_version}
         ${versions}=    Resolve RKE2 Versions
@@ -1865,6 +1947,7 @@ Suite Setup For Rancher Integration Tests
     ...    ${IP_POOL_START}
     ...    ${IP_POOL_END}
     ...    ${DEFAULT_NAMESPACE}/${VLAN_NETWORK_NAME}
+    ...    ${IP_POOL_GATEWAY}
     Create Image    ${IMAGE_NAME}    ${UBUNTU_IMAGE_URL}
     Wait For Image Ready    ${IMAGE_NAME}    ${WAIT_TIMEOUT}
 
@@ -1905,12 +1988,17 @@ Suite Teardown For Rancher Integration Tests
     # Delete Harvester mgmt cluster
     Run Keyword And Ignore Error    Delete Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
 
-    # Delete shared resources
+    # Delete Harvester VMs
+    Run Keyword And Ignore Error    Delete Harvester VM    ${IMPORT_CLUSTER_NAME}-vm-0
+    Run Keyword And Ignore Error    Wait For Harvester VM Deleted    ${IMPORT_CLUSTER_NAME}-vm-0    ${RANCHER_WAIT_TIMEOUT}
+
+    # Delete Harvester VMs shared resources
+    Run Keyword And Ignore Error    Delete Image    ${IMAGE_NAME}
     Run Keyword And Ignore Error    Delete IP Pool    ${IP_POOL_NAME}
     Run Keyword And Ignore Error    Delete VLAN Network    ${VLAN_NETWORK_NAME}
     Run Keyword And Ignore Error    Delete VLAN Config    ${VLAN_CONFIG_NAME}
     Run Keyword And Ignore Error    Delete Cluster Network    ${CLUSTER_NETWORK_NAME}
-    Run Keyword And Ignore Error    Delete Image    ${IMAGE_NAME}
+
     Run Keyword And Ignore Error    Set Cluster Registration URL    ${EMPTY}
 
     Cleanup test resources
@@ -1930,5 +2018,5 @@ Cleanup Custom Cluster By Name
     [Documentation]    Delete a custom RKE2 cluster and its VMs by name (best effort).
     Run Keyword And Ignore Error    Delete RKE2 Cluster    ${cluster_name}
     Run Keyword And Ignore Error    Wait For RKE2 Cluster Deleted    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
-    # Clean up VMs created for the custom cluster
     Run Keyword And Ignore Error    Delete Harvester VM    ${cluster_name}-vm-0
+    Run Keyword And Ignore Error    Wait For Harvester VM Deleted    ${cluster_name}-vm-0    ${RANCHER_WAIT_TIMEOUT}

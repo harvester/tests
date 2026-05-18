@@ -55,6 +55,10 @@ ${RANCHER_WAIT_TIMEOUT}         1200
 # RKE2 Version Configuration
 ${RKE2_VERSION}                %{RKE2_VERSION=v1.34}
 
+# KDM (Kontainer Driver Metadata) Configuration
+# Set to a URL pointing to a custom data.json to override the Rancher rke-metadata-config.
+${KDM_URL}                     %{KDM_URL=default}
+
 # Ingress Controller: traefik (default, recommended by Rancher) or nginx
 ${INGRESS_CONTROLLER}           %{INGRESS_CONTROLLER=traefik}
 
@@ -66,3 +70,4 @@ ${CHART_REPO_BRANCH}            %{CHART_REPO_BRANCH=release-v2.14}
 ${IP_POOL_SUBNET}               %{IP_POOL_SUBNET=192.168.1.0/24}
 ${IP_POOL_START}                %{IP_POOL_START=192.168.1.100}
 ${IP_POOL_END}                  %{IP_POOL_END=192.168.1.200}
+${IP_POOL_GATEWAY}              %{IP_POOL_GATEWAY=192.168.1.254}

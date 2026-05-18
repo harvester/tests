@@ -76,10 +76,11 @@ class Network(Base):
         """Get IP pool by name"""
         return self.network.get_ip_pool(name)
 
-    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id):
+    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id,
+                       gateway):
         """Create IP pool"""
         return self.network.create_ip_pool(
-            name, subnet, start_ip, end_ip, network_id
+            name, subnet, start_ip, end_ip, network_id, gateway
         )
 
     def delete_ip_pool(self, name):

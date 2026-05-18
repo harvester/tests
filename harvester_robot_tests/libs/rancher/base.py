@@ -79,6 +79,19 @@ class Base(ABC):
         """
         pass
 
+    @abstractmethod
+    def configure_kdm_url(self, url):
+        """
+        Update the Rancher global setting rke-metadata-config to use a custom KDM URL.
+
+        Sets url to the provided value and refresh-interval-minutes to 0 so Rancher fetches
+        the new data.json immediately.
+
+        Args:
+            url: URL of the custom KDM data.json file
+        """
+        pass
+
     # Cloud Credential Operations
     @abstractmethod
     def create_cloud_credential(self, name, kubeconfig, cluster_id):
@@ -367,25 +380,6 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def wait_for_harvester_vm_ready(self, name, timeout):
-        """Wait for a Harvester VM to be running.
-
-        Args:
-            name: VM name
-            timeout: Timeout in seconds
-        """
-        pass
-
-    @abstractmethod
-    def delete_harvester_vm(self, name):
-        """Delete a Harvester VM and its associated volume.
-
-        Args:
-            name: VM name
-        """
-        pass
-
-    @abstractmethod
     def install_chart(self, cluster_id, repo_name, chart_name, version,
                       release_name, namespace, values=None):
         """Install a Helm chart on a guest cluster via Rancher catalog API."""
@@ -407,9 +401,19 @@ class Base(ABC):
         pass
 
     @abstractmethod
+    def get_deployed_chart_version(self, cluster_id, release_name, namespace):
+        """Return the deployed version string of an installed chart app."""
+        pass
+
+    @abstractmethod
     def create_cloud_config_secret(self, cluster_id, secret_name,
                                    namespace, kubeconfig):
         """Create a cloud-provider-config secret on a guest cluster."""
+        pass
+
+    @abstractmethod
+    def write_cloud_config_to_nodes(self, cluster_id, secret_name, namespace):
+        """Write cloud-provider-config to each node hostPath via a DaemonSet."""
         pass
 
     @abstractmethod
