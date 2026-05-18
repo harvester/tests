@@ -576,20 +576,44 @@ class CRD(Base):
         # Prepare patch data - the value itself is a JSON string
         patch_data = json.dumps({"value": value})
 
-        # Use kubectl to patch the Harvester setting (runs against Harvester)
-        cmd = ["kubectl", "patch", "settings.harvesterhci.io",
-               "cluster-registration-url", "--type=merge", "-p", patch_data,
-               "--insecure-skip-tls-verify"]
+        # Patch the Harvester setting using the default (Harvester) kubeconfig
+        rc, stdout, stderr = self._run_kubectl(
+            ["patch", "settings.harvesterhci.io",
+             "cluster-registration-url", "--type=merge", "-p", patch_data],
+            insecure=True
+        )
 
-        logging(f"Running kubectl command: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, input=None)  # nosec B603
-
-        if result.returncode != 0:
-            raise Exception(f"Failed to set cluster-registration-url: {result.stderr}")
-
-        logging("Successfully set cluster-registration-url")
+        if rc != 0:
+            raise Exception(f"Failed to set cluster-registration-url: {stderr}")
 
         logging("Successfully set cluster-registration-url")
+
+    def _get_rke2_versions_raw(self):
+        """
+        Fetch RKE2 release list via kubectl --raw against the Rancher local cluster.
+
+        Rancher aggregates /v1-rke2-release/releases through its management
+        cluster API, so it is accessible via the Rancher kubeconfig without
+        any REST calls.
+
+        Returns:
+            list: Unsorted list of RKE2 version id strings
+        """
+        rc, stdout, stderr = self._run_kubectl_rancher(
+            ["get", "--raw", "/v1-rke2-release/releases"]
+        )
+        if rc != 0:
+            raise Exception(f"Failed to list RKE2 releases via kubectl: {stderr}")
+
+        try:
+            data = json.loads(stdout)
+        except json.JSONDecodeError as e:
+            raise Exception(f"Failed to parse RKE2 releases response: {e}")
+
+        versions = [r["id"] for r in data.get("data", [])]
+        if not versions:
+            raise Exception("No RKE2 versions available from Rancher")
+        return versions
 
     def get_all_rke2_versions(self, rancher_endpoint, max_versions=None):
         """
@@ -603,33 +627,23 @@ class CRD(Base):
             List of version strings sorted by semantic version (newest first)
         """
         logging("Getting all RKE2 versions from Rancher")
-        try:
-            url = f"{rancher_endpoint}/v1-rke2-release/releases"
-            response = requests.get(url, timeout=30, verify=False)  # nosec B501
-            response.raise_for_status()
+        # Ensure we are authenticated so the Rancher kubeconfig is generated
+        self._authenticate_rancher()
 
-            data = response.json()
-            versions = [r['id'] for r in data.get('data', [])]
+        versions = self._get_rke2_versions_raw()
 
-            if not versions:
-                raise Exception("No RKE2 versions available from Rancher")
+        from pkg_resources import parse_version
+        sorted_versions = sorted(
+            versions,
+            key=lambda v: parse_version(v.split("+")[0].split("-")[0]),
+            reverse=True
+        )
 
-            # Sort versions by semantic version (descending)
-            from pkg_resources import parse_version
-            sorted_versions = sorted(
-                versions,
-                key=lambda v: parse_version(v.split("+")[0].split("-")[0]),
-                reverse=True
-            )
+        if max_versions and max_versions > 0:
+            sorted_versions = sorted_versions[:max_versions]
 
-            # Apply max_versions limit if specified
-            if max_versions and max_versions > 0:
-                sorted_versions = sorted_versions[:max_versions]
-
-            logging(f"Found {len(sorted_versions)} RKE2 versions")
-            return sorted_versions
-        except Exception as e:
-            raise Exception(f"Failed to get RKE2 versions: {e}")
+        logging(f"Found {len(sorted_versions)} RKE2 versions")
+        return sorted_versions
 
     def get_rke2_version(self, target_version, rancher_endpoint):
         """
@@ -643,37 +657,71 @@ class CRD(Base):
             Full version string (e.g. 'v1.28.15+rke2r1')
         """
         logging(f"Getting RKE2 version for target: {target_version}")
+        self._authenticate_rancher()
+
+        versions = self._get_rke2_versions_raw()
+
+        from pkg_resources import parse_version
+        sorted_versions = sorted(
+            versions,
+            key=lambda v: parse_version(v.split("+")[0].split("-")[0]),
+            reverse=True
+        )
+
+        for ver in sorted_versions:
+            if ver.startswith(target_version):
+                logging(f"Selected RKE2 version: {ver}")
+                return ver
+
+        raise Exception(
+            f"No RKE2 version found matching '{target_version}'. "
+            f"Available versions: {sorted_versions[:5]}"
+        )
+
+    def configure_kdm_url(self, url):
+        """
+        Update the Rancher global setting rke-metadata-config to use a custom KDM URL.
+
+        Reads the current setting value via kubectl, updates the 'url' field and
+        sets 'refresh-interval-minutes' to '0', then patches it back so Rancher fetches
+        the new data.json immediately.
+
+        Args:
+            url: URL of the custom KDM data.json file
+        """
+        logging(f"Configuring rke-metadata-config KDM URL: {url}")
+
+        # Read current setting value
+        rc, stdout, stderr = self._run_kubectl_rancher([
+            "get", "settings.management.cattle.io", "rke-metadata-config",
+            "-o", "json"
+        ])
+        if rc != 0:
+            raise Exception(f"Failed to get rke-metadata-config: {stderr}")
+
         try:
-            url = f"{rancher_endpoint}/v1-rke2-release/releases"
-            response = requests.get(url, timeout=30, verify=False)  # nosec B501
-            response.raise_for_status()
+            setting = json.loads(stdout)
+        except json.JSONDecodeError as e:
+            raise Exception(f"Failed to parse rke-metadata-config: {e}")
 
-            data = response.json()
-            versions = [r['id'] for r in data.get('data', [])]
+        current_value = setting.get("value") or setting.get("default", "{}")
+        try:
+            config = json.loads(current_value)
+        except (json.JSONDecodeError, TypeError):
+            config = {}
 
-            if not versions:
-                raise Exception("No RKE2 versions available from Rancher")
+        config["url"] = url
+        config["refresh-interval-minutes"] = "0"
 
-            # Sort versions by semantic version (descending)
-            from pkg_resources import parse_version
-            sorted_versions = sorted(
-                versions,
-                key=lambda v: parse_version(v.split("+")[0].split("-")[0]),
-                reverse=True
-            )
+        patch = json.dumps({"value": json.dumps(config)})
+        rc, stdout, stderr = self._run_kubectl_rancher([
+            "patch", "settings.management.cattle.io", "rke-metadata-config",
+            "--type=merge", "-p", patch
+        ])
+        if rc != 0:
+            raise Exception(f"Failed to update rke-metadata-config: {stderr}")
 
-            # Find first version matching target prefix
-            for ver in sorted_versions:
-                if ver.startswith(target_version):
-                    logging(f"Selected RKE2 version: {ver}")
-                    return ver
-
-            raise Exception(
-                f"No RKE2 version found matching '{target_version}'. "
-                f"Available versions: {sorted_versions[:5]}"
-            )
-        except Exception as e:
-            raise Exception(f"Failed to get RKE2 version: {e}")
+        logging(f"rke-metadata-config updated: url={url}, refresh-interval-minutes=0")
 
     def create_cloud_credential(self, name, kubeconfig, cluster_id):
         """Create cloud credential for Harvester"""
@@ -722,7 +770,6 @@ class CRD(Base):
         ])
 
         if rc == 0:
-            import json
             return json.loads(stdout)
         elif "not found" in stderr.lower():
             return None
@@ -1103,66 +1150,77 @@ class CRD(Base):
     def generate_kubeconfig(self, cluster_id, cluster_name):
         """Generate full-access kubeconfig for Harvester cluster.
 
-        Uses Rancher's generateKubeconfig action to get a kubeconfig with
-        full access to the Harvester cluster. Used for cloud credentials.
+        Constructs a kubeconfig pointing to the Harvester cluster via Rancher's
+        k8s proxy endpoint, using the existing admin bearer token. This is
+        functionally equivalent to Rancher's generateKubeconfig action, which
+        also returns a bearer-token kubeconfig for /k8s/clusters/{cluster_id}.
         """
         logging(f"Generating kubeconfig for cluster: {cluster_name}")
 
         token = self._authenticate_rancher()
-
-        url = (f"{self.rancher_endpoint.rstrip('/')}"
-               f"/v3/clusters/{cluster_id}?action=generateKubeconfig")
-
-        response = requests.post(
-            url,
-            json={},
-            headers={"Authorization": f"Bearer {token}"},
-            verify=False
+        k8s_endpoint = (
+            f"{self.rancher_endpoint.rstrip('/')}/k8s/clusters/{cluster_id}"
         )
 
-        if response.status_code != 200:
-            raise Exception(
-                f"Failed to generate kubeconfig: "
-                f"{response.status_code}, {response.text}"
-            )
+        kubeconfig = {
+            "apiVersion": "v1",
+            "kind": "Config",
+            "clusters": [{
+                "name": cluster_name,
+                "cluster": {
+                    "server": k8s_endpoint,
+                    "insecure-skip-tls-verify": True
+                }
+            }],
+            "contexts": [{
+                "name": cluster_name,
+                "context": {
+                    "cluster": cluster_name,
+                    "user": cluster_name
+                }
+            }],
+            "current-context": cluster_name,
+            "users": [{
+                "name": cluster_name,
+                "user": {
+                    "token": token
+                }
+            }]
+        }
 
-        kubeconfig = response.json().get("config", "")
-        logging("Generated kubeconfig for cluster")
-        return kubeconfig
+        kubeconfig_yaml = yaml.dump(kubeconfig)
+        logging(f"Generated kubeconfig for cluster: {cluster_name}")
+        return kubeconfig_yaml
 
     def generate_cloud_provider_kubeconfig(self, cluster_id, cluster_name):
         """Generate cloud provider kubeconfig via Harvester kubeconfig API.
 
-        Uses the Harvester-specific endpoint to generate a kubeconfig with
-        the external Rancher URL and limited cloudprovider role. This is
-        used for the cloud provider secret inside the guest VM.
+        Uses kubectl create --raw to POST to the Harvester-specific kubeconfig
+        endpoint through Rancher's k8s proxy, obtaining a kubeconfig with the
+        limited cloudprovider role. This is used for the cloud provider secret
+        inside the guest VM.
         """
         logging(f"Generating cloud provider kubeconfig for cluster: {cluster_name}")
 
-        token = self._authenticate_rancher()
-
-        url = (f"{self.rancher_endpoint.rstrip('/')}"
-               f"/k8s/clusters/{cluster_id}/v1/harvester/kubeconfig")
         data = {
             "clusterRoleName": "harvesterhci.io:cloudprovider",
             "namespace": "default",
             "serviceAccountName": cluster_name
         }
 
-        response = requests.post(
-            url,
-            json=data,
-            headers={"Authorization": f"Bearer {token}"},
-            verify=False
+        rc, stdout, stderr = self._run_kubectl_raw_guest(
+            cluster_id,
+            "/v1/harvester/kubeconfig",
+            method="create",
+            input_data=json.dumps(data)
         )
 
-        if response.status_code != 200:
+        if rc != 0:
             raise Exception(
-                f"Failed to generate harvester kubeconfig: "
-                f"{response.status_code}, {response.text}"
+                f"Failed to generate cloud provider kubeconfig: {stderr}"
             )
 
-        kubeconfig = response.text.replace("\\n", "\n").strip('"')
+        kubeconfig = stdout.replace("\\n", "\n").strip('"')
         logging("Generated cloud provider kubeconfig for cluster")
         return kubeconfig
 
@@ -2109,66 +2167,6 @@ class CRD(Base):
         except ApiException as e:
             raise Exception(f"Failed to create VM {name}: {e}")
 
-    def wait_for_harvester_vm_ready(self, name, timeout=DEFAULT_TIMEOUT):
-        """Wait for a Harvester VM to be running."""
-        logging(f"Waiting for VM {name} to be running")
-        retry_count, retry_interval = get_retry_count_and_interval()
-
-        end_time = time.time() + int(timeout)
-        while time.time() < end_time:
-            try:
-                vmi = self.custom_api.get_namespaced_custom_object(
-                    group="kubevirt.io",
-                    version="v1",
-                    namespace=DEFAULT_NAMESPACE,
-                    plural="virtualmachineinstances",
-                    name=name
-                )
-                phase = vmi.get("status", {}).get("phase", "")
-                if phase == "Running":
-                    logging(f"VM {name} is running")
-                    return vmi
-                logging(f"VM {name} phase: {phase}", level="DEBUG")
-            except ApiException as e:
-                if e.status != 404:
-                    logging(
-                        f"Error checking VM status: {e}", level="WARNING"
-                    )
-
-            time.sleep(retry_interval)
-
-        raise Exception(f"Timeout waiting for VM {name} to be running")
-
-    def delete_harvester_vm(self, name):
-        """Delete a Harvester VM and its associated volume."""
-        logging(f"Deleting Harvester VM: {name}")
-        try:
-            self.custom_api.delete_namespaced_custom_object(
-                group="kubevirt.io",
-                version="v1",
-                namespace=DEFAULT_NAMESPACE,
-                plural="virtualmachines",
-                name=name
-            )
-            logging(f"Deleted Harvester VM: {name}")
-        except ApiException as e:
-            if e.status != 404:
-                raise Exception(f"Failed to delete VM {name}: {e}")
-
-        # Delete the volume (PVC) created by volumeClaimTemplates
-        disk_pvc = f"{name}-disk-0"
-        logging(f"Deleting VM volume: {disk_pvc}")
-        try:
-            self.core_api.delete_namespaced_persistent_volume_claim(
-                name=disk_pvc,
-                namespace=DEFAULT_NAMESPACE
-            )
-            logging(f"Deleted VM volume: {disk_pvc}")
-        except ApiException as e:
-            if e.status != 404:
-                logging(f"Failed to delete volume {disk_pvc}: {e}",
-                        level="WARNING")
-
     # Chart Install Operations (for import clusters)
     def install_chart(self, cluster_id, repo_name, chart_name, version,
                       release_name, namespace, values=None):
@@ -2368,6 +2366,35 @@ class CRD(Base):
 
         return []
 
+    def get_deployed_chart_version(self, cluster_id, release_name, namespace):
+        """Return the deployed version string of an installed chart app.
+
+        Reads the version from apps.catalog.cattle.io on the guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            release_name: Helm release name (e.g. harvester-csi-driver)
+            namespace: Namespace where the chart was installed
+
+        Returns:
+            str: Deployed chart version (e.g. '0.1.18')
+        """
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["get", "apps.catalog.cattle.io", release_name,
+             "-n", namespace, "-o", "json"]
+        )
+        if rc != 0:
+            raise Exception(
+                f"Failed to get chart app {release_name}: {stderr}")
+        data = json.loads(stdout)
+        version = (data.get("spec", {})
+                       .get("chart", {})
+                       .get("metadata", {})
+                       .get("version", "unknown"))
+        logging(f"Deployed chart version for {release_name}: {version}")
+        return version
+
     def create_cloud_config_secret(self, cluster_id, secret_name,
                                    namespace, kubeconfig):
         """Create a cloud-provider-config secret on a guest cluster.
@@ -2418,6 +2445,121 @@ class CRD(Base):
 
         logging(f"Created cloud config secret: {secret_name}")
         return secret_spec
+
+    def write_cloud_config_to_nodes(self, cluster_id, secret_name, namespace):
+        """Deploy a temporary privileged DaemonSet on the guest cluster that
+        copies the cloud-provider-config secret data to the node hostPath
+        (/var/lib/rancher/rke2/etc/config-files/cloud-provider-config).
+        The DaemonSet is deleted after all nodes are configured.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            secret_name: Name of the secret containing 'cloud-provider-config'
+            namespace: Namespace of the secret (typically kube-system)
+        """
+        ds_name = "harvester-cp-config-writer"
+        target_path = (
+            "/var/lib/rancher/rke2/etc/config-files/cloud-provider-config"
+        )
+        ds_spec = {
+            "apiVersion": "apps/v1",
+            "kind": "DaemonSet",
+            "metadata": {"name": ds_name, "namespace": namespace},
+            "spec": {
+                "selector": {
+                    "matchLabels": {"app": ds_name}
+                },
+                "template": {
+                    "metadata": {"labels": {"app": ds_name}},
+                    "spec": {
+                        "tolerations": [{"operator": "Exists"}],
+                        "initContainers": [{
+                            "name": "write-config",
+                            "image": "busybox:1.36.1",
+                            "securityContext": {"privileged": True},
+                            "command": [
+                                "sh", "-c",
+                                (
+                                    "mkdir -p /host/var/lib/rancher/rke2/etc/"
+                                    "config-files && "
+                                    "cp /config/cloud-provider-config "
+                                    "/host" + target_path + " && "
+                                    "chmod 0600 /host" + target_path
+                                )
+                            ],
+                            "volumeMounts": [
+                                {"name": "config", "mountPath": "/config"},
+                                {"name": "host-root", "mountPath": "/host"}
+                            ]
+                        }],
+                        "containers": [{
+                            "name": "pause",
+                            "image": "rancher/mirrored-pause:3.7"
+                        }],
+                        "volumes": [
+                            {
+                                "name": "config",
+                                "secret": {
+                                    "secretName": secret_name,
+                                    "items": [{
+                                        "key": "cloud-provider-config",
+                                        "path": "cloud-provider-config"
+                                    }]
+                                }
+                            },
+                            {
+                                "name": "host-root",
+                                "hostPath": {"path": "/"}
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        logging(f"Deploying DaemonSet {ds_name} to write cloud config on "
+                f"cluster {cluster_id}")
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["apply", "-f", "-"],
+            input_data=json.dumps(ds_spec)
+        )
+        if rc != 0:
+            raise Exception(
+                f"Failed to deploy cloud-config writer DaemonSet: {stderr[:300]}"
+            )
+
+        # Wait until all scheduled nodes have the initContainer completed
+        import time as _time
+        end_time = _time.time() + 300
+        while _time.time() < end_time:
+            rc, stdout, stderr = self._run_kubectl_guest(
+                cluster_id,
+                ["get", "daemonset", ds_name, "-n", namespace,
+                 "-o", "jsonpath={.status.desiredNumberScheduled}"
+                 "/{.status.numberReady}"]
+            )
+            if rc == 0 and "/" in stdout:
+                desired, ready = stdout.strip().split("/")
+                if desired == ready and int(desired) > 0:
+                    logging(f"All {ready}/{desired} nodes configured")
+                    break
+            _time.sleep(10)
+        else:
+            raise Exception(
+                "Timed out waiting for cloud-config writer DaemonSet to finish"
+            )
+
+        # Clean up the DaemonSet
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["delete", "daemonset", ds_name, "-n", namespace,
+             "--ignore-not-found"]
+        )
+        if rc != 0:
+            logging(f"Warning: failed to delete DaemonSet {ds_name}: {stderr}")
+        else:
+            logging(f"Deleted DaemonSet {ds_name}")
 
     def wait_for_chart_app_ready(self, cluster_id, release_name,
                                  namespace, timeout=DEFAULT_TIMEOUT):

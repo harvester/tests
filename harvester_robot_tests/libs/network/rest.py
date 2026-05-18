@@ -225,7 +225,8 @@ class Rest(Base):
             )
         return data
 
-    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id):
+    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id,
+                       gateway):
         """Create IP pool, reusing existing pool with the same name"""
         logging(f"Creating IP pool: {name}")
 
@@ -246,7 +247,7 @@ class Rest(Base):
                         "subnet": subnet,
                         "rangeStart": start_ip,
                         "rangeEnd": end_ip,
-                        "gateway": "",
+                        "gateway": gateway,
                         "type": "range" if start_ip or end_ip
                         else "cidr"
                     }],

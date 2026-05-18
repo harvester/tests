@@ -104,7 +104,8 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id):
+    def create_ip_pool(self, name, subnet, start_ip, end_ip, network_id,
+                       gateway):
         """Create IP pool.
 
         Args:
@@ -113,6 +114,7 @@ class Base(ABC):
             start_ip: Start IP address
             end_ip: End IP address
             network_id: Network ID
+            gateway: Gateway IP address
 
         Returns:
             dict: IP pool data
