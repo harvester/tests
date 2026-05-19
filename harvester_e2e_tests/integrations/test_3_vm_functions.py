@@ -2217,3 +2217,114 @@ class TestHotPlugVolume:
 
         assert not scsi, "SCSI device still available in `/sys/block/`"
         assert not out, "SCSI device still available in `lsblk -r`"
+
+
+@pytest.mark.p0
+@pytest.mark.sanity
+@pytest.mark.virtualmachines
+@pytest.mark.skip_if_version(
+    "< v1.6.0",
+    reason=("feature available as of v1.6.0, ref: "
+            "https://docs.harvesterhci.io/v1.6/vm/cpu-memory-hotplug")
+    )
+class TestCpuMemHotPlug:
+    """
+    To cover test:
+    - https://github.com/harvester/tests/issues/1695
+
+    Steps:
+        1. Build a vm with cpu/mem hotplug checked
+        2. Power down the vm
+        3. Power up the vm
+        4. Delete the vm and volumes
+
+    Expected Result:
+        - Building a vm with cpu/mem hotplug checked to be successful
+        - Powering down the vm to be successful
+        - Powering up the vm to be successful
+        - Deleting the vm to be successful
+    """
+
+    @pytest.mark.dependency(name="cpu_mem_hotplug_create_vm")
+    def test_create(
+        self, api_client, image, unique_vm_name, vm_checker
+    ):
+        cpu, mem = 2, 2
+        vm = api_client.vms.Spec(cpu, mem)
+
+        # Parse the value of max-hotplug-ratio
+        code, data = api_client.settings.get("max-hotplug-ratio")
+        max_hotplug_ratio = int(data.get("value", data['default']))
+        vm.set_cpu_mem_hotplug(True, hotplug_ratio=max_hotplug_ratio)
+
+        vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
+
+        code, vm_create_data = api_client.vms.create(unique_vm_name, vm)
+
+        assert 201 == code, (code, vm_create_data)
+
+        vm_running, (code, data) = vm_checker.wait_status_running(unique_vm_name)
+        assert vm_running, (
+            f"Failed to start VM({unique_vm_name}) with errors:\n"
+            f"Status({code}): {data}"
+        )
+
+        # Check cpu/mem hotplug status
+        code, data = api_client.vms.get(unique_vm_name)
+        annotations = data['metadata']['annotations']
+        domain = data['spec']['template']['spec']['domain']
+        cpu_mem_hotplug = annotations['harvesterhci.io/enableCPUAndMemoryHotplug']
+        mem = int(domain['memory']['guest'].replace('Gi', ''))
+        cpu = int(domain['cpu']['sockets'])
+        assert 'true' == cpu_mem_hotplug, "CPU/MEM hotplug isn't enabled"
+        assert domain['resources']['limits']['memory'] == f"{mem * max_hotplug_ratio}Gi", (
+            "Memory limit isn't correct")
+        assert domain['resources']['limits']['cpu'] == f"{cpu * max_hotplug_ratio}", (
+            "CPU limit isn't correct")
+
+    @pytest.mark.dependency(name="cpu_mem_hotplug_stop_vm", depends=["cpu_mem_hotplug_create_vm"])
+    def test_stop(
+        self, unique_vm_name, vm_checker
+    ):
+        vm_stopped, (code, data) = vm_checker.wait_status_stopped(unique_vm_name)
+        assert vm_stopped, (code, data)
+
+    @pytest.mark.dependency(name="cpu_mem_hotplug_start_vm", depends=["cpu_mem_hotplug_stop_vm"])
+    def test_start(
+        self, api_client, unique_vm_name, vm_checker
+    ):
+        vm_started, (code, data) = vm_checker.wait_started(unique_vm_name)
+        assert vm_started, (
+            f"Failed to Start VM({unique_vm_name}) with errors:\n"
+            f"Status: {data.get('status')}\n"
+            f"API Status({code}): {data}"
+        )
+        # Check cpu/mem hotplug status
+        code, data = api_client.vms.get(unique_vm_name)
+        annotations = data['metadata']['annotations']
+        domain = data['spec']['template']['spec']['domain']
+        cpu_mem_hotplug = annotations['harvesterhci.io/enableCPUAndMemoryHotplug']
+        assert 'true' == cpu_mem_hotplug, "CPU/MEM hotplug isn't enabled"
+
+        mem = int(domain['memory']['guest'].replace('Gi', ''))
+        cpu = int(domain['cpu']['sockets'])
+        code, data = api_client.settings.get("max-hotplug-ratio")
+        max_hotplug_ratio = int(data.get("value", data['default']))
+        assert domain['resources']['limits']['memory'] == f"{mem * max_hotplug_ratio}Gi", (
+            "Memory limit isn't correct")
+        assert domain['resources']['limits']['cpu'] == f"{cpu * max_hotplug_ratio}", (
+            "CPU limit isn't correct")
+
+    @pytest.mark.dependency(
+            name="cpu_mem_hotplug_delete_vm", depends=["cpu_mem_hotplug_create_vm"])
+    def test_delete(
+        self, api_client, unique_vm_name, vm_checker
+    ):
+        _, data = api_client.vms.get(unique_vm_name)
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_deleted, (code, data) = vm_checker.wait_deleted(unique_vm_name)
+        assert vm_deleted, (code, data)
+
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
