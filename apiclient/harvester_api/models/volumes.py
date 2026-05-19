@@ -14,7 +14,7 @@ class VolumeSpec:
         self.description = description
         self.annotations = annotations or dict()
 
-    def to_dict(self, name, namespace, image_id=None):
+    def to_dict(self, name, namespace, image_id=None, image_uid=None):
         annotations = self.annotations
         size = f"{self.size}Gi" if isinstance(self.size, (int, float)) else self.size
         data = {
