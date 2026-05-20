@@ -288,7 +288,7 @@ class TestPinCPUonVM:
         )
 
     @pytest.mark.xfail_if_version(
-            ">= v1.7.0", "< v1.8.0", reason="https://github.com/harvester/harvester/issues/9557")
+            ">= v1.7.0", "< v1.7.1", reason="https://github.com/harvester/harvester/issues/9557")
     @pytest.mark.negative
     @pytest.mark.dependency(depends=["pin_cpu_on_vm"])
     def test_disable_cpu_manager_when_vm_on_it(
