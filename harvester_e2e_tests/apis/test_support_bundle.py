@@ -21,6 +21,7 @@ from io import BytesIO
 from time import sleep
 from zipfile import ZipFile
 from datetime import datetime, timedelta
+from pkg_resources import parse_version
 
 import yaml
 import pytest
@@ -423,6 +424,8 @@ class TestSupportBundleExtraNamespaces:
 @pytest.fixture(scope="class")
 def custom_filename_setting(api_client):
     """Setup and teardown for custom support bundle filename pattern"""
+    if api_client.cluster_version < parse_version("1.8.0"):
+        pytest.skip("https://github.com/harvester/harvester/issues/9257 new feature in v1.8.0")
     # Get original setting
     code, data = api_client.settings.get("support-bundle-file-name")
     assert 200 == code, (code, data)
