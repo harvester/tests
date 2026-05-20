@@ -2328,3 +2328,130 @@ class TestCpuMemHotPlug:
         for vol in vm_spec.volumes:
             vol_name = vol['volume']['persistentVolumeClaim']['claimName']
             api_client.volumes.delete(vol_name)
+
+    def test_create_enabled_then_disabled(
+        self, api_client, image, unique_vm_name, vm_checker
+    ):
+        cpu, mem = 2, 2
+        vm = api_client.vms.Spec(cpu, mem)
+
+        # Parse the value of max-hotplug-ratio
+        code, data = api_client.settings.get("max-hotplug-ratio")
+        max_hotplug_ratio = int(data.get("value", data['default']))
+        vm.set_cpu_mem_hotplug(True, hotplug_ratio=max_hotplug_ratio)
+
+        vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
+
+        vm.set_cpu_mem_hotplug(False)
+
+        code, vm_create_data = api_client.vms.create(f"{unique_vm_name}-disabled", vm)
+
+        assert 201 == code, (code, vm_create_data)
+
+        vm_running, (code, data) = vm_checker.wait_status_running(f"{unique_vm_name}-disabled")
+        assert vm_running, (
+            f"Failed to start VM({unique_vm_name}-disabled) with errors:\n"
+            f"Status({code}): {data}"
+        )
+
+        # Check cpu/mem hotplug status
+        code, data = api_client.vms.get(f"{unique_vm_name}-disabled")
+        annotations = data['metadata']['annotations']
+        domain = data['spec']['template']['spec']['domain']
+        cpu_mem_hotplug = annotations.get('harvesterhci.io/enableCPUAndMemoryHotplug', 'false')
+        mem = int(domain['memory']['guest'].replace('Gi', ''))
+        cpu_core = int(domain['cpu']['cores'])
+        cpu_sockets = int(domain['cpu']['sockets'])
+        assert 'false' == cpu_mem_hotplug, "CPU/MEM hotplug isn't disabled"
+        assert domain['resources']['limits']['memory'] == f"{mem}Gi", (
+            "Memory limit isn't correct")
+        assert domain['resources']['limits']['cpu'] == f"{cpu_core}", (
+            "CPU limit isn't correct")
+        assert 1 == cpu_sockets, "CPU sockets should be 1 when hotplug disabled"
+
+        # Delete VM
+        _, data = api_client.vms.get(f"{unique_vm_name}-disabled")
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_deleted, (code, data) = vm_checker.wait_deleted(f"{unique_vm_name}-disabled")
+        assert vm_deleted, (code, data)
+
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
+
+    def test_create_with_modified_maximum(
+        self, api_client, image, unique_vm_name, vm_checker
+    ):
+        cpu, mem = 2, 2
+        max_cpu, max_mem = 4, 4
+        vm = api_client.vms.Spec(cpu, mem)
+
+        vm.set_cpu_mem_hotplug(True, custom_max_cpu=max_cpu, custom_max_mem=max_mem)
+
+        vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
+
+        code, vm_create_data = api_client.vms.create(f"{unique_vm_name}-modified", vm)
+
+        assert 201 == code, (code, vm_create_data)
+
+        vm_running, (code, data) = vm_checker.wait_status_running(f"{unique_vm_name}-modified")
+        assert vm_running, (
+            f"Failed to start VM({unique_vm_name}-modified) with errors:\n"
+            f"Status({code}): {data}"
+        )
+
+        # Check cpu/mem hotplug status
+        code, data = api_client.vms.get(f"{unique_vm_name}-modified")
+        annotations = data['metadata']['annotations']
+        domain = data['spec']['template']['spec']['domain']
+        cpu_mem_hotplug = annotations['harvesterhci.io/enableCPUAndMemoryHotplug']
+        mem = int(domain['memory']['guest'].replace('Gi', ''))
+        cpu = int(domain['cpu']['sockets'])
+        assert 'true' == cpu_mem_hotplug, "CPU/MEM hotplug isn't enabled"
+        assert domain['resources']['limits']['memory'] == f"{max_mem}Gi", (
+            "Memory limit isn't correct")
+        assert domain['resources']['limits']['cpu'] == f"{max_cpu}", (
+            "CPU limit isn't correct")
+
+        # Delete VM
+        _, data = api_client.vms.get(f"{unique_vm_name}-modified")
+        vm_spec = api_client.vms.Spec.from_dict(data)
+        vm_deleted, (code, data) = vm_checker.wait_deleted(f"{unique_vm_name}-modified")
+        assert vm_deleted, (code, data)
+
+        for vol in vm_spec.volumes:
+            vol_name = vol['volume']['persistentVolumeClaim']['claimName']
+            api_client.volumes.delete(vol_name)
+
+    @pytest.mark.parametrize(
+        "invalid_value", [('cpu', 1, 8), ('mem', 8, 1)], ids=['max_cpu', 'max_mem'])
+    def test_create_with_invalid_value(
+        self, api_client, image, unique_vm_name, invalid_value
+    ):
+        cpu, mem = 2, 2
+        test_target, max_cpu, max_mem = invalid_value
+        vm = api_client.vms.Spec(cpu, mem)
+
+        vm.set_cpu_mem_hotplug(True, custom_max_cpu=max_cpu, custom_max_mem=max_mem)
+
+        vm.add_image("disk-0", image['id'], image_uid=image['info']['metadata']['uid'])
+
+        expected_error_indicators = []
+        if test_target == 'cpu':
+            expected_error_indicators = [
+                "maximum sockets allowed",
+                "Number of sockets in CPU topology is greater than",
+            ]
+        else:
+            expected_error_indicators = [
+                "maxGuest memory",
+                "Guest memory is greater than",
+            ]
+
+        code, vm_create_data = api_client.vms.create(f"{unique_vm_name}-invalid", vm)
+        assert 422 == code, (code, vm_create_data)
+        actual_message = vm_create_data.get('message', '')
+        assert any(indicator in actual_message for indicator in expected_error_indicators), (
+            f"Expected to contain one of: {expected_error_indicators}\n"
+            f"Actual message: {actual_message}"
+        )
