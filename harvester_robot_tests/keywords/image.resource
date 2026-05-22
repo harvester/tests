@@ -1,7 +1,6 @@
 *** Settings ***
 Documentation    Image Keywords
 Resource         variables.resource
-Resource         common.resource
 Library          ../libs/keywords/image_keywords.py
 
 *** Keywords ***

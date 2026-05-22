@@ -56,6 +56,10 @@ class Network(Base):
         """Delete VLAN config"""
         return self.network.delete_vlan_config(name)
 
+    def wait_for_vlan_config_deleted(self, name, timeout=120):
+        """Wait for VLAN config to be fully deleted"""
+        return self.network.wait_for_vlan_config_deleted(name, timeout)
+
     def wait_for_cluster_network_ready(self, name, timeout=120):
         """Wait for cluster network to become ready"""
         return self.network.wait_for_cluster_network_ready(name, timeout)

@@ -54,6 +54,16 @@ class Base(ABC):
         pass
 
     @abstractmethod
+    def wait_for_vlan_config_deleted(self, name, timeout):
+        """Wait for VLAN config to be fully deleted.
+
+        Args:
+            name: VLAN config name
+            timeout: Wait timeout in seconds
+        """
+        pass
+
+    @abstractmethod
     def wait_for_cluster_network_ready(self, name, timeout):
         """Wait for cluster network to become ready.
 

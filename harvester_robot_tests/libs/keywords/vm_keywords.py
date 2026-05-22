@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
 from utility.utility import logging # noqa E402
 from vm import VM # noqa E402
+from snapshot import Snapshot  # noqa E402
 from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG, DEFAULT_NAMESPACE # noqa E402
 
 
@@ -17,6 +18,14 @@ class vm_keywords:
 
     def __init__(self):
         self.vm = VM()
+        self._snapshot = None
+
+    @property
+    def snapshot(self):
+        """Lazy initialize Snapshot to allow API client setup first"""
+        if self._snapshot is None:
+            self._snapshot = Snapshot()
+        return self._snapshot
 
     def cleanup_vms(self):
         """Clean up all test VMs"""
@@ -61,6 +70,14 @@ class vm_keywords:
         """Migrate VM to target node"""
         logging(f'Migrating VM {vm_name} to {target_node}')
         self.vm.migrate(vm_name, target_node)
+
+    def is_vm_running(self, vm_name):
+        """Return True if VM is in running state"""
+        return self.vm.is_running(vm_name)
+
+    def is_vm_stopped(self, vm_name):
+        """Return True if VM is in stopped state"""
+        return self.vm.is_stopped(vm_name)
 
     def wait_for_vm_running(self, vm_name, timeout=DEFAULT_TIMEOUT):
         """Wait for VM to reach running state"""
@@ -115,3 +132,55 @@ class vm_keywords:
         """Wait for backup to complete"""
         logging(f'Waiting for backup {backup_name} to complete')
         self.vm.wait_for_backup_completed(vm_name, backup_name, timeout)
+
+    def create_vm_with_volume_using_sc(self, vm_name, sc_name, image_name, network_name=None):
+        """Create a VM with Harvester image root disk and LVM StorageClass as additional volume"""
+        logging(f'Creating VM {vm_name} with LVM SC {sc_name} and image {image_name}')
+        return self.vm.create_vm_with_volume_using_sc(vm_name, sc_name, image_name,
+                                                      network_name=network_name)
+
+    def attach_volume_to_vm(self, vm_name, vol_name):
+        """Attach an volume to a VM"""
+        logging(f'Attaching volume {vol_name} to VM {vm_name}')
+        return self.vm.attach_volume(vm_name, vol_name)
+
+    def check_block_device_in_vm(self, vm_name, expected_disk_size=None):
+        """Assert the data block device is visible in the VM and return its path"""
+        logging(f'Checking block device is available in VM {vm_name}')
+        return self.vm.check_block_device(vm_name, expected_disk_size=expected_disk_size)
+
+    def write_data_and_get_checksum_on_disk(self, vm_name, device, format_device=True):
+        """Write data to the given device inside the VM and return md5sum checksum"""
+        logging(f'Writing data to {device} on VM {vm_name}')
+        return self.vm.write_data_and_get_checksum_on_disk(vm_name, device, format_device)
+
+    def delete_data_from_vm(self, vm_name):
+        """Delete test data from VM"""
+        logging(f'Deleting data from VM {vm_name}')
+        return self.vm.delete_data(vm_name)
+
+    def mount_data_disk_in_vm(self, vm_name):
+        """Mount the data disk in VM after a restore"""
+        logging(f'Mounting data disk in VM {vm_name}')
+        return self.vm.mount_data_disk(vm_name)
+
+    def get_data_checksum_from_vm(self, vm_name):
+        """Get md5sum checksum of data in VM. Raises if VM not ready or result is invalid."""
+        import re
+        logging(f'Getting data checksum from VM {vm_name}')
+        result = self.vm.get_data_checksum(vm_name)
+        if not result or not re.match(r'^[0-9a-f]{32}$', result):
+            raise AssertionError(
+                f"No valid md5sum from VM {vm_name!r} (got: {result!r:.120})"
+            )
+        return result
+
+    def expand_volume_via_vm_edit(self, vm_name, vol_name, new_size):
+        """Expand a volume by patching the VM spec"""
+        logging(f'Expanding volume {vol_name} on VM {vm_name} to {new_size}')
+        return self.vm.expand_volume_via_vm_edit(vm_name, vol_name, new_size)
+
+    def get_volume_size_inside_vm(self, vm_name, expected_size):
+        """Verify volume size inside VM matches expected; returns True/False"""
+        logging(f'Verifying volume size inside VM {vm_name} is {expected_size}')
+        return self.vm.verify_volume_size(vm_name, expected_size)

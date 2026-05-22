@@ -664,3 +664,39 @@ class CRD(Base):
             'image_tag': image_values.get('tag') or spec.get('image/tag'),
             'driver_location': parsed_values.get('driverLocation') or spec.get('driverLocation')
         }
+
+    def install_addon_yaml(self, url):
+        """Install an addon by applying a YAML manifest from a URL.
+        This must be done BEFORE enabling, as some addons are not bundled in the Harvester ISO.
+        """
+        logging(f"Installing addon from URL: {url}")
+        result = subprocess.run(
+            ["kubectl", "apply", "-f", url],
+            capture_output=True, text=True, timeout=60
+        )
+        if result.returncode != 0:
+            raise Exception(f"Failed to install addon YAML from {url}: {result.stderr}")
+        logging(f"Addon YAML applied: {result.stdout.strip()}")
+
+    def _wait_for_addon_cr_exists(self, addon_name, namespace="harvester-system", timeout=60):
+        """Wait for the addon custom resource to exist after kubectl apply"""
+        endtime = time.time() + timeout
+        while time.time() < endtime:
+            try:
+                self.custom_api.get_namespaced_custom_object(
+                    group=HARVESTER_API_GROUP,
+                    version=HARVESTER_API_VERSION,
+                    namespace=namespace,
+                    plural="addons",
+                    name=addon_name
+                )
+                logging(f"Addon CR {addon_name} exists")
+                return
+            except ApiException as e:
+                if e.status == 404:
+                    time.sleep(2)
+                    continue
+                raise
+        raise AssertionError(
+            f"Addon CR {addon_name} not found within {timeout}s after kubectl apply"
+        )

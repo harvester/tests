@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'
 
 from utility.utility import logging, generate_name_with_suffix  # noqa E402
 from rancher import Rancher  # noqa E402
-from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG, DEFAULT_RKE2_USER_DATA, DEFAULT_RKE2_NODE_CPUS, DEFAULT_RKE2_NODE_MEMORY, DEFAULT_RKE2_NODE_DISK  # noqa E402
+from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG, DEFAULT_USER_DATA, DEFAULT_RKE2_NODE_CPUS, DEFAULT_RKE2_NODE_MEMORY, DEFAULT_RKE2_NODE_DISK  # noqa E402
 
 
 class rancher_keywords:
@@ -511,7 +511,7 @@ class rancher_keywords:
         if not disks:
             disks = DEFAULT_RKE2_NODE_DISK
         if not user_data:
-            user_data = DEFAULT_RKE2_USER_DATA
+            user_data = DEFAULT_USER_DATA
         logging(f"Creating Harvester config: {name}")
         return self.rancher.create_harvester_config(
             name, int(cpus), int(mems), int(disks),

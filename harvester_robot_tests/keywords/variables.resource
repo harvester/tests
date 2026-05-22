@@ -33,6 +33,9 @@ ${DEFAULT_STORAGE_CLASS}        harvester-longhorn
 ${DEFAULT_VOLUME_SIZE}          10Gi
 ${RWX_HOST_STORAGE_CLASS}       %{RWX_HOST_STORAGE_CLASS=longhorn-rwx}
 
+# LVM: dm-thin or striped
+${LVM_VG_TYPE}                  %{LVM_VG_TYPE=striped}
+
 # Test Execution
 ${LOOP_COUNT}                   3
 ${RETRY_COUNT}                  100

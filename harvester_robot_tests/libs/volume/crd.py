@@ -10,7 +10,7 @@ from constant import (
     VOLUME_STATE_BOUND,
     ACCESS_MODE_RWO,
     LABEL_TEST, LABEL_TEST_VALUE,
-    DEFAULT_TIMEOUT_SHORT
+    DEFAULT_TIMEOUT_SHORT, DEFAULT_RETRY_INTERVAL
 )
 from utility.utility import logging, get_retry_count_and_interval
 from volume.base import Base
@@ -34,8 +34,21 @@ class CRD(Base):
         namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
         storage_class = kwargs.get('storage_class', DEFAULT_STORAGE_CLASS)
         access_mode = kwargs.get('access_mode', ACCESS_MODE_RWO)
+        volume_mode = kwargs.get('volume_mode', None)
 
         # Build PVC manifest
+        spec = {
+            "accessModes": [access_mode],
+            "storageClassName": storage_class,
+            "resources": {
+                "requests": {
+                    "storage": size
+                }
+            }
+        }
+        if volume_mode:
+            spec["volumeMode"] = volume_mode
+
         body = {
             "apiVersion": "v1",
             "kind": "PersistentVolumeClaim",
@@ -49,15 +62,7 @@ class CRD(Base):
                     "volume.kubernetes.io/storage-provisioner": "driver.longhorn.io"    # Noqa
                 }
             },
-            "spec": {
-                "accessModes": [access_mode],
-                "storageClassName": storage_class,
-                "resources": {
-                    "requests": {
-                        "storage": size
-                    }
-                }
-            }
+            "spec": spec
         }
 
         # Add Longhorn-specific parameters
@@ -92,22 +97,34 @@ class CRD(Base):
             logging(f"Failed to create PVC {volume_name}: {e}")
             raise Exception(f"Failed to create volume: {e.status}, {e.reason}")
 
-    def delete(self, volume_name, wait=True):
-        """Delete a PersistentVolumeClaim"""
-        namespace = DEFAULT_NAMESPACE
+    def delete(self, volume_name, wait=True, namespace=DEFAULT_NAMESPACE,
+               timeout=120, interval=DEFAULT_RETRY_INTERVAL):
+        """Delete a PersistentVolumeClaim.
 
-        try:
-            logging(f"Deleting PersistentVolumeClaim {namespace}/{volume_name}")
-            self.core_api.delete_namespaced_persistent_volume_claim(
-                name=volume_name,
-                namespace=namespace
-            )
-
-            if wait:
-                self.wait_for_deleted(volume_name)
-
-        except ApiException as e:
-            if e.status != 404:  # Ignore not found errors
+        Retries on 409 conflict (volume still attached to a VM whose
+        virt-launcher pod has not fully terminated yet).
+        """
+        deadline = time.time() + timeout
+        while True:
+            try:
+                logging(f"Deleting PersistentVolumeClaim {namespace}/{volume_name}")
+                self.core_api.delete_namespaced_persistent_volume_claim(
+                    name=volume_name,
+                    namespace=namespace
+                )
+                if wait:
+                    self.wait_for_deleted(volume_name, namespace=namespace)
+                return
+            except ApiException as e:
+                if e.status == 404:
+                    return
+                if e.status == 409 and time.time() < deadline:
+                    logging(
+                        f"PVC {volume_name} still attached (409), "
+                        f"retrying in {interval}s …"
+                    )
+                    time.sleep(interval)
+                    continue
                 logging(f"Error deleting PVC {volume_name}: {e}")
                 raise
 
@@ -147,7 +164,8 @@ class CRD(Base):
                 }
             }
         except ApiException as e:
-            logging(f"Failed to get PVC {volume_name}: {e}")
+            if e.status != 404:
+                logging(f"Failed to get PVC {volume_name}: {e}")
             raise
 
     def list(self, namespace=DEFAULT_NAMESPACE, label_selector=None):
@@ -233,15 +251,15 @@ class CRD(Base):
 
         raise AssertionError(f"PVC {namespace}/{volume_name} did not bind within {timeout}s")
 
-    def wait_for_deleted(self, volume_name, timeout=DEFAULT_TIMEOUT_SHORT):
+    def wait_for_deleted(
+            self, volume_name, timeout=DEFAULT_TIMEOUT_SHORT,
+            namespace=DEFAULT_NAMESPACE):
         """Wait for PVC to be deleted"""
-        namespace = DEFAULT_NAMESPACE
         endtime = time.time() + timeout
 
         while time.time() < endtime:
             try:
                 self.get(volume_name, namespace)
-                logging("Waiting for PVC to be deleted...")
             except ApiException as e:
                 if e.status == 404:
                     logging(f"PVC {namespace}/{volume_name} deleted")
@@ -414,3 +432,17 @@ class CRD(Base):
                     logging(f'Error deleting PVC {pvc_name}: {e}', "WARNING")
         except Exception as e:
             logging(f'Error during volume cleanup: {e}', 'WARNING')
+
+
+    def expand_pvc(self, vol_name, new_size, namespace=None):
+        """Expand a PVC to new_size"""
+        from constant import DEFAULT_NAMESPACE
+        ns = namespace or DEFAULT_NAMESPACE
+        body = {"spec": {"resources": {"requests": {"storage": new_size}}}}
+        try:
+            self.core_api.patch_namespaced_persistent_volume_claim(
+                name=vol_name, namespace=ns, body=body
+            )
+            logging(f"PVC {vol_name} expanded to {new_size}")
+        except Exception as e:
+            raise Exception(f"Failed to expand PVC {vol_name}: {e}")

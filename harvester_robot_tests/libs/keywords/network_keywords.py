@@ -73,6 +73,17 @@ class network_keywords:
         logging(f"Deleting VLAN config: {name}")
         self.network.delete_vlan_config(name)
 
+    def wait_for_vlan_config_deleted(self, name, timeout=120):
+        """
+        Wait for VLAN config to be fully deleted.
+
+        Args:
+            name: VLAN config name
+            timeout: Wait timeout in seconds
+        """
+        logging(f"Waiting for VLAN config {name} to be deleted")
+        self.network.wait_for_vlan_config_deleted(name, int(timeout))
+
     def wait_for_cluster_network_ready(self, name, timeout=120):
         """
         Wait for cluster network to become ready.

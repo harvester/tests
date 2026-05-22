@@ -116,7 +116,19 @@ class Rest(Base):
 
         logging(f"Deleted VLAN config: {name}")
 
-    def wait_for_cluster_network_ready(self, name, timeout=120):
+    def wait_for_vlan_config_deleted(self, name, timeout=120):
+        """Wait for a VlanConfig to be fully removed"""
+        logging(f"Waiting for VLAN config {name} to be deleted")
+        deadline = time.time() + int(timeout)
+        while time.time() < deadline:
+            code, _ = self.harvester_api.get(
+                f"v1/harvester/network.harvesterhci.io.vlanconfigs/{name}"
+            )
+            if code == 404:
+                logging(f"VLAN config {name} deleted")
+                return
+            time.sleep(5)
+        raise Exception(f"VLAN config {name} not deleted within {timeout}s")
         """Wait for cluster network to become ready"""
         logging(f"Waiting for cluster network {name} to be ready")
         deadline = time.time() + int(timeout)

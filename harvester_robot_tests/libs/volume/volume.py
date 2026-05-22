@@ -59,3 +59,8 @@ class Volume(Base):
 
     def cleanup(self):
         return self.volume.cleanup()
+
+    def expand_pvc(self, vol_name, new_size, namespace=None):
+        from constant import DEFAULT_NAMESPACE
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.volume.expand_pvc(vol_name, new_size, ns)

@@ -121,3 +121,6 @@ class Rest(Base):
     def cleanup(self):
         """Clean up all test volumes"""
         logging('Cleaning up test volumes')
+
+    def expand_pvc(self, vol_name, new_size, namespace):
+        raise NotImplementedError("REST implementation not available for Volume.expand_pvc")

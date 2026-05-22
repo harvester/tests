@@ -42,3 +42,13 @@ class setting_keywords:
     def enable(self, setting_id):
         setting = self.setting.enable(setting_id)
         return setting
+
+    def configure_csi_driver(self, setting_id, provisioner, snapshot_class):
+        """Configure a CSI driver entry in the csi-driver-config setting"""
+        logging(f'Configuring CSI driver for provisioner {provisioner}')
+        return self.setting.configure_csi_driver(setting_id, provisioner, snapshot_class)
+
+    def remove_csi_driver(self, setting_id, provisioner):
+        """Remove a CSI driver entry from the csi-driver-config setting"""
+        logging(f'Removing CSI driver entry for provisioner {provisioner}')
+        return self.setting.remove_csi_driver(setting_id, provisioner)

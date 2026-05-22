@@ -17,6 +17,8 @@ HARVESTER_API_GROUP = "harvesterhci.io"
 HARVESTER_API_VERSION = "v1beta1"
 KUBEVIRT_API_GROUP = "kubevirt.io"
 KUBEVIRT_API_VERSION = "v1"
+SNAPSHOT_API_GROUP = "snapshot.kubevirt.io"
+SNAPSHOT_API_VERSION = "v1beta1"
 LONGHORN_API_GROUP = "longhorn.io"
 LONGHORN_API_VERSION = "v1beta2"
 
@@ -43,12 +45,18 @@ GIBIBYTE = (MEBIBYTE * KIBIBYTE)
 TEBIBYTE = (GIBIBYTE * KIBIBYTE)
 LARGE_DISK_BYTE = TEBIBYTE
 
-# VM States
+# VM Related
 VM_STATE_STOPPED = "Stopped"
 VM_STATE_RUNNING = "Running"
 VM_STATE_STARTING = "Starting"
 VM_STATE_STOPPING = "Stopping"
 VM_STATE_MIGRATING = "Migrating"
+
+DATA_PATH = "/mnt/test-data"
+DATA_FILE = "testdata.bin"
+
+# Mount point used when formatting and mounting an LVM data disk inside a VM
+BLOCK_DEVICE_MOUNT = "/mnt/vdb_drive"
 
 # Volume States
 VOLUME_STATE_BOUND = "Bound"
@@ -126,8 +134,8 @@ PCIDEVICES_WEBHOOK_SERVICE = "pcidevices-webhook"
 RANCHER_WAIT_TIMEOUT = 1800  # 30 minutes for cluster operations
 RANCHER_NAMESPACE = "fleet-default"
 
-# Cloud-init user data for RKE2 nodes
-DEFAULT_RKE2_USER_DATA = """#cloud-config
+# Cloud-init user data
+DEFAULT_USER_DATA = """#cloud-config
 password: password
 chpasswd:
   expire: false
@@ -159,3 +167,9 @@ HARVESTER_CSI_DRIVER_DEPLOYMENT = "harvester-csi-driver-controllers"
 DEFAULT_RKE2_NODE_CPUS = 4
 DEFAULT_RKE2_NODE_MEMORY = 8  # GB
 DEFAULT_RKE2_NODE_DISK = 80  # GB
+
+# LVM constants
+LVM_PROVISIONER = "lvm.driver.harvesterhci.io"
+LVM_VG_DM_THIN = "vg-dm-thin"
+LVM_VG_STRIPED = "vg-dm-striped"
+LONGHORN_SYSTEM_NAMESPACE = "longhorn-system"

@@ -76,3 +76,8 @@ class Base(ABC):
     def cleanup(self):
         """Clean up all test volumes"""
         pass
+
+    @abstractmethod
+    def expand_pvc(self, vol_name, new_size, namespace):
+        """Expand a PVC to new_size"""
+        pass

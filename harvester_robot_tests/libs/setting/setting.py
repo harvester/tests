@@ -33,3 +33,11 @@ class Setting(Base):
         """Enable a setting - delegates to implementation"""
         setting = self.setting.enable(setting_id)
         return setting
+
+    def configure_csi_driver(self, setting_id, provisioner, snapshot_class):
+        """Configure csi-driver-config setting - delegates to implementation"""
+        return self.setting.configure_csi_driver(setting_id, provisioner, snapshot_class)
+
+    def remove_csi_driver(self, setting_id, provisioner):
+        """Remove a provisioner entry from csi-driver-config - delegates to implementation"""
+        return self.setting.remove_csi_driver(setting_id, provisioner)
