@@ -1,8 +1,6 @@
 *** Settings ***
 Documentation    VM Keywords
 Resource         variables.resource
-Resource         common.resource
-Resource         image.resource
 Library          ../libs/keywords/vm_keywords.py
 
 *** Keywords ***
@@ -13,9 +11,9 @@ List VMs by prefix
     RETURN    ${vms}
 
 VM is created
-    [Arguments]    ${vm_name}    &{config}
+    [Arguments]    ${vm_name}    ${image_id}    ${cpu}=2    ${memory}=4Gi    &{config}
     [Documentation]    Create a virtual machine with provided name
-    vm_keywords.create vm    ${vm_name}    &{config}
+    vm_keywords.create vm    ${vm_name}    ${image_id}    ${cpu}    ${memory}    &{config}
 
 VM is deleted
     [Arguments]    ${vm_name}
@@ -48,7 +46,7 @@ VM should be deleted
     vm_keywords.wait for vm deleted    ${vm_name}
 
 VM should have IP addresses
-    [Arguments]    ${vm_name}    ${networks}
+    [Arguments]    ${vm_name}    ${networks}=${None}
     [Documentation]    Wait for VM to obtain IP addresses
     vm_keywords.wait for vm ip addresses    ${vm_name}    ${networks}
 
@@ -64,8 +62,7 @@ Get VM data checksum
     ${checksum}=    vm_keywords.get vm data checksum    ${vm_name}
     RETURN    ${checksum}
 
-Image is available for VM creation
-    [Arguments]    ${image_name}    ${image_url}
-    [Documentation]    Create an image from URL (delegates to Image module).
-    image.Create image from url with name    ${image_name}    ${image_url}
-    image.Wait for image downloaded by name    ${image_name}
+Update Volume Size to ${new_size}Gi From VM
+    [Arguments]    ${vm_name}    ${disk_name}
+    [Documentation]    Update the size of a VM disk
+    vm_keywords.update_vm_disk_size    ${vm_name}    ${disk_name}    ${new_size}Gi

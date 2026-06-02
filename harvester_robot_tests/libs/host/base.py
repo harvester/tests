@@ -5,7 +5,8 @@ from abc import ABC, abstractmethod
 
 
 class Base(ABC):
-    """Base class for Host implementations"""
+    def __init__(self):
+        self.unsupported_msg = f"Unsupported by {self.__class__.__name__}, falling back."
 
     @abstractmethod
     def list_nodes(self):
@@ -76,3 +77,13 @@ class Base(ABC):
     def remove_node_label(self, node_name, key):
         """Remove a label from a node"""
         pass
+
+    @abstractmethod
+    def add_lh_node_disk_tag(self, node_name, disk_name, tag):
+        """Add a tag to a Longhorn node disk"""
+        raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
+    def remove_lh_node_disk_tag(self, node_name, disk_name, tag):
+        """Remove a tag from a Longhorn node disk"""
+        raise NotImplementedError(self.unsupported_msg)

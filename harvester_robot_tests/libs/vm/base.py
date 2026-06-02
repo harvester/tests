@@ -9,7 +9,7 @@ class Base(ABC):
     """Base class for VM implementations"""
 
     @abstractmethod
-    def create(self, vm_name, cpu, memory, image_id, **kwargs):
+    def create(self, vm_name, image_id, cpu, memory, **kwargs):
         """Create a virtual machine"""
         pass
 
@@ -66,4 +66,9 @@ class Base(ABC):
     @abstractmethod
     def cleanup(self):
         """Clean up test resources"""
+        pass
+
+    @abstractmethod
+    def update_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
+        """Update VM disk size via volumeClaimTemplates annotation."""
         pass

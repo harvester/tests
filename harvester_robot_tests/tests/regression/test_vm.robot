@@ -4,10 +4,14 @@ Test Tags        regression    virtualmachines
 
 Resource         ../../keywords/variables.resource
 Resource         ../../keywords/common.resource
+Resource         ../../keywords/image.resource
 Resource         ../../keywords/virtualmachine.resource
 
-Test Setup       Set up test environment
+
+Suite Setup       Set up test environment
 Test Teardown    Cleanup test resources
+Suite Teardown   Common Suite Teardown
+
 
 *** Test Cases ***
 Test VM Basic Lifecycle
@@ -15,12 +19,12 @@ Test VM Basic Lifecycle
     [Documentation]    Test basic VM creation, start, stop, delete operations
 
     # Generate unique names for vm & image using timestamp
-    ${timestamp}=    Get Current Date    result_format=%Y%m%d%H%M%S%f
-    ${image_name}=    Set Variable    image-0-${timestamp}
-    ${vm_name}=    Set Variable    vm-0-${timestamp}
+    ${suffix}=    Generate Unique Name
+    ${image_name}=    Set Variable    image-0-${suffix}
+    ${vm_name}=    Set Variable    vm-0-${suffix}
 
     Given Image is available for VM creation   ${image_name}    ${OPENSUSE_IMAGE_URL}
-    When VM is created    ${vm_name}    cpu=2    memory=4Gi    image_id=${image_name}
+    When VM is created    ${vm_name}    ${image_name}
     Then VM should be running    ${vm_name}
     And VM should have IP addresses    ${vm_name}    ${DEFAULT_NAMESPACE}
     When VM is stopped    ${vm_name}

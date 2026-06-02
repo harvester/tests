@@ -81,3 +81,9 @@ class Host(Base):
     # Longhorn Node
     def get_lh_node(self, node_name):
         return self.host.get_lh_node(node_name)
+
+    def add_lh_node_disk_tag(self, node_name, disk_name, tag):
+        self.host.add_lh_node_disk_tag(node_name, disk_name, tag)
+
+    def remove_lh_node_disk_tag(self, node_name, disk_name, tag):
+        self.host.remove_lh_node_disk_tag(node_name, disk_name, tag)

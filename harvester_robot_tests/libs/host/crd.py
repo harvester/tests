@@ -5,7 +5,7 @@ Uses Kubernetes Node resources for host/node operations
 import time
 from kubernetes import client
 from kubernetes.client.rest import ApiException
-from crd import get_cr
+from crd import get_cr, patch_cr
 from utility.utility import logging, get_retry_count_and_interval
 from constant import (
     DEFAULT_TIMEOUT_SHORT, DEFAULT_TIMEOUT,
@@ -410,3 +410,79 @@ class CRD(Base):
                 logging(f"Can not find LH node {LONGHORN_NAMESPACE}/{node_name}", level='WARNING')
                 return None
             raise Exception(f"Fail to get LH node {LONGHORN_NAMESPACE}/{node_name}: {e}")
+
+    def add_lh_node_disk_tag(self, node_name, disk_name, tag):
+        lh_node = self.get_lh_node(node_name)
+        if not lh_node:
+            raise Exception(f"Longhorn node {LONGHORN_NAMESPACE}/{node_name} not found")
+
+        disks = lh_node.get("spec", {}).get("disks", {})
+        if disk_name not in disks:
+            raise Exception(
+                f"Disk {disk_name} not found on Longhorn node {LONGHORN_NAMESPACE}/{node_name}"
+            )
+
+        tags = disks.get(disk_name, {}).get("tags", [])
+        if tag in tags:
+            return lh_node
+
+        patch_body = {
+            "spec": {
+                "disks": {
+                    disk_name: {
+                        "tags": tags + [tag]
+                    }
+                }
+            }
+        }
+
+        try:
+            patch_cr(
+                **self.lh_nodes_parameters,
+                name=node_name,
+                body=patch_body
+            )
+        except ApiException as e:
+            raise Exception(
+                f"Failed to tag {tag} on {LONGHORN_NAMESPACE}/{node_name} disk {disk_name}: {e}"
+            )
+
+        return self.get_lh_node(node_name)
+
+    def remove_lh_node_disk_tag(self, node_name, disk_name, tag):
+        lh_node = self.get_lh_node(node_name)
+        if not lh_node:
+            raise Exception(f"Longhorn node {LONGHORN_NAMESPACE}/{node_name} not found")
+
+        disks = lh_node.get("spec", {}).get("disks", {})
+        if disk_name not in disks:
+            raise Exception(
+                f"Disk {disk_name} not found on Longhorn node {LONGHORN_NAMESPACE}/{node_name}"
+            )
+
+        tags = disks.get(disk_name, {}).get("tags", [])
+        if tag not in tags:
+            return lh_node
+
+        patch_body = {
+            "spec": {
+                "disks": {
+                    disk_name: {
+                        "tags": [existing for existing in tags if existing != tag]
+                    }
+                }
+            }
+        }
+
+        try:
+            patch_cr(
+                **self.lh_nodes_parameters,
+                name=node_name,
+                body=patch_body
+            )
+        except ApiException as e:
+            raise Exception(
+                f"Failed to untag {tag} on {LONGHORN_NAMESPACE}/{node_name} disk {disk_name}: {e}"
+            )
+
+        return self.get_lh_node(node_name)

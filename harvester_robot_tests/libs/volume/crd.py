@@ -143,7 +143,8 @@ class CRD(Base):
                     'capacity': (
                         dict(pvc.status.capacity)
                         if pvc.status and pvc.status.capacity else {}
-                    )
+                    ),
+                    'conditions': pvc.status.conditions if pvc.status.conditions else []
                 }
             }
         except ApiException as e:
@@ -257,9 +258,10 @@ class CRD(Base):
         status = pvc.get('status', {})
 
         return {
-            'state': status.get('phase', 'Unknown'),
+            'phase': status.get('phase', 'Unknown'),
             'capacity': status.get('capacity', {}),
-            'access_modes': pvc.get('spec', {}).get('accessModes', [])
+            'access_modes': pvc.get('spec', {}).get('accessModes', []),
+            'conditions': status.get('conditions', [])
         }
 
     def expand(self, volume_name, new_size):
@@ -409,7 +411,8 @@ class CRD(Base):
 
                 try:
                     logging(f'Deleting test PVC: {namespace}/{pvc_name}')
-                    self.delete(pvc_name, wait=False)
+                    # Wait to avoid issues when following cleanup like image and storageclass
+                    self.delete(pvc_name, wait=True)
                 except Exception as e:
                     logging(f'Error deleting PVC {pvc_name}: {e}', "WARNING")
         except Exception as e:

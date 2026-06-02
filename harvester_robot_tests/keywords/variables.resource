@@ -11,7 +11,7 @@ ${HARVESTER_USERNAME}           %{HARVESTER_USERNAME=admin}
 ${HARVESTER_PASSWORD}           %{HARVESTER_PASSWORD=password}
 
 # Timeouts and Intervals
-${WAIT_TIMEOUT}                 600
+${WAIT_TIMEOUT}                 %{WAIT_TIMEOUT=600}
 ${RETRY_INTERVAL}               3
 ${SLEEP_TIMEOUT}                3
 

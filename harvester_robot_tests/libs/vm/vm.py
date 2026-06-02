@@ -18,8 +18,8 @@ class VM(Base):
         else:
             self.vm = Rest()
 
-    def create(self, vm_name, cpu, memory, image_id, **kwargs):
-        return self.vm.create(vm_name, cpu, memory, image_id, **kwargs)
+    def create(self, vm_name, image_id, cpu, memory, **kwargs):
+        return self.vm.create(vm_name, image_id, cpu, memory, **kwargs)
 
     def delete(self, vm_name):
         return self.vm.delete(vm_name)
@@ -77,3 +77,6 @@ class VM(Base):
 
     def cleanup(self):
         return self.vm.cleanup()
+
+    def update_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
+        return self.vm.update_disk_size(vm_name, disk_name, new_size, namespace)

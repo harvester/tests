@@ -9,12 +9,13 @@ from abc import ABC, abstractmethod
 class Base(ABC):
     """Base class for Setting implementations"""
 
+    def __init__(self):
+        self.unsupported_msg = f"Unsupported by {self.__class__.__name__}, falling back."
+
     @abstractmethod
     def get(self, setting_id):
-        """Get setting details"""
-        pass
+        raise NotImplementedError(self.unsupported_msg)
 
     @abstractmethod
     def enable(self, setting_id):
-        """Enable a setting"""
-        pass
+        raise NotImplementedError(self.unsupported_msg)

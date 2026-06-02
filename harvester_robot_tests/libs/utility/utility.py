@@ -54,12 +54,15 @@ def init_harvester_api_client(endpoint, username, password):
     return _harvester_api_client
 
 
+def get_timestamp():
+    return datetime.now().strftime("%Y%m%d%H%M%S")
+
+
 def generate_name_with_suffix(kind, suffix):
     """Generate unique name with timestamp suffix"""
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3]
-    name = f"{kind}-{suffix}-{timestamp}"
-    logging(f"Generated name: {name}")
-    return name
+    timestamp = datetime.now().strftime("%y%m%d-%H%M%S-%f")[:-2]
+    name = "-".join([s for s in [kind, suffix, timestamp] if s])
+    return name+"qa"    # Add 'qa' suffix to all generated names for easier identification
 
 
 def get_retry_count_and_interval():

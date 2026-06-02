@@ -22,10 +22,10 @@ class vm_keywords:
         """Clean up all test VMs"""
         self.vm.cleanup()
 
-    def create_vm(self, vm_name, cpu=2, memory="4Gi", image_id="", **kwargs):
+    def create_vm(self, vm_name, image_id, cpu=2, memory="4Gi", **kwargs):
         """Create a virtual machine"""
-        logging(f'Creating VM {vm_name}')
-        self.vm.create(vm_name, cpu, memory, image_id, **kwargs)
+        logging(f'Creating VM {vm_name} with image {image_id}, {cpu}C/{memory} and {kwargs}')
+        self.vm.create(vm_name, image_id, cpu, memory, **kwargs)
 
     def delete_vm(self, vm_name):
         """Delete a virtual machine"""
@@ -115,3 +115,7 @@ class vm_keywords:
         """Wait for backup to complete"""
         logging(f'Waiting for backup {backup_name} to complete')
         self.vm.wait_for_backup_completed(vm_name, backup_name, timeout)
+
+    def update_vm_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
+        """Update VM disk size via volumeClaimTemplates annotation."""
+        self.vm.update_disk_size(vm_name, disk_name, new_size, namespace)
