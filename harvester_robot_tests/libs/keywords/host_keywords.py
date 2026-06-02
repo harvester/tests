@@ -111,3 +111,18 @@ class host_keywords:
     def get_lh_node(self, node_name):
         """Get Longhorn-specific node details"""
         return self.host.get_lh_node(node_name)
+
+    def add_lh_node_disk_tag(self, node_name, disk_name, tag):
+        """Add a tag to a Longhorn node disk"""
+        return self.host.add_lh_node_disk_tag(node_name, disk_name, tag)
+
+    def remove_lh_node_disk_tag(self, node_name, disk_name, tag):
+        """Remove a tag from a Longhorn node disk"""
+        return self.host.remove_lh_node_disk_tag(node_name, disk_name, tag)
+
+    def is_lh_node_disk_tag_present(self, node_name, disk_name, tag):
+        """Check if a tag exists on a Longhorn node disk"""
+        lh_node = self.host.get_lh_node(node_name)
+        disks = (lh_node or {}).get("spec", {}).get("disks", {})
+        tags = disks.get(disk_name, {}).get("tags", [])
+        return tag in tags

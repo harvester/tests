@@ -9,10 +9,8 @@ from host.base import Base
 
 
 class Rest(Base):
-    """Host Rest implementation - makes actual API calls"""
-
     def __init__(self):
-        pass
+        super().__init__()
 
     def list_nodes(self):
         """List all nodes"""
@@ -171,6 +169,12 @@ class Rest(Base):
                 node_vms.append(vm['metadata']['name'])
 
         return node_vms
+
+    def add_lh_node_disk_tag(self, node_name, disk_name, tag):
+        return super().add_lh_node_disk_tag(node_name, disk_name, tag)
+
+    def remove_lh_node_disk_tag(self, node_name, disk_name, tag):
+        return super().remove_lh_node_disk_tag(node_name, disk_name, tag)
 
     def cleanup(self):
         """Clean up host test artifacts"""

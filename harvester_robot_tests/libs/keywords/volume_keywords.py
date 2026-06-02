@@ -59,7 +59,6 @@ class volume_keywords:
 
     def get_volume_status(self, volume_name):
         """Get volume status"""
-        logging(f'Getting status for volume {volume_name}')
         return self.volume.get_status(volume_name)
 
     def list_volumes(self):
@@ -69,7 +68,6 @@ class volume_keywords:
 
     def expand_volume(self, volume_name, new_size):
         """Expand volume size"""
-        logging(f'Expanding volume {volume_name} to {new_size}')
         self.volume.expand(volume_name, new_size)
 
     def create_volume_snapshot(self, volume_name, snapshot_name):

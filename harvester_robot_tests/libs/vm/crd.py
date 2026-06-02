@@ -5,12 +5,12 @@ import json
 import time
 from kubernetes import client
 from kubernetes.client.rest import ApiException
-from crd import get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted
+from crd import get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted, replace_cr
 from constant import (
     KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION,
     VIRTUALMACHINE_PLURAL, VIRTUALMACHINEINSTANCE_PLURAL,
     DEFAULT_NAMESPACE, LABEL_TEST, LABEL_TEST_VALUE,
-    DEFAULT_TIMEOUT_SHORT
+    DEFAULT_TIMEOUT_SHORT, DEFAULT_STORAGE_CLASS
 )
 from utility.utility import logging, get_retry_count_and_interval
 from vm.base import Base
@@ -29,14 +29,14 @@ class CRD(Base):
             get_retry_count_and_interval()
         )
 
-    def create(self, vm_name, cpu, memory, image_id, **kwargs):
+    def create(self, vm_name, image_id, cpu, memory, **kwargs):
         """Create a VM using CRD"""
         namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
 
         try:
             logging(f"Creating VirtualMachine {namespace}/{vm_name}")
             self._create_virtual_machine(
-                vm_name, cpu, memory, image_id, namespace, **kwargs
+                vm_name, image_id, cpu, memory, namespace, **kwargs
             )
 
             # Wait for VM to be created
@@ -51,8 +51,19 @@ class CRD(Base):
             raise
 
     def _create_virtual_machine(
-            self, vm_name, cpu, memory, image_id, namespace, **kwargs):
-        """Create VM matching Harvester's exact structure."""
+            self, vm_name, image_id, cpu, memory, namespace, **kwargs):
+        """Create VM matching Harvester's exact structure.
+
+        extra_disks: optional list of dicts passed via kwargs, each dict may contain:
+            - size: required, e.g. "10Gi"
+            - storage_class: optional, defaults to "harvester-longhorn"
+            - name: optional, defaults to "{vm_name}-disk-{index}"
+        Example:
+            extra_disks=[
+                {"size": "20Gi", "storage_class": "sc-lhv2"},
+                {"name": "data-2", "size": "50Gi"}
+            ]
+        """
 
         # Look up the image's actual storage class from Harvester.
         # Since v1.8.0 (harvester#5165), storage classes use lh-<uid>
@@ -81,22 +92,94 @@ class CRD(Base):
             )
 
         # Build volumeClaimTemplates annotation for Harvester
+        disk_name = "disk-0"
+        volume_name = f"{vm_name}-{disk_name}"
         volume_claim_templates = [
             {
                 "metadata": {
-                    "name": f"{vm_name}-disk-0",
+                    "name": volume_name,
                     "annotations": {
                         "harvesterhci.io/imageId": f"{namespace}/{image_id}"
+                    },
+                    "labels": {
+                        LABEL_TEST: LABEL_TEST_VALUE
                     }
                 },
                 "spec": {
                     "accessModes": ["ReadWriteMany"],
-                    "resources": {"requests": {"storage": "10Gi"}},
+                    "resources": {
+                        "requests": {
+                            "storage": "10Gi"
+                        }
+                    },
                     "volumeMode": "Block",
                     "storageClassName": storage_class
                 }
             }
         ]
+        spec_devices_disks = [
+            {
+                "bootOrder": 1,
+                "name": disk_name,
+                "disk": {
+                    "bus": "virtio"
+                }
+            }
+        ]
+        spec_volumes = [
+            {
+                "name": disk_name,
+                "persistentVolumeClaim": {
+                    "claimName": volume_name
+                }
+            }
+        ]
+
+        extra_disks = kwargs.get("extra_disks", [])
+        if extra_disks:
+            if not isinstance(extra_disks, list):
+                raise Exception("extra_disks must be a list of dicts")
+            for idx, disk in enumerate(extra_disks, start=1):
+                volume_name = disk.get("name", f"{vm_name}-disk-{idx}")
+                volume_claim_templates.append(
+                    {
+                        "metadata": {
+                            "name": volume_name,
+                            "labels": {
+                                LABEL_TEST: LABEL_TEST_VALUE
+                            }
+                        },
+                        "spec": {
+                            "accessModes": ["ReadWriteMany"],
+                            "resources": {
+                                "requests": {
+                                    "storage": disk["size"]
+                                }
+                            },
+                            "volumeMode": "Block",
+                            "storageClassName": disk.get("storage_class", DEFAULT_STORAGE_CLASS)
+                        }
+                    }
+                )
+                spec_devices_disks.append(
+                    {
+                        "name": volume_name,
+                        "disk": {
+                            "bus": "virtio"
+                        }
+                    }
+                )
+                spec_volumes.append(
+                    {
+                        "name": volume_name,
+                        "persistentVolumeClaim": {
+                            "claimName": volume_name
+                        }
+                    }
+                )
+
+        logging(f"Volume claim templates for VM {vm_name}: {volume_claim_templates}")
+        logging(f"Volume spec_devices_disks for VM {vm_name}: {spec_devices_disks}")
 
         # Build complete VM spec matching Harvester structure
         body = {
@@ -139,6 +222,7 @@ class CRD(Base):
                                 "threads": 1
                             },
                             "devices": {
+                                "disks": spec_devices_disks,
                                 "inputs": [
                                     {
                                         "bus": "usb",
@@ -177,11 +261,13 @@ class CRD(Base):
                         "networks": [
                             {"name": "default", "pod": {}}
                         ],
+                        "volumes": spec_volumes,
                         "terminationGracePeriodSeconds": 120
                     }
                 }
             }
         }
+        logging(f"Creating VM with spec: {body}")
 
         try:
             create_cr(
@@ -556,3 +642,45 @@ class CRD(Base):
                     logging(f'Error deleting VM {vm_name}: {e}', 'WARNING')
         except Exception as e:
             logging(f'Error during VM cleanup: {e}', 'WARNING')
+
+    def _get_disk_template(self, vm_name, disk_name, namespace):
+        vm = self.get(vm_name, namespace)
+        annotations = vm.get("metadata", {}).get("annotations", {})
+        templates_raw = annotations.get("harvesterhci.io/volumeClaimTemplates")
+        if not templates_raw:
+            raise Exception(f"VM {vm_name} has no volumeClaimTemplates annotation")
+
+        try:
+            volume_claim_templates = json.loads(templates_raw)
+        except json.JSONDecodeError as e:
+            raise Exception(f"Invalid volumeClaimTemplates JSON for VM {vm_name}: {e}")
+
+        for template in volume_claim_templates:
+            if template.get("metadata", {}).get("name") == disk_name:
+                return vm, annotations, volume_claim_templates, template
+        raise Exception(f"VM {vm_name} has no disk with PVC name {disk_name}")
+
+    def update_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
+        """Update VM disk size via volumeClaimTemplates annotation."""
+        vm, annotations, volume_claim_templates, target = self._get_disk_template(
+            vm_name, disk_name, namespace
+        )
+
+        # Modify spec with new configuration
+        target.setdefault(
+            "spec", {}).setdefault(
+                "resources", {}).setdefault(
+                    "requests", {})["storage"] = new_size
+        annotations["harvesterhci.io/volumeClaimTemplates"] = json.dumps(volume_claim_templates)
+        vm.setdefault("metadata", {})["annotations"] = annotations
+
+        # Apply updated spec
+        replace_cr(
+            group=KUBEVIRT_API_GROUP,
+            version=KUBEVIRT_API_VERSION,
+            namespace=namespace,
+            plural=VIRTUALMACHINE_PLURAL,
+            name=vm_name,
+            body=vm
+        )
+        logging(f"Updated disk size for {vm_name} {disk_name} to {new_size}")

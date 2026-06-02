@@ -17,7 +17,7 @@ class Rest(Base):
         self.retry_count, self.retry_interval = get_retry_count_and_interval()
         self.checksums = {}
 
-    def create(self, vm_name, cpu, memory, image_id, **kwargs):
+    def create(self, vm_name, image_id, cpu, memory, **kwargs):
         """Create a virtual machine"""
         api = get_harvester_api_client()
 

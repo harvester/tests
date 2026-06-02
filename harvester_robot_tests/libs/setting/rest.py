@@ -3,7 +3,6 @@
 Layer 4: Component and its implementation
 """
 
-from utility.utility import get_harvester_api_client
 from .base import Base
 
 
@@ -11,5 +10,10 @@ class Rest(Base):
     """REST implementation for Setting operations using Harvester API"""
 
     def __init__(self):
-        self.api_client = get_harvester_api_client()
-        self.port_forward_process = None
+        super().__init__()
+
+    def get(self, setting_id):
+        return super().get(setting_id)
+
+    def enable(self, setting_id):
+        return super().enable(setting_id)

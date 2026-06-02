@@ -7,26 +7,17 @@ from abc import ABC, abstractmethod
 
 
 class Base(ABC):
+    def __init__(self):
+        self.unsupported_msg = f"Unsupported by {self.__class__.__name__}, falling back."
+
     @abstractmethod
     def list(self, namespace):
-        """List blockdevices, optionally by namespace
-
-        Return a list of blockdevices
-        """
-        pass
+        raise NotImplementedError(self.unsupported_msg)
 
     @abstractmethod
     def get(self, name, namespace):
-        """Get blockdevice, optionally by name and namespace
-
-        Return a blockdevice or None
-        """
-        pass
+        raise NotImplementedError(self.unsupported_msg)
 
     @abstractmethod
     def provision_longhorn_storage(self, name, engine_version, namespace):
-        """Provision a blockdevice for Longhorn storage
-
-        Return nothing, but raise exception if operation fails
-        """
-        pass
+        raise NotImplementedError(self.unsupported_msg)

@@ -7,9 +7,9 @@ import sys
 
 # Add the path to the utility module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
-from utility.pod import get_pods_by_label    # noqa E402
-from utility.utility import generate_name_with_suffix   # noqa E402
-from utility.utility import init_harvester_api_client   # noqa E402
+from utility.pod import get_pods_by_label  # noqa E402
+from utility.utility import generate_name_with_suffix  # noqa E402
+from utility.utility import init_harvester_api_client  # noqa E402
 from utility.utility import init_k8s_api_client  # noqa E402
 from utility.utility import logging  # noqa E402
 
@@ -44,7 +44,13 @@ class common_keywords:
 
     def cleanup_volumes(self):
         """Cleanup volumes"""
-        logging('Cleanup volumes requested')
+        from volume import Volume
+        Volume().cleanup()
+
+    def cleanup_storageclasses(self):
+        """Cleanup storageclasses"""
+        from storageclass import StorageClass
+        StorageClass().cleanup()
 
     def cleanup_networks(self):
         """Cleanup networks"""

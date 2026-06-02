@@ -17,6 +17,7 @@ class CRD(Base):
 
     def __init__(self):
         """Initialize Kubernetes client"""
+        super().__init__()
         self.core_api = client.CoreV1Api()
         self.custom_api = client.CustomObjectsApi()
         self.common_parameters = {

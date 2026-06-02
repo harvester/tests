@@ -134,3 +134,11 @@ Count Standard Nodes
     ${node_names}=    host_keywords.get_standard_nodes
     ${node_count}=    Get Length    ${node_names}
     RETURN    ${node_count}
+
+Tag Storages
+    [Arguments]    ${tag}    ${disk_by_node}
+    FOR    ${node}    ${disk}    IN    &{disk_by_node}
+        host_keywords.add_lh_node_disk_tag    ${node}    ${disk}    ${tag}
+        Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+            ...    host_keywords.is_lh_node_disk_tag_present    ${node}    ${disk}    ${tag}
+    END

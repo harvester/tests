@@ -3,13 +3,19 @@
 Layer 4: Component and its implementation
 """
 
-from utility.utility import get_harvester_api_client
 from .base import Base
 
 
 class Rest(Base):
     """REST implementation for Blockdevice operations using Harvester API"""
-
     def __init__(self):
-        self.api_client = get_harvester_api_client()
-        self.port_forward_process = None
+        super().__init__()
+
+    def list(self, namespace):
+        return super().list(namespace)
+
+    def get(self, name, namespace):
+        return super().get(name, namespace)
+
+    def provision_longhorn_storage(self, name, engine_version, namespace):
+        return super().provision_longhorn_storage(name, engine_version, namespace)
