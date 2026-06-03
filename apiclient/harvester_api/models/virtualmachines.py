@@ -413,27 +413,32 @@ class VMSpec:
 class VMSpec160(VMSpec):
     # ref: https://docs.harvesterhci.io/v1.6/vm/cpu-memory-hotplug
     _cpu_mem_hotplug = False
-    _custom_max_cpu = _custom_max_mem = 0  # Init the value
-    _hotplug_ratio = 4  # Default value of max-hotplug-ratio setting
+    _custom_max_cpu = _custom_max_mem = _hotplug_ratio = 0  # Init the value
 
     def set_cpu_mem_hotplug(self, enable, custom_max_cpu=0, custom_max_mem=0, hotplug_ratio=4):
+        status_change = self._cpu_mem_hotplug != enable
+        # Don't need to update the spec if the status isn't changed, just return directly
+        if not status_change:
+            return
+
         self._cpu_mem_hotplug = enable
         if enable:
             self._custom_max_cpu = custom_max_cpu
             self._custom_max_mem = custom_max_mem
             self._hotplug_ratio = hotplug_ratio
+            # The behavior after enable the function
+            # Move cpu_cores value to cpu_sockets, and set cpu_cores = 1
+            self.cpu_sockets = self.cpu_cores
+            self.cpu_cores = 1
         else:
-            self._custom_max_cpu = self._custom_max_mem = 0
-            self._hotplug_ratio = 4
+            self._custom_max_cpu = self._custom_max_mem = self._hotplug_ratio = 0
+            self.cpu_cores = self.cpu_sockets
+            self.cpu_sockets = 1
 
     def to_dict(self, name, namespace, hostname=""):
         data = super().to_dict(name, namespace, hostname)
 
         if self._cpu_mem_hotplug:
-            # The behavior after enable the function
-            # Move cpu_cores value to cpu_sockets, and set cpu_cores = 1
-            self.cpu_sockets = self.cpu_cores
-            self.cpu_cores = 1
             memory = int(str(self.memory).replace("Gi", ""))
 
             if self._custom_max_cpu == 0:
@@ -445,7 +450,8 @@ class VMSpec160(VMSpec):
             else:
                 max_mem = self._custom_max_mem
 
-            data['metadata']['annotations']['harvesterhci.io/enableCPUAndMemoryHotplug'] = 'true'
+            data['metadata']['annotations'][
+                'harvesterhci.io/enableCPUAndMemoryHotplug'] = 'true'
             domain = data['spec']['template']['spec']['domain']
             domain['cpu']['cores'] = self.cpu_cores
             domain['cpu']['sockets'] = self.cpu_sockets
@@ -461,30 +467,21 @@ class VMSpec160(VMSpec):
                 'maxGuest': f'{max_mem}Gi'
             }
         else:
-            # If the function is enabled before, change values back
-            if data['metadata']['annotations'].get(
-               'harvesterhci.io/enableCPUAndMemoryHotplug', 'false') == 'true':
-                self.cpu_cores = self.cpu_sockets
-                self.cpu_sockets = 1
-                memory = int(str(self.memory).replace("Gi", ""))
-                data['metadata']['annotations'].pop(
-                    'harvesterhci.io/enableCPUAndMemoryHotplug', None)
-                domain = data['spec']['template']['spec']['domain']
-                domain['cpu']['cores'] = self.cpu_cores
-                domain['cpu']['sockets'] = self.cpu_sockets
-                domain['cpu']['maxSockets'] = self.cpu_sockets
-                domain['resources'] = {
-                    'limits': {
-                        'cpu': f'{self.cpu_cores}',
-                        'memory': f'{memory}Gi'
-                    }
+            memory = int(str(self.memory).replace("Gi", ""))
+            data['metadata']['annotations'].pop(
+                'harvesterhci.io/enableCPUAndMemoryHotplug', None)
+            domain = data['spec']['template']['spec']['domain']
+            domain['cpu']['cores'] = self.cpu_cores
+            domain['cpu']['sockets'] = self.cpu_sockets
+            domain['resources'] = {
+                'limits': {
+                    'cpu': f'{self.cpu_cores}',
+                    'memory': f'{memory}Gi'
                 }
-                domain['memory'] = {
-                    'guest': f'{memory}Gi'
-                }
-            else:
-                # No change if the function is not enabled before
-                pass
+            }
+            domain['memory'] = {
+                'guest': f'{memory}Gi'
+            }
 
         return data
 
@@ -497,8 +494,9 @@ class VMSpec160(VMSpec):
 
         if obj._cpu_mem_hotplug:
             domain = data['spec']['template']['spec']['domain']
-            max_cpu = int(domain['cpu']['maxSockets'])
-            max_mem = int(domain['memory']['maxGuest'].replace('Gi', ''))
+            # Get resources limit values
+            max_cpu = int(domain['resources']['limits']['cpu'])
+            max_mem = int(domain['resources']['limits']['memory'].replace('Gi', ''))
             mem = int(domain['memory']['guest'].replace('Gi', ''))
             # Use the ratio to determine
             if max_mem / mem == max_cpu / obj.cpu_sockets:
@@ -506,11 +504,10 @@ class VMSpec160(VMSpec):
             # Use the custom value to set
             else:
                 obj._hotplug_ratio = 4  # Set default value if the ratio isn't correct
-                obj._custom_max_cpu = max_cpu
-                obj._custom_max_mem = max_mem
+            obj._custom_max_cpu = max_cpu
+            obj._custom_max_mem = max_mem
         else:
-            obj._custom_max_cpu = obj._custom_max_mem = 0  # Init the value
-            obj._hotplug_ratio = 4
+            obj._custom_max_cpu = obj._custom_max_mem = obj._hotplug_ratio = 0  # Init the value
 
         return obj
 
