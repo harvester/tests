@@ -972,6 +972,10 @@ class TestAnyNodesUpgrade:
 
         assert not fails, "\n".join(fails)
 
+    @pytest.mark.skip_if_version(
+        "< v1.7.2",
+        reason="https://github.com/harvester/harvester/issues/10598"
+    )
     @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_vms"])
     def test_verify_restore_vm_from_snapshot(
         self, api_client, cluster_state, vm_shell, vm_checker, wait_timeout
