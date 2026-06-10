@@ -138,8 +138,19 @@ class TestHostState:
                 f", script path: {host_state.path}"
             )
 
-        _, node = api_client.hosts.get(node['id'])
-        assert node["metadata"]["state"]["name"] in ("in-progress", "unavailable")
+        # Retry for the node status change from draining to unavailable
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        expected_states = ("in-progress", "unavailable")
+        while endtime > datetime.now():
+            _, node = api_client.hosts.get(node['id'])
+            if node["metadata"]["state"]["name"] in expected_states:
+                break
+            sleep(5)
+        else:
+            raise AssertionError(
+                f"Node {node['id']} state is {node['metadata']['state']['name']}"
+                f", but we expected it to be {expected_states}"
+            )
 
     @pytest.mark.dependency(name="host_poweron", depends=["host_poweroff"])
     def test_poweron_state(self, api_client, host_state, wait_timeout, available_node_names):
