@@ -31,10 +31,9 @@ logger = logging.getLogger(__name__)
 @pytest.fixture(scope="module")
 def cluster_state(request, unique_name, api_client):
     class ClusterState:
-        vm1 = None
-        vm2 = None
-        vm3 = None
-        pass
+        vms = dangling = None
+        version = ""
+        version_verify = False
 
     state = ClusterState()
 
@@ -42,7 +41,6 @@ def cluster_state(request, unique_name, api_client):
         state.version_verify = True
         state.version = request.config.getoption('--upgrade-target-version')
     else:
-        state.version_verify = False
         state.version = f"version-{unique_name}"
 
     return state
@@ -125,7 +123,9 @@ def image(api_client, image_ubuntu, unique_name, wait_timeout):
 
 
 @pytest.fixture(scope='module')
-def cluster_network(vlan_nic, api_client, unique_name, network_checker, wait_timeout):
+def cluster_network(
+    vlan_nic, api_client, unique_name, network_checker, wait_timeout, cluster_state
+):
     code, data = api_client.clusternetworks.get_config()
     assert 200 == code, (code, data)
 
@@ -172,6 +172,10 @@ def cluster_network(vlan_nic, api_client, unique_name, network_checker, wait_tim
     yield cnet
 
     # Teardown
+    if cluster_state.dangling:
+        # VM-related test(s) have failed, so we should keep the VM network.
+        return
+
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         name = created.pop(0)
@@ -214,6 +218,10 @@ def vm_network(api_client, unique_name, wait_timeout, cluster_network, vlan_id, 
 
     cluster_state.network = data
     yield dict(name=unique_name, cidr=route['cidr'], namespace=data['metadata']['namespace'])
+
+    if cluster_state.dangling:
+        # VM-related test(s) have failed, so we should keep the VM network.
+        return
 
     code, data = api_client.networks.delete(unique_name)
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
@@ -781,7 +789,9 @@ class TestAnyNodesUpgrade:
         names = [unique_vm_name, f"r-{unique_vm_name}", f"sc-{unique_vm_name}"]
         cluster_state.vms = dict(
             md5=vm1_md5, names=names, ssh_user=image['user'], pkey=pri_key,
-            snapshot_name=snapshot_name)
+            snapshot_name=snapshot_name
+        )
+        cluster_state.dangling = {k: True for k in names}
 
     @pytest.mark.dependency(name="any_nodes_upgrade")
     def test_perform_upgrade(
@@ -972,10 +982,6 @@ class TestAnyNodesUpgrade:
 
         assert not fails, "\n".join(fails)
 
-    @pytest.mark.skip_if_version(
-        "< v1.7.2",
-        reason="https://github.com/harvester/harvester/issues/10598"
-    )
     @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_vms"])
     def test_verify_restore_vm_from_snapshot(
         self, api_client, cluster_state, vm_shell, vm_checker, wait_timeout
@@ -988,6 +994,7 @@ class TestAnyNodesUpgrade:
 
         snapshot_name = cluster_state.vms['snapshot_name']
         restored_vm_name = f"snap-r-{cluster_state.vms['names'][0]}"
+        cluster_state.dangling[restored_vm_name] = True
 
         # Restore VM from snapshot and check networking is good
         restore_spec = api_client.vm_snapshots.RestoreSpec.for_new(restored_vm_name)
@@ -1026,10 +1033,10 @@ class TestAnyNodesUpgrade:
             )
 
         # VMs should be able to delete after snapshot operations
-        for name in [restored_vm_name] + cluster_state.vms['names']:
-            code, data = api_client.vms.get(name)
-            vm_deleted, (code, data) = vm_checker.wait_deleted(name)
-            assert vm_deleted, (code, data)
+        code, data = api_client.vms.get(restored_vm_name)
+        vm_deleted, (code, data) = vm_checker.wait_deleted(restored_vm_name)
+        assert vm_deleted, (code, data)
+        del cluster_state.dangling[restored_vm_name]
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_vms"])
     def test_verify_restore_vm(
@@ -1043,6 +1050,7 @@ class TestAnyNodesUpgrade:
 
         backup_name = cluster_state.vms['names'][0]
         restored_vm_name = f"new-r-{backup_name}"
+        cluster_state.dangling[restored_vm_name] = True
 
         # Restore VM from backup and check networking is good
         restore_spec = api_client.backups.RestoreSpec.for_new(restored_vm_name)
@@ -1082,6 +1090,7 @@ class TestAnyNodesUpgrade:
         code, data = api_client.vms.get(restored_vm_name)
         vm_deleted, (code, data) = vm_checker.wait_deleted(restored_vm_name)
         assert vm_deleted, (code, data)
+        del cluster_state.dangling[restored_vm_name]
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_storageclass"])
     def test_verify_storage_class(self, api_client, cluster_state):
@@ -1319,3 +1328,19 @@ class TestAnyNodesUpgrade:
                 break
         else:
             raise AssertionError(f"Upgrade related image(s) still available:\n{upgrade_images}")
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_vms"])
+    def test_teardown_environment(self, api_client, cluster_state, vm_checker):
+        ''' Clean up helper test executed after the upgrade flow
+        1. Deletes the pre-upgrade VMs that were successfully verified, so module fixtures can
+          teardown cleanly.
+        '''
+
+        # remove those VMs created before upgrade and verified
+        for name in cluster_state.vms['names']:
+            if name in cluster_state.dangling:
+                code, data = api_client.vms.get(name)
+                if 404 != code:
+                    vm_deleted, (code, data) = vm_checker.wait_deleted(name)
+                    if vm_deleted:
+                        del cluster_state.dangling[name]
