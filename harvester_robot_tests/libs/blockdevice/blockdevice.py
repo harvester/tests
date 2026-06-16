@@ -35,3 +35,20 @@ class Blockdevice(Base):
 
     def provision_longhorn_storage(self, name, engine_version, namespace):
         self.blockdevice.provision_longhorn_storage(name, engine_version, namespace)
+
+    def identify_lvm_suitable(self, min_size_gib):
+        return self.blockdevice.identify_lvm_suitable(min_size_gib)
+
+    def create_lvm_volume_groups(self, disk_by_node, vg_type):
+        return self.blockdevice.create_lvm_volume_groups(disk_by_node, vg_type)
+
+    def provision_lvm_disk(self, disk_name, node_name, vg_name):
+        return self.blockdevice.provision_lvm_disk(disk_name, node_name, vg_name)
+
+    def wait_for_vgs_active(self, vg_node_map, timeout=None):
+        if timeout is not None:
+            return self.blockdevice.wait_for_vgs_active(vg_node_map, timeout)
+        return self.blockdevice.wait_for_vgs_active(vg_node_map)
+
+    def cleanup_lvm_volume_groups(self, disk_by_node):
+        return self.blockdevice.cleanup_lvm_volume_groups(disk_by_node)

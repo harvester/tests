@@ -22,7 +22,7 @@ class volume_keywords:
         """Clean up all test volumes"""
         self.volume.cleanup()
 
-    def create_volume(self, volume_name, size="2Gi", numberOfReplicas=3, frontend="blockdev", **kwargs):    # NOQA
+    def create_volume(self, volume_name, size="2Gi", numberOfReplicas=None, frontend=None, **kwargs):    # NOQA
         """Create a volume"""
         logging(f'Creating volume {volume_name}')
         self.volume.create(volume_name, size, numberOfReplicas, frontend, **kwargs)
@@ -86,3 +86,9 @@ class volume_keywords:
         """Restore volume from snapshot"""
         logging(f'Restoring volume from snapshot {snapshot_name}')
         self.volume.restore_from_snapshot(volume_name, snapshot_name, new_volume_name)
+
+    # LVM PVC methods
+    def expand_lvm_pvc(self, vol_name, new_size):
+        """Expand an LVM PVC to a new size"""
+        logging(f'Expanding LVM PVC {vol_name} to {new_size}')
+        return self.volume.expand_pvc(vol_name, new_size)

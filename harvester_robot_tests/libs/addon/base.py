@@ -66,3 +66,8 @@ class Base(ABC):
     def verify_prometheus_metric_exists(self, query, prometheus_url, retries=3, retry_interval=5):
         """Verify that a Prometheus metric exists with retry logic"""
         pass
+
+    @abstractmethod
+    def install_addon_yaml(self, url):
+        """Install an addon by applying a YAML manifest from a URL"""
+        pass

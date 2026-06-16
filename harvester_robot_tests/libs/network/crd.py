@@ -132,6 +132,25 @@ class CRD(Base):
                     f"Failed to delete VLAN config: {e}"
                 )
 
+    def wait_for_vlan_config_deleted(self, name, timeout=120):
+        """Wait for a VlanConfig CR to be fully removed"""
+        logging(f"Waiting for VLAN config {name} to be deleted")
+        deadline = time.time() + int(timeout)
+        while time.time() < deadline:
+            try:
+                self.custom_api.get_cluster_custom_object(
+                    group="network.harvesterhci.io",
+                    version="v1beta1",
+                    plural="vlanconfigs",
+                    name=name
+                )
+            except ApiException as e:
+                if e.status == 404:
+                    logging(f"VLAN config {name} deleted")
+                    return
+            time.sleep(5)
+        raise Exception(f"VLAN config {name} not deleted within {timeout}s")
+
     def wait_for_cluster_network_ready(self, name, timeout=120):
         """Wait for cluster network to become ready"""
         logging(f"Waiting for cluster network {name} to be ready")

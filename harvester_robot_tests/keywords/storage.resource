@@ -1,6 +1,9 @@
 *** Settings ***
 Documentation    Storage Keywords
 Library          ../libs/keywords/storage_keywords.py
+Library          ../libs/keywords/vm_keywords.py
+Library          ../libs/keywords/volume_keywords.py
+Library          Collections
 Resource         variables.resource
 Resource         common.resource
 Resource         host.resource
@@ -9,6 +12,10 @@ Resource         host.resource
 *** Variables ***
 &{DATA_DISK_BY_NODE}    &{EMPTY}
 ${LHv2_SC_REPLICAS}    ${EMPTY}
+${LVM_NODE_COUNT}                ${0}
+@{LVM_VOLUMES_CREATED}
+&{LVM_DISK_BY_NODE}              &{EMPTY}
+&{LVM_VG_NODE_MAP}               &{EMPTY}
 
 
 *** Keywords ***
@@ -77,3 +84,95 @@ Wait Until LHv2 Storages Are Provisioned
         Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
         ...    Longhorn Node Disk Is Schedulable    ${node}    ${disk}
     END
+
+# LVM Suite Setup Keywords
+Identify And Assign LVM Disks
+    [Documentation]    Identify nodes with at least one additional disk >= 50 GiB for LVM.
+    ...               Single-node cluster: needs 1 such node (creates vg-dm-thin only).
+    ...               Multi-node cluster: randomly picks 2 nodes (vg-dm-thin + vg-dm-striped).
+    ...               Skips the entire suite when no eligible nodes are found.
+    Log    Identifying disks suitable for LVM (>= 50 GiB)
+    &{LVM_DISK_BY_NODE}=    storage_keywords.identify_lvm_suitable_disks    ${50}
+    ${node_count}=    Get Length    ${LVM_DISK_BY_NODE}
+    Skip If    ${node_count} == 0
+    ...    No nodes found with a suitable disk >= 50 GiB — LVM tests require at least 1 eligible node
+    Set Suite Variable    &{LVM_DISK_BY_NODE}
+    Set Suite Variable    ${LVM_NODE_COUNT}    ${node_count}
+    Log    Found ${node_count} node(s) with LVM-suitable disks: ${LVM_DISK_BY_NODE}
+
+Create LVM Volume Groups
+    [Documentation]    Create volume groups from identified disks.
+    ...               Single-node: creates the VG matching ${LVM_VG_TYPE} (dm-thin or striped).
+    ...               Multi-node: creates vg-dm-thin + vg-dm-striped on separate nodes.
+    Log    Creating LVM volume groups (${LVM_NODE_COUNT} eligible node(s)) type=${LVM_VG_TYPE}
+    &{LVM_VG_NODE_MAP}=    storage_keywords.create_lvm_volume_groups    ${LVM_DISK_BY_NODE}    ${LVM_VG_TYPE}
+    Set Suite Variable    &{LVM_VG_NODE_MAP}
+    # Map the two accepted values to canonical VG/SC names and VM/VOL suffix
+    ${_vg_name}=    Set Variable If    '${LVM_VG_TYPE}' == 'dm-thin'    vg-dm-thin    vg-dm-striped
+    ${_sc_name}=    Set Variable If    '${LVM_VG_TYPE}' == 'dm-thin'    lvm-sc-dm-thin    lvm-sc-dm-striped
+    ${_suffix}=    Set Variable If    '${LVM_VG_TYPE}' == 'dm-thin'    thin    striped
+    Set Suite Variable    ${LVM_VG_ACTIVE}    ${_vg_name}
+    Set Suite Variable    ${LVM_SC_ACTIVE}    ${_sc_name}
+    Set Suite Variable    ${LVM_VM_BLOCK}    lvm-vm-block-${_suffix}
+    Set Suite Variable    ${LVM_VM_FS}    lvm-vm-fs-${_suffix}
+    Set Suite Variable    ${LVM_VM_SC}    lvm-vm-sc-${_suffix}
+    Set Suite Variable    ${LVM_VOL_BLOCK}    lvm-vol-block-${_suffix}
+    Set Suite Variable    ${LVM_VOL_FS}    lvm-vol-fs-${_suffix}
+    Log    LVM volume groups created: ${LVM_VG_NODE_MAP}
+    Log    Active config: VG=${_vg_name} SC=${_sc_name} VM/VOL suffix=${_suffix}
+
+# LVM Volume Keywords
+LVM Block Volume Is Created
+    [Arguments]    ${vol_name}    ${size}    ${sc_name}
+    [Documentation]    Create a block volume using the LVM StorageClass
+    Log    Creating LVM block volume ${vol_name} size=${size} sc=${sc_name}
+    volume_keywords.create_volume    ${vol_name}    ${size}    storage_class=${sc_name}    volume_mode=Block
+    Append To List    ${LVM_VOLUMES_CREATED}    ${vol_name}
+    Set Suite Variable    @{LVM_VOLUMES_CREATED}
+    Log    LVM block volume ${vol_name} created
+
+LVM Filesystem Volume Is Created
+    [Arguments]    ${vol_name}    ${size}    ${sc_name}
+    [Documentation]    Create a filesystem volume using the LVM StorageClass
+    Log    Creating LVM filesystem volume ${vol_name} size=${size} sc=${sc_name}
+    volume_keywords.create_volume    ${vol_name}    ${size}    storage_class=${sc_name}    volume_mode=Filesystem
+    Append To List    ${LVM_VOLUMES_CREATED}    ${vol_name}
+    Set Suite Variable    @{LVM_VOLUMES_CREATED}
+    Log    LVM filesystem volume ${vol_name} created
+
+# LVM Volume Expand Keywords
+LVM Volume Is Expanded Directly
+    [Arguments]    ${vol_name}    ${new_size}
+    [Documentation]    Expand LVM volume by editing the volume directly
+    Log    Expanding volume ${vol_name} to ${new_size} via volume edit
+    volume_keywords.expand_lvm_pvc    ${vol_name}    ${new_size}
+    Log    Volume ${vol_name} expanded to ${new_size}
+
+# LVM Cleanup
+Cleanup LVM Test Resources
+    [Documentation]    Cleanup all LVM test resources
+    Log    Cleaning up LVM test resources
+    # Delete VMs and root disk and wait for full termination before releasing volumes
+    FOR    ${vm_name}    IN    @{VMS_CREATED}
+        Run Keyword And Ignore Error    vm_keywords.delete_vm    ${vm_name}
+        Run Keyword And Ignore Error    vm_keywords.wait_for_vm_deleted    ${vm_name}
+        Run Keyword And Ignore Error    volume_keywords.delete_volume    ${vm_name}-disk-0
+    END
+    # Delete restored VMs (from snapshot restore to new VM tests)
+    FOR    ${vm_name}    IN    @{VMS_RESTORED}
+        Run Keyword And Ignore Error    vm_keywords.delete_vm    ${vm_name}
+        Run Keyword And Ignore Error    vm_keywords.wait_for_vm_deleted    ${vm_name}
+        Run Keyword And Ignore Error    volume_keywords.delete_volume    ${vm_name}-disk-0
+    END
+
+    # Delete Volumes
+    FOR    ${vol_name}    IN    @{LVM_VOLUMES_CREATED}
+        Run Keyword And Ignore Error    volume_keywords.delete_volume    ${vol_name}
+    END
+    # Delete StorageClasses
+    FOR    ${sc_name}    IN    @{LVM_SCS_CREATED}
+        Run Keyword And Ignore Error    storage_keywords.delete_lvm_storage_class    ${sc_name}
+    END
+    # Remove volume groups
+    Run Keyword And Ignore Error    storage_keywords.cleanup_lvm_volume_groups    ${LVM_DISK_BY_NODE}
+    Log    LVM test resources cleaned up

@@ -42,18 +42,6 @@ class common_keywords:
         from image import Image
         Image().cleanup()
 
-    def cleanup_volumes(self):
-        """Cleanup volumes"""
-        logging('Cleanup volumes requested')
-
-    def cleanup_networks(self):
-        """Cleanup networks"""
-        logging('Cleanup networks requested')
-
-    def cleanup_backups(self):
-        """Cleanup backups"""
-        logging('Cleanup backups requested')
-
     def list_pods_by_label(self, namespace, label_selector, status=None):
         """List pods by label"""
         pods = get_pods_by_label(namespace, label_selector)

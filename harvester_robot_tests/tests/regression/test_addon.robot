@@ -42,7 +42,7 @@ Test Rancher Monitoring Addon Deploys And Accessibility
     And Essential Harvester Metrics Should Exist
 
     # Cleanup
-    [Teardown]    addon.Stop Port Forward
+    [Teardown]    addon.Stop Prometheus Port Forward
 
 Test PCI Devices Controller Addon Deploys And Accessibility
     [Tags]    p0    coretest    pcidevices-controller

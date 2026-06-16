@@ -55,3 +55,21 @@ LHv2 Data Engine Is Enabled
 Wait Until LHv2 Data Engine Is Enabled
     Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
     ...    LHv2 Data Engine Is Enabled
+
+# LVM Setting Keywords
+Configure CSI Driver Setting For LVM
+    [Documentation]    Add LVM provisioner entry to csi-driver-config setting
+    Log    Configuring csi-driver-config for LVM snapshots
+    setting_keywords.configure_csi_driver
+    ...    csi-driver-config
+    ...    lvm.driver.harvesterhci.io
+    ...    lvm-snapshot
+    Log    CSI driver config updated for LVM
+
+Reset CSI Driver Setting For LVM
+    [Documentation]    Remove LVM provisioner entry from csi-driver-config setting
+    Log    Resetting csi-driver-config for LVM
+    setting_keywords.remove_csi_driver
+    ...    csi-driver-config
+    ...    lvm.driver.harvesterhci.io
+    Log    CSI driver config reset for LVM

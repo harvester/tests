@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'
 from constant import LARGE_DISK_BYTE  # noqa E402
 from utility.utility import logging  # noqa E402
 from blockdevice import Blockdevice  # noqa E402
+from storageclass import StorageClass  # noqa E402
 from host_keywords import host_keywords  # noqa E402
 
 
@@ -20,6 +21,7 @@ class storage_keywords:
     def __init__(self):
         """Initialize storage keywords with lazy loading"""
         self._blockdevice = None
+        self._sc = None
         self._host = None
 
     @property
@@ -35,6 +37,13 @@ class storage_keywords:
         if self._host is None:
             self._host = host_keywords()
         return self._host
+
+    @property
+    def sc(self):
+        """Lazy initialize StorageClass to allow API client setup first"""
+        if self._sc is None:
+            self._sc = StorageClass()
+        return self._sc
 
     def list_blockdevices(self, namespace):
         return self.blockdevice.list(namespace)
@@ -118,3 +127,35 @@ class storage_keywords:
         for condition in disk_status.get("conditions", []):
             if condition.get("type") == condition_type:
                 return condition.get("status")
+
+    # LVM-specific methods
+    def identify_lvm_suitable_disks(self, min_size_gib):
+        """Identify disks suitable for LVM on all nodes (>= min_size_gib GiB)"""
+        logging(f'Identifying LVM-suitable disks >= {min_size_gib} GiB')
+        return self.blockdevice.identify_lvm_suitable(int(min_size_gib))
+
+    def create_lvm_volume_groups(self, disk_by_node, vg_type):
+        """Create volume groups from identified disks"""
+        logging(f'Creating LVM volume groups from {disk_by_node} type={vg_type}')
+        return self.blockdevice.create_lvm_volume_groups(dict(disk_by_node), str(vg_type))
+
+    def get_node_for_vg(self, vg_name, vg_node_map):
+        """Get the node associated with a volume group"""
+        node = dict(vg_node_map).get(vg_name, "")
+        logging(f'Node for VG {vg_name}: {node}')
+        return node
+
+    def create_lvm_storage_class(self, sc_name, vg_name, vg_type, node):
+        """Create an LVM StorageClass"""
+        logging(f'Creating LVM StorageClass {sc_name} vg={vg_name} type={vg_type} node={node}')
+        return self.sc.create_lvm_sc(sc_name, vg_name, vg_type, node)
+
+    def delete_lvm_storage_class(self, sc_name):
+        """Delete an LVM StorageClass"""
+        logging(f'Deleting LVM StorageClass {sc_name}')
+        return self.sc.delete(sc_name)
+
+    def cleanup_lvm_volume_groups(self, disk_by_node):
+        """Remove LVM volume groups from disks"""
+        logging(f'Cleaning up LVM volume groups for {disk_by_node}')
+        return self.blockdevice.cleanup_lvm_volume_groups(dict(disk_by_node))

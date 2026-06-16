@@ -294,3 +294,8 @@ class addon_keywords:
         """
         logging(f'Getting nvidia-driver-toolkit addon configuration for {addon_name}')
         return self.addon.get_nvidia_toolkit_configuration(addon_name)
+
+    def install_addon_yaml(self, url):
+        """Install an addon by applying a YAML manifest from the given URL"""
+        logging(f'Installing addon from {url}')
+        return self.addon.install_addon_yaml(url)

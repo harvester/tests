@@ -63,11 +63,13 @@ class VM(Base):
     def write_data(self, vm_name, data_size_mb):
         return self.vm.write_data(vm_name, data_size_mb)
 
-    def get_data_checksum(self, vm_name):
-        return self.vm.get_data_checksum(vm_name)
+    def get_data_checksum(self, vm_name, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.get_data_checksum(vm_name, ns)
 
-    def create_snapshot(self, vm_name, snapshot_name):
-        return self.vm.create_snapshot(vm_name, snapshot_name)
+    def mount_data_disk(self, vm_name, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.mount_data_disk(vm_name, ns)
 
     def create_backup(self, vm_name, backup_name):
         return self.vm.create_backup(vm_name, backup_name)
@@ -77,3 +79,42 @@ class VM(Base):
 
     def cleanup(self):
         return self.vm.cleanup()
+
+    def attach_volume(self, vm_name, vol_name, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.attach_volume(vm_name, vol_name, ns)
+
+    def is_running(self, vm_name, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.is_running(vm_name, ns)
+
+    def is_stopped(self, vm_name, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.is_stopped(vm_name, ns)
+
+    def check_block_device(self, vm_name, namespace=None, expected_disk_size=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.check_block_device(vm_name, ns, expected_disk_size)
+
+    def write_data_and_get_checksum_on_disk(
+            self, vm_name, device, format_device=True, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.write_data_and_get_checksum_on_disk(
+            vm_name, device, format_device, ns)
+
+    def create_vm_with_volume_using_sc(self, vm_name, sc_name, image_id,
+                                       namespace=None, network_name=None):
+        return self.vm.create_vm_with_volume_using_sc(
+            vm_name, sc_name, image_id, network_name=network_name)
+
+    def delete_data(self, vm_name, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.delete_data(vm_name, ns)
+
+    def expand_volume_via_vm_edit(self, vm_name, vol_name, new_size, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.expand_volume_via_vm_edit(vm_name, vol_name, new_size, ns)
+
+    def verify_volume_size(self, vm_name, expected_size, namespace=None):
+        ns = namespace or DEFAULT_NAMESPACE
+        return self.vm.verify_volume_size(vm_name, expected_size, ns)

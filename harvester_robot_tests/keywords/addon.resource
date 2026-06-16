@@ -5,8 +5,18 @@ Library          Process
 Resource         variables.resource
 Resource         common.resource
 
+*** Variables ***
+${LVM_ADDON_URL}    https://raw.githubusercontent.com/harvester/experimental-addons/main/harvester-csi-driver-lvm/harvester-csi-driver-lvm.yaml
+
 *** Keywords ***
-Get Initial State
+Install Addon From URL
+    [Arguments]    ${url}
+    [Documentation]    Install an addon by applying a YAML manifest from the given URL
+    Log    Installing addon from ${url}
+    addon_keywords.install_addon_yaml    ${url}
+    Log    Addon YAML applied successfully
+
+Get Addon Initial State
     [Arguments]    ${addon_name}
     [Documentation]    Get initial state of addon (enabled/disabled)
     ...               Args:
@@ -18,7 +28,7 @@ Get Initial State
     Log    Addon ${addon_name} initial state: ${initial_state}
     RETURN    ${initial_state}
 
-Enable
+Enable Addon
     [Arguments]    ${addon_name}
     [Documentation]    Enable an addon
     ...               Args:
@@ -27,7 +37,7 @@ Enable
     addon_keywords.enable_addon    ${addon_name}
     Log    Addon ${addon_name} enable request sent
 
-Disable
+Disable Addon
     [Arguments]    ${addon_name}
     [Documentation]    Disable an addon
     ...               Args:
@@ -36,7 +46,7 @@ Disable
     addon_keywords.disable_addon    ${addon_name}
     Log    Addon ${addon_name} disable request sent
 
-Wait For Enabled
+Wait For Addon Enabled
     [Arguments]    ${addon_name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait until addon is enabled
     ...               Args:
@@ -46,7 +56,7 @@ Wait For Enabled
     addon_keywords.wait_for_addon_enabled    ${addon_name}    ${timeout}
     Log    Addon ${addon_name} is now enabled
 
-Wait For Disabled
+Wait For Addon Disabled
     [Arguments]    ${addon_name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait until addon is disabled
     ...               Args:
@@ -56,7 +66,7 @@ Wait For Disabled
     addon_keywords.wait_for_addon_disabled    ${addon_name}    ${timeout}
     Log    Addon ${addon_name} is now disabled
 
-Is Enabled
+Is Addon Enabled
     [Arguments]    ${addon_name}
     [Documentation]    Check if addon is enabled
     ...               Args:
@@ -76,7 +86,7 @@ Wait For Monitoring Pods Running
     addon_keywords.wait_for_monitoring_pods_running    ${namespace}    ${timeout}
     Log    Monitoring pods are now running
 
-Wait For Pods Running
+Wait For Addon Pods Running
     [Arguments]    ${namespace}    ${label}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait for pods matching label to be running in namespace
     ...               Args:
@@ -87,7 +97,7 @@ Wait For Pods Running
     addon_keywords.wait_for_pods_running    ${namespace}    ${label}    ${timeout}
     Log    Pods with label ${label} are running in ${namespace}
 
-Wait For Service Running
+Wait For Addon Service Running
     [Arguments]    ${namespace}    ${service_name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait for service to be running in namespace
     ...               Args:
@@ -98,7 +108,7 @@ Wait For Service Running
     addon_keywords.wait_for_service_running    ${namespace}    ${service_name}    ${timeout}
     Log    Service ${service_name} is running in ${namespace}
 
-Configure Nvidia Toolkit
+Configure Nvidia Toolkit Addon
     [Arguments]    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
     [Documentation]    Configure the nvidia-driver-toolkit addon with image repo, tag, and driver location
     ...               Args:
@@ -110,7 +120,7 @@ Configure Nvidia Toolkit
     addon_keywords.configure_nvidia_toolkit_addon    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
     Log    Nvidia-driver-toolkit addon configured
 
-Verify Nvidia Toolkit Configured
+Verify Nvidia Toolkit Addon Configured
     [Arguments]    ${addon_name}    ${image_repo}    ${image_tag}    ${driver_location}
     [Documentation]    Verify nvidia-driver-toolkit addon configuration is applied
     ...               Args:
@@ -141,7 +151,7 @@ Port Forward To Prometheus
     addon_keywords.port_forward_to_prometheus    ${namespace}    ${pod_name}    ${local_port}
     Log    Port forward established
 
-Stop Port Forward
+Stop Prometheus Port Forward
     [Documentation]    Stop port forwarding
     Log    Stopping port forward
     addon_keywords.stop_port_forward
@@ -173,7 +183,7 @@ Verify Prometheus Metric Exists
     Should Be True    ${exists}    Metric ${query} should exist
     Log    Metric ${query} verified successfully
 
-Restore State
+Restore Addon State
     [Arguments]    ${addon_name}    ${initial_state}
     [Documentation]    Restore addon to its initial state
     ...               Args:
@@ -187,16 +197,16 @@ Restore State
 Initial Addon State Is Captured
     [Arguments]    ${addon_name}
     [Documentation]    Capture and store the initial state of the addon
-    ${initial_state}=    Get Initial State    ${addon_name}
+    ${initial_state}=    Get Addon Initial State    ${addon_name}
     Set Suite Variable    ${INITIAL_STATE_MONITORING}    ${initial_state}
     Log    Captured initial addon state: ${initial_state}
 
 Monitoring Addon Is Enabled
     [Arguments]    ${addon_name}
     [Documentation]    Enable the monitoring addon and wait for deployment
-    ${is_enabled}=    Is Enabled    ${addon_name}
-    Run Keyword If    not ${is_enabled}    Enable    ${addon_name}
-    Wait For Enabled    ${addon_name}    timeout=900
+    ${is_enabled}=    Is Addon Enabled    ${addon_name}
+    Run Keyword If    not ${is_enabled}    Enable Addon    ${addon_name}
+    Wait For Addon Enabled    ${addon_name}    timeout=900
     Log    Monitoring addon ${addon_name} is enabled
 
 Monitoring Pods Should Be Running
@@ -237,11 +247,11 @@ Suite Teardown For Addon Tests
     Log    Running suite teardown for addon tests
     
     # Stop port forward if still running
-    Run Keyword And Ignore Error    Stop Port Forward
+    Run Keyword And Ignore Error    Stop Prometheus Port Forward
     
     # Restore addon to initial state
     Run Keyword If    '${INITIAL_STATE_MONITORING}' != 'None'
-    ...    Restore State    ${ADDON_MONITORING}    ${INITIAL_STATE_MONITORING}
+    ...    Restore Addon State    ${ADDON_MONITORING}    ${INITIAL_STATE_MONITORING}
     
     # Standard cleanup
     Cleanup test resources
@@ -265,28 +275,28 @@ Get Prometheus Pod Name
 Initial PCI Addon State Is Captured
     [Arguments]    ${addon_name}
     [Documentation]    Capture and store the initial state of the addon
-    ${initial_state}=    Get Initial State    ${addon_name}
+    ${initial_state}=    Get Addon Initial State    ${addon_name}
     Set Suite Variable    ${INITIAL_STATE_PCIDEVICES}    ${initial_state}
     Log    Captured initial addon state: ${initial_state}
 
 PCI Devices Addon Is Enabled
     [Arguments]    ${addon_name}
     [Documentation]    Enable the pcidevices-controller addon and wait for deployment
-    ${is_enabled}=    Is Enabled    ${addon_name}
-    Run Keyword If    not ${is_enabled}    Enable    ${addon_name}
-    Wait For Enabled    ${addon_name}    timeout=900
+    ${is_enabled}=    Is Addon Enabled    ${addon_name}
+    Run Keyword If    not ${is_enabled}    Enable Addon    ${addon_name}
+    Wait For Addon Enabled    ${addon_name}    timeout=900
     Log    PCI Devices addon ${addon_name} is enabled
 
 PCI Devices Controller Pods Should Be Running
     [Arguments]    ${namespace}    ${label}
     [Documentation]    Verify pcidevices-controller pods are running
-    Wait For Pods Running    ${namespace}    ${label}    timeout=900
+    Wait For Addon Pods Running    ${namespace}    ${label}    timeout=900
     Log    All pcidevices-controller pods are running in ${namespace}
 
 PCI Devices Webhook Service Should Be Running
     [Arguments]    ${namespace}    ${service_name}
     [Documentation]    Verify pcidevices-webhook service is running
-    Wait For Service Running    ${namespace}    ${service_name}    timeout=300
+    Wait For Addon Service Running    ${namespace}    ${service_name}    timeout=300
     Log    pcidevices-webhook service is running in ${namespace}
 
 Suite Setup For PCI Devices Addon Tests
@@ -299,6 +309,6 @@ Suite Teardown For PCI Devices Addon Tests
     [Documentation]    Cleanup and restore addon state after tests
     Log    Running suite teardown for PCI Devices addon tests
     Run Keyword If    '${INITIAL_STATE_PCIDEVICES}' != ${None}
-    ...    Restore State    ${ADDON_PCIDEVICES}    ${INITIAL_STATE_PCIDEVICES}
+    ...    Restore Addon State    ${ADDON_PCIDEVICES}    ${INITIAL_STATE_PCIDEVICES}
     Cleanup test resources
     Log    Suite teardown completed

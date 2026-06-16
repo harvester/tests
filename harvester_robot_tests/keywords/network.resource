@@ -45,6 +45,13 @@ Delete VLAN Config
     Log    Deleting VLAN config: ${name}
     network_keywords.delete_vlan_config    ${name}
 
+Wait For VLAN Config Deleted
+    [Arguments]    ${name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for VLAN config to be fully removed before proceeding.
+    ...               Required before deleting the parent ClusterNetwork.
+    Log    Waiting for VLAN config ${name} to be deleted
+    network_keywords.wait_for_vlan_config_deleted    ${name}    ${timeout}
+
 Wait For Cluster Network Ready
     [Arguments]    ${name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait for cluster network to become ready.

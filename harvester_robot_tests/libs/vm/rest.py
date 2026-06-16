@@ -7,7 +7,7 @@ from utility.utility import get_harvester_api_client
 from utility.utility import get_retry_count_and_interval
 from utility.utility import logging
 from vm.base import Base
-from constant import DEFAULT_NAMESPACE
+from constant import DEFAULT_NAMESPACE, DEFAULT_USER_DATA
 
 
 class Rest(Base):
@@ -36,6 +36,8 @@ class Rest(Base):
                 logging(f"Could not look up image UID for {image_id}: {e}",
                         level="WARNING")
             vm_spec.add_image("disk-0", image_id, image_uid=image_uid)
+
+        vm_spec.user_data = DEFAULT_USER_DATA
 
         code, data = api.vms.create(vm_name, vm_spec)
         assert code == 201, f"Failed to create VM: {code}, {data}"
@@ -181,12 +183,6 @@ class Rest(Base):
         """Get checksum of data in VM"""
         return self.checksums.get(vm_name, "")
 
-    def create_snapshot(self, vm_name, snapshot_name):
-        """Create a snapshot of the VM"""
-        api = get_harvester_api_client()
-        code, data = api.vms.create_snapshot(vm_name, snapshot_name)
-        assert code == 201, f"Failed to create snapshot: {code}, {data}"
-
     def create_backup(self, vm_name, backup_name):
         """Create a backup of the VM"""
         api = get_harvester_api_client()
@@ -214,3 +210,51 @@ class Rest(Base):
         """Clean up all VMs"""
         logging('Cleaning up test VMs')
         self.checksums.clear()
+
+    def create_vm_with_volume_using_sc(self, vm_name, sc_name, image_id):
+        raise NotImplementedError("REST implementation not available for VM.create_with_lvm_sc")
+
+    def create_for_lvm(self, vm_name, sc_name, image_id):
+        raise NotImplementedError("REST implementation not available for VM.create_for_lvm")
+
+    def attach_volume(self, vm_name, vol_name, namespace=None):
+        raise NotImplementedError("REST implementation not available for VM.attach_volume")
+
+    def is_running(self, vm_name, namespace=None):
+        raise NotImplementedError("REST implementation not available for VM.is_running")
+
+    def is_stopped(self, vm_name, namespace=None):
+        raise NotImplementedError("REST implementation not available for VM.is_stopped")
+
+    def write_data_and_get_checksum_on_disk(
+            self, vm_name, device, format_device=True, namespace=None):
+        raise NotImplementedError(
+            "REST implementation not available "
+            "for VM.write_data_and_get_checksum_on_disk")
+
+    def mount_data_disk(self, vm_name, namespace=None):
+        raise NotImplementedError(
+            "REST implementation not available for VM.mount_data_disk")
+
+    def delete_data(self, vm_name, namespace=None):
+        raise NotImplementedError("REST implementation not available for VM.delete_data")
+
+    def restore_snapshot_to_new_vm(self, snapshot_name, new_vm_name, namespace=None):
+        raise NotImplementedError("REST implementation not available"
+                                  "for VM.restore_snapshot_to_new_vm")
+
+    def restore_snapshot_to_existing_vm(self, snapshot_name, vm_name, namespace=None):
+        raise NotImplementedError("REST implementation not available"
+                                  "for VM.restore_snapshot_to_existing_vm")
+
+    def wait_for_restore_complete(self, restore_name, namespace, timeout):
+        raise NotImplementedError("REST implementation not available"
+                                  "for VM.wait_for_restore_complete")
+
+    def expand_volume_via_vm_edit(self, vm_name, vol_name, new_size, namespace=None):
+        raise NotImplementedError("REST implementation not available"
+                                  "for VM.expand_volume_via_vm_edit")
+
+    def verify_volume_size(self, vm_name, expected_size, namespace=None):
+        raise NotImplementedError("REST implementation not available"
+                                  "for VM.verify_volume_size")
