@@ -1037,6 +1037,11 @@ Multi node cluster is available
     [Documentation]    Verify multi-node cluster exists before proceeding.
     Skip If    '${MULTI_CLUSTER_ID}' == ''    Multi-node cluster not available
 
+Import cluster should be ready
+    [Documentation]    Skip the Rancher Apps chart tests if the imported cluster did not come up.
+    Skip If    not ${IMPORT_CLUSTER_READY}    Import cluster did not come up; skipping chart validation
+    Skip If    '${IMPORT_CLUSTER_ID}' == ''    Import cluster ID not available; skipping chart validation
+
 Next RKE2 version is available
     [Documentation]    Check if a newer RKE2 patch version exists on Rancher.
     ${next_version}=    Get Next RKE2 Version    ${RKE2_VERSION}    ${RANCHER_ENDPOINT}
@@ -1319,22 +1324,26 @@ Single node custom RKE2 cluster is deleted
 Single node import RKE2 cluster is created
     [Documentation]    Create a single-node import RKE2 cluster where RKE2 is deployed
     ...               via cloud-init on a Harvester VM and the cluster is imported
-    ...               into  Store its ID.
+    ...               into Rancher. Store its ID.
     Log    Creating import cluster: ${IMPORT_CLUSTER_NAME}    console=yes
-    ${cluster_id}=    Create Import RKE2 Cluster With Full Setup
+    ${cluster_id}=    Create Import RKE2 Cluster
     ...    ${IMPORT_CLUSTER_NAME}    1
     Set Suite Variable    ${IMPORT_CLUSTER_ID}    ${cluster_id}
+    Set Suite Variable    ${IMPORT_CLUSTER_READY}    ${True}
     Log    Import cluster created: ${IMPORT_CLUSTER_NAME} (${cluster_id})    console=yes
 
-Basic workloads are deployed on single node import cluster
-    [Documentation]    Deploy CSI, Whoami workloads on the import cluster.
-    ...               Harvester CSI driver and Cloud Provider are installed
-    ...               during cluster setup via Rancher Apps.
-    # CSI workload
+CSI workload is deployed on single node import cluster
+    [Documentation]    Deploy a CSI-backed workload (PVC + nginx deployment) on the
+    ...               import cluster to exercise the Harvester CSI driver.
     ${pvc_name}=    Set Variable    pvc-${IMPORT_CLUSTER_NAME}
     ${csi_deploy}=    Set Variable    csi-${IMPORT_CLUSTER_NAME}
     Create PVC    ${IMPORT_CLUSTER_ID}    ${pvc_name}    1Gi
     Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:1.27    ${pvc_name}
+
+Cloud provider workloads are deployed on single node import cluster
+    [Documentation]    Deploy a Whoami workload with DHCP and IP Pool LoadBalancer
+    ...               services on the import cluster to exercise the Harvester cloud
+    ...               provider.
     # Whoami workload
     ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
     Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
@@ -1346,6 +1355,12 @@ Basic workloads are deployed on single node import cluster
     ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
     Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
     Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_pool}
+
+Harvester CSI driver chart is installed on single node import cluster
+    Install Harvester CSI Driver Chart On Import Cluster    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}
+
+Harvester cloud provider chart is installed on single node import cluster
+    Install Harvester Cloud Provider Chart On Import Cluster    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}
 
 Multi node RKE2 cluster is deleted
     [Documentation]    Delete the multi-node RKE2 cluster and wait for removal.
@@ -1364,8 +1379,17 @@ Harvester deployments should be ready
 
 Harvester CSI driver should be ready
     [Arguments]    ${cluster_id}
-    [Documentation]    Verify only harvester-csi-driver is active (cloud provider skipped).
     Wait For Deployment Ready    ${cluster_id}    kube-system    harvester-csi-driver-controllers
+
+Harvester cloud provider should be ready
+    [Arguments]    ${cluster_id}
+    Wait For Deployment Ready    ${cluster_id}    kube-system    harvester-cloud-provider
+
+Import cluster should be ready and running
+    [Documentation]    Verify the imported cluster is active and running in Rancher.
+    Should Not Be Empty    ${IMPORT_CLUSTER_ID}    Import cluster ID not set
+    Wait For Import Cluster Ready    ${IMPORT_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
+    Log    Import cluster ${IMPORT_CLUSTER_NAME} (${IMPORT_CLUSTER_ID}) is ready and running    console=yes
 
 Basic workloads should be active on single node cluster
     [Documentation]    Verify CSI, Whoami, and both LB services are functional on the single-node cluster.
@@ -1395,19 +1419,25 @@ Basic workloads should be active on single node custom cluster
     Verify LB Via Cluster    ${CUSTOM_CLUSTER_ID}    ${lb_pool}    Hostname:
     Log    All basic workloads verified on custom cluster    console=yes
 
-Basic workloads should be active on single node import cluster
-    [Documentation]    Verify Whoami, CSI PVC/deployment and both LB services are functional on the import cluster.
-    ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
+CSI workload should be active on single node import cluster
+    [Documentation]    Verify the CSI PVC is bound and the CSI-backed deployment is
+    ...               running on the import cluster.
     ${pvc_name}=    Set Variable    pvc-${IMPORT_CLUSTER_NAME}
     ${csi_deploy}=    Set Variable    csi-${IMPORT_CLUSTER_NAME}
-    ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
-    ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
     Wait For PVC Bound    ${IMPORT_CLUSTER_ID}    ${pvc_name}
     Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}
+    Log    CSI workload verified on import cluster    console=yes
+
+Cloud provider workloads should be active on single node import cluster
+    [Documentation]    Verify the Whoami deployment and both LB services (DHCP and IP
+    ...               Pool) are functional on the import cluster.
+    ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
+    ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
+    ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
     Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}
     Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}    Hostname:
     Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_pool}    Hostname:
-    Log    All basic workloads verified on import cluster    console=yes
+    Log    Cloud provider workloads verified on import cluster    console=yes
 
 CSI deployment and PVC should be active
     [Documentation]    Verify the CSI PVC is bound and deployment is running.
@@ -1715,57 +1745,72 @@ Create Custom RKE2 Cluster With Full Setup
 # ============================================================
 # Shared import cluster creation keyword
 # ============================================================
-Install Harvester Charts On Import Cluster
+Ensure Harvester Chart Prerequisites On Import Cluster
     [Arguments]    ${cluster_id}    ${cluster_name}    ${chart_repo_branch}=${CHART_REPO_BRANCH}
-    [Documentation]    Install Harvester Cloud Provider and CSI Driver on an
-    ...               imported cluster via Rancher's chart catalog API.
-    ...               Creates the rancher-charts ClusterRepo on the guest cluster,
-    ...               creates a cloud-config secret, and installs both charts.
-    ...               The chart_repo_branch argument defaults to the CHART_REPO_BRANCH
-    ...               variable (e.g. release-v2.14) but can be overridden per call.
-    Log    Installing Harvester charts on import cluster ${cluster_name}    console=yes
+    [Documentation]    Create the shared prerequisites for installing Harvester charts:
+    ...               the rancher-charts ClusterRepo and cloud-provider-config secret.
+    IF    ${IMPORT_CHART_PREREQS_DONE}
+        Log    Harvester chart prerequisites already created on ${cluster_name}    console=yes
+        RETURN
+    END
+    Log    Creating Harvester chart prerequisites on import cluster ${cluster_name}    console=yes
 
     # Create rancher-charts ClusterRepo on the guest cluster
-    ${repo_name}=    Set Variable    rancher-charts
     Create Cluster Repo
-    ...    ${cluster_id}    ${repo_name}    ${CHART_REPO_URL}    ${chart_repo_branch}
-    Wait For Cluster Repo Ready    ${cluster_id}    ${repo_name}
-    Log    ClusterRepo ${repo_name} (branch=${chart_repo_branch}) is ready    console=yes
+    ...    ${cluster_id}    rancher-charts    ${CHART_REPO_URL}    ${chart_repo_branch}
+    Wait For Cluster Repo Ready    ${cluster_id}    rancher-charts
+    Log    ClusterRepo rancher-charts (branch=${chart_repo_branch}) is ready    console=yes
 
     # Create cloud-provider-config secret on the guest cluster
-    ${secret_name}=    Set Variable    harvester-cloud-provider-config
     Create Cloud Config Secret
-    ...    ${cluster_id}    ${secret_name}    kube-system    ${CP_KUBECONFIG}
+    ...    ${cluster_id}    harvester-cloud-provider-config    kube-system    ${CP_KUBECONFIG}
 
-    # file as a hostPath — the file must exist on the node before the pod starts.
-    Write Cloud Config To Nodes
-    ...    ${cluster_id}    ${secret_name}    kube-system
+    Set Suite Variable    ${IMPORT_CHART_PREREQS_DONE}    ${True}
 
-    # Get latest chart versions from the guest cluster's repo
-    ${cp_versions}=    Get Chart Versions    ${repo_name}    harvester-cloud-provider    ${cluster_id}
-    ${cp_version}=    Get From List    ${cp_versions}    0
-    ${csi_versions}=    Get Chart Versions    ${repo_name}    harvester-csi-driver    ${cluster_id}
+Install Harvester CSI Driver Chart On Import Cluster
+    [Arguments]    ${cluster_id}    ${cluster_name}
+    [Documentation]    Install the Harvester CSI Driver chart from Rancher Apps on an
+    ...               imported cluster. Uses the cloud-config secret (instead of a
+    ...               hostPath) and waits for the chart app to be deployed.
+    Ensure Harvester Chart Prerequisites On Import Cluster    ${cluster_id}    ${cluster_name}
+
+    # Get latest CSI driver chart version from the guest cluster's repo
+    ${csi_versions}=    Get Chart Versions    rancher-charts    harvester-csi-driver    ${cluster_id}
     ${csi_version}=    Get From List    ${csi_versions}    0
-    Log    harvester-cloud-provider chart version: ${cp_version}    console=yes
     Log    harvester-csi-driver chart version: ${csi_version}    console=yes
+
+    # Install Harvester CSI Driver — use secret instead of hostPath
+    ${csi_values}=    Evaluate    {"cloudConfig": {"hostPath": "", "secretName": "harvester-cloud-provider-config"}}
+    Install Chart
+    ...    ${cluster_id}    rancher-charts    harvester-csi-driver
+    ...    ${csi_version}    harvester-csi-driver    kube-system    ${csi_values}
+    Wait For Chart App Ready    ${cluster_id}    harvester-csi-driver    kube-system
+    Log    Harvester CSI Driver chart installed on import cluster    console=yes
+
+Install Harvester Cloud Provider Chart On Import Cluster
+    [Arguments]    ${cluster_id}    ${cluster_name}
+    [Documentation]    Install the Harvester Cloud Provider chart from Rancher Apps on
+    ...               an imported cluster. Writes the cloud-config to the node hostPath
+    ...               required by the chart and waits for the chart app to be deployed.
+    Ensure Harvester Chart Prerequisites On Import Cluster    ${cluster_id}    ${cluster_name}
+
+    # The cloud provider chart mounts the cloud-config file as a hostPath —
+    # the file must exist on the node before the pod starts.
+    Write Cloud Config To Nodes
+    ...    ${cluster_id}    harvester-cloud-provider-config    kube-system
+
+    # Get latest cloud provider chart version from the guest cluster's repo
+    ${cp_versions}=    Get Chart Versions    rancher-charts    harvester-cloud-provider    ${cluster_id}
+    ${cp_version}=    Get From List    ${cp_versions}    0
+    Log    harvester-cloud-provider chart version: ${cp_version}    console=yes
 
     # Install Harvester Cloud Provider
     ${cp_values}=    Evaluate    {"cloudConfigPath": "/var/lib/rancher/rke2/etc/config-files/cloud-provider-config", "global": {"cattle": {"clusterName": "${cluster_id}"}}}
     Install Chart
-    ...    ${cluster_id}    ${repo_name}    harvester-cloud-provider
+    ...    ${cluster_id}    rancher-charts    harvester-cloud-provider
     ...    ${cp_version}    harvester-cloud-provider    kube-system    ${cp_values}
     Wait For Chart App Ready    ${cluster_id}    harvester-cloud-provider    kube-system
-
-    # Build values for CSI driver chart — use secret instead of hostPath
-    ${csi_values}=    Evaluate    {"cloudConfig": {"hostPath": "", "secretName": "${secret_name}"}}
-
-    # Install Harvester CSI Driver
-    Install Chart
-    ...    ${cluster_id}    ${repo_name}    harvester-csi-driver
-    ...    ${csi_version}    harvester-csi-driver    kube-system    ${csi_values}
-    Wait For Chart App Ready    ${cluster_id}    harvester-csi-driver    kube-system
-
-    Log    Harvester charts installed on import cluster    console=yes
+    Log    Harvester Cloud Provider chart installed on import cluster    console=yes
 
 Write Cloud Config To Nodes
     [Arguments]    ${cluster_id}    ${secret_name}    ${namespace}
@@ -1778,12 +1823,11 @@ Write Cloud Config To Nodes
     ...    ${cluster_id}    ${secret_name}    ${namespace}
     RETURN    ${result}
 
-Create Import RKE2 Cluster With Full Setup
+Create Import RKE2 Cluster
     [Arguments]    ${cluster_name}    ${machine_count}    ${rke2_version}=${RKE2_VERSION}
     [Documentation]    Create a minimal import cluster in Rancher, deploy RKE2
     ...               on Harvester VMs via cloud-init, and import the cluster
     ...               using the Rancher registration manifest.
-    ...               Installs Harvester cloud provider and CSI driver.
     ...               Returns management cluster ID.
 
     # Create a minimal provisioning cluster in Rancher (import mode)
@@ -1849,13 +1893,6 @@ Create Import RKE2 Cluster With Full Setup
     ${cluster_id}=    Set Variable    ${cluster}[status][clusterName]
     Log    Import cluster ready: ${cluster_name} (ID: ${cluster_id})    console=yes
 
-    # Install Harvester cloud provider and CSI driver via Rancher Apps
-    Install Harvester Charts On Import Cluster    ${cluster_id}    ${cluster_name}
-
-    # Verify Harvester CSI deployment is ready (cloud provider skipped)
-    Wait For Deployment Ready    ${cluster_id}    kube-system    harvester-csi-driver-controllers
-    Log    Harvester CSI driver ready on import cluster    console=yes
-
     RETURN    ${cluster_id}
 
 # ============================================================
@@ -1896,6 +1933,8 @@ Suite Setup For Rancher Integration Tests
     Set Suite Variable    ${MULTI_CLUSTER_ID}       ${EMPTY}
     Set Suite Variable    ${CUSTOM_CLUSTER_ID}      ${EMPTY}
     Set Suite Variable    ${IMPORT_CLUSTER_ID}      ${EMPTY}
+    Set Suite Variable    ${IMPORT_CLUSTER_READY}        ${False}
+    Set Suite Variable    ${IMPORT_CHART_PREREQS_DONE}    ${False}
     Set Suite Variable    ${LB_DHCP_NAME}           ${EMPTY}
     Set Suite Variable    ${LB_POOL_NAME}           ${EMPTY}
     @{whoami_list}=    Create List
