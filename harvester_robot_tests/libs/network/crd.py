@@ -3,11 +3,17 @@ Network CRD Implementation - Kubernetes API operations
 Layer 4: Makes actual kubectl/K8s API calls for network operations
 """
 
-import time
 import json
-from kubernetes import client
 from kubernetes.client.rest import ApiException
-from constant import DEFAULT_NAMESPACE
+from crd import (
+    create_cr, create_cluster_cr,
+    delete_cr, delete_cluster_cr,
+    list_cr, list_cluster_cr,
+    wait_for_cr_deleted, wait_for_cluster_cr_deleted,
+    get_cluster_cr,
+    wait_for_cluster_cr_condition,
+)
+from constant import DEFAULT_NAMESPACE, LABEL_TEST, LABEL_TEST_VALUE, DEFAULT_TIMEOUT_SHORT
 from utility.utility import logging
 from network.base import Base
 
@@ -16,10 +22,6 @@ class CRD(Base):
     """
     CRD implementation for Network operations using Kubernetes API
     """
-
-    def __init__(self):
-        """Initialize Kubernetes clients"""
-        self.custom_api = client.CustomObjectsApi()
 
     # Cluster Network Operations
     def create_cluster_network(self, name):
@@ -30,12 +32,15 @@ class CRD(Base):
             "apiVersion": "network.harvesterhci.io/v1beta1",
             "kind": "ClusterNetwork",
             "metadata": {
-                "name": name
+                "name": name,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE
+                },
             }
         }
 
         try:
-            self.custom_api.create_cluster_custom_object(
+            create_cluster_cr(
                 group="network.harvesterhci.io",
                 version="v1beta1",
                 plural="clusternetworks",
@@ -51,22 +56,52 @@ class CRD(Base):
                 f"Failed to create cluster network: {e}"
             )
 
-    def delete_cluster_network(self, name):
+    def delete_cluster_network(self, name, wait=False):
         """Delete cluster network"""
         logging(f"Deleting cluster network: {name}")
         try:
-            self.custom_api.delete_cluster_custom_object(
+            delete_cluster_cr(
                 group="network.harvesterhci.io",
                 version="v1beta1",
                 plural="clusternetworks",
                 name=name
             )
+            if wait:
+                wait_for_cluster_cr_deleted(
+                    group="network.harvesterhci.io",
+                    version="v1beta1",
+                    plural="clusternetworks",
+                    name=name,
+                    timeout=DEFAULT_TIMEOUT_SHORT
+                )
             logging(f"Deleted cluster network: {name}")
         except ApiException as e:
             if e.status != 404:
                 raise Exception(
                     f"Failed to delete cluster network: {e}"
                 )
+
+    def list_cluster_networks(self, label_selector=None):
+        return list_cluster_cr(
+            group="network.harvesterhci.io",
+            version="v1beta1",
+            plural="clusternetworks",
+            label_selector=label_selector
+        ).get("items", [])
+
+    def cleanup_cluster_networks(self):
+        logging('Cleaning up test cluster networks')
+        try:
+            cnets = self.list_cluster_networks(label_selector=f"{LABEL_TEST}={LABEL_TEST_VALUE}")
+            for cnet in cnets:
+                name = cnet['metadata']['name']
+                try:
+                    logging(f'Deleting test cluster networks: {name}')
+                    self.delete_cluster_network(name, wait=True)
+                except Exception as e:
+                    logging(f'Error deleting cluster networks {name}: {e}', 'WARNING')
+        except Exception as e:
+            logging(f'Error during cluster networks cleanup: {e}', 'WARNING')
 
     def create_vlan_config(self, name, cluster_network, nic):
         """Create VLAN config to bind NIC to cluster network"""
@@ -79,8 +114,8 @@ class CRD(Base):
             "metadata": {
                 "name": name,
                 "labels": {
-                    "network.harvesterhci.io/clusternetwork":
-                        cluster_network
+                    "network.harvesterhci.io/clusternetwork": cluster_network,
+                    LABEL_TEST: LABEL_TEST_VALUE
                 }
             },
             "spec": {
@@ -99,7 +134,7 @@ class CRD(Base):
         }
 
         try:
-            self.custom_api.create_cluster_custom_object(
+            create_cluster_cr(
                 group="network.harvesterhci.io",
                 version="v1beta1",
                 plural="vlanconfigs",
@@ -115,16 +150,24 @@ class CRD(Base):
                 f"Failed to create VLAN config: {e}"
             )
 
-    def delete_vlan_config(self, name):
+    def delete_vlan_config(self, name, wait=False):
         """Delete VLAN config"""
         logging(f"Deleting VLAN config: {name}")
         try:
-            self.custom_api.delete_cluster_custom_object(
+            delete_cluster_cr(
                 group="network.harvesterhci.io",
                 version="v1beta1",
                 plural="vlanconfigs",
                 name=name
             )
+            if wait:
+                wait_for_cluster_cr_deleted(
+                    group="network.harvesterhci.io",
+                    version="v1beta1",
+                    plural="vlanconfigs",
+                    name=name,
+                    timeout=DEFAULT_TIMEOUT_SHORT
+                )
             logging(f"Deleted VLAN config: {name}")
         except ApiException as e:
             if e.status != 404:
@@ -132,35 +175,48 @@ class CRD(Base):
                     f"Failed to delete VLAN config: {e}"
                 )
 
+    def list_vlan_configs(self, label_selector=None):
+        return list_cluster_cr(
+            group="network.harvesterhci.io",
+            version="v1beta1",
+            plural="vlanconfigs",
+            label_selector=label_selector
+        ).get("items", [])
+
+    def cleanup_vlan_configs(self):
+        logging('Cleaning up test vlan configs')
+        try:
+            vlan_configs = self.list_vlan_configs(
+                label_selector=f"{LABEL_TEST}={LABEL_TEST_VALUE}"
+            )
+            for vlan_config in vlan_configs:
+                name = vlan_config['metadata']['name']
+                try:
+                    logging(f'Deleting test vlan configs: {name}')
+                    self.delete_vlan_config(name, wait=True)
+                except Exception as e:
+                    logging(f'Error deleting vlan configs {name}: {e}', 'WARNING')
+        except Exception as e:
+            logging(f'Error during vlan configs cleanup: {e}', 'WARNING')
+
     def wait_for_cluster_network_ready(self, name, timeout=120):
         """Wait for cluster network to become ready"""
         logging(f"Waiting for cluster network {name} to be ready")
-        deadline = time.time() + int(timeout)
-
-        while time.time() < deadline:
-            try:
-                cn = self.custom_api.get_cluster_custom_object(
-                    group="network.harvesterhci.io",
-                    version="v1beta1",
-                    plural="clusternetworks",
-                    name=name
-                )
-                conditions = cn.get("status", {}).get(
-                    "conditions", []
-                )
-                for cond in conditions:
-                    if (cond.get("type") == "ready"
-                            and cond.get("status") == "True"):
-                        logging(
-                            f"Cluster network {name} is ready"
-                        )
-                        return cn
-            except ApiException:
-                pass
-            time.sleep(5)
-
-        raise Exception(
-            f"Cluster network {name} not ready within {timeout}s"
+        wait_for_cluster_cr_condition(
+            group="network.harvesterhci.io",
+            version="v1beta1",
+            plural="clusternetworks",
+            name=name,
+            condition_type="ready",
+            condition_status="True",
+            timeout=timeout
+        )
+        logging(f"Cluster network {name} is ready")
+        return get_cluster_cr(
+            group="network.harvesterhci.io",
+            version="v1beta1",
+            plural="clusternetworks",
+            name=name
         )
 
     # VLAN Network Operations
@@ -179,9 +235,9 @@ class CRD(Base):
                         '{"mode":"auto"}'
                 },
                 "labels": {
-                    "network.harvesterhci.io/clusternetwork":
-                        cluster_network,
-                    "network.harvesterhci.io/type": "L2VlanNetwork"
+                    "network.harvesterhci.io/clusternetwork": cluster_network,
+                    "network.harvesterhci.io/type": "L2VlanNetwork",
+                    LABEL_TEST: LABEL_TEST_VALUE
                 }
             },
             "spec": {
@@ -198,7 +254,7 @@ class CRD(Base):
         }
 
         try:
-            self.custom_api.create_namespaced_custom_object(
+            create_cr(
                 group="k8s.cni.cncf.io",
                 version="v1",
                 namespace=DEFAULT_NAMESPACE,
@@ -215,17 +271,26 @@ class CRD(Base):
                 f"Failed to create VLAN network: {e}"
             )
 
-    def delete_vlan_network(self, name):
+    def delete_vlan_network(self, name, wait=False):
         """Delete VLAN network"""
         logging(f"Deleting VLAN network: {name}")
         try:
-            self.custom_api.delete_namespaced_custom_object(
+            delete_cr(
                 group="k8s.cni.cncf.io",
                 version="v1",
                 namespace=DEFAULT_NAMESPACE,
                 plural="network-attachment-definitions",
                 name=name
             )
+            if wait:
+                wait_for_cr_deleted(
+                    group="k8s.cni.cncf.io",
+                    version="v1",
+                    namespace=DEFAULT_NAMESPACE,
+                    plural="network-attachment-definitions",
+                    name=name,
+                    timeout=DEFAULT_TIMEOUT_SHORT
+                )
             logging(f"Deleted VLAN network: {name}")
         except ApiException as e:
             if e.status != 404:
@@ -233,13 +298,36 @@ class CRD(Base):
                     f"Failed to delete VLAN network: {e}"
                 )
 
+    def list_vlan_networks(self, label_selector=None):
+        return list_cr(
+            group="k8s.cni.cncf.io",
+            version="v1",
+            namespace=DEFAULT_NAMESPACE,
+            plural="network-attachment-definitions",
+            label_selector=label_selector
+        ).get("items", [])
+
+    def cleanup_vlan_networks(self):
+        logging('Cleaning up test vlan networks')
+        try:
+            vnets = self.list_vlan_networks(label_selector=f"{LABEL_TEST}={LABEL_TEST_VALUE}")
+            for vnet in vnets:
+                name = vnet['metadata']['name']
+                try:
+                    logging(f'Deleting test vlan network: {name}')
+                    self.delete_vlan_network(name, wait=True)
+                except Exception as e:
+                    logging(f'Error deleting vlan network {name}: {e}', 'WARNING')
+        except Exception as e:
+            logging(f'Error during vlan network cleanup: {e}', 'WARNING')
+
     # IP Pool Operations
     def get_ip_pool(self, name):
         """Get IP pool by name, returns None if not found"""
         lb_group = "loadbalancer.harvesterhci.io"
         lb_version = "v1beta1"
         try:
-            return self.custom_api.get_cluster_custom_object(
+            return get_cluster_cr(
                 group=lb_group,
                 version=lb_version,
                 plural="ippools",
@@ -290,7 +378,7 @@ class CRD(Base):
         }
 
         try:
-            self.custom_api.create_cluster_custom_object(
+            create_cluster_cr(
                 group=lb_group,
                 version=lb_version,
                 plural="ippools",
@@ -314,7 +402,7 @@ class CRD(Base):
         lb_version = "v1beta1"
 
         try:
-            self.custom_api.delete_cluster_custom_object(
+            delete_cluster_cr(
                 group=lb_group,
                 version=lb_version,
                 plural="ippools",

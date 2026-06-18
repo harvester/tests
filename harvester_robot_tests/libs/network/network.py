@@ -46,6 +46,9 @@ class Network(Base):
         """Delete cluster network"""
         return self.network.delete_cluster_network(name)
 
+    def cleanup_cluster_networks(self):
+        return self.network.cleanup_cluster_networks()
+
     def create_vlan_config(self, name, cluster_network, nic):
         """Create VLAN config to bind NIC to cluster network"""
         return self.network.create_vlan_config(
@@ -55,6 +58,9 @@ class Network(Base):
     def delete_vlan_config(self, name):
         """Delete VLAN config"""
         return self.network.delete_vlan_config(name)
+
+    def cleanup_vlan_configs(self):
+        return self.network.cleanup_vlan_configs()
 
     def wait_for_cluster_network_ready(self, name, timeout=120):
         """Wait for cluster network to become ready"""
@@ -70,6 +76,9 @@ class Network(Base):
     def delete_vlan_network(self, name):
         """Delete VLAN network"""
         return self.network.delete_vlan_network(name)
+
+    def cleanup_vlan_networks(self):
+        return self.network.cleanup_vlan_networks()
 
     # IP Pool Operations
     def get_ip_pool(self, name):
