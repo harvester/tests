@@ -38,15 +38,6 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def wait_for_storage_network_ready(self, timeout):
-        """Wait for storage-network setting to be applied and completed.
-
-        Args:
-            timeout: Timeout in seconds
-        """
-        pass
-
-    @abstractmethod
     def get_vlan_network_cidr(self, vlan_id, cluster_network):
         """Get the CIDR for a VLAN network by creating a temporary network.
 

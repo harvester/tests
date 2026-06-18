@@ -27,12 +27,22 @@ Get Status
     ${status}=    storage_network_keywords.get_storage_network_status
     RETURN    ${status}
 
-Wait For Ready
+Is Enabled
+    [Arguments]    ${snet_cidr}
+    ${enabled}=    storage_network_keywords.is_storage_network_enabled_in_config
+    Should Be True    ${enabled}    Storage network config (Harvester) is NOT enabled
+    ${enabled}=    storage_network_keywords.is_storage_network_enabled_on_pods    ${snet_cidr}
+    Should Be True    ${enabled}    Storage network service (Longhorn) is NOT enabled
+
+Wait For Enabled
+    [Arguments]    ${snet_cidr}    ${timeout}=${WAIT_TIMEOUT}
+    storage_network_keywords.wait_storage_network_enabled_in_config    ${timeout}
+    storage_network_keywords.wait_storage_network_enabled_on_pods    ${snet_cidr}    ${timeout}
+
+Wait For Disabled
     [Arguments]    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait for storage-network to be applied and completed.
-    Log    Waiting for storage network to be ready
-    ${data}=    storage_network_keywords.wait_for_storage_network_ready    ${timeout}
-    RETURN    ${data}
+    storage_network_keywords.wait_storage_network_disabled_in_config    ${timeout}
+    storage_network_keywords.wait_storage_network_disabled_on_pods    ${timeout}
 
 Get Vlan Network CIDR
     [Arguments]    ${vlan_id}    ${cluster_network}

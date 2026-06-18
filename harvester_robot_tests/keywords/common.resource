@@ -12,12 +12,14 @@ Set up test environment
     common_keywords.init k8s api client
 
 Generate Unique Name
-    [Arguments]    ${prefix1}=${EMPTY}    ${prefix2}=${EMPTY}
-    [Documentation]    Generate a unique name with optional prefixes and yymmdd-HHMMSS-ffffqa timestamp suffix
-    ...  Generate Unique Name            -> '260603-145834-1273qa'
-    ...  Generate Unique Name  foo       -> 'foo-260603-145834-1273qa'
-    ...  Generate Unique Name  foo  bar  -> 'foo-bar-2260603-145834-1273qa'
-    ${name}=    common_keywords.generate_name_with_suffix    ${prefix1}    ${prefix2}
+    [Arguments]    ${prefix1}=${EMPTY}    ${prefix2}=${EMPTY}    ${precise}=${FALSE}
+    [Documentation]    Generate a name with timestamp suffix and optional prefixes
+    ...  The timestamp format is `%m%d%H%M` by default and `%m%d%H%M%S%f` when precise=${TRUE}
+    ...  Examples:
+    ...  Generate Unique Name            -> '06181015'
+    ...  Generate Unique Name  foo       -> 'foo-06181015'
+    ...  Generate Unique Name  foo  bar  precise=${TRUE}-> 'foo-bar-0618101519681156'
+    ${name}=    common_keywords.generate_name_with_suffix    ${prefix1}    ${prefix2}    ${precise}
     RETURN    ${name}
 
 Cleanup test resources
