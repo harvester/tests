@@ -12,6 +12,7 @@ from utility.utility import generate_name_with_suffix  # noqa E402
 from utility.utility import init_harvester_api_client  # noqa E402
 from utility.utility import init_k8s_api_client  # noqa E402
 from utility.utility import logging  # noqa E402
+from constant import LONGHORN_NAMESPACE  # noqa E402
 
 
 class common_keywords:
@@ -28,9 +29,9 @@ class common_keywords:
         """Initialize Kubernetes API client"""
         return init_k8s_api_client()
 
-    def generate_name_with_suffix(self, kind, suffix):
+    def generate_name_with_suffix(self, kind, suffix, precise=False):
         """Generate unique name with timestamp"""
-        return generate_name_with_suffix(kind, suffix)
+        return generate_name_with_suffix(kind, suffix, precise)
 
     def cleanup_vms(self):
         """Cleanup VMs"""
@@ -54,17 +55,33 @@ class common_keywords:
 
     def cleanup_networks(self):
         """Cleanup networks"""
-        logging('Cleanup networks requested')
+        from network import Network
+        net = Network()
+        net.cleanup_vlan_networks()
+        net.cleanup_vlan_configs()
+        net.cleanup_cluster_networks()
 
     def cleanup_backups(self):
         """Cleanup backups"""
         logging('Cleanup backups requested')
 
     def list_pods_by_label(self, namespace, label_selector, status=None):
-        """List pods by label"""
+        """List pods by label
+        Returns: list of V1Pod objects
+        """
         pods = get_pods_by_label(namespace, label_selector)
         if status:
             pods = [pod for pod in pods if pod.status.phase == status]
         logging(f"Found {len(pods)} pods by label {label_selector} in namespace {namespace}: \
                 {[pod.metadata.name for pod in pods]}")
         return pods
+
+    def list_running_im_pods(self):
+        """List running instance-manager pods
+        Returns: list of V1Pod objects
+        """
+        return self.list_pods_by_label(
+            namespace=LONGHORN_NAMESPACE,
+            label_selector='longhorn.io/data-engine=v1,longhorn.io/component=instance-manager',
+            status='Running'
+        )
