@@ -8,7 +8,7 @@ import subprocess
 import json
 from kubernetes import client
 from kubernetes.client.rest import ApiException
-from constant import DEFAULT_TIMEOUT, DEFAULT_NAMESPACE
+from constant import DEFAULT_NAMESPACE
 from utility.utility import logging
 from storage_network.base import Base
 
@@ -108,36 +108,6 @@ class CRD(Base):
             )
 
         return json.loads(stdout)
-
-    def wait_for_storage_network_ready(self, timeout=DEFAULT_TIMEOUT):
-        """Wait for storage-network to be applied and completed"""
-        logging("Waiting for storage-network to be ready")
-
-        end_time = time.time() + int(timeout)
-        while time.time() < end_time:
-            try:
-                data = self.get_storage_network_status()
-                conditions = (data.get("status", {})
-                              .get("conditions", []))
-                if conditions:
-                    last = conditions[-1]
-                    if (last.get("status") == "True"
-                            and last.get("reason") == "Completed"
-                            and data.get("value")):
-                        logging("Storage network is ready (Completed)")
-                        return data
-                    logging(f"Storage network status: "
-                            f"reason={last.get('reason')}, "
-                            f"status={last.get('status')}")
-            except Exception as e:
-                logging(f"Error checking storage-network: {e}",
-                        level="WARNING")
-
-            time.sleep(10)
-
-        raise Exception(
-            "Timeout waiting for storage-network to be ready"
-        )
 
     def get_vlan_network_cidr(self, vlan_id, cluster_network):
         """Get CIDR by creating a temp VLAN network and reading its route"""

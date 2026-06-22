@@ -58,11 +58,15 @@ def get_timestamp():
     return datetime.now().strftime("%Y%m%d%H%M%S")
 
 
-def generate_name_with_suffix(kind, suffix):
-    """Generate unique name with timestamp suffix"""
-    timestamp = datetime.now().strftime("%y%m%d-%H%M%S-%f")[:-2]
-    name = "-".join([s for s in [kind, suffix, timestamp] if s])
-    return name+"qa"    # Add 'qa' suffix to all generated names for easier identification
+def generate_name_with_suffix(kind, suffix, precise=False):
+    """Generate unique name with timestamp suffix
+    e.g.
+    * %m%d%H%M -> 06181015 (general, covers resources with limited length like cluster network)
+    * %m%d%H%M%S%f -> 0618101519681156 (precise, for highly concurrent tests to avoid collisions)
+    """
+    format_str = "%m%d%H%M%S%f" if precise else "%m%d%H%M"
+    timestamp = datetime.now().strftime(format_str)
+    return "-".join([s for s in [kind, suffix, timestamp] if s])
 
 
 def get_retry_count_and_interval():
