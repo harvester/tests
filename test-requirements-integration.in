@@ -1,4 +1,3 @@
 # deprecate juggling installing one-off-packages, in ansible secops
 # coming from rancher_integration_tests -> main.yml need
-pytest-timeout==2.4.0
 kubernetes==35.0.0
