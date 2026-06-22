@@ -120,7 +120,7 @@ class Rest(Base):
     def list(self, namespace):
         """List all images"""
         api = get_harvester_api_client()
-        code, data = api.images.list(namespace)
+        code, data = api.images.get("", namespace)
         assert code == 200, f"Failed to list images: {code}, {data}"
 
         images = []

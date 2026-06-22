@@ -1,7 +1,9 @@
 
 """
-VM Component - delegates to Rest implementation
+VM Component - delegates to CRD or REST implementation
 """
+import os
+
 from constant import HarvesterOperationStrategy, DEFAULT_NAMESPACE
 from vm.rest import Rest
 from vm.crd import CRD
@@ -9,14 +11,13 @@ from vm.base import Base
 
 
 class VM(Base):
-    # Set desired operation strategy here
-    _strategy = HarvesterOperationStrategy.CRD
-
+    """VM component - selects implementation by HARVESTER_OPERATION_STRATEGY"""
     def __init__(self):
-        if self._strategy == HarvesterOperationStrategy.CRD:
-            self.vm = CRD()
-        else:
+        strategy_str = os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower()
+        if strategy_str == HarvesterOperationStrategy.REST.value:
             self.vm = Rest()
+        else:
+            self.vm = CRD()
 
     def create(self, vm_name, image_id, cpu, memory, **kwargs):
         return self.vm.create(vm_name, image_id, cpu, memory, **kwargs)

@@ -36,21 +36,19 @@ def get_harvester_api_client():
 
 
 def init_harvester_api_client(endpoint, username, password):
-    """Initialize the shared Harvester API client"""
+    """Initialize the shared Harvester API client (apiclient/harvester_api)"""
     global _harvester_api_client
 
-    from harvester_api import create_harvester_api_client
+    from utility.api_client import RobotHarvesterAPI
 
     logging(f'Initializing Harvester API client for {endpoint}')
 
-    _harvester_api_client = create_harvester_api_client(
-        endpoint=endpoint,
-        username=username,
-        password=password,
-        verify_ssl=False
+    _harvester_api_client = RobotHarvesterAPI.login(
+        endpoint, username, password, ssl_verify=False
     )
 
-    logging('Harvester API client initialized successfully')
+    logging('Harvester API client initialized successfully '
+            f'(cluster version: {_harvester_api_client.raw_version})')
     return _harvester_api_client
 
 
