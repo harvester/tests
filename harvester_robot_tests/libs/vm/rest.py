@@ -24,10 +24,11 @@ class Rest(Base):
         vm_spec = api.vms.Spec(cpu, memory)
 
         if image_id:
-            # Look up image UID for v1.8.0+ storage class naming (lh-<uid>)
+            # The version-aware VMSpec decides whether the UID is needed
+            # (v1.8.0+ names the image storage class lh-<uid>)
             image_uid = None
             try:
-                code_img, img_data = api.images.get(image_id)
+                code_img, img_data = api.images.get(image_id.split('/')[-1])
                 if code_img == 200:
                     image_uid = img_data.get(
                         "metadata", {}
@@ -50,7 +51,7 @@ class Rest(Base):
     def list(self, namespace=DEFAULT_NAMESPACE):
         """List VMs in a namespace"""
         api = get_harvester_api_client()
-        code, data = api.vms.get(namespace=namespace)
+        code, data = api.vms.get("", namespace)
         assert code == 200, f"Failed to list VMs: {code}, {data}"
         return data.get("data", [])
 
@@ -97,7 +98,8 @@ class Rest(Base):
 
         endtime = datetime.now() + timedelta(seconds=timeout)
         while endtime > datetime.now():
-            code, data = api.vms.get_status(vm_name)
+            # printableStatus lives on the VM object, not the VMI
+            code, data = api.vms.get(vm_name)
             if code == 200 and data.get('status', {}).get('printableStatus') == 'Stopped':
                 return True
             time.sleep(3)
@@ -184,14 +186,15 @@ class Rest(Base):
     def create_snapshot(self, vm_name, snapshot_name):
         """Create a snapshot of the VM"""
         api = get_harvester_api_client()
-        code, data = api.vms.create_snapshot(vm_name, snapshot_name)
+        code, data = api.vm_snapshots.create(vm_name, snapshot_name)
         assert code == 201, f"Failed to create snapshot: {code}, {data}"
 
     def create_backup(self, vm_name, backup_name):
         """Create a backup of the VM"""
         api = get_harvester_api_client()
-        code, data = api.vms.create_backup(vm_name, backup_name)
-        assert code == 201, f"Failed to create backup: {code}, {data}"
+        # Same action API the dashboard uses (?action=backup)
+        code, data = api.vms.backup(vm_name, backup_name)
+        assert code in [200, 201, 204], f"Failed to create backup: {code}, {data}"
 
     def wait_for_backup_completed(self, vm_name, backup_name, timeout):
         """Wait for backup to complete"""
@@ -201,11 +204,13 @@ class Rest(Base):
         while endtime > datetime.now():
             code, data = api.backups.get(backup_name)
             if code == 200:
-                state = data.get('status', {}).get('state')
-                if state == 'Ready':
+                status = data.get('status', {})
+                if status.get('readyToUse'):
                     return True
-                elif state == 'Error':
-                    raise AssertionError(f'Backup {backup_name} failed')
+                if status.get('error'):
+                    raise AssertionError(
+                        f"Backup {backup_name} failed: {status['error']}"
+                    )
             time.sleep(10)
 
         raise AssertionError(f"Backup did not complete within {timeout}s")

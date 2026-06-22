@@ -104,8 +104,8 @@ fi
 # Check required variables
 [[ -z "$HARVESTER_ENDPOINT" ]] && echo -e "${YELLOW}Warning: HARVESTER_ENDPOINT not set (using default)${NC}"
 
-# Set Python path
-export PYTHONPATH="${PYTHONPATH}:$(pwd)/libs"
+# Set Python path (../apiclient provides the shared harvester_api package)
+export PYTHONPATH="${PYTHONPATH}:$(pwd)/libs:$(pwd)/../apiclient"
 
 # Build command
 ROBOT_CMD="robot"
