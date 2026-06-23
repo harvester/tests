@@ -48,14 +48,17 @@ class Volume(Base):
     def expand(self, volume_name, new_size):
         return self.volume.expand(volume_name, new_size)
 
-    def create_snapshot(self, volume_name, snapshot_name):
-        return self.volume.create_snapshot(volume_name, snapshot_name)
+    def create_snapshot(self, volume_name, snapshot_name, snapshot_class):
+        return self.volume.create_snapshot(volume_name, snapshot_name, snapshot_class)
 
     def delete_snapshot(self, volume_name, snapshot_name):
         return self.volume.delete_snapshot(volume_name, snapshot_name)
 
     def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name):
         return self.volume.restore_from_snapshot(volume_name, snapshot_name, new_volume_name)
+
+    def wait_for_snapshot_ready(self, snapshot_name, timeout):
+        return self.volume.wait_for_snapshot_ready(snapshot_name, timeout)
 
     def cleanup(self):
         return self.volume.cleanup()

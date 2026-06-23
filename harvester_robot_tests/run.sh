@@ -27,6 +27,7 @@ fi
 TEST_CASE=""
 TEST_SUITE=""
 TEST_FILE=""
+PROCESSES=""
 INCLUDE_TAG=""
 EXCLUDE_TAG=""
 VARIABLES=""
@@ -48,6 +49,7 @@ Options:
     -v VAR:value       Set Robot Framework variable
     -L log_level       Set log level (TRACE|DEBUG|INFO|WARN|ERROR)
     -d output_dir      Set output directory
+    -p N               Run suites in parallel with pabot (N processes)
     -h                 Show this help
 
 Examples:
@@ -59,6 +61,7 @@ Examples:
     $0 -i p0 -e backup                    # Include/exclude tags
     $0 -v WAIT_TIMEOUT:1200               # Set variable
     $0 -L DEBUG                           # Debug logging
+    $0 -p 3 -i volume                     # Run volume suites in parallel (3 processes)
 
 Available Tags:
     Priority: p0, p1, p2
@@ -68,7 +71,7 @@ EOF
 }
 
 # Parse arguments
-while getopts "t:s:f:i:e:v:L:d:h" opt; do
+while getopts "t:s:f:i:e:v:L:d:p:h" opt; do
     case $opt in
         t) TEST_CASE="--test \"$OPTARG\"" ;;
         s) TEST_SUITE="--suite \"$OPTARG\"" ;;
@@ -78,6 +81,7 @@ while getopts "t:s:f:i:e:v:L:d:h" opt; do
         v) VARIABLES="$VARIABLES --variable $OPTARG" ;;
         L) LOG_LEVEL=$OPTARG ;;
         d) OUTPUT_DIR=$OPTARG ;;
+        p) PROCESSES=$OPTARG ;;
         h) show_help; exit 0 ;;
         \?) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
     esac
@@ -89,6 +93,13 @@ mkdir -p "$OUTPUT_DIR"
 # Check Robot Framework
 if ! command -v robot &> /dev/null; then
     echo -e "${RED}Error: Robot Framework not installed${NC}"
+    echo "Install with: pip install -r requirements.txt"
+    exit 1
+fi
+
+# Check pabot when parallel execution is requested
+if [ -n "$PROCESSES" ] && ! command -v pabot &> /dev/null; then
+    echo -e "${RED}Error: pabot not installed (required for -p)${NC}"
     echo "Install with: pip install -r requirements.txt"
     exit 1
 fi
@@ -108,7 +119,13 @@ fi
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/libs:$(pwd)/../apiclient"
 
 # Build command
-ROBOT_CMD="robot"
+# Use pabot for suite-level parallel execution when -p is given, otherwise plain robot.
+# pabot-specific options (e.g. --processes) must precede the shared robot options.
+if [ -n "$PROCESSES" ]; then
+    ROBOT_CMD="pabot --processes $PROCESSES"
+else
+    ROBOT_CMD="robot"
+fi
 ROBOT_CMD="$ROBOT_CMD --outputdir $OUTPUT_DIR"
 ROBOT_CMD="$ROBOT_CMD --loglevel $LOG_LEVEL"
 ROBOT_CMD="$ROBOT_CMD --timestampoutputs"
