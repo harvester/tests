@@ -644,6 +644,41 @@ class rancher_keywords:
             cluster_id, namespace, name, int(timeout)
         )
 
+    def scale_deployment(self, cluster_id, namespace, name, replicas):
+        """
+        Scale a deployment in a guest cluster to the given replica count
+
+        Args:
+            cluster_id: Cluster ID
+            namespace: Namespace
+            name: Deployment name
+            replicas: Desired replica count
+        """
+        logging(f"Scaling deployment {name} to {replicas} replicas")
+        return self.rancher.scale_deployment(
+            cluster_id, namespace, name, int(replicas)
+        )
+
+    def wait_for_deployment_scaled(self, cluster_id, namespace, name,
+                                   replicas, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a deployment to reach the given ready replica count
+
+        Args:
+            cluster_id: Cluster ID
+            namespace: Namespace
+            name: Deployment name
+            replicas: Expected ready replica count
+            timeout: Timeout in seconds
+
+        Returns:
+            dict: Deployment data when scaled
+        """
+        logging(f"Waiting for deployment {name} to scale to {replicas}")
+        return self.rancher.wait_for_deployment_scaled(
+            cluster_id, namespace, name, int(replicas), int(timeout)
+        )
+
     # PVC Operations
     def create_pvc(self, cluster_id, name, size="1Gi", storage_class=None):
         """
@@ -971,6 +1006,72 @@ class rancher_keywords:
             release_name, namespace, values
         )
 
+    def upgrade_chart(self, cluster_id, repo_name, chart_name, version,
+                      release_name, namespace, values=None):
+        """
+        Upgrade an installed Helm chart on a guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            repo_name: Chart repository name
+            chart_name: Chart name
+            version: Target chart version (empty string for latest)
+            release_name: Helm release name
+            namespace: Target namespace
+            values: Optional dict of chart values overrides
+        """
+        if not version:
+            versions = self.rancher.get_chart_versions(
+                repo_name, chart_name, cluster_id
+            )
+            if not versions:
+                raise Exception(
+                    f"No versions found for chart {chart_name} "
+                    f"in {repo_name}"
+                )
+            version = versions[0]
+            logging(f"Using latest chart version: {version}")
+
+        logging(f"Upgrading chart {chart_name} to v{version} as "
+                f"{release_name} in {namespace}")
+        return self.rancher.upgrade_chart(
+            cluster_id, repo_name, chart_name, version,
+            release_name, namespace, values
+        )
+
+    def uninstall_chart(self, cluster_id, release_name, namespace):
+        """
+        Uninstall a Helm chart (app) from a guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            release_name: Helm release name
+            namespace: Namespace where the chart is installed
+        """
+        logging(f"Uninstalling chart {release_name} from {namespace}")
+        return self.rancher.uninstall_chart(
+            cluster_id, release_name, namespace
+        )
+
+    def wait_for_chart_app_deleted(self, cluster_id, release_name, namespace,
+                                   timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a chart app to be fully removed from a guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            release_name: Helm release name
+            namespace: Namespace where the chart was installed
+            timeout: Timeout in seconds
+
+        Returns:
+            bool: True when deleted
+        """
+        logging(f"Waiting for chart app {release_name} to be deleted")
+        return self.rancher.wait_for_chart_app_deleted(
+            cluster_id, release_name, namespace, int(timeout)
+        )
+
     def get_chart_versions(self, repo_name, chart_name, cluster_id=None):
         """
         Get available versions for a chart from a Rancher chart repository.
@@ -1020,7 +1121,8 @@ class rancher_keywords:
         )
 
     def wait_for_cluster_repo_ready(self, cluster_id, repo_name,
-                                    timeout=DEFAULT_TIMEOUT):
+                                    timeout=DEFAULT_TIMEOUT,
+                                    expected_git_branch=None):
         """
         Wait for a ClusterRepo to finish downloading on a guest cluster.
 
@@ -1028,10 +1130,12 @@ class rancher_keywords:
             cluster_id: Rancher management cluster ID
             repo_name: ClusterRepo name
             timeout: Maximum wait time in seconds
+            expected_git_branch: When set, verify spec.gitBranch matches and
+                                 re-apply if Rancher has reconciled it back
         """
         logging(f"Waiting for ClusterRepo {repo_name} to be ready")
         return self.rancher.wait_for_cluster_repo_ready(
-            cluster_id, repo_name, timeout
+            cluster_id, repo_name, timeout, expected_git_branch
         )
 
     def create_cloud_config_secret(self, cluster_id, secret_name,
@@ -1066,7 +1170,8 @@ class rancher_keywords:
         )
 
     def wait_for_chart_app_ready(self, cluster_id, release_name,
-                                 namespace, timeout=DEFAULT_TIMEOUT):
+                                 namespace, timeout=DEFAULT_TIMEOUT,
+                                 expected_version=None):
         """
         Wait for a chart app to be deployed and ready.
 
@@ -1075,10 +1180,11 @@ class rancher_keywords:
             release_name: Helm release name
             namespace: Namespace where chart was installed
             timeout: Timeout in seconds
+            expected_version: If set, also wait for this exact chart version
         """
         logging(f"Waiting for chart app {release_name} to be ready")
         return self.rancher.wait_for_chart_app_ready(
-            cluster_id, release_name, namespace, int(timeout)
+            cluster_id, release_name, namespace, int(timeout), expected_version
         )
 
     # RWX Volume / StorageClass / StatefulSet Operations

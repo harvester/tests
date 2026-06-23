@@ -1380,6 +1380,49 @@ class CRD(Base):
 
         raise Exception(f"Timeout waiting for deployment {name} to be deleted")
 
+    def scale_deployment(self, cluster_id, namespace, name, replicas):
+        """Scale a deployment in a guest cluster to the given replica count"""
+        logging(f"Scaling deployment {name} to {replicas} replicas "
+                f"in cluster {cluster_id}")
+
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["scale", "deployment", name, "-n", namespace,
+             f"--replicas={replicas}"]
+        )
+
+        if rc != 0:
+            raise Exception(f"Failed to scale deployment {name}: {stderr}")
+
+        logging(f"Scaled deployment {name} to {replicas} replicas")
+
+    def wait_for_deployment_scaled(self, cluster_id, namespace, name,
+                                   replicas, timeout=DEFAULT_TIMEOUT):
+        """Wait for a deployment to reach the given ready replica count"""
+        logging(f"Waiting for deployment {name} to scale to {replicas}")
+        retry_count, retry_interval = get_retry_count_and_interval()
+        replicas = int(replicas)
+
+        end_time = time.time() + int(timeout)
+        while time.time() < end_time:
+            try:
+                deployment = self.get_deployment(cluster_id, namespace, name)
+                if deployment:
+                    status = deployment.get("status", {})
+                    ready = status.get("readyReplicas", 0)
+                    if ready == replicas:
+                        logging(f"Deployment {name} scaled to {replicas}")
+                        return deployment
+            except Exception as e:
+                logging(f"Error checking deployment scale: {e}",
+                        level="WARNING")
+
+            time.sleep(retry_interval)
+
+        raise Exception(
+            f"Timeout waiting for deployment {name} to scale to {replicas}"
+        )
+
     def create_pvc(self, cluster_id, name, size="1Gi", storage_class=None):
         """Create PVC in guest cluster via kubectl"""
         logging(f"Creating PVC {name} in cluster {cluster_id}")
@@ -2219,6 +2262,118 @@ class CRD(Base):
         logging(f"Chart install initiated: {chart_name} v{version}")
         return json.loads(stdout) if stdout.strip() else {}
 
+    def upgrade_chart(self, cluster_id, repo_name, chart_name, version,
+                      release_name, namespace, values=None):
+        """Upgrade an installed Helm chart on a guest cluster via Rancher
+        catalog API.
+
+        Args:
+            cluster_id: Rancher management cluster ID (e.g. c-m-xxxxx)
+            repo_name: Chart repository name (e.g. rancher-charts)
+            chart_name: Chart name (e.g. harvester-csi-driver)
+            version: Target chart version
+            release_name: Helm release name
+            namespace: Namespace where the chart is installed
+            values: Optional dict of chart values overrides
+        """
+        logging(f"Upgrading chart {chart_name} to v{version} as "
+                f"{release_name} in {namespace} on cluster {cluster_id}")
+
+        payload = {
+            "charts": [
+                {
+                    "chartName": chart_name,
+                    "version": version,
+                    "releaseName": release_name,
+                    "annotations": {
+                        "catalog.cattle.io/ui-source-repo": repo_name,
+                        "catalog.cattle.io/ui-source-repo-type": "cluster"
+                    },
+                    "values": values or {}
+                }
+            ],
+            "namespace": namespace
+        }
+
+        rc, stdout, stderr = self._run_kubectl_raw_guest(
+            cluster_id,
+            f"/v1/catalog.cattle.io.clusterrepos/{repo_name}"
+            f"?action=upgrade",
+            method="create",
+            input_data=json.dumps(payload)
+        )
+
+        if rc != 0:
+            raise Exception(
+                f"Failed to upgrade chart {chart_name}: {stderr[:500]}"
+            )
+
+        logging(f"Chart upgrade initiated: {chart_name} v{version}")
+        return json.loads(stdout) if stdout.strip() else {}
+
+    def uninstall_chart(self, cluster_id, release_name, namespace):
+        """Uninstall a Helm chart (app) from a guest cluster via Rancher
+        catalog API.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            release_name: Helm release name
+            namespace: Namespace where the chart is installed
+        """
+        logging(f"Uninstalling chart {release_name} from {namespace} "
+                f"on cluster {cluster_id}")
+
+        rc, stdout, stderr = self._run_kubectl_raw_guest(
+            cluster_id,
+            f"/v1/catalog.cattle.io.apps/{namespace}/{release_name}"
+            f"?action=uninstall",
+            method="create",
+            input_data=json.dumps({})
+        )
+
+        if rc != 0:
+            if "NotFound" in stderr or "not found" in stderr.lower():
+                logging(f"Chart app {release_name} not found; "
+                        f"nothing to uninstall")
+                return {}
+            raise Exception(
+                f"Failed to uninstall chart {release_name}: {stderr[:500]}"
+            )
+
+        logging(f"Chart uninstall initiated: {release_name}")
+        return json.loads(stdout) if stdout.strip() else {}
+
+    def wait_for_chart_app_deleted(self, cluster_id, release_name, namespace,
+                                   timeout=DEFAULT_TIMEOUT):
+        """Wait for a chart app to be fully removed from a guest cluster.
+
+        Args:
+            cluster_id: Rancher management cluster ID
+            release_name: Helm release name
+            namespace: Namespace where the chart was installed
+            timeout: Timeout in seconds
+        """
+        logging(f"Waiting for chart app {release_name} to be deleted "
+                f"from {namespace}")
+        retry_count, retry_interval = get_retry_count_and_interval()
+
+        end_time = time.time() + int(timeout)
+        while time.time() < end_time:
+            rc, stdout, stderr = self._run_kubectl_guest(
+                cluster_id,
+                ["get", "apps.catalog.cattle.io", release_name,
+                 "-n", namespace, "-o", "json"]
+            )
+            if rc != 0 and ("NotFound" in stderr or
+                            "not found" in stderr.lower()):
+                logging(f"Chart app {release_name} has been deleted")
+                return True
+            time.sleep(retry_interval)
+
+        raise Exception(
+            f"Timeout waiting for chart app {release_name} to be deleted"
+        )
+
     def create_cluster_repo(self, cluster_id, repo_name, git_url, git_branch):
         """Create a ClusterRepo on a guest cluster via kubectl.
 
@@ -2261,7 +2416,8 @@ class CRD(Base):
         return repo_spec
 
     def wait_for_cluster_repo_ready(self, cluster_id, repo_name,
-                                    timeout=DEFAULT_TIMEOUT):
+                                    timeout=DEFAULT_TIMEOUT,
+                                    expected_git_branch=None):
         """Wait for a ClusterRepo to finish downloading on a guest cluster.
 
         Requires Downloaded=True on two consecutive polls to avoid the
@@ -2272,10 +2428,15 @@ class CRD(Base):
             cluster_id: Rancher management cluster ID
             repo_name: ClusterRepo name
             timeout: Maximum wait time in seconds
+            expected_git_branch: When set, verify spec.gitBranch matches
         """
-        logging(f"Waiting for ClusterRepo {repo_name} to be ready")
+        logging(f"Waiting for ClusterRepo {repo_name} to be ready"
+                + (f" (branch={expected_git_branch})"
+                   if expected_git_branch else ""))
         end_time = time.time() + int(timeout)
         consecutive_ready = 0
+        reapply_count = 0
+        max_reapply = 3
 
         while time.time() < end_time:
             rc, stdout, stderr = self._run_kubectl_guest(
@@ -2284,6 +2445,7 @@ class CRD(Base):
                  "-o", "json"]
             )
             downloaded = False
+            data = {}
             if rc == 0 and stdout.strip():
                 data = json.loads(stdout)
                 conditions = data.get("status", {}).get("conditions", [])
@@ -2296,8 +2458,51 @@ class CRD(Base):
             if downloaded:
                 consecutive_ready += 1
                 if consecutive_ready >= 2:
+                    # Verify branch matches expected value if provided
+                    if expected_git_branch:
+                        spec = data.get("spec", {})
+                        current_branch = spec.get("gitBranch", "")
+                        current_url = spec.get("gitRepo", "")
+
+                        if current_branch != expected_git_branch:
+                            if reapply_count >= max_reapply:
+                                raise Exception(
+                                    f"ClusterRepo {repo_name} branch mismatch "
+                                    f"after {max_reapply} re-apply attempts. "
+                                    f"Expected branch={expected_git_branch}, "
+                                    f"got branch={current_branch}. "
+                                    f"Rancher is reconciling the repo back to "
+                                    f"its built-in defaults."
+                                )
+                            logging(
+                                f"ClusterRepo {repo_name} branch mismatch "
+                                f"(got={current_branch}, "
+                                f"expected={expected_git_branch}), "
+                                f"re-applying "
+                                f"(attempt {reapply_count + 1}/{max_reapply})",
+                                level="WARNING"
+                            )
+                            repo_spec = {
+                                "apiVersion": "catalog.cattle.io/v1",
+                                "kind": "ClusterRepo",
+                                "metadata": {"name": repo_name},
+                                "spec": {
+                                    "gitRepo": current_url,
+                                    "gitBranch": expected_git_branch
+                                }
+                            }
+                            self._run_kubectl_guest(
+                                cluster_id,
+                                ["apply", "-f", "-"],
+                                input_data=json.dumps(repo_spec)
+                            )
+                            reapply_count += 1
+                            consecutive_ready = 0
+                            time.sleep(5)
+                            continue
+
                     logging(f"ClusterRepo {repo_name} is ready "
-                            f"(stable after {consecutive_ready} checks)")
+                            f"(stable, spec verified)")
                     return data
             else:
                 consecutive_ready = 0
@@ -2562,7 +2767,8 @@ class CRD(Base):
             logging(f"Deleted DaemonSet {ds_name}")
 
     def wait_for_chart_app_ready(self, cluster_id, release_name,
-                                 namespace, timeout=DEFAULT_TIMEOUT):
+                                 namespace, timeout=DEFAULT_TIMEOUT,
+                                 expected_version=None):
         """Wait for a chart app to be deployed and ready.
 
         Args:
@@ -2572,8 +2778,14 @@ class CRD(Base):
             timeout: Timeout in seconds
         """
         logging(f"Waiting for chart app {release_name} to be ready "
-                f"in {namespace}")
+                f"in {namespace}"
+                + (f" at version {expected_version}" if expected_version else ""))
         retry_count, retry_interval = get_retry_count_and_interval()
+
+        # Give the async helm operation pod time to start so the status
+        # transitions away from the stale pre-upgrade 'deployed' state.
+        if expected_version:
+            time.sleep(5)
 
         end_time = time.time() + int(timeout)
         iteration = 0
@@ -2588,13 +2800,24 @@ class CRD(Base):
                     data = json.loads(stdout)
                     info = data.get("spec", {}).get("info", {})
                     status = info.get("status", "")
-                    if status == "deployed":
-                        logging(f"Chart app {release_name} is deployed")
-                        return data
+                    version = (data.get("spec", {})
+                                   .get("chart", {})
+                                   .get("metadata", {})
+                                   .get("version", ""))
+
+                    if expected_version:
+                        if status == "deployed" and version == expected_version:
+                            logging(f"Chart app {release_name} deployed "
+                                    f"at {expected_version}")
+                            return data
+                    else:
+                        if status == "deployed":
+                            logging(f"Chart app {release_name} is deployed")
+                            return data
 
                     if iteration % 10 == 0:
                         logging(f"Chart app {release_name} status: "
-                                f"{status}")
+                                f"{status}, version: {version}")
                 elif iteration % 10 == 0:
                     logging(f"Chart app {release_name} not found yet: "
                             f"{stderr.strip()[:200]}", level="WARNING")
@@ -2608,6 +2831,7 @@ class CRD(Base):
 
         raise Exception(
             f"Timeout waiting for chart app {release_name} to be ready"
+            + (f" at version {expected_version}" if expected_version else "")
         )
 
     # RWX Volume / StorageClass / StatefulSet Operations
