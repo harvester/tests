@@ -171,6 +171,19 @@ class Rancher(Base):
         """Wait for deployment to be deleted"""
         return self.rancher.wait_for_deployment_deleted(cluster_id, namespace, name, timeout)
 
+    def scale_deployment(self, cluster_id, namespace, name, replicas):
+        """Scale a deployment to the given replica count"""
+        return self.rancher.scale_deployment(
+            cluster_id, namespace, name, replicas
+        )
+
+    def wait_for_deployment_scaled(self, cluster_id, namespace, name,
+                                   replicas, timeout):
+        """Wait for a deployment to reach the given ready replica count"""
+        return self.rancher.wait_for_deployment_scaled(
+            cluster_id, namespace, name, replicas, timeout
+        )
+
     # PVC Operations
     def create_pvc(self, cluster_id, name, size="1Gi", storage_class=None):
         """Create PVC in guest cluster"""
@@ -285,6 +298,27 @@ class Rancher(Base):
             release_name, namespace, values
         )
 
+    def upgrade_chart(self, cluster_id, repo_name, chart_name, version,
+                      release_name, namespace, values=None):
+        """Upgrade an installed Helm chart on a guest cluster"""
+        return self.rancher.upgrade_chart(
+            cluster_id, repo_name, chart_name, version,
+            release_name, namespace, values
+        )
+
+    def uninstall_chart(self, cluster_id, release_name, namespace):
+        """Uninstall a Helm chart from a guest cluster"""
+        return self.rancher.uninstall_chart(
+            cluster_id, release_name, namespace
+        )
+
+    def wait_for_chart_app_deleted(self, cluster_id, release_name,
+                                   namespace, timeout):
+        """Wait for a chart app to be fully removed"""
+        return self.rancher.wait_for_chart_app_deleted(
+            cluster_id, release_name, namespace, timeout
+        )
+
     def create_cluster_repo(self, cluster_id, repo_name, git_url, git_branch):
         """Create a ClusterRepo on a guest cluster"""
         return self.rancher.create_cluster_repo(
@@ -292,10 +326,10 @@ class Rancher(Base):
         )
 
     def wait_for_cluster_repo_ready(self, cluster_id, repo_name,
-                                    timeout=600):
+                                    timeout=600, expected_git_branch=None):
         """Wait for a ClusterRepo to finish downloading"""
         return self.rancher.wait_for_cluster_repo_ready(
-            cluster_id, repo_name, timeout
+            cluster_id, repo_name, timeout, expected_git_branch
         )
 
     def get_chart_versions(self, repo_name, chart_name, cluster_id=None):
@@ -324,10 +358,10 @@ class Rancher(Base):
         )
 
     def wait_for_chart_app_ready(self, cluster_id, release_name,
-                                 namespace, timeout):
+                                 namespace, timeout, expected_version=None):
         """Wait for chart app to be deployed"""
         return self.rancher.wait_for_chart_app_ready(
-            cluster_id, release_name, namespace, timeout
+            cluster_id, release_name, namespace, timeout, expected_version
         )
 
     # RWX Volume / StorageClass / StatefulSet Operations

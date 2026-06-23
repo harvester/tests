@@ -207,6 +207,17 @@ class Base(ABC):
         """Wait for deployment to be deleted"""
         pass
 
+    @abstractmethod
+    def scale_deployment(self, cluster_id, namespace, name, replicas):
+        """Scale a deployment in a guest cluster to the given replica count"""
+        pass
+
+    @abstractmethod
+    def wait_for_deployment_scaled(self, cluster_id, namespace, name,
+                                   replicas, timeout):
+        """Wait for a deployment to reach the given ready replica count"""
+        pass
+
     # PVC Operations
     @abstractmethod
     def create_pvc(self, cluster_id, name, size="1Gi", storage_class=None):
@@ -386,12 +397,30 @@ class Base(ABC):
         pass
 
     @abstractmethod
+    def upgrade_chart(self, cluster_id, repo_name, chart_name, version,
+                      release_name, namespace, values=None):
+        """Upgrade an installed Helm chart on a guest cluster."""
+        pass
+
+    @abstractmethod
+    def uninstall_chart(self, cluster_id, release_name, namespace):
+        """Uninstall a Helm chart (app) from a guest cluster."""
+        pass
+
+    @abstractmethod
+    def wait_for_chart_app_deleted(self, cluster_id, release_name,
+                                   namespace, timeout):
+        """Wait for a chart app to be fully removed from a guest cluster."""
+        pass
+
+    @abstractmethod
     def create_cluster_repo(self, cluster_id, repo_name, git_url, git_branch):
         """Create a ClusterRepo on a guest cluster."""
         pass
 
     @abstractmethod
-    def wait_for_cluster_repo_ready(self, cluster_id, repo_name, timeout):
+    def wait_for_cluster_repo_ready(self, cluster_id, repo_name, timeout,
+                                    expected_git_branch=None):
         """Wait for a ClusterRepo to finish downloading on a guest cluster."""
         pass
 
@@ -418,7 +447,7 @@ class Base(ABC):
 
     @abstractmethod
     def wait_for_chart_app_ready(self, cluster_id, release_name,
-                                 namespace, timeout):
+                                 namespace, timeout, expected_version=None):
         """Wait for a chart app to be deployed and ready."""
         pass
 
