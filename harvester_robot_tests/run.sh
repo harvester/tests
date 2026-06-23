@@ -65,11 +65,13 @@ Examples:
     $0 -L DEBUG                           # Debug logging
     $0 -p 3 -i volume                     # Run volume suites in parallel (3 processes)
     $0 -S rest -i volume                  # Run volume suites against the REST API
+    $0 -i pr-baseline -p 8                # Run the PR baseline (image+VM+volume) in parallel
 
 Available Tags:
     Priority: p0, p1, p2
     Type: coretest, regression, negative, smoke, sanity
     Component: virtualmachines, images, volumes, networks, backup, ha
+    Suite set: pr-baseline (all image + basic VM + volume suites for per-PR checks)
 EOF
 }
 

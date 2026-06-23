@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    VirtualMachineImage Invalid Checksum Test Case
-Test Tags        image    checksum    negative
+Test Tags        image    checksum    negative    pr-baseline
 
 Resource    ../../keywords/variables.resource
 Resource    ../../keywords/common.resource
