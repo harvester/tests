@@ -1,7 +1,9 @@
 
 """
-Volume Component - delegates to Rest implementation
+Volume Component - delegates to CRD or REST implementation
 """
+import os
+
 from constant import HarvesterOperationStrategy
 from volume.rest import Rest
 from volume.crd import CRD
@@ -9,14 +11,13 @@ from volume.base import Base
 
 
 class Volume(Base):
-    # Set desired operation strategy here
-    _strategy = HarvesterOperationStrategy.CRD
-
+    """Volume component - selects implementation by HARVESTER_OPERATION_STRATEGY"""
     def __init__(self):
-        if self._strategy == HarvesterOperationStrategy.CRD:
-            self.volume = CRD()
-        else:
+        strategy_str = os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower()
+        if strategy_str == HarvesterOperationStrategy.REST.value:
             self.volume = Rest()
+        else:
+            self.volume = CRD()
 
     def create(self, volume_name, size, numberOfReplicas, frontend, **kwargs):
         return self.volume.create(volume_name, size, numberOfReplicas, frontend, **kwargs)

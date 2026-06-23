@@ -9,7 +9,7 @@ from constant import (
     DEFAULT_NAMESPACE, DEFAULT_STORAGE_CLASS,
     DEFAULT_VOLUME_SNAPSHOT_CLASS,
     VOLUME_STATE_BOUND,
-    ACCESS_MODE_RWO,
+    ACCESS_MODE_RWX,
     LABEL_TEST, LABEL_TEST_VALUE,
     DEFAULT_TIMEOUT_SHORT
 )
@@ -34,7 +34,7 @@ class CRD(Base):
         """
         namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
         storage_class = kwargs.get('storage_class', DEFAULT_STORAGE_CLASS)
-        access_mode = kwargs.get('access_mode', ACCESS_MODE_RWO)
+        access_mode = kwargs.get('access_mode', ACCESS_MODE_RWX)
 
         # Build PVC manifest
         body = {
@@ -52,6 +52,7 @@ class CRD(Base):
             },
             "spec": {
                 "accessModes": [access_mode],
+                "volumeMode": "Block",
                 "storageClassName": storage_class,
                 "resources": {
                     "requests": {
@@ -410,7 +411,8 @@ class CRD(Base):
                 }
             },
             "spec": {
-                "accessModes": [ACCESS_MODE_RWO],
+                "accessModes": [ACCESS_MODE_RWX],
+                "volumeMode": "Block",
                 "storageClassName": storage_class,
                 "resources": {
                     "requests": {
