@@ -31,3 +31,35 @@ Image is available for VM creation
     [Documentation]    Create an image from URL (delegates to Image module).
     Create image from url with name    ${image_name}    ${image_url}
     Wait for image downloaded by name    ${image_name}
+
+Wait for image deleted by name
+    [Arguments]    ${image_name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for the image to be fully removed
+    image_keywords.wait for image deleted    ${image_name}    ${timeout}
+
+List images
+    [Arguments]    ${namespace}=${DEFAULT_NAMESPACE}
+    ${images}=    image_keywords.list images    ${namespace}
+    RETURN    ${images}
+
+Image Should Be Listed
+    [Arguments]    ${image_name}    ${namespace}=${DEFAULT_NAMESPACE}
+    ${images}=    image_keywords.list images    ${namespace}
+    ${names}=    Evaluate    [i['metadata']['name'] for i in $images]
+    Should Contain    ${names}    ${image_name}
+
+Image Should Exist
+    [Arguments]    ${image_name}    ${namespace}=${DEFAULT_NAMESPACE}
+    ${exists}=    image_keywords.image exists    ${image_name}    ${namespace}
+    Should Be True    ${exists}
+
+Image State Is ${state}
+    [Arguments]    ${image_name}
+    ${status}=    image_keywords.get image status    ${image_name}
+    Should Be Equal As Strings    ${status["state"]}    ${state}
+
+Image Size Is Greater Than Zero
+    [Arguments]    ${image_name}
+    ${status}=    image_keywords.get image status    ${image_name}
+    ${size}=    Convert To Integer    ${status["size"]}
+    Should Be True    ${size} > 0
