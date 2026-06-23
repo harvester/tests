@@ -12,7 +12,7 @@ from crd import (
 from constant import (
     HARVESTER_API_GROUP, HARVESTER_API_VERSION,
     VIRTUALMACHINEIMAGE_PLURAL, DEFAULT_NAMESPACE,
-    IMAGE_STATE_ACTIVE, IMAGE_STATE_IMPORTING,
+    IMAGE_STATE_ACTIVE, IMAGE_STATE_IMPORTING, IMAGE_STATE_FAILED,
     LABEL_TEST, LABEL_TEST_VALUE,
     DEFAULT_TIMEOUT
 )
@@ -214,24 +214,35 @@ class CRD(Base):
         image = self.get(image_name, namespace)
         status = image.get("status", {})
 
-        # Determine state from conditions
+        # Determine state. Notes from real Harvester behaviour:
+        #  - A fully imported image has progress == 100 AND Initialized=True.
+        #    Transient download retries can leave a RetryLimitExceeded condition
+        #    behind even on a healthy image, so the success check must come FIRST.
+        #  - A bad checksum/URL never reaches Initialized=True (the backing image
+        #    is not created), so it falls through to the RetryLimitExceeded check.
         conditions = status.get("conditions", [])
-        state = "Unknown"
+        progress = status.get('progress', 0)
 
-        for condition in conditions:
-            if condition.get("type") == "Initialized":
-                if condition.get("status") == "True":
-                    state = IMAGE_STATE_ACTIVE
-                else:
-                    state = IMAGE_STATE_IMPORTING
-            elif condition.get("type") == "Ready":
-                if condition.get("status") == "True":
-                    state = IMAGE_STATE_ACTIVE
+        initialized = any(
+            c.get('type') == 'Initialized' and c.get('status') == 'True'
+            for c in conditions
+        )
+        retry_exceeded = any(c.get('type') == 'RetryLimitExceeded' for c in conditions)
+
+        if progress == 100 and initialized:
+            state = IMAGE_STATE_ACTIVE
+        elif retry_exceeded:
+            state = IMAGE_STATE_FAILED
+        elif conditions or progress:
+            state = IMAGE_STATE_IMPORTING
+        else:
+            state = "Unknown"
 
         return {
             'state': state,
-            'download_percent': status.get('progress', 0),
+            'download_percent': progress,
             'size': status.get('size', 0),
+            'failed': status.get('failed', 0),
             'conditions': conditions
         }
 
