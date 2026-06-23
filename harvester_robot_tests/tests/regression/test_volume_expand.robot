@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    Volume (PVC) Expansion Test Cases
-Test Tags        storage    volume    expand
+Test Tags        storage    volume    expand    pr-baseline
 
 Resource    ../../keywords/variables.resource
 Resource    ../../keywords/common.resource

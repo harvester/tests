@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    VirtualMachineImage Valid Checksum Test Case
-Test Tags        image    checksum
+Test Tags        image    checksum    pr-baseline
 
 Resource    ../../keywords/variables.resource
 Resource    ../../keywords/common.resource

@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    VM Test Cases
-Test Tags        regression    virtualmachines
+Test Tags        regression    virtualmachines    pr-baseline
 
 Resource         ../../keywords/variables.resource
 Resource         ../../keywords/common.resource

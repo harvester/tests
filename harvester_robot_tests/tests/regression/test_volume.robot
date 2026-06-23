@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    Volume (PVC) Basic Lifecycle Test Cases
-Test Tags        storage    volume
+Test Tags        storage    volume    pr-baseline
 
 Resource    ../../keywords/variables.resource
 Resource    ../../keywords/common.resource

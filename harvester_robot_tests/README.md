@@ -312,6 +312,18 @@ Harvester REST API instead of the Kubernetes CRD path. The variable is read when
 keyword libraries are imported, so it must be set before `robot`/`pabot` starts (the
 `-S` flag handles that); a single run uses one strategy for all suites.
 
+**PR baseline (`pr-baseline` tag)**: The suites that should run on every PR are tagged
+`pr-baseline` — all image suites, the basic VM lifecycle, and the volume
+(basic/expand/snapshot) suites. Heavy/hardware-dependent suites (LHv2, node-failure HA)
+are intentionally excluded. Run it with:
+
+```bash
+./run.sh -i pr-baseline          # serial
+./run.sh -i pr-baseline -p 8     # one process per suite, in parallel
+```
+
+To add a suite to the baseline, append `pr-baseline` to its `Test Tags`.
+
 **Note**: The `run.sh` script automatically:
 - Loads environment variables from `.env` file if it exists
 - Sets up Python path to include the libs directory
