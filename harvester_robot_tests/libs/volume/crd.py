@@ -7,6 +7,7 @@ from kubernetes import client
 from kubernetes.client.rest import ApiException
 from constant import (
     DEFAULT_NAMESPACE, DEFAULT_STORAGE_CLASS,
+    DEFAULT_VOLUME_SNAPSHOT_CLASS,
     VOLUME_STATE_BOUND,
     ACCESS_MODE_RWO,
     LABEL_TEST, LABEL_TEST_VALUE,
@@ -294,7 +295,8 @@ class CRD(Base):
             logging(f"Failed to expand PVC: {e}")
             raise
 
-    def create_snapshot(self, volume_name, snapshot_name):
+    def create_snapshot(self, volume_name, snapshot_name,
+                        snapshot_class=DEFAULT_VOLUME_SNAPSHOT_CLASS):
         """
         Create volume snapshot
         Note: This uses VolumeSnapshot CRD
@@ -306,9 +308,13 @@ class CRD(Base):
             "kind": "VolumeSnapshot",
             "metadata": {
                 "name": snapshot_name,
-                "namespace": namespace
+                "namespace": namespace,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE
+                }
             },
             "spec": {
+                "volumeSnapshotClassName": snapshot_class,
                 "source": {
                     "persistentVolumeClaimName": volume_name
                 }
@@ -329,6 +335,39 @@ class CRD(Base):
         except ApiException as e:
             logging(f"Failed to create snapshot: {e}")
             raise
+
+    def get_snapshot_status(self, snapshot_name, namespace=DEFAULT_NAMESPACE):
+        """Get the status of a VolumeSnapshot"""
+        obj_api = client.CustomObjectsApi()
+        snapshot = obj_api.get_namespaced_custom_object(
+            group="snapshot.storage.k8s.io",
+            version="v1",
+            namespace=namespace,
+            plural="volumesnapshots",
+            name=snapshot_name
+        )
+        return snapshot.get('status', {})
+
+    def wait_for_snapshot_ready(self, snapshot_name, timeout=DEFAULT_TIMEOUT_SHORT):
+        """Wait for a VolumeSnapshot to become readyToUse"""
+        namespace = DEFAULT_NAMESPACE
+        endtime = time.time() + timeout
+
+        while time.time() < endtime:
+            try:
+                status = self.get_snapshot_status(snapshot_name, namespace)
+                if status.get('readyToUse'):
+                    logging(f"VolumeSnapshot {namespace}/{snapshot_name} is ready")
+                    return True
+                logging(f"Waiting for VolumeSnapshot {snapshot_name} to be ready...")
+            except ApiException as e:
+                logging(f"Error checking snapshot status: {e}")
+
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"VolumeSnapshot {namespace}/{snapshot_name} was not ready within {timeout}s"
+        )
 
     def delete_snapshot(self, volume_name, snapshot_name):
         """Delete volume snapshot"""
@@ -365,7 +404,10 @@ class CRD(Base):
             "kind": "PersistentVolumeClaim",
             "metadata": {
                 "name": new_volume_name,
-                "namespace": namespace
+                "namespace": namespace,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE
+                }
             },
             "spec": {
                 "accessModes": [ACCESS_MODE_RWO],

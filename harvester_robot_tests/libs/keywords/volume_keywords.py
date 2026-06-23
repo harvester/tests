@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'
 from utility.utility import logging # noqa E402
 from volume import Volume # noqa E402
 from constant import DEFAULT_TIMEOUT_SHORT # noqa E402
+from constant import DEFAULT_VOLUME_SNAPSHOT_CLASS # noqa E402
 
 
 class volume_keywords:
@@ -70,10 +71,12 @@ class volume_keywords:
         """Expand volume size"""
         self.volume.expand(volume_name, new_size)
 
-    def create_volume_snapshot(self, volume_name, snapshot_name):
+    def create_volume_snapshot(self, volume_name, snapshot_name,
+                               snapshot_class=DEFAULT_VOLUME_SNAPSHOT_CLASS):
         """Create volume snapshot"""
-        logging(f'Creating snapshot {snapshot_name} for volume {volume_name}')
-        self.volume.create_snapshot(volume_name, snapshot_name)
+        logging(f'Creating snapshot {snapshot_name} for volume {volume_name} '
+                f'using snapshot class {snapshot_class}')
+        self.volume.create_snapshot(volume_name, snapshot_name, snapshot_class)
 
     def delete_volume_snapshot(self, volume_name, snapshot_name):
         """Delete volume snapshot"""
@@ -84,3 +87,8 @@ class volume_keywords:
         """Restore volume from snapshot"""
         logging(f'Restoring volume from snapshot {snapshot_name}')
         self.volume.restore_from_snapshot(volume_name, snapshot_name, new_volume_name)
+
+    def wait_for_snapshot_ready(self, snapshot_name, timeout=DEFAULT_TIMEOUT_SHORT):
+        """Wait for a volume snapshot to become ready to use"""
+        logging(f'Waiting for snapshot {snapshot_name} to be ready')
+        self.volume.wait_for_snapshot_ready(snapshot_name, timeout)

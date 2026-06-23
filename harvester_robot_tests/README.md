@@ -289,9 +289,18 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 # Set custom variable
 ./run.sh -v WAIT_TIMEOUT:1200
 
+# Run suites in parallel with pabot (only used when -p is given)
+./run.sh -p 3 -i volume           # Run volume suites across 3 processes
+
 # Show help
 ./run.sh -h
 ```
+
+**Parallel execution**: Passing `-p N` runs the selected suites in parallel using
+[`pabot`](https://github.com/mkorpela/pabot) with `N` processes; pabot parallelizes
+at the **suite (file)** level. Without `-p`, the plain `robot` runner is used as before.
+Suites that run concurrently must be self-contained and clean up only their own named
+resources in teardown (the volume suites follow this pattern).
 
 **Note**: The `run.sh` script automatically:
 - Loads environment variables from `.env` file if it exists

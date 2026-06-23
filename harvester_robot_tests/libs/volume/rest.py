@@ -100,7 +100,7 @@ class Rest(Base):
         code, data = api.volumes.expand(volume_name, new_size)
         assert code == 200, f"Failed to expand volume: {code}, {data}"
 
-    def create_snapshot(self, volume_name, snapshot_name):
+    def create_snapshot(self, volume_name, snapshot_name, snapshot_class=None):
         """Create volume snapshot"""
         api = get_harvester_api_client()
         code, data = api.volumes.create_snapshot(volume_name, snapshot_name)
@@ -117,6 +117,10 @@ class Rest(Base):
         api = get_harvester_api_client()
         code, data = api.volumes.restore_from_snapshot(volume_name, snapshot_name, new_volume_name)
         assert code == 201, f"Failed to restore from snapshot: {code}, {data}"
+
+    def wait_for_snapshot_ready(self, snapshot_name, timeout):
+        """Wait for a snapshot to become ready to use"""
+        raise NotImplementedError("wait_for_snapshot_ready is only implemented for the CRD strategy")
 
     def cleanup(self):
         """Clean up all test volumes"""
