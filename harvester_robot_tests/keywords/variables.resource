@@ -66,6 +66,8 @@ ${INGRESS_CONTROLLER}           %{INGRESS_CONTROLLER=traefik}
 # Chart Repository for import clusters
 ${CHART_REPO_URL}               %{CHART_REPO_URL=https://github.com/rancher/charts}
 ${CHART_REPO_BRANCH}            %{CHART_REPO_BRANCH=release-v2.14}
+${CSI_CHART_VERSION}            %{CSI_CHART_VERSION=}
+${CP_CHART_VERSION}             %{CP_CHART_VERSION=}
 
 # IP Pool for LoadBalancer tests
 ${IP_POOL_SUBNET}               %{IP_POOL_SUBNET=192.168.1.0/24}

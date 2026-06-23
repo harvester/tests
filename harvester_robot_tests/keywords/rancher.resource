@@ -769,6 +769,21 @@ Get Chart Versions
     ${versions}=    rancher_keywords.get_chart_versions    ${repo_name}    ${chart_name}    ${cluster_id}
     RETURN    ${versions}
 
+Get Latest Chart Version
+    [Arguments]    ${repo_name}    ${chart_name}    ${cluster_id}=${None}
+    [Documentation]    Get the latest available version for a chart from a Rancher
+    ...               chart repo. Fails with a clear error if no versions are found.
+    ...               Args:
+    ...                   repo_name: Chart repository name
+    ...                   chart_name: Chart name
+    ...                   cluster_id: Optional guest cluster ID to query via proxy
+    ...               Returns:
+    ...                   str: Latest chart version
+    ${versions}=    Get Chart Versions    ${repo_name}    ${chart_name}    ${cluster_id}
+    Should Not Be Empty    ${versions}    No versions found for chart ${chart_name} in repo ${repo_name}
+    ${latest}=    Get From List    ${versions}    0
+    RETURN    ${latest}
+
 Create Cluster Repo
     [Arguments]    ${cluster_id}    ${repo_name}    ${git_url}    ${git_branch}
     [Documentation]    Create a ClusterRepo on a guest cluster.
@@ -783,13 +798,16 @@ Create Cluster Repo
 
 Wait For Cluster Repo Ready
     [Arguments]    ${cluster_id}    ${repo_name}    ${timeout}=${RANCHER_WAIT_TIMEOUT}
+    ...            ${expected_git_branch}=${NONE}
     [Documentation]    Wait for a ClusterRepo to finish downloading on a guest cluster.
     ...               Args:
     ...                   cluster_id: Rancher management cluster ID
     ...                   repo_name: ClusterRepo name
     ...                   timeout: Timeout in seconds
+    ...                   expected_git_branch: When set, verify spec.gitBranch matches
     Log    Waiting for ClusterRepo ${repo_name} to be ready
-    ${result}=    rancher_keywords.wait_for_cluster_repo_ready    ${cluster_id}    ${repo_name}    ${timeout}
+    ${result}=    rancher_keywords.wait_for_cluster_repo_ready    ${cluster_id}    ${repo_name}
+    ...    ${timeout}    ${expected_git_branch}
     RETURN    ${result}
 
 Create Cloud Config Secret
@@ -806,16 +824,18 @@ Create Cloud Config Secret
     RETURN    ${result}
 
 Wait For Chart App Ready
-    [Arguments]    ${cluster_id}    ${release_name}    ${namespace}    ${timeout}=${RANCHER_WAIT_TIMEOUT}
+    [Arguments]    ${cluster_id}    ${release_name}    ${namespace}
+    ...            ${timeout}=${RANCHER_WAIT_TIMEOUT}    ${expected_version}=${NONE}
     [Documentation]    Wait for a chart app to be deployed and ready.
     ...               Args:
     ...                   cluster_id: Rancher management cluster ID
     ...                   release_name: Helm release name
     ...                   namespace: Namespace where chart was installed
     ...                   timeout: Timeout in seconds
+    ...                   expected_version: When set, also wait for this chart version
     Log    Waiting for chart app ${release_name} to be ready
     ${result}=    rancher_keywords.wait_for_chart_app_ready    ${cluster_id}    ${release_name}
-    ...    ${namespace}    ${timeout}
+    ...    ${namespace}    ${timeout}    ${expected_version}
     RETURN    ${result}
 
 Get Deployed Chart Version
@@ -829,6 +849,72 @@ Get Deployed Chart Version
     ...                   str: Deployed chart version string
     ${version}=    rancher_keywords.get_deployed_chart_version    ${cluster_id}    ${release_name}    ${namespace}
     RETURN    ${version}
+
+Upgrade Chart
+    [Arguments]    ${cluster_id}    ${repo_name}    ${chart_name}    ${version}
+    ...            ${release_name}    ${namespace}    ${values}=${None}
+    [Documentation]    Upgrade an installed Helm chart on a guest cluster.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   repo_name: Chart repository name
+    ...                   chart_name: Chart name
+    ...                   version: Target chart version (empty string for latest)
+    ...                   release_name: Helm release name
+    ...                   namespace: Target namespace
+    ...                   values: Optional dict of chart values overrides
+    Log    Upgrading chart ${chart_name} to v${version} on cluster ${cluster_id}
+    ${result}=    rancher_keywords.upgrade_chart    ${cluster_id}    ${repo_name}    ${chart_name}
+    ...    ${version}    ${release_name}    ${namespace}    ${values}
+    RETURN    ${result}
+
+Uninstall Chart
+    [Arguments]    ${cluster_id}    ${release_name}    ${namespace}
+    [Documentation]    Uninstall a Helm chart (app) from a guest cluster.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   release_name: Helm release name
+    ...                   namespace: Namespace where the chart is installed
+    Log    Uninstalling chart ${release_name} from cluster ${cluster_id}
+    ${result}=    rancher_keywords.uninstall_chart    ${cluster_id}    ${release_name}    ${namespace}
+    RETURN    ${result}
+
+Wait For Chart App Deleted
+    [Arguments]    ${cluster_id}    ${release_name}    ${namespace}    ${timeout}=${RANCHER_WAIT_TIMEOUT}
+    [Documentation]    Wait for a chart app to be fully removed from a guest cluster.
+    ...               Args:
+    ...                   cluster_id: Rancher management cluster ID
+    ...                   release_name: Helm release name
+    ...                   namespace: Namespace where chart was installed
+    ...                   timeout: Timeout in seconds
+    Log    Waiting for chart app ${release_name} to be deleted
+    ${result}=    rancher_keywords.wait_for_chart_app_deleted    ${cluster_id}    ${release_name}
+    ...    ${namespace}    ${timeout}
+    RETURN    ${result}
+
+Scale Deployment
+    [Arguments]    ${cluster_id}    ${namespace}    ${name}    ${replicas}
+    [Documentation]    Scale a deployment in a guest cluster to the given replica count.
+    ...               Args:
+    ...                   cluster_id: Cluster ID
+    ...                   namespace: Namespace
+    ...                   name: Deployment name
+    ...                   replicas: Desired replica count
+    Log    Scaling deployment ${name} to ${replicas} replicas
+    rancher_keywords.scale_deployment    ${cluster_id}    ${namespace}    ${name}    ${replicas}
+
+Wait For Deployment Scaled
+    [Arguments]    ${cluster_id}    ${namespace}    ${name}    ${replicas}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for a deployment to reach the given ready replica count.
+    ...               Args:
+    ...                   cluster_id: Cluster ID
+    ...                   namespace: Namespace
+    ...                   name: Deployment name
+    ...                   replicas: Expected ready replica count
+    ...                   timeout: Timeout in seconds
+    Log    Waiting for deployment ${name} to scale to ${replicas}
+    ${result}=    rancher_keywords.wait_for_deployment_scaled    ${cluster_id}    ${namespace}    ${name}
+    ...    ${replicas}    ${timeout}
+    RETURN    ${result}
 
 # RWX Volume / StorageClass / StatefulSet Operations
 Create RWX StorageClass On Host
@@ -1283,12 +1369,12 @@ Multi node cluster is upgraded to next version
     Upgrade RKE2 Cluster    ${MULTI_CLUSTER_NAME}    ${NEXT_RKE2_VERSION}
 
 New CSI workload is deployed
-    [Arguments]    ${suffix}
+    [Arguments]    ${suffix}    ${cluster_id}=${MULTI_CLUSTER_ID}    ${cluster_name}=${MULTI_CLUSTER_NAME}
     [Documentation]    Create a new PVC and nginx deployment for post-operation verification.
-    ${pvc_name}=    Set Variable    pvc-${suffix}-${MULTI_CLUSTER_NAME}
-    ${deploy_name}=    Set Variable    csi-${suffix}-${MULTI_CLUSTER_NAME}
-    Create PVC    ${MULTI_CLUSTER_ID}    ${pvc_name}    1Gi
-    Create Deployment    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}    nginx:1.27    ${pvc_name}
+    ${pvc_name}=    Set Variable    pvc-${suffix}-${cluster_name}
+    ${deploy_name}=    Set Variable    csi-${suffix}-${cluster_name}
+    Create PVC    ${cluster_id}    ${pvc_name}    1Gi
+    Create Deployment    ${cluster_id}    ${DEFAULT_NAMESPACE}    ${deploy_name}    nginx:1.27    ${pvc_name}
 
 All test workloads are removed from cluster
     [Documentation]    Delete all test deployments, PVCs, and LB services from the multi-node cluster.
@@ -1341,26 +1427,172 @@ CSI workload is deployed on single node import cluster
     Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    nginx:1.27    ${pvc_name}
 
 Cloud provider workloads are deployed on single node import cluster
+    [Arguments]    ${suffix}=${EMPTY}
     [Documentation]    Deploy a Whoami workload with DHCP and IP Pool LoadBalancer
     ...               services on the import cluster to exercise the Harvester cloud
     ...               provider.
+    ${base}=    Set Variable If    '${suffix}' == '${EMPTY}'    ${IMPORT_CLUSTER_NAME}    ${suffix}-${IMPORT_CLUSTER_NAME}
     # Whoami workload
-    ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
+    ${whoami_deploy}=    Set Variable    whoami-${base}
     Create Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    traefik/whoami:v1.11.0
     # LB DHCP
-    ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
+    ${lb_dhcp}=    Set Variable    lb-${base}-dhcp
     Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_dhcp}    ${whoami_deploy}    ipam=dhcp
     Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}
     # LB Pool
-    ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
+    ${lb_pool}=    Set Variable    lb-${base}-pool
     Create LB Service    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${lb_pool}    ${whoami_deploy}    ipam=pool
     Wait For LB Service Ready    ${IMPORT_CLUSTER_ID}    ${lb_pool}
 
 Harvester CSI driver chart is installed on single node import cluster
-    Install Harvester CSI Driver Chart On Import Cluster    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}
+    [Arguments]    ${version}=${CSI_CHART_VERSION}
+    [Documentation]    Install the Harvester CSI Driver chart on the import cluster.
+    ...               When version is empty the latest available version is used.
+    Install Harvester CSI Driver Chart On Import Cluster    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}    ${version}
+    Harvester CSI driver should be ready    ${IMPORT_CLUSTER_ID}
 
 Harvester cloud provider chart is installed on single node import cluster
-    Install Harvester Cloud Provider Chart On Import Cluster    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}
+    [Arguments]    ${version}=${CP_CHART_VERSION}
+    [Documentation]    Install the Harvester Cloud Provider chart on the import cluster.
+    ...               When version is empty the latest available version is used.
+    Install Harvester Cloud Provider Chart On Import Cluster    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}    ${version}
+    Harvester cloud provider should be ready    ${IMPORT_CLUSTER_ID}
+
+Multiple Harvester CSI driver chart versions are available
+    [Documentation]    Ensure the rancher-charts repo offers at least two CSI driver
+    ...               chart versions so an upgrade can be tested.
+    ...               If CSI_CHART_VERSION is set, it is used as the target (latest)
+    Ensure Harvester Chart Prerequisites On Import Cluster    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}
+    ${versions}=    Get Chart Versions    rancher-charts    harvester-csi-driver    ${IMPORT_CLUSTER_ID}
+    ${count}=    Get Length    ${versions}
+    IF    '${CSI_CHART_VERSION}' != '${EMPTY}'
+        ${idx}=    Get Index From List    ${versions}    ${CSI_CHART_VERSION}
+        Should Not Be Equal As Integers    ${idx}    -1
+        ...    CSI chart version ${CSI_CHART_VERSION} not found in available versions: ${versions}
+        ${prev_idx}=    Evaluate    ${idx} + 1
+        Skip If    ${prev_idx} >= ${count}
+        ...    No older version available before ${CSI_CHART_VERSION}; cannot test upgrade
+        ${latest}=    Set Variable    ${CSI_CHART_VERSION}
+        ${previous}=    Get From List    ${versions}    ${prev_idx}
+    ELSE
+        Skip If    ${count} < 2
+        ...    Only ${count} harvester-csi-driver chart version(s) available; need at least 2 to test upgrade
+        ${latest}=    Get From List    ${versions}    0
+        ${previous}=    Get From List    ${versions}    1
+    END
+    Set Suite Variable    ${CSI_LATEST_VERSION}    ${latest}
+    Set Suite Variable    ${CSI_PREV_VERSION}    ${previous}
+    Log    CSI chart upgrade path: ${previous} -> ${latest}    console=yes
+
+Harvester CSI driver chart is upgraded to latest on import cluster
+    [Documentation]    Upgrade the Harvester CSI Driver chart to the latest version
+    ...               and verify the deployed chart version matches.
+    ${csi_values}=    Evaluate    {"cloudConfig": {"hostPath": "", "secretName": "harvester-cloud-provider-config"}}
+    Upgrade Chart
+    ...    ${IMPORT_CLUSTER_ID}    rancher-charts    harvester-csi-driver
+    ...    ${CSI_LATEST_VERSION}    harvester-csi-driver    kube-system    ${csi_values}
+    Wait For Chart App Ready
+    ...    ${IMPORT_CLUSTER_ID}    harvester-csi-driver    kube-system
+    ...    expected_version=${CSI_LATEST_VERSION}
+    Log    Upgraded harvester-csi-driver to ${CSI_LATEST_VERSION}    console=yes
+
+CSI upgrade workload is restarted on import cluster
+    [Documentation]    Scale the CSI workload down to 0 and back up to 1 to confirm
+    ...               the upgraded CSI driver can re-attach the volume.
+    ${csi_deploy}=    Set Variable    csi-${IMPORT_CLUSTER_NAME}
+    Scale Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    0
+    Wait For Deployment Scaled    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    0
+    Scale Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}    1
+    Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${csi_deploy}
+    Log    CSI workload restarted on import cluster    console=yes
+
+Cleanup CSI upgrade test resources on import cluster
+    [Arguments]    ${deploy_names}=csi-${IMPORT_CLUSTER_NAME}, csi-csiup-${IMPORT_CLUSTER_NAME}
+    ...    ${pvc_names}=pvc-${IMPORT_CLUSTER_NAME}, pvc-csiup-${IMPORT_CLUSTER_NAME}
+    [Documentation]    Delete CSI workloads and PVCs and uninstall the CSI driver
+    ...               chart so the subsequent install test starts clean.
+    ...               Args:
+    ...                   deploy_names: Comma-separated list of deployment names to delete
+    ...                   pvc_names: Comma-separated list of PVC names to delete
+    @{deployments}=    Split String    ${deploy_names}    ,
+    FOR    ${deployment}    IN    @{deployments}
+        Run Keyword And Ignore Error    Delete Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deployment.strip()}
+    END
+    @{pvcs}=    Split String    ${pvc_names}    ,
+    FOR    ${pvc}    IN    @{pvcs}
+        Run Keyword And Ignore Error    Delete PVC    ${IMPORT_CLUSTER_ID}    ${pvc.strip()}
+    END
+    Run Keyword And Ignore Error    Uninstall Chart    ${IMPORT_CLUSTER_ID}    harvester-csi-driver    kube-system
+    Run Keyword And Ignore Error    Wait For Chart App Deleted    ${IMPORT_CLUSTER_ID}    harvester-csi-driver    kube-system
+
+Multiple Harvester cloud provider chart versions are available
+    [Documentation]    Ensure the rancher-charts repo offers at least two cloud provider
+    ...               chart versions so an upgrade can be tested.
+    ...               If CP_CHART_VERSION is set, it is used as the target (latest) version
+    Ensure Harvester Chart Prerequisites On Import Cluster    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}
+    ${versions}=    Get Chart Versions    rancher-charts    harvester-cloud-provider    ${IMPORT_CLUSTER_ID}
+    ${count}=    Get Length    ${versions}
+    IF    '${CP_CHART_VERSION}' != '${EMPTY}'
+        ${idx}=    Get Index From List    ${versions}    ${CP_CHART_VERSION}
+        Should Not Be Equal As Integers    ${idx}    -1
+        ...    Cloud provider chart version ${CP_CHART_VERSION} not found in available versions: ${versions}
+        ${prev_idx}=    Evaluate    ${idx} + 1
+        Skip If    ${prev_idx} >= ${count}
+        ...    No older version available before ${CP_CHART_VERSION}; cannot test upgrade
+        ${latest}=    Set Variable    ${CP_CHART_VERSION}
+        ${previous}=    Get From List    ${versions}    ${prev_idx}
+    ELSE
+        Skip If    ${count} < 2
+        ...    Only ${count} harvester-cloud-provider chart version(s) available; need at least 2 to test upgrade
+        ${latest}=    Get From List    ${versions}    0
+        ${previous}=    Get From List    ${versions}    1
+    END
+    Set Suite Variable    ${CP_LATEST_VERSION}    ${latest}
+    Set Suite Variable    ${CP_PREV_VERSION}    ${previous}
+    Log    Cloud provider chart upgrade path: ${previous} -> ${latest}    console=yes
+
+Harvester cloud provider chart is upgraded to latest on import cluster
+    [Documentation]    Upgrade the Harvester Cloud Provider chart to the latest version
+    ...               and verify the deployed chart version matches.
+    ${cp_values}=    Evaluate    {"cloudConfigPath": "/var/lib/rancher/rke2/etc/config-files/cloud-provider-config", "global": {"cattle": {"clusterName": "${IMPORT_CLUSTER_ID}"}}}
+    Upgrade Chart
+    ...    ${IMPORT_CLUSTER_ID}    rancher-charts    harvester-cloud-provider
+    ...    ${CP_LATEST_VERSION}    harvester-cloud-provider    kube-system    ${cp_values}
+    Wait For Chart App Ready
+    ...    ${IMPORT_CLUSTER_ID}    harvester-cloud-provider    kube-system
+    ...    expected_version=${CP_LATEST_VERSION}
+    Log    Upgraded harvester-cloud-provider to ${CP_LATEST_VERSION}    console=yes
+
+Cloud provider upgrade workload is restarted on import cluster
+    [Documentation]    Scale the Whoami workload down to 0 and back up to 1 to confirm
+    ...               the upgraded cloud provider keeps serving the LoadBalancer.
+    ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
+    ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
+    Scale Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    0
+    Wait For Deployment Scaled    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    0
+    Scale Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}    1
+    Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}
+    Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}    Hostname:
+    Log    Cloud provider workload restarted on import cluster    console=yes
+
+Cleanup cloud provider upgrade test resources on import cluster
+    [Arguments]    ${lb_names}=lb-${IMPORT_CLUSTER_NAME}-dhcp, lb-${IMPORT_CLUSTER_NAME}-pool, lb-cpup2-${IMPORT_CLUSTER_NAME}-dhcp, lb-cpup2-${IMPORT_CLUSTER_NAME}-pool
+    ...    ${deploy_names}=whoami-${IMPORT_CLUSTER_NAME}, whoami-cpup2-${IMPORT_CLUSTER_NAME}
+    [Documentation]    Delete cloud provider workloads and LoadBalancers and uninstall
+    ...               the cloud provider chart so the subsequent install test starts clean.
+    ...               Args:
+    ...                   lb_names: Comma-separated list of LoadBalancer service names to delete
+    ...                   deploy_names: Comma-separated list of deployment names to delete
+    @{lbs}=    Split String    ${lb_names}    ,
+    FOR    ${lb}    IN    @{lbs}
+        Run Keyword And Ignore Error    Delete LB Service    ${IMPORT_CLUSTER_ID}    ${lb.strip()}
+    END
+    @{deployments}=    Split String    ${deploy_names}    ,
+    FOR    ${deployment}    IN    @{deployments}
+        Run Keyword And Ignore Error    Delete Deployment    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deployment.strip()}
+    END
+    Run Keyword And Ignore Error    Uninstall Chart    ${IMPORT_CLUSTER_ID}    harvester-cloud-provider    kube-system
+    Run Keyword And Ignore Error    Wait For Chart App Deleted    ${IMPORT_CLUSTER_ID}    harvester-cloud-provider    kube-system
 
 Multi node RKE2 cluster is deleted
     [Documentation]    Delete the multi-node RKE2 cluster and wait for removal.
@@ -1429,11 +1661,18 @@ CSI workload should be active on single node import cluster
     Log    CSI workload verified on import cluster    console=yes
 
 Cloud provider workloads should be active on single node import cluster
+    [Arguments]    ${suffix}=${EMPTY}
     [Documentation]    Verify the Whoami deployment and both LB services (DHCP and IP
-    ...               Pool) are functional on the import cluster.
-    ${whoami_deploy}=    Set Variable    whoami-${IMPORT_CLUSTER_NAME}
-    ${lb_dhcp}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-dhcp
-    ${lb_pool}=    Set Variable    lb-${IMPORT_CLUSTER_NAME}-pool
+    ...               Pool) are functional on the import cluster. An optional suffix
+    ...               selects the matching workload set.
+    IF    '${suffix}' == '${EMPTY}'
+        ${base}=    Set Variable    ${IMPORT_CLUSTER_NAME}
+    ELSE
+        ${base}=    Set Variable    ${suffix}-${IMPORT_CLUSTER_NAME}
+    END
+    ${whoami_deploy}=    Set Variable    whoami-${base}
+    ${lb_dhcp}=    Set Variable    lb-${base}-dhcp
+    ${lb_pool}=    Set Variable    lb-${base}-pool
     Wait For Deployment Ready    ${IMPORT_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${whoami_deploy}
     Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_dhcp}    Hostname:
     Verify LB Via Cluster    ${IMPORT_CLUSTER_ID}    ${lb_pool}    Hostname:
@@ -1561,12 +1800,12 @@ All existing workloads should be active
     Log    All existing workloads verified active    console=yes
 
 New CSI workload should be active
-    [Arguments]    ${suffix}
+    [Arguments]    ${suffix}    ${cluster_id}=${MULTI_CLUSTER_ID}    ${cluster_name}=${MULTI_CLUSTER_NAME}
     [Documentation]    Verify the new CSI PVC and deployment are active.
-    ${pvc_name}=    Set Variable    pvc-${suffix}-${MULTI_CLUSTER_NAME}
-    ${deploy_name}=    Set Variable    csi-${suffix}-${MULTI_CLUSTER_NAME}
-    Wait For PVC Bound    ${MULTI_CLUSTER_ID}    ${pvc_name}
-    Wait For Deployment Ready    ${MULTI_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${deploy_name}
+    ${pvc_name}=    Set Variable    pvc-${suffix}-${cluster_name}
+    ${deploy_name}=    Set Variable    csi-${suffix}-${cluster_name}
+    Wait For PVC Bound    ${cluster_id}    ${pvc_name}
+    Wait For Deployment Ready    ${cluster_id}    ${DEFAULT_NAMESPACE}    ${deploy_name}
     Log    New CSI deployment ready: ${deploy_name}    console=yes
 
 Workloads should be cleaned up
@@ -1759,6 +1998,7 @@ Ensure Harvester Chart Prerequisites On Import Cluster
     Create Cluster Repo
     ...    ${cluster_id}    rancher-charts    ${CHART_REPO_URL}    ${chart_repo_branch}
     Wait For Cluster Repo Ready    ${cluster_id}    rancher-charts
+    ...    expected_git_branch=${chart_repo_branch}
     Log    ClusterRepo rancher-charts (branch=${chart_repo_branch}) is ready    console=yes
 
     # Create cloud-provider-config secret on the guest cluster
@@ -1768,27 +2008,28 @@ Ensure Harvester Chart Prerequisites On Import Cluster
     Set Suite Variable    ${IMPORT_CHART_PREREQS_DONE}    ${True}
 
 Install Harvester CSI Driver Chart On Import Cluster
-    [Arguments]    ${cluster_id}    ${cluster_name}
+    [Arguments]    ${cluster_id}    ${cluster_name}    ${version}=${EMPTY}
     [Documentation]    Install the Harvester CSI Driver chart from Rancher Apps on an
     ...               imported cluster. Uses the cloud-config secret (instead of a
     ...               hostPath) and waits for the chart app to be deployed.
     Ensure Harvester Chart Prerequisites On Import Cluster    ${cluster_id}    ${cluster_name}
 
-    # Get latest CSI driver chart version from the guest cluster's repo
-    ${csi_versions}=    Get Chart Versions    rancher-charts    harvester-csi-driver    ${cluster_id}
-    ${csi_version}=    Get From List    ${csi_versions}    0
-    Log    harvester-csi-driver chart version: ${csi_version}    console=yes
+    # Resolve CSI driver chart version (latest when not specified)
+    IF    '${version}' == '${EMPTY}'
+        ${version}=    Get Latest Chart Version    rancher-charts    harvester-csi-driver    ${cluster_id}
+    END
+    Log    harvester-csi-driver chart version: ${version}    console=yes
 
     # Install Harvester CSI Driver — use secret instead of hostPath
     ${csi_values}=    Evaluate    {"cloudConfig": {"hostPath": "", "secretName": "harvester-cloud-provider-config"}}
     Install Chart
     ...    ${cluster_id}    rancher-charts    harvester-csi-driver
-    ...    ${csi_version}    harvester-csi-driver    kube-system    ${csi_values}
+    ...    ${version}    harvester-csi-driver    kube-system    ${csi_values}
     Wait For Chart App Ready    ${cluster_id}    harvester-csi-driver    kube-system
     Log    Harvester CSI Driver chart installed on import cluster    console=yes
 
 Install Harvester Cloud Provider Chart On Import Cluster
-    [Arguments]    ${cluster_id}    ${cluster_name}
+    [Arguments]    ${cluster_id}    ${cluster_name}    ${version}=${EMPTY}
     [Documentation]    Install the Harvester Cloud Provider chart from Rancher Apps on
     ...               an imported cluster. Writes the cloud-config to the node hostPath
     ...               required by the chart and waits for the chart app to be deployed.
@@ -1799,16 +2040,17 @@ Install Harvester Cloud Provider Chart On Import Cluster
     Write Cloud Config To Nodes
     ...    ${cluster_id}    harvester-cloud-provider-config    kube-system
 
-    # Get latest cloud provider chart version from the guest cluster's repo
-    ${cp_versions}=    Get Chart Versions    rancher-charts    harvester-cloud-provider    ${cluster_id}
-    ${cp_version}=    Get From List    ${cp_versions}    0
-    Log    harvester-cloud-provider chart version: ${cp_version}    console=yes
+    # Resolve cloud provider chart version (latest when not specified)
+    IF    '${version}' == '${EMPTY}'
+        ${version}=    Get Latest Chart Version    rancher-charts    harvester-cloud-provider    ${cluster_id}
+    END
+    Log    harvester-cloud-provider chart version: ${version}    console=yes
 
     # Install Harvester Cloud Provider
     ${cp_values}=    Evaluate    {"cloudConfigPath": "/var/lib/rancher/rke2/etc/config-files/cloud-provider-config", "global": {"cattle": {"clusterName": "${cluster_id}"}}}
     Install Chart
     ...    ${cluster_id}    rancher-charts    harvester-cloud-provider
-    ...    ${cp_version}    harvester-cloud-provider    kube-system    ${cp_values}
+    ...    ${version}    harvester-cloud-provider    kube-system    ${cp_values}
     Wait For Chart App Ready    ${cluster_id}    harvester-cloud-provider    kube-system
     Log    Harvester Cloud Provider chart installed on import cluster    console=yes
 
