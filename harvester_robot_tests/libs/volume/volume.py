@@ -1,7 +1,9 @@
 
 """
-Volume Component - delegates to Rest implementation
+Volume Component - delegates to CRD or REST implementation
 """
+import os
+
 from constant import HarvesterOperationStrategy
 from volume.rest import Rest
 from volume.crd import CRD
@@ -9,14 +11,13 @@ from volume.base import Base
 
 
 class Volume(Base):
-    # Set desired operation strategy here
-    _strategy = HarvesterOperationStrategy.CRD
-
+    """Volume component - selects implementation by HARVESTER_OPERATION_STRATEGY"""
     def __init__(self):
-        if self._strategy == HarvesterOperationStrategy.CRD:
-            self.volume = CRD()
-        else:
+        strategy_str = os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower()
+        if strategy_str == HarvesterOperationStrategy.REST.value:
             self.volume = Rest()
+        else:
+            self.volume = CRD()
 
     def create(self, volume_name, size, numberOfReplicas, frontend, **kwargs):
         return self.volume.create(volume_name, size, numberOfReplicas, frontend, **kwargs)
@@ -48,14 +49,17 @@ class Volume(Base):
     def expand(self, volume_name, new_size):
         return self.volume.expand(volume_name, new_size)
 
-    def create_snapshot(self, volume_name, snapshot_name):
-        return self.volume.create_snapshot(volume_name, snapshot_name)
+    def create_snapshot(self, volume_name, snapshot_name, snapshot_class):
+        return self.volume.create_snapshot(volume_name, snapshot_name, snapshot_class)
 
     def delete_snapshot(self, volume_name, snapshot_name):
         return self.volume.delete_snapshot(volume_name, snapshot_name)
 
     def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name):
         return self.volume.restore_from_snapshot(volume_name, snapshot_name, new_volume_name)
+
+    def wait_for_snapshot_ready(self, snapshot_name, timeout):
+        return self.volume.wait_for_snapshot_ready(snapshot_name, timeout)
 
     def cleanup(self):
         return self.volume.cleanup()

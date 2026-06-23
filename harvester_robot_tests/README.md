@@ -289,9 +289,40 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 # Set custom variable
 ./run.sh -v WAIT_TIMEOUT:1200
 
+# Run suites in parallel with pabot (only used when -p is given)
+./run.sh -p 3 -i volume           # Run volume suites across 3 processes
+
+# Run against the REST API instead of CRD
+./run.sh -S rest -i volume        # Same suites, REST strategy
+
 # Show help
 ./run.sh -h
 ```
+
+**Parallel execution**: Passing `-p N` runs the selected suites in parallel using
+[`pabot`](https://github.com/mkorpela/pabot) with `N` processes; pabot parallelizes
+at the **suite (file)** level. Without `-p`, the plain `robot` runner is used as before.
+Suites that run concurrently must be self-contained and clean up only their own named
+resources in teardown (the volume suites follow this pattern).
+
+**Operation strategy (CRD vs REST)**: The `vm`, `image`, and `volume` components pick
+their implementation from the `HARVESTER_OPERATION_STRATEGY` environment variable
+(`crd` by default, or `rest`). Pass `-S rest` to run the **same** suites against the
+Harvester REST API instead of the Kubernetes CRD path. The variable is read when the
+keyword libraries are imported, so it must be set before `robot`/`pabot` starts (the
+`-S` flag handles that); a single run uses one strategy for all suites.
+
+**PR baseline (`pr-baseline` tag)**: The suites that should run on every PR are tagged
+`pr-baseline` — all image suites, the basic VM lifecycle, and the volume
+(basic/expand/snapshot) suites. Heavy/hardware-dependent suites (LHv2, node-failure HA)
+are intentionally excluded. Run it with:
+
+```bash
+./run.sh -i pr-baseline          # serial
+./run.sh -i pr-baseline -p 8     # one process per suite, in parallel
+```
+
+To add a suite to the baseline, append `pr-baseline` to its `Test Tags`.
 
 **Note**: The `run.sh` script automatically:
 - Loads environment variables from `.env` file if it exists

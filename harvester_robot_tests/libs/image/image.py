@@ -1,21 +1,21 @@
 """
-Image Component - delegates to Rest implementation
+Image Component - delegates to CRD or REST implementation
 """
+import os
+
 from constant import HarvesterOperationStrategy, DEFAULT_NAMESPACE
 from image.rest import Rest
 from image.crd import CRD
 
 
 class Image:
-    # Set desired operation strategy here
-    _strategy = HarvesterOperationStrategy.CRD
-
-    """Image component - delegates to Rest implementation"""
+    """Image component - selects implementation by HARVESTER_OPERATION_STRATEGY"""
     def __init__(self):
-        if self._strategy == HarvesterOperationStrategy.CRD:
-            self.image = CRD()
-        else:
+        strategy_str = os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower()
+        if strategy_str == HarvesterOperationStrategy.REST.value:
             self.image = Rest()
+        else:
+            self.image = CRD()
 
     def create_from_url(self, image_name, image_url, checksum="", **kwargs):
         return self.image.create_from_url(image_name, image_url, checksum, **kwargs)

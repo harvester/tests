@@ -97,6 +97,9 @@ RUN_STRATEGY_RERUN_ON_FAILURE = "RerunOnFailure"
 # Storage Class
 DEFAULT_STORAGE_CLASS = "harvester-longhorn"
 
+# VolumeSnapshotClass used by Longhorn-backed snapshots on Harvester
+DEFAULT_VOLUME_SNAPSHOT_CLASS = "longhorn-snapshot"
+
 # Retry and Timeout Defaults
 DEFAULT_RETRY_COUNT = 100
 DEFAULT_RETRY_INTERVAL = 3
