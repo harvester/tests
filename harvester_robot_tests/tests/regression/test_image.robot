@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    VirtualMachineImage Lifecycle Test Cases
-Test Tags        image
+Test Tags        image    pr-baseline
 
 Resource    ../../keywords/variables.resource
 Resource    ../../keywords/common.resource

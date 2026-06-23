@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    VirtualMachineImage Invalid URL Test Case
-Test Tags        image    negative
+Test Tags        image    negative    pr-baseline
 
 Resource    ../../keywords/variables.resource
 Resource    ../../keywords/common.resource

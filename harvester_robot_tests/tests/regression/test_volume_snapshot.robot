@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation    Volume (PVC) Snapshot and Restore Test Cases
-Test Tags        storage    volume    snapshot
+Test Tags        storage    volume    snapshot    pr-baseline
 
 Resource    ../../keywords/variables.resource
 Resource    ../../keywords/common.resource
