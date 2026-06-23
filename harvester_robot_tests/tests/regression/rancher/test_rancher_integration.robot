@@ -38,20 +38,20 @@ Test RWX Volume On Single Node Cluster
     # [Teardown]    Cleanup RWX test resources on single node cluster
 
 Test Create Multi Node RKE2 Cluster
-    [Tags]    p0
+    [Tags]    p0    cloudprovider    csi
     [Documentation]    Create and verify a 3-node RKE2 cluster.
     When Multi node RKE2 cluster is created
     Then Harvester deployments should be ready    ${MULTI_CLUSTER_ID}
 
 Test CSI Deployment
-    [Tags]    p0
+    [Tags]    p0    csi
     [Documentation]    Deploy a CSI workload with PVC on the multi-node cluster.
     Given Multi node cluster is available
     When CSI workload with PVC is deployed
     Then CSI deployment and PVC should be active
 
 Test Load Balancer DHCP Mode
-    [Tags]    p0
+    [Tags]    p0    cloudprovider
     [Documentation]    Deploy a Whoami workload and create a LoadBalancer service in DHCP mode.
     Given Multi node cluster is available
     And Whoami workload is deployed    dhcp
@@ -60,7 +60,7 @@ Test Load Balancer DHCP Mode
     Then DHCP load balancer should be serving traffic
 
 Test Load Balancer Pool Mode
-    [Tags]    p0
+    [Tags]    p0    cloudprovider
     [Documentation]    Deploy a Whoami workload and create a LoadBalancer service in IP Pool mode.
     Given Multi node cluster is available
     And Whoami workload is deployed    pool
@@ -146,19 +146,63 @@ Test Import Existing RKE2 Cluster
     When Single node import RKE2 cluster is created
     Then Import cluster should be ready and running
 
+Test Upgrade Harvester CSI Driver Chart On Imported RKE2 Cluster
+    [Tags]     import    chart    csi    upgrade    p2
+    [Documentation]   Test CSI chart upgrade from Rancher Apps from n-1 to latest
+
+    Given Import cluster should be ready
+    And Multiple Harvester CSI driver chart versions are available
+
+    When Harvester CSI driver chart is installed on single node import cluster    ${CSI_PREV_VERSION}
+    And CSI workload is deployed on single node import cluster
+    Then CSI workload should be active on single node import cluster
+
+    When Harvester CSI driver chart is upgraded to latest on import cluster
+    Then Harvester CSI driver should be ready    ${IMPORT_CLUSTER_ID}
+
+    When CSI upgrade workload is restarted on import cluster
+    Then CSI workload should be active on single node import cluster
+
+    When New CSI workload is deployed    csiup    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}
+    Then New CSI workload should be active    csiup    ${IMPORT_CLUSTER_ID}    ${IMPORT_CLUSTER_NAME}
+
+    [Teardown]    Cleanup CSI upgrade test resources on import cluster
+
 Test Harvester CSI Driver Chart On Imported RKE2 Cluster
     [Tags]     import    chart    csi    p2
     [Documentation]    Tests the Harvester CSI Driver chart from Rancher Apps
-    [Setup]    Import cluster should be ready
+    Given Import cluster should be ready
     When Harvester CSI driver chart is installed on single node import cluster
     Then Harvester CSI driver should be ready    ${IMPORT_CLUSTER_ID}
     When CSI workload is deployed on single node import cluster
     Then CSI workload should be active on single node import cluster
 
+Test Upgrade Harvester Cloud Provider Chart On Imported RKE2 Cluster
+    [Tags]     import    chart    cloudprovider    upgrade    p2
+    [Documentation]    Test cloud provider chart upgrade from Rancher Apps from n-1 to latest
+
+    Given Import cluster should be ready
+    And Multiple Harvester cloud provider chart versions are available
+
+    When Harvester cloud provider chart is installed on single node import cluster    ${CP_PREV_VERSION}
+    And Cloud provider workloads are deployed on single node import cluster
+    Then Cloud provider workloads should be active on single node import cluster
+
+    When Harvester cloud provider chart is upgraded to latest on import cluster
+    Then Harvester cloud provider should be ready    ${IMPORT_CLUSTER_ID}
+
+    When Cloud provider upgrade workload is restarted on import cluster
+    Then Cloud provider workloads should be active on single node import cluster
+
+    When Cloud provider workloads are deployed on single node import cluster    cpup2
+    Then Cloud provider workloads should be active on single node import cluster    cpup2
+
+    [Teardown]    Cleanup cloud provider upgrade test resources on import cluster
+
 Test Harvester Cloud Provider Chart On Imported RKE2 Cluster
     [Tags]     import    chart    cloudprovider    p2
     [Documentation]    Tests the Harvester Cloud Provider chart from Rancher Apps
-    [Setup]    Import cluster should be ready
+    Given Import cluster should be ready
     When Harvester cloud provider chart is installed on single node import cluster
     Then Harvester cloud provider should be ready    ${IMPORT_CLUSTER_ID}
     When Cloud provider workloads are deployed on single node import cluster

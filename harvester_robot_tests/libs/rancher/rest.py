@@ -1034,6 +1034,55 @@ class Rest(Base):
 
         raise Exception(f"Timeout waiting for deployment {name} to be deleted")
 
+    def scale_deployment(self, cluster_id, namespace, name, replicas):
+        """Scale a deployment in a guest cluster to the given replica count"""
+        logging(f"Scaling deployment {name} to {replicas} replicas "
+                f"in cluster {cluster_id}")
+
+        deployment = self.get_deployment(cluster_id, namespace, name)
+        if deployment is None:
+            raise Exception(f"Deployment {name} not found")
+
+        deployment.setdefault("spec", {})["replicas"] = int(replicas)
+
+        code, data = self._rancher_request(
+            "PUT",
+            f"k8s/clusters/{cluster_id}/v1/apps.deployments/{namespace}/{name}",
+            deployment
+        )
+
+        if code not in [200, 201]:
+            raise Exception(f"Failed to scale deployment {name}: {code}, {data}")
+
+        logging(f"Scaled deployment {name} to {replicas} replicas")
+
+    def wait_for_deployment_scaled(self, cluster_id, namespace, name,
+                                   replicas, timeout=DEFAULT_TIMEOUT):
+        """Wait for a deployment to reach the given ready replica count"""
+        logging(f"Waiting for deployment {name} to scale to {replicas}")
+        retry_count, retry_interval = get_retry_count_and_interval()
+        replicas = int(replicas)
+
+        end_time = time.time() + int(timeout)
+        while time.time() < end_time:
+            try:
+                deployment = self.get_deployment(cluster_id, namespace, name)
+                if deployment:
+                    status = deployment.get("status", {})
+                    ready = status.get("readyReplicas", 0)
+                    if ready == replicas:
+                        logging(f"Deployment {name} scaled to {replicas}")
+                        return deployment
+            except Exception as e:
+                logging(f"Error checking deployment scale: {e}",
+                        level="WARNING")
+
+            time.sleep(retry_interval)
+
+        raise Exception(
+            f"Timeout waiting for deployment {name} to scale to {replicas}"
+        )
+
     def create_pvc(self, cluster_id, name, size="1Gi", storage_class=None):
         """Create PVC in guest cluster"""
         logging(f"Creating PVC {name} in cluster {cluster_id}")
@@ -1836,6 +1885,95 @@ class Rest(Base):
         logging(f"Chart install initiated: {chart_name} v{version}")
         return data
 
+    def upgrade_chart(self, cluster_id, repo_name, chart_name, version,
+                      release_name, namespace, values=None):
+        """Upgrade an installed Helm chart on a guest cluster via Rancher
+        catalog API using the 'upgrade' action."""
+        logging(f"Upgrading chart {chart_name} to v{version} as "
+                f"{release_name} in {namespace} on cluster {cluster_id}")
+
+        payload = {
+            "charts": [
+                {
+                    "chartName": chart_name,
+                    "version": version,
+                    "releaseName": release_name,
+                    "annotations": {
+                        "catalog.cattle.io/ui-source-repo": repo_name,
+                        "catalog.cattle.io/ui-source-repo-type": "cluster"
+                    },
+                    "values": values or {}
+                }
+            ],
+            "namespace": namespace
+        }
+
+        code, data = self._rancher_request(
+            "POST",
+            f"k8s/clusters/{cluster_id}"
+            f"/v1/catalog.cattle.io.clusterrepos/{repo_name}"
+            f"?action=upgrade",
+            data=payload
+        )
+
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to upgrade chart {chart_name}: "
+                f"{code}, {str(data)[:500]}"
+            )
+
+        logging(f"Chart upgrade initiated: {chart_name} v{version}")
+        return data
+
+    def uninstall_chart(self, cluster_id, release_name, namespace):
+        """Uninstall a Helm chart (app) from a guest cluster via Rancher
+        catalog API."""
+        logging(f"Uninstalling chart {release_name} from {namespace} "
+                f"on cluster {cluster_id}")
+
+        code, data = self._rancher_request(
+            "POST",
+            f"k8s/clusters/{cluster_id}"
+            f"/v1/catalog.cattle.io.apps/{namespace}/{release_name}"
+            f"?action=uninstall",
+            data={}
+        )
+
+        if code == 404:
+            logging(f"Chart app {release_name} not found; "
+                    f"nothing to uninstall")
+            return {}
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to uninstall chart {release_name}: "
+                f"{code}, {str(data)[:500]}"
+            )
+
+        logging(f"Chart uninstall initiated: {release_name}")
+        return data
+
+    def wait_for_chart_app_deleted(self, cluster_id, release_name, namespace,
+                                   timeout=DEFAULT_TIMEOUT):
+        """Wait for a chart app to be fully removed from a guest cluster."""
+        logging(f"Waiting for chart app {release_name} to be deleted "
+                f"from {namespace}")
+        retry_count, retry_interval = get_retry_count_and_interval()
+
+        end_time = time.time() + int(timeout)
+        while time.time() < end_time:
+            code, data = self._rancher_proxy_request(
+                "GET", cluster_id,
+                f"v1/catalog.cattle.io.apps/{namespace}/{release_name}"
+            )
+            if code == 404:
+                logging(f"Chart app {release_name} has been deleted")
+                return True
+            time.sleep(retry_interval)
+
+        raise Exception(
+            f"Timeout waiting for chart app {release_name} to be deleted"
+        )
+
     def create_cluster_repo(self, cluster_id, repo_name, git_url, git_branch):
         """Create a ClusterRepo on a guest cluster via Rancher proxy."""
         logging(f"Creating ClusterRepo {repo_name} on cluster {cluster_id} "
@@ -1871,15 +2009,21 @@ class Rest(Base):
         return data
 
     def wait_for_cluster_repo_ready(self, cluster_id, repo_name,
-                                    timeout=DEFAULT_TIMEOUT):
+                                    timeout=DEFAULT_TIMEOUT,
+                                    expected_git_branch=None):
         """Wait for a ClusterRepo to finish downloading on a guest cluster.
 
         Requires Downloaded=True on two consecutive polls to avoid the
         false-positive that occurs briefly after initial creation.
+
         """
-        logging(f"Waiting for ClusterRepo {repo_name} to be ready")
+        logging(f"Waiting for ClusterRepo {repo_name} to be ready"
+                + (f" (branch={expected_git_branch})"
+                   if expected_git_branch else ""))
         end_time = time.time() + int(timeout)
         consecutive_ready = 0
+        reapply_count = 0
+        max_reapply = 3
 
         while time.time() < end_time:
             code, data = self._rancher_proxy_request(
@@ -1898,8 +2042,43 @@ class Rest(Base):
             if downloaded:
                 consecutive_ready += 1
                 if consecutive_ready >= 2:
+                    if expected_git_branch:
+                        spec = data.get("spec", {})
+                        current_branch = spec.get("gitBranch", "")
+
+                        if current_branch != expected_git_branch:
+                            if reapply_count >= max_reapply:
+                                raise Exception(
+                                    f"ClusterRepo {repo_name} branch mismatch "
+                                    f"after {max_reapply} re-apply attempts. "
+                                    f"Expected branch={expected_git_branch}, "
+                                    f"got branch={current_branch}. "
+                                    f"Rancher is reconciling the repo back to "
+                                    f"its built-in defaults."
+                                )
+                            logging(
+                                f"ClusterRepo {repo_name} branch mismatch "
+                                f"(got={current_branch}, "
+                                f"expected={expected_git_branch}), "
+                                f"re-applying via PUT "
+                                f"(attempt {reapply_count + 1}/{max_reapply})",
+                                level="WARNING"
+                            )
+                            updated = dict(data)
+                            updated.setdefault("spec", {})
+                            updated["spec"]["gitBranch"] = expected_git_branch
+                            self._rancher_proxy_request(
+                                "PUT", cluster_id,
+                                f"v1/catalog.cattle.io.clusterrepos/{repo_name}",
+                                updated
+                            )
+                            reapply_count += 1
+                            consecutive_ready = 0
+                            time.sleep(5)
+                            continue
+
                     logging(f"ClusterRepo {repo_name} is ready "
-                            f"(stable after {consecutive_ready} checks)")
+                            f"(stable, spec verified)")
                     return data
             else:
                 consecutive_ready = 0
@@ -2146,11 +2325,16 @@ class Rest(Base):
             logging(f"Deleted DaemonSet {ds_name}")
 
     def wait_for_chart_app_ready(self, cluster_id, release_name,
-                                 namespace, timeout=DEFAULT_TIMEOUT):
+                                 namespace, timeout=DEFAULT_TIMEOUT,
+                                 expected_version=None):
         """Wait for a chart app to be deployed and ready."""
         logging(f"Waiting for chart app {release_name} to be ready "
-                f"in {namespace}")
+                f"in {namespace}"
+                + (f" at version {expected_version}" if expected_version else ""))
         retry_count, retry_interval = get_retry_count_and_interval()
+
+        if expected_version:
+            time.sleep(5)
 
         end_time = time.time() + int(timeout)
         iteration = 0
@@ -2163,13 +2347,24 @@ class Rest(Base):
                 if code == 200 and data:
                     info = data.get("spec", {}).get("info", {})
                     status = info.get("status", "")
-                    if status == "deployed":
-                        logging(f"Chart app {release_name} is deployed")
-                        return data
+                    version = (data.get("spec", {})
+                                   .get("chart", {})
+                                   .get("metadata", {})
+                                   .get("version", ""))
+
+                    if expected_version:
+                        if status == "deployed" and version == expected_version:
+                            logging(f"Chart app {release_name} deployed "
+                                    f"at {expected_version}")
+                            return data
+                    else:
+                        if status == "deployed":
+                            logging(f"Chart app {release_name} is deployed")
+                            return data
 
                     if iteration % 10 == 0:
                         logging(f"Chart app {release_name} status: "
-                                f"{status}")
+                                f"{status}, version: {version}")
             except Exception as e:
                 if iteration % 10 == 0:
                     logging(f"Error checking chart app: {e}",
@@ -2180,6 +2375,7 @@ class Rest(Base):
 
         raise Exception(
             f"Timeout waiting for chart app {release_name} to be ready"
+            + (f" at version {expected_version}" if expected_version else "")
         )
 
     # RWX Volume / StorageClass / StatefulSet Operations
