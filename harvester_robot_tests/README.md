@@ -292,6 +292,9 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 # Run suites in parallel with pabot (only used when -p is given)
 ./run.sh -p 3 -i volume           # Run volume suites across 3 processes
 
+# Run against the REST API instead of CRD
+./run.sh -S rest -i volume        # Same suites, REST strategy
+
 # Show help
 ./run.sh -h
 ```
@@ -301,6 +304,13 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 at the **suite (file)** level. Without `-p`, the plain `robot` runner is used as before.
 Suites that run concurrently must be self-contained and clean up only their own named
 resources in teardown (the volume suites follow this pattern).
+
+**Operation strategy (CRD vs REST)**: The `vm`, `image`, and `volume` components pick
+their implementation from the `HARVESTER_OPERATION_STRATEGY` environment variable
+(`crd` by default, or `rest`). Pass `-S rest` to run the **same** suites against the
+Harvester REST API instead of the Kubernetes CRD path. The variable is read when the
+keyword libraries are imported, so it must be set before `robot`/`pabot` starts (the
+`-S` flag handles that); a single run uses one strategy for all suites.
 
 **Note**: The `run.sh` script automatically:
 - Loads environment variables from `.env` file if it exists

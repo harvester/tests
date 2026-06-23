@@ -17,6 +17,9 @@ ${VOL_TAG}              volume-snapshot
 ${SRC_VOL_NAME}         ${EMPTY}
 ${SNAPSHOT_NAME}        ${EMPTY}
 ${RESTORED_VOL_NAME}    ${EMPTY}
+# Guard: only delete the source snapshot once the restore is confirmed, so a
+# failed/in-progress restore never has its snapshot pulled out from under it.
+${RESTORE_OK}           ${FALSE}
 
 
 *** Test Cases ***
@@ -41,10 +44,13 @@ Restore Volume From Snapshot
     When Restore Volume From Snapshot    ${SRC_VOL_NAME}    ${SNAPSHOT_NAME}    ${RESTORED_VOL_NAME}
     And Wait Until Volume Is Active    ${RESTORED_VOL_NAME}
     Then Volume Size Is 10Gi    ${RESTORED_VOL_NAME}
+    # Restore confirmed (PVC Bound + size verified); snapshot is now safe to delete
+    Set Suite Variable    ${RESTORE_OK}    ${TRUE}
 
 Delete Volume Snapshot
     [Tags]    p1
-    [Documentation]    Delete the snapshot created earlier
+    [Documentation]    Delete the snapshot created earlier (only after a confirmed restore)
+    Skip If    not ${RESTORE_OK}    Restore did not succeed; keeping snapshot for debugging
     When Delete Volume Snapshot    ${SRC_VOL_NAME}    ${SNAPSHOT_NAME}
 
 

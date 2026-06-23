@@ -28,6 +28,7 @@ TEST_CASE=""
 TEST_SUITE=""
 TEST_FILE=""
 PROCESSES=""
+STRATEGY=""
 INCLUDE_TAG=""
 EXCLUDE_TAG=""
 VARIABLES=""
@@ -50,6 +51,7 @@ Options:
     -L log_level       Set log level (TRACE|DEBUG|INFO|WARN|ERROR)
     -d output_dir      Set output directory
     -p N               Run suites in parallel with pabot (N processes)
+    -S strategy        Operation strategy: crd (default) or rest (sets HARVESTER_OPERATION_STRATEGY)
     -h                 Show this help
 
 Examples:
@@ -62,6 +64,7 @@ Examples:
     $0 -v WAIT_TIMEOUT:1200               # Set variable
     $0 -L DEBUG                           # Debug logging
     $0 -p 3 -i volume                     # Run volume suites in parallel (3 processes)
+    $0 -S rest -i volume                  # Run volume suites against the REST API
 
 Available Tags:
     Priority: p0, p1, p2
@@ -71,7 +74,7 @@ EOF
 }
 
 # Parse arguments
-while getopts "t:s:f:i:e:v:L:d:p:h" opt; do
+while getopts "t:s:f:i:e:v:L:d:p:S:h" opt; do
     case $opt in
         t) TEST_CASE="--test \"$OPTARG\"" ;;
         s) TEST_SUITE="--suite \"$OPTARG\"" ;;
@@ -82,6 +85,7 @@ while getopts "t:s:f:i:e:v:L:d:p:h" opt; do
         L) LOG_LEVEL=$OPTARG ;;
         d) OUTPUT_DIR=$OPTARG ;;
         p) PROCESSES=$OPTARG ;;
+        S) STRATEGY=$OPTARG ;;
         h) show_help; exit 0 ;;
         \?) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
     esac
@@ -117,6 +121,9 @@ fi
 
 # Set Python path (../apiclient provides the shared harvester_api package)
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/libs:$(pwd)/../apiclient"
+
+# Operation strategy (crd|rest). Read at library import time, so export before robot starts.
+[ -n "$STRATEGY" ] && export HARVESTER_OPERATION_STRATEGY="$STRATEGY"
 
 # Build command
 # Use pabot for suite-level parallel execution when -p is given, otherwise plain robot.
