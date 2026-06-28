@@ -37,6 +37,36 @@ class VM(Base):
     def restart(self, vm_name):
         return self.vm.restart(vm_name)
 
+    def pause(self, vm_name):
+        return self.vm.pause(vm_name)
+
+    def unpause(self, vm_name):
+        return self.vm.unpause(vm_name)
+
+    def wait_for_paused(self, vm_name, timeout):
+        return self.vm.wait_for_paused(vm_name, timeout)
+
+    def try_get(self, vm_name):
+        return self.vm.try_get(vm_name)
+
+    def try_delete(self, vm_name):
+        return self.vm.try_delete(vm_name)
+
+    def add_volume(self, vm_name, disk_name, volume_name):
+        return self.vm.add_volume(vm_name, disk_name, volume_name)
+
+    def remove_volume(self, vm_name, disk_name):
+        return self.vm.remove_volume(vm_name, disk_name)
+
+    def wait_for_volume_hotplugged(self, vm_name, disk_name, timeout):
+        return self.vm.wait_for_volume_hotplugged(vm_name, disk_name, timeout)
+
+    def wait_for_volume_unplugged(self, vm_name, disk_name, timeout):
+        return self.vm.wait_for_volume_unplugged(vm_name, disk_name, timeout)
+
+    def get_disk_names(self, vm_name):
+        return self.vm.get_disk_names(vm_name)
+
     def migrate(self, vm_name, target_node):
         return self.vm.migrate(vm_name, target_node)
 

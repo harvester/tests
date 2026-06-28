@@ -10,7 +10,8 @@ from constant import (
     KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION,
     VIRTUALMACHINE_PLURAL, VIRTUALMACHINEINSTANCE_PLURAL,
     DEFAULT_NAMESPACE, LABEL_TEST, LABEL_TEST_VALUE,
-    DEFAULT_TIMEOUT_SHORT, DEFAULT_STORAGE_CLASS
+    DEFAULT_TIMEOUT_SHORT, DEFAULT_STORAGE_CLASS,
+    RUN_STRATEGY_RERUN_ON_FAILURE,
 )
 from utility.utility import logging, get_retry_count_and_interval
 from vm.base import Base
@@ -135,6 +136,11 @@ class CRD(Base):
             }
         ]
 
+        # runStrategy controls whether the VM boots on create. Default keeps the
+        # existing behaviour (RerunOnFailure starts it); pass run_strategy=Halted
+        # to create a stopped VM.
+        run_strategy = kwargs.get("run_strategy", RUN_STRATEGY_RERUN_ON_FAILURE)
+
         extra_disks = kwargs.get("extra_disks", [])
         if extra_disks:
             if not isinstance(extra_disks, list):
@@ -178,6 +184,22 @@ class CRD(Base):
                     }
                 )
 
+        # Attach pre-existing PVCs (not provisioned via volumeClaimTemplates).
+        # existing_volumes: list of PVC names already Bound in the namespace.
+        existing_volumes = kwargs.get("existing_volumes", [])
+        if existing_volumes:
+            if not isinstance(existing_volumes, list):
+                raise Exception("existing_volumes must be a list of PVC names")
+            for idx, pvc_name in enumerate(existing_volumes, start=1):
+                disk_nm = f"existing-{idx}"
+                spec_devices_disks.append(
+                    {"name": disk_nm, "disk": {"bus": "virtio"}}
+                )
+                spec_volumes.append(
+                    {"name": disk_nm,
+                     "persistentVolumeClaim": {"claimName": pvc_name}}
+                )
+
         logging(f"Volume claim templates for VM {vm_name}: {volume_claim_templates}")
         logging(f"Volume spec_devices_disks for VM {vm_name}: {spec_devices_disks}")
 
@@ -189,7 +211,7 @@ class CRD(Base):
                 "name": vm_name,
                 "namespace": namespace,
                 "annotations": {
-                    "harvesterhci.io/vmRunStrategy": "RerunOnFailure",
+                    "harvesterhci.io/vmRunStrategy": run_strategy,
                     "harvesterhci.io/volumeClaimTemplates": (
                         json.dumps(volume_claim_templates)
                     ),
@@ -202,7 +224,7 @@ class CRD(Base):
                 }
             },
             "spec": {
-                "runStrategy": "RerunOnFailure",
+                "runStrategy": run_strategy,
                 "template": {
                     "metadata": {
                         "annotations": {
@@ -282,26 +304,61 @@ class CRD(Base):
             raise
 
     def delete(self, vm_name, namespace=DEFAULT_NAMESPACE):
-        """Delete VirtualMachine."""
+        """Delete a VM together with the PVCs it owns (boot + data disks).
+
+        Harvester does not cascade-delete the volumeClaimTemplate PVCs, so we
+        collect the PVC claim names from the VM spec, delete the VM, wait for it
+        to be gone, then delete those PVCs. This also unblocks deleting the
+        source image afterwards (its backing image can't be removed while a PVC
+        still references it).
+        """
+        # Collect the PVC names this VM references, before it disappears.
+        pvc_names = []
+        try:
+            vm = self.get(vm_name, namespace)
+            volumes = (vm.get('spec', {}).get('template', {}).get('spec', {})
+                       .get('volumes', []))
+            for vol in volumes:
+                claim = vol.get('persistentVolumeClaim', {}).get('claimName')
+                if claim:
+                    pvc_names.append(claim)
+        except ApiException as e:
+            if e.status != 404:
+                logging(f"Could not read VM {vm_name} volumes before delete: {e}",
+                        "WARNING")
+
+        # Delete the VM.
         try:
             logging(f"Deleting VirtualMachine {namespace}/{vm_name}")
+            delete_cr(
+                group=KUBEVIRT_API_GROUP,
+                version=KUBEVIRT_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINE_PLURAL,
+                name=vm_name
+            )
+            logging(f"Deleted VirtualMachine {namespace}/{vm_name}")
+        except ApiException as e:
+            if e.status != 404:
+                logging(f"Error deleting VM {vm_name}: {e}")
+                raise
 
+        # Wait for the VM to be gone so its PVCs are released, then delete them.
+        try:
+            self.wait_for_deleted(vm_name, DEFAULT_TIMEOUT_SHORT, namespace)
+        except Exception as e:
+            logging(f"VM {vm_name} not fully gone before PVC cleanup: {e}",
+                    "WARNING")
+
+        for pvc in pvc_names:
             try:
-                delete_cr(
-                    group=KUBEVIRT_API_GROUP,
-                    version=KUBEVIRT_API_VERSION,
-                    namespace=namespace,
-                    plural=VIRTUALMACHINE_PLURAL,
-                    name=vm_name
+                logging(f"Deleting PVC {namespace}/{pvc} owned by VM {vm_name}")
+                self.core_api.delete_namespaced_persistent_volume_claim(
+                    name=pvc, namespace=namespace
                 )
-                logging(f"Deleted VirtualMachine {namespace}/{vm_name}")
             except ApiException as e:
                 if e.status != 404:
-                    raise
-
-        except Exception as e:
-            logging(f"Error deleting VM {vm_name}: {e}")
-            raise
+                    logging(f"Error deleting PVC {pvc}: {e}", "WARNING")
 
     def get(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Get VirtualMachine."""
@@ -330,6 +387,11 @@ class CRD(Base):
             try:
                 vm = self.get(vm_name, namespace)
                 vm['spec']['runStrategy'] = 'Always'
+                # Harvester treats harvesterhci.io/vmRunStrategy as the source of
+                # truth and reconciles spec.runStrategy from it, so keep both in
+                # sync or the change gets reverted.
+                vm.setdefault('metadata', {}).setdefault('annotations', {})[
+                    'harvesterhci.io/vmRunStrategy'] = 'Always'
 
                 self.obj_api.replace_namespaced_custom_object(
                     group=KUBEVIRT_API_GROUP,
@@ -360,6 +422,10 @@ class CRD(Base):
             try:
                 vm = self.get(vm_name, namespace)
                 vm['spec']['runStrategy'] = 'Halted'
+                # Keep the Harvester runStrategy annotation in sync with spec, or
+                # Harvester reconciles spec.runStrategy back and the stop is lost.
+                vm.setdefault('metadata', {}).setdefault('annotations', {})[
+                    'harvesterhci.io/vmRunStrategy'] = 'Halted'
 
                 self.obj_api.replace_namespaced_custom_object(
                     group=KUBEVIRT_API_GROUP,
@@ -385,22 +451,100 @@ class CRD(Base):
         )
 
     def restart(self, vm_name, namespace=DEFAULT_NAMESPACE):
-        """Restart a VM."""
-        logging(f"Restarting VM {namespace}/{vm_name}")
+        """Restart a VM by stopping then starting it.
+
+        Implemented as stop + wait_for_stopped + start (pure CRD, reliable).
+        Note: start sets runStrategy=Always, so a restarted VM ends up with
+        runStrategy Always regardless of its original strategy.
+        """
+        logging(f"Restarting VM {namespace}/{vm_name} via stop+start")
+        self.stop(vm_name, namespace)
+        self.wait_for_stopped(vm_name, DEFAULT_TIMEOUT_SHORT, namespace)
+        self.start(vm_name, namespace)
+        logging(f"VM {namespace}/{vm_name} restart initiated")
+
+    def _vmi_subresource(self, vm_name, action, namespace=DEFAULT_NAMESPACE, body=None):
+        """Call a kubevirt VMI subresource (pause/unpause) via the aggregated
+        subresources.kubevirt.io API. These have no spec-field equivalent, so
+        they must go through the subresource endpoint.
+        """
+        path = (f"/apis/subresources.{KUBEVIRT_API_GROUP}/{KUBEVIRT_API_VERSION}"
+                f"/namespaces/{namespace}/{VIRTUALMACHINEINSTANCE_PLURAL}"
+                f"/{vm_name}/{action}")
+        return self.obj_api.api_client.call_api(
+            path, "PUT",
+            header_params={"Content-Type": "application/json"},
+            body=body if body is not None else {},
+            auth_settings=["BearerToken"],
+            response_type=None,
+            _return_http_data_only=True,
+            _preload_content=False,
+        )
+
+    def pause(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Pause a running VM (VMI pause subresource)."""
+        logging(f"Pausing VM {namespace}/{vm_name}")
+        self._vmi_subresource(vm_name, "pause", namespace)
+
+    def unpause(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Unpause a paused VM (VMI unpause subresource)."""
+        logging(f"Unpausing VM {namespace}/{vm_name}")
+        self._vmi_subresource(vm_name, "unpause", namespace)
+
+    def wait_for_paused(self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT,
+                        namespace=DEFAULT_NAMESPACE):
+        """Wait for the VMI to report the Paused condition as True."""
+        endtime = time.time() + timeout
+        while time.time() < endtime:
+            try:
+                vmi = self.obj_api.get_namespaced_custom_object(
+                    group=KUBEVIRT_API_GROUP,
+                    version=KUBEVIRT_API_VERSION,
+                    namespace=namespace,
+                    plural=VIRTUALMACHINEINSTANCE_PLURAL,
+                    name=vm_name
+                )
+                conditions = vmi.get('status', {}).get('conditions', [])
+                if any(c.get('type') == 'Paused' and c.get('status') == 'True'
+                       for c in conditions):
+                    logging(f"VM {namespace}/{vm_name} is paused")
+                    return True
+            except ApiException as e:
+                if e.status != 404:
+                    logging(f"Error checking VM paused status: {e}")
+            time.sleep(self.retry_interval)
+        raise AssertionError(
+            f"VM {namespace}/{vm_name} was not paused within {timeout}s")
+
+    def try_get(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Attempt to get a VM; returns {success, code, message}."""
         try:
-            # Create a restart subresource request
-            self.obj_api.create_namespaced_custom_object(
+            self.get(vm_name, namespace)
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def try_delete(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Attempt to delete a VM; returns {success, code, message}.
+
+        Unlike delete(), does NOT swallow a 404 so callers can assert that
+        deleting a missing VM is rejected.
+        """
+        try:
+            delete_cr(
                 group=KUBEVIRT_API_GROUP,
                 version=KUBEVIRT_API_VERSION,
                 namespace=namespace,
                 plural=VIRTUALMACHINE_PLURAL,
-                name=vm_name,
-                body={}
+                name=vm_name
             )
-            logging(f"VM {namespace}/{vm_name} restart initiated")
+            return {"success": True, "code": 200, "message": ""}
         except ApiException as e:
-            logging(f"Error restarting VM: {e}")
-            raise
+            logging(f"Delete of VM {namespace}/{vm_name} returned "
+                    f"status={e.status}: {e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
 
     def migrate(self, vm_name, target_node, namespace=DEFAULT_NAMESPACE):
         """Migrate VM to target node."""
@@ -492,32 +636,30 @@ class CRD(Base):
 
     def wait_for_stopped(
             self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
-        """Wait for VM to be stopped."""
+        """Wait for VM to be stopped.
+
+        The only accepted signal is the VM object's status.printableStatus ==
+        "Stopped" (what the Harvester UI shows). Nothing else counts as stopped.
+        """
         endtime = time.time() + timeout
         last_log_time = 0
 
         while time.time() < endtime:
             try:
-                vmi = self.obj_api.get_namespaced_custom_object(
-                    group=KUBEVIRT_API_GROUP,
-                    version=KUBEVIRT_API_VERSION,
-                    namespace=namespace,
-                    plural=VIRTUALMACHINEINSTANCE_PLURAL,
-                    name=vm_name
-                )
-
-                phase = vmi.get('status', {}).get('phase', 'Unknown')
-                now = time.time()
-                if now - last_log_time >= 30:
-                    logging(
-                        f"Waiting for VM {vm_name} to stop (current phase: {phase})..."
-                    )
-                    last_log_time = now
-
-            except ApiException as e:
-                if e.status == 404:
+                vm = self.get(vm_name, namespace)
+                printable = vm.get('status', {}).get('printableStatus', 'Unknown')
+                if printable == 'Stopped':
                     logging(f"VM {namespace}/{vm_name} is stopped")
                     return True
+            except ApiException as e:
+                printable = f"<error {e.status}>"
+                logging(f"Error checking VM stopped status: {e}")
+
+            now = time.time()
+            if now - last_log_time >= 30:
+                logging(f"Waiting for VM {vm_name} to stop "
+                        f"(printableStatus: {printable})...")
+                last_log_time = now
 
             time.sleep(self.retry_interval)
 
@@ -620,6 +762,109 @@ class CRD(Base):
             f"VM {namespace}/{vm_name} did not get IP addresses "
             f"within {timeout}s"
         )
+
+    def _vm_subresource(self, vm_name, action, namespace=DEFAULT_NAMESPACE, body=None):
+        """Call a kubevirt VirtualMachine subresource (e.g. addvolume/removevolume)
+        via the aggregated subresources.kubevirt.io API.
+        """
+        path = (f"/apis/subresources.{KUBEVIRT_API_GROUP}/{KUBEVIRT_API_VERSION}"
+                f"/namespaces/{namespace}/{VIRTUALMACHINE_PLURAL}"
+                f"/{vm_name}/{action}")
+        return self.obj_api.api_client.call_api(
+            path, "PUT",
+            header_params={"Content-Type": "application/json"},
+            body=body if body is not None else {},
+            auth_settings=["BearerToken"],
+            response_type=None,
+            _return_http_data_only=True,
+            _preload_content=False,
+        )
+
+    def add_volume(self, vm_name, disk_name, volume_name,
+                   namespace=DEFAULT_NAMESPACE, bus="scsi"):
+        """Hot-plug an existing PVC into a running VM (kubevirt addvolume).
+
+        Hot-plugged disks use the scsi bus.
+        """
+        body = {
+            "name": disk_name,
+            "disk": {"name": disk_name, "disk": {"bus": bus}},
+            "volumeSource": {
+                "persistentVolumeClaim": {"claimName": volume_name}
+            },
+        }
+        logging(f"Hot-plugging volume {volume_name} as {disk_name} into "
+                f"VM {namespace}/{vm_name}")
+        self._vm_subresource(vm_name, "addvolume", namespace, body)
+
+    def remove_volume(self, vm_name, disk_name, namespace=DEFAULT_NAMESPACE):
+        """Hot-unplug a disk from a running VM (kubevirt removevolume)."""
+        logging(f"Hot-unplugging disk {disk_name} from VM {namespace}/{vm_name}")
+        self._vm_subresource(vm_name, "removevolume", namespace, {"name": disk_name})
+
+    def get_volume_status(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the VMI status.volumeStatus list (attach/hotplug state)."""
+        vmi = self.obj_api.get_namespaced_custom_object(
+            group=KUBEVIRT_API_GROUP,
+            version=KUBEVIRT_API_VERSION,
+            namespace=namespace,
+            plural=VIRTUALMACHINEINSTANCE_PLURAL,
+            name=vm_name
+        )
+        return vmi.get('status', {}).get('volumeStatus', [])
+
+    def wait_for_volume_hotplugged(self, vm_name, disk_name,
+                                   timeout=DEFAULT_TIMEOUT_SHORT,
+                                   namespace=DEFAULT_NAMESPACE):
+        """Wait for a hot-plugged disk to reach the Ready phase in volumeStatus."""
+        endtime = time.time() + timeout
+        last_log_time = 0
+        while time.time() < endtime:
+            try:
+                for vs in self.get_volume_status(vm_name, namespace):
+                    if vs.get('name') == disk_name:
+                        phase = vs.get('phase', 'Unknown')
+                        if phase == 'Ready':
+                            logging(f"Volume {disk_name} hot-plugged into "
+                                    f"{vm_name} (phase={phase})")
+                            return True
+                        now = time.time()
+                        if now - last_log_time >= 30:
+                            logging(f"Waiting for {disk_name} hotplug "
+                                    f"(phase={phase})...")
+                            last_log_time = now
+            except ApiException as e:
+                logging(f"Error checking volumeStatus: {e}")
+            time.sleep(self.retry_interval)
+        raise AssertionError(
+            f"Volume {disk_name} was not hot-plugged into {vm_name} "
+            f"within {timeout}s")
+
+    def wait_for_volume_unplugged(self, vm_name, disk_name,
+                                  timeout=DEFAULT_TIMEOUT_SHORT,
+                                  namespace=DEFAULT_NAMESPACE):
+        """Wait for a disk to disappear from the VMI volumeStatus."""
+        endtime = time.time() + timeout
+        while time.time() < endtime:
+            try:
+                names = [vs.get('name')
+                         for vs in self.get_volume_status(vm_name, namespace)]
+                if disk_name not in names:
+                    logging(f"Volume {disk_name} hot-unplugged from {vm_name}")
+                    return True
+            except ApiException as e:
+                logging(f"Error checking volumeStatus: {e}")
+            time.sleep(self.retry_interval)
+        raise AssertionError(
+            f"Volume {disk_name} was not hot-unplugged from {vm_name} "
+            f"within {timeout}s")
+
+    def get_disk_names(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the disk names declared in the VM spec (boot + data disks)."""
+        vm = self.get(vm_name, namespace)
+        disks = (vm.get('spec', {}).get('template', {}).get('spec', {})
+                 .get('domain', {}).get('devices', {}).get('disks', []))
+        return [d.get('name') for d in disks]
 
     def cleanup(self):
         """Clean up test VMs."""

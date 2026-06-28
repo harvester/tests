@@ -55,6 +55,66 @@ class Rest(Base):
         assert code == 200, f"Failed to list VMs: {code}, {data}"
         return data.get("data", [])
 
+    def pause(self, vm_name):
+        """Pause a VM. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "pause is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def unpause(self, vm_name):
+        """Unpause a VM. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "unpause is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_paused(self, vm_name, timeout):
+        """Wait for paused. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_paused is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_get(self, vm_name):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_get is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_delete(self, vm_name):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_delete is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def add_volume(self, vm_name, disk_name, volume_name):
+        """Hot-plug a volume. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "add_volume is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def remove_volume(self, vm_name, disk_name):
+        """Hot-unplug a volume. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "remove_volume is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_volume_hotplugged(self, vm_name, disk_name, timeout):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_volume_hotplugged is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_volume_unplugged(self, vm_name, disk_name, timeout):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_volume_unplugged is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_disk_names(self, vm_name):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_disk_names is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def start(self, vm_name):
         """Start a VM"""
         api = get_harvester_api_client()
