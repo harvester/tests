@@ -4,10 +4,10 @@ Documentation    Create Volume From VM Image Test Cases
 ...    A volume provisioned from an image must bind and carry the image's id.
 Test Tags        storage    volume    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
-Resource    ../../keywords/volume.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
+Resource    ../../../keywords/volume.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

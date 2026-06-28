@@ -4,10 +4,10 @@ Documentation    VM Lifecycle Operations Test Cases
 ...    (pause/unpause/stop/start/restart/delete).
 Test Tags        virtualmachines    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
-Resource    ../../keywords/virtualmachine.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
+Resource    ../../../keywords/virtualmachine.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

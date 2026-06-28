@@ -4,9 +4,9 @@ Documentation    Volume Shrink Rejection Test Cases
 ...    Shrinking a PVC must be rejected by the API and leave the volume unchanged.
 Test Tags        storage    volume    negative    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/volume.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/volume.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

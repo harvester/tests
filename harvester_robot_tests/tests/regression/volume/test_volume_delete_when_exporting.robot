@@ -5,10 +5,10 @@ Documentation    Delete Volume While Exporting Test Case
 ...    admission webhook should reject the delete and leave the volume intact.
 Test Tags        storage    volume    negative    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
-Resource    ../../keywords/volume.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
+Resource    ../../../keywords/volume.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

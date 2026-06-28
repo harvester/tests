@@ -5,10 +5,10 @@ Documentation    Image-Backed Volume Resize Test Cases
 ...    remain Bound after each one.
 Test Tags        storage    volume    resize    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
-Resource    ../../keywords/volume.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
+Resource    ../../../keywords/volume.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

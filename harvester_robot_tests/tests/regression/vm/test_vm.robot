@@ -2,10 +2,10 @@
 Documentation    VM Test Cases
 Test Tags        regression    virtualmachines    pr-baseline
 
-Resource         ../../keywords/variables.resource
-Resource         ../../keywords/common.resource
-Resource         ../../keywords/image.resource
-Resource         ../../keywords/virtualmachine.resource
+Resource         ../../../keywords/variables.resource
+Resource         ../../../keywords/common.resource
+Resource         ../../../keywords/image.resource
+Resource         ../../../keywords/virtualmachine.resource
 
 
 Suite Setup       Local Suite Setup

@@ -44,7 +44,7 @@ Usage: $0 [options]
 Options:
     -t "test name"      Run specific test case by name
     -s "suite name"     Run specific test suite by name
-    -f "file path"      Run specific test file (e.g., tests/regression/test_vm.robot)
+    -f "file path"      Run specific test file (e.g., tests/regression/vm/test_vm.robot)
     -i "tag"           Include tests with tag
     -e "tag"           Exclude tests with tag
     -v VAR:value       Set Robot Framework variable
@@ -57,8 +57,9 @@ Options:
 Examples:
     $0                                    # Run all tests
     $0 -t "Test VM Basic Lifecycle"       # Run specific test case
-    $0 -s "test_vm"                       # Run test suite by name
-    $0 -f tests/regression/test_vm.robot  # Run specific test file
+    $0 -s "test_vm"                       # Run a single test suite by name
+    $0 -s vm                              # Run a whole category (vm/volume/image/addon/rancher)
+    $0 -f tests/regression/vm/test_vm.robot  # Run specific test file
     $0 -i coretest                        # Run with tag
     $0 -i p0 -e backup                    # Include/exclude tags
     $0 -v WAIT_TIMEOUT:1200               # Set variable

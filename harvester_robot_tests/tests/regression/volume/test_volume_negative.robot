@@ -4,9 +4,9 @@ Documentation    Volume API Negative Test Cases (CRUD on missing / invalid resou
 ...    Covers get/delete of a non-existent volume and creation without size/name.
 Test Tags        storage    volume    negative    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/volume.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/volume.resource
 
 Suite Setup       Set up test environment
 Test Teardown     Common Test Teardown

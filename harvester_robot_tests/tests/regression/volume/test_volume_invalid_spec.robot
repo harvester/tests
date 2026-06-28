@@ -5,9 +5,9 @@ Documentation    Volume Negative Creation Test Cases (invalid specifications)
 ...    error message, and no volume resource should be left behind.
 Test Tags        storage    volume    negative    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/volume.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/volume.resource
 
 Suite Setup       Set up test environment
 Test Teardown     Invalid Volume Test Teardown
