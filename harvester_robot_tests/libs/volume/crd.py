@@ -2,16 +2,21 @@
 """
 Volume CRD Implementation - uses Kubernetes PersistentVolumeClaim for volume operations
 """
+import math
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from kubernetes import client
 from kubernetes.client.rest import ApiException
+from crd import get_cr, create_cr
 from constant import (
     DEFAULT_NAMESPACE, DEFAULT_STORAGE_CLASS,
     DEFAULT_VOLUME_SNAPSHOT_CLASS,
     VOLUME_STATE_BOUND,
     ACCESS_MODE_RWX,
     LABEL_TEST, LABEL_TEST_VALUE,
-    DEFAULT_TIMEOUT_SHORT
+    DEFAULT_TIMEOUT_SHORT,
+    HARVESTER_API_GROUP, HARVESTER_API_VERSION,
+    VIRTUALMACHINEIMAGE_PLURAL,
 )
 from utility.utility import logging, get_retry_count_and_interval
 from volume.base import Base
@@ -94,6 +99,219 @@ class CRD(Base):
             logging(f"Failed to create PVC {volume_name}: {e}")
             raise Exception(f"Failed to create volume: {e.status}, {e.reason}")
 
+    def create_from_image(self, volume_name, image_name, size=None,
+                          namespace=DEFAULT_NAMESPACE):
+        """Create a PVC backed by a VirtualMachineImage.
+
+        Harvester provisions a volume from an image with an ordinary PVC that
+        (a) uses the image's own StorageClass (status.storageClassName) and
+        (b) carries the harvesterhci.io/imageId annotation pointing at the
+        image. No REST action endpoint is involved - this is pure CRD/PVC.
+
+        size defaults to the image's virtual size rounded up to whole GiB.
+        """
+        image = get_cr(
+            group=HARVESTER_API_GROUP,
+            version=HARVESTER_API_VERSION,
+            namespace=namespace,
+            plural=VIRTUALMACHINEIMAGE_PLURAL,
+            name=image_name,
+        )
+        image_status = image.get("status", {})
+        storage_class = image_status.get("storageClassName")
+        assert storage_class, (
+            f"Image {namespace}/{image_name} has no status.storageClassName "
+            f"yet; is it fully imported?")
+
+        if size is None:
+            virtual_size = image_status.get("virtualSize", 0)
+            size = f"{max(1, math.ceil(virtual_size / 1024 ** 3))}Gi"
+
+        image_id = f"{namespace}/{image_name}"
+        body = {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "name": volume_name,
+                "namespace": namespace,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE
+                },
+                "annotations": {
+                    "harvesterhci.io/imageId": image_id
+                }
+            },
+            "spec": {
+                "accessModes": [ACCESS_MODE_RWX],
+                "volumeMode": "Block",
+                "storageClassName": storage_class,
+                "resources": {
+                    "requests": {
+                        "storage": size
+                    }
+                }
+            }
+        }
+
+        try:
+            logging(f"Creating PVC {namespace}/{volume_name} from image "
+                    f"{image_id} (sc={storage_class}, size={size})")
+            self.core_api.create_namespaced_persistent_volume_claim(
+                namespace=namespace,
+                body=body
+            )
+            self.wait_for_volume_created(volume_name, namespace)
+            return {
+                "metadata": {"name": volume_name, "namespace": namespace},
+                "image_id": image_id,
+                "storage_class": storage_class,
+            }
+        except ApiException as e:
+            logging(f"Failed to create PVC from image {volume_name}: {e}")
+            raise Exception(
+                f"Failed to create volume from image: {e.status}, {e.reason}")
+
+    def get_image_id(self, volume_name, namespace=DEFAULT_NAMESPACE):
+        """Return the harvesterhci.io/imageId annotation of a PVC (or '')."""
+        pvc = self.get(volume_name, namespace)
+        annotations = pvc.get("metadata", {}).get("annotations", {}) or {}
+        return annotations.get("harvesterhci.io/imageId", "")
+
+    def export_to_image(self, volume_name, image_name,
+                        target_storage_class=DEFAULT_STORAGE_CLASS,
+                        namespace=DEFAULT_NAMESPACE):
+        """Start exporting a volume (PVC) to a VirtualMachineImage.
+
+        This is the CRD form of the REST `?action=export`: it creates a
+        VirtualMachineImage with sourceType=export-from-volume pointing at the
+        source PVC (pvcName/pvcNamespace). The export then runs asynchronously;
+        while it is in progress the source PVC cannot be deleted.
+        """
+        body = {
+            "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
+            "kind": "VirtualMachineImage",
+            "metadata": {
+                "name": image_name,
+                "namespace": namespace,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE,
+                    "harvesterhci.io/imageDisplayName": image_name
+                },
+                "annotations": {
+                    "harvesterhci.io/storageClassName": target_storage_class
+                }
+            },
+            "spec": {
+                "displayName": image_name,
+                "sourceType": "export-from-volume",
+                "pvcName": volume_name,
+                "pvcNamespace": namespace,
+                "targetStorageClassName": target_storage_class
+            }
+        }
+        logging(f"Exporting volume {namespace}/{volume_name} to image "
+                f"{image_name} (sc={target_storage_class})")
+        return create_cr(
+            group=HARVESTER_API_GROUP,
+            version=HARVESTER_API_VERSION,
+            namespace=namespace,
+            plural=VIRTUALMACHINEIMAGE_PLURAL,
+            body=body
+        )
+
+    def create_concurrently(self, volume_names, size="10Gi", numberOfReplicas=3,
+                            timeout=DEFAULT_TIMEOUT_SHORT):
+        """Create several volumes in parallel and wait for each to bind.
+
+        Stresses the API server / Longhorn concurrent provisioning path.
+        Returns a list of {name, success, error} dicts (one per volume).
+        """
+        def _worker(name):
+            try:
+                self.create(name, size, numberOfReplicas, "blockdev")
+                self.wait_for_attached(name, timeout)   # reach Bound
+                return {"name": name, "success": True, "error": ""}
+            except Exception as e:
+                return {"name": name, "success": False, "error": str(e)}
+
+        results = []
+        with ThreadPoolExecutor(max_workers=len(volume_names)) as executor:
+            futures = [executor.submit(_worker, n) for n in volume_names]
+            for future in as_completed(futures):
+                results.append(future.result())
+        return results
+
+    def delete_concurrently(self, volume_names, timeout=DEFAULT_TIMEOUT_SHORT):
+        """Delete several volumes in parallel and wait for each to be gone.
+
+        Returns a list of {name, success, error} dicts (one per volume).
+        """
+        def _worker(name):
+            try:
+                self.delete(name, wait=True)
+                return {"name": name, "success": True, "error": ""}
+            except Exception as e:
+                return {"name": name, "success": False, "error": str(e)}
+
+        results = []
+        with ThreadPoolExecutor(max_workers=len(volume_names)) as executor:
+            futures = [executor.submit(_worker, n) for n in volume_names]
+            for future in as_completed(futures):
+                results.append(future.result())
+        return results
+
+    def try_create(self, volume_name, size, numberOfReplicas=3,
+                   frontend="blockdev", **kwargs):
+        """Attempt to create a PVC for negative testing.
+
+        Unlike create(), this never raises when the API server rejects the
+        request; it returns a result dict so callers can assert on the failure
+        code and message.
+
+        Returns: {"success": bool, "code": int, "message": str}
+        """
+        namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
+        storage_class = kwargs.get('storage_class', DEFAULT_STORAGE_CLASS)
+        access_mode = kwargs.get('access_mode', ACCESS_MODE_RWX)
+
+        body = {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "name": volume_name,
+                "namespace": namespace,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE
+                }
+            },
+            "spec": {
+                "accessModes": [access_mode],
+                "volumeMode": "Block",
+                "storageClassName": storage_class,
+                "resources": {
+                    "requests": {
+                        "storage": size
+                    }
+                }
+            }
+        }
+
+        try:
+            self.core_api.create_namespaced_persistent_volume_claim(
+                namespace=namespace,
+                body=body
+            )
+            logging(f"PVC {namespace}/{volume_name} was unexpectedly created "
+                    f"with size '{size}'", "WARNING")
+            return {"success": True, "code": 201, "message": ""}
+        except ApiException as e:
+            # e.body carries the API server's validation message (JSON string);
+            # fall back to reason when the body is empty.
+            message = e.body or e.reason or ""
+            logging(f"PVC {namespace}/{volume_name} rejected as expected "
+                    f"(status={e.status}): {e.reason}")
+            return {"success": False, "code": e.status, "message": message}
+
     def delete(self, volume_name, wait=True):
         """Delete a PersistentVolumeClaim"""
         namespace = DEFAULT_NAMESPACE
@@ -152,6 +370,51 @@ class CRD(Base):
         except ApiException as e:
             logging(f"Failed to get PVC {volume_name}: {e}")
             raise
+
+    def exists(self, volume_name, namespace=DEFAULT_NAMESPACE):
+        """Return True if the PVC exists, False if it returns 404.
+
+        Used by negative tests to confirm no resource is left behind after a
+        rejected creation.
+        """
+        try:
+            self.get(volume_name, namespace)
+            return True
+        except ApiException as e:
+            if e.status == 404:
+                return False
+            raise
+
+    def try_get(self, volume_name, namespace=DEFAULT_NAMESPACE):
+        """Attempt to get a PVC for negative testing.
+
+        Never raises; returns {"success": bool, "code": int, "message": str}.
+        """
+        try:
+            self.get(volume_name, namespace)
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def try_delete(self, volume_name, namespace=DEFAULT_NAMESPACE):
+        """Attempt to delete a PVC for negative testing.
+
+        Unlike delete(), this does NOT swallow a 404; it returns the result so
+        callers can assert that deleting a missing volume is rejected.
+        Returns {"success": bool, "code": int, "message": str}.
+        """
+        try:
+            self.core_api.delete_namespaced_persistent_volume_claim(
+                name=volume_name,
+                namespace=namespace
+            )
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            logging(f"Delete of PVC {namespace}/{volume_name} returned "
+                    f"status={e.status}: {e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
 
     def list(self, namespace=DEFAULT_NAMESPACE, label_selector=None):
         """List PersistentVolumeClaims"""
@@ -295,6 +558,37 @@ class CRD(Base):
         except ApiException as e:
             logging(f"Failed to expand PVC: {e}")
             raise
+
+    def try_expand(self, volume_name, new_size, namespace=DEFAULT_NAMESPACE):
+        """Attempt to resize a PVC for negative testing.
+
+        Never raises on API rejection; returns {success, code, message} so a
+        caller can assert that shrinking is forbidden. K8s rejects a shrink at
+        the API server, so this fires regardless of REST/CRD path.
+        """
+        body = {
+            "spec": {
+                "resources": {
+                    "requests": {
+                        "storage": new_size
+                    }
+                }
+            }
+        }
+        try:
+            self.core_api.patch_namespaced_persistent_volume_claim(
+                name=volume_name,
+                namespace=namespace,
+                body=body
+            )
+            logging(f"PVC {namespace}/{volume_name} resize to {new_size} "
+                    f"was unexpectedly accepted", "WARNING")
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            logging(f"Resize of PVC {namespace}/{volume_name} to {new_size} "
+                    f"rejected (status={e.status}): {e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
 
     def create_snapshot(self, volume_name, snapshot_name,
                         snapshot_class=DEFAULT_VOLUME_SNAPSHOT_CLASS):

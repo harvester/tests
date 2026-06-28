@@ -49,6 +49,68 @@ class Rest(Base):
         self.wait_for_attached(volume_name, DEFAULT_TIMEOUT_SHORT)
         return data
 
+    def try_create(self, volume_name, size, numberOfReplicas=3,
+                   frontend="blockdev", **kwargs):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_create is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def exists(self, volume_name):
+        """Existence check. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "exists is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def create_from_image(self, volume_name, image_name, size=None):
+        """Create volume from image. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "create_from_image is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_expand(self, volume_name, new_size):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_expand is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_image_id(self, volume_name):
+        """Read imageId annotation. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_image_id is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def export_to_image(self, volume_name, image_name,
+                        target_storage_class=DEFAULT_STORAGE_CLASS):
+        """Export volume to image. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "export_to_image is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def create_concurrently(self, volume_names, size="10Gi"):
+        """Concurrent create. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "create_concurrently is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def delete_concurrently(self, volume_names):
+        """Concurrent delete. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "delete_concurrently is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_get(self, volume_name):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_get is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_delete(self, volume_name):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_delete is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def delete(self, volume_name, wait=True):
         """Delete a volume"""
         api = get_harvester_api_client()
