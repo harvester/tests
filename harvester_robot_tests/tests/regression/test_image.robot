@@ -32,6 +32,21 @@ List Images And Image Exists
     Given Image Should Exist    ${IMAGE_NAME}
     Then Image Should Be Listed    ${IMAGE_NAME}
 
+Get Single Image
+    [Tags]    p1
+    [Documentation]    Getting the image by name returns it with the matching name
+    Get Image By Name    ${IMAGE_NAME}
+
+Update Image Metadata
+    [Tags]    p0
+    [Documentation]    Update labels and annotations and verify they persist
+    ${labels}=    Create Dictionary    test-label=42
+    ${annotations}=    Create Dictionary    test-annotation=dummy    field.cattle.io/description=test description
+    ${metadata}=    Create Dictionary    labels=${labels}    annotations=${annotations}
+    Update Image Metadata    ${IMAGE_NAME}    ${metadata}
+    Image Label Should Be    ${IMAGE_NAME}    test-label    42
+    Image Annotation Should Be    ${IMAGE_NAME}    test-annotation    dummy
+
 Delete Image
     [Tags]    p0
     [Documentation]    Delete an image and verify it is removed

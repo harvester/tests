@@ -63,3 +63,45 @@ Image Size Is Greater Than Zero
     ${status}=    image_keywords.get image status    ${image_name}
     ${size}=    Convert To Integer    ${status["size"]}
     Should Be True    ${size} > 0
+
+# negative
+Try To Create Image
+    [Arguments]    ${image_name}    ${image_url}=${EMPTY}    ${source_type}=download    ${checksum}=${EMPTY}
+    [Documentation]    Attempt to create an image expected to be rejected.
+    ...    Returns a result dict {success, code, message}; never fails on rejection.
+    ${result}=    image_keywords.try_create_image    ${image_name}    ${image_url}    ${source_type}    ${checksum}
+    RETURN    ${result}
+
+Try To Get Image
+    [Arguments]    ${image_name}
+    [Documentation]    Attempt to get an image expected to be missing. Returns result dict.
+    ${result}=    image_keywords.try_get_image    ${image_name}
+    RETURN    ${result}
+
+Try To Delete Image
+    [Arguments]    ${image_name}
+    [Documentation]    Attempt to delete an image expected to be missing. Returns result dict.
+    ${result}=    image_keywords.try_delete_image    ${image_name}
+    RETURN    ${result}
+
+# update
+Update Image Metadata
+    [Arguments]    ${image_name}    ${metadata}
+    [Documentation]    Patch an image's metadata (a dict with labels/annotations)
+    image_keywords.update_image    ${image_name}    ${metadata}
+
+Image Label Should Be
+    [Arguments]    ${image_name}    ${key}    ${expected}
+    ${metadata}=    image_keywords.get_image_metadata    ${image_name}
+    Dictionary Should Contain Item    ${metadata}[labels]    ${key}    ${expected}
+
+Image Annotation Should Be
+    [Arguments]    ${image_name}    ${key}    ${expected}
+    ${metadata}=    image_keywords.get_image_metadata    ${image_name}
+    Dictionary Should Contain Item    ${metadata}[annotations]    ${key}    ${expected}
+
+Get Image By Name
+    [Arguments]    ${image_name}
+    [Documentation]    Get a single image's metadata and assert its name matches
+    ${metadata}=    image_keywords.get_image_metadata    ${image_name}
+    Should Be Equal As Strings    ${metadata}[name]    ${image_name}

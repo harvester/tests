@@ -60,3 +60,29 @@ class image_keywords:
     def image_exists(self, image_name, namespace='default'):
         """Check if image exists"""
         return self.image.exists(image_name, namespace)
+
+    def try_create_image(self, image_name, image_url="", source_type="download",
+                         checksum=""):
+        """Attempt to create an image for negative testing; returns result dict"""
+        logging(f'Attempting to create image {image_name} '
+                f'(sourceType={source_type}, url={image_url}) (negative test)')
+        return self.image.try_create(image_name, image_url, source_type, checksum)
+
+    def try_get_image(self, image_name, namespace='default'):
+        """Attempt to get an image for negative testing; returns result dict"""
+        logging(f'Attempting to get image {image_name} (negative test)')
+        return self.image.try_get(image_name, namespace)
+
+    def try_delete_image(self, image_name, namespace='default'):
+        """Attempt to delete an image for negative testing; returns result dict"""
+        logging(f'Attempting to delete image {image_name} (negative test)')
+        return self.image.try_delete(image_name, namespace)
+
+    def update_image(self, image_name, metadata, namespace='default'):
+        """Update an image's metadata (labels/annotations)"""
+        logging(f'Updating image {image_name} metadata')
+        return self.image.update(image_name, metadata, namespace)
+
+    def get_image_metadata(self, image_name, namespace='default'):
+        """Return the metadata block of an image"""
+        return self.image.get_metadata(image_name, namespace)
