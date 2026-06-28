@@ -26,6 +26,21 @@ class Image:
     def wait_for_ready(self, image_name, timeout):
         return self.image.wait_for_ready(image_name, timeout)
 
+    def try_create(self, image_name, image_url="", source_type="download", checksum=""):
+        return self.image.try_create(image_name, image_url, source_type, checksum)
+
+    def try_get(self, image_name, namespace=DEFAULT_NAMESPACE):
+        return self.image.try_get(image_name, namespace)
+
+    def try_delete(self, image_name, namespace=DEFAULT_NAMESPACE):
+        return self.image.try_delete(image_name, namespace)
+
+    def update(self, image_name, metadata, namespace=DEFAULT_NAMESPACE):
+        return self.image.update(image_name, metadata, namespace)
+
+    def get_metadata(self, image_name, namespace=DEFAULT_NAMESPACE):
+        return self.image.get_metadata(image_name, namespace)
+
     def delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.delete(image_name, namespace)
 
