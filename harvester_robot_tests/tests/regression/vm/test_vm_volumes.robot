@@ -4,11 +4,11 @@ Documentation    VM With Multiple Disk Volumes Test Cases
 ...    (two volumes, existing volume). Verified via VM spec disk count (CRD-only).
 Test Tags        virtualmachines    volumes    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
-Resource    ../../keywords/volume.resource
-Resource    ../../keywords/virtualmachine.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
+Resource    ../../../keywords/volume.resource
+Resource    ../../../keywords/virtualmachine.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

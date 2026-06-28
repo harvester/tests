@@ -2,12 +2,12 @@
 Documentation    Longhorn V2 Data Engine Test Cases
 Test Tags        storage    longhorn    lhv2    experimental
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/setting.resource
-Resource    ../../keywords/image.resource
-Resource    ../../keywords/virtualmachine.resource
-Resource    ../../keywords/volume.resource
-Resource    ../../keywords/storageclass.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/setting.resource
+Resource    ../../../keywords/image.resource
+Resource    ../../../keywords/virtualmachine.resource
+Resource    ../../../keywords/volume.resource
+Resource    ../../../keywords/storageclass.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

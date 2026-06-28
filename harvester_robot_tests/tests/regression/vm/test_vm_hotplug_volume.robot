@@ -4,11 +4,11 @@ Documentation    VM Volume Hot-Plug / Hot-Unplug Test Cases
 ...    Verified via the VMI status.volumeStatus (CRD-only, no in-guest check).
 Test Tags        virtualmachines    volumes    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
-Resource    ../../keywords/volume.resource
-Resource    ../../keywords/virtualmachine.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
+Resource    ../../../keywords/volume.resource
+Resource    ../../../keywords/virtualmachine.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

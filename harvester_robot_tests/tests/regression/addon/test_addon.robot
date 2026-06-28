@@ -4,9 +4,9 @@ Documentation    Rancher-Monitoring Addon Test Cases
 ...             of the Rancher-Monitoring add-on in Harvester.
 Test Tags        regression    addons    rancher-monitoring
 
-Resource         ../../keywords/variables.resource
-Resource         ../../keywords/common.resource
-Resource         ../../keywords/addon.resource
+Resource         ../../../keywords/variables.resource
+Resource         ../../../keywords/common.resource
+Resource         ../../../keywords/addon.resource
 
 Suite Setup      Suite Setup For Addon Tests
 Suite Teardown   Suite Teardown For Addon Tests

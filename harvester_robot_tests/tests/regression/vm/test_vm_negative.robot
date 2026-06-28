@@ -4,9 +4,9 @@ Documentation    VM API Negative Test Cases
 ...    Getting/deleting a non-existent VM must return 404 NotFound.
 Test Tags        virtualmachines    negative    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/virtualmachine.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/virtualmachine.resource
 
 Suite Setup       Set up test environment
 Test Teardown     Common Test Teardown

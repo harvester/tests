@@ -268,10 +268,15 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 ./run.sh
 
 # Run specific test file
-./run.sh -f tests/regression/test_vm.robot
+./run.sh -f tests/regression/vm/test_vm.robot
 
 # Run specific test suite by name
 ./run.sh -s test_vm
+
+# Run a whole category (regression tests are grouped under
+# vm/ volume/ image/ addon/ rancher/ subfolders)
+./run.sh -s vm
+./run.sh -s volume -p 6
 
 # Run specific test case by name
 ./run.sh -t "Test VM Basic Lifecycle"
@@ -340,20 +345,20 @@ If you prefer to use the `robot` command directly:
 robot tests/
 
 # Run specific test suite
-robot tests/regression/test_vm.robot
+robot tests/regression/vm/test_vm.robot
 
 # Run specific test case
-robot --test "Test VM Basic Lifecycle" tests/regression/test_vm.robot
+robot --test "Test VM Basic Lifecycle" tests/regression/vm/test_vm.robot
 
 # Run with debug logging
-robot --loglevel DEBUG tests/regression/test_vm.robot
+robot --loglevel DEBUG tests/regression/vm/test_vm.robot
 
 # Run with tags
 robot --include smoke tests/
 robot --exclude slow tests/
 
 # Dry run (syntax validation)
-robot --dryrun tests/regression/test_vm.robot
+robot --dryrun tests/regression/vm/test_vm.robot
 
 # Run with custom variables
 robot --variable WAIT_TIMEOUT:1200 tests/
@@ -479,8 +484,14 @@ harvester_robot_tests/
 ├── scripts/
 │   └── node-management/
 └── tests/                           # Layer 1: Test cases
-    ├── regression/
-    └── negative/
+    ├── regression/                  # grouped by component into subfolders
+    │   ├── __init__.robot           # applies the `regression` tag to the whole tree
+    │   ├── vm/
+    │   ├── volume/
+    │   ├── image/
+    │   ├── addon/
+    │   └── rancher/
+    └── resilient/
 ```
 
 ## Troubleshooting

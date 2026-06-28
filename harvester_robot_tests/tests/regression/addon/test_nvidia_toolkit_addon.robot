@@ -4,9 +4,9 @@ Documentation    NVIDIA Driver Toolkit Addon Test Cases
 ...             of the nvidia-driver-toolkit add-on in Harvester, including interaction with the pcidevices-controller addon.
 Test Tags        regression    addons    nvidia-driver-toolkit
 
-Resource         ../../keywords/variables.resource
-Resource         ../../keywords/common.resource
-Resource         ../../keywords/addon.resource
+Resource         ../../../keywords/variables.resource
+Resource         ../../../keywords/common.resource
+Resource         ../../../keywords/addon.resource
 
 Suite Setup      Suite Setup For Nvidia Addon Tests
 Suite Teardown   Suite Teardown For Nvidia Addon Tests

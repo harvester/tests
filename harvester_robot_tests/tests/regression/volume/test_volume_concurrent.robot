@@ -5,9 +5,9 @@ Documentation    Concurrent Volume Creation Test Cases
 ...    API thread-safety and Longhorn concurrent provisioning.
 Test Tags        storage    volume    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/volume.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/volume.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

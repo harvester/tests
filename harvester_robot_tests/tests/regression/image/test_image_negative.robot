@@ -4,9 +4,9 @@ Documentation    Image API Negative Test Cases (CRUD on missing / invalid resour
 ...    Covers get/delete of a non-existent image and creation with empty data/url.
 Test Tags        image    negative    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
 
 Suite Setup       Set up test environment
 Test Teardown     Invalid Image Test Teardown

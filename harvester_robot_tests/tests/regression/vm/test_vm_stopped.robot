@@ -4,10 +4,10 @@ Documentation    Create Stopped VM Test Cases
 ...    A VM created with runStrategy=Halted must not boot, and must start on demand.
 Test Tags        virtualmachines    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
-Resource    ../../keywords/virtualmachine.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
+Resource    ../../../keywords/virtualmachine.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown

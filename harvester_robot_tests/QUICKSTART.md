@@ -70,7 +70,7 @@ chmod +x run.sh
 ./run.sh
 
 # Or run a specific test
-./run.sh -t tests/regression/test_vm.robot
+./run.sh -t tests/regression/vm/test_vm.robot
 ```
 
 ### View Results
@@ -91,7 +91,7 @@ open results/log.html
 
 ```bash
 # Run tests with debug logging
-./run.sh -L DEBUG -t tests/regression/test_vm.robot
+./run.sh -L DEBUG -t tests/regression/vm/test_vm.robot
 
 # Run only core tests
 ./run.sh -i coretest

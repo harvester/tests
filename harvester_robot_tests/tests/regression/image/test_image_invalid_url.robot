@@ -2,9 +2,9 @@
 Documentation    VirtualMachineImage Invalid URL Test Case
 Test Tags        image    negative    pr-baseline
 
-Resource    ../../keywords/variables.resource
-Resource    ../../keywords/common.resource
-Resource    ../../keywords/image.resource
+Resource    ../../../keywords/variables.resource
+Resource    ../../../keywords/common.resource
+Resource    ../../../keywords/image.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown
