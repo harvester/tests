@@ -318,9 +318,11 @@ keyword libraries are imported, so it must be set before `robot`/`pabot` starts 
 `-S` flag handles that); a single run uses one strategy for all suites.
 
 **PR baseline (`pr-baseline` tag)**: The suites that should run on every PR are tagged
-`pr-baseline` — all image suites, the basic VM lifecycle, and the volume
-(basic/expand/snapshot) suites. Heavy/hardware-dependent suites (LHv2, node-failure HA)
-are intentionally excluded. Run it with:
+`pr-baseline` — the VM (`vm/`), Volume (`volume/`) and Image (`image/`) suites
+(lifecycle, negative, hot-plug, resize, snapshot, etc.). They are CRD-only and
+parallel-safe. Heavy / hardware- or host-dependent suites are intentionally excluded:
+LHv2 (`host/`, needs NVMe + the v2 data engine) and node-failure HA (`resilient/`).
+Run it with:
 
 ```bash
 ./run.sh -i pr-baseline          # serial
@@ -383,28 +385,51 @@ results/
 
 ### Test File Structure
 
-Create a new test file in `tests/regression/` or `tests/negative/`:
+Create a new test file in the matching component subfolder under
+`tests/regression/` (`vm/`, `volume/`, `image/`, `addon/`, `rancher/`, `host/`),
+or under `tests/resilient/` for node/HA scenarios. Because suites live one level
+deeper than the keyword files, resource imports use `../../../keywords/`:
 
 ```robot
 *** Settings ***
 Documentation    Description of your test suite
-Test Tags        regression    your-category
+Test Tags        regression    your-category    pr-baseline
 
-Resource         ../../keywords/variables.resource
-Resource         ../../keywords/common.resource
-Resource         ../../keywords/virtualmachine.resource
+Resource         ../../../keywords/variables.resource
+Resource         ../../../keywords/common.resource
+Resource         ../../../keywords/virtualmachine.resource
 
-Test Setup       Set up test environment
-Test Teardown    Cleanup test resources
+Suite Setup       Local Suite Setup
+Suite Teardown    Local Suite Teardown
+Test Teardown     Common Test Teardown
+
+*** Variables ***
+${VM_NAME}    ${EMPTY}
 
 *** Test Cases ***
 Your Test Case Name
     [Tags]    p0    coretest    smoke
     [Documentation]    Detailed description of what this test does
-    
+
     Given Setup preconditions
     When Perform action
     Then Verify expected result
+
+*** Keywords ***
+Local Suite Setup
+    ${suffix}=    Generate Unique Name
+    Set Suite Variable    ${VM_NAME}    vm-${suffix}
+    Set up test environment
+
+Local Suite Teardown
+    # Parallel-safe: only delete THIS suite's own named resources. Never use the
+    # global `Cleanup test resources` here -- under pabot it would delete other
+    # suites' live resources (anything labelled harvesterhci.io/test).
+    Run Keyword If All Tests Passed    Delete Suite Resources
+    Run Keyword If Any Tests Failed    Log Variables
+
+Delete Suite Resources
+    Run Keyword And Ignore Error    VM is deleted    ${VM_NAME}
 ```
 
 ### Adding New Keywords
@@ -432,11 +457,15 @@ class MyKeywords:
 
 Use appropriate tags for your tests:
 
-- **Priority**: `p0` (critical), `p1` (high), `p2` (medium), `p3` (low)
-- **Category**: `coretest`, `regression`, `negative`, `sanity`
-- **Component**: `virtualmachines`, `images`, `volumes`, `networks`, `backup`, `ha`
-- **Speed**: `smoke` (quick), `slow` (long-running)
-- **Scope**: `unit`, `integration`, `e2e`
+- **Priority**: `p0` (critical), `p1` (high), `p2` (medium)
+- **Category**: `coretest`, `regression`, `negative`, `sanity`, `smoke`
+- **Component**: `virtualmachines`, `images`, `volumes`, `storage`, `networks`, `ha`
+- **Suite set**: `pr-baseline` (CRD-only, parallel-safe suites run on every PR)
+- **Special**: `experimental`, `known-issue`
+
+> Tip: tests are also grouped on disk by component subfolder
+> (`tests/regression/vm`, `volume`, `image`, `addon`, `rancher`, `host`), so you can
+> run a whole category with `./run.sh -s vm` without relying on tags.
 
 ### Best Practices
 
@@ -486,12 +515,13 @@ harvester_robot_tests/
 └── tests/                           # Layer 1: Test cases
     ├── regression/                  # grouped by component into subfolders
     │   ├── __init__.robot           # applies the `regression` tag to the whole tree
-    │   ├── vm/
-    │   ├── volume/
-    │   ├── image/
-    │   ├── addon/
-    │   └── rancher/
-    └── resilient/
+    │   ├── vm/                      # VM lifecycle, negative, volumes, hot-plug
+    │   ├── volume/                  # PVC CRUD, negative, from-image, resize, snapshot
+    │   ├── image/                   # image CRUD, checksum/url, negative
+    │   ├── addon/                   # addon + NVIDIA toolkit
+    │   ├── rancher/                 # Rancher integration
+    │   └── host/                    # host-dependent (LHv2 / NVMe data engine)
+    └── resilient/                   # node-failure / HA scenarios
 ```
 
 ## Troubleshooting

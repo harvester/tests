@@ -69,8 +69,11 @@ chmod +x run.sh
 # Run all tests
 ./run.sh
 
-# Or run a specific test
-./run.sh -t tests/regression/vm/test_vm.robot
+# Or run a specific test file (-f = file path)
+./run.sh -f tests/regression/vm/test_vm.robot
+
+# Or run a whole category (vm / volume / image / addon / rancher / host)
+./run.sh -s vm
 ```
 
 ### View Results
@@ -90,17 +93,24 @@ open results/log.html
 ## Common Commands
 
 ```bash
-# Run tests with debug logging
-./run.sh -L DEBUG -t tests/regression/vm/test_vm.robot
+# Run a specific test file with debug logging (-f = file)
+./run.sh -L DEBUG -f tests/regression/vm/test_vm.robot
 
-# Run only core tests
-./run.sh -i coretest
+# Run the PR baseline (CRD-only, parallel-safe suites)
+./run.sh -i pr-baseline            # serial
+./run.sh -i pr-baseline -p 8       # in parallel (one process per suite)
+
+# Run a whole category in parallel
+./run.sh -s volume -p 6
 
 # Run P0 priority tests only
 ./run.sh -i p0
 
-# Run all tests except backup tests
-./run.sh -e backup
+# Run all VM tests, exclude negative ones
+./run.sh -i virtualmachines -e negative
+
+# Run against the REST API instead of CRD (default)
+./run.sh -S rest -i volume
 
 # Show help and all available options
 ./run.sh -h
@@ -150,13 +160,20 @@ Use these tags to filter tests:
 - `coretest` - Core functionality tests
 - `regression` - Regression tests
 - `smoke` - Smoke tests
+- `sanity` - Sanity checks
+- `negative` - Negative / error-path tests
+
+**Suite-set Tags:**
+- `pr-baseline` - CRD-only, parallel-safe suites run on every PR
 
 **Component Tags:**
 - `virtualmachines` - VM tests
 - `images` - Image tests
-- `volumes` - Volume tests
-- `networks` - Network tests
-- `backup` - Backup/restore tests
+- `volumes` / `storage` - Volume & storage tests
+- `ha` - Node-failure / HA tests
+
+> Tests are also grouped on disk by component subfolder, so you can run a whole
+> category by suite name instead of tags, e.g. `./run.sh -s vm` or `./run.sh -s image`.
 
 ## Example Workflows
 
@@ -167,7 +184,7 @@ Use these tags to filter tests:
 
 ### Full Regression Test
 ```bash
-./run.sh -i regression -o ./regression-results
+./run.sh -i regression -d ./regression-results
 ```
 
 ### Debug Specific Test
