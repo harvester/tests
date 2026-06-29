@@ -2,7 +2,7 @@
 robotframework==7.0
 robotframework-requests==0.9.5
 # Parallel test execution (suite-level) via `pabot`
-robotframework-pabot>=2.16,<3
+robotframework-pabot>=3
 
 # Python libraries
 requests==2.31.0

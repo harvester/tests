@@ -438,10 +438,6 @@ markupsafe==3.0.3 \
     --hash=sha256:f9e130248f4462aaa8e2552d547f36ddadbeaa573879158d721bbd33dfe4743a \
     --hash=sha256:fed51ac40f757d41b7c48425901843666a6677e3e8eb0abcff09e4ba6e664f50
     # via jinja2
-natsort==8.4.0 \
-    --hash=sha256:45312c4a0e5507593da193dedd04abb1469253b601ecaf63445ad80f0a1ea581 \
-    --hash=sha256:4732914fb471f56b5cce04d7bae6f164a592c7712e1c85f9ef585e197299521c
-    # via robotframework-pabot
 oauthlib==3.3.1 \
     --hash=sha256:0f0f8aa759826a193cf66c12ea1af1637f87b9b4622d46e866952bb022e538c9 \
     --hash=sha256:88119c938d2b8fb88561af5f6ee0eec8cc8d552b7bb1f712743136eb7523b7a1
@@ -595,18 +591,14 @@ robotframework==7.0 \
     #   -r requirements.in
     #   robotframework-pabot
     #   robotframework-requests
-    #   robotframework-stacktrace
-robotframework-pabot==2.20.0 \
-    --hash=sha256:d97304c74aef4265255cd4c8cc028052ba8b9c25f63c546948ec0c90de27681f
+robotframework-pabot==5.2.2 \
+    --hash=sha256:497c3d72551c76eda21029df6a28c6b2ed227e63c4a8510e1c6a0690b9e2be91 \
+    --hash=sha256:e7b95d031e9f04b77312b04a1fd835b9791f022b3436b63b507a720bfec05bb4
     # via -r requirements.in
 robotframework-requests==0.9.5 \
     --hash=sha256:0a508b001f2c55ecb3501a1018f9e169854afc7ddfe68fc856c168e3e90fa5e7 \
     --hash=sha256:0ee7d90146f1a7f4d312deeedbd39245823ba337cbcc84a4e9a32babb165715b
     # via -r requirements.in
-robotframework-stacktrace==0.4.1 \
-    --hash=sha256:018d7a55b99733e64e3cc0b134771b61a47de61de23609ed35c7bf0a53e9290e \
-    --hash=sha256:e96cb36e7e9ab55104c1f7d3606249a109e0a4c3bb6a0e294bff07d54ee6f6a5
-    # via robotframework-pabot
 s3transfer==0.9.0 \
     --hash=sha256:01d4d2c35a016db8cb14f9a4d5e84c1f8c96e7ffc211422555eed45c11fa7eb1 \
     --hash=sha256:9e1b186ec8bb5907a1e82b51237091889a9973a2bb799a924bcd9f301ff79d3d
