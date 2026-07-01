@@ -13,8 +13,11 @@ Test Teardown     Common Test Teardown
 
 *** Variables ***
 ${IMAGE_TAG}            image
+# A known-good SHA512 for ${OPENSUSE_IMAGE_URL}; leave empty to skip that test
+${IMAGE_CHECKSUM}       %{IMAGE_CHECKSUM=}
 # Dynamic Variables
 ${IMAGE_NAME}           ${EMPTY}
+${IMG_CHECKSUM_NAME}    ${EMPTY}
 
 
 *** Test Cases ***
@@ -47,6 +50,15 @@ Update Image Metadata
     Image Label Should Be    ${IMAGE_NAME}    test-label    42
     Image Annotation Should Be    ${IMAGE_NAME}    test-annotation    dummy
 
+Create Image With Valid Checksum
+    [Tags]    p1    checksum
+    [Documentation]    Create an image with a correct SHA512 checksum; runs only when
+    ...    IMAGE_CHECKSUM is set. Uses its own image, independent of the main one.
+    Skip If    '${IMAGE_CHECKSUM}' == '${EMPTY}'    IMAGE_CHECKSUM not provided
+    When Create image from url with name    ${IMG_CHECKSUM_NAME}    ${OPENSUSE_IMAGE_URL}    checksum=${IMAGE_CHECKSUM}
+    And Wait for image downloaded by name    ${IMG_CHECKSUM_NAME}
+    Then Image State Is Active    ${IMG_CHECKSUM_NAME}
+
 Delete Image
     [Tags]    p0
     [Documentation]    Delete an image and verify it is removed
@@ -58,7 +70,8 @@ Delete Image
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name    ${IMAGE_TAG}
-    Set Suite Variable    ${IMAGE_NAME}     img-${suffix}
+    Set Suite Variable    ${IMAGE_NAME}            img-${suffix}
+    Set Suite Variable    ${IMG_CHECKSUM_NAME}     img-cksum-${suffix}
     Set up test environment
 
 Local Suite Teardown
@@ -69,3 +82,4 @@ Local Suite Teardown
 
 Delete Suite Images
     Run Keyword And Ignore Error    Delete image by name    ${IMAGE_NAME}
+    Run Keyword And Ignore Error    Delete image by name    ${IMG_CHECKSUM_NAME}

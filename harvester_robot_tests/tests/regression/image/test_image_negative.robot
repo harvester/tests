@@ -1,7 +1,7 @@
 *** Settings ***
-Documentation    Image API Negative Test Cases (CRUD on missing / invalid resources)
-...    Port of harvester/tests apis/test_images.py TestImagesNegative.
-...    Covers get/delete of a non-existent image and creation with empty data/url.
+Documentation    Image Negative Test Cases (missing / invalid resources, bad checksum/url)
+...    Port of harvester/tests apis/test_images.py TestImagesNegative plus the
+...    invalid-checksum and invalid-url import cases.
 Test Tags        image    negative    pr-baseline
 
 Resource    ../../../keywords/variables.resource
@@ -13,8 +13,11 @@ Test Teardown     Invalid Image Test Teardown
 
 
 *** Variables ***
+# Well-formed but wrong SHA512 (128 hex chars) to force a checksum mismatch
+${INVALID_CHECKSUM}     00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+${INVALID_IMAGE_URL}    https://invalid.example.invalid/nonexistent-image.qcow2
 # Name of the image attempted in the current test, so the teardown can remove it
-# if a creation that should have failed unexpectedly succeeded.
+# (a failed-import image, or a creation that should have failed but succeeded).
 ${CURRENT_IMG}    ${EMPTY}
 
 
@@ -48,6 +51,24 @@ Reject Image Creation With Empty URL
     Set Test Variable    ${CURRENT_IMG}    ${img}
     ${result}=    Try To Create Image    ${img}    ${EMPTY}
     Operation Should Be Rejected    ${result}
+
+Create Image With Invalid Checksum
+    [Tags]    p1    checksum
+    [Documentation]    A wrong checksum must fail verification and never become Active
+    ${img}=    Generate Unique Name    img-badcksum
+    Set Test Variable    ${CURRENT_IMG}    ${img}
+    When Create image from url with name    ${img}    ${OPENSUSE_IMAGE_URL}    checksum=${INVALID_CHECKSUM}
+    Then Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Image State Is Failed    ${img}
+
+Create Image With Invalid URL
+    [Tags]    p1
+    [Documentation]    An unreachable URL must fail the import and never become Active
+    ${img}=    Generate Unique Name    img-badurl
+    Set Test Variable    ${CURRENT_IMG}    ${img}
+    When Create image from url with name    ${img}    ${INVALID_IMAGE_URL}
+    Then Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Image State Is Failed    ${img}
 
 
 *** Keywords ***
