@@ -74,6 +74,7 @@ def cluster_network(request, api_client, unique_name):
     assert 200 == code, (code, data)
 
 
+@pytest.mark.robot_ported
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.settings
@@ -147,6 +148,7 @@ def test_enable_storage_network(
     assert snet_enabled, (code, data)
 
 
+@pytest.mark.robot_ported
 @pytest.mark.p0
 @pytest.mark.smoke
 @pytest.mark.settings

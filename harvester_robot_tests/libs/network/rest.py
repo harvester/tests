@@ -59,6 +59,9 @@ class Rest(Base):
 
         logging(f"Deleted cluster network: {name}")
 
+    def cleanup_cluster_networks(self):
+        pass
+
     def create_vlan_config(self, name, cluster_network, nic):
         """Create VLAN config to bind NIC to cluster network"""
         logging(f"Creating VLAN config: {name} "
@@ -115,6 +118,9 @@ class Rest(Base):
             )
 
         logging(f"Deleted VLAN config: {name}")
+
+    def cleanup_vlan_configs(self):
+        pass
 
     def wait_for_cluster_network_ready(self, name, timeout=120):
         """Wait for cluster network to become ready"""
@@ -208,6 +214,9 @@ class Rest(Base):
             )
 
         logging(f"Deleted VLAN network: {name}")
+
+    def cleanup_vlan_networks(self):
+        pass
 
     # IP Pool Operations
     def get_ip_pool(self, name):
