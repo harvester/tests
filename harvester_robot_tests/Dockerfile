@@ -1,23 +1,28 @@
-# https://apps.rancher.io/artifacts/6b458a91fc2c37c904bce4a9cd888f8d5f6d91bfb1b7fc9395ad52de1d639db7
-FROM dp.apps.rancher.io/containers/kubectl@sha256:6b458a91fc2c37c904bce4a9cd888f8d5f6d91bfb1b7fc9395ad52de1d639db7 AS kubectl-binary-1-35-3
+FROM registry.suse.com/bci/python:3.10
 
-FROM python:3.11.15-slim@sha256:9358444059ed78e2975ada2c189f1c1a3144a5dab6f35bff8c981afb38946634
 LABEL maintainer="Harvester Team"
 LABEL description="Harvester Robot Framework E2E Test Suite"
+
+ARG ARCH=amd64
+ENV ARCH=${ARCH}
 
 # Set working directory
 WORKDIR /harvester-robot-tests
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    openssh-client \
-    && rm -rf /var/lib/apt/lists/*
+RUN zypper rm -y container-suseconnect && \
+    zypper --no-gpg-checks ref && \
+    zypper in -y git curl openssh-clients iputils vim && zypper clean -a
 
-# Install kubectl
-COPY --from=kubectl-binary-1-35-3 /usr/bin/kubectl /usr/local/bin/kubectl
-RUN chmod +x /usr/local/bin/kubectl
+ARG KUBECTL_VERSION=v1.35.5
+ARG KUBECTL_SHA256_amd64=90f75ea6ecc9ea5633262e1c0b83a40560003b30fc94a04cb099404fcef0c224
+ARG KUBECTL_SHA256_arm64=ac69e06fd6860d69786692f5af1c3a1208ed54f8366a4d97ab15c172e99765ee
+
+RUN KUBECTL_SHA256=KUBECTL_SHA256_${ARCH} && \
+    curl -sfL https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl > /usr/bin/kubectl && \
+    echo "${!KUBECTL_SHA256}  /usr/bin/kubectl" | sha256sum -c - && \
+    chmod +x /usr/bin/kubectl
+
+RUN --mount=from=dir_apiclient,target=/tmp/apiclient cp -r /tmp/apiclient /
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
@@ -35,5 +40,8 @@ RUN mkdir -p /tmp/harvester-test-report
 # Set permissions
 RUN chmod +x run.sh
 
+# hack to avoid permission denied error when running pabot in container
+RUN touch .pabotsuitenames && chmod 666 .pabotsuitenames
+
 # Default command
-CMD ["./run.sh"]
+ENTRYPOINT ["./run.sh"]
