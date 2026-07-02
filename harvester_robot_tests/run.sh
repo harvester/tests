@@ -52,6 +52,7 @@ Options:
     -d output_dir      Set output directory
     -p N               Run suites in parallel with pabot (N processes)
     -S strategy        Operation strategy: crd (default) or rest (sets HARVESTER_OPERATION_STRATEGY)
+    -W                 Skip virtual environment check
     -h                 Show this help
 
 Examples:
@@ -77,7 +78,7 @@ EOF
 }
 
 # Parse arguments
-while getopts "t:s:f:i:e:v:L:d:p:S:h" opt; do
+while getopts "t:s:f:i:e:v:L:d:p:S:Wh" opt; do
     case $opt in
         t) TEST_CASE="--test \"$OPTARG\"" ;;
         s) TEST_SUITE="--suite \"$OPTARG\"" ;;
@@ -89,6 +90,7 @@ while getopts "t:s:f:i:e:v:L:d:p:S:h" opt; do
         d) OUTPUT_DIR=$OPTARG ;;
         p) PROCESSES=$OPTARG ;;
         S) STRATEGY=$OPTARG ;;
+        W) SKIP_VENV_CHECK=true ;;
         h) show_help; exit 0 ;;
         \?) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
     esac
@@ -111,8 +113,8 @@ if [ -n "$PROCESSES" ] && ! command -v pabot &> /dev/null; then
     exit 1
 fi
 
-# Check virtual environment
-if [[ -z "$VIRTUAL_ENV" ]]; then
+# Check virtual environment (skip if -W is set)
+if [[ "$SKIP_VENV_CHECK" != "true" ]] && [[ -z "$VIRTUAL_ENV" ]]; then
     echo -e "${YELLOW}Warning: Virtual environment not activated${NC}"
     read -p "Continue? (y/N) " -n 1 -r
     echo
