@@ -29,6 +29,7 @@ report.html
 *.swp
 *.swo
 *~
+.pabotsuitenames
 
 # OS
 .DS_Store
