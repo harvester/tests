@@ -31,6 +31,7 @@ VIRTUALMACHINEIMAGE_PLURAL = "virtualmachineimages"
 VIRTUALMACHINEINSTANCE_PLURAL = "virtualmachineinstances"
 VOLUME_PLURAL = "volumes"
 PERSISTENTVOLUMECLAIM_PLURAL = "persistentvolumeclaims"
+VIRTUALMACHINEBACKUP_PLURAL = "virtualmachinebackups"
 
 # Test Labels
 LABEL_TEST = "harvesterhci.io/test"
