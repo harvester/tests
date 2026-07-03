@@ -33,6 +33,7 @@ VIRTUALMACHINEBACKUP_PLURAL = "virtualmachinebackups"
 VIRTUALMACHINERESTORE_PLURAL = "virtualmachinerestores"
 VOLUME_PLURAL = "volumes"
 PERSISTENTVOLUMECLAIM_PLURAL = "persistentvolumeclaims"
+VIRTUALMACHINEBACKUP_PLURAL = "virtualmachinebackups"
 
 # Backup / Restore
 SETTING_BACKUP_TARGET = "backup-target"
