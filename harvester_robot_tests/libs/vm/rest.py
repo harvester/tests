@@ -249,32 +249,6 @@ class Rest(Base):
         code, data = api.vm_snapshots.create(vm_name, snapshot_name)
         assert code == 201, f"Failed to create snapshot: {code}, {data}"
 
-    def create_backup(self, vm_name, backup_name):
-        """Create a backup of the VM"""
-        api = get_harvester_api_client()
-        # Same action API the dashboard uses (?action=backup)
-        code, data = api.vms.backup(vm_name, backup_name)
-        assert code in [200, 201, 204], f"Failed to create backup: {code}, {data}"
-
-    def wait_for_backup_completed(self, vm_name, backup_name, timeout):
-        """Wait for backup to complete"""
-        api = get_harvester_api_client()
-
-        endtime = datetime.now() + timedelta(seconds=timeout)
-        while endtime > datetime.now():
-            code, data = api.backups.get(backup_name)
-            if code == 200:
-                status = data.get('status', {})
-                if status.get('readyToUse'):
-                    return True
-                if status.get('error'):
-                    raise AssertionError(
-                        f"Backup {backup_name} failed: {status['error']}"
-                    )
-            time.sleep(10)
-
-        raise AssertionError(f"Backup did not complete within {timeout}s")
-
     def cleanup(self):
         """Clean up all VMs"""
         logging('Cleaning up test VMs')
