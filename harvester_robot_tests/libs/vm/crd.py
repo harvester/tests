@@ -389,39 +389,27 @@ class CRD(Base):
         return result.get("items", [])
 
     def start(self, vm_name, namespace=DEFAULT_NAMESPACE):
-        """Start a VM."""
-        for i in range(self.retry_count):
-            try:
-                vm = self.get(vm_name, namespace)
-                vm['spec']['runStrategy'] = 'Always'
-                # Harvester treats harvesterhci.io/vmRunStrategy as the source of
-                # truth and reconciles spec.runStrategy from it, so keep both in
-                # sync or the change gets reverted.
-                vm.setdefault('metadata', {}).setdefault('annotations', {})[
-                    'harvesterhci.io/vmRunStrategy'] = 'Always'
+        """Start a VM via the kubevirt `start` subresource.
 
-                self.obj_api.replace_namespaced_custom_object(
-                    group=KUBEVIRT_API_GROUP,
-                    version=KUBEVIRT_API_VERSION,
-                    namespace=namespace,
-                    plural=VIRTUALMACHINE_PLURAL,
-                    name=vm_name,
-                    body=vm
-                )
-
-                logging(f"VM {namespace}/{vm_name} started")
-                return
-
-            except ApiException as e:
-                if e.status == 409:
-                    logging(f"Conflict when starting VM, retrying ({i})...")
-                    time.sleep(self.retry_interval)
-                else:
-                    raise
-
-        raise AssertionError(
-            f"Failed to start VM after {self.retry_count} attempts"
-        )
+        This is the same path Harvester itself uses (dashboard and the
+        restore controller's startVM). The subresource issues a state-change
+        request, which boots the VM regardless of its run strategy — a
+        spec-only runStrategy update is NOT enough: the strategy restored
+        from the vmRunStrategy annotation is usually RerunOnFailure, and
+        under RerunOnFailure a cleanly shut down VMI (phase Succeeded) is
+        never restarted, so the VM would hang stopped forever. Harvester's
+        VM mutator then restores spec.runStrategy from the annotation, so
+        the VM comes back with its original strategy.
+        """
+        logging(f"Starting VM {namespace}/{vm_name}")
+        try:
+            self._vm_subresource(vm_name, "start", namespace)
+        except ApiException as e:
+            raise AssertionError(
+                f"Failed to start VM {namespace}/{vm_name}: "
+                f"{e.status} {e.reason} {e.body}"
+            )
+        logging(f"VM {namespace}/{vm_name} started")
 
     def stop(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Stop a VM."""
@@ -465,14 +453,30 @@ class CRD(Base):
         """Restart a VM by stopping then starting it.
 
         Implemented as stop + wait_for_stopped + start (pure CRD, reliable).
-        Note: start sets runStrategy=Always, so a restarted VM ends up with
-        runStrategy Always regardless of its original strategy.
+        start() restores the run strategy remembered in the vmRunStrategy
+        annotation, so the VM comes back with its original strategy.
         """
         logging(f"Restarting VM {namespace}/{vm_name} via stop+start")
         self.stop(vm_name, namespace)
         self.wait_for_stopped(vm_name, DEFAULT_TIMEOUT_SHORT, namespace)
         self.start(vm_name, namespace)
         logging(f"VM {namespace}/{vm_name} restart initiated")
+
+    def _vmi_is_gone(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return True when the VMI object no longer exists."""
+        try:
+            self.obj_api.get_namespaced_custom_object(
+                group=KUBEVIRT_API_GROUP,
+                version=KUBEVIRT_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINEINSTANCE_PLURAL,
+                name=vm_name
+            )
+            return False
+        except ApiException as e:
+            if e.status == 404:
+                return True
+            raise
 
     def _vmi_subresource(self, vm_name, action, namespace=DEFAULT_NAMESPACE, body=None):
         """Call a kubevirt VMI subresource (pause/unpause) via the aggregated
@@ -649,8 +653,13 @@ class CRD(Base):
             self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
         """Wait for VM to be stopped.
 
-        The only accepted signal is the VM object's status.printableStatus ==
-        "Stopped" (what the Harvester UI shows). Nothing else counts as stopped.
+        Requires BOTH the VM object's status.printableStatus == "Stopped"
+        (what the Harvester UI shows) AND the VMI object to be gone.
+        printableStatus turns "Stopped" while the old VMI can still exist in
+        phase Succeeded; starting the VM in that window deadlocks under
+        RerunOnFailure (a Succeeded VMI is never restarted, and leaving
+        Halted also stops its cleanup), so "stopped" here means teardown has
+        fully finished.
         """
         endtime = time.time() + timeout
         last_log_time = 0
@@ -659,7 +668,7 @@ class CRD(Base):
             try:
                 vm = self.get(vm_name, namespace)
                 printable = vm.get('status', {}).get('printableStatus', 'Unknown')
-                if printable == 'Stopped':
+                if printable == 'Stopped' and self._vmi_is_gone(vm_name, namespace):
                     logging(f"VM {namespace}/{vm_name} is stopped")
                     return True
             except ApiException as e:
