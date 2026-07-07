@@ -11,7 +11,7 @@ from constant import (
     VIRTUALMACHINE_PLURAL, VIRTUALMACHINEINSTANCE_PLURAL,
     DEFAULT_NAMESPACE, LABEL_TEST, LABEL_TEST_VALUE,
     DEFAULT_TIMEOUT_SHORT, DEFAULT_STORAGE_CLASS,
-    RUN_STRATEGY_RERUN_ON_FAILURE,
+    RUN_STRATEGY_RERUN_ON_FAILURE, RUN_STRATEGY_HALTED,
 )
 from utility.utility import logging, get_retry_count_and_interval
 from vm.base import Base
@@ -140,6 +140,13 @@ class CRD(Base):
         # existing behaviour (RerunOnFailure starts it); pass run_strategy=Halted
         # to create a stopped VM.
         run_strategy = kwargs.get("run_strategy", RUN_STRATEGY_RERUN_ON_FAILURE)
+        # The vmRunStrategy annotation must hold the last *running* strategy —
+        # Harvester's mutator restores spec.runStrategy from it whenever the VM
+        # leaves Halted, so "Halted" there would make the VM unstartable.
+        annotation_run_strategy = (
+            RUN_STRATEGY_RERUN_ON_FAILURE if run_strategy == RUN_STRATEGY_HALTED
+            else run_strategy
+        )
 
         extra_disks = kwargs.get("extra_disks", [])
         if extra_disks:
@@ -211,7 +218,7 @@ class CRD(Base):
                 "name": vm_name,
                 "namespace": namespace,
                 "annotations": {
-                    "harvesterhci.io/vmRunStrategy": run_strategy,
+                    "harvesterhci.io/vmRunStrategy": annotation_run_strategy,
                     "harvesterhci.io/volumeClaimTemplates": (
                         json.dumps(volume_claim_templates)
                     ),
@@ -422,10 +429,14 @@ class CRD(Base):
             try:
                 vm = self.get(vm_name, namespace)
                 vm['spec']['runStrategy'] = 'Halted'
-                # Keep the Harvester runStrategy annotation in sync with spec, or
-                # Harvester reconciles spec.runStrategy back and the stop is lost.
-                vm.setdefault('metadata', {}).setdefault('annotations', {})[
-                    'harvesterhci.io/vmRunStrategy'] = 'Halted'
+                # Do NOT write the harvesterhci.io/vmRunStrategy annotation here.
+                # Harvester keeps the last *running* strategy in that annotation
+                # and its VM mutator restores spec.runStrategy from it on any
+                # Halted -> non-Halted transition. Writing "Halted" into it makes
+                # every Harvester-initiated start (restore, node maintenance) a
+                # no-op, e.g. a replace-restore hangs at "Waiting for target vm
+                # to be ready". The mutator only intervenes when *leaving*
+                # Halted, so a plain spec change is enough to stop the VM.
 
                 self.obj_api.replace_namespaced_custom_object(
                     group=KUBEVIRT_API_GROUP,

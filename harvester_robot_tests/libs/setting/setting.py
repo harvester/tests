@@ -27,3 +27,10 @@ class Setting(Base):
         except NotImplementedError as e:
             logging(e)
             return self.rest.enable(setting_id)
+
+    def update(self, setting_id, value):
+        try:
+            return self.crd.update(setting_id, value)
+        except NotImplementedError as e:
+            logging(e)
+            return self.rest.update(setting_id, value)

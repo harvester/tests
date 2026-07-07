@@ -91,7 +91,9 @@ The test framework follows a strict 4-layer architecture:
 For specific test scenarios:
 
 - **Network Tests**: VLAN configuration with proper routing and DHCP
-- **Backup Tests**: S3-compatible storage or NFS server
+- **Backup Tests**: a backup target. Suites use the cluster's existing
+  `backup-target` setting when present, otherwise configure it from
+  `BACKUP_TARGET_NFS_ENDPOINT`; they are skipped when neither is available
 - **Node Management Tests**: Node power management scripts
 - **Rancher Integration Tests**: External Rancher cluster
 
@@ -229,6 +231,8 @@ The `.env.example` file contains all available configuration options:
 - `HARVESTER_PASSWORD` - Admin password
 - `VLAN_ID` - VLAN ID for network tests
 - `VLAN_NIC` - Network interface for VLAN (default: `mgmt`)
+- `BACKUP_TARGET_NFS_ENDPOINT` - NFS endpoint (`nfs://host/path`) used to
+  configure the `backup-target` setting when the cluster has none yet
 - `ROBOT_LOG_LEVEL` - Test log level (default: `INFO`)
 - `ROBOT_OUTPUT_DIR` - Output directory for results (default: `./results`)
 
@@ -386,7 +390,7 @@ results/
 ### Test File Structure
 
 Create a new test file in the matching component subfolder under
-`tests/regression/` (`vm/`, `volume/`, `image/`, `addon/`, `rancher/`, `host/`),
+`tests/regression/` (`vm/`, `volume/`, `image/`, `backup/`, `addon/`, `rancher/`, `host/`),
 or under `tests/resilient/` for node/HA scenarios. Because suites live one level
 deeper than the keyword files, resource imports use `../../../keywords/`:
 
@@ -459,12 +463,12 @@ Use appropriate tags for your tests:
 
 - **Priority**: `p0` (critical), `p1` (high), `p2` (medium)
 - **Category**: `coretest`, `regression`, `negative`, `sanity`, `smoke`
-- **Component**: `virtualmachines`, `images`, `volumes`, `storage`, `networks`, `ha`
+- **Component**: `virtualmachines`, `images`, `volumes`, `storage`, `networks`, `backup`, `ha`
 - **Suite set**: `pr-baseline` (CRD-only, parallel-safe suites run on every PR)
 - **Special**: `experimental`, `known-issue`
 
 > Tip: tests are also grouped on disk by component subfolder
-> (`tests/regression/vm`, `volume`, `image`, `addon`, `rancher`, `host`), so you can
+> (`tests/regression/vm`, `volume`, `image`, `backup`, `addon`, `rancher`, `host`), so you can
 > run a whole category with `./run.sh -s vm` without relying on tags.
 
 ### Best Practices
@@ -518,6 +522,7 @@ harvester_robot_tests/
     │   ├── vm/                      # VM lifecycle, negative, volumes, hot-plug
     │   ├── volume/                  # PVC CRUD, negative, from-image, resize, snapshot
     │   ├── image/                   # image CRUD, checksum/url, negative
+    │   ├── backup/                  # VM backup and restore (needs backup-target)
     │   ├── addon/                   # addon + NVIDIA toolkit
     │   ├── rancher/                 # Rancher integration
     │   └── host/                    # host-dependent (LHv2 / NVMe data engine)

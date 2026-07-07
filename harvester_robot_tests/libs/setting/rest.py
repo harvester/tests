@@ -17,3 +17,6 @@ class Rest(Base):
 
     def enable(self, setting_id):
         return super().enable(setting_id)
+
+    def update(self, setting_id, value):
+        return super().update(setting_id, value)

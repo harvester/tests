@@ -42,6 +42,11 @@ ${DEFAULT_NAMESPACE}            default
 ${LONGHORN_NAMESPACE}           longhorn-system
 ${LABEL_TEST}                   test-harvester
 
+# Backup
+# NFS endpoint (nfs://host/path) used to configure the backup-target setting
+# when the cluster does not have one yet; backup suites skip if both are absent.
+${BACKUP_TARGET_NFS_ENDPOINT}    %{BACKUP_TARGET_NFS_ENDPOINT=}
+
 # NVIDIA Driver Toolkit Addon
 ${NVIDIA_TOOLKIT_IMAGE_REPO}    %{NVIDIA_TOOLKIT_IMAGE_REPO=nvidia/driver-toolkit}
 ${NVIDIA_TOOLKIT_IMAGE_TAG}     %{NVIDIA_TOOLKIT_IMAGE_TAG=v1.7-20260209}

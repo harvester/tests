@@ -55,3 +55,18 @@ class CRD(Base):
             return setting
         except ApiException as e:
             raise Exception(f"Failed to enable setting {setting_id}: {e}")
+
+    def update(self, setting_id, value):
+        """Update a setting's value by id"""
+        try:
+            patch_body = {
+                "value": value
+            }
+            setting = patch_cr(
+                **self.common_parameters,
+                name=setting_id,
+                body=patch_body
+            )
+            return setting
+        except ApiException as e:
+            raise Exception(f"Failed to update setting {setting_id}: {e}")

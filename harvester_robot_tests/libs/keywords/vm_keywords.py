@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
 from utility.utility import logging # noqa E402
 from vm import VM # noqa E402
-from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG, DEFAULT_NAMESPACE # noqa E402
+from constant import DEFAULT_TIMEOUT, DEFAULT_NAMESPACE # noqa E402
 
 
 class vm_keywords:
@@ -152,16 +152,6 @@ class vm_keywords:
         """Create a snapshot of the VM"""
         logging(f'Creating snapshot {snapshot_name} for VM {vm_name}')
         self.vm.create_snapshot(vm_name, snapshot_name)
-
-    def create_vm_backup(self, vm_name, backup_name):
-        """Create a backup of the VM"""
-        logging(f'Creating backup {backup_name} for VM {vm_name}')
-        self.vm.create_backup(vm_name, backup_name)
-
-    def wait_for_backup_completed(self, vm_name, backup_name, timeout=DEFAULT_TIMEOUT_LONG):
-        """Wait for backup to complete"""
-        logging(f'Waiting for backup {backup_name} to complete')
-        self.vm.wait_for_backup_completed(vm_name, backup_name, timeout)
 
     def update_vm_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
         """Update VM disk size via volumeClaimTemplates annotation."""

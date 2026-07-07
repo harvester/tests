@@ -100,12 +100,6 @@ class VM(Base):
     def create_snapshot(self, vm_name, snapshot_name):
         return self.vm.create_snapshot(vm_name, snapshot_name)
 
-    def create_backup(self, vm_name, backup_name):
-        return self.vm.create_backup(vm_name, backup_name)
-
-    def wait_for_backup_completed(self, vm_name, backup_name, timeout):
-        return self.vm.wait_for_backup_completed(vm_name, backup_name, timeout)
-
     def cleanup(self):
         return self.vm.cleanup()
 

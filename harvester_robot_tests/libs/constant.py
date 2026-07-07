@@ -29,8 +29,16 @@ LONGHORN_NAMESPACE = "longhorn-system"
 VIRTUALMACHINE_PLURAL = "virtualmachines"
 VIRTUALMACHINEIMAGE_PLURAL = "virtualmachineimages"
 VIRTUALMACHINEINSTANCE_PLURAL = "virtualmachineinstances"
+VIRTUALMACHINEBACKUP_PLURAL = "virtualmachinebackups"
+VIRTUALMACHINERESTORE_PLURAL = "virtualmachinerestores"
 VOLUME_PLURAL = "volumes"
 PERSISTENTVOLUMECLAIM_PLURAL = "persistentvolumeclaims"
+
+# Backup / Restore
+SETTING_BACKUP_TARGET = "backup-target"
+BACKUP_TYPE_BACKUP = "backup"
+DELETION_POLICY_DELETE = "delete"
+DELETION_POLICY_RETAIN = "retain"
 
 # Test Labels
 LABEL_TEST = "harvesterhci.io/test"
