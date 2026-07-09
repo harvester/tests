@@ -2,6 +2,12 @@
 Snapshot Keywords - creates Snapshot() instance and delegates - NO direct API calls!
 """
 
+import os
+import sys
+
+# add utility module to import paths
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) # noqa E402
+
 from utility.utility import logging # noqa E402
 from snapshot import Snapshot # noqa E402
 
@@ -29,5 +35,5 @@ class snapshot_keywords:
         self.snap.wait_ready(snapshot_name, **kwargs)
 
     def wait_snapshot_deleted(self, snapshot_name, **kwargs):
-        logging(f"Waiting for snapshot {snapshot_name} to be ready")
+        logging(f"Waiting for snapshot {snapshot_name} to be deleted")
         self.snap.wait_deleted(snapshot_name, **kwargs)

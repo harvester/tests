@@ -25,18 +25,6 @@ class CRD(Base):
 
     def _create_snapshot(self, namespace, snapshot_name, vm_name):
         try:
-            _ = self.obj_api.get_namespaced_custom_object(
-                group="kubevirt.io",
-                version="v1",
-                plural="virtualmachines",
-                namespace=namespace,
-                name=vm_name
-            )
-        except ApiException as err:
-            logging(f"failed to look up VM {namespace}/{vm_name}: {err}")
-            raise
-
-        try:
             body = {
                 "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
                 "kind": "VirtualMachineBackup",
@@ -105,7 +93,7 @@ class CRD(Base):
 
             except ApiException as err:
                 if err.status != 404:
-                    logging(f"error checking snapshot {namespace}/{snapshot_name}")
+                    logging(f"error checking snapshot {namespace}/{snapshot_name}: {err}")
                     raise
             finally:
                 if time.time() > endtime:

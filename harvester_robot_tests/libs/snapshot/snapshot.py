@@ -2,6 +2,8 @@
 Snapshot Component - delegates to REST/CRD implementation
 """
 
+import os
+
 from constant import HarvesterOperationStrategy
 from snapshot.rest import Rest
 from snapshot.crd import CRD
@@ -12,6 +14,12 @@ class Snapshot(Base):
     _strategy = HarvesterOperationStrategy.CRD
 
     def __init__(self):
+        strategy_str = os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower()
+        try:
+            self._strategy = HarvesterOperationStrategy(strategy_str)
+        except ValueError:
+            self._strategy = HarvesterOperationStrategy.CRD
+
         if self._strategy == HarvesterOperationStrategy.CRD:
             self.snapshot = CRD()
         else:

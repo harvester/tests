@@ -4,12 +4,6 @@ Resource         variables.resource
 Library          ../libs/keywords/snapshot_keywords.py
 
 *** Keywords ***
-List Snapshots by prefix
-    [Arguments]    ${prefix}    ${namespace}=default
-    [Documentation]    List Snapshots whose name starts with the given prefix
-    ${snaps}=    snapshot_keywords.list snaps    namespace=${namespace}    name_prefix=${prefix}
-    RETURN    ${snaps}
-
 Snapshot is created
     [Arguments]        ${vm_name}    ${snapshot_name}
     [Documentation]    Create a VM snapshot with the given name
