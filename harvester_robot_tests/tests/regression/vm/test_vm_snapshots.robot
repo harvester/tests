@@ -2,11 +2,11 @@
 Documentation    VM Test Cases
 Test Tags        regression    virtualmachines
 
-Resource         ../../keywords/variables.resource
-Resource         ../../keywords/common.resource
-Resource         ../../keywords/image.resource
-Resource         ../../keywords/virtualmachine.resource
-Resource         ../../keywords/snapshot.resource
+Resource         ../../../keywords/variables.resource
+Resource         ../../../keywords/common.resource
+Resource         ../../../keywords/image.resource
+Resource         ../../../keywords/virtualmachine.resource
+Resource         ../../../keywords/snapshot.resource
 
 
 Suite Setup       Set up test environment

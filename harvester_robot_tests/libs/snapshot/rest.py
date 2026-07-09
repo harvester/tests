@@ -9,13 +9,13 @@ class Rest(Base):
         self.checksums = {}
 
     def create(self, vm_name, snapshot_name, **kwargs):
-        pass
+        raise NotImplementedError("Snapshot REST strategy is not implemented yet")
 
     def delete(self, snapshot_name, **kwargs):
-        pass
+        raise NotImplementedError("Snapshot REST strategy is not implemented yet")
 
     def wait_ready(self, snapshot_name, **kwargs):
-        pass
+        raise NotImplementedError("Snapshot REST strategy is not implemented yet")
 
     def wait_deleted(self, snapshot_name, **kwargs):
-        pass
+        raise NotImplementedError("Snapshot REST strategy is not implemented yet")
