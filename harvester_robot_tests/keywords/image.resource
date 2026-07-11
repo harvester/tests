@@ -64,6 +64,25 @@ Image Size Is Greater Than Zero
     ${size}=    Convert To Integer    ${status["size"]}
     Should Be True    ${size} > 0
 
+Image Export Should Have Started
+    [Arguments]    ${image_name}
+    [Documentation]    Assert the image controller has begun processing the image
+    ...    (its state is no longer Unknown, i.e. status conditions/progress exist)
+    ${status}=    image_keywords.get image status    ${image_name}
+    Should Not Be Equal As Strings    ${status["state"]}    Unknown
+    ...    msg=Image ${image_name} has not been picked up by the image controller yet
+
+Wait Until Image Export Has Started
+    [Arguments]    ${image_name}
+    [Documentation]    Wait until the image controller has started processing the
+    ...    export image. The PVC webhook rejects deleting an exporting volume by
+    ...    looking the image up in its informer cache, so a delete issued right
+    ...    after creating the image can race the cache and incorrectly succeed.
+    ...    Once the controller has stamped the image status, the image has
+    ...    propagated through the informer caches and the protection is in effect.
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Image Export Should Have Started    ${image_name}
+
 # negative
 Try To Create Image
     [Arguments]    ${image_name}    ${image_url}=${EMPTY}    ${source_type}=download    ${checksum}=${EMPTY}
