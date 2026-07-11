@@ -66,8 +66,10 @@ Delete VM Backup
 
 *** Keywords ***
 Local Suite Setup
-    Set up test environment
-    Backup target is configured
+    # Set the resource names BEFORE anything that can fail or skip: the suite
+    # teardown always runs, and cleaning up with still-empty names would poll
+    # collection URLs for minutes (and an empty-name delete targets the whole
+    # collection).
     ${suffix}=    Generate Unique Name
     Set Suite Variable    ${IMG_NAME}                img-${suffix}
     Set Suite Variable    ${VM_NAME}                 vm-bak-${suffix}
@@ -75,6 +77,8 @@ Local Suite Setup
     Set Suite Variable    ${RESTORED_VM_NAME}        vm-restored-${suffix}
     Set Suite Variable    ${RESTORE_NEW_NAME}        restore-new-${suffix}
     Set Suite Variable    ${RESTORE_REPLACE_NAME}    restore-replace-${suffix}
+    Set up test environment
+    Backup target is configured
     Image is available for VM creation    ${IMG_NAME}    ${OPENSUSE_IMAGE_URL}
     VM is created    ${VM_NAME}    ${IMG_NAME}
     VM should be running    ${VM_NAME}

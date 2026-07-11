@@ -40,6 +40,9 @@ def delete_cr(group, version, namespace, plural, name):
     """
     Delete a Custom Resource
     """
+    # An empty name would turn the request into a DELETE on the collection
+    # URL, i.e. delete EVERY object of this kind in the namespace.
+    assert name, f"refusing to delete {plural} with an empty name"
     obj_api = client.CustomObjectsApi()
     return obj_api.delete_namespaced_custom_object(
         group=group,
