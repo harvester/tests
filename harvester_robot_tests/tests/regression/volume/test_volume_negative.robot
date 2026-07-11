@@ -93,6 +93,10 @@ Reject Deleting Volume While Exporting
     Create Volume    ${EXPORT_VOL}    5Gi
     Wait Until Volume Is Active    ${EXPORT_VOL}
     Export Volume To Image    ${EXPORT_VOL}    ${EXPORT_IMG}
+    # The delete-while-exporting guard is enforced via the webhook's informer
+    # cache; wait until the controller has picked up the new image so the
+    # protection is in effect before attempting the delete.
+    Wait Until Image Export Has Started    ${EXPORT_IMG}
     ${result}=    Try To Delete Volume    ${EXPORT_VOL}
     Operation Should Be Rejected    ${result}
     Volume Is Present    ${EXPORT_VOL}
