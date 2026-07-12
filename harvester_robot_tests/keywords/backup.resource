@@ -69,3 +69,20 @@ Restore is deleted
     [Arguments]    ${restore_name}
     [Documentation]    Delete a restore bookkeeping object
     backup_keywords.delete_restore    ${restore_name}
+
+Get Backup Volume Names
+    [Arguments]    ${backup_name}
+    [Documentation]    Return the longhorn volume names recorded in the backup.
+    ...    Capture this BEFORE deleting the backup — it is the only place the
+    ...    mapping to the leftover longhorn BackupVolume CRs lives.
+    ${names}=    backup_keywords.get_backup_volume_names    ${backup_name}
+    RETURN    ${names}
+
+Cleanup Longhorn Backup Artifacts
+    [Arguments]    ${volume_names}    ${image_name}
+    [Documentation]    Delete the longhorn BackupVolume/BackupBackingImage CRs
+    ...    this suite left on the backup target (longhorn then removes the
+    ...    corresponding data from the store). Only CRs matching the given
+    ...    volumes/image are touched, so this stays parallel-safe. Must run
+    ...    while the image CR still exists.
+    backup_keywords.cleanup_longhorn_backup_artifacts    ${volume_names}    ${image_name}

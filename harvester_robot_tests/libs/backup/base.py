@@ -54,3 +54,12 @@ class Base(ABC):
     @abstractmethod
     def delete_restore(self, restore_name, namespace=DEFAULT_NAMESPACE):
         raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
+    def get_backup_volume_names(self, backup_name, namespace=DEFAULT_NAMESPACE):
+        raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
+    def cleanup_longhorn_backup_artifacts(self, volume_names, image_name,
+                                          namespace=DEFAULT_NAMESPACE):
+        raise NotImplementedError(self.unsupported_msg)

@@ -99,3 +99,14 @@ class backup_keywords:
         """Delete a restore bookkeeping object"""
         logging(f'Deleting restore {restore_name}')
         self.backup.delete_restore(restore_name)
+
+    def get_backup_volume_names(self, backup_name):
+        """Longhorn volume names recorded in the backup (capture before deleting it)"""
+        return self.backup.get_backup_volume_names(backup_name)
+
+    def cleanup_longhorn_backup_artifacts(self, volume_names, image_name):
+        """Delete leftover longhorn BackupVolume/BackupBackingImage CRs for
+        this suite's volumes and image"""
+        logging(f'Cleaning longhorn backup artifacts (volumes={volume_names}, '
+                f'image={image_name})')
+        self.backup.cleanup_longhorn_backup_artifacts(volume_names, image_name)

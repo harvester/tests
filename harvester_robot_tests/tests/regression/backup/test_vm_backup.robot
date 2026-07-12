@@ -28,6 +28,9 @@ ${BACKUP_NAME}             ${EMPTY}
 ${RESTORED_VM_NAME}        ${EMPTY}
 ${RESTORE_NEW_NAME}        ${EMPTY}
 ${RESTORE_REPLACE_NAME}    ${EMPTY}
+# Longhorn volume names recorded from the backup before it is deleted, so the
+# teardown can clean the leftover BackupVolume CRs on the backup target.
+@{BACKUP_VOL_NAMES}
 
 
 *** Test Cases ***
@@ -60,6 +63,8 @@ Restore Backup To Replace Original VM
 Delete VM Backup
     [Tags]    p0
     [Documentation]    Delete the backup and verify it is removed
+    ${vol_names}=    Get Backup Volume Names    ${BACKUP_NAME}
+    Set Suite Variable    @{BACKUP_VOL_NAMES}    @{vol_names}
     When VM backup is deleted    ${BACKUP_NAME}
     Then Backup should be deleted    ${BACKUP_NAME}
 
@@ -96,4 +101,9 @@ Delete Suite Resources
     Run Keyword And Ignore Error    Restore is deleted    ${RESTORE_REPLACE_NAME}
     Run Keyword And Ignore Error    VM is deleted    ${RESTORED_VM_NAME}
     Run Keyword And Ignore Error    VM is deleted    ${VM_NAME}
+    # Longhorn keeps BackupVolume/BackupBackingImage bookkeeping CRs (and the
+    # matching data on the backup target) even after the VMBackup is deleted.
+    # Clean ours before the image goes away — the backing image lookup needs
+    # the live image CR.
+    Run Keyword And Ignore Error    Cleanup Longhorn Backup Artifacts    ${BACKUP_VOL_NAMES}    ${IMG_NAME}
     Run Keyword And Ignore Error    Delete image by name    ${IMG_NAME}
