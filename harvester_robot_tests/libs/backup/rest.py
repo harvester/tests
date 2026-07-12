@@ -44,3 +44,11 @@ class Rest(Base):
 
     def delete_restore(self, restore_name, namespace=DEFAULT_NAMESPACE):
         return super().delete_restore(restore_name, namespace)
+
+    def get_backup_volume_names(self, backup_name, namespace=DEFAULT_NAMESPACE):
+        return super().get_backup_volume_names(backup_name, namespace)
+
+    def cleanup_longhorn_backup_artifacts(self, volume_names, image_name,
+                                          namespace=DEFAULT_NAMESPACE):
+        return super().cleanup_longhorn_backup_artifacts(
+            volume_names, image_name, namespace)

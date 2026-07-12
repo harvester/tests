@@ -40,6 +40,12 @@ BACKUP_TYPE_BACKUP = "backup"
 DELETION_POLICY_DELETE = "delete"
 DELETION_POLICY_RETAIN = "retain"
 
+# Longhorn backup-store bookkeeping CRs (longhorn-system namespace)
+BACKUPVOLUME_PLURAL = "backupvolumes"
+BACKUPBACKINGIMAGE_PLURAL = "backupbackingimages"
+# Prefix of UID-style longhorn BackingImage names created by Harvester
+BACKING_IMAGE_PREFIX = "vmi"
+
 # Test Labels
 LABEL_TEST = "harvesterhci.io/test"
 LABEL_TEST_VALUE = "robot-framework"
