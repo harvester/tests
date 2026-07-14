@@ -646,8 +646,58 @@ class CRD(Base):
             time.sleep(self.retry_interval)
 
         raise AssertionError(
-            f"VM {namespace}/{vm_name} did not run within {timeout}s"
+            f"VM {namespace}/{vm_name} did not run within {timeout}s\n"
+            f"{self._describe_vm_startup(vm_name, namespace)}"
         )
+
+    def _describe_vm_startup(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Collect why a VM is not running: VMI phase/conditions plus the
+        virt-launcher pod's status and pending events (unschedulable,
+        volume attach, image pull, ...). Used to make startup-timeout
+        failures diagnosable from the test log alone.
+        """
+        lines = []
+        try:
+            vmi = self.obj_api.get_namespaced_custom_object(
+                group=KUBEVIRT_API_GROUP,
+                version=KUBEVIRT_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINEINSTANCE_PLURAL,
+                name=vm_name
+            )
+            status = vmi.get('status', {})
+            lines.append(f"VMI phase: {status.get('phase', 'Unknown')}")
+            for cond in status.get('conditions', []):
+                lines.append(f"VMI condition: {cond.get('type')}="
+                             f"{cond.get('status')} {cond.get('reason', '')} "
+                             f"{cond.get('message', '')}".rstrip())
+        except Exception as e:
+            lines.append(f"VMI not readable: {e}")
+
+        try:
+            pods = self.core_api.list_namespaced_pod(
+                namespace,
+                label_selector=f"vm.kubevirt.io/name={vm_name}"
+            )
+            for pod in pods.items:
+                lines.append(f"Pod {pod.metadata.name}: "
+                             f"phase={pod.status.phase}")
+                for cond in (pod.status.conditions or []):
+                    if cond.status != 'True':
+                        lines.append(f"  condition {cond.type}={cond.status} "
+                                     f"{cond.reason or ''}: "
+                                     f"{cond.message or ''}".rstrip())
+                events = self.core_api.list_namespaced_event(
+                    namespace,
+                    field_selector=(f"involvedObject.name={pod.metadata.name},"
+                                    f"involvedObject.kind=Pod")
+                )
+                for ev in events.items[-5:]:
+                    lines.append(f"  event {ev.type}/{ev.reason}: {ev.message}")
+        except Exception as e:
+            lines.append(f"virt-launcher pod not readable: {e}")
+
+        return "\n".join(lines)
 
     def wait_for_stopped(
             self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
