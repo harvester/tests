@@ -12,12 +12,14 @@ Set up test environment
     common_keywords.init k8s api client
 
 Generate Unique Name
-    [Arguments]    ${prefix1}=${EMPTY}    ${prefix2}=${EMPTY}
-    [Documentation]    Generate a unique name with optional prefixes and yymmdd-HHMMSS-ffffqa timestamp suffix
-    ...  Generate Unique Name            -> '260603-145834-1273qa'
-    ...  Generate Unique Name  foo       -> 'foo-260603-145834-1273qa'
-    ...  Generate Unique Name  foo  bar  -> 'foo-bar-2260603-145834-1273qa'
-    ${name}=    common_keywords.generate_name_with_suffix    ${prefix1}    ${prefix2}
+    [Arguments]    ${prefix1}=${EMPTY}    ${prefix2}=${EMPTY}    ${precise}=${FALSE}
+    [Documentation]    Generate a name with timestamp suffix and optional prefixes
+    ...  The timestamp format is `%m%d%H%M` by default and `%m%d%H%M%S%f` when precise=${TRUE}
+    ...  Examples:
+    ...  Generate Unique Name            -> '06181015'
+    ...  Generate Unique Name  foo       -> 'foo-06181015'
+    ...  Generate Unique Name  foo  bar  precise=${TRUE}-> 'foo-bar-0618101519681156'
+    ${name}=    common_keywords.generate_name_with_suffix    ${prefix1}    ${prefix2}    ${precise}
     RETURN    ${name}
 
 Cleanup test resources
@@ -36,6 +38,35 @@ Common Suite Teardown
 
 Common Test Teardown
     Run Keyword If Test Failed    Log Variables
+
+# Generic negative-result assertions (operate on a {success, code, message} dict
+# returned by any "Try To ..." keyword, regardless of resource type).
+Operation Should Be Rejected
+    [Arguments]    ${result}    @{expected_messages}
+    [Documentation]    Assert a {success, code, message} result was rejected with a client
+    ...    error (400/403/409/422). If expected_messages are given, the message must
+    ...    contain at least one of them (case-insensitive).
+    Should Not Be True    ${result}[success]
+    ...    msg=Operation was expected to fail but succeeded (code=${result}[code])
+    Should Be True    ${result}[code] in (400, 403, 409, 422)
+    ...    msg=Expected a client error 4xx but got ${result}[code]
+    IF    ${expected_messages}
+        ${msg_lower}=    Convert To Lower Case    ${result}[message]
+        ${lowered}=    Evaluate    [m.lower() for m in $expected_messages]
+        Should Contain Any    ${msg_lower}    @{lowered}
+        ...    msg=Expected message to contain one of ${expected_messages}, got: ${result}[message]
+    END
+
+Operation Should Be Not Found
+    [Arguments]    ${result}
+    [Documentation]    Assert a {success, code, message} result was a 404 NotFound
+    Should Not Be True    ${result}[success]
+    ...    msg=Operation was expected to return NotFound but succeeded (code=${result}[code])
+    Should Be Equal As Integers    ${result}[code]    404
+    ...    msg=Expected 404 but got ${result}[code]
+    ${msg_lower}=    Convert To Lower Case    ${result}[message]
+    Should Contain    ${msg_lower}    notfound
+    ...    msg=Expected a NotFound error, got: ${result}[message]
 
 List Pods By Label
     [Arguments]    ${namespace}    ${label_selector}   ${status}=${None}

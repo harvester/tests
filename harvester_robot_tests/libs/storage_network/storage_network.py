@@ -52,10 +52,6 @@ class StorageNetwork(Base):
         """Get the current storage-network setting status"""
         return self.storage_network.get_storage_network_status()
 
-    def wait_for_storage_network_ready(self, timeout):
-        """Wait for storage-network to be applied and completed"""
-        return self.storage_network.wait_for_storage_network_ready(timeout)
-
     def get_vlan_network_cidr(self, vlan_id, cluster_network):
         """Get CIDR for a VLAN network"""
         return self.storage_network.get_vlan_network_cidr(

@@ -43,7 +43,7 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def create_snapshot(self, volume_name, snapshot_name):
+    def create_snapshot(self, volume_name, snapshot_name, snapshot_class):
         """Create a snapshot of the volume"""
         pass
 
@@ -55,6 +55,11 @@ class Base(ABC):
     @abstractmethod
     def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name):
         """Restore a volume from a snapshot"""
+        pass
+
+    @abstractmethod
+    def wait_for_snapshot_ready(self, snapshot_name, timeout):
+        """Wait for a snapshot to become ready to use"""
         pass
 
     @abstractmethod

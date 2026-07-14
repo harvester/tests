@@ -6,13 +6,13 @@ import time
 from kubernetes import client
 from kubernetes.client.rest import ApiException
 from crd import (
-    get_cr, create_cr, delete_cr, list_cr,
+    get_cr, create_cr, delete_cr, list_cr, patch_cr,
     wait_for_cr_deleted, wait_for_cr_condition
 )
 from constant import (
     HARVESTER_API_GROUP, HARVESTER_API_VERSION,
     VIRTUALMACHINEIMAGE_PLURAL, DEFAULT_NAMESPACE,
-    IMAGE_STATE_ACTIVE, IMAGE_STATE_IMPORTING,
+    IMAGE_STATE_ACTIVE, IMAGE_STATE_IMPORTING, IMAGE_STATE_FAILED,
     LABEL_TEST, LABEL_TEST_VALUE,
     DEFAULT_TIMEOUT
 )
@@ -88,6 +88,96 @@ class CRD(Base):
         except ApiException as e:
             logging(f"Failed to create image {image_name}: {e}")
             raise Exception(f"Failed to create image: {e.status}, {e.reason}")
+
+    def try_create(self, image_name, image_url="", source_type="download",
+                   checksum="", namespace=DEFAULT_NAMESPACE):
+        """Attempt to create an image for negative testing.
+
+        Never raises on API rejection; returns {success, code, message} so a
+        caller can assert on the failure code/reason (e.g. empty url/data).
+        """
+        body = {
+            "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
+            "kind": "VirtualMachineImage",
+            "metadata": {
+                "name": image_name,
+                "namespace": namespace,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE
+                }
+            },
+            "spec": {
+                "displayName": image_name,
+                "sourceType": source_type,
+                "url": image_url
+            }
+        }
+        if checksum:
+            body["spec"]["checksum"] = checksum
+
+        try:
+            create_cr(
+                group=HARVESTER_API_GROUP,
+                version=HARVESTER_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINEIMAGE_PLURAL,
+                body=body
+            )
+            logging(f"Image {namespace}/{image_name} was unexpectedly created "
+                    f"(sourceType='{source_type}', url='{image_url}')", "WARNING")
+            return {"success": True, "code": 201, "message": ""}
+        except ApiException as e:
+            logging(f"Image {namespace}/{image_name} rejected as expected "
+                    f"(status={e.status}): {e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def try_get(self, image_name, namespace=DEFAULT_NAMESPACE):
+        """Attempt to get an image; returns {success, code, message}."""
+        try:
+            self.get(image_name, namespace)
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def try_delete(self, image_name, namespace=DEFAULT_NAMESPACE):
+        """Attempt to delete an image; returns {success, code, message}.
+
+        Unlike delete(), this does NOT swallow a 404 so callers can assert that
+        deleting a missing image is rejected.
+        """
+        try:
+            delete_cr(
+                group=HARVESTER_API_GROUP,
+                version=HARVESTER_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINEIMAGE_PLURAL,
+                name=image_name
+            )
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            logging(f"Delete of image {namespace}/{image_name} returned "
+                    f"status={e.status}: {e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def update(self, image_name, metadata, namespace=DEFAULT_NAMESPACE):
+        """Patch an image's metadata (labels/annotations). Returns the CR."""
+        body = {"metadata": metadata}
+        return patch_cr(
+            group=HARVESTER_API_GROUP,
+            version=HARVESTER_API_VERSION,
+            namespace=namespace,
+            plural=VIRTUALMACHINEIMAGE_PLURAL,
+            name=image_name,
+            body=body
+        )
+
+    def get_metadata(self, image_name, namespace=DEFAULT_NAMESPACE):
+        """Return the metadata block of an image"""
+        cr = self.get(image_name, namespace)
+        return cr.get("metadata", {})
 
     def delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         """Delete a VirtualMachineImage"""
@@ -214,24 +304,35 @@ class CRD(Base):
         image = self.get(image_name, namespace)
         status = image.get("status", {})
 
-        # Determine state from conditions
+        # Determine state. Notes from real Harvester behaviour:
+        #  - A fully imported image has progress == 100 AND Initialized=True.
+        #    Transient download retries can leave a RetryLimitExceeded condition
+        #    behind even on a healthy image, so the success check must come FIRST.
+        #  - A bad checksum/URL never reaches Initialized=True (the backing image
+        #    is not created), so it falls through to the RetryLimitExceeded check.
         conditions = status.get("conditions", [])
-        state = "Unknown"
+        progress = status.get('progress', 0)
 
-        for condition in conditions:
-            if condition.get("type") == "Initialized":
-                if condition.get("status") == "True":
-                    state = IMAGE_STATE_ACTIVE
-                else:
-                    state = IMAGE_STATE_IMPORTING
-            elif condition.get("type") == "Ready":
-                if condition.get("status") == "True":
-                    state = IMAGE_STATE_ACTIVE
+        initialized = any(
+            c.get('type') == 'Initialized' and c.get('status') == 'True'
+            for c in conditions
+        )
+        retry_exceeded = any(c.get('type') == 'RetryLimitExceeded' for c in conditions)
+
+        if progress == 100 and initialized:
+            state = IMAGE_STATE_ACTIVE
+        elif retry_exceeded:
+            state = IMAGE_STATE_FAILED
+        elif conditions or progress:
+            state = IMAGE_STATE_IMPORTING
+        else:
+            state = "Unknown"
 
         return {
             'state': state,
-            'download_percent': status.get('progress', 0),
+            'download_percent': progress,
             'size': status.get('size', 0),
+            'failed': status.get('failed', 0),
             'conditions': conditions
         }
 

@@ -36,21 +36,19 @@ def get_harvester_api_client():
 
 
 def init_harvester_api_client(endpoint, username, password):
-    """Initialize the shared Harvester API client"""
+    """Initialize the shared Harvester API client (apiclient/harvester_api)"""
     global _harvester_api_client
 
-    from harvester_api import create_harvester_api_client
+    from utility.api_client import RobotHarvesterAPI
 
     logging(f'Initializing Harvester API client for {endpoint}')
 
-    _harvester_api_client = create_harvester_api_client(
-        endpoint=endpoint,
-        username=username,
-        password=password,
-        verify_ssl=False
+    _harvester_api_client = RobotHarvesterAPI.login(
+        endpoint, username, password, ssl_verify=False
     )
 
-    logging('Harvester API client initialized successfully')
+    logging('Harvester API client initialized successfully '
+            f'(cluster version: {_harvester_api_client.raw_version})')
     return _harvester_api_client
 
 
@@ -58,11 +56,15 @@ def get_timestamp():
     return datetime.now().strftime("%Y%m%d%H%M%S")
 
 
-def generate_name_with_suffix(kind, suffix):
-    """Generate unique name with timestamp suffix"""
-    timestamp = datetime.now().strftime("%y%m%d-%H%M%S-%f")[:-2]
-    name = "-".join([s for s in [kind, suffix, timestamp] if s])
-    return name+"qa"    # Add 'qa' suffix to all generated names for easier identification
+def generate_name_with_suffix(kind, suffix, precise=False):
+    """Generate unique name with timestamp suffix
+    e.g.
+    * %m%d%H%M -> 06181015 (general, covers resources with limited length like cluster network)
+    * %m%d%H%M%S%f -> 0618101519681156 (precise, for highly concurrent tests to avoid collisions)
+    """
+    format_str = "%m%d%H%M%S%f" if precise else "%m%d%H%M"
+    timestamp = datetime.now().strftime(format_str)
+    return "-".join([s for s in [kind, suffix, timestamp] if s])
 
 
 def get_retry_count_and_interval():

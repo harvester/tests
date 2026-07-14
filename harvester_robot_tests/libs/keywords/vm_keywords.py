@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
 from utility.utility import logging # noqa E402
 from vm import VM # noqa E402
-from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG, DEFAULT_NAMESPACE # noqa E402
+from constant import DEFAULT_TIMEOUT, DEFAULT_NAMESPACE # noqa E402
 
 
 class vm_keywords:
@@ -62,6 +62,53 @@ class vm_keywords:
         logging(f'Migrating VM {vm_name} to {target_node}')
         self.vm.migrate(vm_name, target_node)
 
+    def pause_vm(self, vm_name):
+        """Pause a running VM"""
+        logging(f'Pausing VM {vm_name}')
+        self.vm.pause(vm_name)
+
+    def unpause_vm(self, vm_name):
+        """Unpause a paused VM"""
+        logging(f'Unpausing VM {vm_name}')
+        self.vm.unpause(vm_name)
+
+    def wait_for_vm_paused(self, vm_name, timeout=DEFAULT_TIMEOUT):
+        """Wait for a VM to be paused"""
+        logging(f'Waiting for VM {vm_name} to be paused')
+        self.vm.wait_for_paused(vm_name, timeout)
+
+    def try_get_vm(self, vm_name):
+        """Attempt to get a VM for negative testing; returns result dict"""
+        logging(f'Attempting to get VM {vm_name} (negative test)')
+        return self.vm.try_get(vm_name)
+
+    def try_delete_vm(self, vm_name):
+        """Attempt to delete a VM for negative testing; returns result dict"""
+        logging(f'Attempting to delete VM {vm_name} (negative test)')
+        return self.vm.try_delete(vm_name)
+
+    def add_volume_to_vm(self, vm_name, disk_name, volume_name):
+        """Hot-plug an existing volume into a running VM"""
+        logging(f'Hot-plugging volume {volume_name} as {disk_name} into {vm_name}')
+        self.vm.add_volume(vm_name, disk_name, volume_name)
+
+    def remove_volume_from_vm(self, vm_name, disk_name):
+        """Hot-unplug a disk from a running VM"""
+        logging(f'Hot-unplugging disk {disk_name} from {vm_name}')
+        self.vm.remove_volume(vm_name, disk_name)
+
+    def wait_for_vm_volume_hotplugged(self, vm_name, disk_name, timeout=DEFAULT_TIMEOUT):
+        """Wait for a hot-plugged disk to be Ready"""
+        self.vm.wait_for_volume_hotplugged(vm_name, disk_name, timeout)
+
+    def wait_for_vm_volume_unplugged(self, vm_name, disk_name, timeout=DEFAULT_TIMEOUT):
+        """Wait for a disk to be detached"""
+        self.vm.wait_for_volume_unplugged(vm_name, disk_name, timeout)
+
+    def get_vm_disk_names(self, vm_name):
+        """Return the disk names declared in the VM spec"""
+        return self.vm.get_disk_names(vm_name)
+
     def wait_for_vm_running(self, vm_name, timeout=DEFAULT_TIMEOUT):
         """Wait for VM to reach running state"""
         logging(f'Waiting for VM {vm_name} to be running')
@@ -105,16 +152,6 @@ class vm_keywords:
         """Create a snapshot of the VM"""
         logging(f'Creating snapshot {snapshot_name} for VM {vm_name}')
         self.vm.create_snapshot(vm_name, snapshot_name)
-
-    def create_vm_backup(self, vm_name, backup_name):
-        """Create a backup of the VM"""
-        logging(f'Creating backup {backup_name} for VM {vm_name}')
-        self.vm.create_backup(vm_name, backup_name)
-
-    def wait_for_backup_completed(self, vm_name, backup_name, timeout=DEFAULT_TIMEOUT_LONG):
-        """Wait for backup to complete"""
-        logging(f'Waiting for backup {backup_name} to complete')
-        self.vm.wait_for_backup_completed(vm_name, backup_name, timeout)
 
     def update_vm_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
         """Update VM disk size via volumeClaimTemplates annotation."""

@@ -1,7 +1,9 @@
 
 """
-VM Component - delegates to Rest implementation
+VM Component - delegates to CRD or REST implementation
 """
+import os
+
 from constant import HarvesterOperationStrategy, DEFAULT_NAMESPACE
 from vm.rest import Rest
 from vm.crd import CRD
@@ -9,14 +11,13 @@ from vm.base import Base
 
 
 class VM(Base):
-    # Set desired operation strategy here
-    _strategy = HarvesterOperationStrategy.CRD
-
+    """VM component - selects implementation by HARVESTER_OPERATION_STRATEGY"""
     def __init__(self):
-        if self._strategy == HarvesterOperationStrategy.CRD:
-            self.vm = CRD()
-        else:
+        strategy_str = os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower()
+        if strategy_str == HarvesterOperationStrategy.REST.value:
             self.vm = Rest()
+        else:
+            self.vm = CRD()
 
     def create(self, vm_name, image_id, cpu, memory, **kwargs):
         return self.vm.create(vm_name, image_id, cpu, memory, **kwargs)
@@ -35,6 +36,36 @@ class VM(Base):
 
     def restart(self, vm_name):
         return self.vm.restart(vm_name)
+
+    def pause(self, vm_name):
+        return self.vm.pause(vm_name)
+
+    def unpause(self, vm_name):
+        return self.vm.unpause(vm_name)
+
+    def wait_for_paused(self, vm_name, timeout):
+        return self.vm.wait_for_paused(vm_name, timeout)
+
+    def try_get(self, vm_name):
+        return self.vm.try_get(vm_name)
+
+    def try_delete(self, vm_name):
+        return self.vm.try_delete(vm_name)
+
+    def add_volume(self, vm_name, disk_name, volume_name):
+        return self.vm.add_volume(vm_name, disk_name, volume_name)
+
+    def remove_volume(self, vm_name, disk_name):
+        return self.vm.remove_volume(vm_name, disk_name)
+
+    def wait_for_volume_hotplugged(self, vm_name, disk_name, timeout):
+        return self.vm.wait_for_volume_hotplugged(vm_name, disk_name, timeout)
+
+    def wait_for_volume_unplugged(self, vm_name, disk_name, timeout):
+        return self.vm.wait_for_volume_unplugged(vm_name, disk_name, timeout)
+
+    def get_disk_names(self, vm_name):
+        return self.vm.get_disk_names(vm_name)
 
     def migrate(self, vm_name, target_node):
         return self.vm.migrate(vm_name, target_node)
@@ -68,12 +99,6 @@ class VM(Base):
 
     def create_snapshot(self, vm_name, snapshot_name):
         return self.vm.create_snapshot(vm_name, snapshot_name)
-
-    def create_backup(self, vm_name, backup_name):
-        return self.vm.create_backup(vm_name, backup_name)
-
-    def wait_for_backup_completed(self, vm_name, backup_name, timeout):
-        return self.vm.wait_for_backup_completed(vm_name, backup_name, timeout)
 
     def cleanup(self):
         return self.vm.cleanup()

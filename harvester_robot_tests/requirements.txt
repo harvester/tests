@@ -593,7 +593,12 @@ robotframework==7.0 \
     --hash=sha256:865f427c4e4ec8c0b71a24dedbdad6668adfecc9fce04d77d02e1b8e54b77f41
     # via
     #   -r requirements.in
+    #   robotframework-pabot
     #   robotframework-requests
+robotframework-pabot==5.2.2 \
+    --hash=sha256:497c3d72551c76eda21029df6a28c6b2ed227e63c4a8510e1c6a0690b9e2be91 \
+    --hash=sha256:e7b95d031e9f04b77312b04a1fd835b9791f022b3436b63b507a720bfec05bb4
+    # via -r requirements.in
 robotframework-requests==0.9.5 \
     --hash=sha256:0a508b001f2c55ecb3501a1018f9e169854afc7ddfe68fc856c168e3e90fa5e7 \
     --hash=sha256:0ee7d90146f1a7f4d312deeedbd39245823ba337cbcc84a4e9a32babb165715b

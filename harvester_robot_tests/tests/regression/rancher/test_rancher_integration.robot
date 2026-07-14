@@ -3,7 +3,7 @@ Documentation    Rancher Integration Test Cases (RKE2)
 ...             This suite tests Rancher integration with Harvester for a given
 ...             RKE2 version. It covers cluster creation, workload deployment, scaling, and upgrade scenarios.
 Test Tags        rancher    rke2    regression
-Resource         ../../keywords/rancher.resource
+Resource         ../../../keywords/rancher.resource
 
 Suite Setup      Suite Setup For Rancher Integration Tests
 Suite Teardown   Suite Teardown For Rancher Integration Tests

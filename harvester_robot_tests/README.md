@@ -91,7 +91,9 @@ The test framework follows a strict 4-layer architecture:
 For specific test scenarios:
 
 - **Network Tests**: VLAN configuration with proper routing and DHCP
-- **Backup Tests**: S3-compatible storage or NFS server
+- **Backup Tests**: a backup target. Suites use the cluster's existing
+  `backup-target` setting when present, otherwise configure it from
+  `BACKUP_TARGET_NFS_ENDPOINT`; they are skipped when neither is available
 - **Node Management Tests**: Node power management scripts
 - **Rancher Integration Tests**: External Rancher cluster
 
@@ -229,6 +231,8 @@ The `.env.example` file contains all available configuration options:
 - `HARVESTER_PASSWORD` - Admin password
 - `VLAN_ID` - VLAN ID for network tests
 - `VLAN_NIC` - Network interface for VLAN (default: `mgmt`)
+- `BACKUP_TARGET_NFS_ENDPOINT` - NFS endpoint (`nfs://host/path`) used to
+  configure the `backup-target` setting when the cluster has none yet
 - `ROBOT_LOG_LEVEL` - Test log level (default: `INFO`)
 - `ROBOT_OUTPUT_DIR` - Output directory for results (default: `./results`)
 
@@ -268,10 +272,15 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 ./run.sh
 
 # Run specific test file
-./run.sh -f tests/regression/test_vm.robot
+./run.sh -f tests/regression/vm/test_vm.robot
 
 # Run specific test suite by name
 ./run.sh -s test_vm
+
+# Run a whole category (regression tests are grouped under
+# vm/ volume/ image/ addon/ rancher/ subfolders)
+./run.sh -s vm
+./run.sh -s volume -p 6
 
 # Run specific test case by name
 ./run.sh -t "Test VM Basic Lifecycle"
@@ -289,9 +298,42 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 # Set custom variable
 ./run.sh -v WAIT_TIMEOUT:1200
 
+# Run suites in parallel with pabot (only used when -p is given)
+./run.sh -p 3 -i volume           # Run volume suites across 3 processes
+
+# Run against the REST API instead of CRD
+./run.sh -S rest -i volume        # Same suites, REST strategy
+
 # Show help
 ./run.sh -h
 ```
+
+**Parallel execution**: Passing `-p N` runs the selected suites in parallel using
+[`pabot`](https://github.com/mkorpela/pabot) with `N` processes; pabot parallelizes
+at the **suite (file)** level. Without `-p`, the plain `robot` runner is used as before.
+Suites that run concurrently must be self-contained and clean up only their own named
+resources in teardown (the volume suites follow this pattern).
+
+**Operation strategy (CRD vs REST)**: The `vm`, `image`, and `volume` components pick
+their implementation from the `HARVESTER_OPERATION_STRATEGY` environment variable
+(`crd` by default, or `rest`). Pass `-S rest` to run the **same** suites against the
+Harvester REST API instead of the Kubernetes CRD path. The variable is read when the
+keyword libraries are imported, so it must be set before `robot`/`pabot` starts (the
+`-S` flag handles that); a single run uses one strategy for all suites.
+
+**PR baseline (`pr-baseline` tag)**: The suites that should run on every PR are tagged
+`pr-baseline` — the VM (`vm/`), Volume (`volume/`) and Image (`image/`) suites
+(lifecycle, negative, hot-plug, resize, snapshot, etc.). They are CRD-only and
+parallel-safe. Heavy / hardware- or host-dependent suites are intentionally excluded:
+LHv2 (`host/`, needs NVMe + the v2 data engine) and node-failure HA (`resilient/`).
+Run it with:
+
+```bash
+./run.sh -i pr-baseline          # serial
+./run.sh -i pr-baseline -p 8     # one process per suite, in parallel
+```
+
+To add a suite to the baseline, append `pr-baseline` to its `Test Tags`.
 
 **Note**: The `run.sh` script automatically:
 - Loads environment variables from `.env` file if it exists
@@ -309,20 +351,20 @@ If you prefer to use the `robot` command directly:
 robot tests/
 
 # Run specific test suite
-robot tests/regression/test_vm.robot
+robot tests/regression/vm/test_vm.robot
 
 # Run specific test case
-robot --test "Test VM Basic Lifecycle" tests/regression/test_vm.robot
+robot --test "Test VM Basic Lifecycle" tests/regression/vm/test_vm.robot
 
 # Run with debug logging
-robot --loglevel DEBUG tests/regression/test_vm.robot
+robot --loglevel DEBUG tests/regression/vm/test_vm.robot
 
 # Run with tags
 robot --include smoke tests/
 robot --exclude slow tests/
 
 # Dry run (syntax validation)
-robot --dryrun tests/regression/test_vm.robot
+robot --dryrun tests/regression/vm/test_vm.robot
 
 # Run with custom variables
 robot --variable WAIT_TIMEOUT:1200 tests/
@@ -347,28 +389,51 @@ results/
 
 ### Test File Structure
 
-Create a new test file in `tests/regression/` or `tests/negative/`:
+Create a new test file in the matching component subfolder under
+`tests/regression/` (`vm/`, `volume/`, `image/`, `backup/`, `addon/`, `rancher/`, `host/`),
+or under `tests/resilient/` for node/HA scenarios. Because suites live one level
+deeper than the keyword files, resource imports use `../../../keywords/`:
 
 ```robot
 *** Settings ***
 Documentation    Description of your test suite
-Test Tags        regression    your-category
+Test Tags        regression    your-category    pr-baseline
 
-Resource         ../../keywords/variables.resource
-Resource         ../../keywords/common.resource
-Resource         ../../keywords/virtualmachine.resource
+Resource         ../../../keywords/variables.resource
+Resource         ../../../keywords/common.resource
+Resource         ../../../keywords/virtualmachine.resource
 
-Test Setup       Set up test environment
-Test Teardown    Cleanup test resources
+Suite Setup       Local Suite Setup
+Suite Teardown    Local Suite Teardown
+Test Teardown     Common Test Teardown
+
+*** Variables ***
+${VM_NAME}    ${EMPTY}
 
 *** Test Cases ***
 Your Test Case Name
     [Tags]    p0    coretest    smoke
     [Documentation]    Detailed description of what this test does
-    
+
     Given Setup preconditions
     When Perform action
     Then Verify expected result
+
+*** Keywords ***
+Local Suite Setup
+    ${suffix}=    Generate Unique Name
+    Set Suite Variable    ${VM_NAME}    vm-${suffix}
+    Set up test environment
+
+Local Suite Teardown
+    # Parallel-safe: only delete THIS suite's own named resources. Never use the
+    # global `Cleanup test resources` here -- under pabot it would delete other
+    # suites' live resources (anything labelled harvesterhci.io/test).
+    Run Keyword If All Tests Passed    Delete Suite Resources
+    Run Keyword If Any Tests Failed    Log Variables
+
+Delete Suite Resources
+    Run Keyword And Ignore Error    VM is deleted    ${VM_NAME}
 ```
 
 ### Adding New Keywords
@@ -396,11 +461,15 @@ class MyKeywords:
 
 Use appropriate tags for your tests:
 
-- **Priority**: `p0` (critical), `p1` (high), `p2` (medium), `p3` (low)
-- **Category**: `coretest`, `regression`, `negative`, `sanity`
-- **Component**: `virtualmachines`, `images`, `volumes`, `networks`, `backup`, `ha`
-- **Speed**: `smoke` (quick), `slow` (long-running)
-- **Scope**: `unit`, `integration`, `e2e`
+- **Priority**: `p0` (critical), `p1` (high), `p2` (medium)
+- **Category**: `coretest`, `regression`, `negative`, `sanity`, `smoke`
+- **Component**: `virtualmachines`, `images`, `volumes`, `storage`, `networks`, `backup`, `ha`
+- **Suite set**: `pr-baseline` (CRD-only, parallel-safe suites run on every PR)
+- **Special**: `experimental`, `known-issue`
+
+> Tip: tests are also grouped on disk by component subfolder
+> (`tests/regression/vm`, `volume`, `image`, `backup`, `addon`, `rancher`, `host`), so you can
+> run a whole category with `./run.sh -s vm` without relying on tags.
 
 ### Best Practices
 
@@ -448,8 +517,16 @@ harvester_robot_tests/
 ├── scripts/
 │   └── node-management/
 └── tests/                           # Layer 1: Test cases
-    ├── regression/
-    └── negative/
+    ├── regression/                  # grouped by component into subfolders
+    │   ├── __init__.robot           # applies the `regression` tag to the whole tree
+    │   ├── vm/                      # VM lifecycle, negative, volumes, hot-plug
+    │   ├── volume/                  # PVC CRUD, negative, from-image, resize, snapshot
+    │   ├── image/                   # image CRUD, checksum/url, negative
+    │   ├── backup/                  # VM backup and restore (needs backup-target)
+    │   ├── addon/                   # addon + NVIDIA toolkit
+    │   ├── rancher/                 # Rancher integration
+    │   └── host/                    # host-dependent (LHv2 / NVMe data engine)
+    └── resilient/                   # node-failure / HA scenarios
 ```
 
 ## Troubleshooting

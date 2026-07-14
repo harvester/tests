@@ -31,6 +31,10 @@ class Base(ABC):
         pass
 
     @abstractmethod
+    def cleanup_cluster_networks(self):
+        pass
+
+    @abstractmethod
     def create_vlan_config(self, name, cluster_network, nic):
         """Create VLAN config to bind NIC to cluster network.
 
@@ -51,6 +55,10 @@ class Base(ABC):
         Args:
             name: VLAN config name
         """
+        pass
+
+    @abstractmethod
+    def cleanup_vlan_configs(self):
         pass
 
     @abstractmethod
@@ -88,6 +96,10 @@ class Base(ABC):
         Args:
             name: Network name
         """
+        pass
+
+    @abstractmethod
+    def cleanup_vlan_networks(self):
         pass
 
     # IP Pool Operations

@@ -24,10 +24,11 @@ class Rest(Base):
         vm_spec = api.vms.Spec(cpu, memory)
 
         if image_id:
-            # Look up image UID for v1.8.0+ storage class naming (lh-<uid>)
+            # The version-aware VMSpec decides whether the UID is needed
+            # (v1.8.0+ names the image storage class lh-<uid>)
             image_uid = None
             try:
-                code_img, img_data = api.images.get(image_id)
+                code_img, img_data = api.images.get(image_id.split('/')[-1])
                 if code_img == 200:
                     image_uid = img_data.get(
                         "metadata", {}
@@ -50,9 +51,69 @@ class Rest(Base):
     def list(self, namespace=DEFAULT_NAMESPACE):
         """List VMs in a namespace"""
         api = get_harvester_api_client()
-        code, data = api.vms.get(namespace=namespace)
+        code, data = api.vms.get("", namespace)
         assert code == 200, f"Failed to list VMs: {code}, {data}"
         return data.get("data", [])
+
+    def pause(self, vm_name):
+        """Pause a VM. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "pause is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def unpause(self, vm_name):
+        """Unpause a VM. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "unpause is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_paused(self, vm_name, timeout):
+        """Wait for paused. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_paused is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_get(self, vm_name):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_get is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_delete(self, vm_name):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_delete is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def add_volume(self, vm_name, disk_name, volume_name):
+        """Hot-plug a volume. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "add_volume is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def remove_volume(self, vm_name, disk_name):
+        """Hot-unplug a volume. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "remove_volume is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_volume_hotplugged(self, vm_name, disk_name, timeout):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_volume_hotplugged is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_volume_unplugged(self, vm_name, disk_name, timeout):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_volume_unplugged is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_disk_names(self, vm_name):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_disk_names is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
 
     def start(self, vm_name):
         """Start a VM"""
@@ -97,7 +158,8 @@ class Rest(Base):
 
         endtime = datetime.now() + timedelta(seconds=timeout)
         while endtime > datetime.now():
-            code, data = api.vms.get_status(vm_name)
+            # printableStatus lives on the VM object, not the VMI
+            code, data = api.vms.get(vm_name)
             if code == 200 and data.get('status', {}).get('printableStatus') == 'Stopped':
                 return True
             time.sleep(3)
@@ -184,31 +246,8 @@ class Rest(Base):
     def create_snapshot(self, vm_name, snapshot_name):
         """Create a snapshot of the VM"""
         api = get_harvester_api_client()
-        code, data = api.vms.create_snapshot(vm_name, snapshot_name)
+        code, data = api.vm_snapshots.create(vm_name, snapshot_name)
         assert code == 201, f"Failed to create snapshot: {code}, {data}"
-
-    def create_backup(self, vm_name, backup_name):
-        """Create a backup of the VM"""
-        api = get_harvester_api_client()
-        code, data = api.vms.create_backup(vm_name, backup_name)
-        assert code == 201, f"Failed to create backup: {code}, {data}"
-
-    def wait_for_backup_completed(self, vm_name, backup_name, timeout):
-        """Wait for backup to complete"""
-        api = get_harvester_api_client()
-
-        endtime = datetime.now() + timedelta(seconds=timeout)
-        while endtime > datetime.now():
-            code, data = api.backups.get(backup_name)
-            if code == 200:
-                state = data.get('status', {}).get('state')
-                if state == 'Ready':
-                    return True
-                elif state == 'Error':
-                    raise AssertionError(f'Backup {backup_name} failed')
-            time.sleep(10)
-
-        raise AssertionError(f"Backup did not complete within {timeout}s")
 
     def cleanup(self):
         """Clean up all VMs"""

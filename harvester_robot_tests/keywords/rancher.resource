@@ -29,13 +29,6 @@ Clear State
     [Documentation]    Clear state - either specific key or all
     rancher_keywords.clear_state    ${key}
 
-Generate Unique Name
-    [Arguments]    ${prefix}=test
-    [Documentation]    Generate unique name with timestamp
-    ${name}=    rancher_keywords.generate_unique_name    ${prefix}
-    Log    Generated unique name: ${name}
-    RETURN    ${name}
-
 # Harvester Management Cluster Operations
 Create Harvester Mgmt Cluster
     [Arguments]    ${cluster_name}
@@ -1060,13 +1053,6 @@ Get Storage Network Status
     ${status}=    storage_network.Get Status
     RETURN    ${status}
 
-Wait For Storage Network Ready
-    [Arguments]    ${timeout}=${RANCHER_WAIT_TIMEOUT}
-    [Documentation]    Wait for storage-network to be applied and completed.
-    ...               Delegates to Storage Network module.
-    ${data}=    storage_network.Wait For Ready    ${timeout}
-    RETURN    ${data}
-
 Get Vlan Network CIDR
     [Arguments]    ${vlan_id}    ${cluster_network}
     [Documentation]    Get the CIDR for a VLAN network by creating a temp network.
@@ -1258,7 +1244,7 @@ Storage network is configured for RWX
     ${cluster_network}=    Set Variable    %{CLUSTER_NETWORK=mgmt}
     ${cidr}=    Get Vlan Network CIDR    ${VLAN_ID}    ${cluster_network}
     Enable Storage Network    ${VLAN_ID}    ${cluster_network}    ${cidr}    share_rwx=${TRUE}
-    Wait For Storage Network Ready    ${RANCHER_WAIT_TIMEOUT}
+    storage_network.Wait For Enabled    ${cidr}    ${RANCHER_WAIT_TIMEOUT}
     Log    Storage network configured for RWX    console=yes
 
 Storage network is enabled for RWX
@@ -1283,7 +1269,7 @@ Storage network is enabled for RWX
     ${cluster_network}=    Set Variable    %{CLUSTER_NETWORK=mgmt}
     ${cidr}=    Get Vlan Network CIDR    ${VLAN_ID}    ${cluster_network}
     Enable Storage Network    ${VLAN_ID}    ${cluster_network}    ${cidr}    share_rwx=${TRUE}
-    Wait For Storage Network Ready    ${RANCHER_WAIT_TIMEOUT}
+    storage_network.Wait For Enabled    ${cidr}    ${RANCHER_WAIT_TIMEOUT}
     Log    Storage network enabled    console=yes
 
     # Start VMs back up

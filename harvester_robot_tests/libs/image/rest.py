@@ -81,6 +81,36 @@ class Rest(Base):
 
         raise AssertionError(f"Image {image_name} was not ready within {timeout}s")
 
+    def try_create(self, image_name, image_url="", source_type="download", checksum=""):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_create is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_get(self, image_name, namespace=DEFAULT_NAMESPACE):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_get is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_delete(self, image_name, namespace=DEFAULT_NAMESPACE):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_delete is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def update(self, image_name, metadata, namespace=DEFAULT_NAMESPACE):
+        """Update image metadata. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "update is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_metadata(self, image_name, namespace=DEFAULT_NAMESPACE):
+        """Read image metadata. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_metadata is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         """Delete an image"""
         api = get_harvester_api_client()
@@ -120,7 +150,7 @@ class Rest(Base):
     def list(self, namespace):
         """List all images"""
         api = get_harvester_api_client()
-        code, data = api.images.list(namespace)
+        code, data = api.images.get("", namespace)
         assert code == 200, f"Failed to list images: {code}, {data}"
 
         images = []

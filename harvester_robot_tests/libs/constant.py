@@ -29,8 +29,22 @@ LONGHORN_NAMESPACE = "longhorn-system"
 VIRTUALMACHINE_PLURAL = "virtualmachines"
 VIRTUALMACHINEIMAGE_PLURAL = "virtualmachineimages"
 VIRTUALMACHINEINSTANCE_PLURAL = "virtualmachineinstances"
+VIRTUALMACHINEBACKUP_PLURAL = "virtualmachinebackups"
+VIRTUALMACHINERESTORE_PLURAL = "virtualmachinerestores"
 VOLUME_PLURAL = "volumes"
 PERSISTENTVOLUMECLAIM_PLURAL = "persistentvolumeclaims"
+
+# Backup / Restore
+SETTING_BACKUP_TARGET = "backup-target"
+BACKUP_TYPE_BACKUP = "backup"
+DELETION_POLICY_DELETE = "delete"
+DELETION_POLICY_RETAIN = "retain"
+
+# Longhorn backup-store bookkeeping CRs (longhorn-system namespace)
+BACKUPVOLUME_PLURAL = "backupvolumes"
+BACKUPBACKINGIMAGE_PLURAL = "backupbackingimages"
+# Prefix of UID-style longhorn BackingImage names created by Harvester
+BACKING_IMAGE_PREFIX = "vmi"
 
 # Test Labels
 LABEL_TEST = "harvesterhci.io/test"
@@ -96,6 +110,9 @@ RUN_STRATEGY_RERUN_ON_FAILURE = "RerunOnFailure"
 
 # Storage Class
 DEFAULT_STORAGE_CLASS = "harvester-longhorn"
+
+# VolumeSnapshotClass used by Longhorn-backed snapshots on Harvester
+DEFAULT_VOLUME_SNAPSHOT_CLASS = "longhorn-snapshot"
 
 # Retry and Timeout Defaults
 DEFAULT_RETRY_COUNT = 100

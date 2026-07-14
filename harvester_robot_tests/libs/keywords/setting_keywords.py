@@ -42,3 +42,7 @@ class setting_keywords:
     def enable(self, setting_id):
         setting = self.setting.enable(setting_id)
         return setting
+
+    def update(self, setting_id, value):
+        setting = self.setting.update(setting_id, value)
+        return setting
