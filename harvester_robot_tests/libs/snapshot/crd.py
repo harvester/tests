@@ -95,12 +95,12 @@ class CRD(Base):
                 if err.status != 404:
                     logging(f"error checking snapshot {namespace}/{snapshot_name}: {err}")
                     raise
-            finally:
-                if time.time() > endtime:
-                    raise AssertionError(
-                        f"Snapshot {namespace}/{snapshot_name} not ready within {timeout}s"
-                    )
-                time.sleep(self.retry_interval)
+
+            if time.time() > endtime:
+                raise AssertionError(
+                    f"Snapshot {namespace}/{snapshot_name} not ready within {timeout}s"
+                )
+            time.sleep(self.retry_interval)
 
         raise AssertionError(
             f"Snapshot {namespace}/{snapshot_name} not ready after {self.retry_count} attempts"
@@ -123,16 +123,18 @@ class CRD(Base):
                 if now - last_log_time >= 30:
                     logging(f"waiting for snapshot {namespace}/{snapshot_name} to be deleted")
                     last_log_time = now
+
             except ApiException as err:
                 if err.status == 404:
                     return True
                 logging(f"error checing snapshot {namespace}/{snapshot_name}: {err}")
-            finally:
-                if time.time() > endtime:
-                    raise AssertionError(
-                        f"failed to delete snapshot {namespace}/{snapshot_name} within {timeout}s"
-                    )
-                time.sleep(self.retry_interval)
+
+            if time.time() > endtime:
+                raise AssertionError(
+                    f"failed to delete snapshot {namespace}/{snapshot_name} within {timeout}s"
+                )
+            time.sleep(self.retry_interval)
+
         raise AssertionError(
             f"snapshot {namespace}/{snapshot_name} not deleted after {self.retry_count} attempts"
         )
