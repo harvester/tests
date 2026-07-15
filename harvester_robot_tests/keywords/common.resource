@@ -12,13 +12,17 @@ Set up test environment
     common_keywords.init k8s api client
 
 Generate Unique Name
-    [Arguments]    ${prefix1}=${EMPTY}    ${prefix2}=${EMPTY}    ${precise}=${FALSE}
-    [Documentation]    Generate a name with timestamp suffix and optional prefixes
-    ...  The timestamp format is `%m%d%H%M` by default and `%m%d%H%M%S%f` when precise=${TRUE}
+    [Arguments]    ${prefix1}=${EMPTY}    ${prefix2}=${EMPTY}    ${precise}=${TRUE}
+    [Documentation]    Generate a name with timestamp suffix and optional prefixes.
+    ...  The default `%m%d%H%M%S%f` timestamp has sub-second precision so
+    ...  concurrent pabot suites never collide (colliding names also make their
+    ...  local teardowns delete each other's resources). Pass precise=${FALSE}
+    ...  to get the short `%m%d%H%M` form ONLY for resources with tight name
+    ...  length limits (e.g. cluster networks).
     ...  Examples:
-    ...  Generate Unique Name            -> '06181015'
-    ...  Generate Unique Name  foo       -> 'foo-06181015'
-    ...  Generate Unique Name  foo  bar  precise=${TRUE}-> 'foo-bar-0618101519681156'
+    ...  Generate Unique Name            -> '0618101519681156'
+    ...  Generate Unique Name  foo       -> 'foo-0618101519681156'
+    ...  Generate Unique Name  foo  bar  precise=${FALSE}  -> 'foo-bar-06181015'
     ${name}=    common_keywords.generate_name_with_suffix    ${prefix1}    ${prefix2}    ${precise}
     RETURN    ${name}
 

@@ -35,7 +35,9 @@ Test Disable Storage Network
 *** Keywords ***
 Local Suite Setup
     Set Up Test Environment
-    ${name}=    Generate Unique Name    qa
+    # Cluster network names must stay short (the bridge interface name is
+    # capped at 15 chars), so opt into the minute-precision short form.
+    ${name}=    Generate Unique Name    qa    precise=${FALSE}
     Set Suite Variable    ${CNET_NAME}    ${name}
 
 Get VLAN Network CIDR

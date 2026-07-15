@@ -56,11 +56,15 @@ def get_timestamp():
     return datetime.now().strftime("%Y%m%d%H%M%S")
 
 
-def generate_name_with_suffix(kind, suffix, precise=False):
+def generate_name_with_suffix(kind, suffix, precise=True):
     """Generate unique name with timestamp suffix
     e.g.
-    * %m%d%H%M -> 06181015 (general, covers resources with limited length like cluster network)
-    * %m%d%H%M%S%f -> 0618101519681156 (precise, for highly concurrent tests to avoid collisions)
+    * %m%d%H%M%S%f -> 0618101519681156 (default; sub-second precision so
+      concurrent pabot suites never collide — colliding names also make their
+      local teardowns delete each other's resources)
+    * %m%d%H%M -> 06181015 (precise=False; ONLY for resources with tight name
+      length limits, e.g. cluster networks whose bridge interface name is
+      capped at 15 chars — callers opt in and accept the collision risk)
     """
     format_str = "%m%d%H%M%S%f" if precise else "%m%d%H%M"
     timestamp = datetime.now().strftime(format_str)
