@@ -10,6 +10,7 @@ import os
 import time
 import subprocess
 import json
+import base64
 import tempfile
 import requests
 import yaml
@@ -488,6 +489,30 @@ class CRD(Base):
 
         raise Exception(f"Timeout waiting for cluster {cluster_name} to get cluster ID")
 
+    def _get_registration_token_secret_value(self, cluster_id, secret_name):
+        """
+        Read the registration token out of the Secret Rancher (>=2.15)
+        stores it in.
+
+        Args:
+            cluster_id: Namespace the ClusterRegistrationToken/Secret live in
+            secret_name: Name of the Secret (from status.tokenSecretName)
+
+        Returns:
+            str: The decoded token, or empty string if not yet available
+        """
+        rc, stdout, stderr = self._run_kubectl_rancher([
+            "get", "secret", secret_name, "-n", cluster_id,
+            "-o", "jsonpath={.data.token}"
+        ])
+        if rc != 0 or not stdout:
+            return ""
+        try:
+            return base64.b64decode(stdout.strip()).decode("utf-8").strip()
+        except (ValueError, UnicodeDecodeError) as e:
+            logging(f"Failed to decode token secret {secret_name}: {e}", level="WARNING")
+            return ""
+
     def get_cluster_registration_url(self, cluster_id, rancher_endpoint, timeout=300):
         """
         Get cluster registration URL for importing Harvester using kubectl.
@@ -495,9 +520,19 @@ class CRD(Base):
         Polls for the ClusterRegistrationToken CRD (management.cattle.io/v3)
         which is automatically created by Rancher after cluster creation.
 
+        The token lives in different places depending on the Rancher version:
+        - Rancher <2.15: the plaintext token is in `.status.token` directly.
+        - Rancher >=2.15: `.status.token` is left empty and the token is
+          moved into a Secret named by `.status.tokenSecretName` (in the same
+          namespace, base64-encoded under the `token` key) as a security
+          hardening change.
+
+        This method handles both cases and builds the manifest URL manually
+        from the real token so it works regardless of Rancher version.
+
         Args:
             cluster_id: The internal cluster ID (e.g., c-m-xxxxx)
-            rancher_endpoint: Rancher server endpoint (used for logging)
+            rancher_endpoint: Rancher server endpoint used to build the URL
             timeout: Maximum time to wait for token
 
         Returns:
@@ -516,26 +551,36 @@ class CRD(Base):
         while time.time() < end_time:
             attempt += 1
             try:
-                # Get ClusterRegistrationToken via kubectl
+                # Get ClusterRegistrationToken status via kubectl
                 rc, stdout, stderr = self._run_kubectl_rancher([
                     "get", "clusterregistrationtokens.management.cattle.io",
                     token_name, "-n", cluster_id,
-                    "-o", "jsonpath={.status.manifestUrl}"
+                    "-o", "json"
                 ])
 
-                # Log every 5 attempts to show progress
-                if attempt % 5 == 1 or rc != 0:
-                    stdout_preview = stdout[:100] if stdout else 'empty'
-                    logging(f"Attempt {attempt}: rc={rc}, stdout={stdout_preview}")
-
                 if rc == 0 and stdout:
-                    manifest_url = stdout.strip()
-                    if manifest_url:
+                    status = json.loads(stdout).get("status", {})
+                    token = (status.get("token") or "").strip()
+                    secret_name = status.get("tokenSecretName")
+
+                    if not token and secret_name:
+                        # Rancher >=2.15: token lives in a Secret instead
+                        token = self._get_registration_token_secret_value(cluster_id, secret_name)
+
+                    # Log every 5 attempts to show progress
+                    if attempt % 5 == 1:
+                        logging(
+                            f"Attempt {attempt}: "
+                            f"token {'found' if token else 'not yet available'}"
+                        )
+
+                    if token and "{" not in token:
+                        manifest_url = (
+                            f"{rancher_endpoint.rstrip('/')}/v3/import/"
+                            f"{token}_{cluster_id}.yaml"
+                        )
                         logging(f"Got cluster registration URL: {manifest_url}")
                         return manifest_url
-                    else:
-                        if attempt % 5 == 1:
-                            logging("manifestUrl not yet available, waiting...")
                 elif "NotFound" in stderr or "not found" in stderr.lower():
                     if attempt % 5 == 1:
                         logging("Registration token not yet created, waiting...")
