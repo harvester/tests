@@ -296,6 +296,9 @@ class VMSpec:
                 "runStrategy": self.run_strategy,
                 "template": {
                     "metadata": {
+                        "annotations": {
+                            "harvesterhci.io/sshNames": '[]'
+                        },
                         "labels": {
                             "harvesterhci.io/vmName": name
                         }
