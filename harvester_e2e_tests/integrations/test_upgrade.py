@@ -419,7 +419,8 @@ def stopped_vm(request, api_client, ssh_keypair, wait_timeout, unique_name, imag
 @pytest.mark.negative
 @pytest.mark.any_nodes
 class TestInvalidUpgrade:
-    @pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/10220")
+    @pytest.mark.skip_if_version(
+            "< v1.8.0", reason="https://github.com/harvester/harvester/issues/10220")
     @pytest.mark.skip_if_version(
             "< v1.5.0",
             reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
@@ -452,7 +453,8 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
-    @pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/10220")
+    @pytest.mark.skip_if_version(
+            "< v1.8.0", reason="https://github.com/harvester/harvester/issues/10220")
     @pytest.mark.skip_if_version(
             "< v1.5.0",
             reason="https://github.com/harvester/harvester/issues/7654 fix after `v1.5.0`")
@@ -491,7 +493,8 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(upgrade_name)
         api_client.versions.delete(version)
 
-    @pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/10220")
+    @pytest.mark.skip_if_version(
+            "< v1.8.0", reason="https://github.com/harvester/harvester/issues/10220")
     def test_version_compatibility(
         self, api_client, unique_name, upgrade_target, upgrade_timeout
     ):
@@ -517,7 +520,8 @@ class TestInvalidUpgrade:
         api_client.upgrades.delete(data['metadata']['name'])
         api_client.versions.delete(version)
 
-    @pytest.mark.skip(reason="https://github.com/harvester/harvester/issues/10220")
+    @pytest.mark.skip_if_version(
+            "< v1.8.0", reason="https://github.com/harvester/harvester/issues/10220")
     def test_degraded_volume(
         self, api_client, unique_name, vm_shell_from_host, upgrade_target, stopped_vm,
         vm_checker, volume_checker, upgrade_checker
