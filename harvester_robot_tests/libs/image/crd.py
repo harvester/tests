@@ -45,6 +45,7 @@ class CRD(Base):
         namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
         display_name = kwargs.get('display_name', image_name)
         description = kwargs.get('description', f'Test image {image_name}')
+        retry = kwargs.get('retry', None)
 
         body = {
             "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
@@ -69,6 +70,12 @@ class CRD(Base):
         # Add checksum if provided
         if checksum:
             body["spec"]["checksum"] = checksum
+
+        # spec.retry (import retry limit, cluster default 3). retry=0 makes a
+        # doomed import (e.g. bad checksum) fail on the first attempt instead
+        # of re-downloading the whole image several times.
+        if retry is not None:
+            body["spec"]["retry"] = int(retry)
 
         try:
             logging(f"Creating VirtualMachineImage {namespace}/{image_name}")
@@ -242,17 +249,16 @@ class CRD(Base):
                 image = self.get(image_name, namespace)
                 status = image.get("status", {})
 
-                # Check download percent - Harvester uses 'progress' field
+                # 'progress' alone is not a success signal (it reaches 100 even
+                # when checksum verification later fails); Imported=True is.
                 download_percent = status.get("progress", 0)
-                if download_percent == 100:
-                    # Check Initialized condition
-                    conditions = status.get("conditions", [])
-                    for condition in conditions:
-                        is_initialized = condition.get("type") == "Initialized"
-                        is_true = condition.get("status") == "True"
-                        if is_initialized and is_true:
-                            logging(f"Image {namespace}/{image_name} downloaded successfully")
-                            return True
+                conditions = status.get("conditions", [])
+                for condition in conditions:
+                    is_imported = condition.get("type") == "Imported"
+                    is_true = condition.get("status") == "True"
+                    if is_imported and is_true:
+                        logging(f"Image {namespace}/{image_name} downloaded successfully")
+                        return True
                 now = time.time()
                 if now - last_log_time >= 30:
                     logging(f"Waiting for image download: {download_percent}%...")
@@ -304,24 +310,27 @@ class CRD(Base):
         image = self.get(image_name, namespace)
         status = image.get("status", {})
 
-        # Determine state. Notes from real Harvester behaviour:
-        #  - A fully imported image has progress == 100 AND Initialized=True.
-        #    Transient download retries can leave a RetryLimitExceeded condition
-        #    behind even on a healthy image, so the success check must come FIRST.
-        #  - A bad checksum/URL never reaches Initialized=True (the backing image
-        #    is not created), so it falls through to the RetryLimitExceeded check.
+        # Determine state, mirroring Harvester's own semantics
+        # (pkg/image/common/operator.go):
+        #  - Imported=True is the only success signal. progress is NOT one: it
+        #    hits (and after a failure stays at) 100 during every download
+        #    attempt even for a bad checksum, since the checksum is verified
+        #    only after the download completes.
+        #  - RetryLimitExceeded must be checked by STATUS, not mere presence:
+        #    while retries remain the condition exists with status False, and a
+        #    successful import resets it to False as well.
         conditions = status.get("conditions", [])
         progress = status.get('progress', 0)
 
-        initialized = any(
-            c.get('type') == 'Initialized' and c.get('status') == 'True'
-            for c in conditions
-        )
-        retry_exceeded = any(c.get('type') == 'RetryLimitExceeded' for c in conditions)
+        def cond_is_true(cond_type):
+            return any(
+                c.get('type') == cond_type and c.get('status') == 'True'
+                for c in conditions
+            )
 
-        if progress == 100 and initialized:
+        if cond_is_true('Imported'):
             state = IMAGE_STATE_ACTIVE
-        elif retry_exceeded:
+        elif cond_is_true('RetryLimitExceeded'):
             state = IMAGE_STATE_FAILED
         elif conditions or progress:
             state = IMAGE_STATE_IMPORTING
