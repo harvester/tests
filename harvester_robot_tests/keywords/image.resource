@@ -6,9 +6,11 @@ Library          ../libs/keywords/image_keywords.py
 
 *** Keywords ***
 Create image from url with name
-    [Arguments]    ${image_name}    ${image_url}    ${storage_class}=${EMPTY}    ${checksum}=
-    [Documentation]    Create image from URL using provided name and optional storage class
-    image_keywords.create image from url    ${image_name}    ${image_url}    storage_class=${storage_class}    checksum=${checksum}
+    [Arguments]    ${image_name}    ${image_url}    ${storage_class}=${EMPTY}    ${checksum}=    ${retry}=${NONE}
+    [Documentation]    Create image from URL using provided name and optional storage class.
+    ...    retry overrides spec.retry (import retry limit, cluster default 3);
+    ...    retry=${0} makes a doomed import fail on the first attempt.
+    image_keywords.create image from url    ${image_name}    ${image_url}    storage_class=${storage_class}    checksum=${checksum}    retry=${retry}
 
 Wait for image downloaded by name
     [Arguments]    ${image_name}    ${timeout}=${WAIT_TIMEOUT}

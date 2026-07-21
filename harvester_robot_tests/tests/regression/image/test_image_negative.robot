@@ -57,7 +57,10 @@ Create Image With Invalid Checksum
     [Documentation]    A wrong checksum must fail verification and never become Active
     ${img}=    Generate Unique Name    img-badcksum
     Set Test Variable    ${CURRENT_IMG}    ${img}
-    When Create image from url with name    ${img}    ${OPENSUSE_IMAGE_URL}    checksum=${INVALID_CHECKSUM}
+    # retry=0: the checksum is only verified after a full download, so with the
+    # default retry limit (3) a failing image re-downloads 4 times before
+    # RetryLimitExceeded=True. One attempt is enough for this negative test.
+    When Create image from url with name    ${img}    ${OPENSUSE_IMAGE_URL}    checksum=${INVALID_CHECKSUM}    retry=${0}
     Then Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
     ...    Image State Is Failed    ${img}
 
@@ -66,7 +69,7 @@ Create Image With Invalid URL
     [Documentation]    An unreachable URL must fail the import and never become Active
     ${img}=    Generate Unique Name    img-badurl
     Set Test Variable    ${CURRENT_IMG}    ${img}
-    When Create image from url with name    ${img}    ${INVALID_IMAGE_URL}
+    When Create image from url with name    ${img}    ${INVALID_IMAGE_URL}    retry=${0}
     Then Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
     ...    Image State Is Failed    ${img}
 
