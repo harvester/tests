@@ -873,8 +873,8 @@ class TestImageEnhancements:
         delete_image(api_client, original_image, wait_timeout)
         delete_image(api_client, exported_image_id, wait_timeout)
 
-    @pytest.mark.xfail(
-            reason="https://github.com/harvester/harvester/issues/9515")
+    @pytest.mark.xfail_if_version(
+            "<= v1.8.0", reason="https://github.com/harvester/harvester/issues/9515")
     @pytest.mark.p1
     @pytest.mark.images
     @pytest.mark.negative
@@ -898,8 +898,9 @@ class TestImageEnhancements:
             resp = api_client.images.create_by_file(invalid_long_name, Path(f.name))
             assert not resp.ok, f"Expected failure with long name but" \
                                 f" got success: {resp.status_code}"
-            assert resp.status_code in [400, 422], f"Expected 400/422 for " \
-                                                   f"invalid name, got: {resp.status_code}"
+            # Add 404 into expected code, ref: https://github.com/harvester/harvester/pull/10490
+            assert resp.status_code in [400, 422, 404], f"Expected 400/422 for " \
+                                                        f"invalid name, got: {resp.status_code}"
 
             # Test 2: Valid name (should PASS)
             valid_base = "valid-image-name"
