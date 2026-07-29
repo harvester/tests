@@ -78,6 +78,36 @@ VM is restarted
     [Documentation]    Restart a VM (stop then start)
     vm_keywords.restart vm    ${vm_name}
 
+VM is soft-rebooted
+    [Arguments]    ${vm_name}
+    [Documentation]    Soft-reboot a running VM (guest-level reboot via
+    ...    qemu-guest-agent), unlike restart which tears down and recreates the VMI
+    vm_keywords.softreboot vm    ${vm_name}
+
+VM qemu-agent should be disconnected
+    [Arguments]    ${vm_name}    &{config}
+    [Documentation]    Wait until the VM's guest agent disconnects (i.e. the
+    ...    AgentConnected condition is removed), meaning the guest is
+    ...    rebooting/leaving the OS.
+    vm_keywords.wait_for_vm_agent_disconnected    ${vm_name}    &{config}
+
+VM qemu-agent should be connected
+    [Arguments]    ${vm_name}    &{config}
+    [Documentation]    Wait until the VM's guest agent connects (i.e. the
+    ...    AgentConnected condition appears). Right after VM creation/start
+    ...    only Ready/LiveMigratable/StorageLiveMigratable exist yet, so this
+    ...    must be polled rather than checked once. Returns the condition
+    ...    dict, which includes `lastProbeTime`.
+    ${condition}=    vm_keywords.wait_for_vm_agent_connected    ${vm_name}    &{config}
+    RETURN    ${condition}
+
+Agent probe time should be updated
+    [Arguments]    ${old_probe_time}    ${new_probe_time}
+    [Documentation]    Assert the guest agent's lastProbeTime advanced,
+    ...    confirming the agent actually reconnected after a soft-reboot
+    ...    rather than never having disconnected.
+    vm_keywords.verify_agent_probe_time_updated    ${old_probe_time}    ${new_probe_time}
+
 VM is paused
     [Arguments]    ${vm_name}
     [Documentation]    Pause a running VM

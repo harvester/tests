@@ -7,7 +7,7 @@ from utility.utility import get_harvester_api_client
 from utility.utility import get_retry_count_and_interval
 from utility.utility import logging
 from vm.base import Base
-from constant import DEFAULT_NAMESPACE
+from constant import DEFAULT_NAMESPACE, DEFAULT_TIMEOUT_SHORT
 
 
 class Rest(Base):
@@ -133,6 +133,70 @@ class Rest(Base):
         code, data = api.vms.restart(vm_name)
         assert code in [200, 204], f"Failed to restart VM: {code}, {data}"
 
+    def softreboot(self, vm_name):
+        """Soft-reboot a running VM (guest-level reboot via qemu-guest-agent)"""
+        api = get_harvester_api_client()
+        code, data = api.vms.softreboot(vm_name)
+        assert code in [200, 204], f"Failed to soft-reboot VM: {code}, {data}"
+
+    def wait_vm_condition(
+            self, vm_name, condition_type, condition_status,
+            timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+        """Wait until a VM's status.conditions reaches the expected state.
+
+        status.conditions is a set keyed by `type`, NOT an append-ordered
+        log -- entries such as Ready/LiveMigratable/StorageLiveMigratable
+        are always present, while conditions like AgentConnected only
+        appear once qemu-guest-agent connects.
+
+        If `condition_status` is a string (e.g. "True"), waits until a
+        condition of `condition_type` exists with a matching `status`, and
+        returns that condition dict (so callers can still read fields such
+        as `lastProbeTime`).
+
+        If `condition_status` is None, waits until NO condition of
+        `condition_type` is present at all, and returns None.
+        """
+        api = get_harvester_api_client()
+        for i in range(timeout):
+            code, data = api.vms.get_status(vm_name, namespace)
+            if code == 200:
+                conditions = data.get('status', {}).get('conditions', [])
+                cond = next((c for c in conditions if c.get('type') == condition_type), None)
+
+                if condition_status is None:
+                    if cond is None:
+                        return None
+                elif cond is not None and cond.get('status') == condition_status:
+                    return cond
+
+                if i % 30 == 0:
+                    logging(f"Waiting for VM {vm_name} condition {condition_type}="
+                            f"{condition_status} (current: {cond})...")
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"VM {vm_name} condition {condition_type} did not reach "
+            f"status={condition_status} within {timeout}s"
+        )
+
+    def wait_for_agent_connected(
+            self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+        """Wait until the VM's guest agent connects.
+
+        Right after a VM is created/started, qemu-guest-agent has not
+        connected yet (only Ready/LiveMigratable/StorageLiveMigratable
+        exist), so this must be polled rather than checked once. Returns the
+        AgentConnected condition dict (includes `lastProbeTime`).
+        """
+        return self.wait_vm_condition(vm_name, "AgentConnected", "True", timeout, namespace)
+
+    def wait_for_agent_disconnected(
+            self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+        """Wait until the VM's guest agent disconnects (AgentConnected
+        condition is removed entirely)."""
+        return self.wait_vm_condition(vm_name, "AgentConnected", None, timeout, namespace)
+
     def migrate(self, vm_name, target_node):
         """Migrate VM to target node"""
         api = get_harvester_api_client()
@@ -253,3 +317,9 @@ class Rest(Base):
         """Clean up all VMs"""
         logging('Cleaning up test VMs')
         self.checksums.clear()
+
+    def update_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
+        """Update VM disk size. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "update_disk_size is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
