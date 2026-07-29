@@ -4,6 +4,7 @@ VM Keywords - creates VM() instance and delegates - NO direct API calls!
 """
 import os
 import sys
+from datetime import datetime
 
 # Add the path to the utility module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
@@ -56,6 +57,30 @@ class vm_keywords:
         """Restart a VM"""
         logging(f'Restarting VM {vm_name}')
         self.vm.restart(vm_name)
+
+    def softreboot_vm(self, vm_name):
+        """Soft-reboot a running VM (guest-level reboot)"""
+        logging(f'Soft-rebooting VM {vm_name}')
+        self.vm.softreboot(vm_name)
+
+    def wait_for_vm_agent_connected(self, vm_name, timeout=DEFAULT_TIMEOUT):
+        """Wait until the VM's guest agent connects (AgentConnected condition appears)"""
+        logging(f'Waiting for VM {vm_name} guest agent to connect')
+        return self.vm.wait_for_agent_connected(vm_name, timeout)
+
+    def wait_for_vm_agent_disconnected(self, vm_name, timeout=DEFAULT_TIMEOUT):
+        """Wait until the VM's guest agent disconnects (AgentConnected condition is removed)"""
+        logging(f'Waiting for VM {vm_name} guest agent to disconnect')
+        return self.vm.wait_for_agent_disconnected(vm_name, timeout)
+
+    def verify_agent_probe_time_updated(self, old_probe_time, new_probe_time):
+        """Assert the guest agent's lastProbeTime advanced after a soft-reboot"""
+        old_t = datetime.strptime(old_probe_time, '%Y-%m-%dT%H:%M:%SZ')
+        new_t = datetime.strptime(new_probe_time, '%Y-%m-%dT%H:%M:%SZ')
+        assert new_t > old_t, (
+            "Agent's probe time is not updated. "
+            f"Before soft-reboot: {old_t}, After soft-reboot: {new_t}"
+        )
 
     def migrate_vm(self, vm_name, target_node):
         """Migrate VM to target node"""

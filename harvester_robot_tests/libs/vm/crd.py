@@ -506,6 +506,78 @@ class CRD(Base):
         logging(f"Unpausing VM {namespace}/{vm_name}")
         self._vmi_subresource(vm_name, "unpause", namespace)
 
+    def softreboot(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Soft-reboot a running VM (VMI softreboot subresource).
+
+        This is the same aggregated subresources.kubevirt.io endpoint that
+        Harvester's `vms.softreboot()` API action proxies to (action=
+        "softreboot"). It asks the guest agent to reboot the guest OS in
+        place, unlike restart()/stop()+start() which tear down and recreate
+        the VMI. Requires the guest agent to be connected; kubevirt returns
+        an error if it is not.
+        """
+        logging(f"Soft-rebooting VM {namespace}/{vm_name}")
+        self._vmi_subresource(vm_name, "softreboot", namespace)
+
+    def wait_vm_condition(
+            self, vm_name, condition_type, condition_status,
+            timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+        """Wait until a VM's status.conditions reaches the expected state.
+
+        status.conditions is a set keyed by `type`, NOT an append-ordered
+        log -- entries such as Ready/LiveMigratable/StorageLiveMigratable
+        are always present, while conditions like AgentConnected only
+        appear once qemu-guest-agent connects.
+
+        If `condition_status` is a string (e.g. "True"), waits until a
+        condition of `condition_type` exists with a matching `status`, and
+        returns that condition dict (so callers can still read fields such
+        as `lastProbeTime`).
+
+        If `condition_status` is None, waits until NO condition of
+        `condition_type` is present at all, and returns None.
+        """
+        for i in range(timeout):
+            vm = self.get(vm_name, namespace)
+            conditions = vm.get('status', {}).get('conditions', [])
+            cond = next((c for c in conditions if c.get('type') == condition_type), None)
+
+            if condition_status is None:
+                if cond is None:
+                    logging(f"VM {namespace}/{vm_name} condition {condition_type} is absent")
+                    return None
+            elif cond is not None and cond.get('status') == condition_status:
+                logging(f"VM {namespace}/{vm_name} condition {condition_type}="
+                        f"{condition_status}")
+                return cond
+
+            if i % 30 == 0:
+                logging(f"Waiting for VM {vm_name} condition {condition_type}="
+                        f"{condition_status} (current: {cond})...")
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"VM {namespace}/{vm_name} condition {condition_type} did not reach "
+            f"status={condition_status} within {timeout}s"
+        )
+
+    def wait_for_agent_connected(
+            self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+        """Wait until the VM's guest agent connects.
+
+        Right after a VM is created/started, qemu-guest-agent has not
+        connected yet (only Ready/LiveMigratable/StorageLiveMigratable
+        exist), so this must be polled rather than checked once. Returns the
+        AgentConnected condition dict (includes `lastProbeTime`).
+        """
+        return self.wait_vm_condition(vm_name, "AgentConnected", "True", timeout, namespace)
+
+    def wait_for_agent_disconnected(
+            self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+        """Wait until the VM's guest agent disconnects (AgentConnected
+        condition is removed entirely)."""
+        return self.wait_vm_condition(vm_name, "AgentConnected", None, timeout, namespace)
+
     def wait_for_paused(self, vm_name, timeout=DEFAULT_TIMEOUT_SHORT,
                         namespace=DEFAULT_NAMESPACE):
         """Wait for the VMI to report the Paused condition as True."""

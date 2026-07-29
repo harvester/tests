@@ -43,6 +43,21 @@ Restart VM
     VM is restarted    ${VM_NAME}
     VM should be running    ${VM_NAME}
 
+Soft-Reboot VM
+    [Tags]    p0
+    [Documentation]    Soft-reboot the VM (guest-level reboot via
+    ...    qemu-guest-agent). The guest agent must disconnect (leaving the
+    ...    OS), then reconnect with a fresh probe time (entering the OS
+    ...    again), and the VM must return to Running.
+    ${old_condition}=    VM qemu-agent should be connected    ${VM_NAME}
+    ${old_probe_time}=    Set Variable    ${old_condition}[lastProbeTime]
+    VM is soft-rebooted    ${VM_NAME}
+    VM qemu-agent should be disconnected    ${VM_NAME}
+    ${new_condition}=    VM qemu-agent should be connected    ${VM_NAME}
+    ${new_probe_time}=    Set Variable    ${new_condition}[lastProbeTime]
+    VM should be running    ${VM_NAME}
+    Agent probe time should be updated    ${old_probe_time}    ${new_probe_time}
+
 Delete VM
     [Tags]    p0
     [Documentation]    Delete the VM and verify it is removed
