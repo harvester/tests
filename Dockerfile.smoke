@@ -1,0 +1,15 @@
+FROM FROM python:3.10.16-bookworm@sha256:b240c5813c2fa23506dc314bb370da0e890dadce666c7886780757976dc3b54b
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential findutils wget && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# bake the test dependencies into the image so a test run needs no network
+COPY test-requirements.txt /tmp/test-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/test-requirements.txt
+
+# the local API client package; --no-deps mirrors the tox setup so its
+# dependencies keep coming from the hashed requirements above
+COPY apiclient /tmp/apiclient
+RUN pip install --no-cache-dir --no-deps /tmp/apiclient
+
+WORKDIR /app
