@@ -63,6 +63,11 @@ TF_HARVESTER_CONFIG = '''
     disk_info = %(disk_info)s
     network_info = %(network_info)s
     user_data = %(user_data)s
+    input {
+      name = "tablet"
+      type = "tablet"
+      bus  = "usb"
+    }
   }
 '''
 TF_DISK_INFO = '''<<EOF
