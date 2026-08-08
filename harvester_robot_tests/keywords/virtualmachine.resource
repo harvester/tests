@@ -13,7 +13,9 @@ List VMs by prefix
 
 VM is created
     [Arguments]    ${vm_name}    ${image_id}    ${cpu}=2    ${memory}=4Gi    &{config}
-    [Documentation]    Create a virtual machine with provided name
+    [Documentation]    Create a virtual machine with provided name.
+    ...    Pass ssh_public_key=... (or user_data=...) to attach a cloud-init
+    ...    disk, which is what makes the VM SSH-reachable.
     vm_keywords.create vm    ${vm_name}    ${image_id}    ${cpu}    ${memory}    &{config}
 
 VM is deleted
@@ -47,6 +49,30 @@ VM Disk Count Should Be
     [Documentation]    Assert the VM declares the expected number of disks
     ${names}=    vm_keywords.get_vm_disk_names    ${vm_name}
     Length Should Be    ${names}    ${expected}
+
+Get VM CPU Cores
+    [Arguments]    ${vm_name}
+    [Documentation]    Return the CPU cores declared in the VM spec
+    ${cores}=    vm_keywords.get_vm_cpu_cores    ${vm_name}
+    RETURN    ${cores}
+
+Get Running VM CPU Cores
+    [Arguments]    ${vm_name}
+    [Documentation]    Return the CPU cores the running VMI actually reports
+    ...    (status.currentCPUTopology, falling back to the VMI spec)
+    ${cores}=    vm_keywords.get_vmi_cpu_cores    ${vm_name}
+    RETURN    ${cores}
+
+VM CPU is updated
+    [Arguments]    ${vm_name}    ${cores}
+    [Documentation]    Update spec.domain.cpu.cores (and the matching CPU
+    ...    limit) of a VM. Takes effect after the VM is restarted.
+    vm_keywords.update_vm_cpu_cores    ${vm_name}    ${cores}
+
+VM CPU cores should be
+    [Arguments]    ${vm_name}    ${expected}
+    [Documentation]    Wait until the running VMI reports the expected CPU cores
+    vm_keywords.wait_for_vm_cpu_cores    ${vm_name}    ${expected}
 
 Add Volume To VM
     [Arguments]    ${vm_name}    ${disk_name}    ${volume_name}

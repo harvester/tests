@@ -79,6 +79,24 @@ class VM(Base):
     def get_disk_names(self, vm_name):
         return self.vm.get_disk_names(vm_name)
 
+    def get_cpu_cores(self, vm_name):
+        return self.vm.get_cpu_cores(vm_name)
+
+    def get_vmi_cpu_cores(self, vm_name):
+        return self.vm.get_vmi_cpu_cores(vm_name)
+
+    def update_cpu_cores(self, vm_name, cores):
+        return self.vm.update_cpu_cores(vm_name, cores)
+
+    def wait_for_cpu_cores(self, vm_name, expected_cores, timeout):
+        return self.vm.wait_for_cpu_cores(vm_name, expected_cores, timeout)
+
+    def get_ip_address(self, vm_name, network="default"):
+        return self.vm.get_ip_address(vm_name, network)
+
+    def get_node_name(self, vm_name):
+        return self.vm.get_node_name(vm_name)
+
     def migrate(self, vm_name, target_node):
         return self.vm.migrate(vm_name, target_node)
 

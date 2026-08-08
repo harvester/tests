@@ -26,6 +26,9 @@ class Host(Base):
     def get_node(self, node_name):
         return self.host.get_node(node_name)
 
+    def get_node_ip(self, node_name, address_type='InternalIP'):
+        return self.host.get_node_ip(node_name, address_type)
+
     def get_node_by_index(self, index):
         return self.host.get_node_by_index(index)
 

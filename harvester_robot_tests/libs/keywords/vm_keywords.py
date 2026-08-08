@@ -134,6 +134,24 @@ class vm_keywords:
         """Return the disk names declared in the VM spec"""
         return self.vm.get_disk_names(vm_name)
 
+    def get_vm_cpu_cores(self, vm_name):
+        """Return the CPU cores declared in the VM spec"""
+        return self.vm.get_cpu_cores(vm_name)
+
+    def get_vmi_cpu_cores(self, vm_name):
+        """Return the CPU cores the running VMI reports"""
+        return self.vm.get_vmi_cpu_cores(vm_name)
+
+    def update_vm_cpu_cores(self, vm_name, cores):
+        """Update the VM's CPU cores"""
+        logging(f'Updating VM {vm_name} CPU cores to {cores}')
+        self.vm.update_cpu_cores(vm_name, cores)
+
+    def wait_for_vm_cpu_cores(self, vm_name, expected_cores, timeout=DEFAULT_TIMEOUT):
+        """Wait until the running VMI reports the expected CPU cores"""
+        logging(f'Waiting for VM {vm_name} to report {expected_cores} CPU cores')
+        self.vm.wait_for_cpu_cores(vm_name, expected_cores, timeout)
+
     def wait_for_vm_running(self, vm_name, timeout=DEFAULT_TIMEOUT):
         """Wait for VM to reach running state"""
         logging(f'Waiting for VM {vm_name} to be running')

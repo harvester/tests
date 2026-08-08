@@ -3,6 +3,7 @@ VM CRD Implementation
 """
 import json
 import time
+import yaml
 from kubernetes import client
 from kubernetes.client.rest import ApiException
 from crd import get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted, replace_cr
@@ -15,6 +16,9 @@ from constant import (
 )
 from utility.utility import logging, get_retry_count_and_interval
 from vm.base import Base
+
+# Same baseline cloud-config VMSpec ships with.
+DEFAULT_USER_DATA = "#cloud-config\npackage_update: true"
 
 
 class CRD(Base):
@@ -206,6 +210,23 @@ class CRD(Base):
                     {"name": disk_nm,
                      "persistentVolumeClaim": {"claimName": pvc_name}}
                 )
+
+        # Cloud-init. Like VMSpec, the VM always carries a cloudinitdisk; the
+        # stock cloud images have password auth disabled, so the injected
+        # public key is the only usable credential.
+        userdata = yaml.safe_load(
+            kwargs.get("user_data") or DEFAULT_USER_DATA) or {}
+        if kwargs.get("ssh_public_key"):
+            userdata["ssh_authorized_keys"] = [kwargs["ssh_public_key"]]
+        spec_devices_disks.append(
+            {"name": "cloudinitdisk", "disk": {"bus": "virtio"}}
+        )
+        spec_volumes.append(
+            {"name": "cloudinitdisk", "cloudInitNoCloud": {
+                "userData": "#cloud-config\n" + yaml.dump(userdata),
+                "networkData": kwargs.get("network_data", ""),
+            }}
+        )
 
         logging(f"Volume claim templates for VM {vm_name}: {volume_claim_templates}")
         logging(f"Volume spec_devices_disks for VM {vm_name}: {spec_devices_disks}")
@@ -905,6 +926,37 @@ class CRD(Base):
             f"within {timeout}s"
         )
 
+    def get_ip_address(self, vm_name, network="default",
+                       namespace=DEFAULT_NAMESPACE):
+        """Return the IP address the VMI reports for `network`."""
+        vmi = self._get_vmi(vm_name, namespace)
+        interfaces = vmi.get('status', {}).get('interfaces', [])
+        for iface in interfaces:
+            if iface.get('name') == network and iface.get('ipAddress'):
+                return iface['ipAddress']
+        raise AssertionError(
+            f"VM {namespace}/{vm_name} has no IP address on network "
+            f"{network!r} (interfaces: {interfaces})")
+
+    def get_node_name(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the name of the node the VM is currently running on."""
+        vmi = self._get_vmi(vm_name, namespace)
+        node_name = vmi.get('status', {}).get('nodeName')
+        if not node_name:
+            raise AssertionError(
+                f"VM {namespace}/{vm_name} is not scheduled to a node yet")
+        return node_name
+
+    def _get_vmi(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Fetch the VirtualMachineInstance (only exists while running)."""
+        return self.obj_api.get_namespaced_custom_object(
+            group=KUBEVIRT_API_GROUP,
+            version=KUBEVIRT_API_VERSION,
+            namespace=namespace,
+            plural=VIRTUALMACHINEINSTANCE_PLURAL,
+            name=vm_name
+        )
+
     def _vm_subresource(self, vm_name, action, namespace=DEFAULT_NAMESPACE, body=None):
         """Call a kubevirt VirtualMachine subresource (e.g. addvolume/removevolume)
         via the aggregated subresources.kubevirt.io API.
@@ -1000,6 +1052,104 @@ class CRD(Base):
         raise AssertionError(
             f"Volume {disk_name} was not hot-unplugged from {vm_name} "
             f"within {timeout}s")
+
+    def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the CPU cores declared in the VM spec."""
+        vm = self.get(vm_name, namespace)
+        cores = (vm.get('spec', {}).get('template', {}).get('spec', {})
+                 .get('domain', {}).get('cpu', {}).get('cores'))
+        if cores is None:
+            raise AssertionError(
+                f"VM {namespace}/{vm_name} has no spec.domain.cpu.cores")
+        return int(cores)
+
+    def get_vmi_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the CPU cores the running VMI is actually configured with.
+
+        Prefers status.currentCPUTopology (populated by kubevirt, and the
+        authoritative value once CPU hot-plug is in play) and falls back to
+        the VMI spec for older versions.
+        """
+        vmi = self.obj_api.get_namespaced_custom_object(
+            group=KUBEVIRT_API_GROUP,
+            version=KUBEVIRT_API_VERSION,
+            namespace=namespace,
+            plural=VIRTUALMACHINEINSTANCE_PLURAL,
+            name=vm_name
+        )
+        topology = vmi.get('status', {}).get('currentCPUTopology') or {}
+        cores = topology.get('cores')
+        if cores is None:
+            cores = (vmi.get('spec', {}).get('domain', {})
+                     .get('cpu', {}).get('cores'))
+        if cores is None:
+            raise AssertionError(
+                f"VMI {namespace}/{vm_name} does not report CPU cores")
+        return int(cores)
+
+    def update_cpu_cores(self, vm_name, cores, namespace=DEFAULT_NAMESPACE):
+        """Update the VM's CPU cores.
+
+        Mirrors what Harvester does: spec.domain.cpu.cores drives the guest
+        topology while spec.domain.resources.limits.cpu must be kept in sync,
+        otherwise the VM is admitted with a CPU limit that contradicts the
+        requested topology. The change only reaches the guest after the VM is
+        restarted (unless CPU hot-plug is enabled).
+        """
+        cores = int(cores)
+        for i in range(self.retry_count):
+            try:
+                vm = self.get(vm_name, namespace)
+                domain = vm['spec']['template']['spec']['domain']
+                domain.setdefault('cpu', {})['cores'] = cores
+                limits = domain.get('resources', {}).get('limits')
+                if limits is not None and 'cpu' in limits:
+                    limits['cpu'] = str(cores)
+
+                replace_cr(
+                    group=KUBEVIRT_API_GROUP,
+                    version=KUBEVIRT_API_VERSION,
+                    namespace=namespace,
+                    plural=VIRTUALMACHINE_PLURAL,
+                    name=vm_name,
+                    body=vm
+                )
+                logging(f"Updated VM {namespace}/{vm_name} CPU cores to {cores}")
+                return
+            except ApiException as e:
+                if e.status == 409:
+                    logging(f"Conflict when updating VM CPU, retrying ({i})...")
+                    time.sleep(self.retry_interval)
+                else:
+                    raise
+
+        raise AssertionError(
+            f"Failed to update CPU of VM {namespace}/{vm_name} after "
+            f"{self.retry_count} attempts"
+        )
+
+    def wait_for_cpu_cores(self, vm_name, expected_cores,
+                           timeout=DEFAULT_TIMEOUT_SHORT,
+                           namespace=DEFAULT_NAMESPACE):
+        """Wait until the running VMI reports the expected CPU cores."""
+        expected_cores = int(expected_cores)
+        endtime = time.time() + timeout
+        current = None
+        while time.time() < endtime:
+            try:
+                current = self.get_vmi_cpu_cores(vm_name, namespace)
+                if current == expected_cores:
+                    logging(f"VM {namespace}/{vm_name} reports "
+                            f"{current} CPU cores")
+                    return True
+            except (ApiException, AssertionError) as e:
+                logging(f"Error checking VMI CPU cores: {e}")
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"VM {namespace}/{vm_name} did not report {expected_cores} CPU "
+            f"cores within {timeout}s (current: {current})"
+        )
 
     def get_disk_names(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Return the disk names declared in the VM spec (boot + data disks)."""

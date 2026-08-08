@@ -77,6 +77,15 @@ class CRD(Base):
             logging(f"Failed to get node {node_name}: {e}")
             raise
 
+    def get_node_ip(self, node_name, address_type='InternalIP'):
+        """Get a node's IP address (InternalIP by default)"""
+        node = self.get_node(node_name)
+        for addr in node['status'].get('addresses', []):
+            if addr.get('type') == address_type:
+                return addr['address']
+        raise AssertionError(
+            f"Node {node_name} has no {address_type} address")
+
     def get_node_by_index(self, index):
         """Get node name by index"""
         nodes = self.list_nodes()

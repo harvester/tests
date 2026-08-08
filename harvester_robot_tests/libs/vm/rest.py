@@ -2,6 +2,7 @@
 VM Rest Implementation - actual API calls using get_harvester_api_client()
 """
 import time
+import yaml
 from datetime import datetime, timedelta
 from utility.utility import get_harvester_api_client
 from utility.utility import get_retry_count_and_interval
@@ -37,6 +38,21 @@ class Rest(Base):
                 logging(f"Could not look up image UID for {image_id}: {e}",
                         level="WARNING")
             vm_spec.add_image("disk-0", image_id, image_uid=image_uid)
+
+        # Cloud-init: VMSpec already carries a cloudinitdisk with default
+        # user-data (and the qemu-guest-agent setup), so just merge the ssh
+        # key into it -- exactly what stopped_vm() does. The setter prepends
+        # the "#cloud-config" header for us.
+        if kwargs.get("user_data"):
+            vm_spec.user_data = kwargs["user_data"]
+        if kwargs.get("ssh_public_key"):
+            userdata = yaml.safe_load(vm_spec.user_data) or {}
+            userdata["ssh_authorized_keys"] = [kwargs["ssh_public_key"]]
+            vm_spec.user_data = yaml.dump(userdata)
+        if kwargs.get("network_data"):
+            vm_spec.network_data = kwargs["network_data"]
+        if kwargs.get("run_strategy"):
+            vm_spec.run_strategy = kwargs["run_strategy"]
 
         code, data = api.vms.create(vm_name, vm_spec)
         assert code == 201, f"Failed to create VM: {code}, {data}"
@@ -114,6 +130,97 @@ class Rest(Base):
         raise NotImplementedError(
             "get_disk_names is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the CPU cores declared in the VM spec.
+
+        Uses the version-aware VMSpec model instead of reading the raw VM
+        object, so callers do not have to know whether the cores live in
+        `domain.cpu.cores` or `domain.cpu.sockets` (the CPU/memory hot-plug
+        layout used from v1.8.0 onwards).
+        """
+        api = get_harvester_api_client()
+        code, data = api.vms.get(vm_name, namespace)
+        assert code == 200, f"Failed to get VM {vm_name}: {code}, {data}"
+        spec = api.vms.Spec.from_dict(data)
+        return int(spec.cpu_cores)
+
+    def get_vmi_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the CPU cores the running VMI is actually configured with.
+
+        There is no model for the VMI (it is a read-only status object), so
+        this reads `status.currentCPUTopology` -- the value kubevirt reports
+        for the live guest -- and falls back to the VMI spec on older
+        versions that do not populate the topology.
+        """
+        api = get_harvester_api_client()
+        code, data = api.vms.get_status(vm_name, namespace)
+        assert code == 200, f"Failed to get VMI {vm_name}: {code}, {data}"
+        topology = data.get('status', {}).get('currentCPUTopology') or {}
+        cores = topology.get('cores')
+        if cores is None:
+            cores = (data.get('spec', {}).get('domain', {})
+                     .get('cpu', {}).get('cores'))
+        if cores is None:
+            raise AssertionError(
+                f"VMI {namespace}/{vm_name} does not report CPU cores")
+        return int(cores)
+
+    def update_cpu_cores(self, vm_name, cores, namespace=DEFAULT_NAMESPACE):
+        """Update the VM's CPU cores through the Harvester REST API.
+
+        The VM is round-tripped through the VMSpec model
+        (`from_dict` -> `cpu_cores` -> `update`), which keeps
+        `domain.resources.limits.cpu` and the hot-plug related fields
+        consistent for us. The change only reaches the guest after the VM is
+        restarted (unless CPU hot-plug is enabled).
+        """
+        api = get_harvester_api_client()
+        cores = int(cores)
+        for i in range(self.retry_count):
+            code, data = api.vms.get(vm_name, namespace)
+            assert code == 200, f"Failed to get VM {vm_name}: {code}, {data}"
+
+            spec = api.vms.Spec.from_dict(data)
+            spec.cpu_cores = cores
+
+            code, data = api.vms.update(vm_name, spec, namespace)
+            if code == 200:
+                logging(f"Updated VM {namespace}/{vm_name} CPU cores to {cores}")
+                return data
+            if code == 409:
+                logging(f"Conflict when updating VM CPU, retrying ({i})...")
+                time.sleep(self.retry_interval)
+                continue
+            raise AssertionError(
+                f"Failed to update CPU of VM {namespace}/{vm_name}: "
+                f"{code}, {data}")
+
+        raise AssertionError(
+            f"Failed to update CPU of VM {namespace}/{vm_name} after "
+            f"{self.retry_count} attempts")
+
+    def wait_for_cpu_cores(self, vm_name, expected_cores,
+                           timeout=DEFAULT_TIMEOUT_SHORT,
+                           namespace=DEFAULT_NAMESPACE):
+        """Wait until the running VMI reports the expected CPU cores."""
+        expected_cores = int(expected_cores)
+        endtime = datetime.now() + timedelta(seconds=timeout)
+        current = None
+        while endtime > datetime.now():
+            try:
+                current = self.get_vmi_cpu_cores(vm_name, namespace)
+                if current == expected_cores:
+                    logging(f"VM {namespace}/{vm_name} reports "
+                            f"{current} CPU cores")
+                    return True
+            except AssertionError as e:
+                logging(f"Error checking VMI CPU cores: {e}")
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"VM {namespace}/{vm_name} did not report {expected_cores} CPU "
+            f"cores within {timeout}s (current: {current})")
 
     def start(self, vm_name):
         """Start a VM"""
@@ -196,6 +303,31 @@ class Rest(Base):
         """Wait until the VM's guest agent disconnects (AgentConnected
         condition is removed entirely)."""
         return self.wait_vm_condition(vm_name, "AgentConnected", None, timeout, namespace)
+
+    def get_ip_address(self, vm_name, network="default",
+                       namespace=DEFAULT_NAMESPACE):
+        """Return the IP address the VMI reports for `network`."""
+        api = get_harvester_api_client()
+        code, data = api.vms.get_status(vm_name, namespace)
+        assert code == 200, f"Failed to get VMI {vm_name}: {code}, {data}"
+        interfaces = data.get('status', {}).get('interfaces', [])
+        for iface in interfaces:
+            if iface.get('name') == network and iface.get('ipAddress'):
+                return iface['ipAddress']
+        raise AssertionError(
+            f"VM {namespace}/{vm_name} has no IP address on network "
+            f"{network!r} (interfaces: {interfaces})")
+
+    def get_node_name(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the name of the node the VM is currently running on."""
+        api = get_harvester_api_client()
+        code, data = api.vms.get_status(vm_name, namespace)
+        assert code == 200, f"Failed to get VMI {vm_name}: {code}, {data}"
+        node_name = data.get('status', {}).get('nodeName')
+        if not node_name:
+            raise AssertionError(
+                f"VM {namespace}/{vm_name} is not scheduled to a node yet")
+        return node_name
 
     def migrate(self, vm_name, target_node):
         """Migrate VM to target node"""
