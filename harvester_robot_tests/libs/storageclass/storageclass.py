@@ -21,6 +21,13 @@ class StorageClass(Base):
             logging(e)
             return self.rest.create(name, data_engine, number_of_replicas, disk_selector)
 
+    def create_lvm(self, name, vg_name, vg_type, node):
+        try:
+            return self.crd.create_lvm(name, vg_name, vg_type, node)
+        except NotImplementedError as e:
+            logging(e)
+            return self.rest.create_lvm(name, vg_name, vg_type, node)
+
     def delete(self, name):
         try:
             return self.crd.delete(name)

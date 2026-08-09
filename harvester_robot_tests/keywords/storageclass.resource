@@ -5,6 +5,12 @@ Resource         variables.resource
 
 
 *** Keywords ***
+Create LVM Storage Class
+    [Arguments]    ${name}    ${vg_name}    ${vg_type}    ${node}
+    storage_keywords.create_lvm_storageclass    ${name}    ${vg_name}    ${vg_type}    ${node}
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Storage Class Is Present    ${name}
+
 Create Storage Class
     [Arguments]    ${name}    ${data_engine}    ${number_of_replicas}    ${disk_selector}
     [Documentation]    Create a StorageClass with Longhorn provisioner.
