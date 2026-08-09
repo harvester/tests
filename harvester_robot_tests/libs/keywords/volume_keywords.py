@@ -140,10 +140,13 @@ class volume_keywords:
         logging(f'Deleting snapshot {snapshot_name} from volume {volume_name}')
         self.volume.delete_snapshot(volume_name, snapshot_name)
 
-    def restore_volume_from_snapshot(self, volume_name, snapshot_name, new_volume_name):
+    def restore_volume_from_snapshot(self, volume_name, snapshot_name, new_volume_name,
+                                     **kwargs):
         """Restore volume from snapshot"""
         logging(f'Restoring volume from snapshot {snapshot_name}')
-        self.volume.restore_from_snapshot(volume_name, snapshot_name, new_volume_name)
+        self.volume.restore_from_snapshot(
+            volume_name, snapshot_name, new_volume_name, **kwargs
+        )
 
     def wait_for_snapshot_ready(self, snapshot_name, timeout=DEFAULT_TIMEOUT_SHORT):
         """Wait for a volume snapshot to become ready to use"""

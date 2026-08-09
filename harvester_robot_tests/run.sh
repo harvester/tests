@@ -29,8 +29,11 @@ TEST_SUITE=""
 TEST_FILE=""
 PROCESSES=""
 ORDERING=""
+EXCLUDE_LVM=""
+LVM_REQUESTED=""
 STRATEGY=""
 INCLUDE_TAG=""
+INCLUDE_TAG_VALUE=""
 EXCLUDE_TAG=""
 VARIABLES=""
 LOG_LEVEL=${ROBOT_LOG_LEVEL:-INFO}
@@ -70,6 +73,7 @@ Examples:
     $0 -L DEBUG                           # Debug logging
     $0 -p 3 -i volume                     # Run volume suites in parallel (3 processes)
     $0 -p 3 -o tests/regression/rancher/rancher-ordering.txt -f tests/regression/rancher/  # Shared setup, parallel rancher suites
+    $0 -p 3 -f tests/regression/addon/lvm   # Ordered LVM setup, parallel suites, and cleanup
     $0 -S rest -i volume                  # Run volume suites against the REST API
     $0 -i pr-baseline -p 8                # Run the PR baseline (image+VM+volume) in parallel
 
@@ -87,7 +91,7 @@ while getopts "t:s:f:i:e:v:L:d:p:o:S:Wh" opt; do
         t) TEST_CASE="--test \"$OPTARG\"" ;;
         s) TEST_SUITE="--suite \"$OPTARG\"" ;;
         f) TEST_FILE="$OPTARG" ;;
-        i) INCLUDE_TAG="--include $OPTARG" ;;
+        i) INCLUDE_TAG="--include $OPTARG"; INCLUDE_TAG_VALUE="$OPTARG" ;;
         e) EXCLUDE_TAG="--exclude $OPTARG" ;;
         v) VARIABLES="$VARIABLES --variable $OPTARG" ;;
         L) LOG_LEVEL=$OPTARG ;;
@@ -100,6 +104,42 @@ while getopts "t:s:f:i:e:v:L:d:p:o:S:Wh" opt; do
         \?) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
     esac
 done
+
+if [ -n "$ORDERING" ] && [ -z "$PROCESSES" ]; then
+    echo -e "${RED}Error: -o requires parallel execution with -p${NC}"
+    exit 1
+fi
+
+INCLUDE_TAG_LOWER=${INCLUDE_TAG_VALUE,,}
+STRATEGY_LOWER=${STRATEGY,,}
+
+if [[ "$TEST_FILE" == *"addon/lvm"* ]]; then
+    LVM_REQUESTED=true
+elif [[ "$ORDERING" == *"lvm-order.txt"* ]]; then
+    LVM_REQUESTED=true
+    TEST_FILE="tests/regression/addon/lvm"
+elif [ "$INCLUDE_TAG_LOWER" = "lvm" ]; then
+    LVM_REQUESTED=true
+    TEST_FILE="tests/regression/addon/lvm"
+elif [[ "$INCLUDE_TAG_LOWER" == *"lvm"* ]]; then
+    echo -e "${RED}Error: LVM tag expressions are not supported${NC}"
+    echo "Use: -f tests/regression/addon/lvm"
+    exit 1
+fi
+
+if [ -n "$LVM_REQUESTED" ]; then
+    if [ "$STRATEGY_LOWER" = "rest" ]; then
+        echo -e "${RED}Error: LVM suites require the CRD operation strategy${NC}"
+        exit 1
+    fi
+    if [ -n "$PROCESSES" ] && [ -z "$ORDERING" ]; then
+        ORDERING="tests/regression/addon/lvm/lvm-order.txt"
+    fi
+else
+    # LVM consumes a physical test disk and requires staged cleanup. Broad
+    # serial and parallel runs exclude it unless the caller opts in explicitly.
+    EXCLUDE_LVM=true
+fi
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
@@ -153,6 +193,7 @@ ROBOT_CMD="$ROBOT_CMD --consolecolors on"
 [ -n "$TEST_SUITE" ] && ROBOT_CMD="$ROBOT_CMD $TEST_SUITE"
 [ -n "$INCLUDE_TAG" ] && ROBOT_CMD="$ROBOT_CMD $INCLUDE_TAG"
 [ -n "$EXCLUDE_TAG" ] && ROBOT_CMD="$ROBOT_CMD $EXCLUDE_TAG"
+[ -n "$EXCLUDE_LVM" ] && ROBOT_CMD="$ROBOT_CMD --exclude lvm"
 [ -n "$VARIABLES" ] && ROBOT_CMD="$ROBOT_CMD $VARIABLES"
 
 # Add test path - if TEST_FILE is specified, use it; otherwise use tests/ directory

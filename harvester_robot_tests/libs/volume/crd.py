@@ -668,9 +668,20 @@ class CRD(Base):
     def delete_snapshot(self, volume_name, snapshot_name):
         """Delete volume snapshot"""
         namespace = DEFAULT_NAMESPACE
+        obj_api = client.CustomObjectsApi()
+        content_name = None
 
         try:
-            obj_api = client.CustomObjectsApi()
+            snapshot = obj_api.get_namespaced_custom_object(
+                group="snapshot.storage.k8s.io",
+                version="v1",
+                namespace=namespace,
+                plural="volumesnapshots",
+                name=snapshot_name
+            )
+            content_name = snapshot.get("status", {}).get(
+                "boundVolumeSnapshotContentName"
+            )
             obj_api.delete_namespaced_custom_object(
                 group="snapshot.storage.k8s.io",
                 version="v1",
@@ -679,16 +690,63 @@ class CRD(Base):
                 name=snapshot_name
             )
 
-            logging(f"VolumeSnapshot {namespace}/{snapshot_name} deleted")
+            logging(f"VolumeSnapshot {namespace}/{snapshot_name} delete requested")
         except ApiException as e:
-            if e.status != 404:
-                logging(f"Failed to delete snapshot: {e}")
-                raise
+            if e.status == 404:
+                return
+            logging(f"Failed to delete snapshot: {e}")
+            raise
 
-    def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name):
+        deadline = time.time() + DEFAULT_TIMEOUT_SHORT
+        while time.time() < deadline:
+            snapshot_deleted = False
+            content_deleted = content_name is None
+            try:
+                obj_api.get_namespaced_custom_object(
+                    group="snapshot.storage.k8s.io",
+                    version="v1",
+                    namespace=namespace,
+                    plural="volumesnapshots",
+                    name=snapshot_name
+                )
+            except ApiException as e:
+                if e.status == 404:
+                    snapshot_deleted = True
+                else:
+                    raise
+
+            if content_name:
+                try:
+                    obj_api.get_cluster_custom_object(
+                        group="snapshot.storage.k8s.io",
+                        version="v1",
+                        plural="volumesnapshotcontents",
+                        name=content_name
+                    )
+                except ApiException as e:
+                    if e.status == 404:
+                        content_deleted = True
+                    else:
+                        raise
+
+            if snapshot_deleted and content_deleted:
+                logging(
+                    f"VolumeSnapshot {namespace}/{snapshot_name} and content deleted"
+                )
+                return
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"VolumeSnapshot {namespace}/{snapshot_name} was not fully deleted "
+            f"within {DEFAULT_TIMEOUT_SHORT}s"
+        )
+
+    def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name, **kwargs):
         """Restore volume from snapshot"""
         namespace = DEFAULT_NAMESPACE
-        storage_class = DEFAULT_STORAGE_CLASS
+        storage_class = kwargs.get('storage_class', DEFAULT_STORAGE_CLASS)
+        access_mode = kwargs.get('access_mode', ACCESS_MODE_RWX)
+        volume_mode = kwargs.get('volume_mode', 'Block')
 
         # Get original volume to get size
         original_pvc = self.get(volume_name, namespace)
@@ -706,8 +764,8 @@ class CRD(Base):
                 }
             },
             "spec": {
-                "accessModes": [ACCESS_MODE_RWX],
-                "volumeMode": "Block",
+                "accessModes": [access_mode],
+                "volumeMode": volume_mode,
                 "storageClassName": storage_class,
                 "resources": {
                     "requests": {

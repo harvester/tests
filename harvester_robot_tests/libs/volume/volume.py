@@ -89,8 +89,10 @@ class Volume(Base):
     def delete_snapshot(self, volume_name, snapshot_name):
         return self.volume.delete_snapshot(volume_name, snapshot_name)
 
-    def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name):
-        return self.volume.restore_from_snapshot(volume_name, snapshot_name, new_volume_name)
+    def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name, **kwargs):
+        return self.volume.restore_from_snapshot(
+            volume_name, snapshot_name, new_volume_name, **kwargs
+        )
 
     def wait_for_snapshot_ready(self, snapshot_name, timeout):
         return self.volume.wait_for_snapshot_ready(snapshot_name, timeout)
