@@ -53,7 +53,7 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name):
+    def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name, **kwargs):
         """Restore a volume from a snapshot"""
         pass
 
