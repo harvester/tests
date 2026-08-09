@@ -685,3 +685,6 @@ class Rest(Base):
             'image_tag': image_values.get('tag') or spec.get('image/tag'),
             'driver_location': parsed_values.get('driverLocation') or spec.get('driverLocation')
         }
+
+    def install_addon_yaml(self, url):
+        raise NotImplementedError("REST implementation not available for Addon.install_yaml")

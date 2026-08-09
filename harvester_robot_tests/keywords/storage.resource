@@ -7,6 +7,36 @@ Resource         host.resource
 
 
 *** Keywords ***
+Get LVM Suitable Disks
+    [Arguments]    ${min_size_gib}=50
+    ${disks}=    storage_keywords.identify_lvm_suitable_disks    ${min_size_gib}
+    Should Not Be Empty    ${disks}    No unprovisioned disk >= ${min_size_gib} GiB is available for LVM
+    RETURN    ${disks}
+
+Label LVM Test Disks
+    [Arguments]    ${disk_by_node}    ${run_id}
+    storage_keywords.label_lvm_test_disks    ${disk_by_node}    ${run_id}
+
+Get LVM Test Disks
+    [Arguments]    ${run_id}
+    ${disks}=    storage_keywords.get_lvm_test_disks    ${run_id}
+    Should Not Be Empty    ${disks}    No LVM test disks found for run ${run_id}
+    RETURN    ${disks}
+
+Get LVM Volume Group Node
+    [Arguments]    ${run_id}    ${vg_name}
+    ${node}=    storage_keywords.get_lvm_vg_node    ${run_id}    ${vg_name}
+    RETURN    ${node}
+
+Create LVM Volume Groups
+    [Arguments]    ${disk_by_node}    ${vg_type}=dm-thin
+    ${vg_node_map}=    storage_keywords.create_lvm_volume_groups    ${disk_by_node}    ${vg_type}
+    RETURN    ${vg_node_map}
+
+Cleanup LVM Volume Groups
+    [Arguments]    ${disk_by_node}
+    storage_keywords.cleanup_lvm_volume_groups    ${disk_by_node}
+
 # instance-manager (IM)
 Standard Nodes Have Running v2 IM Pods
     ${standard_nodes_count}=    host.Count Standard Nodes

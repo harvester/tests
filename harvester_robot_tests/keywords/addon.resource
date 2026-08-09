@@ -5,7 +5,14 @@ Library          Process
 Resource         variables.resource
 Resource         common.resource
 
+*** Variables ***
+${LVM_ADDON_URL}    https://raw.githubusercontent.com/harvester/experimental-addons/main/harvester-csi-driver-lvm/harvester-csi-driver-lvm.yaml
+
 *** Keywords ***
+Install Addon From URL
+    [Arguments]    ${url}
+    addon_keywords.install_addon_yaml    ${url}
+
 Get Initial State
     [Arguments]    ${addon_name}
     [Documentation]    Get initial state of addon (enabled/disabled)

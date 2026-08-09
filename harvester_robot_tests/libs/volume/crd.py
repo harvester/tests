@@ -40,6 +40,7 @@ class CRD(Base):
         namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
         storage_class = kwargs.get('storage_class', DEFAULT_STORAGE_CLASS)
         access_mode = kwargs.get('access_mode', ACCESS_MODE_RWX)
+        volume_mode = kwargs.get('volume_mode', 'Block')
 
         # Build PVC manifest
         body = {
@@ -57,7 +58,7 @@ class CRD(Base):
             },
             "spec": {
                 "accessModes": [access_mode],
-                "volumeMode": "Block",
+                "volumeMode": volume_mode,
                 "storageClassName": storage_class,
                 "resources": {
                     "requests": {

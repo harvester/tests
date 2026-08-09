@@ -142,3 +142,24 @@ class storage_keywords:
 
     def get_storageclass(self, name):
         return self.storageclass.get(name)
+
+    def identify_lvm_suitable_disks(self, min_size_gib=50):
+        return self.blockdevice.identify_lvm_suitable(min_size_gib)
+
+    def label_lvm_test_disks(self, disk_by_node, run_id):
+        return self.blockdevice.label_lvm_test_disks(disk_by_node, run_id)
+
+    def get_lvm_test_disks(self, run_id):
+        return self.blockdevice.get_lvm_test_disks(run_id)
+
+    def get_lvm_vg_node(self, run_id, vg_name):
+        return self.blockdevice.get_lvm_vg_node(run_id, vg_name)
+
+    def create_lvm_volume_groups(self, disk_by_node, vg_type="dm-thin"):
+        return self.blockdevice.create_lvm_volume_groups(disk_by_node, vg_type)
+
+    def cleanup_lvm_volume_groups(self, disk_by_node):
+        return self.blockdevice.cleanup_lvm_volume_groups(disk_by_node)
+
+    def create_lvm_storageclass(self, name, vg_name, vg_type, node):
+        return self.storageclass.create_lvm(name, vg_name, vg_type, node)

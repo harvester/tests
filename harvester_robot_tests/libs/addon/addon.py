@@ -110,3 +110,7 @@ class Addon(Base):
     def get_nvidia_toolkit_configuration(self, addon_name):
         """Get nvidia-driver-toolkit addon configuration - delegates to implementation"""
         return self.addon.get_nvidia_toolkit_configuration(addon_name)
+
+    def install_addon_yaml(self, url):
+        """Install an addon by applying a YAML manifest from a URL - delegates to implementation"""
+        return self.addon.install_addon_yaml(url)

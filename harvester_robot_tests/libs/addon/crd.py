@@ -125,6 +125,15 @@ class CRD(Base):
                 # First find which namespace the addon is in
                 namespace = self._find_addon_namespace(addon_name)
                 if not namespace:
+                    if attempt < max_retries - 1:
+                        logging(
+                            f"Addon {addon_name} is not visible yet, retrying in "
+                            f"{retry_delay}s... ({attempt+1}/{max_retries})",
+                            level='WARNING'
+                        )
+                        time.sleep(retry_delay)
+                        retry_delay = min(retry_delay * 2, 16)
+                        continue
                     raise Exception(f"Addon {addon_name} not found in any namespace")
 
                 patch_body = {
@@ -172,6 +181,15 @@ class CRD(Base):
                 # First find which namespace the addon is in
                 namespace = self._find_addon_namespace(addon_name)
                 if not namespace:
+                    if attempt < max_retries - 1:
+                        logging(
+                            f"Addon {addon_name} is not visible yet, retrying in "
+                            f"{retry_delay}s... ({attempt+1}/{max_retries})",
+                            level='WARNING'
+                        )
+                        time.sleep(retry_delay)
+                        retry_delay = min(retry_delay * 2, 16)
+                        continue
                     raise Exception(f"Addon {addon_name} not found in any namespace")
 
                 patch_body = {
@@ -664,3 +682,16 @@ class CRD(Base):
             'image_tag': image_values.get('tag') or spec.get('image/tag'),
             'driver_location': parsed_values.get('driverLocation') or spec.get('driverLocation')
         }
+
+    def install_addon_yaml(self, url):
+        """Install an addon by applying a YAML manifest from a URL.
+        This must be done BEFORE enabling, as some addons are not bundled in the Harvester ISO.
+        """
+        logging(f"Installing addon from URL: {url}")
+        result = subprocess.run(
+            ["kubectl", "apply", "-f", url],
+            capture_output=True, text=True, timeout=60
+        )
+        if result.returncode != 0:
+            raise Exception(f"Failed to install addon YAML from {url}: {result.stderr}")
+        logging(f"Addon YAML applied: {result.stdout.strip()}")

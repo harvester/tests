@@ -3,16 +3,24 @@
 Layer 4: Component and its implementation
 """
 
+import random
+import time
 from kubernetes import client
 from kubernetes.client.rest import ApiException
 from crd import get_cr, patch_cr
-from constant import HARVESTER_API_GROUP, HARVESTER_API_VERSION
-from utility.utility import logging
+from constant import (
+    HARVESTER_API_GROUP, HARVESTER_API_VERSION,
+    DEFAULT_TIMEOUT, GIBIBYTE,
+    LONGHORN_SYSTEM_NAMESPACE, LVM_VG_DM_THIN, LVM_VG_STRIPED,
+)
+from utility.utility import logging, get_retry_count_and_interval
 from .base import Base
 
 
 class CRD(Base):
     """CRD implementation for Blockdevice operations using Kubernetes API"""
+
+    LVM_TEST_RUN_LABEL = "harvesterhci.io/lvm-test-run"
 
     def __init__(self):
         """Initialize Kubernetes client"""
@@ -25,6 +33,7 @@ class CRD(Base):
             "plural": "blockdevices"
         }
         self.port_forward_process = None
+        _, self.retry_interval = get_retry_count_and_interval()
 
     def list(self, namespace):
         try:
@@ -75,3 +84,249 @@ class CRD(Base):
             )
         except ApiException as e:
             raise Exception(f"Failed to provision blockdevice {namespace}/{name}: {e}")
+
+    def identify_lvm_suitable(self, min_size_gib):
+        """Identify blockdevices >= min_size_gib suitable for LVM.
+        Returns dict {node_name: disk_name} with one disk per node.
+        """
+        min_size_bytes = int(min_size_gib) * GIBIBYTE
+
+        blockdevices = self.custom_api.list_namespaced_custom_object(
+            group=HARVESTER_API_GROUP,
+            version=HARVESTER_API_VERSION,
+            namespace=LONGHORN_SYSTEM_NAMESPACE,
+            plural="blockdevices"
+        ).get("items", [])
+
+        disk_by_node = {}
+        for bd in blockdevices:
+            node_name = bd.get("spec", {}).get("nodeName", "")
+            if not node_name:
+                continue
+
+            status = bd.get("status", {})
+            if status.get("state", "") != "Active":
+                continue
+
+            if status.get("provisionPhase", "") != "Unprovisioned":
+                continue
+
+            try:
+                size_bytes = int(
+                    bd.get("status", {})
+                    .get("deviceStatus", {})
+                    .get("capacity", {})
+                    .get("sizeBytes", 0)
+                )
+            except (ValueError, TypeError):
+                size_bytes = 0
+
+            if size_bytes < min_size_bytes:
+                continue
+
+            if node_name not in disk_by_node:
+                disk_name = bd.get("metadata", {}).get("name", "")
+                if disk_name:
+                    disk_by_node[node_name] = disk_name
+
+        logging(f"Suitable disks for LVM: {disk_by_node}")
+        return disk_by_node
+
+    def label_lvm_test_disks(self, disk_by_node, run_id):
+        """Label selected disks so a later Pabot stage can find them."""
+        for node_name, disk_name in disk_by_node.items():
+            patch_cr(
+                group=HARVESTER_API_GROUP,
+                version=HARVESTER_API_VERSION,
+                namespace=LONGHORN_SYSTEM_NAMESPACE,
+                plural="blockdevices",
+                name=disk_name,
+                body={
+                    "metadata": {
+                        "labels": {self.LVM_TEST_RUN_LABEL: str(run_id)}
+                    }
+                },
+            )
+            logging(
+                f"Labelled LVM test disk {disk_name} on {node_name} "
+                f"with run ID {run_id}"
+            )
+
+    def get_lvm_test_disks(self, run_id):
+        """Return {node_name: disk_name} selected by an earlier test stage."""
+        blockdevices = self.custom_api.list_namespaced_custom_object(
+            group=HARVESTER_API_GROUP,
+            version=HARVESTER_API_VERSION,
+            namespace=LONGHORN_SYSTEM_NAMESPACE,
+            plural="blockdevices",
+            label_selector=f"{self.LVM_TEST_RUN_LABEL}={run_id}",
+        ).get("items", [])
+
+        disk_by_node = {}
+        for bd in blockdevices:
+            node_name = bd.get("spec", {}).get("nodeName", "")
+            disk_name = bd.get("metadata", {}).get("name", "")
+            if node_name and disk_name:
+                disk_by_node[node_name] = disk_name
+        logging(f"LVM test disks for run {run_id}: {disk_by_node}")
+        return disk_by_node
+
+    def get_lvm_vg_node(self, run_id, vg_name):
+        """Find the node hosting a labelled LVM volume group."""
+        disk_by_node = self.get_lvm_test_disks(run_id)
+        for node_name, disk_name in disk_by_node.items():
+            bd = self.get(disk_name, LONGHORN_SYSTEM_NAMESPACE)
+            actual_vg = (
+                bd.get("spec", {}).get("provisioner", {})
+                .get("lvm", {}).get("vgName", "")
+            )
+            if actual_vg == vg_name:
+                return node_name
+        raise AssertionError(
+            f"Volume group {vg_name} for LVM test run {run_id} was not found"
+        )
+
+    def create_lvm_volume_groups(self, disk_by_node, vg_type):
+        """Create LVM volume groups on selected nodes.
+        Selects one node and creates only the VG requested by vg_type.
+        Returns dict {vg_name: node_name}.
+        """
+        _VG_TYPE_MAP = {
+            "dm-thin": LVM_VG_DM_THIN,
+            "striped": LVM_VG_STRIPED,
+        }
+        nodes = list(disk_by_node.keys())
+        if not nodes:
+            raise AssertionError("No nodes with suitable disks found for LVM")
+
+        vg_node_map = {}
+
+        selected_node = random.choice(nodes)
+        vg_name = _VG_TYPE_MAP.get(vg_type, LVM_VG_DM_THIN)
+        self.provision_lvm_disk(
+            disk_by_node[selected_node], selected_node, vg_name
+        )
+        vg_node_map[vg_name] = selected_node
+        logging(f"Assigned {vg_name} to node {selected_node}")
+
+        self.wait_for_vgs_active(vg_node_map)
+        return vg_node_map
+
+    def provision_lvm_disk(self, disk_name, node_name, vg_name):
+        """Provision a blockdevice for LVM with specified volume group"""
+        logging(f"Provisioning disk {disk_name} on {node_name} for VG {vg_name}")
+        patch_body = {
+            "spec": {
+                "provision": True,
+                "provisioner": {
+                    "lvm": {
+                        "vgName": vg_name
+                    }
+                }
+            }
+        }
+        try:
+            patch_cr(
+                group=HARVESTER_API_GROUP,
+                version=HARVESTER_API_VERSION,
+                namespace=LONGHORN_SYSTEM_NAMESPACE,
+                plural="blockdevices",
+                name=disk_name,
+                body=patch_body
+            )
+        except ApiException as e:
+            raise Exception(f"Failed to provision disk {disk_name} for VG {vg_name}: {e}")
+
+    def wait_for_vgs_active(self, vg_node_map, timeout=DEFAULT_TIMEOUT):
+        """Wait for all volume groups in vg_node_map to become active"""
+        endtime = time.time() + timeout
+        for vg_name, node_name in vg_node_map.items():
+            while time.time() < endtime:
+                try:
+                    blockdevices = self.custom_api.list_namespaced_custom_object(
+                        group=HARVESTER_API_GROUP,
+                        version=HARVESTER_API_VERSION,
+                        namespace=LONGHORN_SYSTEM_NAMESPACE,
+                        plural="blockdevices"
+                    ).get("items", [])
+
+                    for bd in blockdevices:
+                        bd_node = bd.get("spec", {}).get("nodeName", "")
+                        bd_vg = (bd.get("spec", {}).get("provisioner", {})
+                                 .get("lvm", {}).get("vgName", ""))
+                        if bd_node == node_name and bd_vg == vg_name:
+                            phase = bd.get("status", {}).get("provisionPhase", "")
+                            state = bd.get("status", {}).get("state", "")
+                            if phase == "Provisioned" and state == "Active":
+                                logging(f"VG {vg_name} on {node_name} is active")
+                                break
+                    else:
+                        time.sleep(self.retry_interval)
+                        continue
+                    break
+                except ApiException:
+                    time.sleep(self.retry_interval)
+            else:
+                raise AssertionError(f"VG {vg_name} on {node_name} not active within {timeout}s")
+
+    def cleanup_lvm_volume_groups(self, disk_by_node):
+        """Remove LVM provisioning from disks"""
+        deadline = time.time() + DEFAULT_TIMEOUT
+        pending = dict(disk_by_node)
+        while pending and time.time() < deadline:
+            for node, disk_name in list(pending.items()):
+                try:
+                    blockdevice = self.get(disk_name, LONGHORN_SYSTEM_NAMESPACE)
+                    phase = blockdevice.get("status", {}).get("provisionPhase", "")
+                    if phase == "Unprovisioned":
+                        logging(f"LVM disk {disk_name} on {node} is unprovisioned")
+                        del pending[node]
+                        continue
+
+                    # NDM rejects this while an informer still sees a PV using
+                    # an LVM StorageClass for the VG. Retry until workload
+                    # teardown and the informer caches have converged.
+                    patch_cr(
+                        group=HARVESTER_API_GROUP,
+                        version=HARVESTER_API_VERSION,
+                        namespace=LONGHORN_SYSTEM_NAMESPACE,
+                        plural="blockdevices",
+                        name=disk_name,
+                        body={"spec": {"provision": False}}
+                    )
+                    logging(
+                        f"Requested LVM cleanup for disk {disk_name} on {node}"
+                    )
+                except ApiException as e:
+                    logging(
+                        f"LVM cleanup for disk {disk_name} is not ready yet: {e}",
+                        level="WARNING",
+                    )
+            if pending:
+                time.sleep(self.retry_interval)
+
+        if pending:
+            raise AssertionError(
+                f"LVM disks were not unprovisioned within {DEFAULT_TIMEOUT}s: {pending}"
+            )
+
+        for node, disk_name in disk_by_node.items():
+            try:
+                patch_cr(
+                    group=HARVESTER_API_GROUP,
+                    version=HARVESTER_API_VERSION,
+                    namespace=LONGHORN_SYSTEM_NAMESPACE,
+                    plural="blockdevices",
+                    name=disk_name,
+                    body={
+                        "metadata": {
+                            "labels": {self.LVM_TEST_RUN_LABEL: None}
+                        }
+                    },
+                )
+                logging(f"Removed LVM test label from disk {disk_name} on {node}")
+            except ApiException as e:
+                logging(
+                    f"Error removing LVM test label from disk {disk_name}: {e}",
+                    level="WARNING",
+                )

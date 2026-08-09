@@ -6,7 +6,7 @@ Layer 4: Component and its implementation
 from kubernetes import client
 from kubernetes.client.rest import ApiException
 from utility.utility import logging
-from constant import LABEL_TEST, LABEL_TEST_VALUE
+from constant import LABEL_TEST, LABEL_TEST_VALUE, LVM_PROVISIONER
 from .base import Base
 
 
@@ -67,6 +67,30 @@ class CRD(Base):
             )
         except ApiException as e:
             raise Exception(f"Failed to create StorageClass {name}: {e}")
+
+    def create_lvm(self, name, vg_name, vg_type, node):
+        """Create a node-local StorageClass for the LVM CSI driver."""
+        if self.get(name):
+            raise Exception(f"StorageClass {name} already exists")
+        body = {
+            "apiVersion": "storage.k8s.io/v1",
+            "kind": "StorageClass",
+            "metadata": {"name": name, "labels": {LABEL_TEST: LABEL_TEST_VALUE}},
+            "provisioner": LVM_PROVISIONER,
+            "allowVolumeExpansion": True,
+            "reclaimPolicy": "Delete",
+            "volumeBindingMode": "WaitForFirstConsumer",
+            "parameters": {"node": node, "vgName": vg_name, "type": vg_type},
+            "allowedTopologies": [{
+                "matchLabelExpressions": [{
+                    "key": "topology.lvm.csi/node",
+                    "values": [node],
+                }],
+            }],
+        }
+        return self.custom_api.create_cluster_custom_object(
+            **self.common_parameters, body=body
+        )
 
     def delete(self, name):
         try:
