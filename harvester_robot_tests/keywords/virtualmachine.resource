@@ -176,3 +176,32 @@ Update Volume Size to ${new_size}Gi From VM
     [Arguments]    ${vm_name}    ${disk_name}
     [Documentation]    Update the size of a VM disk
     vm_keywords.update_vm_disk_size    ${vm_name}    ${disk_name}    ${new_size}Gi
+
+Execute Command In VM
+    [Arguments]    ${vm_name}    ${command}    ${username}    ${pkey}=${None}
+    [Documentation]    Execute a command inside the VM's guest OS over SSH,
+    ...    using the Harvester host node running the VM as a jump host
+    ...    (see SSH_PRIVATE_KEY in variables.resource).
+    ...    Returns the combined stdout and stderr as a single value.
+    ${output}=    vm_keywords.exec_command_in_vm    ${vm_name}    ${command}
+    ...    ${username}    pkey=${pkey}
+    RETURN    ${output}
+
+VM cloud-init should be done
+    [Arguments]    ${vm_name}    ${username}    ${pkey}=${None}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Poll `cloud-init status` inside the VM guest over SSH
+    ...    until it reports done.
+    vm_keywords.wait_for_vm_cloudinit_done    ${vm_name}    ${username}
+    ...    pkey=${pkey}    timeout=${timeout}
+
+Get VM CPU Cores
+    [Arguments]    ${vm_name}
+    [Documentation]    Get the VM spec's requested CPU core count
+    ${cores}=    vm_keywords.get_vm_cpu_cores    ${vm_name}
+    RETURN    ${cores}
+
+VM CPU is updated to ${cpu_cores}
+    [Arguments]    ${vm_name}
+    [Documentation]    Update the VM's CPU core count
+    vm_keywords.update_vm_cpu_cores    ${vm_name}    ${cpu_cores}
+

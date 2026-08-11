@@ -229,6 +229,8 @@ The `.env.example` file contains all available configuration options:
 - `HARVESTER_ENDPOINT` - Harvester API endpoint
 - `HARVESTER_USERNAME` - Admin username
 - `HARVESTER_PASSWORD` - Admin password
+- `SSH_PRIVATE_KEY` - SSH private key (PEM) used to access the Harvester host
+  node, e.g. as a jump host to reach VM guests (see `Execute Command In VM`)
 - `VLAN_ID` - VLAN ID for network tests
 - `VLAN_NIC` - Network interface for VLAN (default: `mgmt`)
 - `BACKUP_TARGET_NFS_ENDPOINT` - NFS endpoint (`nfs://host/path`) used to

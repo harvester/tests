@@ -4,11 +4,13 @@ VM Keywords - creates VM() instance and delegates - NO direct API calls!
 """
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
+from time import sleep
 
 # Add the path to the utility module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
 from utility.utility import logging # noqa E402
+from utility.ssh import exec_command_in_vm # noqa E402
 from vm import VM # noqa E402
 from constant import DEFAULT_TIMEOUT, DEFAULT_NAMESPACE # noqa E402
 
@@ -181,3 +183,52 @@ class vm_keywords:
     def update_vm_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
         """Update VM disk size via volumeClaimTemplates annotation."""
         self.vm.update_disk_size(vm_name, disk_name, new_size, namespace)
+
+    def get_vm_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Get the VM spec's requested CPU core count."""
+        return self.vm.get_cpu_cores(vm_name, namespace)
+
+    def update_vm_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE):
+        """Update the VM's CPU core count (spec.template.spec.domain.cpu.cores)."""
+        logging(f'Updating VM {vm_name} CPU cores to {cpu_cores}')
+        self.vm.update_cpu_cores(vm_name, cpu_cores, namespace)
+
+    def exec_command_in_vm(
+        self, vm_name, command, username, pkey=None, network="default",
+        namespace=DEFAULT_NAMESPACE, timeout=DEFAULT_TIMEOUT
+    ):
+        """Execute a command inside the VM's guest OS over SSH.
+
+        SSHes into the Harvester host node currently running the VM (using
+        the SSH_PRIVATE_KEY environment variable) and uses it as a jump host
+        to reach the VM's guest OS.
+
+        Returns: output (combined stdout and stderr)
+        """
+        logging(f'Executing command in VM {vm_name}: {command}')
+        return exec_command_in_vm(
+            vm_name, command, username, pkey, network, namespace, timeout
+        )
+
+    def wait_for_vm_cloudinit_done(
+        self, vm_name, username, pkey=None, network="default",
+        namespace=DEFAULT_NAMESPACE, timeout=DEFAULT_TIMEOUT
+    ):
+        """Poll `cloud-init status` inside the VM guest over SSH until it
+        reports done. Returns the last output.
+        """
+        logging(f'Waiting for cloud-init to finish inside VM {vm_name}')
+        endtime = datetime.now() + timedelta(seconds=timeout)
+        output = ""
+        while datetime.now() < endtime:
+            output = exec_command_in_vm(
+                vm_name, "cloud-init status", username, pkey, network,
+                namespace, timeout
+            )
+            if 'done' in output:
+                return output
+            sleep(3)
+        raise AssertionError(
+            f"VM {vm_name} cloud-init did not finish within {timeout}s, "
+            f"last status: {output}"
+        )

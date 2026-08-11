@@ -12,6 +12,7 @@ from utility.utility import generate_name_with_suffix  # noqa E402
 from utility.utility import init_harvester_api_client  # noqa E402
 from utility.utility import init_k8s_api_client  # noqa E402
 from utility.utility import logging  # noqa E402
+from utility.ssh import generate_ssh_keypair  # noqa E402
 from constant import LONGHORN_NAMESPACE  # noqa E402
 
 
@@ -51,6 +52,13 @@ class common_keywords:
         target = _extract_release(str(version))
         assert target is not None, f"Not a version string: {version}"
         return release >= target
+
+    def generate_ssh_keypair(self):
+        """Generate a fresh RSA keypair for injecting into a VM's cloud-init
+        ssh_authorized_keys (public) and guest SSH login (private).
+        Returns: (public_key, private_key)
+        """
+        return generate_ssh_keypair()
 
     def cleanup_vms(self):
         """Cleanup VMs"""

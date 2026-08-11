@@ -10,6 +10,9 @@ ${HARVESTER_ENDPOINT}           %{HARVESTER_ENDPOINT=https://localhost}
 ${HARVESTER_USERNAME}           %{HARVESTER_USERNAME=admin}
 ${HARVESTER_PASSWORD}           %{HARVESTER_PASSWORD=password}
 
+# SSH private key (PEM) used to access the Harvester host node
+${SSH_PRIVATE_KEY}              %{SSH_PRIVATE_KEY=}
+
 # Timeouts and Intervals
 ${WAIT_TIMEOUT}                 %{WAIT_TIMEOUT=600}
 ${RETRY_INTERVAL}               3
@@ -17,7 +20,9 @@ ${SLEEP_TIMEOUT}                3
 
 # Images
 ${OPENSUSE_IMAGE_URL}           %{OPENSUSE_IMAGE_URL=https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.6/images/openSUSE-Leap-15.6.x86_64-NoCloud.qcow2}
+${OPENSUSE_SSH_USER}            opensuse
 ${UBUNTU_IMAGE_URL}             %{UBUNTU_IMAGE_URL=https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img}
+${UBUNTU_SSH_USER}              ubuntu
 
 # Network
 ${VLAN_ID}                      %{VLAN_ID=2011}
