@@ -801,6 +801,7 @@ class TestVMResource:
             code, data = api_client.vms.update(unique_vm_name, vm_spec)
             assert 200 == code, (code, data)
 
+    @pytest.mark.robot_ported
     def test_update_cpu(
         self, api_client, ssh_keypair, vm_shell_from_host, vm_checker,
         stopped_vm

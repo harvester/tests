@@ -35,6 +35,15 @@ Cluster Version Is At Least
     ${result}=    common_keywords.cluster_version_is_at_least    ${version}
     RETURN    ${result}
 
+Generate SSH Keypair
+    [Documentation]    Generate a fresh RSA keypair. The public key can be
+    ...    passed as `ssh_public_key` to `VM is created` (injected into the
+    ...    VM's cloud-init ssh_authorized_keys); the private key can then be
+    ...    passed as `pkey` to `Execute Command In VM`.
+    ...    Returns: (public_key, private_key)
+    ${public_key}    ${private_key}=    common_keywords.generate_ssh_keypair
+    RETURN    ${public_key}    ${private_key}
+
 Cleanup test resources
     [Documentation]    Clean up all resources created during tests
     Log    Cleaning up test resources

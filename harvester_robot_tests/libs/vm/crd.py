@@ -211,6 +211,28 @@ class CRD(Base):
         logging(f"Volume claim templates for VM {vm_name}: {volume_claim_templates}")
         logging(f"Volume spec_devices_disks for VM {vm_name}: {spec_devices_disks}")
 
+        # Optional cloud-init NoCloud disk: if ssh_public_key is provided,
+        # authorizes it for guest SSH access (used by exec_command_in_vm /
+        # Execute Command In VM). Without this the VM has no way to log in
+        # with the generated guest keypair.
+        ssh_public_key = kwargs.get("ssh_public_key")
+        if ssh_public_key:
+            spec_devices_disks.append(
+                {"name": "cloudinitdisk", "disk": {"bus": "virtio"}}
+            )
+            spec_volumes.append(
+                {
+                    "name": "cloudinitdisk",
+                    "cloudInitNoCloud": {
+                        "networkData": "",
+                        "userData": (
+                            "#cloud-config\n"
+                            f"ssh_authorized_keys:\n  - {ssh_public_key}\n"
+                        )
+                    }
+                }
+            )
+
         # Build complete VM spec matching Harvester structure
         body = {
             "apiVersion": f"{KUBEVIRT_API_GROUP}/{KUBEVIRT_API_VERSION}",
@@ -368,6 +390,35 @@ class CRD(Base):
                 if e.status != 404:
                     logging(f"Error deleting PVC {pvc}: {e}", "WARNING")
 
+        # PVC deletion is asynchronous (Longhorn/CSI finalizers keep the
+        # object around briefly after the delete call returns), so wait for
+        # each one to actually disappear. Without this, a caller that
+        # deletes the backing image right after VM is deleted can race
+        # ahead of the PVC teardown and get rejected by Harvester's
+        # validating webhook ("Cannot delete image ...: being used by
+        # volume ...").
+        for pvc in pvc_names:
+            self._wait_for_pvc_deleted(pvc, namespace)
+
+    def _wait_for_pvc_deleted(self, pvc_name, namespace=DEFAULT_NAMESPACE,
+                              timeout=DEFAULT_TIMEOUT_SHORT):
+        """Wait until a PVC is fully gone."""
+        endtime = time.time() + timeout
+        while time.time() < endtime:
+            try:
+                self.core_api.read_namespaced_persistent_volume_claim(
+                    name=pvc_name, namespace=namespace
+                )
+            except ApiException as e:
+                if e.status == 404:
+                    logging(f"PVC {namespace}/{pvc_name} is deleted")
+                    return
+                logging(f"Error checking PVC {pvc_name} deletion: {e}", "WARNING")
+                return
+            time.sleep(self.retry_interval)
+        logging(f"PVC {namespace}/{pvc_name} was not deleted within {timeout}s",
+                "WARNING")
+
     def get(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Get VirtualMachine."""
         return get_cr(
@@ -456,6 +507,21 @@ class CRD(Base):
         Implemented as stop + wait_for_stopped + start (pure CRD, reliable).
         start() restores the run strategy remembered in the vmRunStrategy
         annotation, so the VM comes back with its original strategy.
+
+        Unlike the REST implementation's restart() -- which calls
+        KubeVirt's native `restart` subresource action and then has to
+        diff the VMI's `metadata.uid` before/after to detect that a
+        genuinely new VMI came up (the old VMI can still be observed
+        reporting phase=Running with its old IP for a moment after
+        `restart` is triggered) -- no such check is needed here. That's
+        because wait_for_stopped() below requires BOTH
+        status.printableStatus == "Stopped" AND the VMI object being
+        completely gone (_vmi_is_gone()) before this method ever calls
+        start(). So by the time start() runs, the old VMI is already
+        confirmed deleted, and any VMI wait_for_running() subsequently
+        observes as Running is necessarily the new one -- there is no
+        window where a stale old VMI could be misidentified as the new
+        one, so comparing UIDs would be redundant here.
         """
         logging(f"Restarting VM {namespace}/{vm_name} via stop+start")
         self.stop(vm_name, namespace)
@@ -865,7 +931,12 @@ class CRD(Base):
                     name=vm_name
                 )
 
-                interfaces = vmi.get('status', {}).get('interfaces', [])
+                # status.interfaces can be explicitly null (not just
+                # missing) before the VM's networking is fully up, and
+                # dict.get(key, default) only applies the default when the
+                # key is absent -- not when its value is None -- so `or []`
+                # is needed to avoid a TypeError iterating over None.
+                interfaces = vmi.get('status', {}).get('interfaces') or []
 
                 # Check each requested network for IP address
                 got_all_ips = True
@@ -1074,3 +1145,41 @@ class CRD(Base):
             body=vm
         )
         logging(f"Updated disk size for {vm_name} {disk_name} to {new_size}")
+
+    def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the VM spec's requested CPU core count."""
+        vm = self.get(vm_name, namespace)
+        return vm['spec']['template']['spec']['domain']['cpu']['cores']
+
+    def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE,
+                         retry_count=5):
+        """Update a VM's CPU core count (spec.template.spec.domain.cpu.cores),
+        keeping resources.limits.cpu in sync. Retries on 409 Conflict (object
+        modified concurrently between the get and the replace) by re-fetching
+        and reapplying the change.
+        """
+        for attempt in range(retry_count):
+            vm = self.get(vm_name, namespace)
+            domain = vm['spec']['template']['spec']['domain']
+            domain.setdefault('cpu', {})['cores'] = int(cpu_cores)
+            domain.setdefault('resources', {}).setdefault(
+                'limits', {})['cpu'] = str(cpu_cores)
+
+            try:
+                replace_cr(
+                    group=KUBEVIRT_API_GROUP,
+                    version=KUBEVIRT_API_VERSION,
+                    namespace=namespace,
+                    plural=VIRTUALMACHINE_PLURAL,
+                    name=vm_name,
+                    body=vm
+                )
+                logging(f"Updated VM {namespace}/{vm_name} CPU cores to {cpu_cores}")
+                return
+            except ApiException as e:
+                if e.status == 409 and attempt < retry_count - 1:
+                    logging(f"Conflict updating VM {vm_name} CPU cores, "
+                            f"retrying ({attempt + 1}/{retry_count})...")
+                    time.sleep(1)
+                    continue
+                raise

@@ -2,6 +2,7 @@
 VM Rest Implementation - actual API calls using get_harvester_api_client()
 """
 import time
+import yaml
 from datetime import datetime, timedelta
 from utility.utility import get_harvester_api_client
 from utility.utility import get_retry_count_and_interval
@@ -22,6 +23,16 @@ class Rest(Base):
         api = get_harvester_api_client()
 
         vm_spec = api.vms.Spec(cpu, memory)
+
+        run_strategy = kwargs.get("run_strategy")
+        if run_strategy:
+            vm_spec.run_strategy = run_strategy
+
+        ssh_public_key = kwargs.get("ssh_public_key")
+        if ssh_public_key:
+            userdata = yaml.safe_load(vm_spec.user_data) or {}
+            userdata['ssh_authorized_keys'] = [ssh_public_key]
+            vm_spec.user_data = yaml.dump(userdata)
 
         if image_id:
             # The version-aware VMSpec decides whether the UID is needed
@@ -129,10 +140,42 @@ class Rest(Base):
         assert code in [200, 204], f"Failed to stop VM: {code}, {data}"
 
     def restart(self, vm_name):
-        """Restart a VM"""
+        """Restart a VM via KubeVirt's native `restart` subresource action,
+        then confirm the *new* VMI is actually up using its status.
+
+        `api.vms.get_status()` hits the VMI endpoint directly, so its
+        response is the VMI object itself -- including `metadata.uid`.
+        KubeVirt's restart deletes and recreates the VMI internally, so a
+        genuinely new VMI has a different `uid` than the one observed
+        before the restart was triggered. Waiting for the uid to change
+        (in addition to phase == Running) is what makes this reliable:
+        checking phase alone is not enough, because immediately after
+        triggering restart the *old* VMI can still be observed reporting
+        phase=Running (with its old IP) before it's actually torn down --
+        callers polling only on phase would see success instantly and then
+        try to use a VM that's about to disappear.
+        """
         api = get_harvester_api_client()
+
+        code, data = api.vms.get_status(vm_name)
+        old_uid = data.get('metadata', {}).get('uid') if code == 200 else None
+
+        logging(f"Restarting VM {vm_name}")
         code, data = api.vms.restart(vm_name)
         assert code in [200, 204], f"Failed to restart VM: {code}, {data}"
+
+        endtime = datetime.now() + timedelta(seconds=DEFAULT_TIMEOUT_SHORT)
+        while endtime > datetime.now():
+            code, data = api.vms.get_status(vm_name)
+            if code == 200:
+                new_uid = data.get('metadata', {}).get('uid')
+                phase = data.get('status', {}).get('phase')
+                if new_uid and new_uid != old_uid and phase == 'Running':
+                    logging(f"VM {vm_name} restarted (new VMI uid={new_uid})")
+                    return
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(f"VM {vm_name} did not restart within {DEFAULT_TIMEOUT_SHORT}s")
 
     def softreboot(self, vm_name):
         """Soft-reboot a running VM (guest-level reboot via qemu-guest-agent)"""
@@ -254,15 +297,31 @@ class Rest(Base):
         assert code == 200, f"Failed to get VM status: {code}, {data}"
         return data
 
-    def wait_for_ip_addresses(self, vm_name, networks, timeout):
+    def wait_for_ip_addresses(self, vm_name, networks=None, timeout=DEFAULT_TIMEOUT_SHORT):
         """Wait for VM to get IP addresses"""
         api = get_harvester_api_client()
+
+        if networks is None:
+            networks = ['default']
+        elif isinstance(networks, str):
+            # Handle case where Robot Framework passes string like "['default']"
+            import ast
+            try:
+                networks = ast.literal_eval(networks)
+            except (ValueError, SyntaxError):
+                # If it's just a plain string, treat it as a single network
+                networks = [networks]
 
         endtime = datetime.now() + timedelta(seconds=timeout)
         while endtime > datetime.now():
             code, data = api.vms.get_status(vm_name)
             if code == 200:
-                interfaces = data.get('status', {}).get('interfaces', [])
+                # status.interfaces can be explicitly null (not just
+                # missing) before the VM's networking is fully up, and
+                # dict.get(key, default) only applies the default when the
+                # key is absent -- not when its value is None -- so `or []`
+                # is needed to avoid a TypeError iterating over None.
+                interfaces = data.get('status', {}).get('interfaces') or []
                 got_all_ips = all(
                     any(iface['name'] == net and iface.get('ipAddress')
                         for iface in interfaces)
@@ -327,3 +386,36 @@ class Rest(Base):
         raise NotImplementedError(
             "update_disk_size is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the VM spec's requested CPU core count."""
+        api = get_harvester_api_client()
+        code, data = api.vms.get(vm_name, namespace)
+        assert code == 200, f"Failed to get VM: {code}, {data}"
+        return data['spec']['template']['spec']['domain']['cpu']['cores']
+
+    def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE,
+                         retry_count=5):
+        """Update a VM's CPU core count. Retries on 409 Conflict (object
+        modified concurrently between the get and the update) by re-fetching
+        and reapplying the change.
+        """
+        api = get_harvester_api_client()
+
+        for attempt in range(retry_count):
+            code, data = api.vms.get(vm_name, namespace)
+            assert code == 200, f"Failed to get VM: {code}, {data}"
+
+            vm_spec = api.vms.Spec.from_dict(data)
+            vm_spec.cpu_cores = int(cpu_cores)
+
+            code, data = api.vms.update(vm_name, vm_spec, namespace)
+            if code == 200:
+                logging(f"Updated VM {namespace}/{vm_name} CPU cores to {cpu_cores}")
+                return
+            if code == 409 and attempt < retry_count - 1:
+                logging(f"Conflict updating VM {vm_name} CPU cores, "
+                        f"retrying ({attempt + 1}/{retry_count})...")
+                time.sleep(1)
+                continue
+            raise AssertionError(f"Failed to update VM CPU cores: {code}, {data}")
