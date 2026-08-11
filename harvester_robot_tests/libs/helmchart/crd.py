@@ -8,13 +8,14 @@ from kubernetes import client
 from kubernetes.client.rest import ApiException
 from utility.utility import logging, get_retry_count_and_interval
 from constant import DEFAULT_TIMEOUT_LONG
+from helmchart.base import Base
 
 HELMCHART_GROUP = "helm.cattle.io"
 HELMCHART_VERSION = "v1"
 HELMCHART_PLURAL = "helmcharts"
 
 
-class CRD:
+class CRD(Base):
     """Kubernetes API operations for HelmChart CRs."""
 
     def __init__(self):
