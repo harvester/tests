@@ -80,6 +80,7 @@ def expected_default_templates(api_client):
 @pytest.mark.templates
 @pytest.mark.negative
 class TestVMTemplateNegative:
+    @pytest.mark.robot_ported
     def test_get_not_exist(self, api_client, unique_name):
         code, data = api_client.templates.get(unique_name)
 
@@ -149,6 +150,7 @@ class TestVMTemplate:
                 f"Still got {code} with {data}"
             )
 
+    @pytest.mark.robot_ported
     @pytest.mark.dependency(depends=["get_template"])
     def test_get_system_default(self, api_client):
         code, data = api_client.templates.get(namespace=DEFAULT_TEMPLATES_NAMESPACE)
@@ -157,6 +159,7 @@ class TestVMTemplate:
         names = {t['metadata']['name'] for t in data['items']}
         assert expected_default_templates(api_client) == names, (code, data)
 
+    @pytest.mark.robot_ported
     @pytest.mark.dependency(depends=["get_template"])
     def test_get_system_default_versions(self, api_client):
         code, tmpl_data = api_client.templates.get(namespace=DEFAULT_TEMPLATES_NAMESPACE)

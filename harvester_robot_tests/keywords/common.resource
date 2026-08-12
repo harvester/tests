@@ -26,6 +26,15 @@ Generate Unique Name
     ${name}=    common_keywords.generate_name_with_suffix    ${prefix1}    ${prefix2}    ${precise}
     RETURN    ${name}
 
+Cluster Version Is At Least
+    [Arguments]    ${version}
+    [Documentation]    True if the cluster release is >= the given version
+    ...  (e.g. '1.9.0'). Versionless dev builds (master/commit-hash) are
+    ...  treated as the newest release. Use this to pick version-dependent
+    ...  expectations.
+    ${result}=    common_keywords.cluster_version_is_at_least    ${version}
+    RETURN    ${result}
+
 Cleanup test resources
     [Documentation]    Clean up all resources created during tests
     Log    Cleaning up test resources

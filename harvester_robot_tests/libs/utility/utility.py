@@ -7,6 +7,7 @@ Includes the shared API client accessor function
 import logging as log
 import coloredlogs
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -69,6 +70,32 @@ def generate_name_with_suffix(kind, suffix, precise=True):
     format_str = "%m%d%H%M%S%f" if precise else "%m%d%H%M"
     timestamp = datetime.now().strftime(format_str)
     return "-".join([s for s in [kind, suffix, timestamp] if s])
+
+
+def _extract_release(text):
+    """Extract a (major, minor, micro) tuple from a version-ish string."""
+    match = re.search(r"v?(\d+)\.(\d+)(?:\.(\d+))?", text)
+    if match:
+        return tuple(int(g or 0) for g in match.groups())
+    return None
+
+
+def get_cluster_version_release():
+    """Best-effort (major, minor, micro) tuple of the Harvester cluster.
+
+    Reads the raw server-version setting and extracts the release, so
+    CI/dev builds with a non-semver version (e.g.
+    release-v1.9.0-rc5-b117-head or v1.8-head) still resolve. Returns
+    None for versionless values (master/commit-hash builds) - callers
+    should treat those as the newest release.
+    """
+    api = get_harvester_api_client()
+    code, data = api.get("apis/harvesterhci.io/v1beta1/settings/server-version")
+    release = _extract_release(data.get('value', '') if code == 200 else '')
+    if release is None:
+        logging("No release version found in server-version, "
+                "treating as the newest release")
+    return release
 
 
 def get_retry_count_and_interval():
