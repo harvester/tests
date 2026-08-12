@@ -118,7 +118,8 @@ class TestVMOverCommit:
             code, host = api_client.hosts.get(vmi['status']['nodeName'])
             curr_res = vm_calc.node_resources(host)['schedulable']
             node_res = nodes_res[vmi['status']['nodeName']]['schedulable']
-            assert 1 <= node_res['cpu'] - curr_res['cpu'] < 2
+            # round to avoid float precision error, e.g. 4.338 - 3.338 = 0.99999...
+            assert 1 <= round(node_res['cpu'] - curr_res['cpu'], 6) < 2
             # ???: K -> M -> G = 1000 ** 3 = 10 ** 9
             assert 10 ** 9 <= node_res['memory'] - curr_res['memory'] < 2 * 10 ** 9
         finally:
@@ -175,7 +176,7 @@ class TestVMOverCommit:
             code, host = api_client.hosts.get(vmi['status']['nodeName'])
             curr_res = vm_calc.node_resources(host)['schedulable']
             node_res = nodes_res[vmi['status']['nodeName']]['schedulable']
-            assert node_res['cpu'] - curr_res['cpu'] < 1
+            assert round(node_res['cpu'] - curr_res['cpu'], 6) < 1
             # ???: K -> M -> G = 1000 ** 3 = 10 ** 9
             assert node_res['memory'] - curr_res['memory'] < 1 * 10 ** 9
         finally:
