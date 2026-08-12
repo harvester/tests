@@ -15,6 +15,7 @@
 # To contact SUSE about this file by physical or electronic mail,
 # you may find current contact information at www.suse.com
 
+import re
 from time import sleep
 from datetime import datetime, timedelta
 
@@ -24,8 +25,54 @@ pytest_plugins = [
    "harvester_e2e_tests.fixtures.api_client"
   ]
 
-DEFAULT_TEMPLATES = 4
+# Default templates shipped in every supported version
+BASE_TEMPLATES = {
+    'iso-image-base-template',
+    'raw-image-base-template',
+    'windows-iso-image-base-template',
+    'windows-raw-image-base-template',
+}
+# Size-tiered Windows templates added in v1.9.0
+WINDOWS_TIERED_TEMPLATES = {
+    'windows-iso-small-template',
+    'windows-iso-medium-template',
+    'windows-iso-large-template',
+    'windows-w11-iso-template',
+}
 DEFAULT_TEMPLATES_NAMESPACE = 'harvester-public'
+
+
+def _extract_release(text):
+    """Extract a (major, minor, micro) tuple from a version-ish string."""
+    match = re.search(r"v?(\d+)\.(\d+)(?:\.(\d+))?", text)
+    if match:
+        return tuple(int(g or 0) for g in match.groups())
+    return None
+
+
+def cluster_release(api_client):
+    """Best-effort (major, minor, micro) of the cluster, None if unknown.
+
+    Dev/CI builds carry a non-semver server-version (e.g.
+    ``release-v1.9.0-rc5-b117-head``, ``v1.8-head`` or a commit hash), which
+    breaks ``api_client.cluster_version`` parsing, so extract the release
+    from the raw setting value instead. Versionless values (master/hash
+    builds) yield None.
+    """
+    code, data = api_client.settings.get('server-version')
+    return _extract_release(data.get('value', '') if code == 200 else '')
+
+
+def expected_default_templates(api_client):
+    """The exact default template set for the cluster's version.
+
+    Versionless dev builds (master/commit-hash) are treated as the newest
+    release.
+    """
+    release = cluster_release(api_client)
+    if release and release < (1, 9, 0):
+        return BASE_TEMPLATES
+    return BASE_TEMPLATES | WINDOWS_TIERED_TEMPLATES
 
 
 @pytest.mark.p0
@@ -107,11 +154,17 @@ class TestVMTemplate:
         code, data = api_client.templates.get(namespace=DEFAULT_TEMPLATES_NAMESPACE)
 
         assert 200 == code, (code, data)
-        assert DEFAULT_TEMPLATES == len(data['items']), (code, data)
+        names = {t['metadata']['name'] for t in data['items']}
+        assert expected_default_templates(api_client) == names, (code, data)
 
     @pytest.mark.dependency(depends=["get_template"])
     def test_get_system_default_versions(self, api_client):
+        code, tmpl_data = api_client.templates.get(namespace=DEFAULT_TEMPLATES_NAMESPACE)
+        assert 200 == code, (code, tmpl_data)
+
         code, data = api_client.templates.get_version(namespace=DEFAULT_TEMPLATES_NAMESPACE)
 
         assert 200 == code, (code, data)
-        assert DEFAULT_TEMPLATES == len(data['items']), (code, data)
+        names = {t['metadata']['name'] for t in tmpl_data['items']}
+        version_template_ids = {v['spec']['templateId'].split('/')[-1] for v in data['items']}
+        assert names == version_template_ids, (code, data)
