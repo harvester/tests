@@ -1,4 +1,4 @@
-FROM FROM python:3.10.16-bookworm@sha256:b240c5813c2fa23506dc314bb370da0e890dadce666c7886780757976dc3b54b
+FROM python:3.10.16-bookworm@sha256:b240c5813c2fa23506dc314bb370da0e890dadce666c7886780757976dc3b54b
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential findutils wget && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
