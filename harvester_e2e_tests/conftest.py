@@ -294,6 +294,7 @@ def pytest_configure(config):
     markers = [
         ("skip_if_version", "Mark test skip when cluster version hit the condition"),
         ("xfail_if_version", "Mark test xfail when cluster version hit the condition"),
+        ("robot_ported", "Mark test as ported to the Robot Framework suite"),
         ("smoke", "{_r} smoke testing"),
         ("sanity", "{_r} sanity testing"),
         ('p0', ("mark the test's priority is p0")),

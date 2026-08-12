@@ -33,6 +33,25 @@ class common_keywords:
         """Generate unique name with timestamp"""
         return generate_name_with_suffix(kind, suffix, precise)
 
+    def cluster_version_is_at_least(self, version):
+        """
+        Check the cluster release version against a lower bound
+
+        Args:
+            version: Version string like '1.9.0'
+
+        Returns:
+            bool: True if the cluster release >= version. Versionless dev
+                  builds (master/commit-hash) are treated as the newest.
+        """
+        from utility.utility import get_cluster_version_release, _extract_release
+        release = get_cluster_version_release()
+        if release is None:
+            return True
+        target = _extract_release(str(version))
+        assert target is not None, f"Not a version string: {version}"
+        return release >= target
+
     def cleanup_vms(self):
         """Cleanup VMs"""
         from vm import VM

@@ -22,6 +22,7 @@ LONGHORN_API_VERSION = "v1beta2"
 
 # Harvester Namespace
 HARVESTER_NAMESPACE = "harvester-system"
+HARVESTER_PUBLIC_NAMESPACE = "harvester-public"
 DEFAULT_NAMESPACE = "default"
 LONGHORN_NAMESPACE = "longhorn-system"
 
@@ -31,6 +32,8 @@ VIRTUALMACHINEIMAGE_PLURAL = "virtualmachineimages"
 VIRTUALMACHINEINSTANCE_PLURAL = "virtualmachineinstances"
 VIRTUALMACHINEBACKUP_PLURAL = "virtualmachinebackups"
 VIRTUALMACHINERESTORE_PLURAL = "virtualmachinerestores"
+VIRTUALMACHINETEMPLATE_PLURAL = "virtualmachinetemplates"
+VIRTUALMACHINETEMPLATEVERSION_PLURAL = "virtualmachinetemplateversions"
 VOLUME_PLURAL = "volumes"
 PERSISTENTVOLUMECLAIM_PLURAL = "persistentvolumeclaims"
 VIRTUALMACHINEBACKUP_PLURAL = "virtualmachinebackups"
