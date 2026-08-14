@@ -1740,13 +1740,26 @@ class CRD(Base):
                         continue
 
                     ready = status.get("ready") is True
+                    cluster_id = status.get("clusterName")
 
-                    conditions = {
-                        c.get("type"): c.get("status")
-                        for c in status.get("conditions", [])
-                    }
-                    connected = conditions.get("Connected") == "True"
-                    ready_cond = conditions.get("Ready") == "True"
+                    connected = False
+                    ready_cond = False
+                    if cluster_id:
+                        rc, mgmt_stdout, mgmt_stderr = self._run_kubectl_rancher([
+                            "get", "clusters.management.cattle.io",
+                            cluster_id, "-o", "json"
+                        ])
+                        if rc == 0 and mgmt_stdout:
+                            try:
+                                mgmt_status = json.loads(mgmt_stdout).get("status", {})
+                                mgmt_conditions = {
+                                    c.get("type"): c.get("status")
+                                    for c in mgmt_status.get("conditions", [])
+                                }
+                                connected = mgmt_conditions.get("Connected") == "True"
+                                ready_cond = mgmt_conditions.get("Ready") == "True"
+                            except json.JSONDecodeError:
+                                pass
 
                     if ready and (connected or ready_cond):
                         logging(
@@ -1757,8 +1770,8 @@ class CRD(Base):
                     if iteration % 10 == 0:
                         logging(
                             f"Import cluster not ready yet. "
-                            f"ready={ready}, connected={connected}, "
-                            f"ready_cond={ready_cond}"
+                            f"ready={ready}, cluster_id={cluster_id}, "
+                            f"connected={connected}, ready_cond={ready_cond}"
                         )
 
             except Exception as e:
@@ -1996,8 +2009,11 @@ class CRD(Base):
 
     def get_cluster_registration_command(self, cluster_name,
                                          timeout=DEFAULT_TIMEOUT_LONG):
-        """Get the insecure node registration command for a custom cluster."""
+        """Get the insecure node registration command for a custom cluster.
+        """
         logging(f"Getting registration command for cluster: {cluster_name}")
+
+        token = self._authenticate_rancher()
 
         # Get the management cluster ID
         cluster = self.get_rke2_cluster(cluster_name)
@@ -2011,7 +2027,10 @@ class CRD(Base):
             )
 
         logging(f"Management cluster ID: {cluster_id}")
-        token_name = "default-token"
+
+        url = (f"{self.rancher_endpoint.rstrip('/')}/v3/clusterRegistrationTokens/"
+               f"{cluster_id}:default-token")
+        headers = {"Authorization": f"Bearer {token}"}
 
         retry_count, retry_interval = get_retry_count_and_interval()
         end_time = time.time() + int(timeout)
@@ -2020,35 +2039,32 @@ class CRD(Base):
         while time.time() < end_time:
             attempt += 1
             try:
-                rc, stdout, stderr = self._run_kubectl_rancher([
-                    "get",
-                    "clusterregistrationtokens.management.cattle.io",
-                    token_name, "-n", cluster_id,
-                    "-o", "jsonpath={.status.insecureNodeCommand}"
-                ])
-
-                if attempt % 5 == 1 or rc != 0:
-                    logging(f"Attempt {attempt}: rc={rc}")
-
-                if rc == 0 and stdout and stdout.strip():
-                    logging("Got cluster registration command")
-                    return stdout.strip()
-                elif "NotFound" in stderr or "not found" in stderr.lower():
-                    if attempt % 5 == 1:
-                        logging(
-                            "Registration token not yet created, waiting..."
-                        )
-                else:
-                    if attempt % 5 == 1:
-                        logging(
-                            "insecureNodeCommand not yet available, "
-                            "waiting...",
-                            level="DEBUG"
-                        )
+                response = requests.get(url, headers=headers, verify=False)  # nosec B501
             except Exception as e:
                 logging(
                     f"Error getting registration command "
                     f"(attempt {attempt}): {e}",
+                    level="WARNING"
+                )
+                time.sleep(retry_interval)
+                continue
+
+            if attempt % 5 == 1 or response.status_code not in [200, 404]:
+                logging(f"Attempt {attempt}: Response status {response.status_code}")
+
+            if response.status_code == 200:
+                node_cmd = response.json().get("insecureNodeCommand", "")
+                if node_cmd:
+                    logging("Got cluster registration command")
+                    return node_cmd
+                elif attempt % 5 == 1:
+                    logging("insecureNodeCommand not yet available, waiting...")
+            elif response.status_code == 404:
+                if attempt % 5 == 1:
+                    logging("Registration token not yet created, waiting...")
+            else:
+                logging(
+                    f"Unexpected response {response.status_code}: {response.text}",
                     level="WARNING"
                 )
 
