@@ -1359,13 +1359,23 @@ class Rest(Base):
                         continue
 
                     ready = status.get("ready") is True
+                    cluster_id = status.get("clusterName")
 
-                    conditions = {
-                        c.get("type"): c.get("status")
-                        for c in status.get("conditions", [])
-                    }
-                    connected = conditions.get("Connected") == "True"
-                    ready_cond = conditions.get("Ready") == "True"
+                    connected = False
+                    ready_cond = False
+                    if cluster_id:
+                        mgmt_code, mgmt_data = self._rancher_request(
+                            "GET",
+                            f"v1/management.cattle.io.clusters/{cluster_id}"
+                        )
+                        if mgmt_code == 200 and mgmt_data:
+                            mgmt_conditions = {
+                                c.get("type"): c.get("status")
+                                for c in mgmt_data.get("status", {})
+                                                  .get("conditions", [])
+                            }
+                            connected = mgmt_conditions.get("Connected") == "True"
+                            ready_cond = mgmt_conditions.get("Ready") == "True"
 
                     if ready and (connected or ready_cond):
                         logging(
@@ -1376,8 +1386,8 @@ class Rest(Base):
                     if iteration % 10 == 0:
                         logging(
                             f"Import cluster not ready yet. "
-                            f"ready={ready}, connected={connected}, "
-                            f"ready_cond={ready_cond}"
+                            f"ready={ready}, cluster_id={cluster_id}, "
+                            f"connected={connected}, ready_cond={ready_cond}"
                         )
 
             except Exception as e:
