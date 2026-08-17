@@ -36,7 +36,8 @@ class Rest(Base):
             except Exception as e:
                 logging(f"Could not look up image UID for {image_id}: {e}",
                         level="WARNING")
-            vm_spec.add_image("disk-0", image_id, image_uid=image_uid)
+            vm_spec.add_image("disk-0", image_id, size=kwargs.get("disk_size", 10),
+                              image_uid=image_uid)
 
         code, data = api.vms.create(vm_name, vm_spec)
         assert code == 201, f"Failed to create VM: {code}, {data}"
@@ -141,7 +142,8 @@ class Rest(Base):
 
     def wait_vm_condition(
             self, vm_name, condition_type, condition_status,
-            timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+            timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE,
+            match_field="type"):
         """Wait until a VM's status.conditions reaches the expected state.
 
         status.conditions is a set keyed by `type`, NOT an append-ordered
@@ -150,19 +152,21 @@ class Rest(Base):
         appear once qemu-guest-agent connects.
 
         If `condition_status` is a string (e.g. "True"), waits until a
-        condition of `condition_type` exists with a matching `status`, and
-        returns that condition dict (so callers can still read fields such
-        as `lastProbeTime`).
+        condition matching `condition_type` (compared against the
+        condition's `match_field`, either "type" or "reason") exists with
+        a matching `status`, and returns that condition dict (so callers
+        can still read fields such as `lastProbeTime`).
 
-        If `condition_status` is None, waits until NO condition of
-        `condition_type` is present at all, and returns None.
+        If `condition_status` is None, waits until NO matching condition
+        is present at all, and returns None.
         """
         api = get_harvester_api_client()
         for i in range(timeout):
             code, data = api.vms.get_status(vm_name, namespace)
             if code == 200:
                 conditions = data.get('status', {}).get('conditions', [])
-                cond = next((c for c in conditions if c.get('type') == condition_type), None)
+                cond = next((c for c in conditions if c.get(match_field) == condition_type),
+                            None)
 
                 if condition_status is None:
                     if cond is None:

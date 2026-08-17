@@ -139,6 +139,20 @@ class vm_keywords:
         logging(f'Waiting for VM {vm_name} to be running')
         self.vm.wait_for_running(vm_name, timeout)
 
+    def wait_for_vm_condition(self, vm_name, condition_type, condition_status,
+                              timeout=DEFAULT_TIMEOUT, match_field="type"):
+        """Wait until a VM's status.conditions reaches the expected state.
+
+        match_field selects whether condition_type is compared against the
+        condition's `type` (default) or `reason` field -- some conditions
+        (e.g. GuestNotRunning, Unschedulable) are only distinguishable by
+        `reason`.
+        """
+        logging(f'Waiting for VM {vm_name} condition {match_field}={condition_type} '
+                f'to reach status={condition_status}')
+        return self.vm.wait_vm_condition(vm_name, condition_type, condition_status,
+                                         timeout, match_field=match_field)
+
     def wait_for_vm_stopped(self, vm_name, timeout=DEFAULT_TIMEOUT):
         """Wait for VM to stop"""
         logging(f'Waiting for VM {vm_name} to be stopped')

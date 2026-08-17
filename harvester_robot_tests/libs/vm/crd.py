@@ -95,6 +95,7 @@ class CRD(Base):
         # Build volumeClaimTemplates annotation for Harvester
         disk_name = "disk-0"
         volume_name = f"{vm_name}-{disk_name}"
+        boot_disk_size = kwargs.get("disk_size", "10Gi")
         volume_claim_templates = [
             {
                 "metadata": {
@@ -110,7 +111,7 @@ class CRD(Base):
                     "accessModes": ["ReadWriteMany"],
                     "resources": {
                         "requests": {
-                            "storage": "10Gi"
+                            "storage": boot_disk_size
                         }
                     },
                     "volumeMode": "Block",
@@ -280,8 +281,8 @@ class CRD(Base):
                                     "memory": str(memory)
                                 },
                                 "requests": {
-                                    "cpu": "125m",
-                                    "memory": "2730Mi"
+                                    "cpu": kwargs.get("requests_cpu", "125m"),
+                                    "memory": kwargs.get("requests_memory", "2730Mi")
                                 }
                             }
                         },
@@ -521,7 +522,8 @@ class CRD(Base):
 
     def wait_vm_condition(
             self, vm_name, condition_type, condition_status,
-            timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+            timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE,
+            match_field="type"):
         """Wait until a VM's status.conditions reaches the expected state.
 
         status.conditions is a set keyed by `type`, NOT an append-ordered
@@ -530,17 +532,18 @@ class CRD(Base):
         appear once qemu-guest-agent connects.
 
         If `condition_status` is a string (e.g. "True"), waits until a
-        condition of `condition_type` exists with a matching `status`, and
-        returns that condition dict (so callers can still read fields such
-        as `lastProbeTime`).
+        condition matching `condition_type` (compared against the
+        condition's `match_field`, either "type" or "reason") exists with
+        a matching `status`, and returns that condition dict (so callers
+        can still read fields such as `lastProbeTime`).
 
-        If `condition_status` is None, waits until NO condition of
-        `condition_type` is present at all, and returns None.
+        If `condition_status` is None, waits until NO matching condition
+        is present at all, and returns None.
         """
         for i in range(timeout):
             vm = self.get(vm_name, namespace)
             conditions = vm.get('status', {}).get('conditions', [])
-            cond = next((c for c in conditions if c.get('type') == condition_type), None)
+            cond = next((c for c in conditions if c.get(match_field) == condition_type), None)
 
             if condition_status is None:
                 if cond is None:

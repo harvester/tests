@@ -40,8 +40,10 @@ class VM(Base):
     def softreboot(self, vm_name):
         return self.vm.softreboot(vm_name)
 
-    def wait_vm_condition(self, vm_name, condition_type, condition_status, timeout):
-        return self.vm.wait_vm_condition(vm_name, condition_type, condition_status, timeout)
+    def wait_vm_condition(self, vm_name, condition_type, condition_status, timeout,
+                          match_field="type"):
+        return self.vm.wait_vm_condition(vm_name, condition_type, condition_status, timeout,
+                                         match_field=match_field)
 
     def wait_for_agent_connected(self, vm_name, timeout):
         return self.vm.wait_for_agent_connected(vm_name, timeout)

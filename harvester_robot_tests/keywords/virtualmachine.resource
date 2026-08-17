@@ -36,6 +36,16 @@ VM is created with extra disks
     END
     vm_keywords.create vm    ${vm_name}    ${image_id}    2    4Gi    extra_disks=${disks}
 
+VM condition should be
+    [Arguments]    ${vm_name}    ${condition}    ${status}    ${match_field}=type
+    [Documentation]    Wait until the VM's status.conditions reaches the expected
+    ...    state. ${condition} is compared against the condition's `type` by
+    ...    default; pass match_field=reason to match reason-only conditions
+    ...    (e.g. GuestNotRunning, Unschedulable).
+    ${result}=    vm_keywords.wait_for_vm_condition    ${vm_name}    ${condition}    ${status}
+    ...    match_field=${match_field}
+    RETURN    ${result}
+
 VM is created with existing volume
     [Arguments]    ${vm_name}    ${image_id}    ${pvc_name}
     [Documentation]    Create a VM that attaches an already-existing PVC as a data disk
