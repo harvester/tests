@@ -436,6 +436,7 @@ class TestVMOperations:
                 f"API Status({code}): {data}"
             )
 
+    @pytest.mark.robot_ported
     def test_softreboot(self, api_client, unique_vm_name, wait_timeout):
         '''
         Steps:
@@ -1589,6 +1590,7 @@ class TestVMWithVolumes:
         api_client.volumes.delete(vol_name)
 
 
+@pytest.mark.robot_ported
 @pytest.mark.p0
 @pytest.mark.sanity
 @pytest.mark.virtualmachines
