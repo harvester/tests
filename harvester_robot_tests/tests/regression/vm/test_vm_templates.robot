@@ -9,8 +9,10 @@ Library          Collections
 Resource         ../../../keywords/common.resource
 Resource         ../../../keywords/vm_template.resource
 
+# Read-only suite: creates no resources, so no cleanup is needed. Must not use
+# Common Suite Teardown - its global label sweep deletes resources still owned
+# by sibling suites when running under pabot.
 Suite Setup       Set Up Test Environment
-Suite Teardown    Common Suite Teardown
 Test Teardown     Common Test Teardown
 
 
