@@ -17,6 +17,7 @@ class VMSpec:
     usbtablet: ClassVar[bool]
 
     cpu_cores: int
+    cpu_model: Optional[str]
     memory: int | United_S
     description: str
     reserved_mem: int | float | United_S

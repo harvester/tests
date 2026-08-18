@@ -49,6 +49,7 @@ class VMSpec:
         self.acpi = True
         # initial data
         self.cpu_cores = cpu_cores
+        self.cpu_model = None
         self.memory = memory
         self.mgmt_network = mgmt_network
         self.guest_agent = guest_agent
@@ -274,6 +275,8 @@ class VMSpec:
 
         machine = dict(type=self.machine_type)
         cpu = dict(cores=self.cpu_cores, sockets=self.cpu_sockets, thread=self.cpu_threads)
+        if self.cpu_model is not None:
+            cpu['model'] = self.cpu_model
         resources = dict(cpu=self.cpu_cores, memory=mem)
 
         volume_claims = dumps([v['claim'] for v in volumes if 'claim' in v])
@@ -382,6 +385,7 @@ class VMSpec:
 
         obj = cls(cpu['cores'], mem, desc, reserved_mem, os_type)
         obj.cpu_sockets, obj.cpu_threads = cpu.get('sockets', 1), cpu.get('threads', 1)
+        obj.cpu_model = cpu.get('model')
         obj.run_strategy = run_strategy
         obj.eviction_strategy = eviction_strategy
         obj.hostname = hostname
