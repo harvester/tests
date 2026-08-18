@@ -2,6 +2,7 @@ import re
 import json
 import yaml
 import logging
+import requests
 from time import sleep
 from hashlib import sha512
 from operator import add
@@ -826,8 +827,21 @@ class TestAnyNodesUpgrade:
         # TODO: check every upgrade stages
         endtime = datetime.now() + timedelta(seconds=upgrade_timeout * nodes)
         while endtime > datetime.now():
-            code, data = api_client.upgrades.get(upgrade_name)
+            try:
+                code, data = api_client.upgrades.get(upgrade_name)
+            except requests.exceptions.ConnectionError as error:
+                logger.warning(
+                    "Harvester API is unavailable while checking upgrade %s; "
+                    "retrying in 10s: %s", upgrade_name, error
+                )
+                sleep(10)
+                continue
             if 200 != code:
+                logger.warning(
+                    "Harvester API returned status %s while checking upgrade %s; "
+                    "retrying in 10s", code, upgrade_name
+                )
+                sleep(10)
                 continue
             interceptor.check(data)
             conds = dict((c['type'], c) for c in data.get('status', {}).get('conditions', []))
