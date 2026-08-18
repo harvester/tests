@@ -99,7 +99,7 @@ Test GPU Node Discovery And CUDA Validation
     And CUDA Output Should Be Correct
 
 
-*** Setup/Teardown Keywords ***
+*** Keywords ***
 GPU Operator Suite Setup
     [Documentation]    Initialise the test environment and skip if conflicting addons
     ...               are already enabled.
