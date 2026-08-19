@@ -261,12 +261,12 @@ def host_shell(request):
         pkey = RSAKey.from_private_key(StringIO(pkey))
 
     class HostShell:
-        _client = _jump = None
-
         def __init__(self, username, password=None, pkey=None):
             self.username = username
             self.password = password
             self.pkey = pkey
+            self._client = None
+            self._jump = False
 
         def __enter__(self):
             return self
@@ -278,20 +278,26 @@ def host_shell(request):
         def client(self):
             return self._client
 
+        def _is_connected(self):
+            transport = self.client and self.client.get_transport()
+            return bool(transport and transport.is_active())
+
         def reconnect(self, ipaddr, port=22, **kwargs):
             if self.client:
                 self.client.close()
-                self._client = cli = SSHClient()
-                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
-                kws = dict(username=self.username, password=self.password, pkey=self.pkey)
-                kws.update(kwargs)
-                cli.connect(ipaddr, port, **kws)
+            self._client = cli = SSHClient()
+            cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+            kws = dict(username=self.username, password=self.password, pkey=self.pkey)
+            kws.update(kwargs)
+            cli.connect(ipaddr, port, **kws)
 
         def login(self, ipaddr, port=22, jumphost=False, allow_agent=False,
                   look_for_keys=False, **kwargs):
-            if not self.client:
-                cli = SSHClient()
-                cli.set_missing_host_key_policy(MissingHostKeyPolicy())
+            if not self._is_connected():
+                if self.client:
+                    self.client.close()
+                self._client = None
+                self._jump = False
                 kws = dict(username=self.username, password=self.password, pkey=self.pkey)
                 kws.update(kwargs)
 
@@ -302,8 +308,7 @@ def host_shell(request):
                     kws.update(dict(allow_agent=allow_agent,
                                     look_for_keys=look_for_keys))
 
-                cli.connect(ipaddr, port, **kws)
-                self._client = cli
+                self.reconnect(ipaddr, port, **kws)
 
                 if jumphost:
                     self.jumphost_policy()
@@ -313,11 +318,15 @@ def host_shell(request):
             return self
 
         def logout(self):
-            if self.client and self.client.get_transport():
-                if self._jump:
+            try:
+                if self._jump and self._is_connected():
+                    # Restore the original sshd_config to disable jumphost
+                    # e.g. AllowTcpForwarding no and AllowAgentForwarding no
                     self.jumphost_policy(False)
-                    self._jump = None
-                self.client.close()
+            finally:
+                self._jump = False
+                if self.client:
+                    self.client.close()
                 self._client = None
 
         def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, env=None,
