@@ -894,8 +894,8 @@ class TestAnyNodesUpgrade:
         assert len(masters) > 0, "No master nodes found"
 
         script = ("sudo tail /var/lib/rancher/rke2/server/logs/audit.log | awk 'END{print}' "
-                  "| jq .requestReceivedTimestamp "
-                  "| xargs -I {} date -d \"{}\" +%s")
+                  "| jq -r '.requestReceivedTimestamp' "
+                  "| xargs -r -I {} date -d '{}' +%s")
 
         node_ips = [n["metadata"]["annotations"][NODE_INTERNAL_IP_ANNOTATION] for n in masters]
         cmp = dict()
@@ -1127,7 +1127,9 @@ class TestAnyNodesUpgrade:
         assert "true" == names[created_sc]["storageclass.kubernetes.io/is-default-class"]
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
-    def test_verify_os_version(self, request, api_client, cluster_state, host_shell):
+    def test_verify_os_version(
+        self, request, api_client, cluster_state, host_shell, wait_timeout
+    ):
         # Verify /etc/os-release on all nodes
         script = "cat /etc/os-release"
         if not cluster_state.version_verify:
@@ -1138,18 +1140,25 @@ class TestAnyNodesUpgrade:
         assert 200 == code, (code, data)
         for node in data['data']:
             node_ip = node["metadata"]["annotations"][NODE_INTERNAL_IP_ANNOTATION]
-
-            with host_shell.login(node_ip) as sh:
-                lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
-                assert not stderr, (
-                    f"Failed to execute {script} on {node_ip}: {stderr}")
+            endtime = datetime.now() + timedelta(seconds=wait_timeout)
+            while endtime > datetime.now():
+                try:
+                    with host_shell.login(node_ip) as sh:
+                        lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
+                except (SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError):
+                    sleep(5)
+                    continue
+                assert not stderr, f"Failed to execute {script} on {node_ip}: {stderr}"
 
                 # eg: PRETTY_NAME="Harvester v1.1.0"
                 assert cluster_state.version == re.findall(r"Harvester (.+?)\"", lines[3])[0], (
                     "OS version is not correct")
+                break
+            else:
+                raise AssertionError(f"Unable to connect to {node_ip} after {wait_timeout}s")
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
-    def test_verify_rke2_version(self, api_client, host_shell):
+    def test_verify_rke2_version(self, api_client, host_shell, wait_timeout):
         # Verify node version on all nodes
         script = "cat /etc/harvester-release.yaml"
 
@@ -1165,17 +1174,29 @@ class TestAnyNodesUpgrade:
 
             # Get except rke2 version
             if except_rke2_version == "":
-                with host_shell.login(node_ip) as sh:
-                    lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
-                    assert not stderr, (
-                        f"Failed to execute {script} on {node_ip}: {stderr}")
+                endtime = datetime.now() + timedelta(seconds=wait_timeout)
+                while endtime > datetime.now():
+                    try:
+                        with host_shell.login(node_ip) as sh:
+                            lines, stderr = sh.exec_command(script, get_pty=True, splitlines=True)
+                    except (
+                        SSHException, NoValidConnectionsError, ConnectionResetError, TimeoutError
+                    ):
+                        sleep(5)
+                        continue
+                    assert not stderr, f"Failed to execute {script} on {node_ip}: {stderr}"
 
                     for line in lines:
                         if "kubernetes" in line:
                             except_rke2_version = re.findall(r"kubernetes: (.*)", line.strip())[0]
                             break
 
-                    assert except_rke2_version != "", ("Failed to get except rke2 version")
+                    assert except_rke2_version != "", "Failed to get except rke2 version"
+                    break
+                else:
+                    raise AssertionError(
+                        f"Unable to connect to {node_ip} after {wait_timeout}s"
+                    )
 
             assert node.get('status', {}).get('nodeInfo', {}).get(
                    "kubeletVersion", "") == except_rke2_version, (
