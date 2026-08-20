@@ -1347,3 +1347,228 @@ class rancher_keywords:
         return self.rancher.get_pods_by_label(
             cluster_id, namespace, label_selector
         )
+
+    # Rancher RBAC Operations
+
+    def install_rbac_chart(self, chart_repo_url, chart_version, release_name, namespace):
+        """
+        Install the harvester-rbac Helm chart on Rancher's local cluster.
+
+        Adds the Helm repository and runs helm install. Idempotent: skips if
+        the release already exists.
+
+        Args:
+            chart_repo_url: Helm repository URL (e.g. https://charts.harvesterhci.io)
+            chart_version: Chart version to install (e.g. 0.1.1)
+            release_name: Helm release name (e.g. harvester-rbac)
+            namespace: Kubernetes namespace for the Helm release
+        """
+        logging(f"Installing harvester-rbac chart v{chart_version} from {chart_repo_url}")
+        self.rancher.install_rbac_chart(
+            chart_repo_url, chart_version, release_name, namespace
+        )
+        logging(f"Helm release '{release_name}' is ready")
+
+    def create_rancher_user(self, user_id, display_name):
+        """
+        Create a new Rancher local user.
+
+        Args:
+            user_id: Username (metadata.name and username field)
+            display_name: Human-readable display name
+
+        Returns:
+            dict: Created user resource
+        """
+        logging(f"Creating Rancher user: {user_id}")
+        return self.rancher.create_rancher_user(user_id, display_name)
+
+    def delete_rancher_user(self, user_id):
+        """
+        Delete a Rancher user and its associated password secret.
+
+        Args:
+            user_id: Username to delete
+        """
+        logging(f"Deleting Rancher user: {user_id}")
+        self.rancher.delete_rancher_user(user_id)
+
+    def set_user_password(self, user_id, password):
+        """
+        Set or update the password for a Rancher local user.
+
+        Args:
+            user_id: Username whose password to set
+            password: Plaintext password value
+        """
+        logging(f"Setting password for Rancher user: {user_id}")
+        self.rancher.set_user_password(user_id, password)
+
+    def assign_standard_user_role(self, user_id):
+        """
+        Assign the Standard User global role to a Rancher user.
+
+        Creates a GlobalRoleBinding with globalRoleName: user.
+
+        Args:
+            user_id: Username to assign the role to
+        """
+        logging(f"Assigning Standard User role to: {user_id}")
+        self.rancher.assign_standard_user_role(user_id)
+
+    def get_management_cluster_id(self, cluster_name):
+        """
+        Return the management cluster ID (e.g. c-m-xxxxx) for a cluster.
+
+        Args:
+            cluster_name: Provisioning cluster name or display name
+
+        Returns:
+            str: Management cluster ID
+        """
+        logging(f"Getting management cluster ID for: {cluster_name}")
+        return self.rancher.get_management_cluster_id(cluster_name)
+
+    def get_project_id(self, cluster_id, project_name):
+        """
+        Return the short project ID (e.g. p-xxxxx) for a named project.
+
+        Args:
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_name: Display name of the project
+
+        Returns:
+            str: Short project ID
+        """
+        logging(f"Getting project ID for '{project_name}' in cluster {cluster_id}")
+        return self.rancher.get_project_id(cluster_id, project_name)
+
+    def assign_project_role(self, user_id, cluster_id, project_id, role_template_name):
+        """
+        Assign a project-scoped role to a Rancher user via ProjectRoleTemplateBinding.
+
+        Args:
+            user_id: Username to assign the role to
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+            role_template_name: RoleTemplate name (e.g. virt-project-view)
+        """
+        logging(
+            f"Assigning project role '{role_template_name}' to "
+            f"user '{user_id}' in project {cluster_id}:{project_id}"
+        )
+        self.rancher.assign_project_role(
+            user_id, cluster_id, project_id, role_template_name
+        )
+
+    def delete_user_global_role_bindings(self, user_id):
+        """
+        Delete all GlobalRoleBindings owned by the given user.
+
+        Args:
+            user_id: Username whose GlobalRoleBindings to remove
+        """
+        logging(f"Deleting GlobalRoleBindings for user: {user_id}")
+        self.rancher.delete_user_global_role_bindings(user_id)
+
+    def delete_user_project_role_bindings(self, user_id, cluster_id, project_id):
+        """
+        Delete all ProjectRoleTemplateBindings owned by the user in a project.
+
+        Args:
+            user_id: Username whose bindings to remove
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+        """
+        logging(
+            f"Deleting project role bindings for user '{user_id}' "
+            f"in project {cluster_id}:{project_id}"
+        )
+        self.rancher.delete_user_project_role_bindings(user_id, cluster_id, project_id)
+
+    def assign_cluster_role(self, user_id, cluster_id, role_template_name):
+        """
+        Assign a cluster-scoped role to a Rancher user via ClusterRoleTemplateBinding.
+
+        Args:
+            user_id: Username to assign the role to
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            role_template_name: RoleTemplate name (e.g. virt-cluster-view)
+        """
+        logging(
+            f"Assigning cluster role '{role_template_name}' to "
+            f"user '{user_id}' in cluster {cluster_id}"
+        )
+        self.rancher.assign_cluster_role(user_id, cluster_id, role_template_name)
+
+    def delete_user_cluster_role_bindings(self, user_id, cluster_id):
+        """
+        Delete all ClusterRoleTemplateBindings owned by the user in a cluster.
+
+        Args:
+            user_id: Username whose ClusterRoleTemplateBindings to remove
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        logging(
+            f"Deleting cluster role bindings for user '{user_id}' "
+            f"in cluster {cluster_id}"
+        )
+        self.rancher.delete_user_cluster_role_bindings(user_id, cluster_id)
+
+    def generate_user_kubeconfig(self, user_id, password, cluster_id):
+        """
+        Login as user_id and return a kubeconfig YAML string for cluster_id.
+
+        Args:
+            user_id: Rancher username
+            password: User's login password
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+
+        Returns:
+            str: kubeconfig YAML content ready for kubectl
+        """
+        logging(f"Generating kubeconfig for user '{user_id}'")
+        return self.rancher.generate_user_kubeconfig(user_id, password, cluster_id)
+
+    def verify_resource_access(self, kubeconfig_content, verb, resource, namespace):
+        """
+        Run 'kubectl auth can-i <verb> <resource> -n <namespace>' with the given kubeconfig.
+
+        Args:
+            kubeconfig_content: kubeconfig YAML string
+            verb: kubectl verb (e.g. 'get', 'create')
+            resource: Resource type (e.g. 'virtualmachines.kubevirt.io')
+            namespace: Target namespace
+
+        Returns:
+            tuple: (True, output) if allowed, (False, output) if denied
+        """
+        logging(f"Verifying '{verb}' access to '{resource}' in namespace '{namespace}'")
+        return self.rancher.verify_resource_access(
+            kubeconfig_content, verb, resource, namespace
+        )
+
+    def create_namespace_in_project(self, namespace_name, cluster_id, project_id):
+        """
+        Create a namespace in the Harvester cluster and bind it to a Rancher project.
+
+        Args:
+            namespace_name: Name for the new namespace
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+        """
+        logging(f"Creating namespace '{namespace_name}' in project {cluster_id}:{project_id}")
+        return self.rancher.create_namespace_in_project(
+            namespace_name, cluster_id, project_id
+        )
+
+    def delete_namespace_from_cluster(self, namespace_name, cluster_id):
+        """
+        Delete a namespace from the Harvester cluster.
+
+        Args:
+            namespace_name: Namespace to delete
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        logging(f"Deleting namespace '{namespace_name}'")
+        self.rancher.delete_namespace_from_cluster(namespace_name, cluster_id)
