@@ -84,3 +84,26 @@ ${IP_POOL_SUBNET}               %{IP_POOL_SUBNET=192.168.1.0/24}
 ${IP_POOL_START}                %{IP_POOL_START=192.168.1.100}
 ${IP_POOL_END}                  %{IP_POOL_END=192.168.1.200}
 ${IP_POOL_GATEWAY}              %{IP_POOL_GATEWAY=192.168.1.254}
+
+# Rancher RBAC Tests (harvester-rbac chart + user/role management)
+${RBAC_CHART_REPO_URL}             %{RBAC_CHART_REPO_URL=https://charts.harvesterhci.io}
+${RBAC_CHART_VERSION}              %{RBAC_CHART_VERSION=0.1.1}
+${RBAC_CHART_RELEASE_NAME}         %{RBAC_CHART_RELEASE_NAME=harvester-rbac}
+${RBAC_CHART_NAMESPACE}            %{RBAC_CHART_NAMESPACE=default}
+${HARVESTER_PROJECT_NAME}          %{HARVESTER_PROJECT_NAME=Default}
+
+# Namespace that belongs to HARVESTER_PROJECT_NAME; used by project-role tests
+${HARVESTER_PROJECT_NAMESPACE}     %{HARVESTER_PROJECT_NAMESPACE=rbactestns}
+
+# Per-role test users (username == display name for simplicity)
+${RBAC_CLUSTER_VIEW_USER}          %{RBAC_CLUSTER_VIEW_USER=virt-viewer}
+${RBAC_CLUSTER_MANAGE_USER}        %{RBAC_CLUSTER_MANAGE_USER=virt-manager}
+${RBAC_PROJECT_VIEW_USER}          %{RBAC_PROJECT_VIEW_USER=proj-viewer}
+${RBAC_PROJECT_MANAGE_USER}        %{RBAC_PROJECT_MANAGE_USER=proj-manager}
+${RBAC_USER_PASSWORD}              %{RBAC_USER_PASSWORD=RbacTest1234!}
+
+# RoleTemplate names created by the harvester-rbac chart
+${RBAC_CLUSTER_VIEW_ROLE}          virt-view-cluster
+${RBAC_CLUSTER_MANAGE_ROLE}        virt-cluster-manage
+${RBAC_PROJECT_VIEW_ROLE}          virt-project-view
+${RBAC_PROJECT_MANAGE_ROLE}        virt-project-manage

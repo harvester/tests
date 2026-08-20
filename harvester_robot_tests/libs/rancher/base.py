@@ -566,3 +566,194 @@ class Base(ABC):
             list: List of pod dicts
         """
         pass
+
+    # Rancher RBAC Operations
+
+    @abstractmethod
+    def install_rbac_chart(self, chart_repo_url, chart_version, release_name, namespace):
+        """Add the Harvester Helm repo and install the harvester-rbac chart on Rancher.
+
+        Args:
+            chart_repo_url: Helm repository URL (e.g. https://charts.harvesterhci.io)
+            chart_version: Chart version to install (e.g. 0.1.1)
+            release_name: Helm release name (e.g. harvester-rbac)
+            namespace: Kubernetes namespace for the helm release
+        """
+        pass
+
+    @abstractmethod
+    def create_rancher_user(self, user_id, display_name):
+        """Create a new Rancher local user.
+
+        Args:
+            user_id: Username (used as both metadata.name and username field)
+            display_name: Human-readable display name
+
+        Returns:
+            dict: Created user resource
+        """
+        pass
+
+    @abstractmethod
+    def delete_rancher_user(self, user_id):
+        """Delete a Rancher user and its associated password secret.
+
+        Args:
+            user_id: Username to delete
+        """
+        pass
+
+    @abstractmethod
+    def set_user_password(self, user_id, password):
+        """Create or update the password Secret for a Rancher local user.
+
+        The secret is stored in the cattle-local-user-passwords namespace.
+
+        Args:
+            user_id: Username whose password to set
+            password: Plaintext password value
+        """
+        pass
+
+    @abstractmethod
+    def assign_standard_user_role(self, user_id):
+        """Assign the Standard User global role (globalRoleName: user) via GlobalRoleBinding.
+
+        Args:
+            user_id: Username to assign the role to
+        """
+        pass
+
+    @abstractmethod
+    def get_management_cluster_id(self, cluster_name):
+        """Return the management cluster ID (e.g. c-m-xxxxx) for a given cluster display name.
+
+        For imported Harvester clusters the management cluster ID is stored in
+        status.clusterName of the corresponding provisioning.cattle.io Cluster.
+
+        Args:
+            cluster_name: Provisioning cluster name or display name
+
+        Returns:
+            str: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        pass
+
+    @abstractmethod
+    def get_project_id(self, cluster_id, project_name):
+        """Return the short project ID (e.g. p-xxxxx) for a project in a cluster.
+
+        Args:
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_name: Display name of the project
+
+        Returns:
+            str: Short project ID (e.g. p-xxxxx)
+        """
+        pass
+
+    @abstractmethod
+    def assign_project_role(self, user_id, cluster_id, project_id, role_template_name):
+        """Create a ProjectRoleTemplateBinding to grant a user a project-scoped role.
+
+        Args:
+            user_id: Username to assign the role to
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+            role_template_name: RoleTemplate name (e.g. virt-project-view)
+        """
+        pass
+
+    @abstractmethod
+    def delete_user_global_role_bindings(self, user_id):
+        """Delete all GlobalRoleBindings owned by the given user.
+
+        Args:
+            user_id: Username whose GlobalRoleBindings to remove
+        """
+        pass
+
+    @abstractmethod
+    def delete_user_project_role_bindings(self, user_id, cluster_id, project_id):
+        """Delete all ProjectRoleTemplateBindings owned by the user in a project.
+
+        Args:
+            user_id: Username whose bindings to remove
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+        """
+        pass
+
+    @abstractmethod
+    def assign_cluster_role(self, user_id, cluster_id, role_template_name):
+        """Create a ClusterRoleTemplateBinding to grant a user a cluster-scoped role.
+
+        Args:
+            user_id: Username to assign the role to
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            role_template_name: RoleTemplate name (e.g. virt-cluster-view)
+        """
+        pass
+
+    @abstractmethod
+    def delete_user_cluster_role_bindings(self, user_id, cluster_id):
+        """Delete all ClusterRoleTemplateBindings owned by the given user in a cluster.
+
+        Args:
+            user_id: Username whose ClusterRoleTemplateBindings to remove
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        pass
+
+    @abstractmethod
+    def generate_user_kubeconfig(self, user_id, password, cluster_id):
+        """Login as user_id and return a kubeconfig YAML string for cluster_id.
+
+        Authenticates against Rancher's local auth provider, then calls
+        generateKubeconfig to produce a ready-to-use kubeconfig for the cluster.
+
+        Args:
+            user_id: Rancher username
+            password: User's login password
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+
+        Returns:
+            str: kubeconfig YAML content
+        """
+        pass
+
+    @abstractmethod
+    def verify_resource_access(self, kubeconfig_content, verb, resource, namespace):
+        """Run 'kubectl auth can-i <verb> <resource> -n <namespace>' with the given kubeconfig.
+
+        Args:
+            kubeconfig_content: kubeconfig YAML string (from generate_user_kubeconfig)
+            verb: kubectl verb (e.g. 'get', 'create')
+            resource: Resource type (e.g. 'virtualmachines.kubevirt.io')
+            namespace: Target namespace
+
+        Returns:
+            tuple: (True, output) if allowed, (False, output) if denied
+        """
+        pass
+
+    @abstractmethod
+    def create_namespace_in_project(self, namespace_name, cluster_id, project_id):
+        """Create a namespace in the Harvester cluster and bind it to a Rancher project.
+
+        Args:
+            namespace_name: Name for the new namespace
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+        """
+        pass
+
+    @abstractmethod
+    def delete_namespace_from_cluster(self, namespace_name, cluster_id):
+        """Delete a namespace from the Harvester cluster (best-effort).
+
+        Args:
+            namespace_name: Namespace to delete
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        pass
