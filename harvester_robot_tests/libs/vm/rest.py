@@ -86,16 +86,47 @@ class Rest(Base):
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
     def try_get(self, vm_name):
-        """Negative-test helper. Only implemented for the CRD strategy."""
-        raise NotImplementedError(
-            "try_get is only implemented for the CRD strategy; "
-            "run with HARVESTER_OPERATION_STRATEGY=crd")
+        """Attempt to get a VM; returns {success, code, message}."""
+        api = get_harvester_api_client()
+        code, data = api.vms.get(vm_name)
+        if code == 200:
+            return {"success": True, "code": code, "message": ""}
+        return {"success": False, "code": code, "message": self._error_message(code, data)}
 
     def try_delete(self, vm_name):
-        """Negative-test helper. Only implemented for the CRD strategy."""
-        raise NotImplementedError(
-            "try_delete is only implemented for the CRD strategy; "
-            "run with HARVESTER_OPERATION_STRATEGY=crd")
+        """Attempt to delete a VM; returns {success, code, message}.
+
+        Unlike delete(), does NOT assert on non-2xx codes so callers can
+        assert that deleting a missing VM is rejected.
+        """
+        api = get_harvester_api_client()
+        code, data = api.vms.delete(vm_name)
+        if code in (200, 204):
+            return {"success": True, "code": code, "message": ""}
+        return {"success": False, "code": code, "message": self._error_message(code, data)}
+
+    @staticmethod
+    def _error_message(code, data):
+        """Build an error message for a non-2xx response.
+
+        The Rancher Steve/kubevirt proxy API doesn't always return a
+        Kubernetes Status object with a `reason` field like the raw CRD
+        path does -- it may just be plain text (e.g. `virtualmachines.
+        kubevirt.io "x" not found`). Callers such as Operation Should Be
+        Not Found match on the substring "notfound" (no space), so for
+        404s we explicitly prefix "NotFound" regardless of the body shape.
+        """
+        if isinstance(data, dict):
+            reason = data.get('reason', '')
+            message = data.get('message', '') or str(data)
+        else:
+            reason = ''
+            message = str(data)
+
+        if not reason and code == 404:
+            reason = 'NotFound'
+
+        return f"{reason}: {message}" if reason else message
 
     def add_volume(self, vm_name, disk_name, volume_name):
         """Hot-plug a volume. Only implemented for the CRD strategy."""
