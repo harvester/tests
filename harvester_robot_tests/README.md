@@ -303,6 +303,10 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 # Run suites in parallel with pabot (only used when -p is given)
 ./run.sh -p 3 -i volume           # Run volume suites across 3 processes
 
+# Run the ordered LVM flow: prepare, parallel workload suites, then cleanup.
+# run.sh automatically selects the LVM ordering file for this path.
+./run.sh -p 3 -f tests/regression/addon/lvm
+
 # Run against the REST API instead of CRD
 ./run.sh -S rest -i volume        # Same suites, REST strategy
 
@@ -315,6 +319,17 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 at the **suite (file)** level. Without `-p`, the plain `robot` runner is used as before.
 Suites that run concurrently must be self-contained and clean up only their own named
 resources in teardown (the volume suites follow this pattern).
+
+The LVM suites additionally share a cluster-wide addon and physical volume group.
+Their ordering file places addon/VG preparation in the first stage, runs attach,
+snapshot, and expansion suites together in the second stage, and waits for all three
+before cleanup/disable in the final stage. `LVM_TEST_RUN_ID` labels the selected
+BlockDevices so the final Pabot process can find the disks chosen by the first one.
+It defaults to `lvm-robot`; override it only when separate LVM runs need distinct IDs.
+Broad serial and parallel runs automatically exclude the `lvm` tag because these
+suites consume an active, unprovisioned physical disk of at least 50 GiB. Invoke the
+command above (or use the exact `-i lvm` tag) to opt in. LVM suites are CRD-only and
+cannot be combined with `-S rest`.
 
 **Operation strategy (CRD vs REST)**: The `vm`, `image`, and `volume` components pick
 their implementation from the `HARVESTER_OPERATION_STRATEGY` environment variable

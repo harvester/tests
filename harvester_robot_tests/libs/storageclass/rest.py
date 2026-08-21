@@ -15,6 +15,9 @@ class Rest(Base):
     def create(self, name, data_engine, number_of_replicas, disk_selector):
         return super().add_storageclass(name, data_engine, number_of_replicas, disk_selector)
 
+    def create_lvm(self, name, vg_name, vg_type, node):
+        return super().create_lvm(name, vg_name, vg_type, node)
+
     def delete(self, name):
         return super().delete(name)
 
