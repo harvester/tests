@@ -570,18 +570,6 @@ class Base(ABC):
     # Rancher RBAC Operations
 
     @abstractmethod
-    def install_rbac_chart(self, chart_repo_url, chart_version, release_name, namespace):
-        """Add the Harvester Helm repo and install the harvester-rbac chart on Rancher.
-
-        Args:
-            chart_repo_url: Helm repository URL (e.g. https://charts.harvesterhci.io)
-            chart_version: Chart version to install (e.g. 0.1.1)
-            release_name: Helm release name (e.g. harvester-rbac)
-            namespace: Kubernetes namespace for the helm release
-        """
-        pass
-
-    @abstractmethod
     def create_rancher_user(self, user_id, display_name):
         """Create a new Rancher local user.
 

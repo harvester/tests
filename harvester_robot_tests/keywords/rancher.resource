@@ -2292,21 +2292,19 @@ Cleanup Custom Cluster By Name
 # Rancher RBAC Keywords
 # ============================================================
 
-Install Harvester RBAC Chart
-    [Arguments]    ${chart_repo_url}=${RBAC_CHART_REPO_URL}
-    ...            ${chart_version}=${RBAC_CHART_VERSION}
-    ...            ${release_name}=${RBAC_CHART_RELEASE_NAME}
-    ...            ${namespace}=${RBAC_CHART_NAMESPACE}
-    [Documentation]    Add the Harvester Helm repo and install the harvester-rbac chart
-    ...               on Rancher's local cluster. Idempotent: skips if already installed.
-    ...               Args:
-    ...                   chart_repo_url: Helm repo URL (default: RBAC_CHART_REPO_URL)
-    ...                   chart_version: Chart version to install (default: RBAC_CHART_VERSION)
-    ...                   release_name: Helm release name (default: RBAC_CHART_RELEASE_NAME)
-    ...                   namespace: Kubernetes namespace for the release (default: RBAC_CHART_NAMESPACE)
-    Log    Installing harvester-rbac chart v${chart_version} from ${chart_repo_url}
-    rancher_keywords.install_rbac_chart    ${chart_repo_url}    ${chart_version}    ${release_name}    ${namespace}
-    Log    Helm release '${release_name}' v${chart_version} is installed
+Install Harvester RBAC Chart On Local Cluster
+    [Arguments]    ${version}=${RBAC_CHART_VERSION}
+    Install Chart
+    ...    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_REPO_NAME}    ${RBAC_CHART_NAME}
+    ...    ${version}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
+    Wait For Chart App Ready
+    ...    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
+    Log    Harvester RBAC chart installed on local cluster    console=yes
+
+Uninstall Harvester RBAC Chart On Local Cluster
+    Uninstall Chart    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
+    Wait For Chart App Deleted    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
+    Log    Harvester RBAC chart uninstalled from local cluster    console=yes
 
 Create Rancher User
     [Arguments]    ${user_id}    ${display_name}
@@ -2472,6 +2470,55 @@ Delete Namespace From Cluster
 # ──────────────────────────────────────────────────────────────────────────────
 # RBAC step keywords (BDD wrappers used by test_rancher_rbac.robot)
 # ──────────────────────────────────────────────────────────────────────────────
+
+Suite Setup For RBAC Tests
+    Log    Starting RBAC suite setup
+    Set up test environment
+    ${timestamp}=    Evaluate    __import__('datetime').datetime.now().strftime("%Y%m%d%H%M%S")
+    Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    hvst-rbac-${timestamp}
+    Set Suite Variable    ${HARVESTER_CLUSTER_ID}    ${EMPTY}
+    Import Harvester To Rancher In Setup
+    ${cluster}=    Get Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
+    Should Not Be Empty    ${cluster}    Harvester cluster not found in Rancher
+    Log    Harvester integration verified    console=yes
+    Install Harvester RBAC Chart On Local Cluster
+    Set Suite Variable    ${SUITE_CLUSTER_ID}    ${HARVESTER_CLUSTER_ID}
+    ${project_id}=    Get Rancher Project ID    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
+    Set Suite Variable    ${SUITE_PROJECT_ID}    ${project_id}
+    Log    Cluster ID: ${SUITE_CLUSTER_ID} | Project ID: ${project_id}
+    Create Namespace In Project
+    ...    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}    ${project_id}
+    FOR    ${user}    IN
+    ...    ${RBAC_CLUSTER_VIEW_USER}
+    ...    ${RBAC_CLUSTER_MANAGE_USER}
+    ...    ${RBAC_PROJECT_VIEW_USER}
+    ...    ${RBAC_PROJECT_MANAGE_USER}
+        Run Keyword And Ignore Error    Delete Rancher User    ${user}
+    END
+    Log    Suite setup complete
+
+Suite Teardown For RBAC Tests
+    Log    Starting RBAC suite teardown
+    FOR    ${user}    IN
+    ...    ${RBAC_CLUSTER_VIEW_USER}
+    ...    ${RBAC_CLUSTER_MANAGE_USER}
+    ...    ${RBAC_PROJECT_VIEW_USER}
+    ...    ${RBAC_PROJECT_MANAGE_USER}
+        Run Keyword And Ignore Error
+        ...    Delete User Cluster Role Bindings    ${user}    ${SUITE_CLUSTER_ID}
+        Run Keyword And Ignore Error
+        ...    Delete User Project Role Bindings    ${user}    ${SUITE_CLUSTER_ID}    ${SUITE_PROJECT_ID}
+        Run Keyword And Ignore Error
+        ...    Delete User Global Role Bindings    ${user}
+        Run Keyword And Ignore Error
+        ...    Delete Rancher User    ${user}
+    END
+    Run Keyword And Ignore Error
+    ...    Delete Namespace From Cluster    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}
+    Run Keyword And Ignore Error    Uninstall Harvester RBAC Chart On Local Cluster
+    Run Keyword And Ignore Error    Delete Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
+    Run Keyword And Ignore Error    Set Cluster Registration URL    ${EMPTY}
+    Log    Suite teardown complete
 
 RBAC Test User Does Not Exist
     [Arguments]    ${user_id}
