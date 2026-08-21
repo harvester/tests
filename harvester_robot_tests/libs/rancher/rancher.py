@@ -423,12 +423,6 @@ class Rancher(Base):
 
     # Rancher RBAC Operations
 
-    def install_rbac_chart(self, chart_repo_url, chart_version, release_name, namespace):
-        """Add the Harvester Helm repo and install the harvester-rbac chart on Rancher"""
-        return self.rancher.install_rbac_chart(
-            chart_repo_url, chart_version, release_name, namespace
-        )
-
     def create_rancher_user(self, user_id, display_name):
         """Create a new Rancher local user"""
         return self.rancher.create_rancher_user(user_id, display_name)

@@ -3212,55 +3212,6 @@ class CRD(Base):
         result = subprocess.run(cmd, capture_output=True, text=True)  # nosec B603
         return result.returncode, result.stdout, result.stderr
 
-    def install_rbac_chart(self, chart_repo_url, chart_version, release_name, namespace):
-        """Add the Harvester Helm repo and install the harvester-rbac chart on Rancher.
-
-        Adds the chart repository under a temporary local alias, updates it, then
-        runs helm install against Rancher's local cluster.  Idempotent: skips if
-        the release already exists.
-
-        Args:
-            chart_repo_url: Helm repository URL (e.g. https://charts.harvesterhci.io)
-            chart_version: Chart version to install (e.g. 0.1.1)
-            release_name: Helm release name (e.g. harvester-rbac)
-            namespace: Kubernetes namespace for the helm release
-        """
-        repo_alias = "_harvester-rbac-tmp"
-        chart_ref = f"{repo_alias}/harvester-rbac"
-        kubeconfig = self._get_rancher_kubeconfig()
-
-        # Add repo (idempotent – --force-update refreshes the URL if already added)
-        rc, _, stderr = self._run_helm(
-            ["repo", "add", repo_alias, chart_repo_url, "--force-update"]
-        )
-        if rc != 0:
-            raise Exception(f"Failed to add Helm repo '{chart_repo_url}': {stderr}")
-
-        rc, _, stderr = self._run_helm(["repo", "update", repo_alias])
-        if rc != 0:
-            logging(f"Warning: helm repo update failed: {stderr}", level="WARNING")
-
-        rc, _, stderr = self._run_helm(
-            ["install", release_name, chart_ref,
-             "--version", chart_version,
-             "--namespace", namespace, "--create-namespace",
-             "--insecure-skip-tls-verify"],
-            kubeconfig=kubeconfig
-        )
-
-        if rc != 0:
-            if "already exists" in stderr or "cannot re-use" in stderr:
-                logging(f"Helm release '{release_name}' already exists; skipping install")
-            else:
-                raise Exception(
-                    f"Failed to install harvester-rbac chart v{chart_version}: {stderr}"
-                )
-        else:
-            logging(
-                f"Installed harvester-rbac chart v{chart_version} as '{release_name}' "
-                f"in namespace '{namespace}'"
-            )
-
     def create_rancher_user(self, user_id, display_name):
         """Create a Rancher local user via kubectl against Rancher's K8s API.
 

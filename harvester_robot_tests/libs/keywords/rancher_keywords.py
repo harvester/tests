@@ -1350,25 +1350,6 @@ class rancher_keywords:
 
     # Rancher RBAC Operations
 
-    def install_rbac_chart(self, chart_repo_url, chart_version, release_name, namespace):
-        """
-        Install the harvester-rbac Helm chart on Rancher's local cluster.
-
-        Adds the Helm repository and runs helm install. Idempotent: skips if
-        the release already exists.
-
-        Args:
-            chart_repo_url: Helm repository URL (e.g. https://charts.harvesterhci.io)
-            chart_version: Chart version to install (e.g. 0.1.1)
-            release_name: Helm release name (e.g. harvester-rbac)
-            namespace: Kubernetes namespace for the Helm release
-        """
-        logging(f"Installing harvester-rbac chart v{chart_version} from {chart_repo_url}")
-        self.rancher.install_rbac_chart(
-            chart_repo_url, chart_version, release_name, namespace
-        )
-        logging(f"Helm release '{release_name}' is ready")
-
     def create_rancher_user(self, user_id, display_name):
         """
         Create a new Rancher local user.

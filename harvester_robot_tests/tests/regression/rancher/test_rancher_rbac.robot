@@ -36,18 +36,31 @@ Suite Teardown   Suite Teardown For RBAC Tests
 ${SUITE_CLUSTER_ID}    ${EMPTY}
 ${SUITE_PROJECT_ID}    ${EMPTY}
 
-*** Test Cases ***
-# ──────────────────────────────────────────────────────────────────────────────
-# Chart installation (prerequisite for all role assignments)
-# ──────────────────────────────────────────────────────────────────────────────
-Test Install Harvester RBAC Chart
-    [Tags]    p0    rbac    chart
-    [Documentation]    Install the harvester-rbac Helm chart on Rancher's local cluster.
-    ...               Creates four RoleTemplates: virt-cluster-view, virt-cluster-manage,
-    ...               virt-project-view, virt-project-manage.
-    ...               Idempotent – skips silently if already installed.
-    Install Harvester RBAC Chart
+# harvester-rbac chart constants
+${RBAC_CLUSTER_ID}              local
+${RBAC_CHART_REPO_NAME}         rancher-charts
+${RBAC_CHART_NAME}              harvester-rbac
+${RBAC_CHART_VERSION}           110.0.0+up0.1.1
+${RBAC_CHART_RELEASE_NAME}      harvester-rbac
+${RBAC_CHART_NAMESPACE}         default
 
+# Rancher project used for project-role tests
+${HARVESTER_PROJECT_NAME}       Default
+${HARVESTER_PROJECT_NAMESPACE}  rbactestns
+
+# Test users (one per role)
+${RBAC_CLUSTER_VIEW_USER}       virt-viewer
+${RBAC_CLUSTER_MANAGE_USER}     virt-manager
+${RBAC_PROJECT_VIEW_USER}       proj-viewer
+${RBAC_PROJECT_MANAGE_USER}     proj-manager
+
+# RoleTemplate names created by the harvester-rbac chart
+${RBAC_CLUSTER_VIEW_ROLE}       virt-view-cluster
+${RBAC_CLUSTER_MANAGE_ROLE}     virt-cluster-manage
+${RBAC_PROJECT_VIEW_ROLE}       virt-project-view
+${RBAC_PROJECT_MANAGE_ROLE}     virt-project-manage
+
+*** Test Cases ***
 # ──────────────────────────────────────────────────────────────────────────────
 # TC1: Cluster Role – View Virtualization Resources
 # ──────────────────────────────────────────────────────────────────────────────
@@ -207,62 +220,3 @@ Test TC4 Verify - Project Manage Can Write VMs In Project Namespace
     Log    [TC4 project-manage write] auth can-i create: ok=${ok}, output=${output}
     Should Be True    ${ok}
     ...    msg=proj-manager should be able to create VMs. Output: ${output}
-
-*** Keywords ***
-Suite Setup For RBAC Tests
-    [Documentation]    1. Import Harvester into Rancher dynamically (suite-owned lifecycle).
-    ...               2. Install the harvester-rbac chart (RoleTemplates must exist).
-    ...               3. Resolve and cache management cluster ID and project ID.
-    ...               4. Create the project test namespace (${HARVESTER_PROJECT_NAMESPACE})
-    ...                  inside ${HARVESTER_PROJECT_NAME} so project-role users have a
-    ...                  namespace to test against.
-    ...               5. Pre-clean any leftover users from a previous run.
-    Log    Starting RBAC suite setup
-    Set up test environment
-    ${timestamp}=    Evaluate    __import__('datetime').datetime.now().strftime("%Y%m%d%H%M%S")
-    Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    hvst-rbac-${timestamp}
-    Set Suite Variable    ${HARVESTER_CLUSTER_ID}    ${EMPTY}
-    Import Harvester To Rancher In Setup
-    ${cluster}=    Get Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
-    Should Not Be Empty    ${cluster}    Harvester cluster not found in Rancher
-    Log    Harvester integration verified    console=yes
-    Install Harvester RBAC Chart
-    Set Suite Variable    ${SUITE_CLUSTER_ID}    ${HARVESTER_CLUSTER_ID}
-    ${project_id}=    Get Rancher Project ID    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
-    Set Suite Variable    ${SUITE_PROJECT_ID}    ${project_id}
-    Log    Cluster ID: ${SUITE_CLUSTER_ID} | Project ID: ${project_id}
-    Create Namespace In Project
-    ...    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}    ${project_id}
-    FOR    ${user}    IN
-    ...    ${RBAC_CLUSTER_VIEW_USER}
-    ...    ${RBAC_CLUSTER_MANAGE_USER}
-    ...    ${RBAC_PROJECT_VIEW_USER}
-    ...    ${RBAC_PROJECT_MANAGE_USER}
-        Run Keyword And Ignore Error    Delete Rancher User    ${user}
-    END
-    Log    Suite setup complete
-
-Suite Teardown For RBAC Tests
-    [Documentation]    Remove all test users, their role bindings, the project namespace,
-    ...               and unimport the Harvester cluster from Rancher.
-    ...               The harvester-rbac chart is intentionally left installed.
-    Log    Starting RBAC suite teardown
-    FOR    ${user}    IN
-    ...    ${RBAC_CLUSTER_VIEW_USER}
-    ...    ${RBAC_CLUSTER_MANAGE_USER}
-    ...    ${RBAC_PROJECT_VIEW_USER}
-    ...    ${RBAC_PROJECT_MANAGE_USER}
-        Run Keyword And Ignore Error
-        ...    Delete User Cluster Role Bindings    ${user}    ${SUITE_CLUSTER_ID}
-        Run Keyword And Ignore Error
-        ...    Delete User Project Role Bindings    ${user}    ${SUITE_CLUSTER_ID}    ${SUITE_PROJECT_ID}
-        Run Keyword And Ignore Error
-        ...    Delete User Global Role Bindings    ${user}
-        Run Keyword And Ignore Error
-        ...    Delete Rancher User    ${user}
-    END
-    Run Keyword And Ignore Error
-    ...    Delete Namespace From Cluster    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}
-    Run Keyword And Ignore Error    Delete Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
-    Run Keyword And Ignore Error    Set Cluster Registration URL    ${EMPTY}
-    Log    Suite teardown complete
