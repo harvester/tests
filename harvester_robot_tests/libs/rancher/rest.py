@@ -2669,3 +2669,476 @@ class Rest(Base):
         items = data.get("data", [])
         logging(f"Found {len(items)} pods with label {label_selector}")
         return items
+
+    # Rancher RBAC Operations
+
+    def create_rancher_user(self, user_id, display_name):
+        """Create a new Rancher local user via the v3 REST API.
+
+        Args:
+            user_id: Username (used as both metadata.name and username field)
+            display_name: Human-readable display name
+
+        Returns:
+            dict: Created user resource
+        """
+        logging(f"Creating Rancher user via REST: {user_id}")
+
+        payload = {
+            "type": "user",
+            "username": user_id,
+            "displayName": display_name,
+            "enabled": True,
+        }
+
+        code, data = self._rancher_request("POST", "v3/users", data=payload)
+
+        if code not in (200, 201):
+            raise Exception(
+                f"Failed to create Rancher user '{user_id}': {code} {data}"
+            )
+
+        logging(f"Created Rancher user: {user_id}")
+        return data
+
+    def delete_rancher_user(self, user_id):
+        """Delete a Rancher user via the v3 REST API.
+
+        Args:
+            user_id: Username to delete
+        """
+        logging(f"Deleting Rancher user via REST: {user_id}")
+
+        code, data = self._rancher_request("DELETE", f"v3/users/{user_id}")
+
+        if code not in (200, 204, 404):
+            raise Exception(
+                f"Failed to delete Rancher user '{user_id}': {code} {data}"
+            )
+
+        logging(f"Deleted Rancher user: {user_id}")
+
+    def set_user_password(self, user_id, password):
+        """Set or update the password for a Rancher local user via the v3 REST API.
+
+        Rancher v3 users support setting the password directly in the user resource.
+
+        Args:
+            user_id: Username whose password to set
+            password: Plaintext password value
+        """
+        logging(f"Setting password for Rancher user via REST: {user_id}")
+
+        payload = {"newPassword": password}
+        code, data = self._rancher_request(
+            "POST",
+            f"v3/users/{user_id}?action=setpassword",
+            data=payload
+        )
+
+        if code not in (200, 201):
+            raise Exception(
+                f"Failed to set password for user '{user_id}': {code} {data}"
+            )
+
+        logging(f"Password set for user: {user_id}")
+
+    def assign_standard_user_role(self, user_id):
+        """Assign the Standard User global role via the v3 GlobalRoleBinding API.
+
+        Args:
+            user_id: Username to assign the role to
+        """
+        logging(f"Assigning Standard User role via REST to: {user_id}")
+
+        payload = {
+            "type": "globalRoleBinding",
+            "globalRoleId": "user",
+            "userId": user_id,
+        }
+
+        code, data = self._rancher_request(
+            "POST", "v3/globalrolebindings", data=payload
+        )
+
+        if code not in (200, 201):
+            raise Exception(
+                f"Failed to assign Standard User role to '{user_id}': "
+                f"{code} {data}"
+            )
+
+        logging(f"Assigned Standard User role to: {user_id}")
+
+    def get_management_cluster_id(self, cluster_name):
+        """Return the management cluster ID for the given cluster display name.
+
+        Queries the v3/clusters endpoint and matches by displayName or name.
+
+        Args:
+            cluster_name: Cluster display name or provisioning cluster name
+
+        Returns:
+            str: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        logging(f"Getting management cluster ID via REST for: {cluster_name}")
+
+        code, data = self._rancher_request("GET", "v3/clusters")
+
+        if code != 200:
+            raise Exception(f"Failed to list clusters: {code} {data}")
+
+        for item in data.get("data", []):
+            if item.get("name") == cluster_name or \
+                    item.get("spec", {}).get("displayName") == cluster_name:
+                cluster_id = item.get("id")
+                logging(f"Found cluster ID: {cluster_id}")
+                return cluster_id
+
+        raise Exception(
+            f"Cluster '{cluster_name}' not found via Rancher REST API"
+        )
+
+    def get_project_id(self, cluster_id, project_name):
+        """Return the short project ID (e.g. p-xxxxx) for a named project.
+
+        Args:
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_name: Display name of the project
+
+        Returns:
+            str: Short project ID (e.g. p-xxxxx)
+        """
+        logging(
+            f"Getting project ID via REST for '{project_name}' "
+            f"in cluster '{cluster_id}'"
+        )
+
+        code, data = self._rancher_request(
+            "GET", f"v3/projects?clusterId={cluster_id}"
+        )
+
+        if code != 200:
+            raise Exception(
+                f"Failed to list projects for cluster '{cluster_id}': "
+                f"{code} {data}"
+            )
+
+        for item in data.get("data", []):
+            if item.get("name") == project_name or \
+                    item.get("spec", {}).get("displayName") == project_name:
+                # Full project ID is "clusterId:projectId"; extract short form
+                full_id = item.get("id", "")
+                project_id = full_id.split(":")[-1] if ":" in full_id else full_id
+                logging(f"Found project '{project_name}': {project_id}")
+                return project_id
+
+        raise Exception(
+            f"Project '{project_name}' not found in cluster '{cluster_id}'"
+        )
+
+    def assign_project_role(self, user_id, cluster_id, project_id, role_template_name):
+        """Create a ProjectRoleTemplateBinding via the v3 REST API.
+
+        Args:
+            user_id: Username to assign the role to
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+            role_template_name: RoleTemplate name (e.g. virt-project-view)
+        """
+        project_name = f"{cluster_id}:{project_id}"
+        logging(
+            f"Assigning project role '{role_template_name}' to '{user_id}' "
+            f"in project '{project_name}' via REST"
+        )
+
+        payload = {
+            "type": "projectRoleTemplateBinding",
+            "projectId": project_name,
+            "roleTemplateId": role_template_name,
+            "userId": user_id,
+        }
+
+        code, data = self._rancher_request(
+            "POST", "v3/projectroletemplatebindings", data=payload
+        )
+
+        if code not in (200, 201):
+            raise Exception(
+                f"Failed to assign project role '{role_template_name}' "
+                f"to '{user_id}': {code} {data}"
+            )
+
+        logging(
+            f"Assigned project role '{role_template_name}' to user '{user_id}'"
+        )
+
+    def delete_user_global_role_bindings(self, user_id):
+        """Delete all GlobalRoleBindings owned by the given user via REST.
+
+        Args:
+            user_id: Username whose GlobalRoleBindings to remove
+        """
+        logging(f"Deleting GlobalRoleBindings via REST for user: {user_id}")
+
+        code, data = self._rancher_request(
+            "GET", f"v3/globalrolebindings?userId={user_id}"
+        )
+
+        if code != 200:
+            logging(
+                f"Warning: failed to list GlobalRoleBindings: {code} {data}",
+                level="WARNING"
+            )
+            return
+
+        deleted = 0
+        for item in data.get("data", []):
+            binding_id = item.get("id", "")
+            del_code, _ = self._rancher_request(
+                "DELETE", f"v3/globalrolebindings/{binding_id}"
+            )
+            if del_code not in (200, 204):
+                logging(
+                    f"Warning: failed to delete GRB '{binding_id}'",
+                    level="WARNING"
+                )
+            else:
+                deleted += 1
+
+        logging(f"Deleted {deleted} GlobalRoleBinding(s) for user '{user_id}'")
+
+    def delete_user_project_role_bindings(self, user_id, cluster_id, project_id):
+        """Delete all ProjectRoleTemplateBindings owned by the user via REST.
+
+        Args:
+            user_id: Username whose bindings to remove
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+        """
+        project_name = f"{cluster_id}:{project_id}"
+        logging(
+            f"Deleting PRTBs via REST for user '{user_id}' "
+            f"in project '{project_name}'"
+        )
+
+        code, data = self._rancher_request(
+            "GET",
+            f"v3/projectroletemplatebindings"
+            f"?projectId={project_name}&userId={user_id}"
+        )
+
+        if code != 200:
+            logging(
+                f"Warning: failed to list PRTBs: {code} {data}",
+                level="WARNING"
+            )
+            return
+
+        deleted = 0
+        for item in data.get("data", []):
+            binding_id = item.get("id", "")
+            del_code, _ = self._rancher_request(
+                "DELETE", f"v3/projectroletemplatebindings/{binding_id}"
+            )
+            if del_code not in (200, 204):
+                logging(
+                    f"Warning: failed to delete PRTB '{binding_id}'",
+                    level="WARNING"
+                )
+            else:
+                deleted += 1
+
+        logging(
+            f"Deleted {deleted} ProjectRoleTemplateBinding(s) for user '{user_id}'"
+        )
+
+    def assign_cluster_role(self, user_id, cluster_id, role_template_name):
+        """Create a ClusterRoleTemplateBinding via the v3 REST API.
+
+        Args:
+            user_id: Username to assign the role to
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            role_template_name: RoleTemplate name (e.g. virt-cluster-view)
+        """
+        logging(
+            f"Assigning cluster role '{role_template_name}' to '{user_id}' "
+            f"in cluster '{cluster_id}' via REST"
+        )
+
+        payload = {
+            "type": "clusterRoleTemplateBinding",
+            "clusterId": cluster_id,
+            "roleTemplateId": role_template_name,
+            "userId": user_id,
+        }
+
+        code, data = self._rancher_request(
+            "POST", "v3/clusterroletemplatebindings", data=payload
+        )
+
+        if code not in (200, 201):
+            raise Exception(
+                f"Failed to assign cluster role '{role_template_name}' "
+                f"to '{user_id}': {code} {data}"
+            )
+
+        logging(
+            f"Assigned cluster role '{role_template_name}' to user '{user_id}'"
+        )
+
+    def delete_user_cluster_role_bindings(self, user_id, cluster_id):
+        """Delete all ClusterRoleTemplateBindings for the given user via REST.
+
+        Args:
+            user_id: Username whose ClusterRoleTemplateBindings to remove
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+        """
+        logging(
+            f"Deleting CRTBs via REST for user '{user_id}' "
+            f"in cluster '{cluster_id}'"
+        )
+
+        code, data = self._rancher_request(
+            "GET",
+            f"v3/clusterroletemplatebindings"
+            f"?clusterId={cluster_id}&userId={user_id}"
+        )
+
+        if code != 200:
+            logging(
+                f"Warning: failed to list CRTBs: {code} {data}",
+                level="WARNING"
+            )
+            return
+
+        deleted = 0
+        for item in data.get("data", []):
+            binding_id = item.get("id", "")
+            del_code, _ = self._rancher_request(
+                "DELETE", f"v3/clusterroletemplatebindings/{binding_id}"
+            )
+            if del_code not in (200, 204):
+                logging(
+                    f"Warning: failed to delete CRTB '{binding_id}'",
+                    level="WARNING"
+                )
+            else:
+                deleted += 1
+
+        logging(
+            f"Deleted {deleted} ClusterRoleTemplateBinding(s) for user '{user_id}'"
+        )
+
+    def _run_kubectl_with_content(self, kubeconfig_content, args):
+        """Run kubectl using an in-memory kubeconfig string."""
+        import subprocess
+        import tempfile as _tempfile
+        fd, path = _tempfile.mkstemp(suffix=".kubeconfig")
+        try:
+            with os.fdopen(fd, 'w') as f:
+                f.write(kubeconfig_content)
+            cmd = ["kubectl", "--kubeconfig", path,
+                   "--insecure-skip-tls-verify"] + list(args)
+            result = subprocess.run(cmd, capture_output=True, text=True)  # nosec B603
+            return result.returncode, result.stdout, result.stderr
+        finally:
+            if os.path.exists(path):
+                os.remove(path)
+
+    def generate_user_kubeconfig(self, user_id, password, cluster_id):
+        """Login as user_id and return a kubeconfig YAML string for cluster_id."""
+        self._authenticate_rancher()  # ensure self.rancher_endpoint is set
+        endpoint = self.rancher_endpoint
+        logging(f"Generating kubeconfig for user '{user_id}' on cluster '{cluster_id}'")
+
+        from urllib.parse import urljoin
+        session = requests.Session()
+        session.verify = False
+        session.headers.update({"Content-Type": "application/json"})
+
+        # Step 1: authenticate as the test user
+        auth_resp = session.post(
+            urljoin(endpoint, "v3-public/localProviders/local?action=login"),
+            json={"username": user_id, "password": password}
+        )
+        if auth_resp.status_code != 201:
+            raise Exception(
+                f"Failed to authenticate as '{user_id}': "
+                f"{auth_resp.status_code} {auth_resp.text}"
+            )
+        user_token = auth_resp.json().get("token")
+        if not user_token:
+            raise Exception(f"No token returned for '{user_id}'")
+
+        # Step 2: generate kubeconfig for the cluster
+        kc_resp = session.post(
+            f"{endpoint.rstrip('/')}/v3/clusters/{cluster_id}"
+            f"?action=generateKubeconfig",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        if kc_resp.status_code != 200:
+            raise Exception(
+                f"Failed to generate kubeconfig for '{user_id}': "
+                f"{kc_resp.status_code} {kc_resp.text}"
+            )
+        kubeconfig = kc_resp.json().get("config")
+        if not kubeconfig:
+            raise Exception(f"Empty kubeconfig returned for '{user_id}'")
+
+        logging(f"Generated kubeconfig for user '{user_id}'")
+        return kubeconfig
+
+    def verify_resource_access(self, kubeconfig_content, verb, resource, namespace):
+        """Run kubectl auth can-i <verb> <resource> -n <namespace> and return (ok, output)."""
+        rc, stdout, stderr = self._run_kubectl_with_content(
+            kubeconfig_content,
+            ["auth", "can-i", verb, resource, "-n", namespace]
+        )
+        output = stdout.strip() if stdout else stderr.strip()
+        logging(
+            f"kubectl auth can-i {verb} {resource} -n {namespace}: rc={rc}, "
+            f"output={output[:300]}",
+            level="DEBUG"
+        )
+        return rc == 0, output
+
+    def create_namespace_in_project(self, namespace_name, cluster_id, project_id):
+        """Create namespace in Harvester cluster and bind it to a Rancher project."""
+        project_ref = f"{cluster_id}:{project_id}"
+        logging(f"Creating namespace '{namespace_name}' in project '{project_ref}'")
+
+        code, data = self._rancher_request(
+            "POST",
+            f"k8s/clusters/{cluster_id}/v1/namespaces",
+            data={
+                "type": "namespace",
+                "metadata": {
+                    "name": namespace_name,
+                    "annotations": {
+                        "field.cattle.io/projectId": project_ref
+                    },
+                    "labels": {
+                        "field.cattle.io/projectId": project_ref
+                    }
+                }
+            }
+        )
+        if code not in (200, 201):
+            raise Exception(
+                f"Failed to create namespace '{namespace_name}': {code} {data}"
+            )
+        logging(f"Namespace '{namespace_name}' created and assigned to project")
+        return data
+
+    def delete_namespace_from_cluster(self, namespace_name, cluster_id):
+        """Delete a namespace from the Harvester cluster."""
+        logging(f"Deleting namespace '{namespace_name}'")
+        code, _ = self._rancher_request(
+            "DELETE",
+            f"k8s/clusters/{cluster_id}/v1/namespaces/{namespace_name}"
+        )
+        if code not in (200, 204, 404):
+            logging(
+                f"Warning: failed to delete namespace '{namespace_name}': {code}",
+                level="WARNING"
+            )

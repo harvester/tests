@@ -420,3 +420,73 @@ class Rancher(Base):
         return self.rancher.get_pods_by_label(
             cluster_id, namespace, label_selector
         )
+
+    # Rancher RBAC Operations
+
+    def create_rancher_user(self, user_id, display_name):
+        """Create a new Rancher local user"""
+        return self.rancher.create_rancher_user(user_id, display_name)
+
+    def delete_rancher_user(self, user_id):
+        """Delete a Rancher user and its associated password secret"""
+        return self.rancher.delete_rancher_user(user_id)
+
+    def set_user_password(self, user_id, password):
+        """Create or update the password for a Rancher local user"""
+        return self.rancher.set_user_password(user_id, password)
+
+    def assign_standard_user_role(self, user_id):
+        """Assign the Standard User global role to a user"""
+        return self.rancher.assign_standard_user_role(user_id)
+
+    def get_management_cluster_id(self, cluster_name):
+        """Return the management cluster ID (e.g. c-m-xxxxx) for a cluster"""
+        return self.rancher.get_management_cluster_id(cluster_name)
+
+    def get_project_id(self, cluster_id, project_name):
+        """Return the short project ID (e.g. p-xxxxx) for a named project"""
+        return self.rancher.get_project_id(cluster_id, project_name)
+
+    def assign_project_role(self, user_id, cluster_id, project_id, role_template_name):
+        """Create a ProjectRoleTemplateBinding to grant a user a project-scoped role"""
+        return self.rancher.assign_project_role(
+            user_id, cluster_id, project_id, role_template_name
+        )
+
+    def delete_user_global_role_bindings(self, user_id):
+        """Delete all GlobalRoleBindings owned by the given user"""
+        return self.rancher.delete_user_global_role_bindings(user_id)
+
+    def delete_user_project_role_bindings(self, user_id, cluster_id, project_id):
+        """Delete all ProjectRoleTemplateBindings owned by the user in a project"""
+        return self.rancher.delete_user_project_role_bindings(
+            user_id, cluster_id, project_id
+        )
+
+    def assign_cluster_role(self, user_id, cluster_id, role_template_name):
+        """Create a ClusterRoleTemplateBinding to grant a user a cluster-scoped role"""
+        return self.rancher.assign_cluster_role(user_id, cluster_id, role_template_name)
+
+    def delete_user_cluster_role_bindings(self, user_id, cluster_id):
+        """Delete all ClusterRoleTemplateBindings owned by the given user in a cluster"""
+        return self.rancher.delete_user_cluster_role_bindings(user_id, cluster_id)
+
+    def generate_user_kubeconfig(self, user_id, password, cluster_id):
+        """Login as user_id and return a kubeconfig YAML string for cluster_id"""
+        return self.rancher.generate_user_kubeconfig(user_id, password, cluster_id)
+
+    def verify_resource_access(self, kubeconfig_content, verb, resource, namespace):
+        """Run kubectl auth can-i <verb> <resource> -n <namespace> and return (ok, output)"""
+        return self.rancher.verify_resource_access(
+            kubeconfig_content, verb, resource, namespace
+        )
+
+    def create_namespace_in_project(self, namespace_name, cluster_id, project_id):
+        """Create namespace in Harvester cluster and assign to a Rancher project"""
+        return self.rancher.create_namespace_in_project(
+            namespace_name, cluster_id, project_id
+        )
+
+    def delete_namespace_from_cluster(self, namespace_name, cluster_id):
+        """Delete a namespace from the Harvester cluster"""
+        return self.rancher.delete_namespace_from_cluster(namespace_name, cluster_id)

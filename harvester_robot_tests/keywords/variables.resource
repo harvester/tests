@@ -84,3 +84,6 @@ ${IP_POOL_SUBNET}               %{IP_POOL_SUBNET=192.168.1.0/24}
 ${IP_POOL_START}                %{IP_POOL_START=192.168.1.100}
 ${IP_POOL_END}                  %{IP_POOL_END=192.168.1.200}
 ${IP_POOL_GATEWAY}              %{IP_POOL_GATEWAY=192.168.1.254}
+
+# Rancher RBAC Tests
+${RBAC_USER_PASSWORD}              %{RBAC_USER_PASSWORD=RbacTest1234!}

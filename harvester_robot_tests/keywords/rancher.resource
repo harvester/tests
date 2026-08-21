@@ -2287,3 +2287,257 @@ Cleanup Custom Cluster By Name
     Run Keyword And Ignore Error    Wait For RKE2 Cluster Deleted    ${cluster_name}    ${RANCHER_WAIT_TIMEOUT}
     Run Keyword And Ignore Error    Delete Harvester VM    ${cluster_name}-vm-0
     Run Keyword And Ignore Error    Wait For Harvester VM Deleted    ${cluster_name}-vm-0    ${RANCHER_WAIT_TIMEOUT}
+
+# ============================================================
+# Rancher RBAC Keywords
+# ============================================================
+
+Install Harvester RBAC Chart On Local Cluster
+    [Arguments]    ${version}=${RBAC_CHART_VERSION}
+    Install Chart
+    ...    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_REPO_NAME}    ${RBAC_CHART_NAME}
+    ...    ${version}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
+    Wait For Chart App Ready
+    ...    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
+    Log    Harvester RBAC chart installed on local cluster    console=yes
+
+Uninstall Harvester RBAC Chart On Local Cluster
+    Uninstall Chart    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
+    Wait For Chart App Deleted    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
+    Log    Harvester RBAC chart uninstalled from local cluster    console=yes
+
+Create Rancher User
+    [Arguments]    ${user_id}    ${display_name}
+    [Documentation]    Create a new Rancher local user.
+    ...               Args:
+    ...                   user_id: Username (metadata.name and username field)
+    ...                   display_name: Human-readable display name
+    ...               Returns:
+    ...                   dict: Created user resource
+    Log    Creating Rancher user: ${user_id}
+    ${user}=    rancher_keywords.create_rancher_user    ${user_id}    ${display_name}
+    RETURN    ${user}
+
+Delete Rancher User
+    [Arguments]    ${user_id}
+    [Documentation]    Delete a Rancher user and its associated password secret.
+    ...               Args:
+    ...                   user_id: Username to delete
+    Log    Deleting Rancher user: ${user_id}
+    rancher_keywords.delete_rancher_user    ${user_id}
+
+Set Rancher User Password
+    [Arguments]    ${user_id}    ${password}
+    [Documentation]    Set or update the password for a Rancher local user.
+    ...               Args:
+    ...                   user_id: Username whose password to set
+    ...                   password: Plaintext password value
+    Log    Setting password for Rancher user: ${user_id}
+    rancher_keywords.set_user_password    ${user_id}    ${password}
+
+Assign Standard User Role
+    [Arguments]    ${user_id}
+    [Documentation]    Assign the Standard User global role (globalRoleName: user)
+    ...               to a Rancher user via GlobalRoleBinding.
+    ...               Args:
+    ...                   user_id: Username to assign the role to
+    Log    Assigning Standard User global role to: ${user_id}
+    rancher_keywords.assign_standard_user_role    ${user_id}
+
+Get Management Cluster ID
+    [Arguments]    ${cluster_name}
+    [Documentation]    Return the management cluster ID (e.g. c-m-xxxxx) for a cluster.
+    ...               Reads status.clusterName from the provisioning cluster resource.
+    ...               Args:
+    ...                   cluster_name: Provisioning cluster name
+    ...               Returns:
+    ...                   str: Management cluster ID
+    Log    Getting management cluster ID for: ${cluster_name}
+    ${cluster_id}=    rancher_keywords.get_management_cluster_id    ${cluster_name}
+    Log    Management cluster ID: ${cluster_id}
+    RETURN    ${cluster_id}
+
+Get Rancher Project ID
+    [Arguments]    ${cluster_id}    ${project_name}
+    [Documentation]    Return the short project ID (e.g. p-xxxxx) for a named project.
+    ...               Args:
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    ...                   project_name: Display name of the project
+    ...               Returns:
+    ...                   str: Short project ID
+    Log    Getting project ID for '${project_name}' in cluster ${cluster_id}
+    ${project_id}=    rancher_keywords.get_project_id    ${cluster_id}    ${project_name}
+    Log    Project ID: ${project_id}
+    RETURN    ${project_id}
+
+Assign Project Role
+    [Arguments]    ${user_id}    ${cluster_id}    ${project_id}    ${role_template_name}
+    [Documentation]    Create a ProjectRoleTemplateBinding to grant a user a project-scoped role.
+    ...               Args:
+    ...                   user_id: Username to assign the role to
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    ...                   project_id: Short project ID (e.g. p-xxxxx)
+    ...                   role_template_name: RoleTemplate name (e.g. virt-project-view)
+    Log    Assigning project role '${role_template_name}' to '${user_id}'
+    rancher_keywords.assign_project_role    ${user_id}    ${cluster_id}    ${project_id}    ${role_template_name}
+
+Delete User Global Role Bindings
+    [Arguments]    ${user_id}
+    [Documentation]    Delete all GlobalRoleBindings owned by the given user.
+    ...               Args:
+    ...                   user_id: Username whose GlobalRoleBindings to remove
+    Log    Deleting GlobalRoleBindings for user: ${user_id}
+    rancher_keywords.delete_user_global_role_bindings    ${user_id}
+
+Delete User Project Role Bindings
+    [Arguments]    ${user_id}    ${cluster_id}    ${project_id}
+    [Documentation]    Delete all ProjectRoleTemplateBindings owned by the user in a project.
+    ...               Args:
+    ...                   user_id: Username whose bindings to remove
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    ...                   project_id: Short project ID (e.g. p-xxxxx)
+    Log    Deleting project role bindings for user '${user_id}'
+    rancher_keywords.delete_user_project_role_bindings    ${user_id}    ${cluster_id}    ${project_id}
+
+Assign Cluster Role
+    [Arguments]    ${user_id}    ${cluster_id}    ${role_template_name}
+    [Documentation]    Create a ClusterRoleTemplateBinding to grant a user a cluster-scoped role.
+    ...               Args:
+    ...                   user_id: Username to assign the role to
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    ...                   role_template_name: RoleTemplate name (e.g. virt-cluster-view)
+    Log    Assigning cluster role '${role_template_name}' to '${user_id}'
+    rancher_keywords.assign_cluster_role    ${user_id}    ${cluster_id}    ${role_template_name}
+
+Delete User Cluster Role Bindings
+    [Arguments]    ${user_id}    ${cluster_id}
+    [Documentation]    Delete all ClusterRoleTemplateBindings owned by the user in a cluster.
+    ...               Args:
+    ...                   user_id: Username whose ClusterRoleTemplateBindings to remove
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    Log    Deleting cluster role bindings for user '${user_id}'
+    rancher_keywords.delete_user_cluster_role_bindings    ${user_id}    ${cluster_id}
+
+Generate User Kubeconfig
+    [Arguments]    ${user_id}    ${password}    ${cluster_id}
+    [Documentation]    Login as user_id and return a kubeconfig YAML string for cluster_id.
+    ...               Authenticates against Rancher's local auth provider, then calls
+    ...               generateKubeconfig to produce a ready-to-use kubeconfig.
+    ...               Args:
+    ...                   user_id: Rancher username
+    ...                   password: User's login password
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    ...               Returns:
+    ...                   str: kubeconfig YAML content
+    Log    Generating kubeconfig for user '${user_id}'
+    ${kubeconfig}=    rancher_keywords.generate_user_kubeconfig    ${user_id}    ${password}    ${cluster_id}
+    RETURN    ${kubeconfig}
+
+Verify Resource Access
+    [Arguments]    ${kubeconfig}    ${verb}    ${resource}    ${namespace}
+    [Documentation]    Run 'kubectl auth can-i <verb> <resource> -n <namespace>' using the given kubeconfig.
+    ...               Returns (ok, output) – ok is True if allowed, False if denied.
+    ...               Args:
+    ...                   kubeconfig: kubeconfig YAML string
+    ...                   verb: kubectl verb (e.g. get, create)
+    ...                   resource: Resource type (e.g. virtualmachines.kubevirt.io)
+    ...                   namespace: Target namespace
+    ...               Returns:
+    ...                   tuple: (bool, str)
+    ${ok}    ${output}=    rancher_keywords.verify_resource_access
+    ...    ${kubeconfig}    ${verb}    ${resource}    ${namespace}
+    RETURN    ${ok}    ${output}
+
+Create Namespace In Project
+    [Arguments]    ${namespace_name}    ${cluster_id}    ${project_id}
+    [Documentation]    Create a namespace in the Harvester cluster and bind it to a Rancher project.
+    ...               Args:
+    ...                   namespace_name: Name for the new namespace
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    ...                   project_id: Short project ID (e.g. p-xxxxx)
+    Log    Creating namespace '${namespace_name}' in project ${cluster_id}:${project_id}
+    rancher_keywords.create_namespace_in_project    ${namespace_name}    ${cluster_id}    ${project_id}
+
+Delete Namespace From Cluster
+    [Arguments]    ${namespace_name}    ${cluster_id}
+    [Documentation]    Delete a namespace from the Harvester cluster (best-effort).
+    ...               Args:
+    ...                   namespace_name: Namespace to delete
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    Log    Deleting namespace '${namespace_name}'
+    rancher_keywords.delete_namespace_from_cluster    ${namespace_name}    ${cluster_id}
+
+# ──────────────────────────────────────────────────────────────────────────────
+# RBAC step keywords (BDD wrappers used by test_rancher_rbac.robot)
+# ──────────────────────────────────────────────────────────────────────────────
+
+Suite Setup For RBAC Tests
+    Log    Starting RBAC suite setup
+    Set up test environment
+    ${timestamp}=    Evaluate    __import__('datetime').datetime.now().strftime("%Y%m%d%H%M%S")
+    Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    hvst-rbac-${timestamp}
+    Set Suite Variable    ${HARVESTER_CLUSTER_ID}    ${EMPTY}
+    Import Harvester To Rancher In Setup
+    ${cluster}=    Get Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
+    Should Not Be Empty    ${cluster}    Harvester cluster not found in Rancher
+    Log    Harvester integration verified    console=yes
+    Install Harvester RBAC Chart On Local Cluster
+    Set Suite Variable    ${SUITE_CLUSTER_ID}    ${HARVESTER_CLUSTER_ID}
+    ${project_id}=    Get Rancher Project ID    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
+    Set Suite Variable    ${SUITE_PROJECT_ID}    ${project_id}
+    Log    Cluster ID: ${SUITE_CLUSTER_ID} | Project ID: ${project_id}
+    Create Namespace In Project
+    ...    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}    ${project_id}
+    FOR    ${user}    IN
+    ...    ${RBAC_CLUSTER_VIEW_USER}
+    ...    ${RBAC_CLUSTER_MANAGE_USER}
+    ...    ${RBAC_PROJECT_VIEW_USER}
+    ...    ${RBAC_PROJECT_MANAGE_USER}
+        Run Keyword And Ignore Error    Delete Rancher User    ${user}
+    END
+    Log    Suite setup complete
+
+Suite Teardown For RBAC Tests
+    Log    Starting RBAC suite teardown
+    FOR    ${user}    IN
+    ...    ${RBAC_CLUSTER_VIEW_USER}
+    ...    ${RBAC_CLUSTER_MANAGE_USER}
+    ...    ${RBAC_PROJECT_VIEW_USER}
+    ...    ${RBAC_PROJECT_MANAGE_USER}
+        Run Keyword And Ignore Error
+        ...    Delete User Cluster Role Bindings    ${user}    ${SUITE_CLUSTER_ID}
+        Run Keyword And Ignore Error
+        ...    Delete User Project Role Bindings    ${user}    ${SUITE_CLUSTER_ID}    ${SUITE_PROJECT_ID}
+        Run Keyword And Ignore Error
+        ...    Delete User Global Role Bindings    ${user}
+        Run Keyword And Ignore Error
+        ...    Delete Rancher User    ${user}
+    END
+    Run Keyword And Ignore Error
+    ...    Delete Namespace From Cluster    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}
+    Run Keyword And Ignore Error    Uninstall Harvester RBAC Chart On Local Cluster
+    Run Keyword And Ignore Error    Delete Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
+    Run Keyword And Ignore Error    Set Cluster Registration URL    ${EMPTY}
+    Log    Suite teardown complete
+
+RBAC Test User Does Not Exist
+    [Arguments]    ${user_id}
+    Run Keyword And Ignore Error    Delete Rancher User    ${user_id}
+
+RBAC Test User Is Created
+    [Arguments]    ${user_id}
+    ${user}=    Create Rancher User    ${user_id}    ${user_id}
+    Should Not Be Empty    ${user}    msg=User creation returned empty response for '${user_id}'
+    Set Rancher User Password    ${user_id}    ${RBAC_USER_PASSWORD}
+
+Standard User Role Is Assigned To
+    [Arguments]    ${user_id}
+    Assign Standard User Role    ${user_id}
+
+Cluster Role Is Assigned To User
+    [Arguments]    ${user_id}    ${cluster_id}    ${role_template_name}
+    Assign Cluster Role    ${user_id}    ${cluster_id}    ${role_template_name}
+
+Project Role Is Assigned To User
+    [Arguments]    ${user_id}    ${cluster_id}    ${project_id}    ${role_template_name}
+    Assign Project Role    ${user_id}    ${cluster_id}    ${project_id}    ${role_template_name}
