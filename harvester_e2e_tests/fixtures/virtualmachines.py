@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 import pytest
 from paramiko import SSHClient, RSAKey, MissingHostKeyPolicy
-from paramiko.ssh_exception import ChannelException, NoValidConnectionsError
+from paramiko.ssh_exception import NoValidConnectionsError, SSHException
 
 
 @pytest.fixture(scope="session")
@@ -103,7 +103,8 @@ def vm_shell_from_host(vm_shell, host_shell, wait_timeout):
             while endtime > datetime.now():
                 try:
                     vm_sh.connect(vm_ip, jumphost=h.client)
-                except (ChannelException, NoValidConnectionsError) as e:
+                except (SSHException, NoValidConnectionsError,
+                        ConnectionResetError, TimeoutError) as e:
                     login_ex = e
                     sleep(3)
                 else:
@@ -369,7 +370,8 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
             while endtime > datetime.now():
                 try:
                     vm_sh.connect(vm_ip, **kws)
-                except (ChannelException, NoValidConnectionsError) as e:
+                except (SSHException, NoValidConnectionsError,
+                        ConnectionResetError, TimeoutError) as e:
                     login_ex = e
                     sleep(self.snooze)
                 else:

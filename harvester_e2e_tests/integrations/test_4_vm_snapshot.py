@@ -2,7 +2,7 @@ import yaml
 from datetime import datetime, timedelta
 from time import sleep
 
-from paramiko.ssh_exception import ChannelException
+from paramiko.ssh_exception import NoValidConnectionsError, SSHException
 import pytest
 
 
@@ -235,6 +235,8 @@ def restored_vm_2(api_client, restored_from_snapshot_name_2,
 def vm_shell_do(name, api_client, host_shell, vm_shell, user, ssh_keypair, action, wait_timeout):
     _, privatekey = ssh_keypair
 
+    # Wait until the VM is fully ready (agent connected implies cloud-init
+    # finished provisioning the SSH key) before attempting to log in.
     deadline = datetime.now() + timedelta(seconds=wait_timeout)
     while deadline > datetime.now():
         code, data = api_client.vms.get_status(name)
@@ -242,35 +244,40 @@ def vm_shell_do(name, api_client, host_shell, vm_shell, user, ssh_keypair, actio
             phase = data.get("status", {}).get("phase")
             conds = data.get("status", {}).get("conditions", [{}])
             if ("Running" == phase
-                    and "AgentConnected" == conds[-1].get("type")
-                    and data["status"].get("interfaces")):
+                    and any("AgentConnected" == c.get("type") for c in conds)
+                    and any(iface.get("ipAddress")
+                            for iface in data["status"].get("interfaces", [])
+                            if iface.get("name") == "default")):
                 break
-            sleep(3)
+        sleep(3)
+    else:
+        raise AssertionError(f"VM {name} is not ready with {wait_timeout} timed out")
 
-        vm_ip = next(iface["ipAddress"] for iface in data["status"]["interfaces"]
-                     if iface["name"] == "default")
+    vm_ip = next(iface["ipAddress"] for iface in data["status"]["interfaces"]
+                 if iface.get("name") == "default" and iface.get("ipAddress"))
 
-        code, data = api_client.hosts.get(data["status"]["nodeName"])
-        host_ip = next(addr["address"] for addr in data["status"]["addresses"]
-                       if addr["type"] == "InternalIP")
+    code, data = api_client.hosts.get(data["status"]["nodeName"])
+    host_ip = next(addr["address"] for addr in data["status"]["addresses"]
+                   if addr["type"] == "InternalIP")
 
-        with host_shell.login(host_ip, jumphost=True) as h:
-            vm_sh = vm_shell(user, pkey=privatekey)
+    with host_shell.login(host_ip, jumphost=True) as h:
+        vm_sh = vm_shell(user, pkey=privatekey)
 
-            deadline = datetime.now() + timedelta(seconds=wait_timeout)
-            while deadline > datetime.now():
-                try:
-                    vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
-                    print(e)
-                    sleep(3)
-                else:
-                    break
+        deadline = datetime.now() + timedelta(seconds=wait_timeout)
+        while deadline > datetime.now():
+            try:
+                vm_sh.connect(vm_ip, jumphost=h.client)
+            except (SSHException, NoValidConnectionsError,
+                    ConnectionResetError, TimeoutError) as e:
+                print(e)
+                sleep(3)
             else:
-                raise AssertionError(f"Unable to login to {name}")
+                break
+        else:
+            raise AssertionError(f"Unable to login to {name}")
 
-            with vm_sh as sh:
-                action(sh)
+        with vm_sh as sh:
+            action(sh)
 
 
 @pytest.mark.p0
