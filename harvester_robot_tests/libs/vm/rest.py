@@ -383,13 +383,51 @@ class Rest(Base):
 
     def verify_on_node(self, vm_name, expected_node):
         """Verify VM is running on expected node"""
-        api = get_harvester_api_client()
-        code, data = api.vms.get_status(vm_name)
-        assert code == 200, f"Failed to get VM status: {code}, {data}"
-
-        actual_node = data.get('status', {}).get('nodeName')
+        actual_node = self.get_node(vm_name)
         assert actual_node == expected_node, \
             f"VM {vm_name} is on {actual_node}, expected {expected_node}"
+
+    def get_node(self, vm_name):
+        """Return the node currently running the VM, or None when not running."""
+        api = get_harvester_api_client()
+        code, data = api.vms.get_status(vm_name)
+        if code == 404:
+            return None
+        assert code == 200, f"Failed to get VM status: {code}, {data}"
+        return data.get('status', {}).get('nodeName')
+
+    def wait_for_migrated_away_from(self, vm_name, original_node, timeout):
+        """Wait until the VM is Running on any node other than original_node.
+
+        Used for descheduler tests, where the destination is chosen by the
+        scheduler rather than requested by the test.
+
+        Returns:
+            str: The node the VM ended up on
+        """
+        api = get_harvester_api_client()
+
+        endtime = datetime.now() + timedelta(seconds=timeout)
+        while endtime > datetime.now():
+            code, data = api.vms.get_status(vm_name)
+            if code == 200:
+                status = data.get('status', {})
+                current_node = status.get('nodeName')
+                if (current_node and current_node != original_node
+                        and status.get('phase') == 'Running'):
+                    return current_node
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"VM {vm_name} did not move off node {original_node} within {timeout}s"
+        )
+
+    def get_annotations(self, vm_name):
+        """Return the VM object's metadata.annotations."""
+        api = get_harvester_api_client()
+        code, data = api.vms.get(vm_name)
+        assert code == 200, f"Failed to get VM: {code}, {data}"
+        return data.get('metadata', {}).get('annotations', {}) or {}
 
     def write_data(self, vm_name, data_size_mb):
         """Write data to VM"""

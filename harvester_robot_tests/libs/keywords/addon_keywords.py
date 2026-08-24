@@ -61,6 +61,22 @@ class addon_keywords:
         logging(f'Enabling addon {addon_name}')
         self.addon.enable_addon(addon_name)
 
+    def try_enable_addon(self, addon_name):
+        """
+        Attempt to enable an addon for negative testing
+
+        Returns a result dict {success, code, message} instead of raising, so the
+        test layer can assert on the rejection.
+
+        Args:
+            addon_name: Name of the addon to enable
+
+        Returns:
+            dict: {success, code, message}
+        """
+        logging(f'Attempting to enable addon {addon_name} (negative test)')
+        return self.addon.try_enable_addon(addon_name)
+
     def disable_addon(self, addon_name):
         """
         Disable an addon
@@ -141,6 +157,153 @@ class addon_keywords:
         """
         logging(f'Waiting for service {service_name} in namespace {namespace} to be running')
         self.addon.wait_for_service_running(namespace, service_name, int(timeout))
+
+    def wait_for_pods_gone(self, namespace, label, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait until no pods matching the label remain in the namespace
+
+        Args:
+            namespace: Kubernetes namespace
+            label: Label selector for pods
+            timeout: Timeout in seconds
+        """
+        logging(f'Waiting for pods with label {label} in namespace {namespace} to be gone')
+        self.addon.wait_for_pods_gone(namespace, label, int(timeout))
+
+    def wait_for_deployment_ready(self, name, namespace, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a Deployment to report all replicas ready
+
+        Args:
+            name: Name of the deployment
+            namespace: Kubernetes namespace
+            timeout: Timeout in seconds
+        """
+        logging(f'Waiting for deployment {namespace}/{name} to be ready')
+        self.addon.wait_for_deployment_ready(name, namespace, int(timeout))
+
+    def wait_for_deployment_gone(self, name, namespace, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a Deployment to be removed
+
+        Args:
+            name: Name of the deployment
+            namespace: Kubernetes namespace
+            timeout: Timeout in seconds
+        """
+        logging(f'Waiting for deployment {namespace}/{name} to be gone')
+        self.addon.wait_for_deployment_gone(name, namespace, int(timeout))
+
+    def get_configmap_data(self, name, namespace):
+        """
+        Get the data map of a ConfigMap
+
+        Args:
+            name: Name of the ConfigMap
+            namespace: Kubernetes namespace
+
+        Returns:
+            dict: The ConfigMap's data, or None if the ConfigMap does not exist
+        """
+        logging(f'Getting ConfigMap {namespace}/{name}')
+        return self.addon.get_configmap_data(name, namespace)
+
+    def get_addon_values_content(self, addon_name):
+        """
+        Get the raw spec.valuesContent string of an addon
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            str: The raw valuesContent (empty string when unset)
+        """
+        logging(f'Getting raw valuesContent of addon {addon_name}')
+        return self.addon.get_addon_values_content(addon_name)
+
+    def get_addon_values(self, addon_name):
+        """
+        Get the parsed spec.valuesContent of an addon
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            dict: Parsed valuesContent (empty dict when unset)
+        """
+        logging(f'Getting parsed valuesContent of addon {addon_name}')
+        return self.addon.get_addon_values(addon_name)
+
+    def set_addon_values_content(self, addon_name, values_content):
+        """
+        Replace the raw spec.valuesContent of an addon
+
+        Args:
+            addon_name: Name of the addon
+            values_content: Raw YAML string to store
+        """
+        logging(f'Setting raw valuesContent of addon {addon_name}')
+        self.addon.set_addon_values_content(addon_name, values_content)
+
+    def update_addon_values(self, addon_name, values):
+        """
+        Replace spec.valuesContent of an addon from a dict
+
+        Args:
+            addon_name: Name of the addon
+            values: dict serialised to YAML and stored as valuesContent
+        """
+        logging(f'Updating valuesContent of addon {addon_name}')
+        self.addon.update_addon_values(addon_name, values)
+
+    def get_addon_labels(self, addon_name):
+        """
+        Get the metadata.labels of an addon
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            dict: The addon's labels (empty dict when unset)
+        """
+        addon = self.addon.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+        return addon.get('metadata', {}).get('labels', {}) or {}
+
+    def get_addon_spec(self, addon_name):
+        """
+        Get the spec of an addon
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            dict: The addon's spec (empty dict when unset)
+        """
+        addon = self.addon.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+        return addon.get('spec', {}) or {}
+
+    def addon_exists(self, addon_name):
+        """
+        Check whether an addon CR exists in any known addon namespace
+
+        Older Harvester releases do not ship every addon, so suites use this to
+        skip rather than fail.
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            bool: True if the addon CR exists
+        """
+        try:
+            return self.addon.get_addon(addon_name) is not None
+        except Exception as e:
+            logging(f'Error checking whether addon {addon_name} exists: {e}', level='WARNING')
+            return False
 
     def wait_for_monitoring_pods_running(self, namespace, timeout=DEFAULT_TIMEOUT_LONG):
         """

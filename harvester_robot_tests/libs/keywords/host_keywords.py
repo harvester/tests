@@ -102,6 +102,14 @@ class host_keywords:
         logging(f'Getting capacity for node {node_name}')
         return self.host.get_node_capacity(node_name)
 
+    def get_node_resource_utilization(self, node_name):
+        """Get a node's requests-based CPU/memory utilization
+
+        Matches how the descheduler's LowNodeUtilization strategy measures nodes.
+        """
+        logging(f'Getting resource utilization for node {node_name}')
+        return self.host.get_node_resource_utilization(node_name)
+
     def get_node_vms(self, node_name):
         """Get VMs on node"""
         logging(f'Getting VMs on node {node_name}')

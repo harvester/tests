@@ -45,6 +45,10 @@ class Addon(Base):
         """Enable an addon - delegates to implementation"""
         return self.addon.enable_addon(addon_name)
 
+    def try_enable_addon(self, addon_name):
+        """Attempt to enable an addon, returning a result dict - delegates"""
+        return self.addon.try_enable_addon(addon_name)
+
     def disable_addon(self, addon_name):
         """Disable an addon - delegates to implementation"""
         return self.addon.disable_addon(addon_name)
@@ -76,6 +80,38 @@ class Addon(Base):
     def wait_for_service_running(self, namespace, service_name, timeout):
         """Wait for service to be running - delegates to implementation"""
         return self.addon.wait_for_service_running(namespace, service_name, timeout)
+
+    def wait_for_pods_gone(self, namespace, label_selector, timeout):
+        """Wait for pods to be gone - delegates to implementation"""
+        return self.addon.wait_for_pods_gone(namespace, label_selector, timeout)
+
+    def wait_for_deployment_ready(self, name, namespace, timeout):
+        """Wait for deployment to be ready - delegates to implementation"""
+        return self.addon.wait_for_deployment_ready(name, namespace, timeout)
+
+    def wait_for_deployment_gone(self, name, namespace, timeout):
+        """Wait for deployment to be removed - delegates to implementation"""
+        return self.addon.wait_for_deployment_gone(name, namespace, timeout)
+
+    def get_configmap_data(self, name, namespace):
+        """Get a ConfigMap's data map - delegates to implementation"""
+        return self.addon.get_configmap_data(name, namespace)
+
+    def get_addon_values_content(self, addon_name):
+        """Get raw spec.valuesContent - delegates to implementation"""
+        return self.addon.get_addon_values_content(addon_name)
+
+    def get_addon_values(self, addon_name):
+        """Get parsed spec.valuesContent - delegates to implementation"""
+        return self.addon.get_addon_values(addon_name)
+
+    def set_addon_values_content(self, addon_name, values_content):
+        """Replace raw spec.valuesContent - delegates to implementation"""
+        return self.addon.set_addon_values_content(addon_name, values_content)
+
+    def update_addon_values(self, addon_name, values):
+        """Replace spec.valuesContent from a dict - delegates to implementation"""
+        return self.addon.update_addon_values(addon_name, values)
 
     def stop_port_forward(self):
         """Stop port forwarding - delegates to implementation"""

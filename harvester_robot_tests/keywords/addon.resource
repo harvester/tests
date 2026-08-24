@@ -27,6 +27,19 @@ Enable
     addon_keywords.enable_addon    ${addon_name}
     Log    Addon ${addon_name} enable request sent
 
+Try To Enable
+    [Arguments]    ${addon_name}
+    [Documentation]    Attempt to enable an addon expected to be rejected by a webhook.
+    ...               Returns a {success, code, message} dict instead of raising, for
+    ...               use with `Operation Should Be Rejected`.
+    ...               Args:
+    ...                   addon_name: Name of the addon to enable
+    ...               Returns:
+    ...                   dict: {success, code, message}
+    Log    Attempting to enable addon: ${addon_name} (negative test)
+    ${result}=    addon_keywords.try_enable_addon    ${addon_name}
+    RETURN    ${result}
+
 Disable
     [Arguments]    ${addon_name}
     [Documentation]    Disable an addon
@@ -86,6 +99,121 @@ Wait For Pods Running
     Log    Waiting for pods with label ${label} in namespace ${namespace} to be running
     addon_keywords.wait_for_pods_running    ${namespace}    ${label}    ${timeout}
     Log    Pods with label ${label} are running in ${namespace}
+
+Addon Exists
+    [Arguments]    ${addon_name}
+    [Documentation]    Check whether the addon CR exists in the cluster
+    ...               Older Harvester releases do not ship every addon, so suites
+    ...               use this to skip rather than fail.
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   bool: True if the addon CR exists
+    ${exists}=    addon_keywords.addon_exists    ${addon_name}
+    RETURN    ${exists}
+
+Get Addon Labels
+    [Arguments]    ${addon_name}
+    [Documentation]    Get the addon's metadata.labels
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   dict: The addon's labels
+    ${labels}=    addon_keywords.get_addon_labels    ${addon_name}
+    RETURN    ${labels}
+
+Get Addon Spec
+    [Arguments]    ${addon_name}
+    [Documentation]    Get the addon's spec
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   dict: The addon's spec
+    ${spec}=    addon_keywords.get_addon_spec    ${addon_name}
+    RETURN    ${spec}
+
+Get Addon Values
+    [Arguments]    ${addon_name}
+    [Documentation]    Get the addon's spec.valuesContent parsed into a dictionary
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   dict: Parsed valuesContent (empty when unset)
+    ${values}=    addon_keywords.get_addon_values    ${addon_name}
+    RETURN    ${values}
+
+Get Addon Values Content
+    [Arguments]    ${addon_name}
+    [Documentation]    Get the addon's raw spec.valuesContent string. Capture this
+    ...               before mutating an addon so teardown can restore it verbatim.
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   str: The raw valuesContent
+    ${content}=    addon_keywords.get_addon_values_content    ${addon_name}
+    RETURN    ${content}
+
+Set Addon Values Content
+    [Arguments]    ${addon_name}    ${values_content}
+    [Documentation]    Replace the addon's raw spec.valuesContent
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...                   values_content: Raw YAML string to store
+    Log    Setting raw valuesContent of addon ${addon_name}
+    addon_keywords.set_addon_values_content    ${addon_name}    ${values_content}
+
+Set Addon Values
+    [Arguments]    ${addon_name}    ${values}
+    [Documentation]    Replace the addon's spec.valuesContent from a dictionary
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...                   values: Dictionary serialised to YAML
+    Log    Updating valuesContent of addon ${addon_name}
+    addon_keywords.update_addon_values    ${addon_name}    ${values}
+
+Wait For Pods Gone
+    [Arguments]    ${namespace}    ${label}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait until no pods matching the label remain in the namespace
+    ...               Args:
+    ...                   namespace: Kubernetes namespace
+    ...                   label: Label selector for pods
+    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
+    Log    Waiting for pods with label ${label} in namespace ${namespace} to be gone
+    addon_keywords.wait_for_pods_gone    ${namespace}    ${label}    ${timeout}
+    Log    No pods with label ${label} remain in ${namespace}
+
+Wait For Deployment Ready
+    [Arguments]    ${name}    ${namespace}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for a Deployment to report all replicas ready
+    ...               Args:
+    ...                   name: Name of the deployment
+    ...                   namespace: Kubernetes namespace
+    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
+    Log    Waiting for deployment ${namespace}/${name} to be ready
+    addon_keywords.wait_for_deployment_ready    ${name}    ${namespace}    ${timeout}
+    Log    Deployment ${namespace}/${name} is ready
+
+Wait For Deployment Gone
+    [Arguments]    ${name}    ${namespace}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for a Deployment to be removed
+    ...               Args:
+    ...                   name: Name of the deployment
+    ...                   namespace: Kubernetes namespace
+    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
+    Log    Waiting for deployment ${namespace}/${name} to be gone
+    addon_keywords.wait_for_deployment_gone    ${name}    ${namespace}    ${timeout}
+    Log    Deployment ${namespace}/${name} is gone
+
+Get ConfigMap Data
+    [Arguments]    ${name}    ${namespace}
+    [Documentation]    Get a ConfigMap's data map
+    ...               Args:
+    ...                   name: Name of the ConfigMap
+    ...                   namespace: Kubernetes namespace
+    ...               Returns:
+    ...                   dict: The ConfigMap's data, or None when it does not exist
+    ${data}=    addon_keywords.get_configmap_data    ${name}    ${namespace}
+    RETURN    ${data}
 
 Wait For Service Running
     [Arguments]    ${namespace}    ${service_name}    ${timeout}=${WAIT_TIMEOUT}

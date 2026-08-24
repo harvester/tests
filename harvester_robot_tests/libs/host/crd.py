@@ -5,6 +5,7 @@ Uses Kubernetes Node resources for host/node operations
 import time
 from kubernetes import client
 from kubernetes.client.rest import ApiException
+from kubernetes.utils import parse_quantity
 from crd import get_cr, patch_cr
 from utility.utility import logging, get_retry_count_and_interval
 from constant import (
@@ -319,6 +320,62 @@ class CRD(Base):
         except ApiException as e:
             logging(f"Failed to get node capacity: {e}")
             raise
+
+    def get_node_resource_utilization(self, node_name):
+        """Return a node's CPU/memory utilization as the descheduler computes it.
+
+        The descheduler's LowNodeUtilization strategy is *requests*-based by
+        default (Harvester does not enable metricsUtilization), so utilization is
+        the sum of the resource requests of all non-terminal pods on the node,
+        expressed as a percentage of the node's allocatable. Reading actual usage
+        from metrics-server would not match what the descheduler acts on.
+
+        Returns:
+            dict with allocatable/requested/available absolutes plus the
+            cpu_percent and memory_percent the descheduler compares to its
+            thresholds.
+        """
+        node = self.core_api.read_node(name=node_name)
+        allocatable = node.status.allocatable or {}
+        cpu_allocatable = float(parse_quantity(allocatable.get('cpu', '0')))
+        memory_allocatable = float(parse_quantity(allocatable.get('memory', '0')))
+
+        pods = self.core_api.list_pod_for_all_namespaces(
+            field_selector=f'spec.nodeName={node_name}'
+        )
+
+        cpu_requested = 0.0
+        memory_requested = 0.0
+        for pod in pods.items:
+            # Succeeded/Failed pods have released their resources
+            if pod.status and pod.status.phase in ('Succeeded', 'Failed'):
+                continue
+            for container in pod.spec.containers or []:
+                requests = (container.resources.requests or {}) if container.resources else {}
+                cpu_requested += float(parse_quantity(requests.get('cpu', '0')))
+                memory_requested += float(parse_quantity(requests.get('memory', '0')))
+
+        cpu_percent = (cpu_requested / cpu_allocatable * 100) if cpu_allocatable else 0.0
+        memory_percent = (
+            (memory_requested / memory_allocatable * 100) if memory_allocatable else 0.0
+        )
+
+        utilization = {
+            'name': node_name,
+            'cpu_allocatable': cpu_allocatable,
+            'memory_allocatable': memory_allocatable,
+            'cpu_requested': cpu_requested,
+            'memory_requested': memory_requested,
+            'cpu_available': max(cpu_allocatable - cpu_requested, 0.0),
+            'memory_available': max(memory_allocatable - memory_requested, 0.0),
+            'cpu_percent': cpu_percent,
+            'memory_percent': memory_percent,
+        }
+        logging(
+            f"Node {node_name} utilization (requests-based): "
+            f"cpu={cpu_percent:.1f}% memory={memory_percent:.1f}%"
+        )
+        return utilization
 
     def get_node_vms(self, node_name):
         """

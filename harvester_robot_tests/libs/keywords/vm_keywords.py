@@ -89,6 +89,27 @@ class vm_keywords:
         logging(f'Migrating VM {vm_name} to {target_node}')
         self.vm.migrate(vm_name, target_node)
 
+    def get_vm_node(self, vm_name):
+        """Return the node currently running the VM, or None when not running"""
+        node = self.vm.get_node(vm_name)
+        logging(f'VM {vm_name} is running on node {node}')
+        return node
+
+    def wait_for_vm_migrated_away_from(self, vm_name, original_node,
+                                       timeout=DEFAULT_TIMEOUT):
+        """Wait until the VM is Running on a node other than original_node
+
+        Returns:
+            str: The node the VM ended up on
+        """
+        logging(f'Waiting for VM {vm_name} to leave node {original_node}')
+        return self.vm.wait_for_migrated_away_from(vm_name, original_node, int(timeout))
+
+    def get_vm_annotations(self, vm_name):
+        """Return the VM object's metadata.annotations"""
+        logging(f'Getting annotations of VM {vm_name}')
+        return self.vm.get_annotations(vm_name)
+
     def pause_vm(self, vm_name):
         """Pause a running VM"""
         logging(f'Pausing VM {vm_name}')

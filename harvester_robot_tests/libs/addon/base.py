@@ -2,6 +2,25 @@
 Base class for Addon operations
 """
 from abc import ABC, abstractmethod
+from collections.abc import Mapping, Sequence
+
+
+def to_plain_containers(obj):
+    """Recursively convert an object tree to built-in dicts/lists.
+
+    Robot Framework's `Create Dictionary` returns a DotDict (an OrderedDict
+    subclass). PyYAML has no representer for it, so dumping one does not fail -
+    it silently emits a `!!python/object/apply:robot.utils.dotdict.DotDict` tag,
+    which would land in an addon's valuesContent and break the chart. Anything
+    written back as YAML must be normalised through here first.
+    """
+    if isinstance(obj, Mapping):
+        return {key: to_plain_containers(value) for key, value in obj.items()}
+    if isinstance(obj, (list, tuple)) or (
+        isinstance(obj, Sequence) and not isinstance(obj, (str, bytes))
+    ):
+        return [to_plain_containers(item) for item in obj]
+    return obj
 
 
 class Base(ABC):

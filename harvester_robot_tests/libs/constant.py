@@ -137,6 +137,23 @@ MONITORING_NAMESPACE = "cattle-monitoring-system"
 
 # Addon-related resource plurals
 ADDON_PLURAL = "addons"
+
+# Descheduler Addon Constants
+# The addon CR ships disabled by default in kube-system; enabling it renders a
+# Deployment and a ConfigMap both named "descheduler" from the upstream
+# kubernetes-sigs/descheduler chart (release name == chart name).
+ADDON_DESCHEDULER = "descheduler"
+DESCHEDULER_NAMESPACE = "kube-system"
+DESCHEDULER_LABEL = "app.kubernetes.io/name=descheduler"
+DESCHEDULER_DEPLOYMENT = "descheduler"
+DESCHEDULER_CONFIGMAP = "descheduler"
+DESCHEDULER_POLICY_KEY = "policy.yaml"
+# Harvester marks non-migratable VMs with this annotation so the descheduler
+# never evicts them (pkg/controller/master/virtualmachine/vmi_descheduler_controller.go)
+ANNOT_PREFER_NO_EVICTION = "descheduler.alpha.kubernetes.io/prefer-no-eviction"
+# Bypasses the "not enough nodes" webhook check (pkg/webhook/resources/addon/validator.go)
+ANNOT_SKIP_DESCHEDULER_WEBHOOK_CHECK = "harvesterhci.io/skipDeschedulerAddonWebhookCheck"
+
 # PCI Devices Controller Addon Constants
 ADDON_PCIDEVICES = "pcidevices-controller"
 PCIDEVICES_NAMESPACE = "harvester-system"

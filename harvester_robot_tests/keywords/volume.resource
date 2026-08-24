@@ -41,9 +41,12 @@ Wait Until Volume Is Active
 
 # lifecycle
 Create Volume
-    [Arguments]    ${vol_name}    ${size}=${DEFAULT_VOLUME_SIZE}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${replicas}=${DEFAULT_VM_REPLICAS}
-    [Documentation]    Create a volume (PVC) backed by the given storage class
-    volume_keywords.create_volume    ${vol_name}    ${size}    ${replicas}    blockdev    storage_class=${storage_class}
+    [Arguments]    ${vol_name}    ${size}=${DEFAULT_VOLUME_SIZE}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${replicas}=${DEFAULT_VM_REPLICAS}    ${access_mode}=ReadWriteMany
+    [Documentation]    Create a volume (PVC) backed by the given storage class.
+    ...    access_mode defaults to ReadWriteMany, which is what Harvester uses for VM
+    ...    volumes. Pass ReadWriteOnce to produce a volume that makes any VM attaching
+    ...    it non-live-migratable.
+    volume_keywords.create_volume    ${vol_name}    ${size}    ${replicas}    blockdev    storage_class=${storage_class}    access_mode=${access_mode}
 
 Create ${size_gi}Gi Volume
     [Arguments]    ${vol_name}

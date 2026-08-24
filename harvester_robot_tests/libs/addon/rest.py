@@ -9,7 +9,7 @@ import signal
 import yaml
 from utility.utility import logging, get_retry_count_and_interval, get_harvester_api_client
 from constant import DEFAULT_TIMEOUT
-from addon.base import Base
+from addon.base import Base, to_plain_containers
 
 
 class Rest(Base):
@@ -141,6 +141,45 @@ class Rest(Base):
                     retry_delay = min(retry_delay * 2, 16)  # Exponential backoff, max 16s
                 else:
                     raise Exception(f"Failed to enable addon {addon_name}: {e}")
+
+    def try_enable_addon(self, addon_name):
+        """
+        Attempt to enable an addon for negative testing (REST)
+
+        Returns a result dict instead of raising so the test layer can assert on
+        the rejection (e.g. the descheduler webhook refusing single-node clusters).
+        Unlike enable_addon() this deliberately does NOT retry on 4xx, because a
+        webhook denial is the expected outcome rather than a transient conflict.
+
+        Args:
+            addon_name: Name of the addon to enable
+
+        Returns:
+            dict: {success, code, message}
+        """
+        logging(f"Attempting to enable addon {addon_name} (negative test)")
+
+        namespace = self._find_addon_namespace(addon_name)
+        if not namespace:
+            raise Exception(f"Addon {addon_name} not found")
+
+        addon = self.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+
+        addon['spec']['enabled'] = True
+
+        code, data = self.api_client.put(
+            f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
+            data=addon
+        )
+
+        if code in [200, 201]:
+            return {"success": True, "code": code, "message": ""}
+
+        logging(f"Enable of addon {addon_name} returned status={code}")
+        message = data if isinstance(data, str) else str(data)
+        return {"success": False, "code": code, "message": message}
 
     def disable_addon(self, addon_name):
         """
@@ -395,6 +434,251 @@ class Rest(Base):
         raise TimeoutError(
             f"Timeout waiting for pods with selector '{label_selector}' "
             f"to be running after {timeout}s"
+        )
+
+    def wait_for_pods_gone(self, namespace, label_selector, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait until no pods matching the label selector remain in the namespace (REST)
+
+        Used after disabling an addon to confirm its workload was torn down.
+
+        Args:
+            namespace: Kubernetes namespace
+            label_selector: Label selector to filter pods
+            timeout: Timeout in seconds
+        """
+        logging(
+            f"Waiting for pods with selector '{label_selector}' in namespace "
+            f"'{namespace}' to be gone"
+        )
+        retry_count, retry_interval = get_retry_count_and_interval()
+        max_retries = int(timeout / retry_interval)
+
+        # Parse label selector (e.g., 'app.kubernetes.io/name=descheduler')
+        label_key, label_value = (
+            label_selector.split('=', 1) if '=' in label_selector else (label_selector, None)
+        )
+
+        for i in range(max_retries):
+            try:
+                # Rancher API doesn't support labelSelector query param -
+                # get all pods and filter client-side
+                code, data = self.api_client.get(f"v1/pods/{namespace}")
+
+                if code != 200:
+                    logging(f"Failed to list pods: HTTP {code}", level='WARNING')
+                    time.sleep(retry_interval)
+                    continue
+
+                all_pods = data.get('data', []) if isinstance(data, dict) else data
+
+                pods = []
+                for pod in all_pods:
+                    labels = pod.get('metadata', {}).get('labels', {})
+                    if label_value:
+                        if labels.get(label_key) == label_value:
+                            pods.append(pod)
+                    else:
+                        if label_key in labels:
+                            pods.append(pod)
+
+                if not pods:
+                    logging(f"No pods with selector '{label_selector}' remain")
+                    return True
+
+                logging(
+                    f"{len(pods)} pod(s) with selector '{label_selector}' still present, "
+                    f"retrying... ({i+1}/{max_retries})"
+                )
+            except Exception as e:
+                logging(f"Error listing pods: {e}", level='WARNING')
+
+            time.sleep(retry_interval)
+
+        raise TimeoutError(
+            f"Timeout waiting for pods with selector '{label_selector}' "
+            f"to be gone after {timeout}s"
+        )
+
+    def wait_for_deployment_ready(self, name, namespace, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a Deployment to report all replicas ready (REST)
+
+        Args:
+            name: Name of the deployment
+            namespace: Kubernetes namespace
+            timeout: Timeout in seconds
+
+        Returns:
+            bool: True once the deployment is ready
+        """
+        logging(f"Waiting for deployment '{namespace}/{name}' to be ready (REST)")
+        retry_count, retry_interval = get_retry_count_and_interval()
+        max_retries = int(timeout / retry_interval)
+
+        for i in range(max_retries):
+            try:
+                code, data = self.api_client.get(f"v1/apps.deployments/{namespace}/{name}")
+                if code == 200 and data:
+                    desired = data.get('spec', {}).get('replicas', 0) or 0
+                    ready = data.get('status', {}).get('readyReplicas', 0) or 0
+                    if desired > 0 and ready == desired:
+                        logging(
+                            f"Deployment '{namespace}/{name}' is ready ({ready}/{desired})"
+                        )
+                        return True
+                    logging(
+                        f"Deployment '{namespace}/{name}' not ready ({ready}/{desired}), "
+                        f"retrying... ({i+1}/{max_retries})"
+                    )
+                else:
+                    logging(
+                        f"Deployment '{namespace}/{name}' not available (HTTP {code}), "
+                        f"retrying... ({i+1}/{max_retries})"
+                    )
+            except Exception as e:
+                logging(f"Error reading deployment: {e}", level='WARNING')
+
+            time.sleep(retry_interval)
+
+        raise TimeoutError(
+            f"Timeout waiting for deployment '{namespace}/{name}' to be ready after {timeout}s"
+        )
+
+    def wait_for_deployment_gone(self, name, namespace, timeout=DEFAULT_TIMEOUT):
+        """
+        Wait for a Deployment to be removed (REST)
+
+        Args:
+            name: Name of the deployment
+            namespace: Kubernetes namespace
+            timeout: Timeout in seconds
+
+        Returns:
+            bool: True once the deployment no longer exists
+        """
+        logging(f"Waiting for deployment '{namespace}/{name}' to be gone (REST)")
+        retry_count, retry_interval = get_retry_count_and_interval()
+        max_retries = int(timeout / retry_interval)
+
+        for i in range(max_retries):
+            try:
+                code, _ = self.api_client.get(f"v1/apps.deployments/{namespace}/{name}")
+                if code == 404:
+                    logging(f"Deployment '{namespace}/{name}' is gone")
+                    return True
+                logging(
+                    f"Deployment '{namespace}/{name}' still present (HTTP {code}), "
+                    f"retrying... ({i+1}/{max_retries})"
+                )
+            except Exception as e:
+                logging(f"Error reading deployment: {e}", level='WARNING')
+
+            time.sleep(retry_interval)
+
+        raise TimeoutError(
+            f"Timeout waiting for deployment '{namespace}/{name}' to be gone after {timeout}s"
+        )
+
+    def get_configmap_data(self, name, namespace):
+        """
+        Get the data map of a ConfigMap (REST)
+
+        Args:
+            name: Name of the ConfigMap
+            namespace: Kubernetes namespace
+
+        Returns:
+            dict: The ConfigMap's data, or None if the ConfigMap does not exist
+        """
+        try:
+            code, data = self.api_client.get(f"v1/configmaps/{namespace}/{name}")
+            if code == 404:
+                logging(f"ConfigMap '{namespace}/{name}' not found", level='WARNING')
+                return None
+            if code != 200:
+                raise Exception(f"HTTP {code}")
+            return data.get('data', {}) or {}
+        except Exception as e:
+            raise Exception(f"Failed to get ConfigMap {namespace}/{name}: {e}")
+
+    def get_addon_values_content(self, addon_name):
+        """
+        Get the raw spec.valuesContent string of an addon (REST)
+
+        The raw string is what must be handed back to set_addon_values_content()
+        when restoring an addon after a test mutated its configuration.
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            str: The raw valuesContent (empty string when unset)
+        """
+        addon = self.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+        return addon.get('spec', {}).get('valuesContent', '')
+
+    def get_addon_values(self, addon_name):
+        """
+        Get the parsed spec.valuesContent of an addon (REST)
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            dict: Parsed valuesContent (empty dict when unset or not a mapping)
+        """
+        values_content = self.get_addon_values_content(addon_name)
+        if not values_content:
+            return {}
+        parsed = yaml.safe_load(values_content)
+        return parsed if isinstance(parsed, dict) else {}
+
+    def set_addon_values_content(self, addon_name, values_content):
+        """
+        Replace the raw spec.valuesContent of an addon (REST)
+
+        Args:
+            addon_name: Name of the addon
+            values_content: Raw YAML string to store
+        """
+        namespace = self._find_addon_namespace(addon_name)
+        if not namespace:
+            raise Exception(f"Addon {addon_name} not found")
+
+        addon = self.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+
+        if 'spec' not in addon:
+            addon['spec'] = {}
+        addon['spec']['valuesContent'] = values_content
+
+        code, data = self.api_client.put(
+            f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
+            data=addon
+        )
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to update valuesContent of addon {addon_name}: HTTP {code}, {data}"
+            )
+        logging(f"Updated valuesContent of addon {namespace}/{addon_name}")
+
+    def update_addon_values(self, addon_name, values):
+        """
+        Replace spec.valuesContent of an addon from a dict (REST)
+
+        Args:
+            addon_name: Name of the addon
+            values: dict serialised to YAML and stored as valuesContent.
+                Normalised to plain containers first so Robot DotDicts do not
+                serialise as Python-tagged YAML.
+        """
+        self.set_addon_values_content(
+            addon_name,
+            yaml.dump(to_plain_containers(values), default_flow_style=False)
         )
 
     def wait_for_service_running(self, namespace, service_name, timeout=DEFAULT_TIMEOUT):
