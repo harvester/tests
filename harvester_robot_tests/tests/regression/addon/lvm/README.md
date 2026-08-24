@@ -9,7 +9,8 @@ cleanup starts.
 [`lvm-order.txt`](./lvm-order.txt) fixes the execution into three stages:
 
 1. Enable the addon and provision the shared volume group.
-2. Run the attach, data-integrity, snapshot, and expansion suites concurrently.
+2. Run the attach, data-integrity, snapshot, snapshot-lifecycle, and
+   expansion suites concurrently.
 3. Clean the volume group and BlockDevices, then disable the addon.
 
 Each `#WAIT` is a Pabot stage barrier: every suite above it must finish before
@@ -27,6 +28,11 @@ override with `WORKLOAD_POD_IMAGE`) against LVM PVCs to checksum real data
 across republish and snapshot-restore. The image is pulled from the registry,
 so the cluster needs egress (or a pre-loaded/mirrored image) when this suite
 runs.
+
+The snapshot-lifecycle suite verifies backend state on the node (via a
+transient privileged hostPID probe pod running the host's `lvs`) and the
+driver's snapshot-location ConfigMap records (harvester/csi-driver-lvm#64).
+The location-record cases need a driver build that includes that PR.
 
 Pabot 5.2.2 does not support comments in ordering files. A line beginning with
 `#` is treated as a suite name unless it is one of Pabot's directives, such as
