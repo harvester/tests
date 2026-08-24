@@ -9,7 +9,7 @@ cleanup starts.
 [`lvm-order.txt`](./lvm-order.txt) fixes the execution into three stages:
 
 1. Enable the addon and provision the shared volume group.
-2. Run the attach, snapshot, and expansion suites concurrently.
+2. Run the attach, data-integrity, snapshot, and expansion suites concurrently.
 3. Clean the volume group and BlockDevices, then disable the addon.
 
 Each `#WAIT` is a Pabot stage barrier: every suite above it must finish before
@@ -21,6 +21,12 @@ BlockDevice of at least 50 GiB. Broad serial and parallel runs exclude the `lvm`
 tag. Run the directory explicitly or use the exact `-i lvm` tag; compound LVM tag
 expressions are rejected so they cannot accidentally bypass staged ordering. The
 suite uses Kubernetes CRDs and does not support the REST operation strategy.
+
+The data-integrity suite runs plain pods (default image `busybox:1.36.1`,
+override with `WORKLOAD_POD_IMAGE`) against LVM PVCs to checksum real data
+across republish and snapshot-restore. The image is pulled from the registry,
+so the cluster needs egress (or a pre-loaded/mirrored image) when this suite
+runs.
 
 Pabot 5.2.2 does not support comments in ordering files. A line beginning with
 `#` is treated as a suite name unless it is one of Pabot's directives, such as

@@ -1,6 +1,7 @@
 --suite Lvm.Test Lvm Addon
 #WAIT
 --suite Lvm.Test Lvm Attach
+--suite Lvm.Test Lvm Data Integrity
 --suite Lvm.Test Lvm Snapshot
 --suite Lvm.Test Lvm Expansion
 #WAIT
