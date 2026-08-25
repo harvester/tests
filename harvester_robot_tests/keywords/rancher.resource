@@ -2219,6 +2219,22 @@ Suite Setup For Rancher Integration Tests
     Wait For Image Ready    ${IMAGE_NAME}    ${WAIT_TIMEOUT}
 
     Log    Test environment ready (version: ${RKE2_VERSION}, timestamp: ${timestamp})    console=yes
+    # RBAC setup reuses the already-imported Harvester cluster
+    Set Suite Variable    ${SUITE_CLUSTER_ID}    ${HARVESTER_CLUSTER_ID}
+    Install Harvester RBAC Chart On Local Cluster
+    ${project_id}=    Get Rancher Project ID    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
+    Set Suite Variable    ${SUITE_PROJECT_ID}    ${project_id}
+    Log    RBAC setup: cluster=${SUITE_CLUSTER_ID}, project=${project_id}    console=yes
+    Create Namespace In Project
+    ...    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}    ${project_id}
+    FOR    ${user}    IN
+    ...    ${RBAC_CLUSTER_VIEW_USER}
+    ...    ${RBAC_CLUSTER_MANAGE_USER}
+    ...    ${RBAC_PROJECT_VIEW_USER}
+    ...    ${RBAC_PROJECT_MANAGE_USER}
+        Run Keyword And Ignore Error    Delete Rancher User    ${user}
+    END
+    Log    Setup complete    console=yes
 
 Import Harvester To Rancher In Setup
     [Documentation]    Import Harvester into Rancher during suite setup.
@@ -2243,6 +2259,25 @@ Import Harvester To Rancher In Setup
 Suite Teardown For Rancher Integration Tests
     [Documentation]    Cleanup all resources after tests.
     Log    Running suite teardown
+
+    # RBAC cleanup
+    FOR    ${user}    IN
+    ...    ${RBAC_CLUSTER_VIEW_USER}
+    ...    ${RBAC_CLUSTER_MANAGE_USER}
+    ...    ${RBAC_PROJECT_VIEW_USER}
+    ...    ${RBAC_PROJECT_MANAGE_USER}
+        Run Keyword And Ignore Error
+        ...    Delete User Cluster Role Bindings    ${user}    ${SUITE_CLUSTER_ID}
+        Run Keyword And Ignore Error
+        ...    Delete User Project Role Bindings    ${user}    ${SUITE_CLUSTER_ID}    ${SUITE_PROJECT_ID}
+        Run Keyword And Ignore Error
+        ...    Delete User Global Role Bindings    ${user}
+        Run Keyword And Ignore Error
+        ...    Delete Rancher User    ${user}
+    END
+    Run Keyword And Ignore Error
+    ...    Delete Namespace From Cluster    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}
+    Run Keyword And Ignore Error    Uninstall Harvester RBAC Chart On Local Cluster
 
     # Cleanup clusters (best effort)
     Run Keyword And Ignore Error    Cleanup Cluster By Name    ${SINGLE_CLUSTER_NAME}
@@ -2343,19 +2378,6 @@ Assign Standard User Role
     ...                   user_id: Username to assign the role to
     Log    Assigning Standard User global role to: ${user_id}
     rancher_keywords.assign_standard_user_role    ${user_id}
-
-Get Management Cluster ID
-    [Arguments]    ${cluster_name}
-    [Documentation]    Return the management cluster ID (e.g. c-m-xxxxx) for a cluster.
-    ...               Reads status.clusterName from the provisioning cluster resource.
-    ...               Args:
-    ...                   cluster_name: Provisioning cluster name
-    ...               Returns:
-    ...                   str: Management cluster ID
-    Log    Getting management cluster ID for: ${cluster_name}
-    ${cluster_id}=    rancher_keywords.get_management_cluster_id    ${cluster_name}
-    Log    Management cluster ID: ${cluster_id}
-    RETURN    ${cluster_id}
 
 Get Rancher Project ID
     [Arguments]    ${cluster_id}    ${project_name}
@@ -2471,55 +2493,6 @@ Delete Namespace From Cluster
 # RBAC step keywords (BDD wrappers used by test_rancher_rbac.robot)
 # ──────────────────────────────────────────────────────────────────────────────
 
-Suite Setup For RBAC Tests
-    Log    Starting RBAC suite setup
-    Set up test environment
-    ${timestamp}=    Evaluate    __import__('datetime').datetime.now().strftime("%Y%m%d%H%M%S")
-    Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    hvst-rbac-${timestamp}
-    Set Suite Variable    ${HARVESTER_CLUSTER_ID}    ${EMPTY}
-    Import Harvester To Rancher In Setup
-    ${cluster}=    Get Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
-    Should Not Be Empty    ${cluster}    Harvester cluster not found in Rancher
-    Log    Harvester integration verified    console=yes
-    Install Harvester RBAC Chart On Local Cluster
-    Set Suite Variable    ${SUITE_CLUSTER_ID}    ${HARVESTER_CLUSTER_ID}
-    ${project_id}=    Get Rancher Project ID    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
-    Set Suite Variable    ${SUITE_PROJECT_ID}    ${project_id}
-    Log    Cluster ID: ${SUITE_CLUSTER_ID} | Project ID: ${project_id}
-    Create Namespace In Project
-    ...    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}    ${project_id}
-    FOR    ${user}    IN
-    ...    ${RBAC_CLUSTER_VIEW_USER}
-    ...    ${RBAC_CLUSTER_MANAGE_USER}
-    ...    ${RBAC_PROJECT_VIEW_USER}
-    ...    ${RBAC_PROJECT_MANAGE_USER}
-        Run Keyword And Ignore Error    Delete Rancher User    ${user}
-    END
-    Log    Suite setup complete
-
-Suite Teardown For RBAC Tests
-    Log    Starting RBAC suite teardown
-    FOR    ${user}    IN
-    ...    ${RBAC_CLUSTER_VIEW_USER}
-    ...    ${RBAC_CLUSTER_MANAGE_USER}
-    ...    ${RBAC_PROJECT_VIEW_USER}
-    ...    ${RBAC_PROJECT_MANAGE_USER}
-        Run Keyword And Ignore Error
-        ...    Delete User Cluster Role Bindings    ${user}    ${SUITE_CLUSTER_ID}
-        Run Keyword And Ignore Error
-        ...    Delete User Project Role Bindings    ${user}    ${SUITE_CLUSTER_ID}    ${SUITE_PROJECT_ID}
-        Run Keyword And Ignore Error
-        ...    Delete User Global Role Bindings    ${user}
-        Run Keyword And Ignore Error
-        ...    Delete Rancher User    ${user}
-    END
-    Run Keyword And Ignore Error
-    ...    Delete Namespace From Cluster    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}
-    Run Keyword And Ignore Error    Uninstall Harvester RBAC Chart On Local Cluster
-    Run Keyword And Ignore Error    Delete Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
-    Run Keyword And Ignore Error    Set Cluster Registration URL    ${EMPTY}
-    Log    Suite teardown complete
-
 RBAC Test User Does Not Exist
     [Arguments]    ${user_id}
     Run Keyword And Ignore Error    Delete Rancher User    ${user_id}
@@ -2541,3 +2514,27 @@ Cluster Role Is Assigned To User
 Project Role Is Assigned To User
     [Arguments]    ${user_id}    ${cluster_id}    ${project_id}    ${role_template_name}
     Assign Project Role    ${user_id}    ${cluster_id}    ${project_id}    ${role_template_name}
+
+User Can Read VMs In Namespace
+    [Arguments]    ${user_id}    ${namespace}
+    ${kubeconfig}=    Generate User Kubeconfig    ${user_id}    ${RBAC_USER_PASSWORD}    ${SUITE_CLUSTER_ID}
+    ${ok}    ${output}=    Verify Resource Access    ${kubeconfig}    get    virtualmachines.kubevirt.io    ${namespace}
+    Should Be True    ${ok}    msg=${user_id} should be able to get VMs in '${namespace}'. Output: ${output}
+
+User Cannot Read VMs In Namespace
+    [Arguments]    ${user_id}    ${namespace}
+    ${kubeconfig}=    Generate User Kubeconfig    ${user_id}    ${RBAC_USER_PASSWORD}    ${SUITE_CLUSTER_ID}
+    ${ok}    ${output}=    Verify Resource Access    ${kubeconfig}    get    virtualmachines.kubevirt.io    ${namespace}
+    Should Not Be True    ${ok}    msg=${user_id} should NOT be able to get VMs in '${namespace}'. Output: ${output}
+
+User Can Write VMs In Namespace
+    [Arguments]    ${user_id}    ${namespace}
+    ${kubeconfig}=    Generate User Kubeconfig    ${user_id}    ${RBAC_USER_PASSWORD}    ${SUITE_CLUSTER_ID}
+    ${ok}    ${output}=    Verify Resource Access    ${kubeconfig}    create    virtualmachines.kubevirt.io    ${namespace}
+    Should Be True    ${ok}    msg=${user_id} should be able to create VMs in '${namespace}'. Output: ${output}
+
+User Cannot Write VMs In Namespace
+    [Arguments]    ${user_id}    ${namespace}
+    ${kubeconfig}=    Generate User Kubeconfig    ${user_id}    ${RBAC_USER_PASSWORD}    ${SUITE_CLUSTER_ID}
+    ${ok}    ${output}=    Verify Resource Access    ${kubeconfig}    create    virtualmachines.kubevirt.io    ${namespace}
+    Should Not Be True    ${ok}    msg=${user_id} should NOT be able to create VMs in '${namespace}'. Output: ${output}
