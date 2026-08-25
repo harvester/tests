@@ -28,6 +28,10 @@ Snapshot LV Should Not Exist On Node
     [Arguments]    ${node}    ${vg}    ${snapshot_handle}
     lvm_driver_keywords.snapshot_lv_should_not_exist    ${node}    ${vg}    ${snapshot_handle}
 
+No PV Should Reference Claim
+    [Arguments]    ${pvc_name}
+    lvm_driver_keywords.no_pv_should_reference_claim    ${pvc_name}
+
 Create Retain Volume Snapshot Class
     [Arguments]    ${class_name}
     lvm_driver_keywords.create_retain_snapshot_class    ${class_name}

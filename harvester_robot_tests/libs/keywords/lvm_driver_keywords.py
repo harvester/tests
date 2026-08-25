@@ -181,6 +181,25 @@ class lvm_driver_keywords:
             f"Backend LV lvm-{snapshot_handle} still present in {vg_name} "
             f"on {node_name}")
 
+    def no_pv_should_reference_claim(self, pvc_name,
+                                     namespace=DEFAULT_NAMESPACE):
+        """Assert no PersistentVolume (e.g. stuck in Released) still
+        references the claim; retries to allow reclaim to finish."""
+        retry_count, retry_interval = get_retry_count_and_interval()
+        leftover = None
+        for _ in range(retry_count):
+            leftover = None
+            for pv in self.core_api.list_persistent_volume().items:
+                ref = pv.spec.claim_ref
+                if ref and ref.name == pvc_name and ref.namespace == namespace:
+                    leftover = f"{pv.metadata.name} (phase {pv.status.phase})"
+                    break
+            if leftover is None:
+                return
+            time.sleep(retry_interval)
+        raise AssertionError(
+            f"PV {leftover} still references deleted claim {pvc_name}")
+
     # ---- retain-policy and pre-provisioned snapshot flow ----
 
     def create_retain_snapshot_class(self, class_name):

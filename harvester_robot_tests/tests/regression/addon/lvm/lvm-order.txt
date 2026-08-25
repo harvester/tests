@@ -4,6 +4,7 @@
 --suite Lvm.Test Lvm Data Integrity
 --suite Lvm.Test Lvm Snapshot
 --suite Lvm.Test Lvm Snapshot Lifecycle
+--suite Lvm.Test Lvm Negative
 --suite Lvm.Test Lvm Expansion
 #WAIT
 --suite Lvm.Test Zz Lvm Cleanup

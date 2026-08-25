@@ -748,9 +748,12 @@ class CRD(Base):
         access_mode = kwargs.get('access_mode', ACCESS_MODE_RWX)
         volume_mode = kwargs.get('volume_mode', 'Block')
 
-        # Get original volume to get size
-        original_pvc = self.get(volume_name, namespace)
-        size = original_pvc['spec']['resources']['requests']['storage']
+        # Default to the source volume's size; negative tests may override
+        # (e.g. an undersized restore that must be rejected).
+        size = kwargs.get('size')
+        if not size:
+            original_pvc = self.get(volume_name, namespace)
+            size = original_pvc['spec']['resources']['requests']['storage']
 
         # Create new PVC from snapshot
         body = {

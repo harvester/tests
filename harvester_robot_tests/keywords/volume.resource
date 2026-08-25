@@ -159,7 +159,7 @@ Delete Volume Snapshot
     volume_keywords.delete_volume_snapshot    ${vol_name}    ${snapshot_name}
 
 Restore Volume From Snapshot
-    [Arguments]    ${vol_name}    ${snapshot_name}    ${new_vol_name}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${volume_mode}=Block    ${access_mode}=ReadWriteMany
+    [Arguments]    ${vol_name}    ${snapshot_name}    ${new_vol_name}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${volume_mode}=Block    ${access_mode}=ReadWriteMany    ${size}=${EMPTY}
     volume_keywords.restore_volume_from_snapshot
     ...    ${vol_name}
     ...    ${snapshot_name}
@@ -167,3 +167,4 @@ Restore Volume From Snapshot
     ...    storage_class=${storage_class}
     ...    volume_mode=${volume_mode}
     ...    access_mode=${access_mode}
+    ...    size=${size}
