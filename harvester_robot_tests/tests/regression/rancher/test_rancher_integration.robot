@@ -11,10 +11,6 @@ Suite Teardown   Suite Teardown For Rancher Integration Tests
 *** Variables ***
 ${SUITE_CLUSTER_ID}             ${EMPTY}
 ${SUITE_PROJECT_ID}             ${EMPTY}
-${RBAC_CLUSTER_ID}              local
-${RBAC_CHART_REPO_NAME}         rancher-charts
-${RBAC_CHART_NAME}              harvester-rbac
-${RBAC_CHART_VERSION}           110.0.0+up0.1.1
 ${RBAC_CHART_RELEASE_NAME}      harvester-rbac
 ${RBAC_CHART_NAMESPACE}         default
 ${HARVESTER_PROJECT_NAME}       ${EMPTY}
