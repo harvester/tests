@@ -80,10 +80,7 @@ ${CSI_CHART_VERSION}            %{CSI_CHART_VERSION=}
 ${CP_CHART_VERSION}             %{CP_CHART_VERSION=}
 
 # RBAC Chart (harvester-rbac Helm chart deployed via Rancher Apps)
-${RBAC_CLUSTER_ID}              local
-${RBAC_CHART_REPO_NAME}         rancher-charts
-${RBAC_CHART_NAME}              harvester-rbac
-${RBAC_CHART_VERSION}           110.0.0+up0.1.1
+${RBAC_CHART_VERSION}           %{RBAC_CHART_VERSION=}
 ${RBAC_USER_PASSWORD}           %{RBAC_USER_PASSWORD=RbacTest1234!}
 
 

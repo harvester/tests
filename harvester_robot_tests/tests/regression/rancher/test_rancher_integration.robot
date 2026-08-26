@@ -9,6 +9,9 @@ Suite Setup      Suite Setup For Rancher Integration Tests
 Suite Teardown   Suite Teardown For Rancher Integration Tests
 
 *** Variables ***
+${RBAC_CLUSTER_ID}              local
+${RBAC_CHART_REPO_NAME}         rancher-charts
+${RBAC_CHART_NAME}              harvester-rbac
 ${SUITE_CLUSTER_ID}             ${EMPTY}
 ${SUITE_PROJECT_ID}             ${EMPTY}
 ${RBAC_CHART_RELEASE_NAME}      harvester-rbac

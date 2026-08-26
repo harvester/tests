@@ -2332,6 +2332,10 @@ Cleanup Custom Cluster By Name
 
 Install Harvester RBAC Chart On Local Cluster
     [Arguments]    ${version}=${RBAC_CHART_VERSION}
+    # Resolve chart version (latest when not specified)
+    IF    '${version}' == '${EMPTY}'
+        ${version}=    Get Latest Chart Version    ${RBAC_CHART_REPO_NAME}    ${RBAC_CHART_NAME}
+    END
     Install Chart
     ...    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_REPO_NAME}    ${RBAC_CHART_NAME}
     ...    ${version}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
