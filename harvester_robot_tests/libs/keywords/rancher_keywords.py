@@ -1397,32 +1397,30 @@ class rancher_keywords:
         logging(f"Assigning Standard User role to: {user_id}")
         self.rancher.assign_standard_user_role(user_id)
 
-    def get_management_cluster_id(self, cluster_name):
+    def create_project(self, cluster_id, display_name):
         """
-        Return the management cluster ID (e.g. c-m-xxxxx) for a cluster.
-
-        Args:
-            cluster_name: Provisioning cluster name or display name
-
-        Returns:
-            str: Management cluster ID
-        """
-        logging(f"Getting management cluster ID for: {cluster_name}")
-        return self.rancher.get_management_cluster_id(cluster_name)
-
-    def get_project_id(self, cluster_id, project_name):
-        """
-        Return the short project ID (e.g. p-xxxxx) for a named project.
+        Create a new Rancher project and return its short project ID.
 
         Args:
             cluster_id: Management cluster ID (e.g. c-m-xxxxx)
-            project_name: Display name of the project
+            display_name: Display name for the project
 
         Returns:
-            str: Short project ID
+            str: Short project ID (e.g. p-xxxxx)
         """
-        logging(f"Getting project ID for '{project_name}' in cluster {cluster_id}")
-        return self.rancher.get_project_id(cluster_id, project_name)
+        logging(f"Creating project '{display_name}' in cluster {cluster_id}")
+        return self.rancher.create_project(cluster_id, display_name)
+
+    def delete_project(self, cluster_id, project_id):
+        """
+        Delete a Rancher project.
+
+        Args:
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+        """
+        logging(f"Deleting project {project_id} in cluster {cluster_id}")
+        self.rancher.delete_project(cluster_id, project_id)
 
     def assign_project_role(self, user_id, cluster_id, project_id, role_template_name):
         """

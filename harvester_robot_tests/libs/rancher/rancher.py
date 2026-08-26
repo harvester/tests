@@ -439,13 +439,13 @@ class Rancher(Base):
         """Assign the Standard User global role to a user"""
         return self.rancher.assign_standard_user_role(user_id)
 
-    def get_management_cluster_id(self, cluster_name):
-        """Return the management cluster ID (e.g. c-m-xxxxx) for a cluster"""
-        return self.rancher.get_management_cluster_id(cluster_name)
+    def create_project(self, cluster_id, display_name):
+        """Create a new Rancher project and return its short project ID"""
+        return self.rancher.create_project(cluster_id, display_name)
 
-    def get_project_id(self, cluster_id, project_name):
-        """Return the short project ID (e.g. p-xxxxx) for a named project"""
-        return self.rancher.get_project_id(cluster_id, project_name)
+    def delete_project(self, cluster_id, project_id):
+        """Delete a Rancher project"""
+        return self.rancher.delete_project(cluster_id, project_id)
 
     def assign_project_role(self, user_id, cluster_id, project_id, role_template_name):
         """Create a ProjectRoleTemplateBinding to grant a user a project-scoped role"""

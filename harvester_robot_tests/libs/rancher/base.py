@@ -613,30 +613,25 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def get_management_cluster_id(self, cluster_name):
-        """Return the management cluster ID (e.g. c-m-xxxxx) for a given cluster display name.
-
-        For imported Harvester clusters the management cluster ID is stored in
-        status.clusterName of the corresponding provisioning.cattle.io Cluster.
+    def create_project(self, cluster_id, display_name):
+        """Create a new Rancher project in the given cluster.
 
         Args:
-            cluster_name: Provisioning cluster name or display name
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            display_name: Display name for the project
 
         Returns:
-            str: Management cluster ID (e.g. c-m-xxxxx)
+            str: Short project ID (e.g. p-xxxxx)
         """
         pass
 
     @abstractmethod
-    def get_project_id(self, cluster_id, project_name):
-        """Return the short project ID (e.g. p-xxxxx) for a project in a cluster.
+    def delete_project(self, cluster_id, project_id):
+        """Delete a Rancher project.
 
         Args:
             cluster_id: Management cluster ID (e.g. c-m-xxxxx)
-            project_name: Display name of the project
-
-        Returns:
-            str: Short project ID (e.g. p-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
         """
         pass
 

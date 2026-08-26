@@ -3337,70 +3337,69 @@ class CRD(Base):
 
         logging(f"Assigned Standard User role to: {user_id}")
 
-    def get_management_cluster_id(self, cluster_name):
-        """Return the management cluster ID for the given provisioning cluster name.
-
-        Retrieves the provisioning cluster and reads status.clusterName, which
-        Rancher populates with the management cluster ID (e.g. c-m-xxxxx).
-
-        Args:
-            cluster_name: Provisioning cluster name (metadata.name in fleet-default)
-
-        Returns:
-            str: Management cluster ID (e.g. c-m-xxxxx)
-        """
-        logging(f"Getting management cluster ID for: {cluster_name}")
-
-        cluster = self.get_harvester_mgmt_cluster(cluster_name)
-        if cluster is None:
-            raise Exception(f"Cluster '{cluster_name}' not found in Rancher")
-
-        cluster_id = cluster.get("status", {}).get("clusterName")
-        if not cluster_id:
-            raise Exception(
-                f"Cluster '{cluster_name}' has no management cluster ID yet "
-                f"(status.clusterName is empty)"
-            )
-
-        logging(f"Management cluster ID for '{cluster_name}': {cluster_id}")
-        return cluster_id
-
-    def get_project_id(self, cluster_id, project_name):
-        """Return the short project ID (e.g. p-xxxxx) for a named project in a cluster.
-
-        Lists management.cattle.io projects in the cluster namespace and finds
-        the project whose spec.displayName matches project_name.
+    def create_project(self, cluster_id, display_name):
+        """Create a new Rancher project in the given cluster.
 
         Args:
             cluster_id: Management cluster ID (e.g. c-m-xxxxx)
-            project_name: Display name of the project
+            display_name: Display name for the project
 
         Returns:
             str: Short project ID (e.g. p-xxxxx)
         """
-        logging(f"Getting project ID for '{project_name}' in cluster {cluster_id}")
+        logging(f"Creating project '{display_name}' in cluster {cluster_id}")
 
-        rc, stdout, stderr = self._run_kubectl_rancher([
-            "get", "projects.management.cattle.io",
-            "-n", cluster_id, "-o", "json"
+        manifest = {
+            "apiVersion": "management.cattle.io/v3",
+            "kind": "Project",
+            "metadata": {
+                "generateName": "p-",
+                "namespace": cluster_id,
+            },
+            "spec": {
+                "clusterName": cluster_id,
+                "displayName": display_name,
+                "containerDefaultResourceLimit": {},
+                "namespaceDefaultResourceQuota": {"limit": {}},
+                "resourceQuota": {"limit": {}, "usedLimit": {}},
+            },
+        }
+
+        yaml_str = yaml.dump(manifest)
+        rc, stdout, stderr = self._run_kubectl_rancher(
+            ["create", "-f", "-", "-o", "json"], input_data=yaml_str
+        )
+
+        if rc != 0:
+            raise Exception(
+                f"Failed to create project '{display_name}' in cluster '{cluster_id}': {stderr}"
+            )
+
+        data = json.loads(stdout)
+        project_id = data.get("metadata", {}).get("name", "")
+        logging(f"Created project '{display_name}': {project_id}")
+        return project_id
+
+    def delete_project(self, cluster_id, project_id):
+        """Delete a Rancher project.
+
+        Args:
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+        """
+        logging(f"Deleting project {project_id} in cluster {cluster_id}")
+
+        rc, _, stderr = self._run_kubectl_rancher([
+            "delete", "projects.management.cattle.io",
+            "-n", cluster_id, project_id, "--ignore-not-found"
         ])
 
         if rc != 0:
             raise Exception(
-                f"Failed to list projects in cluster '{cluster_id}': {stderr}"
+                f"Failed to delete project '{project_id}' in cluster '{cluster_id}': {stderr}"
             )
 
-        data = json.loads(stdout)
-        for item in data.get("items", []):
-            display_name = item.get("spec", {}).get("displayName", "")
-            if display_name == project_name:
-                project_id = item.get("metadata", {}).get("name", "")
-                logging(f"Found project '{project_name}': {project_id}")
-                return project_id
-
-        raise Exception(
-            f"Project '{project_name}' not found in cluster '{cluster_id}'"
-        )
+        logging(f"Deleted project {project_id}")
 
     def assign_project_role(self, user_id, cluster_id, project_id, role_template_name):
         """Create a ProjectRoleTemplateBinding to grant a user a project-scoped role.

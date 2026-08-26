@@ -17,7 +17,7 @@ ${RBAC_CHART_NAME}              harvester-rbac
 ${RBAC_CHART_VERSION}           110.0.0+up0.1.1
 ${RBAC_CHART_RELEASE_NAME}      harvester-rbac
 ${RBAC_CHART_NAMESPACE}         default
-${HARVESTER_PROJECT_NAME}       Default
+${HARVESTER_PROJECT_NAME}       ${EMPTY}
 ${HARVESTER_PROJECT_NAMESPACE}  rbactestns
 ${RBAC_CLUSTER_VIEW_USER}       virt-viewer
 ${RBAC_CLUSTER_MANAGE_USER}     virt-manager

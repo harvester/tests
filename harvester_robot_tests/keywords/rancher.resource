@@ -2135,6 +2135,7 @@ Suite Setup For Rancher Integration Tests
     ${timestamp}=    Evaluate    __import__('datetime').datetime.now().strftime("%Y%m%d%H%M%S")
     Set Suite Variable    ${UNIQUE_NAME}    ${timestamp}
     Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    hvst-${timestamp}
+    Set Suite Variable    ${HARVESTER_PROJECT_NAME}    hvst-proj-${timestamp}
     Set Suite Variable    ${RKE2_CLUSTER_NAME}    rke2-${timestamp}
     Set Suite Variable    ${VLAN_NETWORK_NAME}    vlan-network-${VLAN_ID}
     # Harvester enforces a 12-character max on ClusterNetwork and VlanConfig names.
@@ -2222,7 +2223,7 @@ Suite Setup For Rancher Integration Tests
     # RBAC setup reuses the already-imported Harvester cluster
     Set Suite Variable    ${SUITE_CLUSTER_ID}    ${HARVESTER_CLUSTER_ID}
     Install Harvester RBAC Chart On Local Cluster
-    ${project_id}=    Get Rancher Project ID    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
+    ${project_id}=    Create Rancher Project    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
     Set Suite Variable    ${SUITE_PROJECT_ID}    ${project_id}
     Log    RBAC setup: cluster=${SUITE_CLUSTER_ID}, project=${project_id}    console=yes
     Create Namespace In Project
@@ -2277,6 +2278,8 @@ Suite Teardown For Rancher Integration Tests
     END
     Run Keyword And Ignore Error
     ...    Delete Namespace From Cluster    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}
+    Run Keyword If    '${SUITE_PROJECT_ID}' != '${EMPTY}'
+    ...    Run Keyword And Ignore Error    Delete Rancher Project    ${SUITE_CLUSTER_ID}    ${SUITE_PROJECT_ID}
     Run Keyword And Ignore Error    Uninstall Harvester RBAC Chart On Local Cluster
 
     # Cleanup clusters (best effort)
@@ -2379,18 +2382,27 @@ Assign Standard User Role
     Log    Assigning Standard User global role to: ${user_id}
     rancher_keywords.assign_standard_user_role    ${user_id}
 
-Get Rancher Project ID
-    [Arguments]    ${cluster_id}    ${project_name}
-    [Documentation]    Return the short project ID (e.g. p-xxxxx) for a named project.
+Create Rancher Project
+    [Arguments]    ${cluster_id}    ${display_name}
+    [Documentation]    Create a new Rancher project and return its short project ID.
     ...               Args:
     ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
-    ...                   project_name: Display name of the project
+    ...                   display_name: Display name for the project
     ...               Returns:
-    ...                   str: Short project ID
-    Log    Getting project ID for '${project_name}' in cluster ${cluster_id}
-    ${project_id}=    rancher_keywords.get_project_id    ${cluster_id}    ${project_name}
+    ...                   str: Short project ID (e.g. p-xxxxx)
+    Log    Creating Rancher project '${display_name}' in cluster ${cluster_id}
+    ${project_id}=    rancher_keywords.create_project    ${cluster_id}    ${display_name}
     Log    Project ID: ${project_id}
     RETURN    ${project_id}
+
+Delete Rancher Project
+    [Arguments]    ${cluster_id}    ${project_id}
+    [Documentation]    Delete a Rancher project.
+    ...               Args:
+    ...                   cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+    ...                   project_id: Short project ID (e.g. p-xxxxx)
+    Log    Deleting Rancher project ${project_id} in cluster ${cluster_id}
+    rancher_keywords.delete_project    ${cluster_id}    ${project_id}
 
 Assign Project Role
     [Arguments]    ${user_id}    ${cluster_id}    ${project_id}    ${role_template_name}

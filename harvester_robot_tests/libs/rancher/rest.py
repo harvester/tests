@@ -2769,72 +2769,58 @@ class Rest(Base):
 
         logging(f"Assigned Standard User role to: {user_id}")
 
-    def get_management_cluster_id(self, cluster_name):
-        """Return the management cluster ID for the given cluster display name.
-
-        Queries the v3/clusters endpoint and matches by displayName or name.
-
-        Args:
-            cluster_name: Cluster display name or provisioning cluster name
-
-        Returns:
-            str: Management cluster ID (e.g. c-m-xxxxx)
-        """
-        logging(f"Getting management cluster ID via REST for: {cluster_name}")
-
-        code, data = self._rancher_request("GET", "v3/clusters")
-
-        if code != 200:
-            raise Exception(f"Failed to list clusters: {code} {data}")
-
-        for item in data.get("data", []):
-            if item.get("name") == cluster_name or \
-                    item.get("spec", {}).get("displayName") == cluster_name:
-                cluster_id = item.get("id")
-                logging(f"Found cluster ID: {cluster_id}")
-                return cluster_id
-
-        raise Exception(
-            f"Cluster '{cluster_name}' not found via Rancher REST API"
-        )
-
-    def get_project_id(self, cluster_id, project_name):
-        """Return the short project ID (e.g. p-xxxxx) for a named project.
+    def create_project(self, cluster_id, display_name):
+        """Create a new Rancher project via the v3 REST API.
 
         Args:
             cluster_id: Management cluster ID (e.g. c-m-xxxxx)
-            project_name: Display name of the project
+            display_name: Display name for the project
 
         Returns:
             str: Short project ID (e.g. p-xxxxx)
         """
-        logging(
-            f"Getting project ID via REST for '{project_name}' "
-            f"in cluster '{cluster_id}'"
-        )
+        logging(f"Creating project '{display_name}' in cluster {cluster_id} via REST")
 
-        code, data = self._rancher_request(
-            "GET", f"v3/projects?clusterId={cluster_id}"
-        )
+        payload = {
+            "type": "project",
+            "clusterId": cluster_id,
+            "name": display_name,
+            "containerDefaultResourceLimit": {},
+            "namespaceDefaultResourceQuota": {"limit": {}},
+            "resourceQuota": {"limit": {}},
+        }
 
-        if code != 200:
+        code, data = self._rancher_request("POST", "v3/projects", data=payload)
+
+        if code not in (200, 201):
             raise Exception(
-                f"Failed to list projects for cluster '{cluster_id}': "
+                f"Failed to create project '{display_name}' in cluster '{cluster_id}': "
                 f"{code} {data}"
             )
 
-        for item in data.get("data", []):
-            if item.get("name") == project_name or \
-                    item.get("spec", {}).get("displayName") == project_name:
-                # Full project ID is "clusterId:projectId"; extract short form
-                full_id = item.get("id", "")
-                project_id = full_id.split(":")[-1] if ":" in full_id else full_id
-                logging(f"Found project '{project_name}': {project_id}")
-                return project_id
+        full_id = data.get("id", "")
+        project_id = full_id.split(":")[-1] if ":" in full_id else full_id
+        logging(f"Created project '{display_name}': {project_id}")
+        return project_id
 
-        raise Exception(
-            f"Project '{project_name}' not found in cluster '{cluster_id}'"
-        )
+    def delete_project(self, cluster_id, project_id):
+        """Delete a Rancher project via the v3 REST API.
+
+        Args:
+            cluster_id: Management cluster ID (e.g. c-m-xxxxx)
+            project_id: Short project ID (e.g. p-xxxxx)
+        """
+        full_id = f"{cluster_id}:{project_id}"
+        logging(f"Deleting project {full_id} via REST")
+
+        code, data = self._rancher_request("DELETE", f"v3/projects/{full_id}")
+
+        if code not in (200, 204):
+            raise Exception(
+                f"Failed to delete project '{full_id}': {code} {data}"
+            )
+
+        logging(f"Deleted project {full_id}")
 
     def assign_project_role(self, user_id, cluster_id, project_id, role_template_name):
         """Create a ProjectRoleTemplateBinding via the v3 REST API.
