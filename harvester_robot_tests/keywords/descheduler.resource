@@ -22,9 +22,6 @@ ${DESCHEDULER_DEPLOYMENT}       descheduler
 ${DESCHEDULER_CONFIGMAP}        descheduler
 ${DESCHEDULER_POLICY_KEY}       policy.yaml
 ${DESCHEDULER_DISPLAY_NAME}     virtual-machine-auto-balance
-# Enabling pulls the descheduler image and runs a helm job; 900s mirrors the
-# timeout the other addon suites use for first-time chart deployment.
-${DESCHEDULER_ADDON_TIMEOUT}    900
 # Populated at runtime by `Initial Descheduler State Is Captured`; declared here
 # so teardown is safe even when the suite skipped before capturing anything.
 ${INITIAL_STATE_DESCHEDULER}    ${None}
@@ -75,7 +72,7 @@ Descheduler Addon Is Enabled
     IF    not ${is_enabled}
         addon.Enable    ${ADDON_DESCHEDULER}
     END
-    addon.Wait For Enabled    ${ADDON_DESCHEDULER}    timeout=${DESCHEDULER_ADDON_TIMEOUT}
+    addon.Wait For Enabled    ${ADDON_DESCHEDULER}
     Log    Descheduler addon is enabled
 
 Descheduler Addon Is Disabled
@@ -84,7 +81,7 @@ Descheduler Addon Is Disabled
     IF    ${is_enabled}
         addon.Disable    ${ADDON_DESCHEDULER}
     END
-    addon.Wait For Disabled    ${ADDON_DESCHEDULER}    timeout=${DESCHEDULER_ADDON_TIMEOUT}
+    addon.Wait For Disabled    ${ADDON_DESCHEDULER}
     Log    Descheduler addon is disabled
 
 Try To Enable Descheduler Addon
@@ -267,22 +264,18 @@ Descheduler Thresholds Should Be
 Descheduler Pods Should Be Running
     [Documentation]    Wait for the descheduler pods to be Running and ready
     addon.Wait For Pods Running    ${DESCHEDULER_NAMESPACE}    ${DESCHEDULER_LABEL}
-    ...    timeout=${DESCHEDULER_ADDON_TIMEOUT}
 
 Descheduler Deployment Should Be Ready
     [Documentation]    Wait for the descheduler Deployment to report all replicas ready
     addon.Wait For Deployment Ready    ${DESCHEDULER_DEPLOYMENT}    ${DESCHEDULER_NAMESPACE}
-    ...    timeout=${DESCHEDULER_ADDON_TIMEOUT}
 
 Descheduler Pods Should Be Gone
     [Documentation]    Wait until no descheduler pods remain
     addon.Wait For Pods Gone    ${DESCHEDULER_NAMESPACE}    ${DESCHEDULER_LABEL}
-    ...    timeout=${DESCHEDULER_ADDON_TIMEOUT}
 
 Descheduler Deployment Should Be Gone
     [Documentation]    Wait until the descheduler Deployment has been uninstalled
     addon.Wait For Deployment Gone    ${DESCHEDULER_DEPLOYMENT}    ${DESCHEDULER_NAMESPACE}
-    ...    timeout=${DESCHEDULER_ADDON_TIMEOUT}
 
 Get Rendered Descheduler Policy
     [Documentation]    Return the policy.yaml rendered into the descheduler ConfigMap.
