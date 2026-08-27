@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation    Global Variables for Harvester Robot Tests
 Library          Collections
-Library          String  
+Library          String
 Library          DateTime
 
 *** Variables ***
@@ -23,11 +23,6 @@ ${OPENSUSE_IMAGE_URL}           %{OPENSUSE_IMAGE_URL=https://download.opensuse.o
 ${OPENSUSE_SSH_USER}            opensuse
 ${UBUNTU_IMAGE_URL}             %{UBUNTU_IMAGE_URL=https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img}
 ${UBUNTU_SSH_USER}              ubuntu
-
-# Descheduler addon
-# Upper bound on how long to wait for the descheduler to evict and reschedule a VM.
-# Must comfortably exceed the configured deschedulingInterval plus a live migration.
-${DESCHEDULER_EVICTION_TIMEOUT}    %{DESCHEDULER_EVICTION_TIMEOUT=1200}
 
 # Network
 ${VLAN_ID}                      %{VLAN_ID=2011}

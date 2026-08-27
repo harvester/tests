@@ -321,7 +321,6 @@ Test VM Is Rebalanced Off An Overutilized Node
     # than two nodes the scheduler may pick any underutilized node, and once the VM
     # lands the roles can invert and the descheduler may move it on again.
     ${new_node}=    VM should be moved off node    ${OVERLOAD_VM}    ${busy_node}
-    ...    timeout=${DESCHEDULER_EVICTION_TIMEOUT}
     Log    ${OVERLOAD_VM} rebalanced ${busy_node} -> ${new_node} (expected ${destination_node})
     Then VM should be running    ${OVERLOAD_VM}
     And Should Not Be Equal    ${new_node}    ${busy_node}
