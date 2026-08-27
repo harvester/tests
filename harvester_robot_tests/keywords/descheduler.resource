@@ -11,6 +11,7 @@ Library          Collections
 Resource         variables.resource
 Resource         common.resource
 Resource         addon.resource
+Resource         deployment.resource
 Resource         host.resource
 Resource         virtualmachine.resource
 
@@ -267,7 +268,7 @@ Descheduler Pods Should Be Running
 
 Descheduler Deployment Should Be Ready
     [Documentation]    Wait for the descheduler Deployment to report all replicas ready
-    addon.Wait For Deployment Ready    ${DESCHEDULER_DEPLOYMENT}    ${DESCHEDULER_NAMESPACE}
+    Wait For Deployment Ready    ${DESCHEDULER_DEPLOYMENT}    ${DESCHEDULER_NAMESPACE}
 
 Descheduler Pods Should Be Gone
     [Documentation]    Wait until no descheduler pods remain
@@ -275,7 +276,7 @@ Descheduler Pods Should Be Gone
 
 Descheduler Deployment Should Be Gone
     [Documentation]    Wait until the descheduler Deployment has been uninstalled
-    addon.Wait For Deployment Gone    ${DESCHEDULER_DEPLOYMENT}    ${DESCHEDULER_NAMESPACE}
+    Wait For Deployment Gone    ${DESCHEDULER_DEPLOYMENT}    ${DESCHEDULER_NAMESPACE}
 
 Get Rendered Descheduler Policy
     [Documentation]    Return the policy.yaml rendered into the descheduler ConfigMap.

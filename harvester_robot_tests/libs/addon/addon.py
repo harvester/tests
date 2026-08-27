@@ -85,14 +85,6 @@ class Addon(Base):
         """Wait for pods to be gone - delegates to implementation"""
         return self.addon.wait_for_pods_gone(namespace, label_selector, timeout)
 
-    def wait_for_deployment_ready(self, name, namespace, timeout):
-        """Wait for deployment to be ready - delegates to implementation"""
-        return self.addon.wait_for_deployment_ready(name, namespace, timeout)
-
-    def wait_for_deployment_gone(self, name, namespace, timeout):
-        """Wait for deployment to be removed - delegates to implementation"""
-        return self.addon.wait_for_deployment_gone(name, namespace, timeout)
-
     def get_configmap_data(self, name, namespace):
         """Get a ConfigMap's data map - delegates to implementation"""
         return self.addon.get_configmap_data(name, namespace)

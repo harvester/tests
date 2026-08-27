@@ -28,7 +28,6 @@ class CRD(Base):
     def __init__(self):
         """Initialize Kubernetes client"""
         self.core_api = client.CoreV1Api()
-        self.apps_api = client.AppsV1Api()
         self.custom_api = client.CustomObjectsApi()
         self.addon_group = HARVESTER_API_GROUP
         self.addon_version = HARVESTER_API_VERSION
@@ -454,86 +453,6 @@ class CRD(Base):
         raise TimeoutError(
             f"Timeout waiting for pods with selector '{label_selector}' "
             f"to be gone after {timeout}s"
-        )
-
-    def wait_for_deployment_ready(self, name, namespace, timeout=DEFAULT_TIMEOUT):
-        """
-        Wait for a Deployment to report all replicas ready
-
-        Args:
-            name: Name of the deployment
-            namespace: Kubernetes namespace
-            timeout: Timeout in seconds
-
-        Returns:
-            bool: True once the deployment is ready
-        """
-        logging(f"Waiting for deployment '{namespace}/{name}' to be ready")
-        retry_count, retry_interval = get_retry_count_and_interval()
-        max_retries = int(timeout / retry_interval)
-
-        for i in range(max_retries):
-            try:
-                deployment = self.apps_api.read_namespaced_deployment(
-                    name=name, namespace=namespace
-                )
-                desired = deployment.spec.replicas or 0
-                ready = deployment.status.ready_replicas or 0
-                if desired > 0 and ready == desired:
-                    logging(f"Deployment '{namespace}/{name}' is ready ({ready}/{desired})")
-                    return True
-                logging(
-                    f"Deployment '{namespace}/{name}' not ready ({ready}/{desired}), "
-                    f"retrying... ({i+1}/{max_retries})"
-                )
-            except ApiException as e:
-                if e.status == 404:
-                    logging(
-                        f"Deployment '{namespace}/{name}' not found, retrying... "
-                        f"({i+1}/{max_retries})"
-                    )
-                else:
-                    logging(f"Error reading deployment: {e}", level='WARNING')
-
-            time.sleep(retry_interval)
-
-        raise TimeoutError(
-            f"Timeout waiting for deployment '{namespace}/{name}' to be ready after {timeout}s"
-        )
-
-    def wait_for_deployment_gone(self, name, namespace, timeout=DEFAULT_TIMEOUT):
-        """
-        Wait for a Deployment to be removed
-
-        Args:
-            name: Name of the deployment
-            namespace: Kubernetes namespace
-            timeout: Timeout in seconds
-
-        Returns:
-            bool: True once the deployment no longer exists
-        """
-        logging(f"Waiting for deployment '{namespace}/{name}' to be gone")
-        retry_count, retry_interval = get_retry_count_and_interval()
-        max_retries = int(timeout / retry_interval)
-
-        for i in range(max_retries):
-            try:
-                self.apps_api.read_namespaced_deployment(name=name, namespace=namespace)
-                logging(
-                    f"Deployment '{namespace}/{name}' still present, retrying... "
-                    f"({i+1}/{max_retries})"
-                )
-            except ApiException as e:
-                if e.status == 404:
-                    logging(f"Deployment '{namespace}/{name}' is gone")
-                    return True
-                logging(f"Error reading deployment: {e}", level='WARNING')
-
-            time.sleep(retry_interval)
-
-        raise TimeoutError(
-            f"Timeout waiting for deployment '{namespace}/{name}' to be gone after {timeout}s"
         )
 
     def get_configmap_data(self, name, namespace):

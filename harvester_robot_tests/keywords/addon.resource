@@ -182,28 +182,6 @@ Wait For Pods Gone
     addon_keywords.wait_for_pods_gone    ${namespace}    ${label}    ${timeout}
     Log    No pods with label ${label} remain in ${namespace}
 
-Wait For Deployment Ready
-    [Arguments]    ${name}    ${namespace}    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait for a Deployment to report all replicas ready
-    ...               Args:
-    ...                   name: Name of the deployment
-    ...                   namespace: Kubernetes namespace
-    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
-    Log    Waiting for deployment ${namespace}/${name} to be ready
-    addon_keywords.wait_for_deployment_ready    ${name}    ${namespace}    ${timeout}
-    Log    Deployment ${namespace}/${name} is ready
-
-Wait For Deployment Gone
-    [Arguments]    ${name}    ${namespace}    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait for a Deployment to be removed
-    ...               Args:
-    ...                   name: Name of the deployment
-    ...                   namespace: Kubernetes namespace
-    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
-    Log    Waiting for deployment ${namespace}/${name} to be gone
-    addon_keywords.wait_for_deployment_gone    ${name}    ${namespace}    ${timeout}
-    Log    Deployment ${namespace}/${name} is gone
-
 Get ConfigMap Data
     [Arguments]    ${name}    ${namespace}
     [Documentation]    Get a ConfigMap's data map
@@ -363,14 +341,14 @@ Suite Setup For Addon Tests
 Suite Teardown For Addon Tests
     [Documentation]    Cleanup and restore addon state after tests
     Log    Running suite teardown for addon tests
-    
+
     # Stop port forward if still running
     Run Keyword And Ignore Error    Stop Port Forward
-    
+
     # Restore addon to initial state
     Run Keyword If    '${INITIAL_STATE_MONITORING}' != 'None'
     ...    Restore State    ${ADDON_MONITORING}    ${INITIAL_STATE_MONITORING}
-    
+
     # Standard cleanup
     Cleanup test resources
     Log    Suite teardown completed
@@ -378,15 +356,15 @@ Suite Teardown For Addon Tests
 Get Prometheus Pod Name
     [Documentation]    Get the name of the Prometheus pod
     Log    Getting Prometheus pod name
-    
+
     # Use kubectl to get pod name
     @{args}=    Create List    get    pods    -n    ${MONITORING_NAMESPACE}    -l    app.kubernetes.io/name=prometheus    -o    jsonpath={.items[0].metadata.name}
     ${result}=    Run Process    kubectl    @{args}
-    
+
     Should Be Equal As Numbers    ${result.rc}    0    Failed to get Prometheus pod name
     ${pod_name}=    Set Variable    ${result.stdout}
     Should Not Be Empty    ${pod_name}    Prometheus pod name should not be empty
-    
+
     Log    Found Prometheus pod: ${pod_name}
     RETURN    ${pod_name}
 

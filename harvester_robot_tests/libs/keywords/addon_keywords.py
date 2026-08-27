@@ -170,30 +170,6 @@ class addon_keywords:
         logging(f'Waiting for pods with label {label} in namespace {namespace} to be gone')
         self.addon.wait_for_pods_gone(namespace, label, int(timeout))
 
-    def wait_for_deployment_ready(self, name, namespace, timeout=DEFAULT_TIMEOUT):
-        """
-        Wait for a Deployment to report all replicas ready
-
-        Args:
-            name: Name of the deployment
-            namespace: Kubernetes namespace
-            timeout: Timeout in seconds
-        """
-        logging(f'Waiting for deployment {namespace}/{name} to be ready')
-        self.addon.wait_for_deployment_ready(name, namespace, int(timeout))
-
-    def wait_for_deployment_gone(self, name, namespace, timeout=DEFAULT_TIMEOUT):
-        """
-        Wait for a Deployment to be removed
-
-        Args:
-            name: Name of the deployment
-            namespace: Kubernetes namespace
-            timeout: Timeout in seconds
-        """
-        logging(f'Waiting for deployment {namespace}/{name} to be gone')
-        self.addon.wait_for_deployment_gone(name, namespace, int(timeout))
-
     def get_configmap_data(self, name, namespace):
         """
         Get the data map of a ConfigMap
