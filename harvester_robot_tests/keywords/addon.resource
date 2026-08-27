@@ -4,6 +4,7 @@ Library          ../libs/keywords/addon_keywords.py
 Library          Process
 Resource         variables.resource
 Resource         common.resource
+Resource         pod.resource
 
 *** Keywords ***
 Get Initial State
@@ -89,17 +90,6 @@ Wait For Monitoring Pods Running
     addon_keywords.wait_for_monitoring_pods_running    ${namespace}    ${timeout}
     Log    Monitoring pods are now running
 
-Wait For Pods Running
-    [Arguments]    ${namespace}    ${label}    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait for pods matching label to be running in namespace
-    ...               Args:
-    ...                   namespace: Kubernetes namespace
-    ...                   label: Label selector for pods
-    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
-    Log    Waiting for pods with label ${label} in namespace ${namespace} to be running
-    addon_keywords.wait_for_pods_running    ${namespace}    ${label}    ${timeout}
-    Log    Pods with label ${label} are running in ${namespace}
-
 Addon Exists
     [Arguments]    ${addon_name}
     [Documentation]    Check whether the addon CR exists in the cluster
@@ -170,17 +160,6 @@ Set Addon Values
     ...                   values: Dictionary serialised to YAML
     Log    Updating valuesContent of addon ${addon_name}
     addon_keywords.update_addon_values    ${addon_name}    ${values}
-
-Wait For Pods Gone
-    [Arguments]    ${namespace}    ${label}    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait until no pods matching the label remain in the namespace
-    ...               Args:
-    ...                   namespace: Kubernetes namespace
-    ...                   label: Label selector for pods
-    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
-    Log    Waiting for pods with label ${label} in namespace ${namespace} to be gone
-    addon_keywords.wait_for_pods_gone    ${namespace}    ${label}    ${timeout}
-    Log    No pods with label ${label} remain in ${namespace}
 
 Get ConfigMap Data
     [Arguments]    ${name}    ${namespace}

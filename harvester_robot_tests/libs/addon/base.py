@@ -62,11 +62,6 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def wait_for_pods_running(self, namespace, label_selector, timeout):
-        """Wait for pods to be running in a namespace"""
-        pass
-
-    @abstractmethod
     def port_forward(self, namespace, pod_name, local_port, remote_port):
         """Port forward to a pod"""
         pass

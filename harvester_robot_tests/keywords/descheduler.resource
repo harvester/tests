@@ -10,6 +10,7 @@ Documentation    Descheduler Addon Keywords - Reusable keywords for the
 Library          Collections
 Resource         variables.resource
 Resource         common.resource
+Resource         pod.resource
 Resource         addon.resource
 Resource         deployment.resource
 Resource         host.resource
@@ -264,7 +265,7 @@ Descheduler Thresholds Should Be
 # Deployed workload
 Descheduler Pods Should Be Running
     [Documentation]    Wait for the descheduler pods to be Running and ready
-    addon.Wait For Pods Running    ${DESCHEDULER_NAMESPACE}    ${DESCHEDULER_LABEL}
+    Wait For Pods Running    ${DESCHEDULER_NAMESPACE}    ${DESCHEDULER_LABEL}
 
 Descheduler Deployment Should Be Ready
     [Documentation]    Wait for the descheduler Deployment to report all replicas ready
@@ -272,7 +273,7 @@ Descheduler Deployment Should Be Ready
 
 Descheduler Pods Should Be Gone
     [Documentation]    Wait until no descheduler pods remain
-    addon.Wait For Pods Gone    ${DESCHEDULER_NAMESPACE}    ${DESCHEDULER_LABEL}
+    Wait For Pods Gone    ${DESCHEDULER_NAMESPACE}    ${DESCHEDULER_LABEL}
 
 Descheduler Deployment Should Be Gone
     [Documentation]    Wait until the descheduler Deployment has been uninstalled

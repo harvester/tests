@@ -36,3 +36,11 @@ class pod_keywords:
         """Delete a pod if it exists; silently ignores 404."""
         logging(f"Deleting pod '{pod_name}' if it exists")
         self.pod.delete_if_exists(pod_name, namespace)
+
+    def wait_for_pods_running_with_label_selector(self, namespace, label_selector, timeout=DEFAULT_TIMEOUT_SHORT):
+        logging(f"Waiting for pod with label selector '{label_selector}' to be running")
+        return self.pod.wait_for_running_with_label_selector(namespace, label_selector, timeout)
+
+    def wait_for_pods_gone_with_label_selector(self, namespace, label_selector, timeout=DEFAULT_TIMEOUT_SHORT):
+        logging(f"Waiting for pod with label selector '{label_selector}' to be gone")
+        return self.pod.wait_for_gone_with_label_selector(namespace, label_selector, timeout)

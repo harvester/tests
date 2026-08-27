@@ -69,10 +69,6 @@ class Addon(Base):
         """Check if addon is enabled - delegates to implementation"""
         return self.addon.is_addon_enabled(addon_name)
 
-    def wait_for_pods_running(self, namespace, label_selector, timeout):
-        """Wait for pods to be running - delegates to implementation"""
-        return self.addon.wait_for_pods_running(namespace, label_selector, timeout)
-
     def port_forward(self, namespace, pod_name, local_port, remote_port):
         """Port forward to a pod - delegates to implementation"""
         return self.addon.port_forward(namespace, pod_name, local_port, remote_port)
@@ -80,10 +76,6 @@ class Addon(Base):
     def wait_for_service_running(self, namespace, service_name, timeout):
         """Wait for service to be running - delegates to implementation"""
         return self.addon.wait_for_service_running(namespace, service_name, timeout)
-
-    def wait_for_pods_gone(self, namespace, label_selector, timeout):
-        """Wait for pods to be gone - delegates to implementation"""
-        return self.addon.wait_for_pods_gone(namespace, label_selector, timeout)
 
     def get_configmap_data(self, name, namespace):
         """Get a ConfigMap's data map - delegates to implementation"""

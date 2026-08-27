@@ -134,18 +134,6 @@ class addon_keywords:
         """
         return self.addon.is_addon_enabled(addon_name)
 
-    def wait_for_pods_running(self, namespace, label, timeout=DEFAULT_TIMEOUT_LONG):
-        """
-        Wait for pods matching label to be running in namespace
-
-        Args:
-            namespace: Kubernetes namespace
-            label: Label selector for pods
-            timeout: Timeout in seconds
-        """
-        logging(f'Waiting for pods with label {label} in namespace {namespace} to be running')
-        self.addon.wait_for_pods_running(namespace, label, int(timeout))
-
     def wait_for_service_running(self, namespace, service_name, timeout=DEFAULT_TIMEOUT):
         """
         Wait for service to be running in namespace
@@ -157,18 +145,6 @@ class addon_keywords:
         """
         logging(f'Waiting for service {service_name} in namespace {namespace} to be running')
         self.addon.wait_for_service_running(namespace, service_name, int(timeout))
-
-    def wait_for_pods_gone(self, namespace, label, timeout=DEFAULT_TIMEOUT):
-        """
-        Wait until no pods matching the label remain in the namespace
-
-        Args:
-            namespace: Kubernetes namespace
-            label: Label selector for pods
-            timeout: Timeout in seconds
-        """
-        logging(f'Waiting for pods with label {label} in namespace {namespace} to be gone')
-        self.addon.wait_for_pods_gone(namespace, label, int(timeout))
 
     def get_configmap_data(self, name, namespace):
         """
