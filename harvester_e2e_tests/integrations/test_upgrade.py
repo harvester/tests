@@ -656,7 +656,6 @@ class TestAnyNodesUpgrade:
 
         cpu, mem, size = 1, 2, 10
         vm_spec = api_client.vms.Spec(cpu, mem, mgmt_network=False)
-        vm_spec.cpu_model = "host-passthrough"
         vm_spec.add_image('disk-0', image['id'], size=size, image_uid=image.get('uid'))
         vm_spec.add_network('nic-1', f"{vm_network['namespace']}/{vm_network['name']}")
         userdata = yaml.safe_load(vm_spec.user_data)
@@ -1127,15 +1126,32 @@ class TestAnyNodesUpgrade:
         assert "true" == names[created_sc]["storageclass.kubernetes.io/is-default-class"]
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
-    def test_verify_os_version(
-        self, request, api_client, cluster_state, host_shell, wait_timeout
-    ):
-        # Verify /etc/os-release on all nodes
-        script = "cat /etc/os-release"
+    def test_verify_server_version(self, api_client, cluster_state, host_shell, wait_timeout):
         if not cluster_state.version_verify:
-            pytest.skip("skip verify os version")
+            pytest.skip("skip verify server version")
 
-        # Get all nodes
+        # server version
+        # e.g.
+        #   * release: v1.9.0, v1.9.0-rc6
+        #   * branch: v1.9-177462e7-head, master-211c2b36-head
+        code, data = api_client.settings.get("server-version")
+        assert 200 == code, (code, data)
+        server_ver = data["value"]
+
+        # target version
+        # e.g.
+        #   * release: v1.9.0, v1.9.0-rc6
+        #   * branch: v1.9, master
+        target_ver = cluster_state.version
+        assert server_ver.startswith(target_ver), (
+            f"server version {server_ver} does not match target version {target_ver}"
+        )
+
+        # harvester os version on each nodes
+        # e.g.
+        #   * release: v1.1.0
+        #   * branch: 177462e7
+        script = "cat /etc/os-release"
         code, data = api_client.hosts.get()
         assert 200 == code, (code, data)
         for node in data['data']:
@@ -1150,9 +1166,24 @@ class TestAnyNodesUpgrade:
                     continue
                 assert not stderr, f"Failed to execute {script} on {node_ip}: {stderr}"
 
-                # eg: PRETTY_NAME="Harvester v1.1.0"
-                assert cluster_state.version == re.findall(r"Harvester (.+?)\"", lines[3])[0], (
-                    "OS version is not correct")
+                os_ver = re.findall(r"PRETTY_NAME=\"Harvester (.+?)\"", lines[3])[0]
+                if re.match(r"v\d+\.\d+\.\d+", target_ver):
+                    # release
+                    assert server_ver == target_ver, (
+                        f"server version {server_ver} does not match target version {target_ver}"
+                    )
+                    assert server_ver == os_ver, (
+                        f"server version {server_ver} does not match OS version {os_ver}"
+                    )
+                else:
+                    # branch
+                    assert server_ver.startswith(target_ver), (
+                        f"server version {server_ver} does not match target version {target_ver}"
+                    )
+                    assert os_ver in server_ver, (
+                        f"server version {server_ver} does not match OS version {os_ver}"
+                    )
+
                 break
             else:
                 raise AssertionError(f"Unable to connect to {node_ip} after {wait_timeout}s")
