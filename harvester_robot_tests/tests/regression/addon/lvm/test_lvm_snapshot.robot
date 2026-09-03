@@ -28,7 +28,7 @@ Snapshot And Restore LVM Block Volume
     ...    ${LVM_VG_NAME}
     ...    ${LVM_VG_TYPE}
     ...    ${LVM_NODE_NAME}
-    VM is created    ${LVM_VM_NAME}    ${IMAGE_NAME}
+    VM is created    ${LVM_VM_NAME}    ${IMAGE_NAME}    node_name=${LVM_NODE_NAME}
     VM should be running    ${LVM_VM_NAME}
     Create Volume
     ...    ${LVM_VOLUME_NAME}
