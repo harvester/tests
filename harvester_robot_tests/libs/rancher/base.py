@@ -80,6 +80,16 @@ class Base(ABC):
         pass
 
     @abstractmethod
+    def get_harvester_node_driver_version(self):
+        """
+        Get the Harvester node driver (docker-machine-driver-harvester) version.
+
+        Returns:
+            str: Version string (e.g. '1.0.6')
+        """
+        pass
+
+    @abstractmethod
     def configure_kdm_url(self, url):
         """
         Update the Rancher global setting rke-metadata-config to use a custom KDM URL.

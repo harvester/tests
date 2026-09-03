@@ -246,6 +246,17 @@ class rancher_keywords:
         self.rancher.configure_kdm_url(url)
         logging("KDM URL configured successfully")
 
+    def get_harvester_node_driver_version(self):
+        """
+        Get the Harvester node driver (docker-machine-driver-harvester) version
+
+        Returns:
+            str: Version string (e.g. '1.0.6')
+        """
+        version = self.rancher.get_harvester_node_driver_version()
+        logging(f"Harvester node driver version: {version}")
+        return version
+
     def import_harvester_to_rancher(self, cluster_name, timeout=DEFAULT_TIMEOUT_LONG):
         """
         Full workflow to import Harvester to Rancher

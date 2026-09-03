@@ -3,6 +3,7 @@ Documentation    Rancher Integration Keywords - Reusable keywords for Rancher op
 Library          ../libs/keywords/rancher_keywords.py
 Library          Collections
 Library          String
+Library          pabot.PabotLib
 Resource         variables.resource
 Resource         common.resource
 Resource         storage_network.resource
@@ -147,6 +148,21 @@ Get RKE2 Version
     ${version}=    rancher_keywords.get_rke2_version    ${target_version}    ${rancher_endpoint}
     RETURN    ${version}
 
+Wait For RKE2 Cluster Ready
+    [Arguments]    ${cluster_name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait for RKE2 cluster to be ready
+    ...               Args:
+    ...                   cluster_name: Name of the cluster
+    ...                   timeout: Timeout in seconds
+    ...               Returns:
+    ...                   dict: Cluster data when ready
+    Log    Waiting for RKE2 cluster ${cluster_name} to be ready
+    ${cluster}=    rancher_keywords.wait_for_rke2_cluster_ready    ${cluster_name}    ${timeout}
+    ${version}=    rancher_keywords.get_harvester_node_driver_version
+    Log    Harvester node driver version: ${version}    console=yes
+    Log    RKE2 cluster version: ${cluster}[spec][kubernetesVersion]    console=yes
+    RETURN    ${cluster}
+
 Import Harvester To Rancher
     [Arguments]    ${cluster_name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Full workflow to import Harvester to Rancher
@@ -221,18 +237,6 @@ Delete RKE2 Cluster
     ...                   cluster_name: Name of the cluster to delete
     Log    Deleting RKE2 cluster: ${cluster_name}
     rancher_keywords.delete_rke2_cluster    ${cluster_name}
-
-Wait For RKE2 Cluster Ready
-    [Arguments]    ${cluster_name}    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait for RKE2 cluster to be ready
-    ...               Args:
-    ...                   cluster_name: Name of the cluster
-    ...                   timeout: Timeout in seconds
-    ...               Returns:
-    ...                   dict: Cluster data when ready
-    Log    Waiting for RKE2 cluster ${cluster_name} to be ready
-    ${cluster}=    rancher_keywords.wait_for_rke2_cluster_ready    ${cluster_name}    ${timeout}
-    RETURN    ${cluster}
 
 Wait For RKE2 Cluster Deleted
     [Arguments]    ${cluster_name}    ${timeout}=${WAIT_TIMEOUT}
@@ -2220,21 +2224,7 @@ Suite Setup For Rancher Integration Tests
     Wait For Image Ready    ${IMAGE_NAME}    ${WAIT_TIMEOUT}
 
     Log    Test environment ready (version: ${RKE2_VERSION}, timestamp: ${timestamp})    console=yes
-    # RBAC setup reuses the already-imported Harvester cluster
     Set Suite Variable    ${SUITE_CLUSTER_ID}    ${HARVESTER_CLUSTER_ID}
-    Install Harvester RBAC Chart On Local Cluster
-    ${project_id}=    Create Rancher Project    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
-    Set Suite Variable    ${SUITE_PROJECT_ID}    ${project_id}
-    Log    RBAC setup: cluster=${SUITE_CLUSTER_ID}, project=${project_id}    console=yes
-    Create Namespace In Project
-    ...    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}    ${project_id}
-    FOR    ${user}    IN
-    ...    ${RBAC_CLUSTER_VIEW_USER}
-    ...    ${RBAC_CLUSTER_MANAGE_USER}
-    ...    ${RBAC_PROJECT_VIEW_USER}
-    ...    ${RBAC_PROJECT_MANAGE_USER}
-        Run Keyword And Ignore Error    Delete Rancher User    ${user}
-    END
     Log    Setup complete    console=yes
 
 Import Harvester To Rancher In Setup
@@ -2261,7 +2251,50 @@ Suite Teardown For Rancher Integration Tests
     [Documentation]    Cleanup all resources after tests.
     Log    Running suite teardown
 
-    # RBAC cleanup
+    # Cleanup clusters (best effort)
+    Run Keyword And Ignore Error    Cleanup Cluster By Name    ${SINGLE_CLUSTER_NAME}
+    Run Keyword And Ignore Error    Cleanup Cluster By Name    ${MULTI_CLUSTER_NAME}
+
+    # Delete cloud credential
+    Run Keyword If    '${CLOUD_CREDENTIAL_ID}' != '${EMPTY}'
+    ...    Run Keyword And Ignore Error    Delete Cloud Credential    ${CLOUD_CREDENTIAL_ID}
+
+    # Delete Harvester mgmt cluster
+    Run Keyword And Ignore Error    Delete Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
+
+    # Delete Harvester VMs shared resources
+    Run Keyword And Ignore Error    Delete Image    ${IMAGE_NAME}
+    Run Keyword And Ignore Error    Delete IP Pool    ${IP_POOL_NAME}
+    Run Keyword And Ignore Error    Delete VLAN Network    ${VLAN_NETWORK_NAME}
+    Run Keyword And Ignore Error    Delete VLAN Config    ${VLAN_CONFIG_NAME}
+    Run Keyword And Ignore Error    Delete Cluster Network    ${CLUSTER_NETWORK_NAME}
+
+    Run Keyword And Ignore Error    Set Cluster Registration URL    ${EMPTY}
+
+    Cleanup test resources
+    Log    Suite teardown completed
+
+Setup RBAC Test Prerequisites
+    [Documentation]    Create the Rancher project/namespace RBAC tests are scoped
+    ...               to, and pre-clean any leftover test users from a previous run.
+    ...               Sets ${SUITE_PROJECT_ID}.
+    ${project_id}=    Create Rancher Project    ${SUITE_CLUSTER_ID}    ${HARVESTER_PROJECT_NAME}
+    Set Suite Variable    ${SUITE_PROJECT_ID}    ${project_id}
+    Create Namespace In Project
+    ...    ${HARVESTER_PROJECT_NAMESPACE}    ${SUITE_CLUSTER_ID}    ${project_id}
+    FOR    ${user}    IN
+    ...    ${RBAC_CLUSTER_VIEW_USER}
+    ...    ${RBAC_CLUSTER_MANAGE_USER}
+    ...    ${RBAC_PROJECT_VIEW_USER}
+    ...    ${RBAC_PROJECT_MANAGE_USER}
+        Run Keyword And Ignore Error    Delete Rancher User    ${user}
+    END
+
+Teardown RBAC Test Resources
+    [Documentation]    Delete RBAC test users, role bindings, namespace, project
+    ...               and uninstall the RBAC chart. Extracted from the full suite
+    ...               teardown so a suite reusing a shared environment can run just
+    ...               this part instead of tearing down the whole environment.
     FOR    ${user}    IN
     ...    ${RBAC_CLUSTER_VIEW_USER}
     ...    ${RBAC_CLUSTER_MANAGE_USER}
@@ -2282,32 +2315,120 @@ Suite Teardown For Rancher Integration Tests
     ...    Run Keyword And Ignore Error    Delete Rancher Project    ${SUITE_CLUSTER_ID}    ${SUITE_PROJECT_ID}
     Run Keyword And Ignore Error    Uninstall Harvester RBAC Chart On Local Cluster
 
-    # Cleanup clusters (best effort)
-    Run Keyword And Ignore Error    Cleanup Cluster By Name    ${SINGLE_CLUSTER_NAME}
-    Run Keyword And Ignore Error    Cleanup Cluster By Name    ${MULTI_CLUSTER_NAME}
+# ============================================================
+# Shared environment keywords (parallel execution across Rancher suite)
+# ============================================================
+# This is utilize the shared resources across parallel execution of Rancher suite tests
 
-    # Delete cloud credential
-    Run Keyword If    '${CLOUD_CREDENTIAL_ID}' != '${EMPTY}'
-    ...    Run Keyword And Ignore Error    Delete Cloud Credential    ${CLOUD_CREDENTIAL_ID}
+Publish Shared Rancher Environment
+    [Documentation]    Serialize the environment created by Suite Setup For Rancher
+    ...               Integration Tests and publish it via PabotLib so sibling
+    ...               suites (running in other pabot processes) can reuse it.
+    ${env}=    Create Dictionary
+    ...    UNIQUE_NAME=${UNIQUE_NAME}
+    ...    HARVESTER_CLUSTER_NAME=${HARVESTER_CLUSTER_NAME}
+    ...    HARVESTER_PROJECT_NAME=${HARVESTER_PROJECT_NAME}
+    ...    RKE2_CLUSTER_NAME=${RKE2_CLUSTER_NAME}
+    ...    VLAN_NETWORK_NAME=${VLAN_NETWORK_NAME}
+    ...    CLUSTER_NETWORK_NAME=${CLUSTER_NETWORK_NAME}
+    ...    VLAN_CONFIG_NAME=${VLAN_CONFIG_NAME}
+    ...    IP_POOL_NAME=${IP_POOL_NAME}
+    ...    IMAGE_NAME=${IMAGE_NAME}
+    ...    SINGLE_CLUSTER_NAME=${SINGLE_CLUSTER_NAME}
+    ...    MULTI_CLUSTER_NAME=${MULTI_CLUSTER_NAME}
+    ...    SINGLE_CONFIG_NAME=${SINGLE_CONFIG_NAME}
+    ...    MULTI_CONFIG_NAME=${MULTI_CONFIG_NAME}
+    ...    CUSTOM_CLUSTER_NAME=${CUSTOM_CLUSTER_NAME}
+    ...    IMPORT_CLUSTER_NAME=${IMPORT_CLUSTER_NAME}
+    ...    HARVESTER_CLUSTER_ID=${HARVESTER_CLUSTER_ID}
+    ...    CLOUD_CREDENTIAL_ID=${CLOUD_CREDENTIAL_ID}
+    ...    CP_KUBECONFIG=${CP_KUBECONFIG}
+    ...    RKE2_VERSION=${RKE2_VERSION}
+    ...    SUITE_CLUSTER_ID=${SUITE_CLUSTER_ID}
+    ${env_json}=    Evaluate    json.dumps($env)    json
+    Set Parallel Value For Key    RANCHER_SHARED_ENV    ${env_json}
+    Log    Published shared Rancher environment for sibling suites    console=yes
 
-    # Delete Harvester mgmt cluster
-    Run Keyword And Ignore Error    Delete Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
+Load Shared Rancher Environment
+    [Arguments]    ${env_json}=${EMPTY}
+    [Documentation]    Populate this suite's variables from the environment
+    ...               published by Publish Shared Rancher Environment. Fetches it
+    ...               via PabotLib when not passed in directly. Also (re)initializes
+    ...               the per-suite placeholders each suite fills in independently
+    ...               (cluster IDs created by its own tests, workload lists, etc).
+    IF    '${env_json}' == '${EMPTY}'
+        ${env_json}=    Get Parallel Value For Key    RANCHER_SHARED_ENV
+    END
+    ${env}=    Evaluate    json.loads($env_json)    json
+    Set Suite Variable    ${UNIQUE_NAME}    ${env}[UNIQUE_NAME]
+    Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    ${env}[HARVESTER_CLUSTER_NAME]
+    Set Suite Variable    ${HARVESTER_PROJECT_NAME}    ${env}[HARVESTER_PROJECT_NAME]
+    Set Suite Variable    ${RKE2_CLUSTER_NAME}    ${env}[RKE2_CLUSTER_NAME]
+    Set Suite Variable    ${VLAN_NETWORK_NAME}    ${env}[VLAN_NETWORK_NAME]
+    Set Suite Variable    ${CLUSTER_NETWORK_NAME}    ${env}[CLUSTER_NETWORK_NAME]
+    Set Suite Variable    ${VLAN_CONFIG_NAME}    ${env}[VLAN_CONFIG_NAME]
+    Set Suite Variable    ${IP_POOL_NAME}    ${env}[IP_POOL_NAME]
+    Set Suite Variable    ${IMAGE_NAME}    ${env}[IMAGE_NAME]
+    Set Suite Variable    ${SINGLE_CLUSTER_NAME}    ${env}[SINGLE_CLUSTER_NAME]
+    Set Suite Variable    ${MULTI_CLUSTER_NAME}    ${env}[MULTI_CLUSTER_NAME]
+    Set Suite Variable    ${SINGLE_CONFIG_NAME}    ${env}[SINGLE_CONFIG_NAME]
+    Set Suite Variable    ${MULTI_CONFIG_NAME}    ${env}[MULTI_CONFIG_NAME]
+    Set Suite Variable    ${CUSTOM_CLUSTER_NAME}    ${env}[CUSTOM_CLUSTER_NAME]
+    Set Suite Variable    ${IMPORT_CLUSTER_NAME}    ${env}[IMPORT_CLUSTER_NAME]
+    Set Suite Variable    ${HARVESTER_CLUSTER_ID}    ${env}[HARVESTER_CLUSTER_ID]
+    Set Suite Variable    ${CLOUD_CREDENTIAL_ID}    ${env}[CLOUD_CREDENTIAL_ID]
+    Set Suite Variable    ${CP_KUBECONFIG}    ${env}[CP_KUBECONFIG]
+    Set Suite Variable    ${RKE2_VERSION}    ${env}[RKE2_VERSION]
+    Set Suite Variable    ${SUITE_CLUSTER_ID}    ${env}[SUITE_CLUSTER_ID]
+    # Per-suite placeholders - each suite creates and owns its own copies.
+    Set Suite Variable    ${SINGLE_CLUSTER_ID}    ${EMPTY}
+    Set Suite Variable    ${MULTI_CLUSTER_ID}    ${EMPTY}
+    Set Suite Variable    ${CUSTOM_CLUSTER_ID}    ${EMPTY}
+    Set Suite Variable    ${IMPORT_CLUSTER_ID}    ${EMPTY}
+    Set Suite Variable    ${IMPORT_CLUSTER_READY}    ${False}
+    Set Suite Variable    ${IMPORT_CHART_PREREQS_DONE}    ${False}
+    Set Suite Variable    ${LB_DHCP_NAME}    ${EMPTY}
+    Set Suite Variable    ${LB_POOL_NAME}    ${EMPTY}
+    @{whoami_list}=    Create List
+    Set Suite Variable    @{WHOAMI_DEPLOYMENTS}    @{whoami_list}
+    Set Suite Variable    ${NEXT_RKE2_VERSION}    ${EMPTY}
 
-    # Delete Harvester VMs
-    Run Keyword And Ignore Error    Delete Harvester VM    ${IMPORT_CLUSTER_NAME}-vm-0
-    Run Keyword And Ignore Error    Wait For Harvester VM Deleted    ${IMPORT_CLUSTER_NAME}-vm-0    ${RANCHER_WAIT_TIMEOUT}
+Get Or Create Rancher Test Environment
+    [Documentation]    Reuse the shared Rancher environment published by Test
+    ...               Rancher Env's setup test when running under pabot's staged
+    ...               ordering (see rancher-ordering.txt); otherwise - plain
+    ...               `robot`, or pabot without the ordering file - create the
+    ...               environment locally so each suite still works standalone.
+    Set up test environment
+    ${status}    ${env_json}=    Run Keyword And Ignore Error
+    ...    Get Parallel Value For Key    RANCHER_SHARED_ENV
+    IF    '${status}' == 'PASS' and '${env_json}' != '${EMPTY}'
+        Load Shared Rancher Environment    ${env_json}
+        Set Suite Variable    ${ENV_IS_SHARED}    ${True}
+        Log    Reused shared Rancher test environment    console=yes
+    ELSE
+        Suite Setup For Rancher Integration Tests
+        Set Suite Variable    ${ENV_IS_SHARED}    ${False}
+    END
 
-    # Delete Harvester VMs shared resources
-    Run Keyword And Ignore Error    Delete Image    ${IMAGE_NAME}
-    Run Keyword And Ignore Error    Delete IP Pool    ${IP_POOL_NAME}
-    Run Keyword And Ignore Error    Delete VLAN Network    ${VLAN_NETWORK_NAME}
-    Run Keyword And Ignore Error    Delete VLAN Config    ${VLAN_CONFIG_NAME}
-    Run Keyword And Ignore Error    Delete Cluster Network    ${CLUSTER_NETWORK_NAME}
-
-    Run Keyword And Ignore Error    Set Cluster Registration URL    ${EMPTY}
-
-    Cleanup test resources
-    Log    Suite teardown completed
+Teardown Rancher Test Suite
+    [Arguments]    ${cleanup_rbac}=${False}    ${cleanup_import_cluster}=${False}
+    [Documentation]    Suite Teardown for suites using Get Or Create Rancher Test
+    ...               Environment. RBAC resources (if any) are always cleaned up
+    ...               by this suite. The full shared environment (Harvester
+    ...               import, network, image, credential) is only torn down here
+    ...               if this suite created its own standalone copy (fallback
+    ...               path) - otherwise it's left for Test Rancher Env's
+    ...               teardown test to clean up.
+    IF    ${cleanup_rbac}
+        Teardown RBAC Test Resources
+    END
+    IF    ${cleanup_import_cluster}
+        Cleanup import cluster test resources
+    END
+    IF    not ${ENV_IS_SHARED}
+        Suite Teardown For Rancher Integration Tests
+    END
 
 # ============================================================
 # Utility keywords
@@ -2347,6 +2468,14 @@ Uninstall Harvester RBAC Chart On Local Cluster
     Uninstall Chart    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
     Wait For Chart App Deleted    ${RBAC_CLUSTER_ID}    ${RBAC_CHART_RELEASE_NAME}    ${RBAC_CHART_NAMESPACE}
     Log    Harvester RBAC chart uninstalled from local cluster    console=yes
+
+Skip RBAC Tests If Chart Not Installed
+    [Documentation]    Test Setup for the RBAC suite: skip cluster-role/project-role
+    ...               test cases (TC1-TC4) if the RBAC chart install test case did not pass.
+    ${needs_chart}=    Evaluate    any(tc in """${TEST NAME}""" for tc in ['TC1', 'TC2', 'TC3', 'TC4'])
+    IF    ${needs_chart} and not ${RBAC_CHART_INSTALLED}
+        Skip    RBAC chart is not installed; skipping RBAC test
+    END
 
 Create Rancher User
     [Arguments]    ${user_id}    ${display_name}

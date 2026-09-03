@@ -37,6 +37,19 @@ class Rancher(Base):
         else:
             self.rancher = Rest()
 
+        # Lazily created only if the active strategy isn't already Rest -
+        # see install_chart(), which always uses Rest regardless of strategy.
+        self._chart_rest_instance = None
+
+    def _chart_rest(self):
+        """Return a Rest() instance for chart operations, reusing self.rancher
+        if it's already a Rest instance to avoid creating a redundant one."""
+        if isinstance(self.rancher, Rest):
+            return self.rancher
+        if self._chart_rest_instance is None:
+            self._chart_rest_instance = Rest()
+        return self._chart_rest_instance
+
     # Harvester Management Cluster Operations
     def create_harvester_mgmt_cluster(self, cluster_name):
         """Create Harvester management cluster entry in Rancher (Import Existing)"""
@@ -78,6 +91,10 @@ class Rancher(Base):
     def configure_kdm_url(self, url):
         """Update Rancher global rke-metadata-config to use a custom KDM URL"""
         return self.rancher.configure_kdm_url(url)
+
+    def get_harvester_node_driver_version(self):
+        """Get the Harvester node driver (docker-machine-driver-harvester) version"""
+        return self.rancher.get_harvester_node_driver_version()
 
     # Cloud Credential Operations
     def create_cloud_credential(self, name, kubeconfig, cluster_id):
@@ -292,8 +309,15 @@ class Rancher(Base):
     # Chart Install Operations
     def install_chart(self, cluster_id, repo_name, chart_name, version,
                       release_name, namespace, values=None):
-        """Install a Helm chart on a guest cluster"""
-        return self.rancher.install_chart(
+        """Install a Helm chart on a guest cluster.
+
+        Always uses the REST implementation regardless of
+        HARVESTER_OPERATION_STRATEGY: crd.py's path to Rancher's catalog
+        install action has shown recurring "lost connection to cluster"
+        tunnel failures on this environment that rest.py's direct
+        session-based API calls do not.
+        """
+        return self._chart_rest().install_chart(
             cluster_id, repo_name, chart_name, version,
             release_name, namespace, values
         )

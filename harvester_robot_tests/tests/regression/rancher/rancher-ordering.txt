@@ -1,0 +1,8 @@
+--test Rancher.Test Rancher Env.Setup Rancher Test Environment
+#WAIT
+--suite Rancher.Test Rancher Guestcluster Integration
+--suite Rancher.Test Rancher Charts
+--suite Rancher.Test Rancher Rbac
+#WAIT
+--test Rancher.Test Rancher Env.Teardown Rancher Test Environment
+

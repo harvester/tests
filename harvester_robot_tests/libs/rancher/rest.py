@@ -7,6 +7,7 @@ import os
 import time
 import requests
 import json
+import re
 from utility.utility import logging, get_retry_count_and_interval, get_harvester_api_client
 from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG, DEFAULT_NAMESPACE
 from rancher.base import Base
@@ -407,6 +408,26 @@ class Rest(Base):
             f"No RKE2 version found matching '{target_version}'. "
             f"Available versions: {sorted_versions[:5]}"
         )
+
+    def get_harvester_node_driver_version(self):
+        """
+        Get the Harvester node driver (docker-machine-driver-harvester) version.
+
+        Parses the version out of the driver's release download URL
+        (e.g. "...download/v1.0.6/docker-machine-driver-harvester-amd64.tar.gz").
+
+        Returns:
+            str: Version string (e.g. '1.0.6')
+        """
+        code, data = self._rancher_request("GET", "v3/nodeDrivers/harvester")
+        if code != 200:
+            raise Exception(f"Failed to get harvester node driver: {code}, {data}")
+
+        url = data.get("url", "")
+        match = re.search(r"/v(\d+\.\d+\.\d+)/", url)
+        if not match:
+            raise Exception(f"Could not parse version from node driver url: {url}")
+        return match.group(1)
 
     def configure_kdm_url(self, url):
         """
@@ -1878,19 +1899,30 @@ class Rest(Base):
             "namespace": namespace
         }
 
-        code, data = self._rancher_request(
-            "POST",
+        path = (
             f"k8s/clusters/{cluster_id}"
             f"/v1/catalog.cattle.io.clusterrepos/{repo_name}"
-            f"?action=install",
-            data=payload
+            f"?action=install"
         )
+        max_attempts = 5
+        retry_wait_seconds = 30
 
-        if code not in [200, 201]:
-            raise Exception(
-                f"Failed to install chart {chart_name}: "
-                f"{code}, {str(data)[:500]}"
+        for attempt in range(1, max_attempts + 1):
+            code, data = self._rancher_request("POST", path, data=payload)
+            if code in (200, 201):
+                break
+            if "lost connection to cluster" not in str(data) or attempt == max_attempts:
+                raise Exception(
+                    f"Failed to install chart {chart_name}: "
+                    f"{code}, {str(data)[:500]}"
+                )
+            logging(
+                f"Chart install hit a transient tunnel disconnect "
+                f"(attempt {attempt}/{max_attempts}); retrying in "
+                f"{retry_wait_seconds}s",
+                level="WARNING"
             )
+            time.sleep(retry_wait_seconds)
 
         logging(f"Chart install initiated: {chart_name} v{version}")
         return data

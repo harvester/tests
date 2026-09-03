@@ -28,6 +28,7 @@ TEST_CASE=""
 TEST_SUITE=""
 TEST_FILE=""
 PROCESSES=""
+ORDERING=""
 STRATEGY=""
 INCLUDE_TAG=""
 EXCLUDE_TAG=""
@@ -51,6 +52,8 @@ Options:
     -L log_level       Set log level (TRACE|DEBUG|INFO|WARN|ERROR)
     -d output_dir      Set output directory
     -p N               Run suites in parallel with pabot (N processes)
+    -o orderfile       Pabot ordering file (implies --testlevelsplit); use with -p
+                       to stage a shared setup/teardown suite around parallel ones
     -S strategy        Operation strategy: crd (default) or rest (sets HARVESTER_OPERATION_STRATEGY)
     -W                 Skip virtual environment check
     -h                 Show this help
@@ -66,6 +69,7 @@ Examples:
     $0 -v WAIT_TIMEOUT:1200               # Set variable
     $0 -L DEBUG                           # Debug logging
     $0 -p 3 -i volume                     # Run volume suites in parallel (3 processes)
+    $0 -p 3 -o tests/regression/rancher/rancher-ordering.txt -f tests/regression/rancher/  # Shared setup, parallel rancher suites
     $0 -S rest -i volume                  # Run volume suites against the REST API
     $0 -i pr-baseline -p 8                # Run the PR baseline (image+VM+volume) in parallel
 
@@ -78,7 +82,7 @@ EOF
 }
 
 # Parse arguments
-while getopts "t:s:f:i:e:v:L:d:p:S:Wh" opt; do
+while getopts "t:s:f:i:e:v:L:d:p:o:S:Wh" opt; do
     case $opt in
         t) TEST_CASE="--test \"$OPTARG\"" ;;
         s) TEST_SUITE="--suite \"$OPTARG\"" ;;
@@ -89,6 +93,7 @@ while getopts "t:s:f:i:e:v:L:d:p:S:Wh" opt; do
         L) LOG_LEVEL=$OPTARG ;;
         d) OUTPUT_DIR=$OPTARG ;;
         p) PROCESSES=$OPTARG ;;
+        o) ORDERING=$OPTARG ;;
         S) STRATEGY=$OPTARG ;;
         W) SKIP_VENV_CHECK=true ;;
         h) show_help; exit 0 ;;
@@ -135,6 +140,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)/libs:$(pwd)/../apiclient"
 # pabot-specific options (e.g. --processes) must precede the shared robot options.
 if [ -n "$PROCESSES" ]; then
     ROBOT_CMD="pabot --processes $PROCESSES"
+    [ -n "$ORDERING" ] && ROBOT_CMD="$ROBOT_CMD --testlevelsplit --ordering $ORDERING"
 else
     ROBOT_CMD="robot"
 fi

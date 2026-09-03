@@ -15,3 +15,7 @@ class SkipSuiteTeardown(SuiteVisitor):
 
     def start_test(self, test):
         test.teardown = None
+        # If any teardown is not handled by a [Teardown] setting
+        # Add 'env-teardown' tag to skip it explicitly via its own tag.
+        if 'env-teardown' in test.tags:
+            test.tags.add('robot:skip')
