@@ -7,5 +7,6 @@
 --suite Lvm.Test Lvm Snapshot Lifecycle
 --suite Lvm.Test Lvm Negative
 --suite Lvm.Test Lvm Expansion
+--suite Lvm.Test Lvm Image
 #WAIT
 --suite Lvm.Test Zz Lvm Cleanup

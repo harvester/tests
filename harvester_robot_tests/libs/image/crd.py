@@ -71,6 +71,13 @@ class CRD(Base):
         if checksum:
             body["spec"]["checksum"] = checksum
 
+        # Import onto a third-party StorageClass (e.g. LVM) through the CDI
+        # backend instead of the default Longhorn backing image.
+        storage_class = kwargs.get('storage_class', '')
+        if storage_class:
+            body["spec"]["targetStorageClassName"] = storage_class
+            body["spec"]["backend"] = kwargs.get('backend', 'cdi')
+
         # spec.retry (import retry limit, cluster default 3). retry=0 makes a
         # doomed import (e.g. bad checksum) fail on the first attempt instead
         # of re-downloading the whole image several times.
