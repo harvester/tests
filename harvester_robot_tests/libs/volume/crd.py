@@ -794,6 +794,59 @@ class CRD(Base):
             logging(f"Failed to restore from snapshot: {e}")
             raise
 
+    def clone_from_volume(self, source_volume_name, new_volume_name, **kwargs):
+        """Clone a volume from another PVC (dataSource: PersistentVolumeClaim).
+
+        Unlike a snapshot restore this goes through the driver's
+        volume-clone path. Size defaults to the source volume's size.
+        """
+        namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
+        storage_class = kwargs.get('storage_class', DEFAULT_STORAGE_CLASS)
+        access_mode = kwargs.get('access_mode', ACCESS_MODE_RWX)
+        volume_mode = kwargs.get('volume_mode', 'Block')
+
+        size = kwargs.get('size')
+        if not size:
+            source_pvc = self.get(source_volume_name, namespace)
+            size = source_pvc['spec']['resources']['requests']['storage']
+
+        body = {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "name": new_volume_name,
+                "namespace": namespace,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE
+                }
+            },
+            "spec": {
+                "accessModes": [access_mode],
+                "volumeMode": volume_mode,
+                "storageClassName": storage_class,
+                "resources": {
+                    "requests": {
+                        "storage": size
+                    }
+                },
+                "dataSource": {
+                    "name": source_volume_name,
+                    "kind": "PersistentVolumeClaim"
+                }
+            }
+        }
+
+        try:
+            self.core_api.create_namespaced_persistent_volume_claim(
+                namespace=namespace,
+                body=body
+            )
+            logging(f"PVC {namespace}/{new_volume_name} cloned from "
+                    f"volume {source_volume_name}")
+        except ApiException as e:
+            logging(f"Failed to clone from volume: {e}")
+            raise
+
     def cleanup(self):
         """Clean up all test volumes"""
         logging('Cleaning up test volumes')

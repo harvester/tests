@@ -68,6 +68,12 @@ class Rest(Base):
             "create_from_image is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
+    def clone_from_volume(self, source_volume_name, new_volume_name, **kwargs):
+        """Clone from volume. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "clone_from_volume is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def try_expand(self, volume_name, new_size):
         """Negative-test helper. Only implemented for the CRD strategy."""
         raise NotImplementedError(

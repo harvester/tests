@@ -94,6 +94,11 @@ class Volume(Base):
             volume_name, snapshot_name, new_volume_name, **kwargs
         )
 
+    def clone_from_volume(self, source_volume_name, new_volume_name, **kwargs):
+        return self.volume.clone_from_volume(
+            source_volume_name, new_volume_name, **kwargs
+        )
+
     def wait_for_snapshot_ready(self, snapshot_name, timeout):
         return self.volume.wait_for_snapshot_ready(snapshot_name, timeout)
 
