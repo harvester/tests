@@ -172,16 +172,38 @@ class CRD(Base):
         return disk_by_node
 
     def get_lvm_vg_node(self, run_id, vg_name):
-        """Find the node hosting a labelled LVM volume group."""
+        """Find the node hosting a provisioned LVM volume group.
+
+        The provisioner spec alone is not authoritative: an interrupted
+        deprovision can leave spec.provisioner on a disk whose VG is
+        already gone, and the run label is shared across runs. Require
+        provisionPhase == Provisioned, and refuse to guess when several
+        disks still claim the VG.
+        """
         disk_by_node = self.get_lvm_test_disks(run_id)
+        matches = {}
         for node_name, disk_name in disk_by_node.items():
             bd = self.get(disk_name, LONGHORN_SYSTEM_NAMESPACE)
             actual_vg = (
                 bd.get("spec", {}).get("provisioner", {})
                 .get("lvm", {}).get("vgName", "")
             )
-            if actual_vg == vg_name:
-                return node_name
+            if actual_vg != vg_name:
+                continue
+            phase = bd.get("status", {}).get("provisionPhase", "")
+            if phase == "Provisioned":
+                matches[node_name] = disk_name
+            else:
+                logging(
+                    f"Ignoring stale LVM provisioner spec on {disk_name} "
+                    f"({node_name}): provisionPhase={phase or 'unknown'}",
+                    level="WARN")
+        if len(matches) > 1:
+            raise AssertionError(
+                f"Multiple provisioned disks claim VG {vg_name}: {matches}; "
+                "clean up stale blockdevices before running the LVM suites")
+        if matches:
+            return next(iter(matches))
         raise AssertionError(
             f"Volume group {vg_name} for LVM test run {run_id} was not found"
         )
