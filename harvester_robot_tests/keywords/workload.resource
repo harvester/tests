@@ -41,3 +41,8 @@ Filesystem Volume File Checksum
     [Arguments]    ${pod_name}
     ${checksum}=    workload_keywords.filesystem_file_checksum    ${pod_name}
     RETURN    ${checksum}
+
+Filesystem Volume Capacity In MB
+    [Arguments]    ${pod_name}
+    ${capacity}=    workload_keywords.filesystem_capacity_mb    ${pod_name}
+    RETURN    ${capacity}

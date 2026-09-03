@@ -9,12 +9,15 @@ Suite Teardown   Local Suite Teardown
 
 
 *** Variables ***
-${LVM_DISK_NAME}    lvm-data
-${IMAGE_NAME}        ${EMPTY}
-${LVM_SC_NAME}       ${EMPTY}
-${LVM_VOLUME_NAME}   ${EMPTY}
-${LVM_VM_NAME}       ${EMPTY}
-${LVM_NODE_NAME}     ${EMPTY}
+${LVM_DISK_NAME}          lvm-data
+${LVM_MOVE_DISK_NAME}     lvm-moved-data
+${IMAGE_NAME}             ${EMPTY}
+${LVM_SC_NAME}            ${EMPTY}
+${LVM_VOLUME_NAME}        ${EMPTY}
+${LVM_MOVE_VOLUME_NAME}    ${EMPTY}
+${LVM_VM_NAME}            ${EMPTY}
+${LVM_SECOND_VM_NAME}     ${EMPTY}
+${LVM_NODE_NAME}          ${EMPTY}
 
 
 *** Test Cases ***
@@ -37,20 +40,46 @@ Provision LVM Block Volume And Attach To VM
     Wait Until Volume Is Active    ${LVM_VOLUME_NAME}
     Volume Should Be Hotplugged    ${LVM_VM_NAME}    ${LVM_DISK_NAME}
 
+Volume Moves Between VMs On The Same Node
+    [Documentation]    An RWO LVM volume must be re-attachable: unplug it
+    ...    from one VM and hotplug it into another VM on the same node,
+    ...    exercising the full unpublish/republish cycle.
+    [Tags]    p1
+    VM is created    ${LVM_SECOND_VM_NAME}    ${IMAGE_NAME}    node_name=${LVM_NODE_NAME}
+    VM should be running    ${LVM_SECOND_VM_NAME}
+    Create Volume
+    ...    ${LVM_MOVE_VOLUME_NAME}
+    ...    ${LVM_VOLUME_SIZE}
+    ...    storage_class=${LVM_SC_NAME}
+    ...    volume_mode=Block
+    ...    access_mode=ReadWriteOnce
+    Add Volume To VM    ${LVM_VM_NAME}    ${LVM_MOVE_DISK_NAME}    ${LVM_MOVE_VOLUME_NAME}
+    Wait Until Volume Is Active    ${LVM_MOVE_VOLUME_NAME}
+    Volume Should Be Hotplugged    ${LVM_VM_NAME}    ${LVM_MOVE_DISK_NAME}
+    Remove Volume From VM    ${LVM_VM_NAME}    ${LVM_MOVE_DISK_NAME}
+    Volume Should Be Unplugged    ${LVM_VM_NAME}    ${LVM_MOVE_DISK_NAME}
+    Add Volume To VM    ${LVM_SECOND_VM_NAME}    ${LVM_MOVE_DISK_NAME}    ${LVM_MOVE_VOLUME_NAME}
+    Wait Until Volume Is Active    ${LVM_MOVE_VOLUME_NAME}
+    Volume Should Be Hotplugged    ${LVM_SECOND_VM_NAME}    ${LVM_MOVE_DISK_NAME}
+
 
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name    lvm-attach
-    Set Suite Variable    ${IMAGE_NAME}         image-${suffix}
-    Set Suite Variable    ${LVM_SC_NAME}        lvm-sc-${suffix}
-    Set Suite Variable    ${LVM_VOLUME_NAME}    lvm-vol-${suffix}
-    Set Suite Variable    ${LVM_VM_NAME}        lvm-vm-${suffix}
+    Set Suite Variable    ${IMAGE_NAME}              image-${suffix}
+    Set Suite Variable    ${LVM_SC_NAME}             lvm-sc-${suffix}
+    Set Suite Variable    ${LVM_VOLUME_NAME}         lvm-vol-${suffix}
+    Set Suite Variable    ${LVM_MOVE_VOLUME_NAME}    lvm-move-${suffix}
+    Set Suite Variable    ${LVM_VM_NAME}             lvm-vm-${suffix}
+    Set Suite Variable    ${LVM_SECOND_VM_NAME}      lvm-vm2-${suffix}
     ${node}=    Initialize LVM Workload Suite
     Set Suite Variable    ${LVM_NODE_NAME}    ${node}
     Image is available for VM creation    ${IMAGE_NAME}    ${OPENSUSE_IMAGE_URL}
 
 Local Suite Teardown
     Run Keyword And Ignore Error    VM is deleted    ${LVM_VM_NAME}
+    Run Keyword And Ignore Error    VM is deleted    ${LVM_SECOND_VM_NAME}
     Run Keyword And Ignore Error    Delete Volume    ${LVM_VOLUME_NAME}
+    Run Keyword And Ignore Error    Delete Volume    ${LVM_MOVE_VOLUME_NAME}
     Run Keyword And Ignore Error    Delete Storage Class    ${LVM_SC_NAME}
     Run Keyword And Ignore Error    Delete image by name    ${IMAGE_NAME}

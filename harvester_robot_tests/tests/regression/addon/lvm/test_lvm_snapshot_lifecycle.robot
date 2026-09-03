@@ -69,6 +69,44 @@ Imported Snapshot Deletes Backend Via Location Record
     Delete Imported Snapshot And Wait For Backend Cleanup    ${LVM_IMPORTED_SNAPSHOT}
     Snapshot LV Should Not Exist On Node    ${LVM_NODE_NAME}    ${LVM_VG_NAME}    ${handle}
 
+Deleting A Middle Snapshot Keeps Others Restorable
+    [Documentation]    Take three snapshots of the same volume at different
+    ...    data states, delete the middle one, and verify the neighbours are
+    ...    unaffected: their backend LVs survive and the oldest one still
+    ...    restores its original data.
+    [Tags]    p1
+    Create Consumed Volume    ${LVM_VOLUME_NAME}
+    ${checksum_a}=    Write Block Pattern To Volume    ${POD_CONSUMER}
+    Create Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_A}    lvm-snapshot
+    Wait Until Snapshot Is Ready    ${LVM_SNAP_A}
+    Overwrite Block Volume Head    ${POD_CONSUMER}
+    Create Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_B}    lvm-snapshot
+    Wait Until Snapshot Is Ready    ${LVM_SNAP_B}
+    Overwrite Block Volume Head    ${POD_CONSUMER}
+    Create Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_C}    lvm-snapshot
+    Wait Until Snapshot Is Ready    ${LVM_SNAP_C}
+    ${handle_a}=    Get Snapshot Handle    ${LVM_SNAP_A}
+    ${handle_b}=    Get Snapshot Handle    ${LVM_SNAP_B}
+    ${handle_c}=    Get Snapshot Handle    ${LVM_SNAP_C}
+    Delete Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_B}
+    Snapshot LV Should Not Exist On Node    ${LVM_NODE_NAME}    ${LVM_VG_NAME}    ${handle_b}
+    Snapshot LV Should Exist On Node    ${LVM_NODE_NAME}    ${LVM_VG_NAME}    ${handle_a}
+    Snapshot LV Should Exist On Node    ${LVM_NODE_NAME}    ${LVM_VG_NAME}    ${handle_c}
+    Restore Volume From Snapshot
+    ...    ${LVM_VOLUME_NAME}
+    ...    ${LVM_SNAP_A}
+    ...    ${LVM_MULTI_RESTORE}
+    ...    storage_class=${LVM_SC_NAME}
+    ...    access_mode=ReadWriteOnce
+    Create Workload Pod With Volume    ${POD_MULTI}    ${LVM_MULTI_RESTORE}    Block
+    ${restored_checksum}=    Block Volume Checksum    ${POD_MULTI}
+    Should Be Equal    ${restored_checksum}    ${checksum_a}
+    ...    msg=Restore from the oldest snapshot changed after deleting a newer one
+    Delete Workload Pod    ${POD_MULTI}
+    Delete Volume    ${LVM_MULTI_RESTORE}
+    Delete Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_A}
+    Delete Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_C}
+
 
 *** Keywords ***
 Create Consumed Volume
@@ -93,7 +131,12 @@ Local Suite Setup
     Set Suite Variable    ${LVM_SNAPSHOT_NAME}        lvm-snap-${suffix}
     Set Suite Variable    ${LVM_IMPORTED_SNAPSHOT}    lvm-imported-${suffix}
     Set Suite Variable    ${LVM_RETAIN_CLASS}         lvm-retain-${suffix}
+    Set Suite Variable    ${LVM_SNAP_A}               lvm-snap-a-${suffix}
+    Set Suite Variable    ${LVM_SNAP_B}               lvm-snap-b-${suffix}
+    Set Suite Variable    ${LVM_SNAP_C}               lvm-snap-c-${suffix}
+    Set Suite Variable    ${LVM_MULTI_RESTORE}        lvm-multi-restore-${suffix}
     Set Suite Variable    ${POD_CONSUMER}             pod-consumer-${suffix}
+    Set Suite Variable    ${POD_MULTI}                pod-multi-${suffix}
     ${node}=    Initialize LVM Workload Suite
     Set Suite Variable    ${LVM_NODE_NAME}    ${node}
     Create LVM Storage Class
@@ -108,6 +151,13 @@ Local Suite Teardown
     ...    Delete Imported Snapshot And Wait For Backend Cleanup    ${LVM_IMPORTED_SNAPSHOT}
     Run Keyword And Ignore Error
     ...    Delete Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAPSHOT_NAME}
+    Run Keyword And Ignore Error
+    ...    Delete Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_A}
+    Run Keyword And Ignore Error
+    ...    Delete Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_B}
+    Run Keyword And Ignore Error
+    ...    Delete Volume Snapshot    ${LVM_VOLUME_NAME}    ${LVM_SNAP_C}
     Run Keyword And Ignore Error    Delete Volume Snapshot Class    ${LVM_RETAIN_CLASS}
+    Run Keyword And Ignore Error    Delete Volume    ${LVM_MULTI_RESTORE}
     Run Keyword And Ignore Error    Delete Volume    ${LVM_VOLUME_NAME}
     Run Keyword And Ignore Error    Delete Storage Class    ${LVM_SC_NAME}

@@ -254,3 +254,11 @@ class workload_keywords:
         exactly what a re-format would cause."""
         out = self._exec(pod_name, f"sha256sum {FILESYSTEM_MOUNT_PATH}/data.bin")
         return out.split()[0]
+
+    def filesystem_capacity_mb(self, pod_name):
+        """Return the mounted filesystem's total size in MiB (df -m), so
+        tests can verify an expansion actually resized the filesystem."""
+        out = self._exec(pod_name, (
+            f"df -m {FILESYSTEM_MOUNT_PATH} | awk 'NR==2 {{print $2}}'"
+        ))
+        return int(out)
