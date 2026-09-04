@@ -106,7 +106,9 @@ Local Suite Setup
     ...    ${LVM_NODE_NAME}
 
 Local Suite Teardown
-    Run Keyword And Ignore Error    Cleanup Workload Pods
+    Run Keyword And Ignore Error    Delete Workload Pod    ${POD_SRC}
+    Run Keyword And Ignore Error    Delete Workload Pod    ${POD_RESTORE}
+    Run Keyword And Ignore Error    Delete Workload Pod    ${POD_OUTLIVE}
     Run Keyword And Ignore Error
     ...    Delete Volume Snapshot    ${LVM_SRC_VOLUME_NAME}    ${LVM_SNAPSHOT_NAME}
     Run Keyword And Ignore Error

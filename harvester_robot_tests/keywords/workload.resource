@@ -15,9 +15,6 @@ Delete Workload Pod
     [Arguments]    ${pod_name}
     workload_keywords.delete_workload_pod    ${pod_name}
 
-Cleanup Workload Pods
-    workload_keywords.cleanup_workload_pods
-
 Write Block Pattern To Volume
     [Arguments]    ${pod_name}    ${size_mb}=128
     ${checksum}=    workload_keywords.write_block_pattern    ${pod_name}    ${size_mb}

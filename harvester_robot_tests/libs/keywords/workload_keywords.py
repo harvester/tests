@@ -160,14 +160,6 @@ class workload_keywords:
             time.sleep(retry_interval)
         raise AssertionError(f"Workload pod {pod_name} was not removed in time")
 
-    def cleanup_workload_pods(self):
-        """Delete every pod created by this keyword library."""
-        pods = self.core_api.list_namespaced_pod(
-            namespace=DEFAULT_NAMESPACE,
-            label_selector=f"app={LABEL_WORKLOAD}")
-        for pod in pods.items:
-            self.delete_workload_pod(pod.metadata.name)
-
     def _exec(self, pod_name, command):
         """Run a shell command in the pod and return stdout.
 
@@ -259,6 +251,6 @@ class workload_keywords:
         """Return the mounted filesystem's total size in MiB (df -m), so
         tests can verify an expansion actually resized the filesystem."""
         out = self._exec(pod_name, (
-            f"df -m {FILESYSTEM_MOUNT_PATH} | awk 'NR==2 {{print $2}}'"
+            f"df -Pm {FILESYSTEM_MOUNT_PATH} | awk 'NR==2 {{print $2}}'"
         ))
         return int(out)

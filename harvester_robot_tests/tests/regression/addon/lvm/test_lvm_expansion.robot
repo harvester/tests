@@ -122,7 +122,10 @@ Local Suite Setup
 
 Local Suite Teardown
     Run Keyword And Ignore Error    VM is deleted    ${LVM_VM_NAME}
-    Run Keyword And Ignore Error    Cleanup Workload Pods
+    Run Keyword And Ignore Error    Delete Workload Pod    ${POD_BLK_A}
+    Run Keyword And Ignore Error    Delete Workload Pod    ${POD_BLK_B}
+    Run Keyword And Ignore Error    Delete Workload Pod    ${POD_FS_A}
+    Run Keyword And Ignore Error    Delete Workload Pod    ${POD_FS_B}
     Run Keyword And Ignore Error    Delete Volume    ${LVM_VOLUME_NAME}
     Run Keyword And Ignore Error    Delete Volume    ${LVM_BLK_DATA_VOLUME}
     Run Keyword And Ignore Error    Delete Volume    ${LVM_FS_DATA_VOLUME}
