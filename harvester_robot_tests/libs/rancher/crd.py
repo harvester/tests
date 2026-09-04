@@ -2307,13 +2307,18 @@ class CRD(Base):
             "namespace": namespace
         }
 
-        rc, stdout, stderr = self._run_kubectl_raw_guest(
-            cluster_id,
-            f"/v1/catalog.cattle.io.clusterrepos/{repo_name}"
-            f"?action=install",
-            method="create",
-            input_data=json.dumps(payload)
-        )
+        raw_path = (f"/v1/catalog.cattle.io.clusterrepos/{repo_name}"
+                    f"?action=install")
+        if cluster_id == "local":
+            rc, stdout, stderr = self._run_kubectl_rancher(
+                ["create", "--raw", raw_path, "-f", "-"],
+                input_data=json.dumps(payload)
+            )
+        else:
+            rc, stdout, stderr = self._run_kubectl_raw_guest(
+                cluster_id, raw_path, method="create",
+                input_data=json.dumps(payload)
+            )
 
         if rc != 0:
             raise Exception(
@@ -2356,13 +2361,18 @@ class CRD(Base):
             "namespace": namespace
         }
 
-        rc, stdout, stderr = self._run_kubectl_raw_guest(
-            cluster_id,
-            f"/v1/catalog.cattle.io.clusterrepos/{repo_name}"
-            f"?action=upgrade",
-            method="create",
-            input_data=json.dumps(payload)
-        )
+        raw_path = (f"/v1/catalog.cattle.io.clusterrepos/{repo_name}"
+                    f"?action=upgrade")
+        if cluster_id == "local":
+            rc, stdout, stderr = self._run_kubectl_rancher(
+                ["create", "--raw", raw_path, "-f", "-"],
+                input_data=json.dumps(payload)
+            )
+        else:
+            rc, stdout, stderr = self._run_kubectl_raw_guest(
+                cluster_id, raw_path, method="create",
+                input_data=json.dumps(payload)
+            )
 
         if rc != 0:
             raise Exception(
@@ -2384,13 +2394,18 @@ class CRD(Base):
         logging(f"Uninstalling chart {release_name} from {namespace} "
                 f"on cluster {cluster_id}")
 
-        rc, stdout, stderr = self._run_kubectl_raw_guest(
-            cluster_id,
-            f"/v1/catalog.cattle.io.apps/{namespace}/{release_name}"
-            f"?action=uninstall",
-            method="create",
-            input_data=json.dumps({})
-        )
+        raw_path = (f"/v1/catalog.cattle.io.apps/{namespace}/{release_name}"
+                    f"?action=uninstall")
+        if cluster_id == "local":
+            rc, stdout, stderr = self._run_kubectl_rancher(
+                ["create", "--raw", raw_path, "-f", "-"],
+                input_data=json.dumps({})
+            )
+        else:
+            rc, stdout, stderr = self._run_kubectl_raw_guest(
+                cluster_id, raw_path, method="create",
+                input_data=json.dumps({})
+            )
 
         if rc != 0:
             if "NotFound" in stderr or "not found" in stderr.lower():
@@ -2420,11 +2435,12 @@ class CRD(Base):
 
         end_time = time.time() + int(timeout)
         while time.time() < end_time:
-            rc, stdout, stderr = self._run_kubectl_guest(
-                cluster_id,
-                ["get", "apps.catalog.cattle.io", release_name,
-                 "-n", namespace, "-o", "json"]
-            )
+            args = ["get", "apps.catalog.cattle.io", release_name,
+                    "-n", namespace, "-o", "json"]
+            if cluster_id == "local":
+                rc, stdout, stderr = self._run_kubectl_rancher(args)
+            else:
+                rc, stdout, stderr = self._run_kubectl_guest(cluster_id, args)
             if rc != 0 and ("NotFound" in stderr or
                             "not found" in stderr.lower()):
                 logging(f"Chart app {release_name} has been deleted")
@@ -2645,11 +2661,12 @@ class CRD(Base):
         Returns:
             str: Deployed chart version (e.g. '0.1.18')
         """
-        rc, stdout, stderr = self._run_kubectl_guest(
-            cluster_id,
-            ["get", "apps.catalog.cattle.io", release_name,
-             "-n", namespace, "-o", "json"]
-        )
+        args = ["get", "apps.catalog.cattle.io", release_name,
+                "-n", namespace, "-o", "json"]
+        if cluster_id == "local":
+            rc, stdout, stderr = self._run_kubectl_rancher(args)
+        else:
+            rc, stdout, stderr = self._run_kubectl_guest(cluster_id, args)
         if rc != 0:
             raise Exception(
                 f"Failed to get chart app {release_name}: {stderr}")
@@ -2852,11 +2869,14 @@ class CRD(Base):
         iteration = 0
         while time.time() < end_time:
             try:
-                rc, stdout, stderr = self._run_kubectl_guest(
-                    cluster_id,
-                    ["get", "apps.catalog.cattle.io", release_name,
-                     "-n", namespace, "-o", "json"]
-                )
+                args = ["get", "apps.catalog.cattle.io", release_name,
+                        "-n", namespace, "-o", "json"]
+                if cluster_id == "local":
+                    rc, stdout, stderr = self._run_kubectl_rancher(args)
+                else:
+                    rc, stdout, stderr = self._run_kubectl_guest(
+                        cluster_id, args
+                    )
                 if rc == 0 and stdout.strip():
                     data = json.loads(stdout)
                     info = data.get("spec", {}).get("info", {})
