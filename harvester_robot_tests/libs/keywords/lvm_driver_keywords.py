@@ -6,7 +6,9 @@ ConfigMap records (harvester/csi-driver-lvm#64), backend LV presence on
 nodes, and pre-provisioned VolumeSnapshotContent import. Kubernetes API
 only; no Harvester REST equivalent exists, so no CRD/REST strategy split.
 """
+import json
 import os
+import re
 import sys
 import time
 
@@ -34,6 +36,48 @@ class lvm_driver_keywords:
         init_k8s_api_client()
         self.core_api = client.CoreV1Api()
         self.obj_api = client.CustomObjectsApi()
+
+    # ---- csi-driver-config (VM backup admission gate) ----
+
+    def ensure_csi_driver_config(self, snapshot_class="lvm-snapshot"):
+        """Register the LVM driver in the csi-driver-config setting.
+
+        Harvester's webhook only admits a VM snapshot (VirtualMachineBackup)
+        when the PVC's provisioner has a volumeSnapshotClassName configured
+        there; third-party drivers must be added explicitly.
+        """
+        setting = self.obj_api.get_cluster_custom_object(
+            group="harvesterhci.io", version="v1beta1",
+            plural="settings", name="csi-driver-config")
+        config = json.loads(
+            setting.get("value") or setting.get("default") or "{}")
+        entry = config.get(LVM_DRIVER_NAME, {})
+        if entry.get("volumeSnapshotClassName") == snapshot_class:
+            return
+        entry["volumeSnapshotClassName"] = snapshot_class
+        config[LVM_DRIVER_NAME] = entry
+        self.obj_api.patch_cluster_custom_object(
+            group="harvesterhci.io", version="v1beta1",
+            plural="settings", name="csi-driver-config",
+            body={"value": json.dumps(config)})
+        logging(f"Registered {LVM_DRIVER_NAME} with snapshot class "
+                f"{snapshot_class} in csi-driver-config")
+
+    def remove_csi_driver_config(self):
+        """Drop the LVM driver entry from the csi-driver-config setting."""
+        setting = self.obj_api.get_cluster_custom_object(
+            group="harvesterhci.io", version="v1beta1",
+            plural="settings", name="csi-driver-config")
+        config = json.loads(
+            setting.get("value") or setting.get("default") or "{}")
+        if LVM_DRIVER_NAME not in config:
+            return
+        del config[LVM_DRIVER_NAME]
+        self.obj_api.patch_cluster_custom_object(
+            group="harvesterhci.io", version="v1beta1",
+            plural="settings", name="csi-driver-config",
+            body={"value": json.dumps(config)})
+        logging(f"Removed {LVM_DRIVER_NAME} from csi-driver-config")
 
     # ---- snapshot handle plumbing ----
 
@@ -199,6 +243,30 @@ class lvm_driver_keywords:
             time.sleep(retry_interval)
         raise AssertionError(
             f"PV {leftover} still references deleted claim {pvc_name}")
+
+    def no_helper_pods_should_remain(self):
+        """Assert every LVM provisioner helper pod is gone from the driver
+        namespace. Helper pods are named <action>-<resource> (older builds
+        prefix them with lvm-); after all volumes and snapshots are deleted
+        none may linger, or the driver is leaking pods (csi-driver-lvm#64
+        test plan case 3)."""
+        pattern = re.compile(r'^(lvm-)?(create|delete|clone)-')
+        retry_count, retry_interval = get_retry_count_and_interval()
+        leftover = []
+        for _ in range(retry_count):
+            pods = self.core_api.list_namespaced_pod(
+                namespace=LVM_DRIVER_NAMESPACE)
+            leftover = [
+                f"{pod.metadata.name} (phase {pod.status.phase})"
+                for pod in pods.items
+                if pattern.match(pod.metadata.name)
+            ]
+            if not leftover:
+                return
+            time.sleep(retry_interval)
+        raise AssertionError(
+            f"LVM helper pods still present in {LVM_DRIVER_NAMESPACE}: "
+            f"{', '.join(leftover)}")
 
     # ---- retain-policy and pre-provisioned snapshot flow ----
 

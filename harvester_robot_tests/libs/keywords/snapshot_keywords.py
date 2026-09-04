@@ -25,6 +25,11 @@ class snapshot_keywords:
         logging(f"Creating snapshot {snapshot_name} from VM {vm_name}")
         self.snap.create(vm_name, snapshot_name, **kwargs)
 
+    def restore_snapshot_to_new_vm(self, snapshot_name, new_vm_name, **kwargs):
+        """Restore a VM snapshot into a brand-new VM"""
+        logging(f'Restoring snapshot {snapshot_name} into new VM {new_vm_name}')
+        self.snap.restore_to_new_vm(snapshot_name, new_vm_name, **kwargs)
+
     def delete_snapshot(self, snapshot_name, **kwargs):
         """Delete a snapshot"""
         logging(f"Deleting snapshot {snapshot_name}")

@@ -7,6 +7,12 @@ Library          ../libs/keywords/lvm_driver_keywords.py
 
 
 *** Keywords ***
+Configure LVM Snapshot Class In CSI Driver Config
+    lvm_driver_keywords.ensure_csi_driver_config
+
+Remove LVM Snapshot Class From CSI Driver Config
+    lvm_driver_keywords.remove_csi_driver_config
+
 Get Snapshot Handle
     [Arguments]    ${snapshot_name}
     ${handle}=    lvm_driver_keywords.get_snapshot_handle    ${snapshot_name}
@@ -27,6 +33,9 @@ Snapshot LV Should Exist On Node
 Snapshot LV Should Not Exist On Node
     [Arguments]    ${node}    ${vg}    ${snapshot_handle}
     lvm_driver_keywords.snapshot_lv_should_not_exist    ${node}    ${vg}    ${snapshot_handle}
+
+No LVM Helper Pods Should Remain
+    lvm_driver_keywords.no_helper_pods_should_remain
 
 No PV Should Reference Claim
     [Arguments]    ${pvc_name}

@@ -14,6 +14,12 @@ Snapshot should be ready
     [Documentation]    Wait for the snapshot to reach ready state
     snapshot_keywords.wait snapshot ready   ${snapshot_name}
 
+Snapshot is restored to new VM
+    [Arguments]    ${snapshot_name}    ${new_vm_name}
+    [Documentation]    Restore a VM snapshot into a brand-new VM and wait for
+    ...    the VirtualMachineRestore to complete.
+    snapshot_keywords.restore_snapshot_to_new_vm    ${snapshot_name}    ${new_vm_name}
+
 Snapshot is deleted
     [Arguments]        ${snapshot_name}
     [Documentation]    Delete VM snapshot with the given name

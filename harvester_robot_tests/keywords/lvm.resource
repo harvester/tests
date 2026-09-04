@@ -8,6 +8,7 @@ Resource         storage.resource
 Resource         storageclass.resource
 Resource         virtualmachine.resource
 Resource         volume.resource
+Resource         lvm_driver.resource
 
 
 *** Variables ***
@@ -31,10 +32,14 @@ Prepare LVM Test Environment
     # Pabot process and therefore cannot read suite variables from this test.
     Label LVM Test Disks    ${disk_by_node}    ${LVM_TEST_RUN_ID}
     Create LVM Volume Groups    ${disk_by_node}    ${LVM_VG_TYPE}
+    # VM snapshots of LVM-backed volumes are only admitted when the driver
+    # has a snapshot class registered in the csi-driver-config setting.
+    Configure LVM Snapshot Class In CSI Driver Config
 
 Cleanup LVM Test Environment
     Set up test environment
     Run Keyword And Continue On Failure    Cleanup Labelled LVM Volume Groups
+    Run Keyword And Continue On Failure    Remove LVM Snapshot Class From CSI Driver Config
     Disable    ${LVM_ADDON_NAME}
     Wait For Disabled    ${LVM_ADDON_NAME}
 
