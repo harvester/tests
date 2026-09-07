@@ -118,10 +118,11 @@ Test Descheduler Addon Deploys When Enabled
     ...               Addon state is restored by the suite teardown.
 
     # Step 1: Multi-node precondition enforced by Harvester's addon webhook
-    Given Cluster Should Support Descheduler
+    ${node_count}=    Get cluster node count
+    Skip If    ${node_count} < 2
 
     # Step 2: Enable the addon
-    When Descheduler Addon Is Enabled
+    Given Descheduler Addon Is Enabled
 
     # Steps 3-4: Workload is deployed
     Then Descheduler Pods Should Be Running
@@ -147,10 +148,11 @@ Test Descheduler Addon Is Torn Down When Disabled
     ...                   - Deployment and ConfigMap kube-system/descheduler are gone
 
     # Step 1: Multi-node precondition enforced by Harvester's addon webhook
-    Given Cluster Should Support Descheduler
+    ${node_count}=    Get cluster node count
+    Skip If    ${node_count} < 2
 
     # Step 2: Start from a deployed descheduler
-    And Descheduler Addon Is Enabled
+    Given Descheduler Addon Is Enabled
     And Descheduler Deployment Should Be Ready
 
     # Step 3: Disable
@@ -177,7 +179,8 @@ Test Descheduler Addon Cannot Be Enabled On Single Node Cluster
     ...                   - Addon spec.enabled remains false
 
     # Step 1: Only meaningful on a single-node cluster
-    Given Cluster Should Be Single Node
+    ${node_count}=    Get cluster node count
+    Skip If    ${node_count} > 1
 
     # Step 2: Attempt to enable
     ${result}=    Try To Enable Descheduler Addon
@@ -206,10 +209,11 @@ Test Descheduler Node Utilization Thresholds Are Configurable
     ...               Original valuesContent is restored by the suite teardown.
 
     # Step 1: Multi-node precondition enforced by Harvester's addon webhook
-    Given Cluster Should Support Descheduler
+    ${node_count}=    Get cluster node count
+    Skip If    ${node_count} < 2
 
     # Step 2: A running descheduler to reconfigure
-    And Descheduler Addon Is Enabled
+    Given Descheduler Addon Is Enabled
     And Descheduler Deployment Should Be Ready
 
     # Step 3: Lower the thresholds
@@ -294,8 +298,10 @@ Test VM Is Rebalanced Off An Overutilized Node
     ...                   - No further movement once the descheduler is disabled
 
     # Step 1: Multi-node precondition enforced by Harvester's addon webhook
-    Given Cluster Should Support Descheduler
-    And Test Image Is Available
+    ${node_count}=    Get cluster node count
+    Skip If    ${node_count} < 2
+
+    Given Test Image Is Available
 
     # Step 2: Measure the cluster as the descheduler sees it
     ${busy}    ${destination}=    Descheduler Rebalance Nodes Are Selected

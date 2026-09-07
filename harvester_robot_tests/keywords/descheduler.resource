@@ -40,24 +40,6 @@ Descheduler Addon Should Be Available
     END
     Log    Descheduler addon CR is present
 
-Cluster Should Support Descheduler
-    [Documentation]    Pass the current test early when the cluster has fewer than
-    ...    two nodes. Harvester's addon webhook rejects enabling the descheduler on
-    ...    single-node clusters, so deployment tests cannot run there.
-    ${node_count}=    Get cluster node count
-    Pass Execution If    ${node_count} < 2
-    ...    Cluster has ${node_count} node(s); the descheduler addon requires at least 2
-    Log    Cluster has ${node_count} nodes; descheduler addon can be enabled
-
-Cluster Should Be Single Node
-    [Documentation]    Pass the current test early unless the cluster has exactly one
-    ...    node. Only single-node clusters can exercise the addon webhook's
-    ...    "not enough nodes" rejection.
-    ${node_count}=    Get cluster node count
-    Pass Execution If    ${node_count} > 1
-    ...    Cluster has ${node_count} nodes; the single-node rejection cannot be exercised
-    Log    Cluster is single-node; the descheduler addon must be rejected
-
 # Addon state
 Initial Descheduler State Is Captured
     [Documentation]    Capture the addon's enabled flag and raw valuesContent so
