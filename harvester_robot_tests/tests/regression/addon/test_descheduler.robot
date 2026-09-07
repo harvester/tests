@@ -308,10 +308,18 @@ Test VM Is Rebalanced Off An Overutilized Node
     # Step 3: Size the overload VM from those measurements
     ${vm_memory}=    Overload VM Memory Is Calculated    ${busy}    ${destination}
 
-    # Step 4: Pin the VM to the busy node, then reopen the cluster
-    When Overload VM Is Created On Node    ${busy_node}    ${vm_memory}
+    # Step 4.1: Cordon all nodes except one
+    ${cordoned}=    Cordon all the standard nodes except named ${busy_node}
+    Set Suite Variable    ${CORDONED_NODES}    ${cordoned}
+
+    # Step 4.2: Pin the VM to the busy node
+    When VM is created    ${OVERLOAD_VM}    ${TEST_IMAGE_NAME}    ${DEFAULT_VM_CPU}    ${vm_memory}
+    ...    requests_memory=${vm_memory}
+    And VM should be running    ${OVERLOAD_VM}
     Then VM should be running on node    ${OVERLOAD_VM}    ${busy_node}
-    And Cordoned Nodes Are Restored
+
+    # Step 4.3: then reopen the cluster
+    Cordoned Nodes Are Restored
 
     # Steps 5-6: Straddle the two nodes with thresholds and start descheduling
     When Descheduler Thresholds Are Derived From Nodes    ${busy_node}    ${destination_node}
@@ -398,42 +406,14 @@ Delete Annotation Test Resources
     Run Keyword And Ignore Error    VM is deleted    ${MIGRATABLE_VM}
     Run Keyword And Ignore Error    Delete Volume    ${RWO_VOLUME}
 
-Only Node Is Schedulable
-    [Arguments]    ${keep_node}
-    [Documentation]    Cordon every standard node except ${keep_node}, so the next VM can
-    ...    only land there. Records what was cordoned for later restoration.
-    ${nodes}=    List Standard Nodes
-    ${cordoned}=    Create List
-    FOR    ${node}    IN    @{nodes}
-        IF    '${node}' != '${keep_node}'
-            Cordon node named    ${node}
-            Append To List    ${cordoned}    ${node}
-        END
-    END
-    Set Suite Variable    ${CORDONED_NODES}    ${cordoned}
-    Log    Cordoned ${cordoned}; only ${keep_node} is schedulable
-
 Cordoned Nodes Are Restored
-    [Documentation]    Uncordon everything `Only Node Is Schedulable` cordoned.
+    [Documentation]    Uncordon cordoned nodes in ${CORDONED_NODES}
     ...    Safe to call more than once; the record is cleared each time.
     FOR    ${node}    IN    @{CORDONED_NODES}
         Run Keyword And Ignore Error    Uncordon node named    ${node}
     END
     ${no_nodes}=    Create List
     Set Suite Variable    ${CORDONED_NODES}    ${no_nodes}
-
-Overload VM Is Created On Node
-    [Arguments]    ${node_name}    ${memory}
-    [Documentation]    Create the overload VM pinned to ${node_name} by cordoning every
-    ...    other node first.
-    ...
-    ...    requests_memory is passed explicitly because the framework otherwise hardcodes
-    ...    a 2730Mi request regardless of guest size, and it is the *request* that
-    ...    LowNodeUtilization measures.
-    Only Node Is Schedulable    ${node_name}
-    VM is created    ${OVERLOAD_VM}    ${TEST_IMAGE_NAME}    ${DEFAULT_VM_CPU}    ${memory}
-    ...    requests_memory=${memory}
-    VM should be running    ${OVERLOAD_VM}
 
 Delete E2E Test Resources
     [Documentation]    Teardown for the rebalance e2e. Uncordons first so the cluster is

@@ -182,3 +182,16 @@ Tag Storages
         Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
             ...    host_keywords.is_lh_node_disk_tag_present    ${node}    ${disk}    ${tag}
     END
+
+Cordon all the standard nodes except named ${node_name}
+    [Documentation]    Cordon every standard node except ${node_name}
+    ${nodes}=    List Standard Nodes
+    ${cordoned}=    Create List
+    FOR    ${node}    IN    @{nodes}
+        IF    '${node}' != '${node_name}'
+            Cordon node named    ${node}
+            Append To List    ${cordoned}    ${node}
+        END
+    END
+    Log    Cordoned ${cordoned}; only ${node_name} is schedulable
+    RETURN    ${cordoned}
