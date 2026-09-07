@@ -68,9 +68,9 @@ Snapshot Outlives Deleted Source Volume
 Create Pending Consumer Pod
     [Arguments]    ${pod_name}    ${volume_name}
     [Documentation]    Start a consumer pod without waiting for Running:
-    ...    with WaitForFirstConsumer it only has to trigger provisioning,
-    ...    and in these tests neither pod nor PVC is ever expected to
-    ...    become ready.
+    ...    it represents a real workload waiting on the volume, and in
+    ...    these tests neither pod nor PVC is ever expected to become
+    ...    ready.
     Create Workload Pod With Volume    ${pod_name}    ${volume_name}    Block    wait=${False}
 
 Create Consumed Volume

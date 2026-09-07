@@ -40,7 +40,6 @@ VM Snapshot Of LVM-Backed VM Restores Into A New VM
     ...    and the restored guest must boot (csi-driver-lvm#64 test plan
     ...    case 2).
     [Tags]    p1
-    Skip    Known Harvester limitation: restore-new never starts the target VM while its WaitForFirstConsumer volumes wait for a consumer, so the restore deadlocks (updateStatus gates VM start on isVolumesReady; WFFC PVCs bind only once the VM runs). Applies to every WFFC StorageClass incl. LVM.
     Snapshot is created    ${LVM_VM_NAME}    ${LVM_VM_SNAPSHOT}
     Snapshot should be ready    ${LVM_VM_SNAPSHOT}
     Snapshot is restored to new VM    ${LVM_VM_SNAPSHOT}    ${LVM_RESTORED_VM}

@@ -320,8 +320,8 @@ class CRD(Base):
             }
         }
         # Pin the VM to a node when requested. Needed for node-local storage
-        # (e.g. LVM): a hotplugged WaitForFirstConsumer volume can only bind
-        # when its consumer runs on the node allowed by the StorageClass.
+        # (e.g. LVM): the PV carries a node affinity, so its consumer VM has
+        # to run on that node for volumes to bind and attach.
         node_name = kwargs.get("node_name")
         if node_name:
             body["spec"]["template"]["spec"]["nodeSelector"] = {

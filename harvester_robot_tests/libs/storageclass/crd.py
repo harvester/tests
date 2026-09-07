@@ -79,7 +79,12 @@ class CRD(Base):
             "provisioner": LVM_PROVISIONER,
             "allowVolumeExpansion": True,
             "reclaimPolicy": "Delete",
-            "volumeBindingMode": "WaitForFirstConsumer",
+            # Immediate is the interim decision for LVM: the SC is pinned to a
+            # single node via allowedTopologies, so binding never needs the
+            # consumer for placement, and WaitForFirstConsumer deadlocks the
+            # Harvester VM-restore flow (VM start waits for volumes-ready
+            # while a WFFC PVC waits for the VM's pod).
+            "volumeBindingMode": "Immediate",
             "parameters": {"node": node, "vgName": vg_name, "type": vg_type},
             "allowedTopologies": [{
                 "matchLabelExpressions": [{
