@@ -142,45 +142,6 @@ class Rest(Base):
                 else:
                     raise Exception(f"Failed to enable addon {addon_name}: {e}")
 
-    def try_enable_addon(self, addon_name):
-        """
-        Attempt to enable an addon for negative testing (REST)
-
-        Returns a result dict instead of raising so the test layer can assert on
-        the rejection (e.g. the descheduler webhook refusing single-node clusters).
-        Unlike enable_addon() this deliberately does NOT retry on 4xx, because a
-        webhook denial is the expected outcome rather than a transient conflict.
-
-        Args:
-            addon_name: Name of the addon to enable
-
-        Returns:
-            dict: {success, code, message}
-        """
-        logging(f"Attempting to enable addon {addon_name} (negative test)")
-
-        namespace = self._find_addon_namespace(addon_name)
-        if not namespace:
-            raise Exception(f"Addon {addon_name} not found")
-
-        addon = self.get_addon(addon_name)
-        if not addon:
-            raise Exception(f"Addon {addon_name} not found")
-
-        addon['spec']['enabled'] = True
-
-        code, data = self.api_client.put(
-            f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
-            data=addon
-        )
-
-        if code in [200, 201]:
-            return {"success": True, "code": code, "message": ""}
-
-        logging(f"Enable of addon {addon_name} returned status={code}")
-        message = data if isinstance(data, str) else str(data)
-        return {"success": False, "code": code, "message": message}
-
     def disable_addon(self, addon_name):
         """
         Disable an addon with retry logic for transient update conflicts

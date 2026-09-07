@@ -155,43 +155,6 @@ class CRD(Base):
                 else:
                     raise Exception(f"Failed to enable addon {addon_name}: {e}")
 
-    def try_enable_addon(self, addon_name):
-        """
-        Attempt to enable an addon for negative testing
-
-        Returns a result dict instead of raising so the test layer can assert on
-        the rejection (e.g. the descheduler webhook refusing single-node clusters).
-        Unlike enable_addon() this deliberately does NOT retry on 4xx, because a
-        webhook denial is the expected outcome rather than a transient conflict.
-
-        Args:
-            addon_name: Name of the addon to enable
-
-        Returns:
-            dict: {success, code, message}
-        """
-        logging(f"Attempting to enable addon {addon_name} (negative test)")
-
-        namespace = self._find_addon_namespace(addon_name)
-        if not namespace:
-            raise Exception(f"Addon {addon_name} not found in any namespace")
-
-        patch_body = {"spec": {"enabled": True}}
-        try:
-            patch_cr(
-                group=self.addon_group,
-                version=self.addon_version,
-                namespace=namespace,
-                plural=self.addon_plural,
-                name=addon_name,
-                body=patch_body
-            )
-            return {"success": True, "code": 200, "message": ""}
-        except ApiException as e:
-            logging(f"Enable of addon {addon_name} returned status={e.status}: {e.reason}")
-            return {"success": False, "code": e.status,
-                    "message": e.body or e.reason or ""}
-
     def disable_addon(self, addon_name):
         """
         Disable an addon with retry logic for transient update conflicts

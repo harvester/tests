@@ -61,22 +61,6 @@ class addon_keywords:
         logging(f'Enabling addon {addon_name}')
         self.addon.enable_addon(addon_name)
 
-    def try_enable_addon(self, addon_name):
-        """
-        Attempt to enable an addon for negative testing
-
-        Returns a result dict {success, code, message} instead of raising, so the
-        test layer can assert on the rejection.
-
-        Args:
-            addon_name: Name of the addon to enable
-
-        Returns:
-            dict: {success, code, message}
-        """
-        logging(f'Attempting to enable addon {addon_name} (negative test)')
-        return self.addon.try_enable_addon(addon_name)
-
     def disable_addon(self, addon_name):
         """
         Disable an addon

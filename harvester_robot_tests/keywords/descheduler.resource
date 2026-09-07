@@ -68,13 +68,6 @@ Descheduler Addon Is Disabled
     addon.Wait For Disabled    ${ADDON_DESCHEDULER}
     Log    Descheduler addon is disabled
 
-Try To Enable Descheduler Addon
-    [Documentation]    Attempt to enable the addon, expecting the webhook to refuse.
-    ...    Returns a {success, code, message} dict for `Operation Should Be Rejected`
-    ...    instead of raising.
-    ${result}=    addon.Try To Enable    ${ADDON_DESCHEDULER}
-    RETURN    ${result}
-
 Descheduler Addon Should Be Disabled
     [Documentation]    Assert the addon's spec.enabled is currently false
     ${is_enabled}=    addon.Is Enabled    ${ADDON_DESCHEDULER}

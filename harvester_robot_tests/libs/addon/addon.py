@@ -45,10 +45,6 @@ class Addon(Base):
         """Enable an addon - delegates to implementation"""
         return self.addon.enable_addon(addon_name)
 
-    def try_enable_addon(self, addon_name):
-        """Attempt to enable an addon, returning a result dict - delegates"""
-        return self.addon.try_enable_addon(addon_name)
-
     def disable_addon(self, addon_name):
         """Disable an addon - delegates to implementation"""
         return self.addon.disable_addon(addon_name)

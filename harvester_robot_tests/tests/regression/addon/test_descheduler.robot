@@ -171,9 +171,9 @@ Test Descheduler Addon Cannot Be Enabled On Single Node Cluster
     ...               Only runs on single-node clusters; passes early otherwise.
     ...               Steps:
     ...                   1. Pass early unless the cluster has exactly one node
-    ...                   2. Attempt to enable the descheduler addon
-    ...                   3. Verify the request was rejected with a client error
-    ...                   4. Verify the addon is still disabled
+    ...                   2. Attempt to enable the descheduler addon and
+    ...                      verify the request was rejected with a client error
+    ...                   3. Verify the addon is still disabled
     ...               Expected Result:
     ...                   - Request rejected (4xx) with "not enough nodes exist in the cluster"
     ...                   - Addon spec.enabled remains false
@@ -182,13 +182,10 @@ Test Descheduler Addon Cannot Be Enabled On Single Node Cluster
     ${node_count}=    Get cluster node count
     Skip If    ${node_count} > 1
 
-    # Step 2: Attempt to enable
-    ${result}=    Try To Enable Descheduler Addon
+    # Step 2: Attempt to enable and webhook rejection
+    Run Keyword and Expect Error    not enough nodes exist in the cluster    Enable    Descheduler Addon
 
-    # Step 3: Webhook rejection
-    Then Operation Should Be Rejected    ${result}    not enough nodes exist in the cluster
-
-    # Step 4: Nothing changed
+    # Step 3: Nothing changed
     And Descheduler Addon Should Be Disabled
 
 Test Descheduler Node Utilization Thresholds Are Configurable

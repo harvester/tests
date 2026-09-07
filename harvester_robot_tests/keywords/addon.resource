@@ -28,19 +28,6 @@ Enable
     addon_keywords.enable_addon    ${addon_name}
     Log    Addon ${addon_name} enable request sent
 
-Try To Enable
-    [Arguments]    ${addon_name}
-    [Documentation]    Attempt to enable an addon expected to be rejected by a webhook.
-    ...               Returns a {success, code, message} dict instead of raising, for
-    ...               use with `Operation Should Be Rejected`.
-    ...               Args:
-    ...                   addon_name: Name of the addon to enable
-    ...               Returns:
-    ...                   dict: {success, code, message}
-    Log    Attempting to enable addon: ${addon_name} (negative test)
-    ${result}=    addon_keywords.try_enable_addon    ${addon_name}
-    RETURN    ${result}
-
 Disable
     [Arguments]    ${addon_name}
     [Documentation]    Disable an addon
