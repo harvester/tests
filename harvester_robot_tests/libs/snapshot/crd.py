@@ -53,6 +53,68 @@ class CRD(Base):
             raise
         self._wait_for_ready(namespace, snapshot_name)
 
+    def _restore_snapshot_to_new_vm(self, namespace, snapshot_name,
+                                    new_vm_name):
+        restore_name = f"restore-{new_vm_name}"
+        try:
+            body = {
+                "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
+                "kind": "VirtualMachineRestore",
+                "metadata": {
+                    "name": restore_name,
+                    "namespace": namespace,
+                },
+                "spec": {
+                    "target": {
+                        "apiGroup": KUBEVIRT_API_GROUP,
+                        "kind": "VirtualMachine",
+                        "name": new_vm_name,
+                    },
+                    "virtualMachineBackupName": snapshot_name,
+                    "virtualMachineBackupNamespace": namespace,
+                    "newVM": True,
+                }
+            }
+            create_cr(
+                group=HARVESTER_API_GROUP,
+                version=HARVESTER_API_VERSION,
+                plural="virtualmachinerestores",
+                namespace=namespace,
+                body=body
+            )
+        except ApiException as err:
+            logging(f"failed to create restore {namespace}/{restore_name}: {err}")
+            raise
+        self._wait_for_restore_complete(namespace, restore_name)
+
+    def _wait_for_restore_complete(self, namespace, restore_name,
+                                   timeout=DEFAULT_TIMEOUT_SHORT):
+        endtime = time.time() + timeout
+        restore = {}
+        while time.time() < endtime:
+            try:
+                restore = self.obj_api.get_namespaced_custom_object(
+                    group=HARVESTER_API_GROUP,
+                    version=HARVESTER_API_VERSION,
+                    namespace=namespace,
+                    plural="virtualmachinerestores",
+                    name=restore_name
+                )
+                if restore.get("status", {}).get("complete"):
+                    logging(f"restore {namespace}/{restore_name} is complete")
+                    return
+            except ApiException as err:
+                logging(f"error reading restore {restore_name}: {err}")
+            time.sleep(self.retry_interval)
+        conditions = restore.get("status", {}).get("conditions", [])
+        detail = "; ".join(
+            f"{c.get('type')}={c.get('status')} ({c.get('reason', '')}: "
+            f"{c.get('message', '')})"
+            for c in conditions) or "no status conditions"
+        raise AssertionError(
+            f"restore {namespace}/{restore_name} did not complete "
+            f"within {timeout}s: {detail}")
+
     def _delete_snapshot(self, namespace, snapshot_name):
         try:
             delete_cr(
@@ -151,6 +213,10 @@ class CRD(Base):
             logging(f"failed to create snapshot {namespace}/{snapshot_name}: {err}")
             raise
         return {'metadata': {'name': snapshot_name, 'namespace': namespace}}
+
+    def restore_to_new_vm(self, snapshot_name, new_vm_name, **kwargs):
+        namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
+        self._restore_snapshot_to_new_vm(namespace, snapshot_name, new_vm_name)
 
     def delete(self, snapshot_name, **kwargs):
         namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)

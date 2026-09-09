@@ -18,6 +18,11 @@ class Base(ABC):
         raise NotImplementedError(self.unsupported_msg)
 
     @abstractmethod
+    def create_lvm(self, name, vg_name, vg_type, node):
+        """Create an LVM-backed StorageClass."""
+        raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
     def delete(self, name):
         """Delete a StorageClass"""
         raise NotImplementedError(self.unsupported_msg)

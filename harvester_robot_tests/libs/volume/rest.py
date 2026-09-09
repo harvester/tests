@@ -68,6 +68,12 @@ class Rest(Base):
             "create_from_image is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
+    def clone_from_volume(self, source_volume_name, new_volume_name, **kwargs):
+        """Clone from volume. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "clone_from_volume is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def try_expand(self, volume_name, new_size):
         """Negative-test helper. Only implemented for the CRD strategy."""
         raise NotImplementedError(
@@ -230,7 +236,7 @@ class Rest(Base):
         code, data = api.vol_snapshots.delete(snapshot_name)
         assert code in (200, 204), f"Failed to delete snapshot: {code}, {data}"
 
-    def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name):
+    def restore_from_snapshot(self, volume_name, snapshot_name, new_volume_name, **kwargs):
         """Restore a new volume from a snapshot via the ?action=restore endpoint.
 
         The action is asynchronous and returns 204 No Content; success is
@@ -238,8 +244,28 @@ class Rest(Base):
         The source snapshot must outlive that provisioning, so callers must not
         delete it until the restored volume is active.
         """
+        storage_class = kwargs.get('storage_class', DEFAULT_STORAGE_CLASS)
+        access_mode = kwargs.get('access_mode', ACCESS_MODE_RWX)
+        volume_mode = kwargs.get('volume_mode', 'Block')
+        namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
+        unknown_options = set(kwargs) - {
+            'storage_class', 'access_mode', 'volume_mode', 'namespace'
+        }
+        if (
+            storage_class != DEFAULT_STORAGE_CLASS
+            or access_mode != ACCESS_MODE_RWX
+            or volume_mode != 'Block'
+            or unknown_options
+        ):
+            raise NotImplementedError(
+                "REST snapshot restore cannot override storage_class, "
+                "access_mode, or volume_mode"
+            )
+
         api = get_harvester_api_client()
-        code, data = api.vol_snapshots.restore(snapshot_name, new_volume_name)
+        code, data = api.vol_snapshots.restore(
+            snapshot_name, new_volume_name, namespace=namespace
+        )
         assert code in (200, 201, 204), f"Failed to restore from snapshot: {code}, {data}"
 
     def cleanup(self):

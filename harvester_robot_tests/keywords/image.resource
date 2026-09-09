@@ -29,9 +29,10 @@ Get image status by name
     RETURN    ${status}
 
 Image is available for VM creation
-    [Arguments]    ${image_name}    ${image_url}
+    [Arguments]    ${image_name}    ${image_url}    ${storage_class}=${EMPTY}
     [Documentation]    Create an image from URL (delegates to Image module).
-    Create image from url with name    ${image_name}    ${image_url}
+    ...    storage_class imports onto a third-party StorageClass via CDI.
+    Create image from url with name    ${image_name}    ${image_url}    storage_class=${storage_class}
     Wait for image downloaded by name    ${image_name}
 
 Wait for image deleted by name

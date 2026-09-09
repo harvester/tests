@@ -11,6 +11,11 @@ class Rest(Base):
     def create(self, vm_name, snapshot_name, **kwargs):
         raise NotImplementedError("Snapshot REST strategy is not implemented yet")
 
+    def restore_to_new_vm(self, snapshot_name, new_vm_name, **kwargs):
+        raise NotImplementedError(
+            "restore_to_new_vm is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def delete(self, snapshot_name, **kwargs):
         raise NotImplementedError("Snapshot REST strategy is not implemented yet")
 

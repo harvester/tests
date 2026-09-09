@@ -41,9 +41,10 @@ Wait Until Volume Is Active
 
 # lifecycle
 Create Volume
-    [Arguments]    ${vol_name}    ${size}=${DEFAULT_VOLUME_SIZE}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${replicas}=${DEFAULT_VM_REPLICAS}
+    [Arguments]    ${vol_name}    ${size}=${DEFAULT_VOLUME_SIZE}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${replicas}=${DEFAULT_VM_REPLICAS}    ${volume_mode}=Block    ${access_mode}=ReadWriteMany
     [Documentation]    Create a volume (PVC) backed by the given storage class
-    volume_keywords.create_volume    ${vol_name}    ${size}    ${replicas}    blockdev    storage_class=${storage_class}
+    volume_keywords.create_volume    ${vol_name}    ${size}    ${replicas}    blockdev
+    ...    storage_class=${storage_class}    volume_mode=${volume_mode}    access_mode=${access_mode}
 
 Create ${size_gi}Gi Volume
     [Arguments]    ${vol_name}
@@ -157,6 +158,23 @@ Delete Volume Snapshot
     [Arguments]    ${vol_name}    ${snapshot_name}
     volume_keywords.delete_volume_snapshot    ${vol_name}    ${snapshot_name}
 
+Clone Volume From Volume
+    [Arguments]    ${source_vol_name}    ${new_vol_name}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${volume_mode}=Block    ${access_mode}=ReadWriteMany    ${size}=${EMPTY}
+    volume_keywords.clone_volume_from_volume
+    ...    ${source_vol_name}
+    ...    ${new_vol_name}
+    ...    storage_class=${storage_class}
+    ...    volume_mode=${volume_mode}
+    ...    access_mode=${access_mode}
+    ...    size=${size}
+
 Restore Volume From Snapshot
-    [Arguments]    ${vol_name}    ${snapshot_name}    ${new_vol_name}
-    volume_keywords.restore_volume_from_snapshot    ${vol_name}    ${snapshot_name}    ${new_vol_name}
+    [Arguments]    ${vol_name}    ${snapshot_name}    ${new_vol_name}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${volume_mode}=Block    ${access_mode}=ReadWriteMany    ${size}=${EMPTY}
+    volume_keywords.restore_volume_from_snapshot
+    ...    ${vol_name}
+    ...    ${snapshot_name}
+    ...    ${new_vol_name}
+    ...    storage_class=${storage_class}
+    ...    volume_mode=${volume_mode}
+    ...    access_mode=${access_mode}
+    ...    size=${size}

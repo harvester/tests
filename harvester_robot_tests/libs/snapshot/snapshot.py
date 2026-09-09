@@ -28,6 +28,9 @@ class Snapshot(Base):
     def create(self, vm_name, snapshot_name, **kwargs):
         return self.snapshot.create(vm_name, snapshot_name, **kwargs)
 
+    def restore_to_new_vm(self, snapshot_name, new_vm_name, **kwargs):
+        return self.snapshot.restore_to_new_vm(snapshot_name, new_vm_name, **kwargs)
+
     def delete(self, snapshot_name, **kwargs):
         return self.snapshot.delete(snapshot_name, **kwargs)
 

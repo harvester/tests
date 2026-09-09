@@ -1,0 +1,12 @@
+--suite Lvm.Test Lvm Addon
+#WAIT
+--suite Lvm.Test Lvm Attach
+--suite Lvm.Test Lvm Clone
+--suite Lvm.Test Lvm Data Integrity
+--suite Lvm.Test Lvm Snapshot
+--suite Lvm.Test Lvm Snapshot Lifecycle
+--suite Lvm.Test Lvm Negative
+--suite Lvm.Test Lvm Expansion
+--suite Lvm.Test Lvm Image
+#WAIT
+--suite Lvm.Test Zz Lvm Cleanup
