@@ -17,7 +17,7 @@ from constant import (
     ADDON_PLURAL,
 )
 from utility.utility import logging, get_retry_count_and_interval
-from addon.base import Base
+from addon.base import Base, to_plain_containers
 
 
 class CRD(Base):
@@ -312,67 +312,101 @@ class CRD(Base):
             return addon.get('spec', {}).get('enabled', False)
         return False
 
-    def wait_for_pods_running(self, namespace, label_selector, timeout=DEFAULT_TIMEOUT):
+    def get_configmap_data(self, name, namespace):
         """
-        Wait for pods to be running in a namespace
+        Get the data map of a ConfigMap
 
         Args:
+            name: Name of the ConfigMap
             namespace: Kubernetes namespace
-            label_selector: Label selector to filter pods
-            timeout: Timeout in seconds
+
+        Returns:
+            dict: The ConfigMap's data, or None if the ConfigMap does not exist
         """
-        logging(
-            f"Waiting for pods with selector '{label_selector}' in namespace "
-            f"'{namespace}' to be running"
-        )
-        retry_count, retry_interval = get_retry_count_and_interval()
-        max_retries = int(timeout / retry_interval)
+        try:
+            configmap = self.core_api.read_namespaced_config_map(
+                name=name, namespace=namespace
+            )
+            return configmap.data or {}
+        except ApiException as e:
+            if e.status == 404:
+                logging(f"ConfigMap '{namespace}/{name}' not found", level='WARNING')
+                return None
+            raise Exception(f"Failed to get ConfigMap {namespace}/{name}: {e}")
 
-        for i in range(max_retries):
-            try:
-                pods = self.core_api.list_namespaced_pod(
-                    namespace=namespace,
-                    label_selector=label_selector
-                )
+    def get_addon_values_content(self, addon_name):
+        """
+        Get the raw spec.valuesContent string of an addon
 
-                if len(pods.items) == 0:
-                    logging(
-                        f"No pods found with selector '{label_selector}', retrying... "
-                        f"({i+1}/{max_retries})"
-                    )
-                    time.sleep(retry_interval)
-                    continue
+        The raw string is what must be handed back to set_addon_values_content()
+        when restoring an addon after a test mutated its configuration.
 
-                all_running = True
-                for pod in pods.items:
-                    if pod.status.phase != 'Running':
-                        all_running = False
-                        break
+        Args:
+            addon_name: Name of the addon
 
-                    # Check if all containers are ready
-                    if pod.status.container_statuses:
-                        for container_status in pod.status.container_statuses:
-                            if not container_status.ready:
-                                all_running = False
-                                break
+        Returns:
+            str: The raw valuesContent (empty string when unset)
+        """
+        addon = self.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+        return addon.get('spec', {}).get('valuesContent', '')
 
-                if all_running:
-                    logging(f"All pods with selector '{label_selector}' are running")
-                    return True
+    def get_addon_values(self, addon_name):
+        """
+        Get the parsed spec.valuesContent of an addon
 
-                logging(
-                    f"Pods not yet all running, retrying... "
-                    f"({i+1}/{max_retries})"
-                )
-                time.sleep(retry_interval)
+        Args:
+            addon_name: Name of the addon
 
-            except ApiException as e:
-                logging(f"Error listing pods: {e}", level='WARNING')
-                time.sleep(retry_interval)
+        Returns:
+            dict: Parsed valuesContent (empty dict when unset or not a mapping)
+        """
+        values_content = self.get_addon_values_content(addon_name)
+        if not values_content:
+            return {}
+        parsed = yaml.safe_load(values_content)
+        return parsed if isinstance(parsed, dict) else {}
 
-        raise TimeoutError(
-            f"Timeout waiting for pods with selector '{label_selector}' "
-            f"to be running after {timeout}s"
+    def set_addon_values_content(self, addon_name, values_content):
+        """
+        Replace the raw spec.valuesContent of an addon
+
+        Args:
+            addon_name: Name of the addon
+            values_content: Raw YAML string to store
+        """
+        namespace = self._find_addon_namespace(addon_name)
+        if not namespace:
+            raise Exception(f"Addon {addon_name} not found in any known namespace")
+
+        patch_body = {"spec": {"valuesContent": values_content}}
+        try:
+            patch_cr(
+                group=self.addon_group,
+                version=self.addon_version,
+                namespace=namespace,
+                plural=self.addon_plural,
+                name=addon_name,
+                body=patch_body
+            )
+            logging(f"Updated valuesContent of addon {namespace}/{addon_name}")
+        except ApiException as e:
+            raise Exception(f"Failed to update valuesContent of addon {addon_name}: {e}")
+
+    def update_addon_values(self, addon_name, values):
+        """
+        Replace spec.valuesContent of an addon from a dict
+
+        Args:
+            addon_name: Name of the addon
+            values: dict serialised to YAML and stored as valuesContent.
+                Normalised to plain containers first so Robot DotDicts do not
+                serialise as Python-tagged YAML.
+        """
+        self.set_addon_values_content(
+            addon_name,
+            yaml.dump(to_plain_containers(values), default_flow_style=False)
         )
 
     def wait_for_service_running(self, namespace, service_name, timeout=DEFAULT_TIMEOUT):

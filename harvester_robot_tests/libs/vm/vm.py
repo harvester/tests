@@ -102,8 +102,17 @@ class VM(Base):
     def wait_for_migration_completed(self, vm_name, target_node, timeout):
         return self.vm.wait_for_migration_completed(vm_name, target_node, timeout)
 
+    def wait_for_migrated_away_from(self, vm_name, original_node, timeout):
+        return self.vm.wait_for_migrated_away_from(vm_name, original_node, timeout)
+
     def verify_on_node(self, vm_name, expected_node):
         return self.vm.verify_on_node(vm_name, expected_node)
+
+    def get_node(self, vm_name):
+        return self.vm.get_node(vm_name)
+
+    def get_annotations(self, vm_name):
+        return self.vm.get_annotations(vm_name)
 
     def write_data(self, vm_name, data_size_mb):
         return self.vm.write_data(vm_name, data_size_mb)

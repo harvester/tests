@@ -1,5 +1,6 @@
 *** Settings ***
 Documentation    VM Keywords
+Library          Collections
 Resource         variables.resource
 Resource         common.resource
 Library          ../libs/keywords/vm_keywords.py
@@ -169,6 +170,62 @@ VM should have IP addresses
     [Arguments]    ${vm_name}    ${networks}=${None}
     [Documentation]    Wait for VM to obtain IP addresses
     vm_keywords.wait for vm ip addresses    ${vm_name}    ${networks}
+
+Get VM node
+    [Arguments]    ${vm_name}
+    [Documentation]    Return the node currently running the VM (the VMI's
+    ...    status.nodeName), or None when the VM is not running.
+    ${node}=    vm_keywords.get_vm_node    ${vm_name}
+    RETURN    ${node}
+
+VM should be running on node
+    [Arguments]    ${vm_name}    ${expected_node}
+    [Documentation]    Assert the VM is currently running on ${expected_node}
+    vm_keywords.verify_vm_on_node    ${vm_name}    ${expected_node}
+
+VM should be moved off node
+    [Arguments]    ${vm_name}    ${original_node}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait until the VM is Running on any node other than
+    ...    ${original_node}, without requesting a specific destination. Used when
+    ...    something else (e.g. the descheduler) decides where the VM lands.
+    ...    Returns the node the VM ended up on.
+    ${node}=    vm_keywords.wait_for_vm_migrated_away_from    ${vm_name}    ${original_node}
+    ...    timeout=${timeout}
+    RETURN    ${node}
+
+Get VM annotations
+    [Arguments]    ${vm_name}
+    [Documentation]    Return the VM object's metadata.annotations as a dictionary
+    ${annotations}=    vm_keywords.get_vm_annotations    ${vm_name}
+    RETURN    ${annotations}
+
+VM annotation should be
+    [Arguments]    ${vm_name}    ${key}    ${value}
+    [Documentation]    Assert the VM carries an annotation with the expected value.
+    ...    Controllers set annotations asynchronously, so this polls.
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    VM Annotation Value Is    ${vm_name}    ${key}    ${value}
+
+VM Annotation Value Is
+    [Arguments]    ${vm_name}    ${key}    ${value}
+    [Documentation]    Single-shot assertion backing `VM annotation should be`
+    ${annotations}=    Get VM annotations    ${vm_name}
+    Dictionary Should Contain Item    ${annotations}    ${key}    ${value}
+    ...    msg=VM ${vm_name} annotation ${key} should be '${value}'
+
+VM annotation should be absent
+    [Arguments]    ${vm_name}    ${key}
+    [Documentation]    Assert the VM does not carry the given annotation.
+    ...    Controllers remove annotations asynchronously, so this polls.
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    VM Annotation Is Not Present    ${vm_name}    ${key}
+
+VM Annotation Is Not Present
+    [Arguments]    ${vm_name}    ${key}
+    [Documentation]    Single-shot assertion backing `VM annotation should be absent`
+    ${annotations}=    Get VM annotations    ${vm_name}
+    Dictionary Should Not Contain Key    ${annotations}    ${key}
+    ...    msg=VM ${vm_name} should not carry annotation ${key}
 
 Data is written to VM
     [Arguments]    ${vm_name}    ${data_size_mb}=100

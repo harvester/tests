@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation    Global Variables for Harvester Robot Tests
 Library          Collections
-Library          String  
+Library          String
 Library          DateTime
 
 *** Variables ***

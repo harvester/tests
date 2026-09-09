@@ -9,7 +9,7 @@ import signal
 import yaml
 from utility.utility import logging, get_retry_count_and_interval, get_harvester_api_client
 from constant import DEFAULT_TIMEOUT
-from addon.base import Base
+from addon.base import Base, to_plain_containers
 
 
 class Rest(Base):
@@ -308,93 +308,105 @@ class Rest(Base):
             return addon.get('spec', {}).get('enabled', False)
         return False
 
-    def wait_for_pods_running(self, namespace, label_selector, timeout=DEFAULT_TIMEOUT):
+    def get_configmap_data(self, name, namespace):
         """
-        Wait for pods to be running in a namespace
+        Get the data map of a ConfigMap (REST)
 
         Args:
+            name: Name of the ConfigMap
             namespace: Kubernetes namespace
-            label_selector: Label selector to filter pods
-                (e.g., 'app.kubernetes.io/name=prometheus')
-            timeout: Timeout in seconds
+
+        Returns:
+            dict: The ConfigMap's data, or None if the ConfigMap does not exist
         """
-        logging(
-            f"Waiting for pods with selector '{label_selector}' in namespace "
-            f"'{namespace}' to be running"
+        try:
+            code, data = self.api_client.get(f"v1/configmaps/{namespace}/{name}")
+            if code == 404:
+                logging(f"ConfigMap '{namespace}/{name}' not found", level='WARNING')
+                return None
+            if code != 200:
+                raise Exception(f"HTTP {code}")
+            return data.get('data', {}) or {}
+        except Exception as e:
+            raise Exception(f"Failed to get ConfigMap {namespace}/{name}: {e}")
+
+    def get_addon_values_content(self, addon_name):
+        """
+        Get the raw spec.valuesContent string of an addon (REST)
+
+        The raw string is what must be handed back to set_addon_values_content()
+        when restoring an addon after a test mutated its configuration.
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            str: The raw valuesContent (empty string when unset)
+        """
+        addon = self.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+        return addon.get('spec', {}).get('valuesContent', '')
+
+    def get_addon_values(self, addon_name):
+        """
+        Get the parsed spec.valuesContent of an addon (REST)
+
+        Args:
+            addon_name: Name of the addon
+
+        Returns:
+            dict: Parsed valuesContent (empty dict when unset or not a mapping)
+        """
+        values_content = self.get_addon_values_content(addon_name)
+        if not values_content:
+            return {}
+        parsed = yaml.safe_load(values_content)
+        return parsed if isinstance(parsed, dict) else {}
+
+    def set_addon_values_content(self, addon_name, values_content):
+        """
+        Replace the raw spec.valuesContent of an addon (REST)
+
+        Args:
+            addon_name: Name of the addon
+            values_content: Raw YAML string to store
+        """
+        namespace = self._find_addon_namespace(addon_name)
+        if not namespace:
+            raise Exception(f"Addon {addon_name} not found")
+
+        addon = self.get_addon(addon_name)
+        if not addon:
+            raise Exception(f"Addon {addon_name} not found")
+
+        if 'spec' not in addon:
+            addon['spec'] = {}
+        addon['spec']['valuesContent'] = values_content
+
+        code, data = self.api_client.put(
+            f"v1/harvester/harvesterhci.io.addons/{namespace}/{addon_name}",
+            data=addon
         )
-        retry_count, retry_interval = get_retry_count_and_interval()
-        max_retries = int(timeout / retry_interval)
+        if code not in [200, 201]:
+            raise Exception(
+                f"Failed to update valuesContent of addon {addon_name}: HTTP {code}, {data}"
+            )
+        logging(f"Updated valuesContent of addon {namespace}/{addon_name}")
 
-        # Parse label selector (e.g., 'app.kubernetes.io/name=prometheus')
-        label_key, label_value = (
-            label_selector.split('=', 1) if '=' in label_selector else (label_selector, None)
-        )
+    def update_addon_values(self, addon_name, values):
+        """
+        Replace spec.valuesContent of an addon from a dict (REST)
 
-        for i in range(max_retries):
-            try:
-                # Rancher API doesn't support labelSelector query param -
-                # get all pods and filter client-side
-                code, data = self.api_client.get(
-                    f"v1/pods/{namespace}"
-                )
-
-                if code != 200:
-                    logging(f"Failed to list pods: HTTP {code}", level='WARNING')
-                    time.sleep(retry_interval)
-                    continue
-
-                all_pods = data.get('data', []) if isinstance(data, dict) else data
-
-                # Filter pods by label selector
-                pods = []
-                for pod in all_pods:
-                    labels = pod.get('metadata', {}).get('labels', {})
-                    if label_value:
-                        if labels.get(label_key) == label_value:
-                            pods.append(pod)
-                    else:
-                        if label_key in labels:
-                            pods.append(pod)
-
-                if not pods or len(pods) == 0:
-                    logging(
-                        f"No pods found with selector '{label_selector}', "
-                        f"retrying... ({i+1}/{max_retries})"
-                    )
-                    time.sleep(retry_interval)
-                    continue
-
-                all_running = True
-                for pod in pods:
-                    status = pod.get('status', {})
-                    phase = status.get('phase', '')
-
-                    if phase != 'Running':
-                        all_running = False
-                        break
-
-                    # Check container statuses
-                    container_statuses = status.get('containerStatuses', [])
-                    if container_statuses:
-                        for container_status in container_statuses:
-                            if not container_status.get('ready', False):
-                                all_running = False
-                                break
-
-                if all_running:
-                    logging(f"All pods with selector '{label_selector}' are running")
-                    return True
-
-                logging(f"Pods not yet all running, retrying... ({i+1}/{max_retries})")
-                time.sleep(retry_interval)
-
-            except Exception as e:
-                logging(f"Error listing pods: {e}", level='WARNING')
-                time.sleep(retry_interval)
-
-        raise TimeoutError(
-            f"Timeout waiting for pods with selector '{label_selector}' "
-            f"to be running after {timeout}s"
+        Args:
+            addon_name: Name of the addon
+            values: dict serialised to YAML and stored as valuesContent.
+                Normalised to plain containers first so Robot DotDicts do not
+                serialise as Python-tagged YAML.
+        """
+        self.set_addon_values_content(
+            addon_name,
+            yaml.dump(to_plain_containers(values), default_flow_style=False)
         )
 
     def wait_for_service_running(self, namespace, service_name, timeout=DEFAULT_TIMEOUT):

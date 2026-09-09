@@ -4,6 +4,7 @@ Library          ../libs/keywords/addon_keywords.py
 Library          Process
 Resource         variables.resource
 Resource         common.resource
+Resource         pod.resource
 
 *** Keywords ***
 Get Initial State
@@ -76,16 +77,87 @@ Wait For Monitoring Pods Running
     addon_keywords.wait_for_monitoring_pods_running    ${namespace}    ${timeout}
     Log    Monitoring pods are now running
 
-Wait For Pods Running
-    [Arguments]    ${namespace}    ${label}    ${timeout}=${WAIT_TIMEOUT}
-    [Documentation]    Wait for pods matching label to be running in namespace
+Addon Exists
+    [Arguments]    ${addon_name}
+    [Documentation]    Check whether the addon CR exists in the cluster
+    ...               Older Harvester releases do not ship every addon, so suites
+    ...               use this to skip rather than fail.
     ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   bool: True if the addon CR exists
+    ${exists}=    addon_keywords.addon_exists    ${addon_name}
+    RETURN    ${exists}
+
+Get Addon Labels
+    [Arguments]    ${addon_name}
+    [Documentation]    Get the addon's metadata.labels
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   dict: The addon's labels
+    ${labels}=    addon_keywords.get_addon_labels    ${addon_name}
+    RETURN    ${labels}
+
+Get Addon Spec
+    [Arguments]    ${addon_name}
+    [Documentation]    Get the addon's spec
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   dict: The addon's spec
+    ${spec}=    addon_keywords.get_addon_spec    ${addon_name}
+    RETURN    ${spec}
+
+Get Addon Values
+    [Arguments]    ${addon_name}
+    [Documentation]    Get the addon's spec.valuesContent parsed into a dictionary
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   dict: Parsed valuesContent (empty when unset)
+    ${values}=    addon_keywords.get_addon_values    ${addon_name}
+    RETURN    ${values}
+
+Get Addon Values Content
+    [Arguments]    ${addon_name}
+    [Documentation]    Get the addon's raw spec.valuesContent string. Capture this
+    ...               before mutating an addon so teardown can restore it verbatim.
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...               Returns:
+    ...                   str: The raw valuesContent
+    ${content}=    addon_keywords.get_addon_values_content    ${addon_name}
+    RETURN    ${content}
+
+Set Addon Values Content
+    [Arguments]    ${addon_name}    ${values_content}
+    [Documentation]    Replace the addon's raw spec.valuesContent
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...                   values_content: Raw YAML string to store
+    Log    Setting raw valuesContent of addon ${addon_name}
+    addon_keywords.set_addon_values_content    ${addon_name}    ${values_content}
+
+Set Addon Values
+    [Arguments]    ${addon_name}    ${values}
+    [Documentation]    Replace the addon's spec.valuesContent from a dictionary
+    ...               Args:
+    ...                   addon_name: Name of the addon
+    ...                   values: Dictionary serialised to YAML
+    Log    Updating valuesContent of addon ${addon_name}
+    addon_keywords.update_addon_values    ${addon_name}    ${values}
+
+Get ConfigMap Data
+    [Arguments]    ${name}    ${namespace}
+    [Documentation]    Get a ConfigMap's data map
+    ...               Args:
+    ...                   name: Name of the ConfigMap
     ...                   namespace: Kubernetes namespace
-    ...                   label: Label selector for pods
-    ...                   timeout: Maximum time to wait (default: WAIT_TIMEOUT)
-    Log    Waiting for pods with label ${label} in namespace ${namespace} to be running
-    addon_keywords.wait_for_pods_running    ${namespace}    ${label}    ${timeout}
-    Log    Pods with label ${label} are running in ${namespace}
+    ...               Returns:
+    ...                   dict: The ConfigMap's data, or None when it does not exist
+    ${data}=    addon_keywords.get_configmap_data    ${name}    ${namespace}
+    RETURN    ${data}
 
 Wait For Service Running
     [Arguments]    ${namespace}    ${service_name}    ${timeout}=${WAIT_TIMEOUT}
@@ -235,14 +307,14 @@ Suite Setup For Addon Tests
 Suite Teardown For Addon Tests
     [Documentation]    Cleanup and restore addon state after tests
     Log    Running suite teardown for addon tests
-    
+
     # Stop port forward if still running
     Run Keyword And Ignore Error    Stop Port Forward
-    
+
     # Restore addon to initial state
     Run Keyword If    '${INITIAL_STATE_MONITORING}' != 'None'
     ...    Restore State    ${ADDON_MONITORING}    ${INITIAL_STATE_MONITORING}
-    
+
     # Standard cleanup
     Cleanup test resources
     Log    Suite teardown completed
@@ -250,15 +322,15 @@ Suite Teardown For Addon Tests
 Get Prometheus Pod Name
     [Documentation]    Get the name of the Prometheus pod
     Log    Getting Prometheus pod name
-    
+
     # Use kubectl to get pod name
     @{args}=    Create List    get    pods    -n    ${MONITORING_NAMESPACE}    -l    app.kubernetes.io/name=prometheus    -o    jsonpath={.items[0].metadata.name}
     ${result}=    Run Process    kubectl    @{args}
-    
+
     Should Be Equal As Numbers    ${result.rc}    0    Failed to get Prometheus pod name
     ${pod_name}=    Set Variable    ${result.stdout}
     Should Not Be Empty    ${pod_name}    Prometheus pod name should not be empty
-    
+
     Log    Found Prometheus pod: ${pod_name}
     RETURN    ${pod_name}
 

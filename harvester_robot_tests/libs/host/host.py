@@ -72,6 +72,9 @@ class Host(Base):
     def get_node_capacity(self, node_name):
         return self.host.get_node_capacity(node_name)
 
+    def get_node_resource_utilization(self, node_name):
+        return self.host.get_node_resource_utilization(node_name)
+
     def get_node_vms(self, node_name):
         return self.host.get_node_vms(node_name)
 

@@ -14,6 +14,15 @@ Cluster has at least ${count} nodes
     ${node_count}=    get_node_count
     Should be true    ${node_count} >= ${count}    Cluster only has ${node_count} nodes, need at least ${count}
 
+Get cluster node count
+    [Documentation]    Get the total number of nodes in the cluster, including
+    ...    witness nodes. This matches what Harvester's addon webhook counts,
+    ...    so suites can decide at runtime whether a multi-node-only test applies.
+    ...    Named "cluster node count" rather than "node count" so it cannot be
+    ...    confused with the embedded-argument keyword `Get node ${node_id}`.
+    ${node_count}=    host_keywords.get_node_count
+    RETURN    ${node_count}
+
 Power on node ${node_id}
     [Documentation]    Power on a node using external script
     ${node_name}=    get_node_by_index    ${node_id}
@@ -129,6 +138,37 @@ List Standard Nodes
     ${node_names}=    host_keywords.get_standard_nodes
     RETURN    ${node_names}
 
+List Control Plane Nodes
+    [Documentation]    Get list of nodes labelled control-plane (or master)
+    ${node_names}=    host_keywords.get_control_plane_nodes
+    RETURN    ${node_names}
+
+List Worker Nodes
+    [Documentation]    Get list of nodes without a control-plane/master label
+    ${node_names}=    host_keywords.get_worker_nodes
+    RETURN    ${node_names}
+
+Get node resource utilization
+    [Arguments]    ${node_name}
+    [Documentation]    Get a node's requests-based CPU/memory utilization, measured the
+    ...    same way the descheduler's LowNodeUtilization strategy measures it.
+    ...    Returns a dict with cpu_percent, memory_percent and the underlying
+    ...    allocatable/requested/available absolutes.
+    ${utilization}=    host_keywords.get_node_resource_utilization    ${node_name}
+    RETURN    ${utilization}
+
+Cordon node named
+    [Arguments]    ${node_name}
+    [Documentation]    Mark a node unschedulable by name. The index-based
+    ...    `Cordon node ${node_id}` keyword cannot be used when the node was chosen
+    ...    at runtime (e.g. "the node not running the workload").
+    host_keywords.cordon_node    ${node_name}
+
+Uncordon node named
+    [Arguments]    ${node_name}
+    [Documentation]    Mark a node schedulable again by name
+    host_keywords.uncordon_node    ${node_name}
+
 Count Standard Nodes
     [Documentation]    Get list of standard nodes
     ${node_names}=    host_keywords.get_standard_nodes
@@ -142,3 +182,16 @@ Tag Storages
         Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
             ...    host_keywords.is_lh_node_disk_tag_present    ${node}    ${disk}    ${tag}
     END
+
+Cordon all the standard nodes except named ${node_name}
+    [Documentation]    Cordon every standard node except ${node_name}
+    ${nodes}=    List Standard Nodes
+    ${cordoned}=    Create List
+    FOR    ${node}    IN    @{nodes}
+        IF    '${node}' != '${node_name}'
+            Cordon node named    ${node}
+            Append To List    ${cordoned}    ${node}
+        END
+    END
+    Log    Cordoned ${cordoned}; only ${node_name} is schedulable
+    RETURN    ${cordoned}

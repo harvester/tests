@@ -24,5 +24,11 @@ class Rest(Base):
     def wait_for_succeeded(self, pod_name, namespace, timeout):
         self._not_implemented("wait_for_succeeded")
 
+    def wait_for_running_with_label_selector(self, namespace, label_selector, timeout):
+        self._not_implemented("wait_for_running_with_label_selector")
+
+    def wait_for_gone_with_label_selector(self, namespace, label_selector, timeout):
+        self._not_implemented("wait_for_gone_with_label_selector")
+
     def get_logs(self, pod_name, namespace):
         self._not_implemented("get_logs")

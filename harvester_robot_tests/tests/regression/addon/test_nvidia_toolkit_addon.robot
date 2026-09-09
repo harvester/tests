@@ -6,6 +6,7 @@ Test Tags        regression    addons    nvidia-driver-toolkit
 
 Resource         ../../../keywords/variables.resource
 Resource         ../../../keywords/common.resource
+Resource         ../../../keywords/pod.resource
 Resource         ../../../keywords/addon.resource
 
 Suite Setup      Suite Setup For Nvidia Addon Tests
@@ -135,7 +136,7 @@ PCI Devices Addon Is Enabled
 PCI Devices Controller Pods Should Be Running
     [Arguments]    ${namespace}    ${label}
     [Documentation]    Verify pcidevices-controller pods are running
-    addon.Wait For Pods Running    ${namespace}    ${label}    timeout=900
+    Wait For Pods Running    ${namespace}    ${label}    timeout=900
     Log    All pcidevices-controller pods are running in ${namespace}
 
 PCI Devices Webhook Service Should Be Running

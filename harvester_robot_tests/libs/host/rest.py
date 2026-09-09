@@ -156,6 +156,12 @@ class Rest(Base):
             'allocatable': status['allocatable']
         }
 
+    def get_node_resource_utilization(self, node_name):
+        raise NotImplementedError(
+            "Host.get_node_resource_utilization is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd"
+        )
+
     def get_node_vms(self, node_name):
         """Get VMs on node"""
         api = get_harvester_api_client()

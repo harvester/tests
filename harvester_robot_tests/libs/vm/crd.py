@@ -736,6 +736,82 @@ class CRD(Base):
             logging(f"Error migrating VM: {e}")
             raise
 
+    def get_node(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the node currently running the VM, or None when not running.
+
+        The authoritative source is the VMI's status.nodeName; the VM object does
+        not carry placement information.
+        """
+        try:
+            vmi = self.obj_api.get_namespaced_custom_object(
+                group=KUBEVIRT_API_GROUP,
+                version=KUBEVIRT_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINEINSTANCE_PLURAL,
+                name=vm_name
+            )
+            return vmi.get('status', {}).get('nodeName')
+        except ApiException as e:
+            if e.status == 404:
+                logging(f"VMI {namespace}/{vm_name} not found; VM is not running")
+                return None
+            raise
+
+    def verify_on_node(self, vm_name, expected_node, namespace=DEFAULT_NAMESPACE):
+        """Assert the VM is currently running on expected_node."""
+        actual_node = self.get_node(vm_name, namespace)
+        assert actual_node == expected_node, \
+            f"VM {namespace}/{vm_name} is on {actual_node}, expected {expected_node}"
+
+    def wait_for_migrated_away_from(
+            self, vm_name, original_node, timeout=DEFAULT_TIMEOUT_SHORT,
+            namespace=DEFAULT_NAMESPACE):
+        """Wait until the VM is Running on any node other than original_node.
+
+        Used for descheduler tests, where the destination is chosen by the
+        scheduler rather than requested by the test.
+
+        Returns:
+            str: The node the VM ended up on
+        """
+        logging(
+            f"Waiting for VM {namespace}/{vm_name} to leave node {original_node}"
+        )
+        endtime = time.time() + timeout
+        while time.time() < endtime:
+            try:
+                vmi = self.obj_api.get_namespaced_custom_object(
+                    group=KUBEVIRT_API_GROUP,
+                    version=KUBEVIRT_API_VERSION,
+                    namespace=namespace,
+                    plural=VIRTUALMACHINEINSTANCE_PLURAL,
+                    name=vm_name
+                )
+                status = vmi.get('status', {})
+                current_node = status.get('nodeName')
+                if (current_node and current_node != original_node
+                        and status.get('phase') == 'Running'):
+                    logging(
+                        f"VM {namespace}/{vm_name} moved from {original_node} "
+                        f"to {current_node}"
+                    )
+                    return current_node
+            except ApiException as e:
+                if e.status != 404:
+                    logging(f"Error reading VMI: {e}", level='WARNING')
+
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"VM {namespace}/{vm_name} did not move off node {original_node} "
+            f"within {timeout}s"
+        )
+
+    def get_annotations(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the VM object's metadata.annotations."""
+        vm = self.get(vm_name, namespace)
+        return vm.get('metadata', {}).get('annotations', {}) or {}
+
     def wait_for_vm_created(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Wait for VM CR creation."""
         for i in range(self.retry_count):
