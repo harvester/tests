@@ -27,10 +27,14 @@ class Pod:
     def wait_for_succeeded(self, pod_name, namespace, timeout=DEFAULT_TIMEOUT_SHORT):
         return self.pod.wait_for_succeeded(pod_name, namespace, timeout)
 
-    def wait_for_running_with_label_selector(self, namespace, label_selector, timeout=DEFAULT_TIMEOUT_SHORT):
+    def wait_for_running_with_label_selector(
+        self, namespace, label_selector, timeout=DEFAULT_TIMEOUT_SHORT
+    ):
         return self.pod.wait_for_running_with_label_selector(namespace, label_selector, timeout)
 
-    def wait_for_gone_with_label_selector(self, namespace, label_selector, timeout=DEFAULT_TIMEOUT_SHORT):
+    def wait_for_gone_with_label_selector(
+        self, namespace, label_selector, timeout=DEFAULT_TIMEOUT_SHORT
+    ):
         return self.pod.wait_for_gone_with_label_selector(namespace, label_selector, timeout)
 
     def get_logs(self, pod_name, namespace):
