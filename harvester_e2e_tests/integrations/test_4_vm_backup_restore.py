@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 
 import yaml
 import pytest
-from paramiko.ssh_exception import ChannelException
+from paramiko.ssh_exception import NoValidConnectionsError, SSHException
 
 pytest_plugins = [
     'harvester_e2e_tests.fixtures.api_client',
@@ -773,7 +773,8 @@ class TestMultipleBackupRestore:
                 while endtime > datetime.now():
                     try:
                         vm_sh.connect(vm_ip, jumphost=h.client)
-                    except ChannelException as e:
+                    except (SSHException, NoValidConnectionsError,
+                            ConnectionResetError, TimeoutError) as e:
                         login_ex = e
                         sleep(3)
                     else:
@@ -904,7 +905,8 @@ class TestMultipleBackupRestore:
             while endtime > datetime.now():
                 try:
                     vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
+                except (SSHException, NoValidConnectionsError,
+                        ConnectionResetError, TimeoutError) as e:
                     login_ex = e
                     sleep(3)
                 else:
@@ -1000,7 +1002,8 @@ class TestMultipleBackupRestore:
             while endtime > datetime.now():
                 try:
                     vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
+                except (SSHException, NoValidConnectionsError,
+                        ConnectionResetError, TimeoutError) as e:
                     login_ex = e
                     sleep(3)
                 else:
@@ -1096,7 +1099,8 @@ class TestMultipleBackupRestore:
             while endtime > datetime.now():
                 try:
                     vm_sh.connect(vm_ip, jumphost=h.client)
-                except ChannelException as e:
+                except (SSHException, NoValidConnectionsError,
+                        ConnectionResetError, TimeoutError) as e:
                     login_ex = e
                     sleep(3)
                 else:

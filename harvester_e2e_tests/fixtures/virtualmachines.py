@@ -359,8 +359,51 @@ def vm_checker(api_client, wait_timeout, sleep_timeout, vm_shell):
                     break
                 sleep(self.snooze)
             else:
+                self._attach_migration_diagnosis(ctx, vm_name, **kws)
                 return False, ctx
             return True, ctx
+
+        def _attach_migration_diagnosis(self, ctx, vm_name, **kws):
+            """Attach VMIM status and related events to a failed-migration context.
+
+            A timed-out migration where the target pod never scheduled leaves no
+            migrationState on the VMI, so the VMI dump alone cannot explain the
+            failure; the reason only shows up in the VMIM and the events. Attach
+            them to ctx.data so existing assertion dumps include them. Must never
+            raise - diagnosis is best-effort and the original failure wins.
+            """
+            ns = kws.get('namespace', 'default')
+            diagnosis = {}
+            try:
+                code, data = self.vms._get(
+                    f"v1/harvester/kubevirt.io.virtualmachineinstancemigrations/{ns}")
+                diagnosis['migrations'] = [
+                    {'name': m.get('metadata', {}).get('name'),
+                     'status': m.get('status', {})}
+                    for m in data.get('data', [])
+                    if m.get('spec', {}).get('vmiName') == vm_name
+                ] if 200 == code else f"HTTP {code}: {data}"
+            except Exception as e:
+                diagnosis['migrations'] = f"unavailable: {e}"
+            try:
+                code, data = self.vms._get(f"v1/events/{ns}")
+                events = [
+                    {'lastTimestamp': ev.get('lastTimestamp'),
+                     'type': ev.get('type'),
+                     'reason': ev.get('reason'),
+                     'kind': ev.get('involvedObject', {}).get('kind'),
+                     'name': ev.get('involvedObject', {}).get('name'),
+                     'message': ev.get('message')}
+                    for ev in data.get('data', [])
+                    if vm_name in ev.get('involvedObject', {}).get('name', '')
+                ] if 200 == code else f"HTTP {code}: {data}"
+                if isinstance(events, list):
+                    events = sorted(events, key=lambda e: e['lastTimestamp'] or '')[-20:]
+                diagnosis['events'] = events
+            except Exception as e:
+                diagnosis['events'] = f"unavailable: {e}"
+            if isinstance(ctx.data, dict):
+                ctx.data['diagnosis'] = diagnosis
 
         def wait_ssh_connected(
             self, vm_ip, username, password=None, pkey=None, endtime=None, **kws

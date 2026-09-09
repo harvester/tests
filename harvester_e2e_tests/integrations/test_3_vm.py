@@ -316,9 +316,19 @@ def test_migrate_vm_with_user_data(
     vm_deleted, (code, data) = vm_checker.wait_deleted(unique_name)
     assert vm_deleted, (code, data)
 
-    for vol in api_client.vms.Spec.from_dict(vm_data).volumes:
-        if vol['volume'].get('persistentVolumeClaim', {}).get('claimName', "") != "":
-            api_client.volumes.delete(vol['volume']['persistentVolumeClaim']['claimName'])
+    claims = [
+        vol['volume']['persistentVolumeClaim']['claimName']
+        for vol in api_client.vms.Spec.from_dict(vm_data).volumes
+        if vol['volume'].get('persistentVolumeClaim', {}).get('claimName', "") != ""
+    ]
+    for claim in claims:
+        api_client.volumes.delete(claim)
+    # the module-scoped image fixture teardown fails with 422 (image in use)
+    # until the volumes are actually gone, not merely marked for deletion
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now() and claims:
+        claims = [c for c in claims if api_client.volumes.get(c)[0] != 404]
+        sleep(5)
 
 
 @pytest.mark.p0
@@ -384,9 +394,19 @@ def test_migrate_vm_with_multiple_volumes(
     vm_deleted, (code, data) = vm_checker.wait_deleted(unique_name)
     assert vm_deleted, (code, data)
 
-    for vol in api_client.vms.Spec.from_dict(vm_data).volumes:
-        if vol['volume'].get('persistentVolumeClaim', {}).get('claimName', "") != "":
-            api_client.volumes.delete(vol['volume']['persistentVolumeClaim']['claimName'])
+    claims = [
+        vol['volume']['persistentVolumeClaim']['claimName']
+        for vol in api_client.vms.Spec.from_dict(vm_data).volumes
+        if vol['volume'].get('persistentVolumeClaim', {}).get('claimName', "") != ""
+    ]
+    for claim in claims:
+        api_client.volumes.delete(claim)
+    # the module-scoped image fixture teardown fails with 422 (image in use)
+    # until the volumes are actually gone, not merely marked for deletion
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now() and claims:
+        claims = [c for c in claims if api_client.volumes.get(c)[0] != 404]
+        sleep(5)
 
 
 @pytest.mark.p1

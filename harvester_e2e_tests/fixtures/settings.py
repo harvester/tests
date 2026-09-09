@@ -22,6 +22,18 @@ def setting_checker(api_client, wait_timeout, sleep_timeout):
             return False, (code, data)
 
         @wait_until(wait_timeout, sleep_timeout)
+        def enable_storage_net(self, vlan_id, cluster_network, cidr):
+            """Update the storage-network setting, retrying while the webhook
+            rejects it because a node's VlanStatus is not Ready yet - enabling
+            right after VlanConfig creation races the per-node network setup.
+            Returns on success or on any other rejection; callers assert 200.
+            """
+            spec = self.settings.StorageNetworkSpec.enable_with(vlan_id, cluster_network, cidr)
+            code, data = self.settings.update('storage-network', spec)
+            retryable = 422 == code and 'not Ready' in str(data)
+            return not retryable, (code, data)
+
+        @wait_until(wait_timeout, sleep_timeout)
         def wait_storage_net_enabled_on_harvester(self):
             snet_configured, (code, data) = self._storage_net_configured()
             if snet_configured and data.get('value'):

@@ -137,10 +137,7 @@ def test_enable_storage_network(
     vlan_cidr = route['cidr']
 
     # Create storage-network
-    enable_spec = api_client.settings.StorageNetworkSpec.enable_with(
-        vlan_id, cluster_network, vlan_cidr
-    )
-    code, data = api_client.settings.update('storage-network', enable_spec)
+    _, (code, data) = setting_checker.enable_storage_net(vlan_id, cluster_network, vlan_cidr)
     assert 200 == code, (code, data)
     snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_harvester()
     assert snet_enabled, (code, data)

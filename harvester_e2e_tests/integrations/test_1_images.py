@@ -169,10 +169,7 @@ def vlan_cidr(api_client, cluster_network, vlan_id, wait_timeout, sleep_timeout)
 def storage_network(api_client, cluster_network, vlan_id, vlan_cidr, setting_checker):
     ''' Ref. https://docs.harvesterhci.io/v1.3/advanced/storagenetwork/#configuration-example
     '''
-    enable_spec = api_client.settings.StorageNetworkSpec.enable_with(
-        vlan_id, cluster_network, vlan_cidr
-    )
-    code, data = api_client.settings.update('storage-network', enable_spec)
+    _, (code, data) = setting_checker.enable_storage_net(vlan_id, cluster_network, vlan_cidr)
     assert 200 == code, (code, data)
     snet_enabled, (code, data) = setting_checker.wait_storage_net_enabled_on_harvester()
     assert snet_enabled, (code, data)
