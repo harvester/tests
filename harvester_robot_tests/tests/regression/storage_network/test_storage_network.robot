@@ -2,9 +2,9 @@
 Documentation    Storage Network Test Cases
 Test Tags        storage    network    setting
 
-Resource         ../../keywords/common.resource
-Resource         ../../keywords/network.resource
-Resource         ../../keywords/storage_network.resource
+Resource         ../../../keywords/common.resource
+Resource         ../../../keywords/network.resource
+Resource         ../../../keywords/storage_network.resource
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Common Suite Teardown
