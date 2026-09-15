@@ -1,1 +1,3 @@
-from image.image import Image   # NOQA
+from image.image import Image
+
+__all__ = ["Image"]

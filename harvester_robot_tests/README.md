@@ -323,8 +323,8 @@ Harvester REST API instead of the Kubernetes CRD path. The variable is read when
 keyword libraries are imported, so it must be set before `robot`/`pabot` starts (the
 `-S` flag handles that); a single run uses one strategy for all suites.
 
-**PR baseline (`pr-baseline` tag)**: The suites that should run on every PR are tagged
-`pr-baseline` — the VM (`vm/`), Volume (`volume/`) and Image (`image/`) suites
+**PR baseline (`pr-baseline` tag)**: Those cases that should run on every PR are tagged
+`pr-baseline` — most are in the VM (`vm/`), Volume (`volume/`) and Image (`image/`) suites
 (lifecycle, negative, hot-plug, resize, snapshot, etc.). They are CRD-only and
 parallel-safe. Heavy / hardware- or host-dependent suites are intentionally excluded:
 LHv2 (`host/`, needs NVMe + the v2 data engine) and node-failure HA (`resilient/`).
@@ -335,7 +335,7 @@ Run it with:
 ./run.sh -i pr-baseline -p 8     # one process per suite, in parallel
 ```
 
-To add a suite to the baseline, append `pr-baseline` to its `Test Tags`.
+To add test cases to the baseline, append `pr-baseline` to `Tags` (case level) or `Test Tags` (suite level).
 
 **Note**: The `run.sh` script automatically:
 - Loads environment variables from `.env` file if it exists
@@ -466,8 +466,10 @@ Use appropriate tags for your tests:
 - **Priority**: `p0` (critical), `p1` (high), `p2` (medium)
 - **Category**: `coretest`, `regression`, `negative`, `sanity`, `smoke`
 - **Component**: `virtualmachines`, `images`, `volumes`, `storage`, `networks`, `backup`, `ha`
-- **Suite set**: `pr-baseline` (CRD-only, parallel-safe suites run on every PR)
-- **Special**: `experimental`, `known-issue`
+- **Special**:
+  * `pr-baseline` (CRD-only, parallel-safe cases run on every PR)
+  * `experimental`
+  * `known-issue`
 
 > Tip: tests are also grouped on disk by component subfolder
 > (`tests/regression/vm`, `volume`, `image`, `backup`, `addon`, `rancher`, `host`), so you can
@@ -523,7 +525,7 @@ harvester_robot_tests/
     │   ├── __init__.robot           # applies the `regression` tag to the whole tree
     │   ├── vm/                      # VM lifecycle, negative, volumes, hot-plug
     │   ├── volume/                  # PVC CRUD, negative, from-image, resize, snapshot
-    │   ├── image/                   # image CRUD, checksum/url, negative
+    │   ├── image/                   # image tests grouped by different sources, negative
     │   ├── backup/                  # VM backup and restore (needs backup-target)
     │   ├── addon/                   # addon + NVIDIA toolkit
     │   ├── rancher/                 # Rancher integration

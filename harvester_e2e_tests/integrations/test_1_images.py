@@ -191,6 +191,7 @@ def storage_network(api_client, cluster_network, vlan_id, vlan_cidr, setting_che
 @pytest.mark.p0
 @pytest.mark.images
 class TestBackendImages:
+    @pytest.mark.robot_ported
     @pytest.mark.smoke
     @pytest.mark.dependency(name="create_image_from_volume")
     def test_create_image_from_volume(
@@ -253,6 +254,7 @@ class TestBackendImages:
         delete_volume(api_client, volume_name, wait_timeout)
         delete_image(api_client, image_id, wait_timeout)
 
+    @pytest.mark.robot_ported
     @pytest.mark.smoke
     @pytest.mark.dependency(name="create_image_url")
     def test_create_image_url(self, image_info, unique_name, api_client, wait_timeout):
@@ -271,6 +273,7 @@ class TestBackendImages:
         create_image_url(api_client, image_name, image_url,
                          image_info.image_checksum, wait_timeout)
 
+    @pytest.mark.robot_ported
     @pytest.mark.sanity
     @pytest.mark.skip_if_version(
         ">= v1.2.0", "< v1.4.0",
@@ -324,6 +327,7 @@ class TestBackendImages:
         get_image(api_client, unique_name)
         delete_image(api_client, unique_name, wait_timeout)
 
+    @pytest.mark.robot_ported
     @pytest.mark.sanity
     @pytest.mark.negative
     def test_create_invalid_file(
@@ -345,6 +349,7 @@ class TestBackendImages:
         ), f"File size correct, it's a multiple of 512 bytes:{resp.status_code}, {resp.content}"
         delete_image(api_client, unique_name, wait_timeout)
 
+    @pytest.mark.robot_ported
     @pytest.mark.sanity
     @pytest.mark.negative
     @pytest.mark.dependency(name="edit_image_in_use", depends=["create_image_url"])

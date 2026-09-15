@@ -25,6 +25,11 @@ class Rest(Base):
 
         return data['metadata']['namespace'] + '/' + image_name
 
+    def create_from_file(self, image_name, file_path, namespace=DEFAULT_NAMESPACE):
+        """Create an image and upload a local file."""
+        api = get_harvester_api_client()
+        return api.images.create_by_file(image_name, file_path, namespace)
+
     def wait_for_downloaded(self, image_name, timeout):
         """Wait for image to be downloaded"""
         api = get_harvester_api_client()

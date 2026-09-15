@@ -1,8 +1,11 @@
 *** Settings ***
 Documentation    Image Keywords
-Resource         variables.resource
-Resource         common.resource
-Library          ../libs/keywords/image_keywords.py
+Library    OperatingSystem
+Library    ../libs/keywords/image_keywords.py
+
+Resource    variables.resource
+Resource    common.resource
+
 
 *** Keywords ***
 Create image from url with name
@@ -55,16 +58,33 @@ Image Should Exist
     ${exists}=    image_keywords.image exists    ${image_name}    ${namespace}
     Should Be True    ${exists}
 
+Image Should Not Exist
+    [Arguments]    ${image_name}    ${namespace}=${DEFAULT_NAMESPACE}
+    ${exists}=    image_keywords.image exists    ${image_name}    ${namespace}
+    Should Not Be True    ${exists}
+
 Image State Is ${state}
     [Arguments]    ${image_name}
     ${status}=    image_keywords.get image status    ${image_name}
     Should Be Equal As Strings    ${status["state"]}    ${state}
+
+Wait Until Image State Is ${state}
+    [Arguments]    ${image_name}
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Image State Is ${state}    ${image_name}
 
 Image Size Is Greater Than Zero
     [Arguments]    ${image_name}
     ${status}=    image_keywords.get image status    ${image_name}
     ${size}=    Convert To Integer    ${status["size"]}
     Should Be True    ${size} > 0
+
+Image Size Is ${size_gi}Gi
+    [Arguments]    ${image_name}
+    ${status}=    image_keywords.get image status    ${image_name}
+    ${size_bytes}=    Convert To Integer    ${status["size"]}
+    ${expected_size_bytes}=    Evaluate    ${size_gi} * 1024 * 1024 * 1024
+    Should Be Equal As Integers    ${size_bytes}    ${expected_size_bytes}
 
 Image Export Should Have Started
     [Arguments]    ${image_name}
@@ -104,6 +124,25 @@ Try To Delete Image
     [Documentation]    Attempt to delete an image expected to be missing. Returns result dict.
     ${result}=    image_keywords.try_delete_image    ${image_name}
     RETURN    ${result}
+
+Create An Invalid Image File
+    [Arguments]    ${file_name}
+    ${path}=    Join Path    ${TEMPDIR}    ${file_name}
+    ${content}=    Evaluate    bytes([0]) * 6
+    Create Binary File    ${path}    ${content}
+    RETURN    ${path}
+
+Upload Image File
+    [Arguments]    ${image_name}    ${file_path}    ${namespace}=${DEFAULT_NAMESPACE}
+    [Documentation]    Create an image by uploading a local file through the REST API.
+    ${response}=    image_keywords.upload image file
+    ...    ${image_name}    ${file_path}    ${namespace}
+    RETURN    ${response}
+
+Upload Image File Should Be Rejected
+    [Arguments]    ${image_name}    ${file_path}    ${namespace}=${DEFAULT_NAMESPACE}
+    ${response}=    Upload Image File    ${image_name}    ${file_path}    ${namespace}
+    Should Be Equal As Integers    ${response.status_code}    500
 
 # update
 Update Image Metadata

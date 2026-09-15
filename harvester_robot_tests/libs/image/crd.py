@@ -96,6 +96,9 @@ class CRD(Base):
             logging(f"Failed to create image {image_name}: {e}")
             raise Exception(f"Failed to create image: {e.status}, {e.reason}")
 
+    def create_from_file(self, image_name, file_path, namespace=DEFAULT_NAMESPACE):
+        raise NotImplementedError("File upload is available only through the REST strategy")
+
     def try_create(self, image_name, image_url="", source_type="download",
                    checksum="", namespace=DEFAULT_NAMESPACE):
         """Attempt to create an image for negative testing.

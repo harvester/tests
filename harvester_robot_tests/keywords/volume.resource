@@ -40,6 +40,12 @@ Wait Until Volume Is Active
         ...    Volume State Is Ready/In-use    ${vol_name}
 
 # lifecycle
+A ${size_gi}Gi Volume is Created
+    [Arguments]    ${vol_name}
+    Create ${size_gi}Gi Volume    ${vol_name}
+    Wait Until Volume Is Active    ${vol_name}
+    Volume Size Is ${size_gi}Gi    ${vol_name}
+    
 Create Volume
     [Arguments]    ${vol_name}    ${size}=${DEFAULT_VOLUME_SIZE}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${replicas}=${DEFAULT_VM_REPLICAS}    ${access_mode}=ReadWriteMany
     [Documentation]    Create a volume (PVC) backed by the given storage class.

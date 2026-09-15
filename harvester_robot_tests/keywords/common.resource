@@ -12,13 +12,16 @@ Set up test environment
     common_keywords.init k8s api client
 
 Generate Unique Name
+    # TODO:
+    # 1. Consider using PABOTQUEUEINDEX to reliably avoid collisions during parallel Pabot runs
+    # 2. Consider using uuid or a simpler form timestamp
     [Arguments]    ${prefix1}=${EMPTY}    ${prefix2}=${EMPTY}    ${precise}=${TRUE}
     [Documentation]    Generate a name with timestamp suffix and optional prefixes.
     ...  The default `%m%d%H%M%S%f` timestamp has sub-second precision so
     ...  concurrent pabot suites never collide (colliding names also make their
     ...  local teardowns delete each other's resources). Pass precise=${FALSE}
     ...  to get the short `%m%d%H%M` form ONLY for resources with tight name
-    ...  length limits (e.g. cluster networks).
+    ...  length limits (e.g. cluster network names use at most 12 chars).
     ...  Examples:
     ...  Generate Unique Name            -> '0618101519681156'
     ...  Generate Unique Name  foo       -> 'foo-0618101519681156'

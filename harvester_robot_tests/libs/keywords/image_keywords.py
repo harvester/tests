@@ -27,6 +27,11 @@ class image_keywords:
         logging(f'Creating image {image_name}')
         self.image.create_from_url(image_name, image_url, checksum, **kwargs)
 
+    def upload_image_file(self, image_name, file_path, namespace='default'):
+        """Create an image by uploading a local file"""
+        logging(f'Uploading image {image_name} from {file_path}')
+        return self.image.create_from_file(image_name, file_path, namespace)
+
     def wait_for_image_downloaded(self, image_name, timeout=DEFAULT_TIMEOUT):
         """Wait for image to be downloaded"""
         logging(f'Waiting for image {image_name} to be downloaded')

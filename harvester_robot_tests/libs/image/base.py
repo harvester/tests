@@ -13,6 +13,11 @@ class Base(ABC):
         pass
 
     @abstractmethod
+    def create_from_file(self, image_name, file_path, namespace="default"):
+        """Create an image by uploading a local file"""
+        pass
+
+    @abstractmethod
     def delete(self, image_name, namespace="default"):
         """Delete an image"""
         pass
