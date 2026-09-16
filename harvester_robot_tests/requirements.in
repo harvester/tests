@@ -33,3 +33,5 @@ pytest-dependency==0.6.0
 
 # Logging and monitoring
 coloredlogs==15.0.1
+
+setuptools==81.0.0

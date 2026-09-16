@@ -101,8 +101,8 @@ For specific test scenarios:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/harvester/harvester-robot-tests.git
-cd harvester-robot-tests
+git clone https://github.com/harvester/tests.git
+cd harvester_robot_tests
 ```
 
 2. Create a virtual environment:

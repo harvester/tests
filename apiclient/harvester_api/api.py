@@ -53,17 +53,18 @@ class HarvesterAPI:
         if not self._version:
             resp = self._get("apis/{API_VERSION}/settings/server-version")
             ver = resp.json()['value']
+            normalized_ver = _normalize_version(ver)
             try:
                 version = parse_version(_normalize_version(ver))
                 assert version.major
                 self._version = version
-            except AttributeError:
+            except (AttributeError, ValueError):
                 # Use KubeVirt version as the customized version
                 # Set the invalid version for local version
                 # Final format: <KubeVirt_Ver>+<normalized_Ver>
                 data = self._get('apis/kubevirt.io/v1/kubevirts').json()
                 kube_ver = data['items'][0]['status'].get('operatorVersion')
-                self._version = parse_version(f"{kube_ver}+{version}")
+                self._version = parse_version(f"{kube_ver}+{normalized_ver}")
 
             # store the raw version returns from `server-version` for reference
             self.raw_version = ver
