@@ -20,11 +20,11 @@ class Subnet(Base):
         else:
             self.subnet = Rest()
 
-    def create_subnet(self, name):
-        return self.subnet.create_subnet(name)
+    def create_subnet(self, name, **kwargs):
+        return self.subnet.create_subnet(name, **kwargs)
 
-    def get_subnet(self, name):
-        return self.subnet.get_subnet(name)
+    def get(self, name):
+        return self.subnet.get(name)
 
-    def delete_subnet(self, name):
-        return self.subnet.delete_subnet(name)
+    def delete(self, name):
+        return self.subnet.delete(name)

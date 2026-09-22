@@ -2,11 +2,11 @@ from subnet.base import Base
 
 
 class Rest(Base):
-    def create_subnet(self, name):
+    def create_subnet(self, name, **kwargs):
         pass
 
-    def get_subnet(self, name):
+    def get(self, name):
         pass
 
-    def delete_subnet(self, name):
+    def delete(self, name):
         pass

@@ -26,6 +26,12 @@ class kubeovn_subnet_keywords:
             self._subnet = Subnet()
         return self._subnet
 
+    def create_subnet(self, name, **kwargs):
+        """
+        Create KubeOVN Subnet
+        """
+        return self.subnet.create_subnet(name, **kwargs)
+
     def get_subnet(self, name):
         """
         Get KubeOVN Subnet details
@@ -36,4 +42,7 @@ class kubeovn_subnet_keywords:
         Returns:
             dict: KubeOVN Subnet Object
         """
-        return self.subnet.get_subnet(name)
+        return self.subnet.get(name)
+
+    def delete_subnet(self, name):
+        return self.subnet.delete(name)
