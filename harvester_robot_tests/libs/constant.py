@@ -22,6 +22,7 @@ LONGHORN_API_VERSION = "v1beta2"
 
 # Harvester Namespace
 HARVESTER_NAMESPACE = "harvester-system"
+KUBE_SYSTEM_NAMESPACE = "kube-system"
 HARVESTER_PUBLIC_NAMESPACE = "harvester-public"
 DEFAULT_NAMESPACE = "default"
 LONGHORN_NAMESPACE = "longhorn-system"
@@ -184,4 +185,9 @@ DEFAULT_RKE2_NODE_DISK = 80  # GB
 KUBEOVN_API_GROUP = "kubeovn.io"
 KUBEOVN_API_VERSION = "v1"
 KUBEOVN_VPC_PLURAL = "vpcs"
+KUBEOVN_VPC_NAT_GATEWAY_PLURAL = "vpc-nat-gateways"
 KUBEOVN_SUBNET_PLURAL = "subnets"
+
+CNI_GROUP = "k8s.cni.cncf.io"
+CNI_VERSION = "v1"
+CNI_NAD_PLURAL = "network-attachment-definitions"

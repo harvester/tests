@@ -1,11 +1,11 @@
 import os
 from constant import HarvesterOperationStrategy
-from subnet.rest import Rest
-from subnet.crd import CRD
-from subnet.base import Base
+from nad.rest import Rest
+from nad.crd import CRD
+from nad.base import Base
 
 
-class Subnet(Base):
+class NetworkAttachmentDefinition(Base):
     def __init__(self):
         # Get strategy from environment variable, default to CRD
         strategy_str = os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower()
@@ -16,15 +16,15 @@ class Subnet(Base):
             self._strategy = HarvesterOperationStrategy.CRD
 
         if self._strategy == HarvesterOperationStrategy.CRD:
-            self.subnet = CRD()
+            self.nad = CRD()
         else:
-            self.subnet = Rest()
+            self.nad = Rest()
 
-    def create_subnet(self, name, **kwargs):
-        return self.subnet.create_subnet(name, **kwargs)
+    def get(self, namespace, name):
+        return self.nad.get(namespace, name)
 
-    def get(self, name):
-        return self.subnet.get(name)
+    def create(self, namespace, name, **kwargs):
+        return self.nad.create(namespace, name, **kwargs)
 
-    def delete(self, name):
-        return self.subnet.delete(name)
+    def delete(self, namespace, name):
+        return self.nad.delete(namespace, name)

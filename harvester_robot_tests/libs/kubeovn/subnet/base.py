@@ -7,13 +7,13 @@ from abc import ABC, abstractmethod
 
 class Base(ABC):
     @abstractmethod
-    def create_subnet(self, name):
+    def create_subnet(self, name, **kwargs):
         pass
 
     @abstractmethod
-    def get_subnet(self, name):
+    def get(self, name):
         pass
 
     @abstractmethod
-    def delete_subnet(self, name):
+    def delete(self, name):
         pass

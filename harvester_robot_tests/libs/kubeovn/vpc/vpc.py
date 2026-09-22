@@ -25,3 +25,15 @@ class VPC(Base):
         Get KubeOVN VPC details
         """
         return self.vpc.get_vpc(vpc_name)
+
+    def create_vpc(self, vpc_name, **kwargs):
+        """
+        Create new KubeOVN VPC
+        """
+        return self.vpc.create_vpc(vpc_name, **kwargs)
+
+    def delete_vpc(self, vpc_name):
+        """
+        Delete KubeOVN VPC
+        """
+        return self.vpc.delete_vpc(vpc_name)
