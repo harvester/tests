@@ -48,6 +48,15 @@ class Image:
     def get_metadata(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.get_metadata(image_name, namespace)
 
+    def get_spec(self, image_name, namespace=DEFAULT_NAMESPACE):
+        return self.image.get_spec(image_name, namespace)
+
+    def supports_backing_image_name(self):
+        return self.image.supports_backing_image_name()
+
+    def get_backing_image(self, backing_image_name):
+        return self.image.get_backing_image(backing_image_name)
+
     def delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.delete(image_name, namespace)
 

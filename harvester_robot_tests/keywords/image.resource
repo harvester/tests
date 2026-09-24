@@ -10,10 +10,14 @@ Resource    common.resource
 *** Keywords ***
 Create image from url with name
     [Arguments]    ${image_name}    ${image_url}    ${storage_class}=${EMPTY}    ${checksum}=    ${retry}=${NONE}
+    ...    ${backing_image_name}=${EMPTY}
     [Documentation]    Create image from URL using provided name and optional storage class.
     ...    retry overrides spec.retry (import retry limit, cluster default 3);
     ...    retry=${0} makes a doomed import fail on the first attempt.
+    ...    backing_image_name sets spec.backingImageName so the Longhorn
+    ...    BackingImage and the image's StorageClass get that exact name.
     image_keywords.create image from url    ${image_name}    ${image_url}    storage_class=${storage_class}    checksum=${checksum}    retry=${retry}
+    ...    backing_image_name=${backing_image_name}
 
 Wait for image downloaded by name
     [Arguments]    ${image_name}    ${timeout}=${WAIT_TIMEOUT}
@@ -32,10 +36,12 @@ Get image status by name
     RETURN    ${status}
 
 Image is available for VM creation
-    [Arguments]    ${image_name}    ${image_url}    ${storage_class}=${EMPTY}
+    [Arguments]    ${image_name}    ${image_url}    ${storage_class}=${EMPTY}    ${backing_image_name}=${EMPTY}
     [Documentation]    Create an image from URL (delegates to Image module).
     ...    storage_class imports onto a third-party StorageClass via CDI.
+    ...    backing_image_name pins the Longhorn BackingImage/StorageClass name.
     Create image from url with name    ${image_name}    ${image_url}    storage_class=${storage_class}
+    ...    backing_image_name=${backing_image_name}
     Wait for image downloaded by name    ${image_name}
 
 Wait for image deleted by name
@@ -79,6 +85,43 @@ Image Size Is Greater Than Zero
     ${status}=    image_keywords.get image status    ${image_name}
     ${size}=    Convert To Integer    ${status["size"]}
     Should Be True    ${size} > 0
+
+Image Storage Class Name Should Be
+    [Arguments]    ${image_name}    ${expected}
+    [Documentation]    Assert status.storageClassName, the StorageClass Harvester
+    ...    created for (and VMs provision root disks from) this image
+    ${status}=    image_keywords.get image status    ${image_name}
+    Should Be Equal As Strings    ${status}[storage_class_name]    ${expected}
+
+Cluster Supports Custom Backing Image Name
+    [Documentation]    True when the VirtualMachineImage CRD has spec.backingImageName
+    ...    (harvester/harvester#11641). Detects the field rather than comparing
+    ...    versions: a v1.9.1 rc cut before the backport parses to the same
+    ...    release as one that carries it.
+    ${supported}=    image_keywords.cluster_supports_backing_image_name
+    RETURN    ${supported}
+
+Skip Unless Cluster Supports Custom Backing Image Name
+    ${supported}=    Cluster Supports Custom Backing Image Name
+    Skip If    not ${supported}    VirtualMachineImage CRD has no spec.backingImageName; skipping
+
+Backing Image Should Exist
+    [Arguments]    ${backing_image_name}
+    [Documentation]    Assert a Longhorn BackingImage with exactly this name exists
+    ${bi}=    image_keywords.get_backing_image    ${backing_image_name}
+    Should Not Be Equal    ${bi}    ${NONE}
+    ...    msg=Longhorn BackingImage ${backing_image_name} does not exist
+
+Backing Image Should Not Exist
+    [Arguments]    ${backing_image_name}
+    ${bi}=    image_keywords.get_backing_image    ${backing_image_name}
+    Should Be Equal    ${bi}    ${NONE}
+    ...    msg=Longhorn BackingImage ${backing_image_name} still exists
+
+Wait Until Backing Image Is Deleted
+    [Arguments]    ${backing_image_name}
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Backing Image Should Not Exist    ${backing_image_name}
 
 Image Size Is ${size_gi}Gi
     [Arguments]    ${image_name}

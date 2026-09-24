@@ -91,3 +91,16 @@ class image_keywords:
     def get_image_metadata(self, image_name, namespace='default'):
         """Return the metadata block of an image"""
         return self.image.get_metadata(image_name, namespace)
+
+    def get_image_spec(self, image_name, namespace='default'):
+        """Return the spec block of an image"""
+        return self.image.get_spec(image_name, namespace)
+
+    def cluster_supports_backing_image_name(self):
+        """True when the VirtualMachineImage CRD exposes spec.backingImageName"""
+        return self.image.supports_backing_image_name()
+
+    def get_backing_image(self, backing_image_name):
+        """Return the Longhorn BackingImage CR with this name, or None"""
+        logging(f'Getting longhorn BackingImage {backing_image_name}')
+        return self.image.get_backing_image(backing_image_name)

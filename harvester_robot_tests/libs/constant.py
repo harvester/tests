@@ -49,6 +49,10 @@ BACKUPVOLUME_PLURAL = "backupvolumes"
 BACKUPBACKINGIMAGE_PLURAL = "backupbackingimages"
 # Prefix of UID-style longhorn BackingImage names created by Harvester
 BACKING_IMAGE_PREFIX = "vmi"
+# Longhorn BackingImage CRs (longhorn-system namespace)
+BACKINGIMAGE_PLURAL = "backingimages"
+# CRD holding the VirtualMachineImage schema (used for feature detection)
+VIRTUALMACHINEIMAGE_CRD = f"{VIRTUALMACHINEIMAGE_PLURAL}.{HARVESTER_API_GROUP}"
 
 # Test Labels
 LABEL_TEST = "harvesterhci.io/test"
