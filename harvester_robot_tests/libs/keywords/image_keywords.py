@@ -67,11 +67,14 @@ class image_keywords:
         return self.image.exists(image_name, namespace)
 
     def try_create_image(self, image_name, image_url="", source_type="download",
-                         checksum=""):
-        """Attempt to create an image for negative testing; returns result dict"""
-        logging(f'Attempting to create image {image_name} '
-                f'(sourceType={source_type}, url={image_url}) (negative test)')
-        return self.image.try_create(image_name, image_url, source_type, checksum)
+                         checksum="", namespace='default', **kwargs):
+        """Attempt to create an image for negative testing; returns result dict.
+        kwargs (backing_image_name, backend, storage_class) map to spec fields.
+        """
+        logging(f'Attempting to create image {namespace}/{image_name} '
+                f'(sourceType={source_type}, url={image_url}, {kwargs}) (negative test)')
+        return self.image.try_create(image_name, image_url, source_type, checksum,
+                                     namespace, **kwargs)
 
     def try_get_image(self, image_name, namespace='default'):
         """Attempt to get an image for negative testing; returns result dict"""

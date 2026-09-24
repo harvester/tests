@@ -86,7 +86,8 @@ class Rest(Base):
 
         raise AssertionError(f"Image {image_name} was not ready within {timeout}s")
 
-    def try_create(self, image_name, image_url="", source_type="download", checksum=""):
+    def try_create(self, image_name, image_url="", source_type="download",
+                   checksum="", namespace=DEFAULT_NAMESPACE, **kwargs):
         """Negative-test helper. Only implemented for the CRD strategy."""
         raise NotImplementedError(
             "try_create is only implemented for the CRD strategy; "

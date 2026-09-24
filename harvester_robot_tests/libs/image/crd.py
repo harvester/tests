@@ -116,11 +116,14 @@ class CRD(Base):
         raise NotImplementedError("File upload is available only through the REST strategy")
 
     def try_create(self, image_name, image_url="", source_type="download",
-                   checksum="", namespace=DEFAULT_NAMESPACE):
+                   checksum="", namespace=DEFAULT_NAMESPACE, **kwargs):
         """Attempt to create an image for negative testing.
 
         Never raises on API rejection; returns {success, code, message} so a
         caller can assert on the failure code/reason (e.g. empty url/data).
+        Optional kwargs backing_image_name / backend / storage_class map to
+        the matching spec fields, so CRD (CEL) and webhook rules on them can
+        be exercised.
         """
         body = {
             "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
@@ -140,6 +143,11 @@ class CRD(Base):
         }
         if checksum:
             body["spec"]["checksum"] = checksum
+        for kwarg, field in (("backing_image_name", "backingImageName"),
+                             ("backend", "backend"),
+                             ("storage_class", "targetStorageClassName")):
+            if kwargs.get(kwarg):
+                body["spec"][field] = kwargs[kwarg]
 
         try:
             create_cr(

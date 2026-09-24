@@ -13,7 +13,7 @@ from utility.utility import init_harvester_api_client  # noqa E402
 from utility.utility import init_k8s_api_client  # noqa E402
 from utility.utility import logging  # noqa E402
 from utility.ssh import generate_ssh_keypair  # noqa E402
-from constant import LONGHORN_NAMESPACE  # noqa E402
+from constant import LONGHORN_NAMESPACE, LABEL_TEST, LABEL_TEST_VALUE  # noqa E402
 
 
 class common_keywords:
@@ -52,6 +52,31 @@ class common_keywords:
         target = _extract_release(str(version))
         assert target is not None, f"Not a version string: {version}"
         return release >= target
+
+    def create_namespace(self, name):
+        """Create a namespace (no-op when it already exists)"""
+        from kubernetes import client
+        from kubernetes.client.rest import ApiException
+        body = client.V1Namespace(metadata=client.V1ObjectMeta(
+            name=name, labels={LABEL_TEST: LABEL_TEST_VALUE}))
+        try:
+            client.CoreV1Api().create_namespace(body=body)
+            logging(f"Created namespace {name}")
+        except ApiException as e:
+            if e.status != 409:
+                raise
+            logging(f"Namespace {name} already exists")
+
+    def delete_namespace(self, name):
+        """Delete a namespace (no-op when it is already gone)"""
+        from kubernetes import client
+        from kubernetes.client.rest import ApiException
+        try:
+            client.CoreV1Api().delete_namespace(name=name)
+            logging(f"Deleted namespace {name}")
+        except ApiException as e:
+            if e.status != 404:
+                raise
 
     def generate_ssh_keypair(self):
         """Generate a fresh RSA keypair for injecting into a VM's cloud-init

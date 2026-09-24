@@ -25,6 +25,10 @@ ${IMAGE_NAME}       ${EMPTY}
 # The custom name; doubles as the Longhorn BackingImage and StorageClass name
 ${BI_NAME}          ${EMPTY}
 ${VM_NAME}          ${EMPTY}
+# Second namespace for the cross-namespace collision case
+${OTHER_NAMESPACE}    ${EMPTY}
+# StorageClass created only to collide with a backingImageName
+${COLLISION_SC}     ${EMPTY}
 
 *** Test Cases ***
 Image With Custom Backing Image Name Uses It End To End
@@ -54,6 +58,39 @@ VM Boots From Image With Custom Backing Image Name
     [Teardown]    Run Keywords    VM is deleted    ${VM_NAME}
     ...    AND    Common Test Teardown
 
+Reject Duplicate Backing Image Name In Same Namespace
+    [Tags]    p1    negative
+    [Documentation]    The webhook rejects a second image claiming a backingImageName
+    ...    another VirtualMachineImage already declares (spec-level check, so
+    ...    it holds even before the first image's StorageClass exists).
+    ${img}=    Generate Unique Name    img-dup
+    Given Image State Is Active    ${IMAGE_NAME}
+    ${result}=    When Try To Create Image    ${img}    ${OPENSUSE_IMAGE_URL}    backing_image_name=${BI_NAME}
+    Then Operation Should Be Rejected    ${result}    already referred by another VirtualMachineImage
+
+Reject Duplicate Backing Image Name Across Namespaces
+    [Tags]    p1    negative
+    [Documentation]    BackingImages and StorageClasses are cluster-scoped, so the
+    ...    same backingImageName must be rejected from another namespace too.
+    ...    This is the collision the old longhorn-<name> StorageClass naming
+    ...    had (harvester/harvester#11641 problem statement).
+    ${img}=    Generate Unique Name    img-dup
+    Given Image State Is Active    ${IMAGE_NAME}
+    ${result}=    When Try To Create Image    ${img}    ${OPENSUSE_IMAGE_URL}    namespace=${OTHER_NAMESPACE}
+    ...    backing_image_name=${BI_NAME}
+    Then Operation Should Be Rejected    ${result}    already referred by another VirtualMachineImage
+
+Reject Backing Image Name Colliding With Existing Storage Class
+    [Tags]    p1    negative
+    [Documentation]    A backingImageName equal to an existing StorageClass (not owned
+    ...    by any image) is rejected, otherwise the image controller would adopt
+    ...    a StorageClass that points somewhere else. The StorageClass is
+    ...    removed by the suite teardown.
+    ${img}=    Generate Unique Name    img-sc-taken
+    Given Create Storage Class    ${COLLISION_SC}    v1    3    ${EMPTY}
+    ${result}=    When Try To Create Image    ${img}    ${OPENSUSE_IMAGE_URL}    backing_image_name=${COLLISION_SC}
+    Then Operation Should Be Rejected    ${result}    storageClassName already exists
+
 Delete Image Removes Custom Storage Class And Backing Image
     [Tags]    p0
     [Documentation]    Deleting the image must remove the custom-named StorageClass
@@ -73,8 +110,11 @@ Local Suite Setup
     Set Suite Variable    ${IMAGE_NAME}    img-${suffix}
     Set Suite Variable    ${BI_NAME}       bi-${suffix}
     Set Suite Variable    ${VM_NAME}       vm-${suffix}
+    Set Suite Variable    ${OTHER_NAMESPACE}    ns-${suffix}
+    Set Suite Variable    ${COLLISION_SC}      sc-taken-${suffix}
     Set up test environment
     Skip Unless Cluster Supports Custom Backing Image Name
+    Namespace is created    ${OTHER_NAMESPACE}
     # Every test relies on this image holding ${BI_NAME}, so create it here
     # rather than in a test: tag filters (-i negative, -i p1) must not be
     # able to skip the precondition.
@@ -87,4 +127,6 @@ Local Suite Teardown
     IF    '${SUITE STATUS}' == 'PASS'
         Run Keyword And Ignore Error    VM is deleted    ${VM_NAME}
         Run Keyword And Ignore Error    Delete image by name    ${IMAGE_NAME}
+        Run Keyword And Ignore Error    Delete Storage Class    ${COLLISION_SC}
+        Run Keyword And Ignore Error    Namespace is deleted    ${OTHER_NAMESPACE}
     END

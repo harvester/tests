@@ -152,9 +152,13 @@ Wait Until Image Export Has Started
 # negative
 Try To Create Image
     [Arguments]    ${image_name}    ${image_url}=${EMPTY}    ${source_type}=download    ${checksum}=${EMPTY}
+    ...    ${namespace}=${DEFAULT_NAMESPACE}    &{spec}
     [Documentation]    Attempt to create an image expected to be rejected.
     ...    Returns a result dict {success, code, message}; never fails on rejection.
+    ...    Extra named args (backing_image_name, backend, storage_class) set the
+    ...    matching spec fields.
     ${result}=    image_keywords.try_create_image    ${image_name}    ${image_url}    ${source_type}    ${checksum}
+    ...    ${namespace}    &{spec}
     RETURN    ${result}
 
 Try To Get Image

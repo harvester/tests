@@ -33,8 +33,10 @@ class Image:
     def wait_for_ready(self, image_name, timeout):
         return self.image.wait_for_ready(image_name, timeout)
 
-    def try_create(self, image_name, image_url="", source_type="download", checksum=""):
-        return self.image.try_create(image_name, image_url, source_type, checksum)
+    def try_create(self, image_name, image_url="", source_type="download",
+                   checksum="", namespace=DEFAULT_NAMESPACE, **kwargs):
+        return self.image.try_create(image_name, image_url, source_type, checksum,
+                                     namespace, **kwargs)
 
     def try_get(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.try_get(image_name, namespace)
