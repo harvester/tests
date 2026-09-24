@@ -15,6 +15,7 @@ from constant import (
     LONGHORN_API_GROUP, LONGHORN_API_VERSION, LONGHORN_NAMESPACE,
     BACKINGIMAGE_PLURAL,
     IMAGE_STATE_ACTIVE, IMAGE_STATE_IMPORTING, IMAGE_STATE_FAILED,
+    IMAGE_SOURCE_DOWNLOAD,
     LABEL_TEST, LABEL_TEST_VALUE,
     DEFAULT_TIMEOUT
 )
@@ -48,6 +49,10 @@ class CRD(Base):
         display_name = kwargs.get('display_name', image_name)
         description = kwargs.get('description', f'Test image {image_name}')
         retry = kwargs.get('retry', None)
+        # 'restore' with a backup-store URL (…?backingImage=<name>) is what
+        # Harvester itself creates when syncing image metadata from the
+        # backup target into a cluster where the image is missing.
+        source_type = kwargs.get('source_type') or IMAGE_SOURCE_DOWNLOAD
 
         body = {
             "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
@@ -64,7 +69,7 @@ class CRD(Base):
             },
             "spec": {
                 "displayName": display_name,
-                "sourceType": "download",
+                "sourceType": source_type,
                 "url": image_url
             }
         }

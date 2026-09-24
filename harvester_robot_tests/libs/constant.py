@@ -104,6 +104,8 @@ ACCESS_MODE_ROX = "ReadOnlyMany"
 IMAGE_SOURCE_DOWNLOAD = "download"
 IMAGE_SOURCE_UPLOAD = "upload"
 IMAGE_SOURCE_EXPORT = "export-from-volume"
+# Set by Harvester on images it re-creates from backup-target metadata
+IMAGE_SOURCE_RESTORE = "restore"
 
 # Network Types
 NETWORK_TYPE_VLAN = "vlan"

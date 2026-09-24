@@ -19,6 +19,17 @@ Create image from url with name
     image_keywords.create image from url    ${image_name}    ${image_url}    storage_class=${storage_class}    checksum=${checksum}    retry=${retry}
     ...    backing_image_name=${backing_image_name}
 
+Create restore image from backing image backup
+    [Arguments]    ${image_name}    ${backup_url}    ${checksum}=${EMPTY}
+    [Documentation]    Create the image Harvester would itself create when syncing
+    ...    backup-target metadata into a cluster where the image is missing:
+    ...    sourceType restore with the backing image's backup-store URL
+    ...    (…?backingImage=<name>) as spec.url. Harvester restores the
+    ...    Longhorn BackingImage from the backup target and derives the
+    ...    StorageClass name from that backingImage parameter.
+    image_keywords.create image from url    ${image_name}    ${backup_url}    checksum=${checksum}
+    ...    source_type=restore
+
 Wait for image downloaded by name
     [Arguments]    ${image_name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait for image download to complete

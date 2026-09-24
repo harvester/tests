@@ -18,6 +18,10 @@ class Rest(Base):
 
     def create_from_url(self, image_name, image_url, checksum="", **kwargs):
         """Create image from URL"""
+        if kwargs.get('source_type') not in (None, '', 'download'):
+            raise NotImplementedError(
+                "source_type other than download is only implemented for the "
+                "CRD strategy; run with HARVESTER_OPERATION_STRATEGY=crd")
         api = get_harvester_api_client()
 
         code, data = api.images.create_by_url(image_name, image_url)
