@@ -86,6 +86,12 @@ Image Size Is Greater Than Zero
     ${size}=    Convert To Integer    ${status["size"]}
     Should Be True    ${size} > 0
 
+Image Backing Image Name Should Be
+    [Arguments]    ${image_name}    ${expected}
+    [Documentation]    Assert spec.backingImageName of an image
+    ${spec}=    image_keywords.get_image_spec    ${image_name}
+    Should Be Equal As Strings    ${spec}[backingImageName]    ${expected}
+
 Image Storage Class Name Should Be
     [Arguments]    ${image_name}    ${expected}
     [Documentation]    Assert status.storageClassName, the StorageClass Harvester
@@ -159,6 +165,14 @@ Try To Create Image
     ...    matching spec fields.
     ${result}=    image_keywords.try_create_image    ${image_name}    ${image_url}    ${source_type}    ${checksum}
     ...    ${namespace}    &{spec}
+    RETURN    ${result}
+
+Try To Update Image Spec
+    [Arguments]    ${image_name}    &{spec}
+    [Documentation]    Attempt to merge-patch spec fields of an image (expected to be
+    ...    rejected). Returns a result dict {success, code, message}; a field
+    ...    set to ${NONE} is removed from the spec.
+    ${result}=    image_keywords.try_update_image_spec    ${image_name}    &{spec}
     RETURN    ${result}
 
 Try To Get Image

@@ -76,6 +76,14 @@ class image_keywords:
         return self.image.try_create(image_name, image_url, source_type, checksum,
                                      namespace, **kwargs)
 
+    def try_update_image_spec(self, image_name, namespace='default', **spec):
+        """Attempt to patch spec fields (negative testing); returns result dict.
+        Pass a field as None to remove it from the spec.
+        """
+        logging(f'Attempting to update spec of image {namespace}/{image_name} '
+                f'with {spec} (negative test)')
+        return self.image.try_update_spec(image_name, spec, namespace)
+
     def try_get_image(self, image_name, namespace='default'):
         """Attempt to get an image for negative testing; returns result dict"""
         logging(f'Attempting to get image {image_name} (negative test)')

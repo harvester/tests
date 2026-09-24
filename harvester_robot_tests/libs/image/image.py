@@ -41,6 +41,9 @@ class Image:
     def try_get(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.try_get(image_name, namespace)
 
+    def try_update_spec(self, image_name, spec, namespace=DEFAULT_NAMESPACE):
+        return self.image.try_update_spec(image_name, spec, namespace)
+
     def try_delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.try_delete(image_name, namespace)
 

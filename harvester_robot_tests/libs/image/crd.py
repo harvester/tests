@@ -196,6 +196,30 @@ class CRD(Base):
             return {"success": False, "code": e.status,
                     "message": e.body or e.reason or ""}
 
+    def try_update_spec(self, image_name, spec, namespace=DEFAULT_NAMESPACE):
+        """Attempt to merge-patch spec fields of an image for negative testing.
+
+        Never raises on API rejection; returns {success, code, message}. A
+        None value removes the field from the spec.
+        """
+        try:
+            patch_cr(
+                group=HARVESTER_API_GROUP,
+                version=HARVESTER_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINEIMAGE_PLURAL,
+                name=image_name,
+                body={"spec": spec}
+            )
+            logging(f"Image {namespace}/{image_name} spec was unexpectedly "
+                    f"updated with {spec}", "WARNING")
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            logging(f"Spec update of image {namespace}/{image_name} rejected "
+                    f"as expected (status={e.status}): {e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
     def update(self, image_name, metadata, namespace=DEFAULT_NAMESPACE):
         """Patch an image's metadata (labels/annotations). Returns the CR."""
         body = {"metadata": metadata}

@@ -91,6 +91,31 @@ Reject Backing Image Name Colliding With Existing Storage Class
     ${result}=    When Try To Create Image    ${img}    ${OPENSUSE_IMAGE_URL}    backing_image_name=${COLLISION_SC}
     Then Operation Should Be Rejected    ${result}    storageClassName already exists
 
+Reject Backing Image Name With CDI Backend
+    [Tags]    p1    negative
+    [Documentation]    backingImageName only makes sense for the backingimage backend;
+    ...    the CRD (CEL) rule rejects it together with backend=cdi before any
+    ...    webhook runs.
+    ${img}=    Generate Unique Name    img-cdi
+    ${bi}=    Generate Unique Name    bi-cdi
+    ${result}=    When Try To Create Image    ${img}    ${OPENSUSE_IMAGE_URL}    backing_image_name=${bi}
+    ...    backend=cdi    storage_class=${DEFAULT_STORAGE_CLASS}
+    Then Operation Should Be Rejected    ${result}    can only be set when Backend is backingimage
+
+Reject Changing Backing Image Name After Creation
+    [Tags]    p1    negative
+    [Documentation]    spec.backingImageName is immutable (CEL self == oldSelf), and
+    ...    cannot be removed either (has(self) == has(oldSelf)); renaming the
+    ...    BackingImage under a live StorageClass would orphan it. The Active
+    ...    image must still carry the original name afterwards.
+    Given Image State Is Active    ${IMAGE_NAME}
+    ${result}=    When Try To Update Image Spec    ${IMAGE_NAME}    backingImageName=${BI_NAME}-renamed
+    Then Operation Should Be Rejected    ${result}    immutable
+    ${result}=    When Try To Update Image Spec    ${IMAGE_NAME}    backingImageName=${NONE}
+    Then Operation Should Be Rejected    ${result}    cannot be added or removed after creation
+    And Image Backing Image Name Should Be    ${IMAGE_NAME}    ${BI_NAME}
+    And Image Storage Class Name Should Be    ${IMAGE_NAME}    ${BI_NAME}
+
 Delete Image Removes Custom Storage Class And Backing Image
     [Tags]    p0
     [Documentation]    Deleting the image must remove the custom-named StorageClass

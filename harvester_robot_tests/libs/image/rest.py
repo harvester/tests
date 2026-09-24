@@ -111,6 +111,12 @@ class Rest(Base):
             "get_backing_image is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
+    def try_update_spec(self, image_name, spec, namespace=DEFAULT_NAMESPACE):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_update_spec is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def try_get(self, image_name, namespace=DEFAULT_NAMESPACE):
         """Negative-test helper. Only implemented for the CRD strategy."""
         raise NotImplementedError(
