@@ -242,18 +242,23 @@ def test_maintenance_mode_trigger_vm_migrate(
         f"Failed to enable maintenance mode on node {src_host} with error: {code}, {data}",
     )
 
+    maintain_cond = None
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
         code, data = api_client.hosts.get(src_host)
-        if data.get('metadata', {}) \
-                .get('annotations', {}) \
-                .get('harvesterhci.io/maintain-status', '') == "completed":
+        assert 200 == code, (code, data)
+        conditions = data.get('status', {}).get('conditions', [])
+        maintain_cond = next((c for c in conditions if c.get('type') == 'MaintenanceMode'),
+                             None)
+        if (maintain_cond and maintain_cond.get('status') == 'True' and
+                maintain_cond.get('reason') == 'Completed'):
             break
         sleep(5)
     else:
         raise AssertionError(
-            f"The maintain-status of node {src_host} can't be completed \
-                with {wait_timeout} timed out\n"
+            f"The maintenance mode of node {src_host} can't be completed "
+            f"with {wait_timeout} timed out\n"
+            f"MaintenanceMode condition: {maintain_cond}\n"
             f"Got error: {code}, {data}"
         )
 
@@ -275,6 +280,26 @@ def test_maintenance_mode_trigger_vm_migrate(
     assert 204 == code, (
         f"Failed to disable maintenance mode on node {src_host} with error: {code}, {data}",
     )
+
+    # Wait for the node to fully exit maintenance mode and become schedulable again.
+    # Subsequent tests (e.g. test_poweroff_node_trigger_vm_reschedule) require all
+    # cluster nodes to be available and schedulable to successfully reschedule VMs.
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.hosts.get(src_host)
+        assert 200 == code, (code, data)
+        conditions = data.get('status', {}).get('conditions', [])
+        maintain_cond = next((c for c in conditions if c.get('type') == 'MaintenanceMode'),
+                             None)
+        if maintain_cond is None and not data.get('spec', {}).get('unschedulable', False):
+            break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Node {src_host} didn't leave maintenance mode after disabled {wait_timeout} secs\n"
+            f"MaintenanceMode condition: {maintain_cond}\n"
+            f"Got error: {code}, {data}"
+        )
 
 
 @pytest.mark.hosts
