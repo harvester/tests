@@ -32,6 +32,17 @@ class setting_keywords:
     def get_value(self, setting_id):
         return self.setting.get(setting_id).get('value')
 
+    def get_default(self, setting_id):
+        return self.setting.get(setting_id).get('default')
+
+    def get_effective_value(self, setting_id):
+        setting = self.setting.get(setting_id)
+        return setting.get('value') or setting.get('default')
+
+    def reset(self, setting_id):
+        """Reset setting to default by removing the value key"""
+        return self.update(setting_id, None)
+
     def get_condition_message(self, setting_id: str, condition_type: str):
         conditions = self.setting.get(setting_id).get('status', {}).get('conditions', [])
         for condition in conditions:
