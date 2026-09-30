@@ -13,7 +13,11 @@ from .base import Base
 
 
 class CRD(Base):
-    """CRD implementation for Setting operations using Kubernetes API"""
+    """CRD implementation for Setting operations using Kubernetes API.
+
+    settings.harvesterhci.io are cluster-scoped CRs (no namespace), so all
+    operations use the cluster-scoped API calls.
+    """
 
     def __init__(self):
         """Initialize Kubernetes client"""
@@ -25,7 +29,6 @@ class CRD(Base):
             "version": HARVESTER_API_VERSION,
             "plural": "settings"
         }
-        self.port_forward_process = None
 
     def get(self, setting_id):
         """Get setting details by id"""
@@ -37,7 +40,8 @@ class CRD(Base):
             return setting
         except ApiException as e:
             if e.status == 404:
-                raise Exception(f"Setting {setting_id} not found", level='ERROR')
+                raise Exception(f"Setting {setting_id} not found")
+            raise Exception(f"Failed to get setting {setting_id}: {e}")
 
     def enable(self, setting_id):
         """Enable a setting by id"""
