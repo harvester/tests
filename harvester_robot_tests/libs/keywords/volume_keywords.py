@@ -109,6 +109,12 @@ class volume_keywords:
         logging(f'Waiting for volume {volume_name} to be deleted')
         self.volume.wait_for_deleted(volume_name, timeout)
 
+    def wait_for_longhorn_volume_healthy(self, pvc_name, timeout=DEFAULT_TIMEOUT_SHORT,
+                                         namespace="default"):
+        """Wait until the Longhorn volume backing a PVC reaches robustness=healthy."""
+        logging(f'Waiting for Longhorn volume backing PVC {pvc_name} to be healthy')
+        self.volume.wait_for_longhorn_volume_healthy(pvc_name, timeout, namespace)
+
     def get_volume_status(self, volume_name):
         """Get volume status"""
         return self.volume.get_status(volume_name)
