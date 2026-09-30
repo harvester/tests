@@ -14,6 +14,7 @@ Resource         pod.resource
 Resource         addon.resource
 Resource         deployment.resource
 Resource         host.resource
+Resource         setting.resource
 Resource         virtualmachine.resource
 
 *** Variables ***
@@ -28,6 +29,10 @@ ${DESCHEDULER_DISPLAY_NAME}     virtual-machine-auto-balance
 # so teardown is safe even when the suite skipped before capturing anything.
 ${INITIAL_STATE_DESCHEDULER}    ${None}
 ${INITIAL_VALUES_DESCHEDULER}   ${None}
+# Populated at runtime by `Overcommit Memory Is Set To 100`; declared here so
+# `Overcommit Config Is Restored` is safe to call even when the setting was
+# never touched.
+${INITIAL_OVERCOMMIT_CONFIG}    ${None}
 
 *** Keywords ***
 Descheduler Addon Should Be Available
@@ -375,3 +380,29 @@ Descheduler Thresholds Are Derived From Nodes
     Descheduler Thresholds Are Set    ${threshold_cpu}    ${threshold_memory}
     ...    100    ${target_memory}    interval=${interval}
     Log    ${busy_node} at ${busy}[memory_percent]% memory is above target ${target_memory}%; ${destination_node} at ${dest}[memory_percent]% is below threshold ${threshold_memory}%
+
+# Overcommit config management
+Overcommit Memory Is Set To 100
+    [Documentation]    Store the current overcommit-config value and patch the memory
+    ...    component to 100 (no overcommit). This makes each VM's pod memory request
+    ...    equal to its configured memory, so node utilization measurements and VM
+    ...    sizing calculations are consistent with what the descheduler observes.
+    ...    The original value is saved in ${INITIAL_OVERCOMMIT_CONFIG} for restoration.
+    ${raw}=    setting_keywords.get_value    overcommit-config
+    Set Suite Variable    ${INITIAL_OVERCOMMIT_CONFIG}    ${raw}
+    ${config}=    Evaluate    json.loads($raw)    modules=json
+    ${memory_was}=    Get From Dictionary    ${config}    memory
+    Set To Dictionary    ${config}    memory=${100}
+    ${new_raw}=    Evaluate    json.dumps($config)    modules=json
+    setting_keywords.update    overcommit-config    ${new_raw}
+    Log    overcommit-config memory: ${memory_was} -> 100 (original config saved for restoration)
+
+Overcommit Config Is Restored
+    [Documentation]    Restore overcommit-config to the value saved by
+    ...    `Overcommit Memory Is Set To 100`. Safe to call even when that keyword
+    ...    was never reached (${INITIAL_OVERCOMMIT_CONFIG} stays ${None}).
+    IF    $INITIAL_OVERCOMMIT_CONFIG is not None
+        setting_keywords.update    overcommit-config    ${INITIAL_OVERCOMMIT_CONFIG}
+        Log    overcommit-config restored to: ${INITIAL_OVERCOMMIT_CONFIG}
+        Set Suite Variable    ${INITIAL_OVERCOMMIT_CONFIG}    ${None}
+    END

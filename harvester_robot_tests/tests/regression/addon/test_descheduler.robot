@@ -300,6 +300,10 @@ Test VM Is Rebalanced Off An Overutilized Node
 
     Given Test Image Is Available
 
+    # Set memory overcommit to 100 so pod requests equal VM memory, making node
+    # utilization measurements and VM sizing consistent with what the descheduler sees.
+    When Overcommit Memory Is Set To 100
+
     # Step 2: Measure the cluster as the descheduler sees it
     ${busy}    ${destination}=    Descheduler Rebalance Nodes Are Selected
     ${busy_node}=    Set Variable    ${busy}[name]
@@ -421,3 +425,4 @@ Delete E2E Test Resources
     Common Test Teardown
     Run Keyword And Ignore Error    Cordoned Nodes Are Restored
     Run Keyword And Ignore Error    VM is deleted    ${OVERLOAD_VM}
+    Run Keyword And Ignore Error    Overcommit Config Is Restored
