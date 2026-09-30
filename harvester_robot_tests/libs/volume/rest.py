@@ -268,6 +268,12 @@ class Rest(Base):
         )
         assert code in (200, 201, 204), f"Failed to restore from snapshot: {code}, {data}"
 
+    def wait_for_longhorn_volume_healthy(self, pvc_name, timeout=None, namespace=None):
+        raise NotImplementedError(
+            "wait_for_longhorn_volume_healthy is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd"
+        )
+
     def cleanup(self):
         """Clean up all test volumes labelled by the framework"""
         api = get_harvester_api_client()

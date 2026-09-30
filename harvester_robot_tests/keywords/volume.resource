@@ -39,6 +39,19 @@ Wait Until Volume Is Active
     Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
         ...    Volume State Is Ready/In-use    ${vol_name}
 
+Wait Until VM Boot Volume Is Healthy
+    [Arguments]    ${vm_name}
+    [Documentation]    Wait until the Longhorn volume backing a VM's boot disk
+    ...    reaches robustness=healthy (all replicas in RW mode).
+    ...
+    ...    A VM's boot PVC is always named <vm-name>-disk-0. This keyword
+    ...    resolves that PVC to the Longhorn Volume CR and polls until
+    ...    status.robustness == 'healthy', ensuring no live-migration attempt
+    ...    will encounter the Longhorn migration-engine wrong-owner-node bug
+    ...    that blocks CSI attach on the target node when replicas are degraded.
+    ${pvc_name}=    Set Variable    ${vm_name}-disk-0
+    volume_keywords.wait_for_longhorn_volume_healthy    ${pvc_name}
+
 # lifecycle
 A ${size_gi}Gi Volume is Created
     [Arguments]    ${vol_name}

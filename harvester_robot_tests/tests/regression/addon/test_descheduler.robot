@@ -322,8 +322,16 @@ Test VM Is Rebalanced Off An Overutilized Node
     And VM should be running    ${OVERLOAD_VM}
     Then VM should be running on node    ${OVERLOAD_VM}    ${busy_node}
 
-    # Step 4.3: then reopen the cluster
+    # Step 4.3: Reopen the cluster so Longhorn can schedule the remaining replicas.
     Cordoned Nodes Are Restored
+
+    # Wait for all Longhorn replicas to reach RW mode (robustness=healthy).
+    # This must run before enabling descheduler addon: the remaining replicas
+    # that could not be scheduled during the cordon window are built here.
+    # If the descheduler fires while the volume is still degraded, Longhorn
+    # assigns the migration engine to the wrong owner node and CSI attach on the
+    # target node blocks indefinitely.
+    And Wait Until VM Boot Volume Is Healthy    ${OVERLOAD_VM}
 
     # Steps 5-6: Straddle the two nodes with thresholds and start descheduling
     When Descheduler Thresholds Are Derived From Nodes    ${busy_node}    ${destination_node}
