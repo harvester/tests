@@ -39,13 +39,22 @@ Wait Until Volume Is Active
     Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
         ...    Volume State Is Ready/In-use    ${vol_name}
 
+Wait Until VM Boot Volume Is Healthy
+    [Arguments]    ${vm_name}
+    [Documentation]    Wait until the Longhorn volume backing a VM's boot disk
+    ...    reaches robustness=healthy (all replicas in RW mode).
+    ...
+    ...    A VM's boot PVC is always named <vm-name>-disk-0.
+    ${pvc_name}=    Set Variable    ${vm_name}-disk-0
+    volume_keywords.wait_for_longhorn_volume_healthy    ${pvc_name}
+
 # lifecycle
 A ${size_gi}Gi Volume is Created
     [Arguments]    ${vol_name}
     Create ${size_gi}Gi Volume    ${vol_name}
     Wait Until Volume Is Active    ${vol_name}
     Volume Size Is ${size_gi}Gi    ${vol_name}
-    
+
 Create Volume
     [Arguments]    ${vol_name}    ${size}=${DEFAULT_VOLUME_SIZE}    ${storage_class}=${DEFAULT_STORAGE_CLASS}    ${replicas}=${DEFAULT_VM_REPLICAS}    ${volume_mode}=Block    ${access_mode}=ReadWriteMany
     [Documentation]    Create a volume (PVC) backed by the given storage class.
