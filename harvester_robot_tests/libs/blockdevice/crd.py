@@ -171,8 +171,8 @@ class CRD(Base):
         logging(f"LVM test disks for run {run_id}: {disk_by_node}")
         return disk_by_node
 
-    def get_lvm_vg_node(self, run_id, vg_name):
-        """Find the node hosting a provisioned LVM volume group.
+    def find_lvm_vg_node(self, run_id, vg_name):
+        """Find the node hosting a provisioned LVM volume group, or None.
 
         The provisioner spec alone is not authoritative: an interrupted
         deprovision can leave spec.provisioner on a disk whose VG is
@@ -202,11 +202,16 @@ class CRD(Base):
             raise AssertionError(
                 f"Multiple provisioned disks claim VG {vg_name}: {matches}; "
                 "clean up stale blockdevices before running the LVM suites")
-        if matches:
-            return next(iter(matches))
-        raise AssertionError(
-            f"Volume group {vg_name} for LVM test run {run_id} was not found"
-        )
+        return next(iter(matches), None)
+
+    def get_lvm_vg_node(self, run_id, vg_name):
+        """Like find_lvm_vg_node, but the volume group has to exist."""
+        node = self.find_lvm_vg_node(run_id, vg_name)
+        if node is None:
+            raise AssertionError(
+                f"Volume group {vg_name} for LVM test run {run_id} was not found"
+            )
+        return node
 
     def create_lvm_volume_groups(self, disk_by_node, vg_type):
         """Create LVM volume groups on selected nodes.

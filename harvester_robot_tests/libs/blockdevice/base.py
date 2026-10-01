@@ -35,6 +35,10 @@ class Base(ABC):
         raise NotImplementedError(self.unsupported_msg)
 
     @abstractmethod
+    def find_lvm_vg_node(self, run_id, vg_name):
+        raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
     def get_lvm_vg_node(self, run_id, vg_name):
         raise NotImplementedError(self.unsupported_msg)
 

@@ -29,6 +29,9 @@ class Rest(Base):
     def get_lvm_test_disks(self, run_id):
         return super().get_lvm_test_disks(run_id)
 
+    def find_lvm_vg_node(self, run_id, vg_name):
+        return super().find_lvm_vg_node(run_id, vg_name)
+
     def get_lvm_vg_node(self, run_id, vg_name):
         return super().get_lvm_vg_node(run_id, vg_name)
 

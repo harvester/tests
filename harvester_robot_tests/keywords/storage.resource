@@ -22,6 +22,11 @@ Get LVM Test Disks
     ${disks}=    storage_keywords.get_lvm_test_disks    ${run_id}
     RETURN    ${disks}
 
+Find LVM Volume Group Node
+    [Arguments]    ${run_id}    ${vg_name}
+    ${node}=    storage_keywords.find_lvm_vg_node    ${run_id}    ${vg_name}
+    RETURN    ${node}
+
 Get LVM Volume Group Node
     [Arguments]    ${run_id}    ${vg_name}
     ${node}=    storage_keywords.get_lvm_vg_node    ${run_id}    ${vg_name}
