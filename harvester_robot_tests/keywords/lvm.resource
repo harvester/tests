@@ -28,13 +28,21 @@ Prepare LVM Test Environment
     Enable    ${LVM_ADDON_NAME}
     Wait For Enabled    ${LVM_ADDON_NAME}
     ${disk_by_node}=    Get LVM Suitable Disks    ${LVM_DISK_SIZE}
-    # Persist ownership on the BlockDevices. The cleanup test is a separate
-    # Pabot process and therefore cannot read suite variables from this test.
+    # Persist ownership on the BlockDevices. Under Pabot the workload suites
+    # and the teardown run in other processes and therefore cannot read suite
+    # variables set here.
     Label LVM Test Disks    ${disk_by_node}    ${LVM_TEST_RUN_ID}
     Create LVM Volume Groups    ${disk_by_node}    ${LVM_VG_TYPE}
     # VM snapshots of LVM-backed volumes are only admitted when the driver
     # has a snapshot class registered in the csi-driver-config setting.
     Configure LVM Snapshot Class In CSI Driver Config
+
+Teardown LVM Test Environment
+    Set up test environment
+    # Every workload suite has finished and deleted its volumes and
+    # snapshots; any provisioner helper pod still around is a driver leak.
+    Run Keyword And Continue On Failure    No LVM Helper Pods Should Remain
+    Cleanup LVM Test Environment
 
 Cleanup LVM Test Environment
     Set up test environment
@@ -44,6 +52,7 @@ Cleanup LVM Test Environment
     Wait For Disabled    ${LVM_ADDON_NAME}
 
 Cleanup Labelled LVM Volume Groups
+    # No disk is labelled when preparation failed before selecting one.
     ${disk_by_node}=    Get LVM Test Disks    ${LVM_TEST_RUN_ID}
     Cleanup LVM Volume Groups    ${disk_by_node}
 
