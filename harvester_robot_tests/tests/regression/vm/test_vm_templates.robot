@@ -29,6 +29,9 @@ Test Teardown     Common Test Teardown
 ...    windows-iso-medium-template
 ...    windows-iso-large-template
 ...    windows-w11-iso-template
+# Template for prepared (sysprepped) Windows images added in v1.10.0
+@{WINDOWS_IMAGE_TEMPLATES}
+...    windows-image-template
 
 
 *** Test Cases ***
@@ -57,8 +60,12 @@ Test Get System Default Template Versions
 Get Expected Default Templates
     [Documentation]    The exact default template set for the cluster's version:
     ...  the base four everywhere, plus the size-tiered Windows set on >= v1.9.0
+    ...  and the prepared Windows image template on >= v1.10.0
     ${at_least_190}=    Cluster Version Is At Least    1.9.0
-    IF    ${at_least_190}
+    ${at_least_1100}=    Cluster Version Is At Least    1.10.0
+    IF    ${at_least_1100}
+        ${expected}=    Combine Lists    ${BASE_TEMPLATES}    ${WINDOWS_TIERED_TEMPLATES}    ${WINDOWS_IMAGE_TEMPLATES}
+    ELSE IF    ${at_least_190}
         ${expected}=    Combine Lists    ${BASE_TEMPLATES}    ${WINDOWS_TIERED_TEMPLATES}
     ELSE
         ${expected}=    Copy List    ${BASE_TEMPLATES}
