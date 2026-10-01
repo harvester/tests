@@ -305,8 +305,8 @@ The `run.sh` script automatically loads `.env` configuration and provides conven
 # Run suites in parallel with pabot (only used when -p is given)
 ./run.sh -p 3 -i volume           # Run volume suites across 3 processes
 
-# Run the ordered LVM flow: prepare, parallel workload suites, then cleanup.
-# run.sh automatically selects the LVM ordering file for this path.
+# Run the LVM suites in parallel; the directory prepares and cleans up its
+# shared addon and volume group once by itself.
 ./run.sh -p 3 -f tests/regression/addon/lvm
 
 # Run against the REST API instead of CRD
@@ -323,7 +323,8 @@ Suites that run concurrently must be self-contained and clean up only their own 
 resources in teardown (the volume suites follow this pattern).
 
 Some suites need more than per-suite isolation. The LVM suites share a cluster-wide
-addon and volume group, so they run as an ordered, opt-in flow (excluded from broad
+addon and volume group, which their directory sets up and tears down exactly once
+through PabotLib, under any runner. They are opt-in (excluded from broad `run.sh`
 runs, CRD-only); see
 [`tests/regression/addon/lvm/README.md`](tests/regression/addon/lvm/README.md).
 

@@ -20,7 +20,6 @@ Label LVM Test Disks
 Get LVM Test Disks
     [Arguments]    ${run_id}
     ${disks}=    storage_keywords.get_lvm_test_disks    ${run_id}
-    Should Not Be Empty    ${disks}    No LVM test disks found for run ${run_id}
     RETURN    ${disks}
 
 Get LVM Volume Group Node

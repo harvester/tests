@@ -73,7 +73,7 @@ Examples:
     $0 -L DEBUG                           # Debug logging
     $0 -p 3 -i volume                     # Run volume suites in parallel (3 processes)
     $0 -p 3 -o tests/regression/rancher/rancher-ordering.txt -f tests/regression/rancher/  # Shared setup, parallel rancher suites
-    $0 -p 3 -f tests/regression/addon/lvm   # Ordered LVM setup, parallel suites, and cleanup
+    $0 -p 3 -f tests/regression/addon/lvm   # LVM suites in parallel around one shared setup and cleanup
     $0 -S rest -i volume                  # Run volume suites against the REST API
     $0 -i pr-baseline -p 8                # Run the PR baseline (image+VM+volume) in parallel
 
@@ -113,18 +113,8 @@ fi
 INCLUDE_TAG_LOWER=${INCLUDE_TAG_VALUE,,}
 STRATEGY_LOWER=${STRATEGY,,}
 
-if [[ "$TEST_FILE" == *"addon/lvm"* ]]; then
+if [[ "$TEST_FILE" == *"addon/lvm"* ]] || [[ "$INCLUDE_TAG_LOWER" == *"lvm"* ]]; then
     LVM_REQUESTED=true
-elif [[ "$ORDERING" == *"lvm-order.txt"* ]]; then
-    LVM_REQUESTED=true
-    TEST_FILE="tests/regression/addon/lvm"
-elif [ "$INCLUDE_TAG_LOWER" = "lvm" ]; then
-    LVM_REQUESTED=true
-    TEST_FILE="tests/regression/addon/lvm"
-elif [[ "$INCLUDE_TAG_LOWER" == *"lvm"* ]]; then
-    echo -e "${RED}Error: LVM tag expressions are not supported${NC}"
-    echo "Use: -f tests/regression/addon/lvm"
-    exit 1
 fi
 
 if [ -n "$LVM_REQUESTED" ]; then
@@ -132,12 +122,9 @@ if [ -n "$LVM_REQUESTED" ]; then
         echo -e "${RED}Error: LVM suites require the CRD operation strategy${NC}"
         exit 1
     fi
-    if [ -n "$PROCESSES" ] && [ -z "$ORDERING" ]; then
-        ORDERING="tests/regression/addon/lvm/lvm-order.txt"
-    fi
 else
-    # LVM consumes a physical test disk and requires staged cleanup. Broad
-    # serial and parallel runs exclude it unless the caller opts in explicitly.
+    # LVM consumes a physical test disk. Broad serial and parallel runs
+    # exclude it unless the caller opts in explicitly.
     EXCLUDE_LVM=true
 fi
 
