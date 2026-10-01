@@ -57,6 +57,13 @@ class Blockdevice(Base):
             logging(e)
             return self.rest.get_lvm_test_disks(run_id)
 
+    def find_lvm_vg_node(self, run_id, vg_name):
+        try:
+            return self.crd.find_lvm_vg_node(run_id, vg_name)
+        except NotImplementedError as e:
+            logging(e)
+            return self.rest.find_lvm_vg_node(run_id, vg_name)
+
     def get_lvm_vg_node(self, run_id, vg_name):
         try:
             return self.crd.get_lvm_vg_node(run_id, vg_name)

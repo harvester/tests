@@ -152,6 +152,9 @@ class storage_keywords:
     def get_lvm_test_disks(self, run_id):
         return self.blockdevice.get_lvm_test_disks(run_id)
 
+    def find_lvm_vg_node(self, run_id, vg_name):
+        return self.blockdevice.find_lvm_vg_node(run_id, vg_name)
+
     def get_lvm_vg_node(self, run_id, vg_name):
         return self.blockdevice.get_lvm_vg_node(run_id, vg_name)
 

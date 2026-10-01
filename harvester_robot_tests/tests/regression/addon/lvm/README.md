@@ -26,6 +26,10 @@ A failing teardown (a leaked helper pod, a volume group that cannot be
 unprovisioned) fails the tests of the suite it ran in: the last LVM suite
 under Pabot, every LVM suite under plain `robot`.
 
+Setup reuses a volume group that an interrupted run left behind (same
+`LVM_TEST_RUN_ID`, disk still `Provisioned`) instead of provisioning another
+disk, so a cluster whose teardown never ran can simply be run again.
+
 The LVM suites are opt-in in `run.sh` because they consume an active,
 unprovisioned physical BlockDevice of at least 50 GiB: broad runs add
 `--exclude lvm`. Run the directory explicitly (`-f tests/regression/addon/lvm`)

@@ -24,6 +24,21 @@ ${LVM_EXPANDED_SIZE}    10Gi
 *** Keywords ***
 Prepare LVM Test Environment
     Set up test environment
+    # An interrupted run leaves its volume group behind. Reuse it: the addon
+    # manifest ships disabled and cannot be applied again while LVM resources
+    # exist, and the disk is no longer unprovisioned.
+    ${node}=    Find LVM Volume Group Node    ${LVM_TEST_RUN_ID}    ${LVM_VG_NAME}
+    IF    $node is None
+        Provision LVM Volume Group
+    ELSE
+        Log    Reusing volume group ${LVM_VG_NAME} on ${node}    console=yes
+        Wait For Enabled    ${LVM_ADDON_NAME}
+    END
+    # VM snapshots of LVM-backed volumes are only admitted when the driver
+    # has a snapshot class registered in the csi-driver-config setting.
+    Configure LVM Snapshot Class In CSI Driver Config
+
+Provision LVM Volume Group
     Install Experimental Addon    ${LVM_ADDON_NAME}    ${LVM_ADDON_URL}
     Enable    ${LVM_ADDON_NAME}
     Wait For Enabled    ${LVM_ADDON_NAME}
@@ -33,9 +48,6 @@ Prepare LVM Test Environment
     # variables set here.
     Label LVM Test Disks    ${disk_by_node}    ${LVM_TEST_RUN_ID}
     Create LVM Volume Groups    ${disk_by_node}    ${LVM_VG_TYPE}
-    # VM snapshots of LVM-backed volumes are only admitted when the driver
-    # has a snapshot class registered in the csi-driver-config setting.
-    Configure LVM Snapshot Class In CSI Driver Config
 
 Teardown LVM Test Environment
     Set up test environment
