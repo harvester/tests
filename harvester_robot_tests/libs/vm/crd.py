@@ -45,6 +45,27 @@ def disk_performance_fields(options):
     return fields
 
 
+def apply_domain_io_settings(domain, options):
+    """Set the VM-wide storage performance fields (blockMultiQueue,
+    ioThreadsPolicy, ioThreads.supplementalPoolThreadCount) on a domain spec.
+
+    Only requested settings are set, so a default VM keeps the exact spec it
+    had before.
+    """
+    block_multi_queue = options.get("block_multi_queue")
+    if block_multi_queue not in (None, ""):
+        domain["devices"]["blockMultiQueue"] = (
+            str(block_multi_queue).lower() == "true")
+    io_threads_policy = options.get("io_threads_policy")
+    if io_threads_policy:
+        domain["ioThreadsPolicy"] = io_threads_policy
+    thread_count = options.get("supplemental_pool_thread_count")
+    if thread_count not in (None, ""):
+        domain["ioThreads"] = {
+            "supplementalPoolThreadCount": int(thread_count)
+        }
+
+
 class CRD(Base):
     """
     VM CRD implementation - uses Kubernetes Custom Resources
@@ -375,21 +396,8 @@ class CRD(Base):
                 "kubernetes.io/hostname": node_name
             }
 
-        # VM-wide storage performance settings. Only set what was requested,
-        # so a default VM keeps the exact spec it had before.
-        domain = body["spec"]["template"]["spec"]["domain"]
-        block_multi_queue = kwargs.get("block_multi_queue")
-        if block_multi_queue not in (None, ""):
-            domain["devices"]["blockMultiQueue"] = (
-                str(block_multi_queue).lower() == "true")
-        io_threads_policy = kwargs.get("io_threads_policy")
-        if io_threads_policy:
-            domain["ioThreadsPolicy"] = io_threads_policy
-        thread_count = kwargs.get("supplemental_pool_thread_count")
-        if thread_count not in (None, ""):
-            domain["ioThreads"] = {
-                "supplementalPoolThreadCount": int(thread_count)
-            }
+        apply_domain_io_settings(
+            body["spec"]["template"]["spec"]["domain"], kwargs)
 
         logging(f"Creating VM with spec: {body}")
 
