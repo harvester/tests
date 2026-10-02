@@ -13,13 +13,17 @@ Suite Setup      Suite Setup For KubeOVN Addon Tests
 Suite Teardown   Suite Teardown For KubeOVN Addon Tests
 
 *** Variables ***
-${ADDON_KUBEOVN}               kubeovn-operator
-${INITIAL_STATE_KUBEOVN}       ${None}
-${KUBEOVN_NAMESPACE}           kube-system
-${KUBEOVN_CONTROLLER_LABEL}    app=kube-ovn-controller
-${KUBEOVN_MONITOR_LABEL}       app=kube-ovn-monitor
-${KUBEOVN_WEBHOOK_LABEL}       app=kube-ovn-webhook
-${DEFAULT_VPC_NAME}            ovn-cluster
+${ADDON_KUBEOVN}                kubeovn-operator
+${INITIAL_STATE_KUBEOVN}        ${None}
+${KUBEOVN_NAMESPACE}            kube-system
+${KUBEOVN_CNI_LABEL}            app=kube-ovn-cni
+${KUBEOVN_CONTROLLER_LABEL}     app=kube-ovn-controller
+${KUBEOVN_MONITOR_LABEL}        app=kube-ovn-monitor
+${KUBEOVN_OVN_CENTRAL_LABEL}    app=ovn-central
+${KUBEOVN_OVS_LABEL}            app=ovs
+${KUBEOVN_PINGER_LABEL}         app=kube-ovn-pinger
+${KUBEOVN_WEBHOOK_LABEL}        app=kube-ovn-webhook
+${DEFAULT_VPC_NAME}             ovn-cluster
 
 *** Test Cases ***
 Test KubeOVN Addon End-to-End
@@ -28,31 +32,50 @@ Test KubeOVN Addon End-to-End
     ...                Steps:
     ...                    1. Store initial state of kubeovn-operator addon
     ...                    2. Enable kubeovn-operator addon and wait for deployment
+    ...                Checks:
+    ...                    1. KubeOVN Controller
+    ...                    2. KubeOVN Monitor
+    ...                    3. KubeOVN Webhook
+    ...                    4. KubeOVN CNI
+    ...                    5. KubeOVN OVN Central
+    ...                    6. KubeOVN OVS
+    ...                    7. KubeOVN Pinger
+    ...                    8. KubeOVN Default VPC
     ...                Expected Result:
     ...                    - Addons restored to initial state after test
 
     # Step 1: Store initial state of KubeOVN addon
-    Given Initial KubeOVN Addon State Is Captured    ${ADDON_KUBEOVN}
+    Given Initial KubeOVN Addon State Is Captured
+    ...     ${ADDON_KUBEOVN}
 
     # Step 2: Enable KubeOVN Addon
-    When KubeOVN Addon is Enabled    ${ADDON_KUBEOVN}
+    When KubeOVN Addon is Enabled
+    ...     ${ADDON_KUBEOVN}
 
-    # Step 3: Verify controller pods are running
+    # Check 1: Verify controller pods are running
     Then KubeOVN Controller Pods Should Be Running
-    ...    ${KUBEOVN_NAMESPACE}
-    ...    ${KUBEOVN_CONTROLLER_LABEL}
 
-    # Step 4: Verify controller pods are running
+    # Check 2: Verify controller pods are running
     Then KubeOVN Monitor Pods Should Be Running
-    ...    ${KUBEOVN_NAMESPACE}
-    ...    ${KUBEOVN_CONTROLLER_LABEL}
 
-    # Step 5: Verify controller pods are running
+    # Check 3: Verify controller pods are running
     Then KubeOVN Webhook Pods Should Be Running
-    ...    ${KUBEOVN_NAMESPACE}
-    ...    ${KUBEOVN_CONTROLLER_LABEL}
 
-    Then KubeOVN VPC Should Exist    ${DEFAULT_VPC_NAME}
+    # Check 4: Verify CNI pods are running
+    Then KubeOVN CNI Pods Should Be Running
+
+    # Check 5: Verify ovn-central pods are running
+    Then KubeOVN OVN Central Pods Should Be Running
+
+    # Check 6: Verify ovs pods are running
+    Then KubeOVN OVS Pods Should Be Running
+
+    # Check 7: Verify pinger pods are running
+    Then KubeOVN Pinger Pods Should Be Running
+
+    # Check 8: Verify default VPC exists
+    Then KubeOVN VPC Should Exist
+    ...     ${DEFAULT_VPC_NAME}
 
 *** Keywords ***
 Suite Setup For KubeOVN Addon Tests
@@ -70,19 +93,57 @@ Suite Teardown For KubeOVN Addon Tests
     Log    Suite teardown completed
 
 KubeOVN Controller Pods Should Be Running
-    [Arguments]    ${namespace}    ${label}
     [Documentation]    Verify kubeovn-controller pods are running
-    addon.Wait For Pods Running    ${namespace}    ${label}    timeout=900
-    Log    All kubeovn-controller pods are running in ${namespace}
+    addon.Wait For Pods Running
+    ...     ${KUBEOVN_NAMESPACE}
+    ...     ${KUBEOVN_CONTROLLER_LABEL}
+    ...     timeout=900
+    Log    All kubeovn-controller pods are running in ${KUBEOVN_NAMESPACE}
 
 KubeOVN Monitor Pods Should Be Running
-    [Arguments]    ${namespace}    ${label}
     [Documentation]    Verify kubeovn-monitor pods are running
-    addon.Wait For Pods Running    ${namespace}    ${label}    timeout=900
-    Log    All kubeovn-monitor pods are running in ${namespace}
+    addon.Wait For Pods Running
+    ...     ${KUBEOVN_NAMESPACE}
+    ...     ${KUBEOVN_MONITOR_LABEL}
+    ...     timeout=900
+    Log    All kubeovn-monitor pods are running in ${KUBEOVN_NAMESPACE}
 
 KubeOVN Webhook Pods Should Be Running
-    [Arguments]    ${namespace}    ${label}
     [Documentation]    Verify kubeovn-webhook pods are running
-    addon.Wait For Pods Running    ${namespace}    ${label}    timeout=900
-    Log    All kubeovn-webhook pods are running in ${namespace}
+    addon.Wait For Pods Running
+    ...     ${KUBEOVN_NAMESPACE}
+    ...     ${KUBEOVN_WEBHOOK_LABEL}
+    ...     timeout=900
+    Log    All kubeovn-webhook pods are running in ${KUBEOVN_NAMESPACE}
+
+KubeOVN CNI Pods Should Be Running
+    [Documentation]    Verify kubeovn CNI pods are running
+    addon.Wait For Pods Running
+    ...     ${KUBEOVN_NAMESPACE}
+    ...     ${KUBEOVN_CNI_LABEL}
+    ...     timeout=900
+    Log    All kubeovn-cni pods are running in ${KUBEOVN_NAMESPACE}
+
+KubeOVN OVN Central Pods Should Be Running
+    [Documentation]    Verify kubeovn OVN central pods are running
+    addon.Wait For Pods Running
+    ...     ${KUBEOVN_NAMESPACE}
+    ...     ${KUBEOVN_OVN_CENTRAL_LABEL}
+    ...     timeout=900
+    Log    All kubeovn ovn-central pods are running in ${KUBEOVN_NAMESPACE}
+
+KubeOVN OVS Pods Should Be Running
+    [Documentation]    Verify kubeovn OVSpods are running
+    addon.Wait For Pods Running
+    ...     ${KUBEOVN_NAMESPACE}
+    ...     ${KUBEOVN_OVS_LABEL}
+    ...     timeout=900
+    Log    All kubeovn ovs pods are running in ${KUBEOVN_NAMESPACE}
+
+KubeOVN Pinger Pods Should Be Running
+    [Documentation]    Verify kubeovn-pinger pods are running
+    addon.Wait For Pods Running
+    ...     ${KUBEOVN_NAMESPACE}
+    ...     ${KUBEOVN_PINGER_LABEL}
+    ...     timeout=900
+    Log    All kubeovn pinger pods are running in ${KUBEOVN_NAMESPACE}
