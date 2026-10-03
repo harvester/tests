@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation    VM Storage Performance Test Cases
 ...    Covers the KubeVirt high-performance storage options that the Harvester
-...    UI exposes since v1.9.0 (harvester/harvester#11550):
+...    UI exposes since v1.9.1 (harvester/harvester#11550):
 ...    - per disk: cache mode, I/O mode and a dedicated I/O thread
 ...    - per VM: virtio-blk multi-queue and the I/O threads policy
 ...    Each case creates a VM with the options set, then checks that they are
@@ -151,7 +151,7 @@ Delete Suite Resources
 Skip Before Harvester 1.9.0
     ${supported}=    Cluster Version Is At Least    1.9.0
     Skip If    not ${supported}
-    ...    The UI exposes the storage performance options since Harvester v1.9.0
+    ...    These cases are verified on Harvester v1.9.0 and later
 
 Storage Performance VM Is Created
     [Arguments]    ${name}    ${cpu}=1    &{options}
