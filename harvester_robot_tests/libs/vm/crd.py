@@ -2,8 +2,8 @@
 VM CRD Implementation
 """
 import json
+import re
 import time
-import xml.etree.ElementTree as ET
 from kubernetes import client
 from kubernetes.stream import stream
 from kubernetes.client.rest import ApiException
@@ -1354,19 +1354,20 @@ class CRD(Base):
         running = [p for p in pods if p.status.phase == "Running"]
         if not running:
             raise Exception(f"No running virt-launcher pod for VM {vm_name}")
-        domain_xml = stream(
+        # KubeVirt aliases each disk as "ua-<disk name>". Let virsh select the
+        # disk's <driver> element, so only its attributes need reading.
+        driver = stream(
             self.core_api.connect_get_namespaced_pod_exec,
             running[0].metadata.name, namespace, container="compute",
-            command=["virsh", "dumpxml", f"{namespace}_{vm_name}"],
+            command=["virsh", "dumpxml", f"{namespace}_{vm_name}", "--xpath",
+                     f"//disk[alias/@name='ua-{disk_name}']/driver"],
             stderr=True, stdin=False, stdout=True, tty=False,
         )
-        # KubeVirt aliases each disk as "ua-<disk name>"
-        for disk in ET.fromstring(domain_xml).iter("disk"):
-            alias = disk.find("alias")
-            if alias is not None and alias.get("name") == f"ua-{disk_name}":
-                return dict(disk.find("driver").attrib)
-        raise Exception(
-            f"Disk {disk_name} not found in the domain of VM {vm_name}")
+        if not driver.strip().startswith("<driver"):
+            raise Exception(
+                f"Disk {disk_name} not found in the domain of VM {vm_name}: "
+                f"{driver.strip()}")
+        return dict(re.findall(r'(\w+)="([^"]*)"', driver))
 
     def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Return the VM spec's requested CPU core count."""
