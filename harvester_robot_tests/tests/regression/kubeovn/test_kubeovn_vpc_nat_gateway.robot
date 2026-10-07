@@ -59,20 +59,20 @@ Test Creating a KubeOVN VPC with a NAT Gateway
     ...     ${INTERNAL_NETWORK_NAME}
     ...     nad_type=OverlayNetwork
     ...     provider=${INTERNAL_NETWORK_NAME}.${DEFAULT_NAMESPACE}.ovn
-    When NetworkAttachmentDefinition is Created
+    And NetworkAttachmentDefinition is Created
     ...     ${KUBE_SYSTEM_NAMESPACE}
     ...     ${EXTERNAL_NETWORK_NAME}
     ...     nad_type=OverlayNetwork
     ...     master=ens9
     ...     provider=${EXTERNAL_NETWORK_NAME}.${KUBE_SYSTEM_NAMESPACE}.ovn
-    When KubeOVN VPC is Created
+    And KubeOVN VPC is Created
     ...     ${KUBEOVN_VPC_NAME}
-    When KubeOVN Subnet is Created
+    And KubeOVN Subnet is Created
     ...     ${INTERNAL_SUBNET_NAME}
     ...     vpc=${KUBEOVN_VPC_NAME}
     ...     cidr_block=10.55.0.0/16
     ...     provider=${INTERNAL_NETWORK_NAME}.${DEFAULT_NAMESPACE}.ovn
-    When KubeOVN Subnet is Created
+    And KubeOVN Subnet is Created
     ...     ${EXTERNAL_SUBNET_NAME}
     ...     vpc=${KUBEOVN_VPC_NAME}
     ...     cidr_block=10.155.0.0/16
@@ -80,7 +80,7 @@ Test Creating a KubeOVN VPC with a NAT Gateway
 
     ${external_subnets}=    Create List    ${EXTERNAL_SUBNET_NAME}
 
-    When KubeOVN VPC NAT Gateway is Created
+    And KubeOVN VPC NAT Gateway is Created
     ...     ${KUBEOVN_VPC_NAT_GATEWAY_NAME}
     ...     vpc=${KUBEOVN_VPC_NAME}
     ...     lan_ip=10.55.0.254

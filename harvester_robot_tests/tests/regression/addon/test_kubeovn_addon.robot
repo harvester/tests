@@ -56,25 +56,25 @@ Test KubeOVN Addon End-to-End
     Then KubeOVN Controller Pods Should Be Running
 
     # Check 2: Verify controller pods are running
-    Then KubeOVN Monitor Pods Should Be Running
+    And KubeOVN Monitor Pods Should Be Running
 
     # Check 3: Verify controller pods are running
-    Then KubeOVN Webhook Pods Should Be Running
+    And KubeOVN Webhook Pods Should Be Running
 
     # Check 4: Verify CNI pods are running
-    Then KubeOVN CNI Pods Should Be Running
+    And KubeOVN CNI Pods Should Be Running
 
     # Check 5: Verify ovn-central pods are running
-    Then KubeOVN OVN Central Pods Should Be Running
+    And KubeOVN OVN Central Pods Should Be Running
 
     # Check 6: Verify ovs pods are running
-    Then KubeOVN OVS Pods Should Be Running
+    And KubeOVN OVS Pods Should Be Running
 
     # Check 7: Verify pinger pods are running
-    Then KubeOVN Pinger Pods Should Be Running
+    And KubeOVN Pinger Pods Should Be Running
 
     # Check 8: Verify default VPC exists
-    Then KubeOVN VPC Should Exist
+    And KubeOVN VPC Should Exist
     ...     ${DEFAULT_VPC_NAME}
 
 *** Keywords ***
