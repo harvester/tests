@@ -313,3 +313,16 @@ VM Launched Disk Driver Should Be
         Should Be Equal As Strings    ${actual}[${attribute}]    ${value}
         ...    msg=Disk ${disk_name} of VM ${vm_name}: domain ${attribute} is ${actual}[${attribute}], expected ${value}
     END
+
+VM Should Boot And Write To Disk
+    [Arguments]    ${vm_name}    ${username}    ${pkey}=${None}
+    [Documentation]    Wait for the guest to boot, then write and read back data
+    ...    with O_DIRECT so the I/O goes through the configured disk path.
+    VM should be running    ${vm_name}
+    VM should have IP addresses    ${vm_name}
+    VM cloud-init should be done    ${vm_name}    ${username}    pkey=${pkey}
+    ${output}=    Execute Command In VM    ${vm_name}
+    ...    sudo dd if=/dev/urandom of=/var/tmp/perf-check bs=1M count=16 oflag=direct status=none && sudo sha256sum /var/tmp/perf-check | cut -c1-8
+    ...    ${username}    pkey=${pkey}
+    Should Match Regexp    ${output.strip()}    ^[0-9a-f]{8}$
+    ...    msg=Failed to write to the disk of ${vm_name}: ${output}
