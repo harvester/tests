@@ -49,6 +49,10 @@ BACKUPVOLUME_PLURAL = "backupvolumes"
 BACKUPBACKINGIMAGE_PLURAL = "backupbackingimages"
 # Prefix of UID-style longhorn BackingImage names created by Harvester
 BACKING_IMAGE_PREFIX = "vmi"
+# Longhorn BackingImage CRs (longhorn-system namespace)
+BACKINGIMAGE_PLURAL = "backingimages"
+# CRD holding the VirtualMachineImage schema (used for feature detection)
+VIRTUALMACHINEIMAGE_CRD = f"{VIRTUALMACHINEIMAGE_PLURAL}.{HARVESTER_API_GROUP}"
 
 # Test Labels
 LABEL_TEST = "harvesterhci.io/test"
@@ -100,6 +104,8 @@ ACCESS_MODE_ROX = "ReadOnlyMany"
 IMAGE_SOURCE_DOWNLOAD = "download"
 IMAGE_SOURCE_UPLOAD = "upload"
 IMAGE_SOURCE_EXPORT = "export-from-volume"
+# Set by Harvester on images it re-creates from backup-target metadata
+IMAGE_SOURCE_RESTORE = "restore"
 
 # Network Types
 NETWORK_TYPE_VLAN = "vlan"

@@ -6,6 +6,7 @@ Backups and restores are managed through the Harvester CRDs
 VirtualMachineBackup and VirtualMachineRestore (harvesterhci.io/v1beta1).
 """
 import time
+from urllib.parse import urlparse, parse_qs
 
 from crd import get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted
 from constant import (
@@ -15,6 +16,7 @@ from constant import (
     VIRTUALMACHINEBACKUP_PLURAL, VIRTUALMACHINERESTORE_PLURAL,
     VIRTUALMACHINEIMAGE_PLURAL,
     BACKUPVOLUME_PLURAL, BACKUPBACKINGIMAGE_PLURAL, BACKING_IMAGE_PREFIX,
+    IMAGE_SOURCE_RESTORE,
     BACKUP_TYPE_BACKUP, DELETION_POLICY_DELETE, DELETION_POLICY_RETAIN,
     DEFAULT_NAMESPACE, DEFAULT_TIMEOUT_LONG, DEFAULT_TIMEOUT_SHORT,
 )
@@ -277,6 +279,28 @@ class CRD(Base):
                 delete_cr(LONGHORN_API_GROUP, LONGHORN_API_VERSION,
                           LONGHORN_NAMESPACE, BACKUPBACKINGIMAGE_PLURAL, name)
 
+    def get_backup_backing_image(self, backing_image_name):
+        """Summary of the longhorn BackupBackingImage holding this backing
+        image's copy on the backup target: {state, url, checksum}, or {} when
+        no such CR exists yet.
+
+        state is Completed once uploaded; url is the backup-store URL
+        (…?backingImage=<name>) Harvester puts into the spec.url of an image
+        it re-creates from the target with sourceType restore.
+        """
+        for bbi in self._list_longhorn_cr(BACKUPBACKINGIMAGE_PLURAL):
+            status = bbi.get('status', {})
+            backing = (bbi.get('spec', {}).get('backingImage')
+                       or status.get('backingImage')
+                       or bbi['metadata']['name'])
+            if backing == backing_image_name:
+                return {
+                    'state': status.get('state', ''),
+                    'url': status.get('url', ''),
+                    'checksum': status.get('checksum', ''),
+                }
+        return {}
+
     def _list_longhorn_cr(self, plural):
         result = list_cr(LONGHORN_API_GROUP, LONGHORN_API_VERSION,
                          LONGHORN_NAMESPACE, plural)
@@ -284,7 +308,9 @@ class CRD(Base):
 
     def _backing_image_candidates(self, image_name, namespace):
         """Possible longhorn BackingImage names for a Harvester image:
-        legacy '{namespace}-{name}' and UID-style 'vmi-{uid}'.
+        legacy '{namespace}-{name}', UID-style 'vmi-{uid}', a custom
+        spec.backingImageName, and for an image re-created from the backup
+        target the backingImage parameter of its restore URL.
         """
         candidates = {f"{namespace}-{image_name}"}
         try:
@@ -293,6 +319,12 @@ class CRD(Base):
             uid = image.get('metadata', {}).get('uid')
             if uid:
                 candidates.add(f"{BACKING_IMAGE_PREFIX}-{uid}")
+            spec = image.get('spec', {})
+            if spec.get('backingImageName'):
+                candidates.add(spec['backingImageName'])
+            if spec.get('sourceType') == IMAGE_SOURCE_RESTORE:
+                query = parse_qs(urlparse(spec.get('url', '')).query)
+                candidates.update(query.get('backingImage', []))
         except Exception as e:
             logging(f"Could not resolve backing image UID for {image_name}: {e}",
                     "WARNING")

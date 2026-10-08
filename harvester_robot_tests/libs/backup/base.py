@@ -63,3 +63,7 @@ class Base(ABC):
     def cleanup_longhorn_backup_artifacts(self, volume_names, image_name,
                                           namespace=DEFAULT_NAMESPACE):
         raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
+    def get_backup_backing_image(self, backing_image_name):
+        raise NotImplementedError(self.unsupported_msg)

@@ -18,6 +18,10 @@ class Rest(Base):
 
     def create_from_url(self, image_name, image_url, checksum="", **kwargs):
         """Create image from URL"""
+        if kwargs.get('source_type') not in (None, '', 'download'):
+            raise NotImplementedError(
+                "source_type other than download is only implemented for the "
+                "CRD strategy; run with HARVESTER_OPERATION_STRATEGY=crd")
         api = get_harvester_api_client()
 
         code, data = api.images.create_by_url(image_name, image_url)
@@ -86,10 +90,35 @@ class Rest(Base):
 
         raise AssertionError(f"Image {image_name} was not ready within {timeout}s")
 
-    def try_create(self, image_name, image_url="", source_type="download", checksum=""):
+    def try_create(self, image_name, image_url="", source_type="download",
+                   checksum="", namespace=DEFAULT_NAMESPACE, **kwargs):
         """Negative-test helper. Only implemented for the CRD strategy."""
         raise NotImplementedError(
             "try_create is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_spec(self, image_name, namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_spec is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def supports_backing_image_name(self):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "supports_backing_image_name is only implemented for the CRD "
+            "strategy; run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_backing_image(self, backing_image_name):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_backing_image is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def try_update_spec(self, image_name, spec, namespace=DEFAULT_NAMESPACE):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_update_spec is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
     def try_get(self, image_name, namespace=DEFAULT_NAMESPACE):

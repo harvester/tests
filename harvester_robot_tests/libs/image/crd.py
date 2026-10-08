@@ -11,8 +11,11 @@ from crd import (
 )
 from constant import (
     HARVESTER_API_GROUP, HARVESTER_API_VERSION,
-    VIRTUALMACHINEIMAGE_PLURAL, DEFAULT_NAMESPACE,
+    VIRTUALMACHINEIMAGE_PLURAL, VIRTUALMACHINEIMAGE_CRD, DEFAULT_NAMESPACE,
+    LONGHORN_API_GROUP, LONGHORN_API_VERSION, LONGHORN_NAMESPACE,
+    BACKINGIMAGE_PLURAL,
     IMAGE_STATE_ACTIVE, IMAGE_STATE_IMPORTING, IMAGE_STATE_FAILED,
+    IMAGE_SOURCE_DOWNLOAD,
     LABEL_TEST, LABEL_TEST_VALUE,
     DEFAULT_TIMEOUT
 )
@@ -46,6 +49,10 @@ class CRD(Base):
         display_name = kwargs.get('display_name', image_name)
         description = kwargs.get('description', f'Test image {image_name}')
         retry = kwargs.get('retry', None)
+        # 'restore' with a backup-store URL (…?backingImage=<name>) is what
+        # Harvester itself creates when syncing image metadata from the
+        # backup target into a cluster where the image is missing.
+        source_type = kwargs.get('source_type') or IMAGE_SOURCE_DOWNLOAD
 
         body = {
             "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
@@ -62,7 +69,7 @@ class CRD(Base):
             },
             "spec": {
                 "displayName": display_name,
-                "sourceType": "download",
+                "sourceType": source_type,
                 "url": image_url
             }
         }
@@ -77,6 +84,13 @@ class CRD(Base):
         if storage_class:
             body["spec"]["targetStorageClassName"] = storage_class
             body["spec"]["backend"] = kwargs.get('backend', 'cdi')
+
+        # spec.backingImageName pins the Longhorn BackingImage AND the
+        # StorageClass Harvester creates for the image to this exact name,
+        # instead of the UID-derived vmi-<uid> / lh-<uid> defaults.
+        backing_image_name = kwargs.get('backing_image_name', '')
+        if backing_image_name:
+            body["spec"]["backingImageName"] = backing_image_name
 
         # spec.retry (import retry limit, cluster default 3). retry=0 makes a
         # doomed import (e.g. bad checksum) fail on the first attempt instead
@@ -107,11 +121,14 @@ class CRD(Base):
         raise NotImplementedError("File upload is available only through the REST strategy")
 
     def try_create(self, image_name, image_url="", source_type="download",
-                   checksum="", namespace=DEFAULT_NAMESPACE):
+                   checksum="", namespace=DEFAULT_NAMESPACE, **kwargs):
         """Attempt to create an image for negative testing.
 
         Never raises on API rejection; returns {success, code, message} so a
         caller can assert on the failure code/reason (e.g. empty url/data).
+        Optional kwargs backing_image_name / backend / storage_class map to
+        the matching spec fields, so CRD (CEL) and webhook rules on them can
+        be exercised.
         """
         body = {
             "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
@@ -131,6 +148,11 @@ class CRD(Base):
         }
         if checksum:
             body["spec"]["checksum"] = checksum
+        for kwarg, field in (("backing_image_name", "backingImageName"),
+                             ("backend", "backend"),
+                             ("storage_class", "targetStorageClassName")):
+            if kwargs.get(kwarg):
+                body["spec"][field] = kwargs[kwarg]
 
         try:
             create_cr(
@@ -179,6 +201,30 @@ class CRD(Base):
             return {"success": False, "code": e.status,
                     "message": e.body or e.reason or ""}
 
+    def try_update_spec(self, image_name, spec, namespace=DEFAULT_NAMESPACE):
+        """Attempt to merge-patch spec fields of an image for negative testing.
+
+        Never raises on API rejection; returns {success, code, message}. A
+        None value removes the field from the spec.
+        """
+        try:
+            patch_cr(
+                group=HARVESTER_API_GROUP,
+                version=HARVESTER_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINEIMAGE_PLURAL,
+                name=image_name,
+                body={"spec": spec}
+            )
+            logging(f"Image {namespace}/{image_name} spec was unexpectedly "
+                    f"updated with {spec}", "WARNING")
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            logging(f"Spec update of image {namespace}/{image_name} rejected "
+                    f"as expected (status={e.status}): {e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
     def update(self, image_name, metadata, namespace=DEFAULT_NAMESPACE):
         """Patch an image's metadata (labels/annotations). Returns the CR."""
         body = {"metadata": metadata}
@@ -195,6 +241,43 @@ class CRD(Base):
         """Return the metadata block of an image"""
         cr = self.get(image_name, namespace)
         return cr.get("metadata", {})
+
+    def get_spec(self, image_name, namespace=DEFAULT_NAMESPACE):
+        """Return the spec block of an image"""
+        cr = self.get(image_name, namespace)
+        return cr.get("spec", {})
+
+    def supports_backing_image_name(self):
+        """True when the installed VirtualMachineImage CRD schema has
+        spec.backingImageName (harvester/harvester#11641; master and the
+        v1.9 backport). Detecting the field beats comparing versions: the
+        release parser cannot tell a v1.9.1 rc that predates the backport
+        from one that carries it.
+        """
+        crd = client.ApiextensionsV1Api().read_custom_resource_definition(
+            VIRTUALMACHINEIMAGE_CRD)
+        for version in crd.spec.versions:
+            if version.name != HARVESTER_API_VERSION or not version.schema:
+                continue
+            props = version.schema.open_apiv3_schema.properties or {}
+            spec_props = getattr(props.get("spec"), "properties", None) or {}
+            return "backingImageName" in spec_props
+        return False
+
+    def get_backing_image(self, backing_image_name):
+        """Return the Longhorn BackingImage CR with this name, or None"""
+        try:
+            return get_cr(
+                group=LONGHORN_API_GROUP,
+                version=LONGHORN_API_VERSION,
+                namespace=LONGHORN_NAMESPACE,
+                plural=BACKINGIMAGE_PLURAL,
+                name=backing_image_name
+            )
+        except ApiException as e:
+            if e.status == 404:
+                return None
+            raise
 
     def delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         """Delete a VirtualMachineImage"""
@@ -352,7 +435,8 @@ class CRD(Base):
             'download_percent': progress,
             'size': status.get('size', 0),
             'failed': status.get('failed', 0),
-            'conditions': conditions
+            'conditions': conditions,
+            'storage_class_name': status.get('storageClassName', '')
         }
 
     def exists(self, image_name, namespace=DEFAULT_NAMESPACE):

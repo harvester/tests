@@ -60,6 +60,11 @@ class backup_keywords:
         value = json.dumps({"type": "nfs", "endpoint": endpoint})
         self.setting.update(SETTING_BACKUP_TARGET, value)
 
+    def get_backup_backing_image(self, backing_image_name):
+        """{state, url, checksum} of the longhorn BackupBackingImage holding
+        this backing image's copy on the backup target ({} when absent)"""
+        return self.backup.get_backup_backing_image(backing_image_name)
+
     def create_backup(self, vm_name, backup_name):
         """Create a backup of the VM"""
         logging(f'Creating backup {backup_name} for VM {vm_name}')

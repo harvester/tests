@@ -38,6 +38,16 @@ Cluster Version Is At Least
     ${result}=    common_keywords.cluster_version_is_at_least    ${version}
     RETURN    ${result}
 
+Namespace is created
+    [Arguments]    ${name}
+    [Documentation]    Create a namespace for test resources (idempotent)
+    common_keywords.create_namespace    ${name}
+
+Namespace is deleted
+    [Arguments]    ${name}
+    [Documentation]    Delete a test namespace (idempotent)
+    common_keywords.delete_namespace    ${name}
+
 Generate SSH Keypair
     [Documentation]    Generate a fresh RSA keypair. The public key can be
     ...    passed as `ssh_public_key` to `VM is created` (injected into the
