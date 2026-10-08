@@ -32,6 +32,12 @@ kubernetes==29.0.0
 pytest==8.0.0
 pytest-dependency==0.6.0
 
+# Optional-use Rancher AI response evaluator (installed with the main dependencies)
+deepeval==4.2.7
+google-genai==2.27.0
+httpx==0.28.1
+tenacity==9.1.4
+
 # Logging and monitoring
 coloredlogs==15.0.1
 
