@@ -5,14 +5,16 @@ Refer unit test in harvester_robot_tests/tests/unit/test_rancher_ai_client.py
 
 import errno
 import json
+import os
+import requests
 import socket
 import ssl
 import time
 import warnings
 from contextlib import suppress
 from dataclasses import asdict
-from typing import Mapping, Optional, cast, overload
-
+from typing import Optional, cast, overload
+import logging
 import websocket
 
 from .models import (
@@ -27,6 +29,7 @@ from .models import (
 )
 from .protocol import RancherAIStreamParser
 
+logger = logging.getLogger(__name__)
 
 @overload
 def _redact(value: str, token: str) -> str: ...
@@ -94,11 +97,20 @@ class RancherAIClient:
     def __init__(self, config: Optional[RancherAIConfig] = None):
         # Import/instantiation can be used by unrelated suites without AI credentials.
         self.config = config
+        try:
+            from robot.libraries.BuiltIn import BuiltIn
+            self.rancher_endpoint = BuiltIn().get_variable_value("${RANCHER_ENDPOINT}")
+            self.rancher_username = BuiltIn().get_variable_value("${RANCHER_USERNAME}")
+            self.rancher_password = BuiltIn().get_variable_value("${RANCHER_PASSWORD}")
+        except Exception:
+            self.rancher_endpoint = os.getenv("RANCHER_ENDPOINT")
+            self.rancher_username = os.getenv("RANCHER_USERNAME")
+            self.rancher_password = os.getenv("RANCHER_PASSWORD")
+        self.rancher_token = None
+        self.rancher_session = None
+        self._authenticate_rancher()
 
-    def ask(self,
-            prompt: str,
-            context: Optional[Mapping[str, JSONValue]] = None
-            ) -> ConversationResult:
+    def ask(self, prompt: str, harvester_cluster_id: str) -> ConversationResult:
         """Submit a user request and wait for a complete response.
 
         * Opens a fresh chat, sends once, receives once and closes.
@@ -107,30 +119,20 @@ class RancherAIClient:
 
         Args:
             prompt: The user-facing request, which is an instruction or a task description.
-            context: The context information. For example, use {"cluster": RANCHER_CLUSTER_ID}
-                when operating on a specific Harvester cluster.
+            harvester_cluster_id: Harvester cluster ID to be used in the Rancher AI context.
 
         Returns:
             A ConversationResult object, returned as-is even if the task fails or the response
             asks for confirmation.
         """
         config = self.config if self.config is not None else RancherAIConfig.from_env()
+        config.api_token = self.rancher_token
+        config.cluster_id = harvester_cluster_id
         if not isinstance(prompt, str) or not prompt.strip():
             raise RancherAIConfigError("prompt must be a nonempty string")
-        if context is not None and not isinstance(context, Mapping):
-            raise RancherAIConfigError("context must be a JSON-serializable mapping")
-
-        request_context: dict[str, JSONValue] = {"cluster": config.cluster_id}
-        if context is not None:
-            request_context.update(context)
-
-        cluster = request_context["cluster"]
-        if not isinstance(cluster, str) or not cluster or any(
-            char.isspace() or ord(char) < 0x20 for char in cluster
-        ):
-            raise RancherAIConfigError("context.cluster must be nonempty without whitespace")
 
         try:
+            request_context = {"cluster": harvester_cluster_id}
             payload = json.dumps({"prompt": prompt, "context": request_context}, allow_nan=False)
         except (ValueError, TypeError, RecursionError):
             raise RancherAIConfigError("prompt and context must be valid JSON data") from None
@@ -149,7 +151,7 @@ class RancherAIClient:
             token = config.api_token
             return ConversationResult(
                 prompt=_redact(prompt, token),
-                cluster_id=_redact(cluster, token),
+                cluster_id=_redact(harvester_cluster_id, token),
                 answer=_redact(parser.answer, token),
                 chat_id=_redact(parser.chat_id, token) if parser.chat_id else None,
                 events=tuple(StreamEvent(event.tag, _redact(event.data, token))
@@ -238,3 +240,35 @@ class RancherAIClient:
                 connection.close(timeout=0)  # No close-handshake wait beyond the deadline.
             with suppress(Exception):
                 connection.shutdown()
+
+    def _authenticate_rancher(self):
+        """Authenticate with Rancher and get token"""
+        if self.rancher_token and self.rancher_session:
+            return  # Already authenticated
+
+        session = requests.Session()
+        session.verify = False
+        session.headers.update({"Content-Type": "application/json"})
+
+        from urllib.parse import urljoin
+        url = urljoin(self.rancher_endpoint, "v3-public/localProviders/local?action=login")
+        logger.info(f"Auth URL: {url} as user {self.rancher_username}")
+        response = session.post(url, json={
+            "username": self.rancher_username,
+            "password": self.rancher_password
+        })
+        if response.status_code != 201:
+            logger.info(f"Auth failed - Status: {response.status_code}, Response: {response.text}")
+            raise Exception(
+                f"Failed to authenticate with Rancher: "
+                f"{response.status_code} {response.text}"
+            )
+
+        token = response.json().get("token")
+        if not token:
+            raise Exception("No token in authentication response")
+
+        self.rancher_token = token
+        self.rancher_session = session
+        session.headers.update({"Authorization": f"Bearer {token}"})
+        logger.info("Successfully authenticated with Rancher")

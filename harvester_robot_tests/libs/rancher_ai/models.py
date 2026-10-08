@@ -92,13 +92,13 @@ class RancherAIResponseTooLargeError(RancherAIProtocolError):
     """The configured response byte limit was exceeded."""
 
 
-@dataclass(frozen=True)
+@dataclass
 class RancherAIConfig:
     """Explicit config; environment access occurs only in ``from_env()``."""
 
-    rancher_url: str                             # env["RANCHER_URL"]
-    api_token: str = field(repr=False)           # env["RANCHER_API_TOKEN"]
-    cluster_id: str                              # env["RANCHER_CLUSTER_ID"]
+    rancher_url: str                             # env["RANCHER_ENDPOINT"]
+    api_token: str = field(repr=False)           # assign in client.py
+    cluster_id: str                              # assign in client.py
     verify_tls: bool = True                      # env["RANCHER_AI_VERIFY_TLS"]
     ca_bundle: Optional[str] = None              # env["RANCHER_AI_CA_BUNDLE"]
     connect_timeout: float = 30.0                # env["RANCHER_AI_CONNECT_TIMEOUT"]
@@ -115,20 +115,6 @@ class RancherAIConfig:
     def __post_init__(self) -> None:
         # Validate without exposing supplied values in exception messages.
         self.websocket_url
-
-        if (
-            not isinstance(self.api_token, str)
-            or not self.api_token
-            or not self._is_valid_cookie_value(self.api_token)
-        ):
-            raise RancherAIConfigError("RANCHER_API_TOKEN must be a valid cookie value")
-
-        if (
-            not isinstance(self.cluster_id, str)
-            or not self.cluster_id
-            or any(char.isspace() or ord(char) < 0x20 for char in self.cluster_id)
-        ):
-            raise RancherAIConfigError("RANCHER_CLUSTER_ID must be nonempty without whitespace")
 
         if not isinstance(self.verify_tls, bool):
             raise RancherAIConfigError("RANCHER_AI_VERIFY_TLS must be a boolean")
@@ -172,7 +158,7 @@ class RancherAIConfig:
 
             parsed.port  # Validate malformed and out-of-range ports.
         except (ValueError, TypeError):
-            raise RancherAIConfigError("RANCHER_URL must be an HTTP(S) URL without credentials, "
+            raise RancherAIConfigError("RANCHER_ENDPOINT must be an HTTP(S) URL without credentials, "
                                        "query or fragment") from None
 
         if (not isinstance(self.endpoint_path, str)
@@ -193,12 +179,7 @@ class RancherAIConfig:
         """Read POC-compatible variables; no GOOGLE_API_KEY is needed in Phase 1."""
         env = os.environ if environ is None else environ
 
-        required = ("RANCHER_URL", "RANCHER_API_TOKEN", "RANCHER_CLUSTER_ID")
-        missing = [name for name in required if not env.get(name, "").strip()]
-        if missing:
-            raise RancherAIConfigError("Missing configuration: " + ", ".join(missing))
-
-        tls = env.get("RANCHER_AI_VERIFY_TLS", "true").strip().lower()
+        tls = os.environ.get("RANCHER_AI_VERIFY_TLS", "true").strip().lower()
         if tls not in ("true", "false", "1", "0", "yes", "no"):
             raise RancherAIConfigError("RANCHER_AI_VERIFY_TLS must be true or false")
 
@@ -209,14 +190,14 @@ class RancherAIConfig:
             ("RANCHER_AI_MAX_RESPONSE_BYTES", "2097152", int),
         ):
             try:
-                numbers[name] = converter(env.get(name, default))
+                numbers[name] = converter(os.environ.get(name, default))
             except (ValueError, TypeError):
                 raise RancherAIConfigError(f"{name} has an invalid numeric value") from None
 
         return cls(
-            rancher_url=env["RANCHER_URL"],
-            api_token=env["RANCHER_API_TOKEN"],
-            cluster_id=env["RANCHER_CLUSTER_ID"],
+            rancher_url=env["RANCHER_ENDPOINT"],
+            api_token="",
+            cluster_id="",
             verify_tls=tls in ("true", "1", "yes"),
             ca_bundle=env.get("RANCHER_AI_CA_BUNDLE") or None,
             connect_timeout=numbers["RANCHER_AI_CONNECT_TIMEOUT"],
