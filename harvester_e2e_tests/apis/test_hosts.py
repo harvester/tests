@@ -159,35 +159,44 @@ def test_maintenance_mode(api_client, wait_timeout):
     status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=True)
     assert 204 == status_code, (status_code, node_stats)
 
-    maintain_stat = "Unknown"
+    maintain_cond = None
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        _, stats = api_client.hosts.get(node_id)
+        code, stats = api_client.hosts.get(node_id)
+        assert 200 == code, (code, stats)
         if stats['spec'].get('unschedulable'):
-            maintain_stat = stats["metadata"]["annotations"].get("harvesterhci.io/maintain-status")
-            if maintain_stat in ("running", "completed"):
+            conditions = stats.get('status', {}).get('conditions', [])
+            maintain_cond = next((c for c in conditions if c.get('type') == 'MaintenanceMode'),
+                                 None)
+            if (maintain_cond and maintain_cond.get('status') == 'True' and
+                    maintain_cond.get('reason') == 'Completed'):
                 break
         sleep(5)
     else:
         raise AssertionError(
             f"Node({node_id}) not entered maintenance mode after {wait_timeout} secs\n"
-            f"maintain-status: {maintain_stat}\t"
+            f"MaintenanceMode condition: {maintain_cond}\t"
         )
 
     # Case 2: disable
     status_code, node_stats = api_client.hosts.maintenance_mode(node_id, enable=False)
+    assert 204 == status_code, (status_code, node_stats)
 
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        _, stats = api_client.hosts.get(node_id)
-        if ("harvesterhci.io/maintain-status" not in stats["metadata"]["annotations"]
-           and "unschedulable" not in stats["spec"]):
+        code, stats = api_client.hosts.get(node_id)
+        assert 200 == code, (code, stats)
+        conditions = stats.get('status', {}).get('conditions', [])
+        maintain_cond = next((c for c in conditions if c.get('type') == 'MaintenanceMode'),
+                             None)
+        if maintain_cond is None and not stats.get('spec', {}).get('unschedulable', False):
             break
         sleep(5)
     else:
         raise AssertionError(
             f"Node({node_id}) not leave maintenance mode after disabled {wait_timeout} secs\n"
-            f'maintain stat:{stats["metadata"]["annotations"]["harvesterhci.io/maintain-status"]}'
+            f"MaintenanceMode condition: {maintain_cond}\t"
+            f"unschedulable: {stats.get('spec', {}).get('unschedulable')}"
         )
 
 
