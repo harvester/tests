@@ -102,5 +102,8 @@ class Volume(Base):
     def wait_for_snapshot_ready(self, snapshot_name, timeout):
         return self.volume.wait_for_snapshot_ready(snapshot_name, timeout)
 
+    def wait_for_longhorn_volume_healthy(self, pvc_name, timeout, namespace):
+        return self.volume.wait_for_longhorn_volume_healthy(pvc_name, timeout, namespace)
+
     def cleanup(self):
         return self.volume.cleanup()

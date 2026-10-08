@@ -109,6 +109,19 @@ class volume_keywords:
         logging(f'Waiting for volume {volume_name} to be deleted')
         self.volume.wait_for_deleted(volume_name, timeout)
 
+    def wait_for_longhorn_volume_healthy(self, pvc_name, timeout=DEFAULT_TIMEOUT_SHORT,
+                                         namespace="default"):
+        """Wait until the Longhorn volume backing a PVC reaches robustness=healthy.
+
+        Resolves the PVC to its bound PersistentVolume (the Longhorn Volume CR
+        name), then polls the Longhorn Volume CR until status.robustness is
+        'healthy'.  This ensures all replicas are in RW mode before live
+        migration is attempted, preventing the Longhorn migration-engine
+        wrong-owner-node bug that blocks CSI attach on the target node.
+        """
+        logging(f'Waiting for Longhorn volume backing PVC {pvc_name} to be healthy')
+        self.volume.wait_for_longhorn_volume_healthy(pvc_name, timeout, namespace)
+
     def get_volume_status(self, volume_name):
         """Get volume status"""
         return self.volume.get_status(volume_name)

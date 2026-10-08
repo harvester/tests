@@ -300,6 +300,10 @@ Test VM Is Rebalanced Off An Overutilized Node
 
     Given Test Image Is Available
 
+    # Set memory overcommit to 100 so pod requests equal VM memory, making node
+    # utilization measurements and VM sizing consistent with what the descheduler sees.
+    When Overcommit Memory Is Set To 100
+
     # Step 2: Measure the cluster as the descheduler sees it
     ${busy}    ${destination}=    Descheduler Rebalance Nodes Are Selected
     ${busy_node}=    Set Variable    ${busy}[name]
@@ -318,8 +322,16 @@ Test VM Is Rebalanced Off An Overutilized Node
     And VM should be running    ${OVERLOAD_VM}
     Then VM should be running on node    ${OVERLOAD_VM}    ${busy_node}
 
-    # Step 4.3: then reopen the cluster
+    # Step 4.3: Reopen the cluster so Longhorn can schedule the remaining replicas.
     Cordoned Nodes Are Restored
+
+    # Wait for all Longhorn replicas to reach RW mode (robustness=healthy).
+    # This must run before enabling descheduler addon: the remaining replicas
+    # that could not be scheduled during the cordon window are built here.
+    # If the descheduler fires while the volume is still degraded, Longhorn
+    # assigns the migration engine to the wrong owner node and CSI attach on the
+    # target node blocks indefinitely.
+    And Wait Until VM Boot Volume Is Healthy    ${OVERLOAD_VM}
 
     # Steps 5-6: Straddle the two nodes with thresholds and start descheduling
     When Descheduler Thresholds Are Derived From Nodes    ${busy_node}    ${destination_node}
@@ -421,3 +433,4 @@ Delete E2E Test Resources
     Common Test Teardown
     Run Keyword And Ignore Error    Cordoned Nodes Are Restored
     Run Keyword And Ignore Error    VM is deleted    ${OVERLOAD_VM}
+    Run Keyword And Ignore Error    Overcommit Config Is Restored

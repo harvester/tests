@@ -17,6 +17,7 @@ from constant import (
     DEFAULT_TIMEOUT_SHORT,
     HARVESTER_API_GROUP, HARVESTER_API_VERSION,
     VIRTUALMACHINEIMAGE_PLURAL,
+    LONGHORN_API_GROUP, LONGHORN_API_VERSION, LONGHORN_NAMESPACE,
 )
 from utility.utility import logging, get_retry_count_and_interval
 from volume.base import Base
@@ -517,6 +518,89 @@ class CRD(Base):
             time.sleep(self.retry_interval)
 
         raise AssertionError(f"PVC {namespace}/{volume_name} was not deleted within {timeout}s")
+
+    def wait_for_longhorn_volume_healthy(self, pvc_name, timeout=DEFAULT_TIMEOUT_SHORT,
+                                         namespace=DEFAULT_NAMESPACE):
+        """Wait until the Longhorn volume backing a PVC reaches robustness=healthy.
+
+        Live migration requires all Longhorn replicas to be in RW mode.  When a
+        VM is created from a backing image the third replica can take several
+        seconds to be accepted by the engine, leaving the volume in 'degraded'
+        state.  If the descheduler triggers eviction while the volume is still
+        degraded, Longhorn cannot start the migration engine on the target node
+        and the CSI attach blocks indefinitely.
+
+        This method:
+          1. Reads the PVC to find the bound PersistentVolume name (which equals
+             the Longhorn Volume CR name, e.g. pvc-<uid>).
+          2. Polls the Longhorn Volume CR in longhorn-system until
+             status.robustness == 'healthy'.
+
+        Args:
+            pvc_name:  name of the PersistentVolumeClaim in *namespace*.
+            timeout:   seconds to wait (default DEFAULT_TIMEOUT_SHORT).
+            namespace: Kubernetes namespace containing the PVC.
+        """
+        obj_api = client.CustomObjectsApi()
+
+        # Step 1: resolve PVC -> PV name (== Longhorn volume name)
+        endtime = time.time() + timeout
+        lh_volume_name = None
+        while time.time() < endtime:
+            try:
+                pvc = self.core_api.read_namespaced_persistent_volume_claim(
+                    name=pvc_name, namespace=namespace)
+                lh_volume_name = pvc.spec.volume_name
+                if lh_volume_name:
+                    break
+                logging(f"Waiting for PVC {namespace}/{pvc_name} to be bound...")
+            except ApiException as e:
+                if e.status != 404:
+                    raise
+                logging(f"PVC {namespace}/{pvc_name} not found yet, retrying...")
+            time.sleep(self.retry_interval)
+
+        if not lh_volume_name:
+            raise AssertionError(
+                f"PVC {namespace}/{pvc_name} did not bind within {timeout}s; "
+                "cannot resolve Longhorn volume name"
+            )
+
+        logging(f"PVC {pvc_name} -> Longhorn volume {lh_volume_name}")
+
+        # Step 2: poll Longhorn Volume CR until robustness == healthy
+        while time.time() < endtime:
+            try:
+                lh_vol = obj_api.get_namespaced_custom_object(
+                    group=LONGHORN_API_GROUP,
+                    version=LONGHORN_API_VERSION,
+                    namespace=LONGHORN_NAMESPACE,
+                    plural="volumes",
+                    name=lh_volume_name,
+                )
+                robustness = lh_vol.get("status", {}).get("robustness", "")
+                if robustness == "healthy":
+                    logging(
+                        f"Longhorn volume {lh_volume_name} is healthy "
+                        f"(backing PVC {pvc_name})"
+                    )
+                    return True
+                logging(
+                    f"Waiting for Longhorn volume {lh_volume_name} to be healthy "
+                    f"(current robustness: {robustness!r})..."
+                )
+            except ApiException as e:
+                if e.status != 404:
+                    raise
+                logging(
+                    f"Longhorn volume {lh_volume_name} not found yet, retrying..."
+                )
+            time.sleep(self.retry_interval)
+
+        raise AssertionError(
+            f"Longhorn volume {lh_volume_name} (PVC {namespace}/{pvc_name}) "
+            f"did not reach robustness=healthy within {timeout}s"
+        )
 
     def get_status(self, volume_name):
         """Get volume status"""
