@@ -271,4 +271,3 @@ VM CPU is updated to ${cpu_cores}
     [Arguments]    ${vm_name}
     [Documentation]    Update the VM's CPU core count
     vm_keywords.update_vm_cpu_cores    ${vm_name}    ${cpu_cores}
-

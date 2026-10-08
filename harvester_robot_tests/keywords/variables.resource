@@ -44,6 +44,7 @@ ${RETRY_COUNT}                  100
 
 # Namespaces and Labels
 ${DEFAULT_NAMESPACE}            default
+${KUBE_SYSTEM_NAMESPACE}        kube-system
 ${LONGHORN_NAMESPACE}           longhorn-system
 ${LABEL_TEST}                   test-harvester
 

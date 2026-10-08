@@ -56,6 +56,7 @@ Cleanup test resources
     Run Keyword And Ignore Error    common_keywords.cleanup_storageclasses
     Run Keyword And Ignore Error    common_keywords.cleanup_networks
     Run Keyword And Ignore Error    common_keywords.cleanup_backups
+    Run Keyword And Ignore Error    kubeovn_keywords.cleanup_vpc_nat_gateways
 
 Common Suite Teardown
     Run Keyword If All Tests Passed    Cleanup test resources
