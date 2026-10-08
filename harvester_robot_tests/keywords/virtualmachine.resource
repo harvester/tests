@@ -272,3 +272,57 @@ VM CPU is updated to ${cpu_cores}
     [Documentation]    Update the VM's CPU core count
     vm_keywords.update_vm_cpu_cores    ${vm_name}    ${cpu_cores}
 
+
+VM Disk Performance Should Be
+    [Arguments]    ${vm_name}    ${disk_name}    ${from_vmi}=${False}    &{expected}
+    [Documentation]    Assert a disk's KubeVirt performance fields (cache, io,
+    ...    dedicatedIOThread) in the VM spec, or in the running VMI when
+    ...    from_vmi=${True}. Only the fields passed in &{expected} are compared.
+    ${actual}=    vm_keywords.get_vm_disk_performance    ${vm_name}    ${disk_name}
+    ...    from_vmi=${from_vmi}
+    FOR    ${field}    ${value}    IN    &{expected}
+        Dictionary Should Contain Key    ${actual}    ${field}
+        ...    msg=Disk ${disk_name} of VM ${vm_name} has no ${field}: ${actual}
+        Should Be Equal As Strings    ${actual}[${field}]    ${value}    ignore_case=True
+        ...    msg=Disk ${disk_name} of VM ${vm_name}: ${field} is ${actual}[${field}], expected ${value}
+    END
+
+VM Domain IO Settings Should Be
+    [Arguments]    ${vm_name}    ${from_vmi}=${False}    &{expected}
+    [Documentation]    Assert the VM-wide storage settings (blockMultiQueue,
+    ...    ioThreadsPolicy, supplementalPoolThreadCount) in the VM spec, or in
+    ...    the running VMI when from_vmi=${True}. Only the settings passed in
+    ...    &{expected} are compared.
+    ${actual}=    vm_keywords.get_vm_domain_io_settings    ${vm_name}    from_vmi=${from_vmi}
+    FOR    ${setting}    ${value}    IN    &{expected}
+        Dictionary Should Contain Key    ${actual}    ${setting}
+        ...    msg=VM ${vm_name} has no ${setting}: ${actual}
+        Should Be Equal As Strings    ${actual}[${setting}]    ${value}    ignore_case=True
+        ...    msg=VM ${vm_name}: ${setting} is ${actual}[${setting}], expected ${value}
+    END
+
+VM Launched Disk Driver Should Be
+    [Arguments]    ${vm_name}    ${disk_name}    &{expected}
+    [Documentation]    Assert attributes of a disk's libvirt <driver> element
+    ...    (e.g. cache, io, queues) in the domain the VM's virt-launcher
+    ...    started, which is what QEMU actually runs with.
+    ${actual}=    vm_keywords.get_vm_launched_disk_driver    ${vm_name}    ${disk_name}
+    FOR    ${attribute}    ${value}    IN    &{expected}
+        Dictionary Should Contain Key    ${actual}    ${attribute}
+        ...    msg=Disk ${disk_name} of VM ${vm_name} has no ${attribute} in its domain: ${actual}
+        Should Be Equal As Strings    ${actual}[${attribute}]    ${value}
+        ...    msg=Disk ${disk_name} of VM ${vm_name}: domain ${attribute} is ${actual}[${attribute}], expected ${value}
+    END
+
+VM Should Boot And Write To Disk
+    [Arguments]    ${vm_name}    ${username}    ${pkey}=${None}
+    [Documentation]    Wait for the guest to boot, then write and read back data
+    ...    with O_DIRECT so the I/O goes through the configured disk path.
+    VM should be running    ${vm_name}
+    VM should have IP addresses    ${vm_name}
+    VM cloud-init should be done    ${vm_name}    ${username}    pkey=${pkey}
+    ${output}=    Execute Command In VM    ${vm_name}
+    ...    sudo dd if=/dev/urandom of=/var/tmp/perf-check bs=1M count=16 oflag=direct status=none && sudo sha256sum /var/tmp/perf-check | cut -c1-8
+    ...    ${username}    pkey=${pkey}
+    Should Match Regexp    ${output.strip()}    ^[0-9a-f]{8}$
+    ...    msg=Failed to write to the disk of ${vm_name}: ${output}

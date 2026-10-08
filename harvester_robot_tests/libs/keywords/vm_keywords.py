@@ -223,6 +223,22 @@ class vm_keywords:
         """Get the VM spec's requested CPU core count."""
         return self.vm.get_cpu_cores(vm_name, namespace)
 
+    def get_vm_disk_performance(self, vm_name, disk_name, from_vmi=False,
+                                namespace=DEFAULT_NAMESPACE):
+        """Get a disk's cache, io and dedicatedIOThread fields."""
+        return self.vm.get_disk_performance(vm_name, disk_name, from_vmi, namespace)
+
+    def get_vm_domain_io_settings(self, vm_name, from_vmi=False,
+                                  namespace=DEFAULT_NAMESPACE):
+        """Get the VM-wide blockMultiQueue, ioThreadsPolicy and
+        supplementalPoolThreadCount settings."""
+        return self.vm.get_domain_io_settings(vm_name, from_vmi, namespace)
+
+    def get_vm_launched_disk_driver(self, vm_name, disk_name,
+                                    namespace=DEFAULT_NAMESPACE):
+        """Get the libvirt driver attributes of a disk in the running domain."""
+        return self.vm.get_launched_disk_driver(vm_name, disk_name, namespace)
+
     def update_vm_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE):
         """Update the VM's CPU core count (spec.template.spec.domain.cpu.cores)."""
         logging(f'Updating VM {vm_name} CPU cores to {cpu_cores}')

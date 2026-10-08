@@ -132,5 +132,17 @@ class VM(Base):
     def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
         return self.vm.get_cpu_cores(vm_name, namespace)
 
+    def get_disk_performance(self, vm_name, disk_name, from_vmi=False,
+                             namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_disk_performance(vm_name, disk_name, from_vmi, namespace)
+
+    def get_domain_io_settings(self, vm_name, from_vmi=False,
+                               namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_domain_io_settings(vm_name, from_vmi, namespace)
+
+    def get_launched_disk_driver(self, vm_name, disk_name,
+                                 namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_launched_disk_driver(vm_name, disk_name, namespace)
+
     def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE):
         return self.vm.update_cpu_cores(vm_name, cpu_cores, namespace)
