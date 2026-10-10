@@ -5,7 +5,6 @@ import os
 import re
 import time
 from asyncio import TimeoutError as AsyncTimeoutError
-from collections.abc import Sequence
 from contextlib import suppress
 from typing import Optional
 
@@ -66,7 +65,7 @@ def _measure_once(
     input: str,
     actual_output: str,
     expected_output: Optional[str],
-    evaluation_steps: tuple[str, ...],
+    evaluation_steps: list[str]
 ) -> tuple[object, object]:
     """Measure output by LLM-as-a-judge with ordinary SDK calls; no worker or generated criteria.
 
@@ -148,7 +147,7 @@ class ResponseEvaluator:
         input: str,
         actual_output: str,
         expected_output: Optional[str] = None,
-        evaluation_steps: Optional[Sequence[str]] = None,
+        evaluation_steps: Optional[list[str]] = None,
     ) -> EvaluationResult:
         _validate_text(input, "input")
         _validate_text(actual_output, "actual_output")
@@ -160,12 +159,12 @@ class ResponseEvaluator:
             version = DEFAULT_RUBRIC_VERSION
         else:
             if (
-                not isinstance(evaluation_steps, Sequence)
+                not isinstance(evaluation_steps, list)
                 or isinstance(evaluation_steps, (str, bytes))
                 or not evaluation_steps
             ):
                 raise EvaluationConfigError(
-                    "evaluation_steps must be a nonempty sequence of strings"
+                    "evaluation_steps must be a nonempty list of strings"
                 )
             for step in evaluation_steps:
                 _validate_text(step, "evaluation_steps item")

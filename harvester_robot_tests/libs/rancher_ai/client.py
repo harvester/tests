@@ -110,7 +110,7 @@ class RancherAIClient:
         self.rancher_session = None
         self._authenticate_rancher()
 
-    def ask(self, prompt: str, harvester_cluster_id: str) -> ConversationResult:
+    def prompt(self, prompt: str, harvester_cluster_id: str) -> ConversationResult:
         """Submit a user request and wait for a complete response.
 
         * Opens a fresh chat, sends once, receives once and closes.
@@ -133,7 +133,13 @@ class RancherAIClient:
 
         try:
             request_context = {"cluster": harvester_cluster_id}
-            payload = json.dumps({"prompt": prompt, "context": request_context}, allow_nan=False)
+            payload = json.dumps({
+                "prompt": prompt,
+                "agent": "virtualization",
+                "context": request_context
+                },
+                allow_nan=False
+            )
         except (ValueError, TypeError, RecursionError):
             raise RancherAIConfigError("prompt and context must be valid JSON data") from None
         parser = RancherAIStreamParser(config.max_response_bytes)
@@ -252,7 +258,6 @@ class RancherAIClient:
 
         from urllib.parse import urljoin
         url = urljoin(self.rancher_endpoint, "v3-public/localProviders/local?action=login")
-        logger.info(f"Auth URL: {url} as user {self.rancher_username}")
         response = session.post(url, json={
             "username": self.rancher_username,
             "password": self.rancher_password
@@ -271,4 +276,3 @@ class RancherAIClient:
         self.rancher_token = token
         self.rancher_session = session
         session.headers.update({"Authorization": f"Bearer {token}"})
-        logger.info("Successfully authenticated with Rancher")
