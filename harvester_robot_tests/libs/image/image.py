@@ -60,6 +60,11 @@ class Image:
     def list(self, namespace):
         return self.image.list(namespace)
 
+    def get_by_display_name(self, display_name: str, namespace=DEFAULT_NAMESPACE):
+        """Get an image by display name through the selected strategy.
+        """
+        return self.image.get_by_display_name(display_name, namespace)
+
     def exists(self, image_name, namespace):
         return self.image.exists(image_name, namespace)
 

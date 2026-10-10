@@ -222,6 +222,28 @@ class CRD(Base):
             name=image_name
         )
 
+    def get_by_display_name(self, display_name: str, namespace=DEFAULT_NAMESPACE):
+        matches = [
+            image
+            for image in self.list(namespace=namespace)
+            if image.get("spec", {}).get("displayName") == display_name
+        ]
+
+        if not matches:
+            raise LookupError(
+                f"No VirtualMachineImage with displayName "
+                f"{display_name!r} in namespace {namespace!r}"
+            )
+
+        if len(matches) > 1:
+            names = [image["metadata"]["name"] for image in matches]
+            raise ValueError(
+                f"Multiple VirtualMachineImages match displayName "
+                f"{display_name!r}: {names}"
+            )
+
+        return matches[0]
+
     def list(self, namespace=DEFAULT_NAMESPACE, label_selector=None):
         """List VirtualMachineImages"""
         result = list_cr(

@@ -110,7 +110,7 @@ class RancherAIClient:
         self.rancher_session = None
         self._authenticate_rancher()
 
-    def ask(self, prompt: str, harvester_cluster_id: str) -> ConversationResult:
+    def prompt(self, prompt: str, harvester_cluster_id: str) -> ConversationResult:
         """Submit a user request and wait for a complete response.
 
         * Opens a fresh chat, sends once, receives once and closes.

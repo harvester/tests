@@ -152,6 +152,32 @@ class Rest(Base):
             'conditions': status.get('conditions', [])
         }
 
+    def get_by_display_name(self, display_name: str, namespace=DEFAULT_NAMESPACE):
+        api = get_harvester_api_client()
+        code, data = api.images.get("", namespace)
+        assert code == 200, f"Failed to list images: {code}, {data}"
+
+        matches = [
+            image
+            for image in data.get('items', [])
+            if image.get("spec", {}).get("displayName") == display_name
+        ]
+
+        if not matches:
+            raise LookupError(
+                f"No VirtualMachineImage with displayName "
+                f"{display_name!r} in namespace {namespace!r}"
+            )
+
+        if len(matches) > 1:
+            names = [image["metadata"]["name"] for image in matches]
+            raise ValueError(
+                f"Multiple VirtualMachineImages match displayName "
+                f"{display_name!r}: {names}"
+            )
+
+        return matches[0]
+
     def list(self, namespace):
         """List all images"""
         api = get_harvester_api_client()
