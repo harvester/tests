@@ -62,6 +62,11 @@ class image_keywords:
         logging('Listing all images')
         return self.image.list(namespace)
 
+    def get_image_by_display_name(self, display_name: str, namespace='default'):
+        """Return the complete image matching an exact display name.
+        """
+        return self.image.get_by_display_name(display_name, namespace)
+
     def image_exists(self, image_name, namespace='default'):
         """Check if image exists"""
         return self.image.exists(image_name, namespace)
