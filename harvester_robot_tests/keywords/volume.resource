@@ -48,6 +48,11 @@ Wait Until VM Boot Volume Is Healthy
     ${pvc_name}=    Set Variable    ${vm_name}-disk-0
     volume_keywords.wait_for_longhorn_volume_healthy    ${pvc_name}
 
+Volume Is Active
+    [Arguments]    ${vol_name}
+    Volume Phase Is Bound    ${vol_name}
+    Volume State Is Ready/In-use    ${vol_name}
+
 # lifecycle
 A ${size_gi}Gi Volume is Created
     [Arguments]    ${vol_name}
