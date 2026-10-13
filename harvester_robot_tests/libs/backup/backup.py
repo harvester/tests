@@ -64,3 +64,6 @@ class Backup(Base):
                                           namespace=DEFAULT_NAMESPACE):
         return self.backup.cleanup_longhorn_backup_artifacts(
             volume_names, image_name, namespace)
+
+    def get_backup_backing_image(self, backing_image_name):
+        return self.backup.get_backup_backing_image(backing_image_name)

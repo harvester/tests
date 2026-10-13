@@ -70,6 +70,29 @@ Restore is deleted
     [Documentation]    Delete a restore bookkeeping object
     backup_keywords.delete_restore    ${restore_name}
 
+Get Backup Backing Image
+    [Arguments]    ${backing_image_name}
+    [Documentation]    Return {state, url, checksum} of the longhorn BackupBackingImage
+    ...    holding this backing image's copy on the backup target. Its url is
+    ...    what Harvester puts into spec.url of an image it re-creates from
+    ...    the target (sourceType restore).
+    ${bbi}=    backup_keywords.get_backup_backing_image    ${backing_image_name}
+    Should Not Be Empty    ${bbi}    msg=No BackupBackingImage for ${backing_image_name}
+    RETURN    ${bbi}
+
+Backup Backing Image Should Be Completed
+    [Arguments]    ${backing_image_name}
+    [Documentation]    Assert the backing image's copy on the backup target is
+    ...    uploaded (status.state Completed)
+    ${bbi}=    backup_keywords.get_backup_backing_image    ${backing_image_name}
+    Should Be Equal As Strings    ${bbi.get('state', '')}    Completed
+    ...    msg=BackupBackingImage of ${backing_image_name} is not Completed: ${bbi}
+
+Wait Until Backup Backing Image Is Completed
+    [Arguments]    ${backing_image_name}
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Backup Backing Image Should Be Completed    ${backing_image_name}
+
 Get Backup Volume Names
     [Arguments]    ${backup_name}
     [Documentation]    Return the longhorn volume names recorded in the backup.
