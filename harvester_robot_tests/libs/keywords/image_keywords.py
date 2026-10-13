@@ -67,11 +67,22 @@ class image_keywords:
         return self.image.exists(image_name, namespace)
 
     def try_create_image(self, image_name, image_url="", source_type="download",
-                         checksum=""):
-        """Attempt to create an image for negative testing; returns result dict"""
-        logging(f'Attempting to create image {image_name} '
-                f'(sourceType={source_type}, url={image_url}) (negative test)')
-        return self.image.try_create(image_name, image_url, source_type, checksum)
+                         checksum="", namespace='default', **kwargs):
+        """Attempt to create an image for negative testing; returns result dict.
+        kwargs (backing_image_name, backend, storage_class) map to spec fields.
+        """
+        logging(f'Attempting to create image {namespace}/{image_name} '
+                f'(sourceType={source_type}, url={image_url}, {kwargs}) (negative test)')
+        return self.image.try_create(image_name, image_url, source_type, checksum,
+                                     namespace, **kwargs)
+
+    def try_update_image_spec(self, image_name, namespace='default', **spec):
+        """Attempt to patch spec fields (negative testing); returns result dict.
+        Pass a field as None to remove it from the spec.
+        """
+        logging(f'Attempting to update spec of image {namespace}/{image_name} '
+                f'with {spec} (negative test)')
+        return self.image.try_update_spec(image_name, spec, namespace)
 
     def try_get_image(self, image_name, namespace='default'):
         """Attempt to get an image for negative testing; returns result dict"""
@@ -91,3 +102,16 @@ class image_keywords:
     def get_image_metadata(self, image_name, namespace='default'):
         """Return the metadata block of an image"""
         return self.image.get_metadata(image_name, namespace)
+
+    def get_image_spec(self, image_name, namespace='default'):
+        """Return the spec block of an image"""
+        return self.image.get_spec(image_name, namespace)
+
+    def cluster_supports_backing_image_name(self):
+        """True when the VirtualMachineImage CRD exposes spec.backingImageName"""
+        return self.image.supports_backing_image_name()
+
+    def get_backing_image(self, backing_image_name):
+        """Return the Longhorn BackingImage CR with this name, or None"""
+        logging(f'Getting longhorn BackingImage {backing_image_name}')
+        return self.image.get_backing_image(backing_image_name)

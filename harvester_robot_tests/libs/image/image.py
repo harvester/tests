@@ -33,11 +33,16 @@ class Image:
     def wait_for_ready(self, image_name, timeout):
         return self.image.wait_for_ready(image_name, timeout)
 
-    def try_create(self, image_name, image_url="", source_type="download", checksum=""):
-        return self.image.try_create(image_name, image_url, source_type, checksum)
+    def try_create(self, image_name, image_url="", source_type="download",
+                   checksum="", namespace=DEFAULT_NAMESPACE, **kwargs):
+        return self.image.try_create(image_name, image_url, source_type, checksum,
+                                     namespace, **kwargs)
 
     def try_get(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.try_get(image_name, namespace)
+
+    def try_update_spec(self, image_name, spec, namespace=DEFAULT_NAMESPACE):
+        return self.image.try_update_spec(image_name, spec, namespace)
 
     def try_delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.try_delete(image_name, namespace)
@@ -47,6 +52,15 @@ class Image:
 
     def get_metadata(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.get_metadata(image_name, namespace)
+
+    def get_spec(self, image_name, namespace=DEFAULT_NAMESPACE):
+        return self.image.get_spec(image_name, namespace)
+
+    def supports_backing_image_name(self):
+        return self.image.supports_backing_image_name()
+
+    def get_backing_image(self, backing_image_name):
+        return self.image.get_backing_image(backing_image_name)
 
     def delete(self, image_name, namespace=DEFAULT_NAMESPACE):
         return self.image.delete(image_name, namespace)

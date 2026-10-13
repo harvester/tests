@@ -39,9 +39,6 @@ class CRD(Base):
             "kind": "StorageClass",
             "metadata": {
                 "name": name,
-                "annotations": {
-                    "cdi.harvesterhci.io/storageProfileVolumeSnapshotClass": "longhorn-snapshot"
-                },
                 "labels": {
                         LABEL_TEST: LABEL_TEST_VALUE
                 }
@@ -59,6 +56,14 @@ class CRD(Base):
                 "dataEngine": str(data_engine)
             }
         }
+
+        # The Harvester webhook rejects CDI annotations on a Longhorn v1
+        # StorageClass ("longhorn v1 does not support CDI annotations");
+        # only v2 needs the snapshot class for CDI-backed images.
+        if str(data_engine) == "v2":
+            body["metadata"]["annotations"] = {
+                "cdi.harvesterhci.io/storageProfileVolumeSnapshotClass": "longhorn-snapshot"
+            }
 
         try:
             return self.custom_api.create_cluster_custom_object(
