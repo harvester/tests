@@ -42,12 +42,14 @@ the teardown, which run in other Pabot processes than the setup, can find the
 disks it chose. It defaults to `lvm-robot`; override it only when separate LVM
 runs need distinct IDs.
 
-The addon manifest comes from
-[harvester/experimental-addons](https://github.com/harvester/experimental-addons).
-By default the branch is derived from the cluster release (`v<major>.<minor>`, so a
-v1.9.x cluster installs the chart pinned on `v1.9`); dev builds without a release
-version, or a release whose branch is not cut yet, use `main`. Set `LVM_ADDON_URL`
-to apply a specific manifest instead, e.g. a mirror in air-gapped setups.
+The addon manifest comes from `addons/standalone/harvester-csi-driver-lvm/addon.yaml`
+in [harvester/harvester](https://github.com/harvester/harvester) since v1.9, and
+from [harvester/experimental-addons](https://github.com/harvester/experimental-addons)
+on older branches. By default the branch is derived from the cluster release
+(`v<major>.<minor>`, so a v1.9.x cluster installs the chart pinned on `v1.9`); dev
+builds without a release version, or a release whose branch is not cut yet, use
+harvester `master`. Set `LVM_ADDON_URL` to apply a specific manifest instead, e.g.
+a mirror in air-gapped setups.
 
 The data-integrity suite runs plain pods (default image `busybox:1.36.1`,
 override with `WORKLOAD_POD_IMAGE`) against LVM PVCs to checksum real data
