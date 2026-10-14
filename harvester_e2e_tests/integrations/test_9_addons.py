@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import os
 import json
+import re
 
 import pytest
 import requests
@@ -24,6 +25,46 @@ def generate_kubeconfig_tempfile(api_client):
     return kubeconfig_path
 
 
+IN_TREE_ADDON_URL = ('https://raw.githubusercontent.com/harvester/'
+                     'harvester/{branch}/addons/standalone/{name}/addon.yaml')
+EXPERIMENTAL_ADDON_URL = ('https://raw.githubusercontent.com/harvester/'
+                          'experimental-addons/{branch}/{name}/{name}.yaml')
+
+
+def addon_manifest_urls(api_client, name):
+    """Candidate manifest URLs for a non-built-in addon, in order.
+
+    Since v1.9 the manifests live in harvester/harvester under
+    addons/standalone; older branches still keep them in
+    harvester/experimental-addons. The branch is derived from the raw
+    server-version, so a v1.9.x cluster gets the chart pinned on the v1.9
+    branch. Versionless (master/hash) builds and releases whose branch
+    has not been cut yet fall back to harvester master.
+    """
+    code, data = api_client.settings.get('server-version')
+    match = re.search(r"v?(\d+)\.(\d+)", data.get('value', '') if code == 200 else '')
+    urls = []
+    if match:
+        branch = f"v{match.group(1)}.{match.group(2)}"
+        urls += [IN_TREE_ADDON_URL.format(branch=branch, name=name),
+                 EXPERIMENTAL_ADDON_URL.format(branch=branch, name=name)]
+    urls.append(IN_TREE_ADDON_URL.format(branch='master', name=name))
+    return urls
+
+
+def download_addon_manifest(api_client, name):
+    """Return the text of the first addon manifest URL that resolves."""
+    errors = []
+    for url in addon_manifest_urls(api_client, name):
+        try:
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            return response.text
+        except Exception as e:
+            errors.append(f"{url}: {e}")
+    raise Exception("; ".join(errors))
+
+
 @pytest.mark.p1
 @pytest.mark.experimental
 @pytest.mark.addons
@@ -34,16 +75,12 @@ class TestVMDHCPControllerAddon:
     Note: This is an experimental addon which is not installed in Harvester
     by default.
     Reference: https://docs.harvesterhci.io/v1.6/advanced/addons/managed-dhcp
-    Installation: Download from
-    https://raw.githubusercontent.com/harvester/experimental-addons/
+    Installation: Download from harvester/harvester addons/standalone
+    (v1.9+) or harvester/experimental-addons (older releases)
     """
 
     addon_id = 'harvester-system/harvester-vm-dhcp-controller'
-    addon_url = (
-        'https://raw.githubusercontent.com/harvester/experimental-addons/'
-        'main/harvester-vm-dhcp-controller/'
-        'harvester-vm-dhcp-controller.yaml'
-    )
+    addon_name = 'harvester-vm-dhcp-controller'
 
     @pytest.mark.dependency(name="vmdhcp_download")
     def test_download_and_install_vm_dhcp_addon(
@@ -53,7 +90,7 @@ class TestVMDHCPControllerAddon:
 
         Steps:
             1. Check if addon already exists
-            2. If not exists, download addon manifest from experimental repo
+            2. If not exists, download addon manifest for the cluster release
             3. Apply the addon manifest using kubectl
             4. Wait for addon to be available
 
@@ -71,9 +108,7 @@ class TestVMDHCPControllerAddon:
 
         # Download addon manifest
         try:
-            response = requests.get(self.addon_url, timeout=30)
-            response.raise_for_status()
-            addon_manifest_text = response.text
+            addon_manifest_text = download_addon_manifest(api_client, self.addon_name)
         except Exception as e:
             pytest.skip(f"Failed to download experimental addon: {e}")
 
