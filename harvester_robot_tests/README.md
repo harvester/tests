@@ -235,8 +235,8 @@ The `.env.example` file contains all available configuration options:
 - `VLAN_NIC` - Network interface for VLAN (default: `mgmt`)
 - `BACKUP_TARGET_NFS_ENDPOINT` - NFS endpoint (`nfs://host/path`) used to
   configure the `backup-target` setting when the cluster has none yet
-- `LVM_ADDON_URL` - LVM addon manifest URL; unset derives the
-  `experimental-addons` branch from the cluster release (see `addon/lvm/README.md`)
+- `LVM_ADDON_URL` - LVM addon manifest URL; unset derives the manifest
+  branch from the cluster release (see `addon/lvm/README.md`)
 - `ROBOT_LOG_LEVEL` - Test log level (default: `INFO`)
 - `ROBOT_OUTPUT_DIR` - Output directory for results (default: `./results`)
 

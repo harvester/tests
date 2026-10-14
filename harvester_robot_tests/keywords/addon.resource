@@ -13,9 +13,11 @@ Install Addon From URL
 
 Install Experimental Addon
     [Arguments]    ${addon_name}    ${url}=${EMPTY}
-    [Documentation]    Apply an addon manifest from harvester/experimental-addons.
-    ...    An explicit url is used as-is; otherwise the branch is derived from the
-    ...    cluster release (v<major>.<minor>) with main as the fallback.
+    [Documentation]    Apply a non-built-in addon manifest. An explicit url is
+    ...    used as-is; otherwise the branch is derived from the cluster release
+    ...    (v<major>.<minor>): harvester/harvester addons/standalone first, then
+    ...    harvester/experimental-addons for pre-v1.9 branches, with harvester
+    ...    master as the fallback.
     addon_keywords.install_experimental_addon    ${addon_name}    ${url}
 
 Get Initial State

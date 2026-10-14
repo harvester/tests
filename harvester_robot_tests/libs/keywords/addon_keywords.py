@@ -399,33 +399,40 @@ class addon_keywords:
         logging(f'Installing addon from {url}')
         return self.addon.install_addon_yaml(url)
 
+    IN_TREE_ADDON_URL = ('https://raw.githubusercontent.com/harvester/'
+                         'harvester/{branch}/addons/standalone/{name}/addon.yaml')
     EXPERIMENTAL_ADDON_URL = ('https://raw.githubusercontent.com/harvester/'
                               'experimental-addons/{branch}/{name}/{name}.yaml')
 
     def install_experimental_addon(self, addon_name, url=''):
-        """Apply an addon manifest from harvester/experimental-addons.
+        """Apply a non-built-in addon manifest for the cluster release.
 
         An explicit url is used as-is (CI mirrors, air-gapped setups).
-        Otherwise the branch is derived from the cluster release, so a
-        v1.9.x cluster installs the chart pinned on the v1.9 branch
-        instead of the dev chart on main. Dev builds without a release
-        version use main, and a release whose branch has not been cut
-        yet falls back to main after the 404.
+        Since v1.9 the manifests live in harvester/harvester under
+        addons/standalone; older branches still read them from
+        harvester/experimental-addons. The branch is derived from the
+        cluster release, so a v1.9.x cluster installs the chart pinned
+        on the v1.9 branch instead of the dev chart on master. Dev
+        builds without a release version use master, and a release
+        whose branch has not been cut yet falls back to master after
+        the 404s.
         """
         if url:
             return self.install_addon_yaml(url)
         from utility.utility import get_cluster_version_release
         release = get_cluster_version_release()
-        branches = ['main']
+        candidates = []
         if release is not None:
-            branches.insert(0, f'v{release[0]}.{release[1]}')
+            branch = f'v{release[0]}.{release[1]}'
+            candidates += [self.IN_TREE_ADDON_URL.format(branch=branch, name=addon_name),
+                           self.EXPERIMENTAL_ADDON_URL.format(branch=branch, name=addon_name)]
+        candidates.append(self.IN_TREE_ADDON_URL.format(branch='master', name=addon_name))
         last_error = None
-        for branch in branches:
-            candidate = self.EXPERIMENTAL_ADDON_URL.format(branch=branch, name=addon_name)
+        for candidate in candidates:
             try:
                 return self.install_addon_yaml(candidate)
             except Exception as e:
                 logging(f'Addon manifest {candidate} not applied: {e}', level='WARNING')
                 last_error = e
-        raise Exception(f'Failed to install {addon_name} from experimental-addons '
-                        f'(tried branches {", ".join(branches)}): {last_error}')
+        raise Exception(f'Failed to install {addon_name} '
+                        f'(tried {", ".join(candidates)}): {last_error}')
