@@ -238,3 +238,25 @@ Get Image By Name
     [Documentation]    Get a single image's metadata and assert its name matches
     ${metadata}=    image_keywords.get_image_metadata    ${image_name}
     Should Be Equal As Strings    ${metadata}[name]    ${image_name}
+
+Get Image Name By Display Name
+    [Documentation]    Return the complete image whose spec.displayName matches exactly.
+    ...    Matching is case-sensitive and limited to the specified namespace.
+    ...    Fails if no image matches, multiple images match, or the API request fails.
+    ...    Supports both CRD and REST operation strategies.
+    ...    Example:
+    ...    | ${image}= | Get Image By Display Name | img-10101823 | namespace=default |
+    ...    | Log | ${image}[metadata][name] |
+    [Arguments]    ${display_name}    ${namespace}=${DEFAULT_NAMESPACE}
+    ${image}=    image_keywords.get_image_by_display_name    ${display_name}    ${namespace}
+    RETURN    ${image}[metadata][name]
+
+Image with display name ${img_display_name} should exist
+    ${img_name}=    Get Image Name By Display Name    ${img_display_name}
+    Wait for image downloaded by name    ${img_name}
+    Image State Is Active    ${img_name}
+    Image Size Is Greater Than Zero    ${img_name}
+
+Image with display name ${img_display_name} should not exist
+    Run Keyword And Expect Error    LookupError: *
+    ...    Get Image Name By Display Name    ${img_display_name}
