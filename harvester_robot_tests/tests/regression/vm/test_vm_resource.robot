@@ -67,6 +67,52 @@ Update VM CPU Cores
     VM should be stopped    ${VM_NAME}
 
 
+Update VM USB Tablet
+    [Tags]    p0
+    [Documentation]    Port of harvester/tests test_3_vm_functions.py
+    ...    TestVMResource::test_update_enable_usb.
+    ...    Reads the current USB tablet state, changes it to the opposite,
+    ...    verifies the change is reflected in the running VMI, then restores
+    ...    the original state and verifies the restore.
+    ...    Proves the full path: API update -> KubeVirt -> VMI spec without
+    ...    assuming any particular initial state.
+
+    # Step 1: Get the current USB Tablet status
+    Given VM is started    ${VM_NAME}
+    And VM should be running    ${VM_NAME}
+    ${enabled}=    Get VM USB Tablet Status    ${VM_NAME}
+
+    # Step 2: Change the setting to the opposite state and verify
+    IF    ${enabled}
+        When Disable VM USB Tablet    ${VM_NAME}
+    ELSE
+        When Enable VM USB Tablet    ${VM_NAME}
+    END
+    And VM is restarted    ${VM_NAME}
+    And VM should be running    ${VM_NAME}
+    IF    ${enabled}
+        Then VM USB Tablet should be disabled    ${VM_NAME}
+    ELSE
+        Then VM USB Tablet should be enabled    ${VM_NAME}
+    END
+
+    # Step 3: Recover the original setting and verify
+    IF    ${enabled}
+        When Enable VM USB Tablet    ${VM_NAME}
+    ELSE
+        When Disable VM USB Tablet    ${VM_NAME}
+    END
+    And VM is restarted    ${VM_NAME}
+    And VM should be running    ${VM_NAME}
+    IF    ${enabled}
+        Then VM USB Tablet should be enabled    ${VM_NAME}
+    ELSE
+        Then VM USB Tablet should be disabled    ${VM_NAME}
+    END
+    And VM is stopped    ${VM_NAME}
+    And VM should be stopped    ${VM_NAME}
+
+
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name

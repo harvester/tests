@@ -882,6 +882,7 @@ class TestVMResource:
         # stop the VM
         vm_checker.wait_stopped(unique_vm_name)
 
+    @pytest.mark.robot_ported
     def test_update_enable_usb(self, api_client, unique_vm_name, vm_checker, image):
         cpu, mem = 1, 2
         vm_spec = api_client.vms.Spec(cpu, mem)
