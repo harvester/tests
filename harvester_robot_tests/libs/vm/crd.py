@@ -463,14 +463,24 @@ class CRD(Base):
         the VM comes back with its original strategy.
         """
         logging(f"Starting VM {namespace}/{vm_name}")
-        try:
-            self._vm_subresource(vm_name, "start", namespace)
-        except ApiException as e:
-            raise AssertionError(
-                f"Failed to start VM {namespace}/{vm_name}: "
-                f"{e.status} {e.reason} {e.body}"
-            )
-        logging(f"VM {namespace}/{vm_name} started")
+        for i in range(self.retry_count):
+            try:
+                self._vm_subresource(vm_name, "start", namespace)
+                logging(f"VM {namespace}/{vm_name} started")
+                return
+            except ApiException as e:
+                if e.status == 409:
+                    logging(f"Conflict when starting VM, retrying ({i})...")
+                    time.sleep(self.retry_interval)
+                else:
+                    raise AssertionError(
+                        f"Failed to start VM {namespace}/{vm_name}: "
+                        f"{e.status} {e.reason} {e.body}"
+                    )
+
+        raise AssertionError(
+            f"Failed to start VM {namespace}/{vm_name} after {self.retry_count} attempts"
+        )
 
     def stop(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Stop a VM."""
@@ -1231,26 +1241,61 @@ class CRD(Base):
         )
         logging(f"Updated disk size for {vm_name} {disk_name} to {new_size}")
 
-    def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
-        """Return the VM spec's requested CPU core count."""
-        vm = self.get(vm_name, namespace)
-        return vm['spec']['template']['spec']['domain']['cpu']['cores']
+    def get_spec(self, vm_name, field, namespace=DEFAULT_NAMESPACE):
+        """Read a single field from the VM spec.
 
-    def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE,
-                         retry_count=5):
-        """Update a VM's CPU core count (spec.template.spec.domain.cpu.cores),
-        keeping resources.limits.cpu in sync. Retries on 409 Conflict (object
-        modified concurrently between the get and the replace) by re-fetching
-        and reapplying the change.
+        Supported *field* values:
+          - ``"cpu_cores"``  – ``spec.template.spec.domain.cpu.cores``
+          - ``"usbtablet"``  – True when ``spec.template.spec.domain.devices.inputs``
+                               contains a USB tablet entry, False otherwise
+
+        Returns the field value
         """
-        for attempt in range(retry_count):
-            vm = self.get(vm_name, namespace)
-            domain = vm['spec']['template']['spec']['domain']
-            domain.setdefault('cpu', {})['cores'] = int(cpu_cores)
-            domain.setdefault('resources', {}).setdefault(
-                'limits', {})['cpu'] = str(cpu_cores)
+        vm = self.get(vm_name, namespace)
+        if field == "cpu_cores":
+            cores = vm['spec']['template']['spec']['domain']['cpu']['cores']
+            logging(f"Got VM {namespace}/{vm_name} spec.template.spec.domain.cpu.cores = {cores}")
+            return cores
+        elif field == "usbtablet":
+            inputs = vm['spec']['template']['spec']['domain']['devices'].get('inputs') or []
+            logging(f"Got VM {namespace}/{vm_name} spec.template.spec.domain.devices.inputs = {inputs}")
+            return any(
+                inp.get('bus') == 'usb' and inp.get('type') == 'tablet'
+                for inp in inputs
+            )
+        else:
+            raise ValueError(f"Unknown spec field: {field!r}")
 
+    def update_spec(self, vm_name, field, value, namespace=DEFAULT_NAMESPACE,
+                    retry_count=5):
+        """Update a single field in the VM spec with automatic conflict retry.
+
+        Supported *field* values:
+          - ``"cpu_cores"``  – sets ``spec.template.spec.domain.cpu.cores``
+                               and keeps ``resources.limits.cpu`` in sync
+          - ``"usbtablet"``  – adds or removes the USB tablet input device
+
+        On any failure the method logs the exception, sleeps, and retries up
+        to *retry_count* times, then asserts success after the loop.
+        """
+        for i in range(retry_count):
             try:
+                vm = self.get(vm_name, namespace)
+                domain = vm['spec']['template']['spec']['domain']
+                if field == "cpu_cores":
+                    domain['cpu']['cores'] = int(value)
+                    domain['resources']['limits']['cpu'] = str(value)
+                    logging(f"Updating VM {namespace}/{vm_name} domain['resources']['limits']['cpu'] to {value} ... ({i})")
+                elif field == "usbtablet":
+                    if value:
+                        domain['devices']['inputs'] = [
+                            {"bus": "usb", "name": "tablet", "type": "tablet"}
+                        ]
+                    else:
+                        domain['devices'].pop('inputs', None)
+                    logging(f"Updating VM {namespace}/{vm_name} usbtablet to {value} ... ({i})")
+                else:
+                    raise ValueError(f"Unknown spec field: {field!r}")
                 replace_cr(
                     group=KUBEVIRT_API_GROUP,
                     version=KUBEVIRT_API_VERSION,
@@ -1259,12 +1304,8 @@ class CRD(Base):
                     name=vm_name,
                     body=vm
                 )
-                logging(f"Updated VM {namespace}/{vm_name} CPU cores to {cpu_cores}")
                 return
-            except ApiException as e:
-                if e.status == 409 and attempt < retry_count - 1:
-                    logging(f"Conflict updating VM {vm_name} CPU cores, "
-                            f"retrying ({attempt + 1}/{retry_count})...")
-                    time.sleep(1)
-                    continue
-                raise
+            except Exception as e:
+                logging(f"Failed to update VM {vm_name} {field}: {e}")
+                time.sleep(1)
+        raise AssertionError(f"Failed to update VM {namespace}/{vm_name} {field}")

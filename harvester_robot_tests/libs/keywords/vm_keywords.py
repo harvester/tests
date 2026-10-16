@@ -219,14 +219,22 @@ class vm_keywords:
         """Update VM disk size via volumeClaimTemplates annotation."""
         self.vm.update_disk_size(vm_name, disk_name, new_size, namespace)
 
-    def get_vm_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
-        """Get the VM spec's requested CPU core count."""
-        return self.vm.get_cpu_cores(vm_name, namespace)
+    def get_vm_spec(self, vm_name, field, namespace=DEFAULT_NAMESPACE):
+        """Read a single field from the VM spec.
 
-    def update_vm_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE):
-        """Update the VM's CPU core count (spec.template.spec.domain.cpu.cores)."""
-        logging(f'Updating VM {vm_name} CPU cores to {cpu_cores}')
-        self.vm.update_cpu_cores(vm_name, cpu_cores, namespace)
+        Supported *field* values: ``"cpu_cores"``, ``"usbtablet"``.
+        """
+        logging(f'Getting VM {vm_name} spec field {field!r}')
+        return self.vm.get_spec(vm_name, field, namespace)
+
+    def update_vm_spec(self, vm_name, field, value, namespace=DEFAULT_NAMESPACE):
+        """Update a single field in the VM spec.
+
+        Supported *field* values: ``"cpu_cores"``, ``"usbtablet"``.
+        Retries automatically on conflict.
+        """
+        logging(f'Updating VM {vm_name} spec field {field!r} to {value!r}')
+        self.vm.update_spec(vm_name, field, value, namespace)
 
     def exec_command_in_vm(
         self, vm_name, command, username, pkey=None, network="default",

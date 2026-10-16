@@ -264,11 +264,42 @@ VM cloud-init should be done
 Get VM CPU Cores
     [Arguments]    ${vm_name}
     [Documentation]    Get the VM spec's requested CPU core count
-    ${cores}=    vm_keywords.get_vm_cpu_cores    ${vm_name}
+    ${cores}=    vm_keywords.get_vm_spec    ${vm_name}    cpu_cores
     RETURN    ${cores}
 
 VM CPU is updated to ${cpu_cores}
     [Arguments]    ${vm_name}
     [Documentation]    Update the VM's CPU core count
-    vm_keywords.update_vm_cpu_cores    ${vm_name}    ${cpu_cores}
+    vm_keywords.update_vm_spec    ${vm_name}    cpu_cores    ${cpu_cores}
+
+Get VM USB Tablet Status
+    [Arguments]    ${vm_name}
+    [Documentation]    Return True when the VM spec has a USB tablet input device,
+    ...    False otherwise.
+    ${enabled}=    vm_keywords.get_vm_spec    ${vm_name}    usbtablet
+    RETURN    ${enabled}
+
+Enable VM USB Tablet
+    [Arguments]    ${vm_name}
+    [Documentation]    Enable the USB tablet input device on a VM
+    vm_keywords.update_vm_spec    ${vm_name}    usbtablet    ${True}
+
+Disable VM USB Tablet
+    [Arguments]    ${vm_name}
+    [Documentation]    Disable the USB tablet input device on a VM
+    vm_keywords.update_vm_spec    ${vm_name}    usbtablet    ${False}
+
+VM USB Tablet should be enabled
+    [Arguments]    ${vm_name}
+    [Documentation]    Assert the VM spec has a USB tablet input device
+    ${enabled}=    Get VM USB Tablet Status    ${vm_name}
+    Should Be True    ${enabled}
+    ...    msg=VM ${vm_name} should have USB tablet enabled but it is disabled
+
+VM USB Tablet should be disabled
+    [Arguments]    ${vm_name}
+    [Documentation]    Assert the VM spec does NOT have a USB tablet input device
+    ${enabled}=    Get VM USB Tablet Status    ${vm_name}
+    Should Not Be True    ${enabled}
+    ...    msg=VM ${vm_name} should have USB tablet disabled but it is enabled
 
