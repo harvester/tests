@@ -129,8 +129,8 @@ class VM(Base):
     def update_disk_size(self, vm_name, disk_name, new_size, namespace=DEFAULT_NAMESPACE):
         return self.vm.update_disk_size(vm_name, disk_name, new_size, namespace)
 
-    def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
-        return self.vm.get_cpu_cores(vm_name, namespace)
+    def get_spec(self, vm_name, field, namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_spec(vm_name, field, namespace)
 
     def get_disk_performance(self, vm_name, disk_name, from_vmi=False,
                              namespace=DEFAULT_NAMESPACE):
@@ -144,5 +144,5 @@ class VM(Base):
                                  namespace=DEFAULT_NAMESPACE):
         return self.vm.get_launched_disk_driver(vm_name, disk_name, namespace)
 
-    def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE):
-        return self.vm.update_cpu_cores(vm_name, cpu_cores, namespace)
+    def update_spec(self, vm_name, field, value, namespace=DEFAULT_NAMESPACE):
+        return self.vm.update_spec(vm_name, field, value, namespace)
