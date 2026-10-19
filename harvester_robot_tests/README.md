@@ -450,7 +450,27 @@ Delete Suite Resources
     Run Keyword And Ignore Error    VM is deleted    ${VM_NAME}
 ```
 
+### Test Steps (BDD Style)
+
+Write the steps of a test case in the behavior-driven style, as in the example
+above. Robot Framework ignores the prefixes when it resolves a keyword, they only
+make the test report readable as precondition, action and expected result:
+
+- `Given`: the precondition, e.g. `Given VM should be running    ${VM_NAME}`
+- `When`: the action under test, e.g. `When Snapshot is created    ${VM_NAME}    ${SNAPSHOT_NAME}`
+- `Then`: the expected result, e.g. `Then Snapshot should be ready    ${SNAPSHOT_NAME}`
+- `And`: a further step of the same kind as the one before
+
+A test that only has a `Then` step, or none of these prefixes at all, is usually
+missing its precondition or action.
+
 ### Adding New Keywords
+
+> [!IMPORTANT]
+> A `.robot` suite file should only define its local suite setup and teardown
+> keywords (`Local Suite Setup`, `Local Suite Teardown` and the
+> `Delete Suite Resources` helper of the teardown). Place all other keywords in
+> a `keywords/*.resource` file.
 
 1. Define keywords in `keywords/*.resource`:
 ```robot
