@@ -68,13 +68,34 @@ Get Available NVMe Disks
 Provision Storages
     [Arguments]    ${engine}    ${disk_by_node}
     FOR    ${node}    ${disk}    IN    &{disk_by_node}
-        Set Test Message    \nProvision blockdevice ${LONGHORN_NAMESPACE}/${disk} with LHv2    append=yes
+        Log    Provision blockdevice ${LONGHORN_NAMESPACE}/${disk} with ${engine}
         storage_keywords.provision_longhorn_storage    ${disk}    ${engine}    ${LONGHORN_NAMESPACE}
     END
+
+Get Provisioned LHv2 Disks
+    [Documentation]    Map of node -> blockdevice for already provisioned LHv2 disks
+    &{disk_by_node}=    storage_keywords.get_provisioned_lhv2_disks    ${LONGHORN_NAMESPACE}
+    RETURN    &{disk_by_node}
 
 Provision Storages With LHv2 Data Engine
     [Arguments]    ${disk_by_node}
     Provision Storages    LonghornV2    ${disk_by_node}
+
+Unprovision Storages
+    [Arguments]    ${disk_by_node}
+    [Documentation]    Release the disks and wait until they are free again. Retried, because
+    ...    the webhook rejects it while the disk holds the last replica of a volume being deleted.
+    FOR    ${node}    ${disk}    IN    &{disk_by_node}
+        Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+        ...    storage_keywords.unprovision_longhorn_storage    ${disk}    ${LONGHORN_NAMESPACE}
+        Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+        ...    Blockdevice Is Unprovisioned    ${disk}
+    END
+
+Blockdevice Is Unprovisioned
+    [Arguments]    ${name}
+    ${bd}=    storage_keywords.get_blockdevice    ${name}    ${LONGHORN_NAMESPACE}
+    Should Be Equal    ${bd}[status][provisionPhase]    Unprovisioned
 
 Blockdevice Is Provisioned
     [Arguments]    ${name}    ${namespace}=${LONGHORN_NAMESPACE}

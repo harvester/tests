@@ -36,6 +36,9 @@ class Blockdevice(Base):
             logging(e)
             self.rest.provision_longhorn_storage(name, engine_version, namespace)
 
+    def unprovision_longhorn_storage(self, name, namespace):
+        return self.crd.unprovision_longhorn_storage(name, namespace)
+
     def identify_lvm_suitable(self, min_size_gib):
         try:
             return self.crd.identify_lvm_suitable(min_size_gib)
