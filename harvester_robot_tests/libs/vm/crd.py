@@ -58,6 +58,7 @@ class CRD(Base):
         extra_disks: optional list of dicts passed via kwargs, each dict may contain:
             - size: required, e.g. "10Gi"
             - storage_class: optional, defaults to "harvester-longhorn"
+            - access_mode: optional, defaults to "ReadWriteMany"
             - name: optional, defaults to "{vm_name}-disk-{index}"
         Example:
             extra_disks=[
@@ -96,6 +97,7 @@ class CRD(Base):
         disk_name = "disk-0"
         volume_name = f"{vm_name}-{disk_name}"
         boot_disk_size = kwargs.get("disk_size", "10Gi")
+        boot_access_mode = kwargs.get("disk_access_mode", "ReadWriteMany")
         volume_claim_templates = [
             {
                 "metadata": {
@@ -108,7 +110,7 @@ class CRD(Base):
                     }
                 },
                 "spec": {
-                    "accessModes": ["ReadWriteMany"],
+                    "accessModes": [boot_access_mode],
                     "resources": {
                         "requests": {
                             "storage": boot_disk_size
@@ -164,7 +166,7 @@ class CRD(Base):
                             }
                         },
                         "spec": {
-                            "accessModes": ["ReadWriteMany"],
+                            "accessModes": [disk.get("access_mode", "ReadWriteMany")],
                             "resources": {
                                 "requests": {
                                     "storage": disk["size"]

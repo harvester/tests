@@ -109,6 +109,17 @@ class storage_keywords:
     def provision_longhorn_storage(self, disk_name: str, engine_version: str, namespace: str):
         self.blockdevice.provision_longhorn_storage(disk_name, engine_version, namespace)
 
+    def get_provisioned_lhv2_disks(self, namespace: str) -> dict:
+        """Map of node name -> blockdevice name for provisioned LHv2 disks"""
+        disks = {}
+        for bd in self.list_blockdevices(namespace):
+            engine = (bd.get("spec", {}).get("provisioner", {})
+                      .get("longhorn", {}).get("engineVersion"))
+            if engine == "LonghornV2" and \
+                    bd.get("status", {}).get("provisionPhase") == "Provisioned":
+                disks[bd["spec"]["nodeName"]] = bd["metadata"]["name"]
+        return disks
+
     def is_blockdevice_provisioned(self, name: str, namespace: str) -> bool:
         blockdevice = self.get_blockdevice(name, namespace)
         provision_phase = blockdevice and blockdevice.get("status", {}).get("provisionPhase")
