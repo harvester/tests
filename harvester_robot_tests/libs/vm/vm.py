@@ -63,6 +63,10 @@ class VM(Base):
     def try_get(self, vm_name):
         return self.vm.try_get(vm_name)
 
+    def get_actions(self, vm_name):
+        # Actions only exist in Harvester API responses, so always use REST
+        return Rest().get_actions(vm_name)
+
     def try_delete(self, vm_name):
         return self.vm.try_delete(vm_name)
 

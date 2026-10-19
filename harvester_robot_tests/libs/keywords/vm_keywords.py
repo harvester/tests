@@ -125,6 +125,9 @@ class vm_keywords:
         logging(f'Waiting for VM {vm_name} to be paused')
         self.vm.wait_for_paused(vm_name, timeout)
 
+    def get_vm_actions(self, vm_name):
+        return self.vm.get_actions(vm_name)
+
     def try_get_vm(self, vm_name):
         """Attempt to get a VM for negative testing; returns result dict"""
         logging(f'Attempting to get VM {vm_name} (negative test)')

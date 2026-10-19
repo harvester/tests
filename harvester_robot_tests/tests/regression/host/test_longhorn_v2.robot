@@ -8,6 +8,7 @@ Resource    ../../../keywords/image.resource
 Resource    ../../../keywords/virtualmachine.resource
 Resource    ../../../keywords/volume.resource
 Resource    ../../../keywords/storageclass.resource
+Library     pabot.PabotLib
 
 Suite Setup       Local Suite Setup
 Suite Teardown    Local Suite Teardown
@@ -69,6 +70,8 @@ Local Suite Setup
     Set Suite Variable    ${VM_NAME}       vm-${suffix}
     Set Suite Variable    ${VOL_NAME}      vol-${suffix}
 
+    # Serialize with other suites using free NVMe disks, released in the teardown
+    Acquire Lock    ${LHV2_DISK_LOCK}
     Set up test environment
     # DISK_BY_NODE
     &{nvme_by_node}=    storage.Get Available NVMe Disks
@@ -88,6 +91,7 @@ Local Suite Setup
 
 Local Suite Teardown
     Common Suite Teardown
+    Run Keyword And Ignore Error    Release Lock    ${LHV2_DISK_LOCK}
     
 Create VM With A ${size_gi}Gi LHv2 Volume
     [Arguments]    ${vm_name}
