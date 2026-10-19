@@ -134,6 +134,16 @@ VM should be paused
     [Documentation]    Wait for VM to reach the paused state
     vm_keywords.wait for vm paused    ${vm_name}
 
+VM should offer action
+    [Arguments]    ${vm_name}    ${action}
+    ${actions}=    vm_keywords.get_vm_actions    ${vm_name}
+    List Should Contain Value    ${actions}    ${action}
+
+VM should not offer action
+    [Arguments]    ${vm_name}    ${action}
+    ${actions}=    vm_keywords.get_vm_actions    ${vm_name}
+    List Should Not Contain Value    ${actions}    ${action}
+
 Try To Get VM
     [Arguments]    ${vm_name}
     [Documentation]    Attempt to get a VM expected to be missing. Returns result dict.

@@ -35,6 +35,12 @@ VM backup is created
     [Documentation]    Create a backup of the VM
     backup_keywords.create_backup    ${vm_name}    ${backup_name}
 
+VM backup creation should be rejected
+    [Arguments]    ${vm_name}    ${backup_name}    ${error_pattern}
+    [Documentation]    Creating the backup must fail with an error matching the pattern
+    Run Keyword And Expect Error    ${error_pattern}
+    ...    VM backup is created    ${vm_name}    ${backup_name}
+
 Backup should be ready
     [Arguments]    ${backup_name}
     [Documentation]    Wait until the backup is ready to use

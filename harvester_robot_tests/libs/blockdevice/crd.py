@@ -85,6 +85,10 @@ class CRD(Base):
         except ApiException as e:
             raise Exception(f"Failed to provision blockdevice {namespace}/{name}: {e}")
 
+    def unprovision_longhorn_storage(self, name, namespace):
+        patch_cr(**self.common_parameters, namespace=namespace, name=name,
+                 body={"spec": {"provision": False}})
+
     def identify_lvm_suitable(self, min_size_gib):
         """Identify blockdevices >= min_size_gib suitable for LVM.
         Returns dict {node_name: disk_name} with one disk per node.

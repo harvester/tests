@@ -40,7 +40,7 @@ Prepare LVM Test Environment
 
 Provision LVM Volume Group
     Install Experimental Addon    ${LVM_ADDON_NAME}    ${LVM_ADDON_URL}
-    Enable    ${LVM_ADDON_NAME}
+    addon.Enable    ${LVM_ADDON_NAME}
     Wait For Enabled    ${LVM_ADDON_NAME}
     ${disk_by_node}=    Get LVM Suitable Disks    ${LVM_DISK_SIZE}
     # Persist ownership on the BlockDevices. Under Pabot the workload suites
@@ -60,7 +60,7 @@ Cleanup LVM Test Environment
     Set up test environment
     Run Keyword And Continue On Failure    Cleanup Labelled LVM Volume Groups
     Run Keyword And Continue On Failure    Remove LVM Snapshot Class From CSI Driver Config
-    Disable    ${LVM_ADDON_NAME}
+    addon.Disable    ${LVM_ADDON_NAME}
     Wait For Disabled    ${LVM_ADDON_NAME}
 
 Cleanup Labelled LVM Volume Groups
