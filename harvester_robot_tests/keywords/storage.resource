@@ -68,9 +68,14 @@ Get Available NVMe Disks
 Provision Storages
     [Arguments]    ${engine}    ${disk_by_node}
     FOR    ${node}    ${disk}    IN    &{disk_by_node}
-        Set Test Message    \nProvision blockdevice ${LONGHORN_NAMESPACE}/${disk} with LHv2    append=yes
+        Log    Provision blockdevice ${LONGHORN_NAMESPACE}/${disk} with ${engine}
         storage_keywords.provision_longhorn_storage    ${disk}    ${engine}    ${LONGHORN_NAMESPACE}
     END
+
+Get Provisioned LHv2 Disks
+    [Documentation]    Map of node -> blockdevice for already provisioned LHv2 disks
+    &{disk_by_node}=    storage_keywords.get_provisioned_lhv2_disks    ${LONGHORN_NAMESPACE}
+    RETURN    &{disk_by_node}
 
 Provision Storages With LHv2 Data Engine
     [Arguments]    ${disk_by_node}

@@ -85,6 +85,12 @@ class Rest(Base):
             "wait_for_paused is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
+    def get_actions(self, vm_name):
+        """Names of the actions the Harvester API offers for the VM"""
+        code, data = get_harvester_api_client().vms.get(vm_name)
+        assert code == 200, f"Failed to get VM {vm_name}: {code}, {data}"
+        return list(data.get("actions", {}))
+
     def try_get(self, vm_name):
         """Attempt to get a VM; returns {success, code, message}."""
         api = get_harvester_api_client()
