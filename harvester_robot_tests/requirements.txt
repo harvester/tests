@@ -763,6 +763,7 @@ httpx==0.28.1 \
     # via
     #   -r requirements.in
     #   google-genai
+    #   ollama
     #   openai
 humanfriendly==10.0 \
     --hash=sha256:1697e1a8a8f550fd43c2865cd84542fc175a61dcb779b6fee18cf6b6ccba1477 \
@@ -1201,6 +1202,10 @@ oauthlib==3.3.1 \
     # via
     #   kubernetes
     #   requests-oauthlib
+ollama==0.6.3 \
+    --hash=sha256:41fc49a8095c4a75939c4c1f8582e4d0671692fb6eac2a5a7ede8c9872b67096 \
+    --hash=sha256:6a20bc42c1a5f889295d7ec490d35e5132fc31f339561530f43a8abd4dbfe508
+    # via -r requirements.in
 openai==2.54.0 \
     --hash=sha256:89089789197ccdb87f173a03145ed1598d00795220c93e96cf712b1cbf5e5f2b \
     --hash=sha256:e3e6f8bc1ba30ddf381ace1a14340eed381cb984a1a59bd0f34b5be3b5d49cfa
@@ -1413,6 +1418,7 @@ pydantic==2.13.5 \
     # via
     #   deepeval
     #   google-genai
+    #   ollama
     #   openai
     #   pydantic-settings
 pydantic-core==2.46.5 \
