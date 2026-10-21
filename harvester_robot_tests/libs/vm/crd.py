@@ -755,8 +755,8 @@ class CRD(Base):
     def try_get(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Attempt to get a VM; returns {success, code, message}."""
         try:
-            self.get(vm_name, namespace)
-            return {"success": True, "code": 200, "message": ""}
+            vm = self.get(vm_name, namespace)
+            return {"success": True, "code": 200, "message": vm}
         except ApiException as e:
             return {"success": False, "code": e.status,
                     "message": e.body or e.reason or ""}

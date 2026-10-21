@@ -4,6 +4,7 @@ Layer 3: Keyword wrappers for Robot Framework
 """
 from rancher_ai.client import RancherAIClient    # noqa E402
 from rancher_ai.evaluation.evaluator import ResponseEvaluator    # noqa E402
+from rancher_ai.models import ConfirmationConversationResult    # noqa E402
 from typing import Optional
 
 
@@ -15,8 +16,6 @@ class rancher_ai_keywords:
         self.evaluator = ResponseEvaluator()
 
     def prompt(self, prompt: str, harvester_cluster_id: str):
-        context = {"cluster": harvester_cluster_id}
-        print(f'Prompt Rancher AI:\n* Prompt: {prompt}\n* Context: {context}')
         return self.chat.prompt(prompt, harvester_cluster_id)
 
     def evaluate_response(
@@ -45,3 +44,15 @@ class rancher_ai_keywords:
         return self.evaluator.evaluate_response(
             input, response, extra_criteria, evaluation_steps,
         )
+
+    def prompt_and_confirm(
+        self, prompt: str, harvester_cluster_id: str, decision: str = "yes",
+    ) -> ConfirmationConversationResult:
+        """Reply once to a validated confirmation request and preserve both turns.
+
+        Args:
+            prompt: Original user request, not the confirmation answer.
+            harvester_cluster_id: Target Harvester cluster ID.
+            decision: yes to confirm, no to cancel; no implicit boolean conversion.
+        """
+        return self.chat.prompt_and_confirm(prompt, harvester_cluster_id, decision)

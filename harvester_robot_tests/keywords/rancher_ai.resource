@@ -27,3 +27,13 @@ Rancher should reply
     ${evaluation_result}=    Evaluate Response
     ...    ${prompt}    ${response}    ${extra_criteria}    ${evaluation_steps}
     Should Be True    ${evaluation_result.passed}    ${evaluation_result.reason}
+
+Prompt Rancher And Confirm
+    [Documentation]    Send a request and reply once to its validated confirmation block.
+    ...    Fails if confirmation is missing, malformed, incomplete, or requested again.
+    ...    Uses the same connection for both turns; does not reconnect or replay.
+    ...    Returns both initial_response and final_response; answer is the final narrative.
+    [Arguments]    ${prompt}    ${harvester_cluster_id}    ${decision}=yes
+    ${conversation_result}=    rancher_ai_keywords.prompt_and_confirm
+    ...    ${prompt}    ${harvester_cluster_id}    ${decision}
+    RETURN    ${conversation_result}
