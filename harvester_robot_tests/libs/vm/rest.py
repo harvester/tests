@@ -90,7 +90,7 @@ class Rest(Base):
         api = get_harvester_api_client()
         code, data = api.vms.get(vm_name)
         if code == 200:
-            return {"success": True, "code": code, "message": ""}
+            return {"success": True, "code": code, "message": data}
         return {"success": False, "code": code, "message": self._error_message(code, data)}
 
     def try_delete(self, vm_name):
