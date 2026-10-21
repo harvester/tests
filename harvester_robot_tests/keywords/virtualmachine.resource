@@ -3,6 +3,7 @@ Documentation    VM Keywords
 Library          Collections
 Resource         variables.resource
 Resource         common.resource
+Resource         volume.resource
 Library          ../libs/keywords/vm_keywords.py
 
 *** Keywords ***
@@ -16,6 +17,21 @@ VM is created
     [Arguments]    ${vm_name}    ${image_id}    ${cpu}=2    ${memory}=4Gi    &{config}
     [Documentation]    Create a virtual machine with provided name
     vm_keywords.create vm    ${vm_name}    ${image_id}    ${cpu}    ${memory}    &{config}
+
+Get VM Volumes
+    [Documentation]    Return PVC claim names in VM volume order, skipping non-PVC volumes.
+    [Arguments]    ${vm_name}
+    &{res}=    Try Get Vm    ${vm_name}
+    Should Be True    ${res.success}    VM ${vm_name} does not exist: ${res.message}
+
+    ${volumes}=    Evaluate    $res['message']['spec']['template']['spec'].get('volumes', [])
+    ${claim_names}=    Create List
+    FOR    ${volume}    IN    @{volumes}
+        IF    'persistentVolumeClaim' in $volume
+            Append To List    ${claim_names}    ${volume}[persistentVolumeClaim][claimName]
+        END
+    END
+    RETURN    ${claim_names}
 
 VM is deleted
     [Arguments]    ${vm_name}
@@ -139,6 +155,12 @@ Try To Get VM
     [Documentation]    Attempt to get a VM expected to be missing. Returns result dict.
     ${result}=    vm_keywords.try_get_vm    ${vm_name}
     RETURN    ${result}
+
+VM does not exist
+    [Arguments]    ${vm_name}
+    [Documentation]    Assert a VM does not exist (is not found)
+    ${result}=    Try To Get VM    ${vm_name}
+    Operation Should Be Not Found    ${result}
 
 Try To Delete VM
     [Arguments]    ${vm_name}
