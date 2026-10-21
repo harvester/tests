@@ -56,6 +56,39 @@ class ConversationResult:
         return asdict(self)
 
 
+@dataclass(frozen=True)
+class ConfirmationConversationResult:
+    """Keep both responses; protocol completion is not proof of task success.
+    """
+    initial_response: ConversationResult = field(repr=False)
+    final_response: ConversationResult = field(repr=False)
+    decision: str
+    elapsed_seconds: float
+
+    @property
+    def answer(self) -> str:
+        """Return the final narrative without mixing it with the pending plan.
+        """
+        return self.final_response.answer
+
+    @property
+    def chat_id(self) -> Optional[str]:
+        """Return the connection's conversation identifier, when supplied.
+        """
+        return self.final_response.chat_id or self.initial_response.chat_id
+
+    @property
+    def completed(self) -> bool:
+        """Return whether both responses have complete message boundaries.
+        """
+        return self.initial_response.completed and self.final_response.completed
+
+    def to_dict(self) -> dict:
+        """Return an independent snapshot with fixed report field names.
+        """
+        return asdict(self)
+
+
 class RancherAIError(Exception):
     """Base error with optional sanitized partial response evidence."""
 
@@ -82,6 +115,10 @@ class RancherAITimeoutError(RancherAIError):
 
 class RancherAIProtocolError(RancherAIError):
     """Invalid tagged stream, JSON control block or text encoding."""
+
+
+class RancherAIConfirmationError(RancherAIProtocolError):
+    """The requested confirmation was missing, ambiguous or repeated."""
 
 
 class RancherAIIncompleteResponseError(RancherAIProtocolError):
