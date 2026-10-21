@@ -4,6 +4,7 @@ import math
 import os
 from dataclasses import asdict, dataclass, field
 from typing import Mapping, Optional
+from urllib.parse import urlsplit
 
 
 class EvaluationError(Exception):
@@ -30,22 +31,46 @@ class EvaluationResponseError(EvaluationProviderError):
 class EvaluationConfig:
     """Environment access is explicit and does not load credential files.
     """
-    api_key: str = field(repr=False)
+    api_key: str = field(default="", repr=False)
     model_name: str = "gemini-3.6-flash"
     threshold: float = 0.8
     timeout: float = 120.0
+    provider: str = "gemini"
+    base_url: Optional[str] = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
-        for name, value in (
-            ("GOOGLE_API_KEY", self.api_key),
-            ("GEMINI_MODEL_NAME", self.model_name),
-        ):
+        if self.provider not in ("gemini", "ollama"):
+            raise EvaluationConfigError("Evaluation provider must be gemini or ollama")
+        fields = [("OLLAMA_MODEL" if self.provider == "ollama" else "GEMINI_MODEL",
+                   self.model_name)]
+        if self.provider == "gemini":
+            fields.append(("GEMINI_API_KEY", self.api_key))
+        else:
+            fields.append(("OLLAMA_URL", self.base_url))
+        for name, value in fields:
             if (
                 not isinstance(value, str)
                 or not value
                 or any(char.isspace() or ord(char) < 0x20 for char in value)
             ):
                 raise EvaluationConfigError(f"{name} must be nonempty without whitespace")
+
+        if self.provider == "ollama":
+            try:
+                url = urlsplit(self.base_url)
+                valid_url = (
+                    url.scheme in ("http", "https") and bool(url.hostname)
+                    and url.username is None and url.password is None
+                    and not url.query and not url.fragment
+                    and "?" not in self.base_url and "#" not in self.base_url
+                    and (url.port is None or 1 <= url.port <= 65535)
+                )
+            except ValueError:
+                valid_url = False
+            if not valid_url:
+                raise EvaluationConfigError(
+                    "OLLAMA_URL must be an HTTP(S) URL without credentials, query or fragment"
+                )
 
         if (
             isinstance(self.threshold, bool)
@@ -67,9 +92,20 @@ class EvaluationConfig:
     def from_env(cls, environ: Optional[Mapping[str, str]] = None) -> "EvaluationConfig":
         env = os.environ if environ is None else environ
 
-        key = env.get("GOOGLE_API_KEY", "")
-        if not isinstance(key, str) or not key.strip():
-            raise EvaluationConfigError("Missing configuration: GOOGLE_API_KEY")
+        selected = None
+        for provider, first, second in (
+            ("ollama", "OLLAMA_URL", "OLLAMA_MODEL"),
+            ("gemini", "GEMINI_API_KEY", "GEMINI_MODEL"),
+        ):
+            values = (env.get(first, ""), env.get(second, ""))
+            if all(isinstance(value, str) and value.strip() for value in values):
+                selected = provider, values
+                break
+        if selected is None:
+            raise EvaluationConfigError(
+                "Missing configuration: OLLAMA_URL and OLLAMA_MODEL, "
+                "or GEMINI_API_KEY and GEMINI_MODEL are required"
+            )
 
         numbers = {}
         for name, default in (
@@ -80,11 +116,14 @@ class EvaluationConfig:
             except (ValueError, TypeError):
                 raise EvaluationConfigError(f"{name} has an invalid numeric value") from None
 
+        provider, (credential, model_name) = selected
         return cls(
-            api_key=key,
-            model_name=env.get("GEMINI_MODEL_NAME", cls.model_name),
+            api_key=credential if provider == "gemini" else "",
+            model_name=model_name,
             threshold=numbers["AI_EVAL_THRESHOLD"],
             timeout=numbers["AI_EVAL_TIMEOUT"],
+            provider=provider,
+            base_url=credential if provider == "ollama" else None,
         )
 
 

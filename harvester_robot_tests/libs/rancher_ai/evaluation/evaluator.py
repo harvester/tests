@@ -1,12 +1,14 @@
-"""Generic synchronous DeepEval/Gemini evaluation, independent of the AI client."""
+"""Generic synchronous DeepEval evaluation, independent of the AI client.
+"""
 
 import math
 import os
 import re
 import time
 from asyncio import TimeoutError as AsyncTimeoutError
-from contextlib import suppress
+from contextlib import ExitStack, suppress
 from typing import Optional
+from utility.utility import logging
 
 from .models import (
     EvaluationConfig, EvaluationConfigError, EvaluationError,
@@ -60,12 +62,71 @@ def _status_code(error: Exception) -> Optional[int]:
     return None
 
 
+def _close(client) -> None:
+    """Release an owned SDK client without hiding an evaluation failure.
+    """
+    with suppress(Exception):
+        client.close()
+
+
+def _create_gemini_model(config: EvaluationConfig, resources: ExitStack):
+    """Create Gemini and register its clients with the caller's resource stack.
+    """
+    import httpx
+    from deepeval.models import GeminiModel
+    from google.genai.types import HttpOptions, HttpRetryOptions
+
+    # Gemini creates further clients during generation. Their shared
+    # caller-owned HTTP transport has one explicit lifecycle.
+    transport = httpx.Client()
+    resources.callback(_close, transport)
+    model = GeminiModel(
+        model=config.model_name, api_key=config.api_key,
+        temperature=0, use_vertexai=False, vertexai=False,
+        generation_kwargs={"automatic_function_calling": {"disable": True}},
+        http_options=HttpOptions(
+            timeout=max(1, math.ceil(config.timeout * 1000)),
+            retry_options=HttpRetryOptions(attempts=1),
+            httpx_client=transport,
+        ),
+    )
+    resources.callback(_close, model.model)
+    return model
+
+
+def _create_ollama_model(config: EvaluationConfig, resources: ExitStack):
+    """Reuse one sync client, including calls made by the SDK constructor.
+    """
+    from deepeval.models import OllamaModel
+
+    client = None
+
+    class SyncOllamaModel(OllamaModel):
+        """Keep stock generation/schema handling with an owned sync client.
+        """
+        def load_model(self, async_mode: bool = False):
+            """Register ownership as soon as a client exists, even during init.
+            """
+            nonlocal client
+            if async_mode:
+                raise EvaluationConfigError("Response evaluation supports synchronous Ollama only")
+            if client is None:
+                client = super().load_model(async_mode=False)
+                resources.callback(_close, client)
+            return client
+
+    return SyncOllamaModel(
+        model=config.model_name, base_url=config.base_url,
+        temperature=0, timeout=config.timeout, follow_redirects=False,
+    )
+
+
 def _measure_once(
     config: EvaluationConfig,
     input: str,
     actual_output: str,
     expected_output: Optional[str],
-    evaluation_steps: list[str]
+    evaluation_steps: tuple[str, ...]
 ) -> tuple[object, object]:
     """Measure output by LLM-as-a-judge with ordinary SDK calls; no worker or generated criteria.
 
@@ -76,31 +137,30 @@ def _measure_once(
     """
     import httpx
     from deepeval.metrics import GEval
-    from deepeval.models import GeminiModel
     from deepeval.test_case import LLMTestCase, SingleTurnParams
-    from google.genai.types import HttpOptions, HttpRetryOptions
     from tenacity import RetryError
 
-    # GeminiModel.load_model() creates additional clients during generation.
-    # A caller-owned sync transport gives those clients one explicit lifecycle.
-    transport = httpx.Client()
-    model = None
-    try:
-        model = GeminiModel(
-            model=config.model_name,
-            api_key=config.api_key,
-            temperature=0,
-            use_vertexai=False,
-            vertexai=False,
-            generation_kwargs={
-                "automatic_function_calling": {"disable": True},
-            },
-            http_options=HttpOptions(
-                timeout=max(1, math.ceil(config.timeout * 1000)),
-                retry_options=HttpRetryOptions(attempts=1),
-                httpx_client=transport,
-            ),
-        )
+    with ExitStack() as resources:
+        try:
+            if config.provider == "ollama":
+                model = _create_ollama_model(config, resources)
+                logging(f"Using Ollama model {config.model_name}")
+            elif config.provider == "gemini":
+                model = _create_gemini_model(config, resources)
+                logging(f"Using Gemini model {config.model_name}")
+            else:
+                raise EvaluationConfigError("Evaluation provider must be gemini or ollama")
+        except EvaluationError:
+            raise
+        except ImportError:
+            raise EvaluationProviderError("Evaluation SDK dependencies are unavailable") from None
+        except Exception as error:
+            status = _status_code(error)
+            detail = f" (HTTP {status})" if status is not None else ""
+            raise EvaluationProviderError(
+                f"Could not initialize {config.provider} judge{detail}"
+            ) from None
+
         params = [SingleTurnParams.INPUT, SingleTurnParams.ACTUAL_OUTPUT]
         case_values = {"input": input, "actual_output": actual_output}
         if expected_output is not None:
@@ -117,23 +177,18 @@ def _measure_once(
             strict_mode=False,
             verbose_mode=False,
         )
-        metric.measure(test_case, _show_indicator=False)
-        return metric.score, metric.reason
-    except RetryError as error:
-        cause = error.last_attempt.exception()
-        if isinstance(cause, (TimeoutError, AsyncTimeoutError, httpx.TimeoutException)):
+        try:
+            metric.measure(test_case, _show_indicator=False)
+            return metric.score, metric.reason
+        except RetryError as error:
+            cause = error.last_attempt.exception()
+            if isinstance(cause, (TimeoutError, AsyncTimeoutError, httpx.TimeoutException)):
+                raise EvaluationTimeoutError("Response evaluation timed out") from None
+            if cause is None:
+                raise EvaluationResponseError("Judge returned no valid response") from None
+            raise cause from None
+        except httpx.TimeoutException:
             raise EvaluationTimeoutError("Response evaluation timed out") from None
-        if cause is None:
-            raise EvaluationResponseError("Judge returned no valid response") from None
-        raise cause from None
-    except httpx.TimeoutException:
-        raise EvaluationTimeoutError("Response evaluation timed out") from None
-    finally:
-        if model is not None:
-            with suppress(Exception):
-                model.model.close()
-        with suppress(Exception):
-            transport.close()
 
 
 class ResponseEvaluator:
@@ -173,7 +228,11 @@ class ResponseEvaluator:
 
         config = self.config if self.config is not None else EvaluationConfig.from_env()
         secrets = tuple(
-            value for value in (config.api_key, os.environ.get("RANCHER_API_TOKEN", ""),) if value
+            value for value in (
+                config.api_key,
+                os.environ.get("GEMINI_API_KEY", ""),
+                os.environ.get("OLLAMA_API_KEY", "")
+            ) if value
         )
         # redact secrets
         input = _redact(input, secrets)
@@ -208,7 +267,7 @@ class ResponseEvaluator:
                     continue
                 detail = f" (HTTP {status})" if status is not None else ""
                 raise EvaluationProviderError(
-                    f"Judge provider request failed{detail}"
+                    f"Judge provider request failed{detail}: {error}"
                 ) from None
 
             if (
