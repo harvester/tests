@@ -213,7 +213,8 @@ class RancherAIConfig:
 
     @classmethod
     def from_env(cls, environ: Optional[Mapping[str, str]] = None) -> "RancherAIConfig":
-        """Read POC-compatible variables; no GOOGLE_API_KEY is needed in Phase 1."""
+        """Read POC-compatible variables; no Gemini API key is needed in Phase 1.
+        """
         env = os.environ if environ is None else environ
 
         tls = os.environ.get("RANCHER_AI_VERIFY_TLS", "true").strip().lower()
