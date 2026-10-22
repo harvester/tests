@@ -10,11 +10,9 @@ Suite Teardown   Local Suite Teardown
 Test Tags        rancher-ai
 
 
-# TODO: Support Ollama LLM
 *** Variables ***
 ${HARVESTER_CLUSTER_NAME}    ${EMPTY}
-# TODO: Drop this
-${HARVESTER_CLUSTER_ID}      c-m-sx8gk9lw    # ${EMPTY}
+${HARVESTER_CLUSTER_ID}      ${EMPTY}
 ${PROMPT}              ${EMPTY}
 ${RESPONSE}            ${EMPTY}
 ${IMG_DISPLAY_NAME}    ${EMPTY}
@@ -125,7 +123,7 @@ Delete VM
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name    precise=${False}
-    # Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    hvst-${suffix}
+    Set Suite Variable    ${HARVESTER_CLUSTER_NAME}    hvst-${suffix}
     Set Suite Variable    ${IMG_DISPLAY_NAME}          img-${suffix}
     Set Suite Variable    ${VM_NAME}                   vm-${suffix}
     Set Suite Variable    ${VNET_NAME}                 vnet-${suffix}
@@ -136,6 +134,7 @@ Local Suite Setup
         rancher.Import Harvester To Rancher In Setup
         Should Not Be Empty    ${HARVESTER_CLUSTER_ID}    Failed to import Harvester cluster
     END
+    rancher_ai.Wait For Rancher AI Deployments Ready
 
 Local Suite Teardown
     Run Keyword If Any Tests Failed    Log Variables
@@ -163,7 +162,3 @@ Rancher Should Reply
     [Arguments]    ${extra_criteria}    ${evaluation_steps}=None
     rancher_ai.Rancher should reply
     ...    ${PROMPT}    ${RESPONSE}    ${extra_criteria}    ${evaluation_steps}
-
-# TODO: Setup rancher-ai-agent and harvester-mcp-server
-# Ref. https://github.com/rancher/prime-docs/pull/362/changes
-# rancher_keyword 裡有現有的 _run_kubectl
