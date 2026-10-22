@@ -10,6 +10,7 @@ from contextlib import ExitStack, suppress
 from typing import Optional
 from utility.utility import logging
 
+from ..models import _get_config_value
 from .models import (
     EvaluationConfig, EvaluationConfigError, EvaluationError,
     EvaluationProviderError, EvaluationResponseError, EvaluationResult,
@@ -230,9 +231,10 @@ class ResponseEvaluator:
         secrets = tuple(
             value for value in (
                 config.api_key,
+                _get_config_value("GEMINI_API_KEY", os.environ, ""),
                 os.environ.get("GEMINI_API_KEY", ""),
                 os.environ.get("OLLAMA_API_KEY", "")
-            ) if value
+            ) if isinstance(value, str) and value
         )
         # redact secrets
         input = _redact(input, secrets)
