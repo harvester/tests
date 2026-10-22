@@ -18,6 +18,26 @@ DEFAULT_ENDPOINT_PATH = (
 )
 
 
+def _get_config_value(name: str, environ: Mapping[str, str], default=None) -> object:
+    """Read a Robot scalar, falling back only when it is undefined or unavailable.
+    """
+    try:
+        from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
+    except ModuleNotFoundError as error:
+        if error.name != "robot":
+            raise
+    else:
+        missing = object()
+        try:
+            value = BuiltIn().get_variable_value("${" + name + "}", missing)
+        except RobotNotRunningError:
+            pass
+        else:
+            if value is not missing:
+                return value
+    return environ.get(name, default)
+
+
 @dataclass(frozen=True)
 class StreamEvent:
     """A parsed control block, kept separately from the narrative."""
@@ -131,8 +151,8 @@ class RancherAIResponseTooLargeError(RancherAIProtocolError):
 
 @dataclass
 class RancherAIConfig:
-    """Explicit config; environment access occurs only in ``from_env()``."""
-
+    """Explicit config; Robot/environment lookup occurs only in ``from_env()``.
+    """
     rancher_url: str                             # env["RANCHER_ENDPOINT"]
     api_token: str = field(repr=False)           # assign in client.py
     cluster_id: str                              # assign in client.py
@@ -160,8 +180,6 @@ class RancherAIConfig:
             not isinstance(self.ca_bundle, str) or not self.ca_bundle.strip()
         ):
             raise RancherAIConfigError("RANCHER_AI_CA_BUNDLE must be a nonempty path")
-        if self.ca_bundle and not self.verify_tls:
-            raise RancherAIConfigError("A CA bundle cannot be used with TLS verification disabled")
 
         for name, value in (
             ("RANCHER_AI_CONNECT_TIMEOUT", self.connect_timeout),
@@ -195,8 +213,9 @@ class RancherAIConfig:
 
             parsed.port  # Validate malformed and out-of-range ports.
         except (ValueError, TypeError):
-            raise RancherAIConfigError("RANCHER_ENDPOINT must be an HTTP(S) URL without credentials, "
-                                       "query or fragment") from None
+            raise RancherAIConfigError(
+                "RANCHER_ENDPOINT must be an HTTP(S) URL without credentials, query or fragment"
+            ) from None
 
         if (not isinstance(self.endpoint_path, str)
                 or not self.endpoint_path.startswith("/")
@@ -213,12 +232,16 @@ class RancherAIConfig:
 
     @classmethod
     def from_env(cls, environ: Optional[Mapping[str, str]] = None) -> "RancherAIConfig":
-        """Read POC-compatible variables; no Gemini API key is needed in Phase 1.
+        """Read AI settings from Robot first, then the supplied environment and defaults.
         """
         env = os.environ if environ is None else environ
 
-        tls = os.environ.get("RANCHER_AI_VERIFY_TLS", "true").strip().lower()
-        if tls not in ("true", "false", "1", "0", "yes", "no"):
+        tls = _get_config_value("RANCHER_AI_VERIFY_TLS", env, "true")
+        if isinstance(tls, str):
+            tls = tls.strip().lower()
+            if tls in ("true", "false", "1", "0", "yes", "no"):
+                tls = tls in ("true", "1", "yes")
+        if not isinstance(tls, bool):
             raise RancherAIConfigError("RANCHER_AI_VERIFY_TLS must be true or false")
 
         numbers = {}
@@ -227,17 +250,28 @@ class RancherAIConfig:
             ("RANCHER_AI_TIMEOUT", "120", float),
             ("RANCHER_AI_MAX_RESPONSE_BYTES", "2097152", int),
         ):
+            value = _get_config_value(name, env, default)
             try:
-                numbers[name] = converter(os.environ.get(name, default))
-            except (ValueError, TypeError):
+                if (isinstance(value, bool)
+                        or not isinstance(value, (str, int, float))
+                        or (converter is int and isinstance(value, float))):
+                    raise ValueError
+                numbers[name] = converter(value)
+            except (ValueError, TypeError, OverflowError):
                 raise RancherAIConfigError(f"{name} has an invalid numeric value") from None
+
+        ca_bundle = _get_config_value("RANCHER_AI_CA_BUNDLE", env)
+        if ca_bundle == "":
+            ca_bundle = None
+        if ca_bundle is not None and not isinstance(ca_bundle, str):
+            raise RancherAIConfigError("RANCHER_AI_CA_BUNDLE must be a nonempty path")
 
         return cls(
             rancher_url=env["RANCHER_ENDPOINT"],
             api_token="",
             cluster_id="",
-            verify_tls=tls in ("true", "1", "yes"),
-            ca_bundle=env.get("RANCHER_AI_CA_BUNDLE") or None,
+            verify_tls=tls,
+            ca_bundle=ca_bundle,
             connect_timeout=numbers["RANCHER_AI_CONNECT_TIMEOUT"],
             timeout=numbers["RANCHER_AI_TIMEOUT"],
             max_response_bytes=numbers["RANCHER_AI_MAX_RESPONSE_BYTES"],

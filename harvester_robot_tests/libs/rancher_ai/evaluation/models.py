@@ -6,6 +6,8 @@ from dataclasses import asdict, dataclass, field
 from typing import Mapping, Optional
 from urllib.parse import urlsplit
 
+from ..models import _get_config_value
+
 
 class EvaluationError(Exception):
     """Evaluation could not produce a valid judgment; no score is fabricated."""
@@ -29,7 +31,7 @@ class EvaluationResponseError(EvaluationProviderError):
 
 @dataclass(frozen=True)
 class EvaluationConfig:
-    """Environment access is explicit and does not load credential files.
+    """Robot/environment access is explicit and does not load credential files.
     """
     api_key: str = field(default="", repr=False)
     model_name: str = "gemini-3.6-flash"
@@ -90,6 +92,8 @@ class EvaluationConfig:
 
     @classmethod
     def from_env(cls, environ: Optional[Mapping[str, str]] = None) -> "EvaluationConfig":
+        """Resolve Robot settings before environment values, then select the provider.
+        """
         env = os.environ if environ is None else environ
 
         selected = None
@@ -97,9 +101,11 @@ class EvaluationConfig:
             ("ollama", "OLLAMA_URL", "OLLAMA_MODEL"),
             ("gemini", "GEMINI_API_KEY", "GEMINI_MODEL"),
         ):
-            values = (env.get(first, ""), env.get(second, ""))
-            if all(isinstance(value, str) and value.strip() for value in values):
-                selected = provider, values
+            first_value = _get_config_value(first, env, "")
+            second_value = _get_config_value(second, env, "")
+            if (isinstance(first_value, str) and isinstance(second_value, str)
+                    and first_value.strip() and second_value.strip()):
+                selected = provider, (first_value, second_value)
                 break
         if selected is None:
             raise EvaluationConfigError(
@@ -111,9 +117,12 @@ class EvaluationConfig:
         for name, default in (
             ("AI_EVAL_THRESHOLD", cls.threshold), ("AI_EVAL_TIMEOUT", cls.timeout)
         ):
+            value = _get_config_value(name, env, default)
             try:
-                numbers[name] = float(env.get(name, default))
-            except (ValueError, TypeError):
+                if isinstance(value, bool) or not isinstance(value, (str, int, float)):
+                    raise ValueError
+                numbers[name] = float(value)
+            except (ValueError, TypeError, OverflowError):
                 raise EvaluationConfigError(f"{name} has an invalid numeric value") from None
 
         provider, (credential, model_name) = selected
