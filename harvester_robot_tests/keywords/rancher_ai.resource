@@ -1,9 +1,19 @@
 *** Settings ***
 Documentation    Rancher AI Keywords - Reusable keywords for Rancher AI operations
 Library          ../libs/keywords/rancher_ai_keywords.py
+Resource         rancher.resource
 
 
 *** Keywords ***
+Wait For Rancher AI Deployments Ready
+    [Documentation]    Wait for AI deployments in Rancher's local cluster.
+    ...    Uses cattle-ai-agent-system and gives each deployment its own timeout.
+    ...    Fails on the first unsuccessful wait; does not skip or ignore failures.
+    FOR    ${deployment}    IN    rancher-ai-agent    rancher-mcp-server    harvester-mcp-server
+        rancher.Wait For Deployment Ready
+        ...    local    cattle-ai-agent-system    ${deployment}    20
+    END
+
 Prompt Rancher
     [Arguments]    ${prompt}    ${harvester_cluster_id}
     [Documentation]    Prompt Rancher AI and returns the response.
