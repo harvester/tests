@@ -79,6 +79,65 @@ def focal_vm(api_client, focal_image, wait_timeout):
         api_client.volumes.delete(volume_name)
 
 
+@pytest.fixture()
+def pinned_focal_vm(api_client, focal_image, wait_timeout):
+    """A running VM that can only be scheduled on a single node (nodeSelector)."""
+    code, data = api_client.hosts.get()
+    assert 200 == code, f"Failed to list nodes with error: {code}, {data}"
+
+    candidates = []
+    for node in data['data']:
+        ready = any(c.get('type') == 'Ready' and c.get('status') == 'True'
+                    for c in node.get('status', {}).get('conditions', []))
+        if ready and not node.get('spec', {}).get('unschedulable', False):
+            candidates.append(node)
+    assert candidates, "No ready and schedulable node found"
+
+    # prefer a worker node, so the control-plane quorum is not involved
+    workers = [n for n in candidates
+               if 'node-role.kubernetes.io/control-plane' not in n['metadata'].get('labels', {})]
+    node = (workers or candidates)[0]
+    node_name = node['metadata']['name']
+    hostname = node['metadata']['labels'].get('kubernetes.io/hostname', node_name)
+
+    unique_name = f'vm-{datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")}'
+    vm_spec = api_client.vms.Spec(1, 1)
+    vm_spec.add_image('disk-0', focal_image['id'], image_uid=focal_image['uid'])
+    vm_data = vm_spec.to_dict(unique_name, 'default')
+    vm_data['metadata'].pop('resourceVersion', None)
+    vm_data['spec']['template']['spec']['nodeSelector'] = {'kubernetes.io/hostname': hostname}
+
+    code, data = api_client.vms.create(unique_name, vm_data)
+    assert 201 == code, (
+        f"Failed to create VM {unique_name} with error: {code}, {data}"
+    )
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(unique_name)
+        if data.get('status', {}).get('ready', False):
+            code, data = api_client.vms.get_status(unique_name)
+            if data['status']['conditions'][-1]['status'] == 'True':
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Can't find VM {unique_name} with {wait_timeout} timed out\n"
+            f"Got error: {code}, {data}"
+        )
+
+    yield dict(name=unique_name, namespace='default', node_name=node_name)
+
+    code, data = api_client.vms.get(unique_name)
+    if 200 == code:
+        volume_name = ""
+        for volume in data['spec']['template']['spec']['volumes']:
+            if volume['name'] == 'disk-0':
+                volume_name = volume['persistentVolumeClaim']['claimName']
+        api_client.vms.delete(unique_name)
+        api_client.volumes.delete(volume_name)
+
+
 @pytest.fixture(scope="class")
 def vm_force_reset_policy(api_client):
     # update vm-force-reset-policy to 10s, so we don't need to wait 300s to force remove VM
@@ -300,6 +359,101 @@ def test_maintenance_mode_trigger_vm_migrate(
             f"MaintenanceMode condition: {maintain_cond}\n"
             f"Got error: {code}, {data}"
         )
+
+
+def _wait_maintenance_condition(api_client, node_name, check, timeout, desc):
+    """Poll the node until `check(condition, node)` is true and return the node."""
+    condition = None
+    code, data = None, None
+    endtime = datetime.now() + timedelta(seconds=timeout)
+    while endtime > datetime.now():
+        code, data = api_client.hosts.get(node_name)
+        assert 200 == code, (code, data)
+        conditions = data.get('status', {}).get('conditions', [])
+        condition = next((c for c in conditions if c.get('type') == 'MaintenanceMode'), None)
+        if check(condition, data):
+            return data
+        sleep(5)
+    raise AssertionError(
+        f"Node {node_name}: {desc} not reached within {timeout} secs\n"
+        f"MaintenanceMode condition: {condition}\n"
+        f"Got: {code}, {data}"
+    )
+
+
+@pytest.mark.hosts
+@pytest.mark.sanity
+@pytest.mark.p1
+@pytest.mark.virtualmachines
+@pytest.mark.parametrize("trigger", ["api_action", "annotation"])
+def test_maintenance_mode_precheck_error_clear(
+    api_client, pinned_focal_vm, wait_timeout, trigger
+):
+    """
+    A maintenance mode pre-check failure is kept as `MaintenanceMode` condition
+    (status False, reason Error) and can be dismissed with `clearMaintenanceMode`.
+    The UI dialog runs the pre-checks itself and would refuse to submit, so the
+    request is sent directly via the API action or by setting the annotation.
+
+    Prerequisite:
+        - A VM that is pinned to one node via nodeSelector (non-migratable)
+    Steps:
+        1. Request maintenance mode for the node hosting the VM
+        2. Wait for the pre-check error condition
+        3. Call `clearMaintenanceMode`
+    Expected Result:
+        - Condition is `status: False`, `reason: Error` with a message
+        - Node stays schedulable, the drain request annotations are removed
+        - VM keeps running on the node
+        - Condition is removed after `clearMaintenanceMode`
+    """
+    node_name = pinned_focal_vm['node_name']
+    drain_annotations = ('harvesterhci.io/drain-requested', 'harvesterhci.io/drain-forced')
+
+    if trigger == "api_action":
+        code, data = api_client.hosts.maintenance_mode(node_name, enable=True)
+        assert 204 == code, (
+            f"Failed to request maintenance mode on node {node_name}: {code}, {data}"
+        )
+    else:
+        code, data = api_client.hosts.update(
+            node_name, dict(metadata=dict(annotations={drain_annotations[0]: 'true'}))
+        )
+        assert 200 == code, (
+            f"Failed to set drain-requested on node {node_name}: {code}, {data}"
+        )
+
+    # the error is persisted first, the drain request annotations are removed afterwards
+    node = _wait_maintenance_condition(
+        api_client, node_name,
+        lambda cond, n: (
+            cond is not None and cond.get('status') == 'False' and cond.get('reason') == 'Error'
+            and not any(a in n['metadata'].get('annotations', {}) for a in drain_annotations)
+        ),
+        wait_timeout, "pre-check error (status False, reason Error)"
+    )
+    conditions = node['status']['conditions']
+    condition = next(c for c in conditions if c['type'] == 'MaintenanceMode')
+    assert condition.get('message'), f"Error condition has no message: {condition}"
+    assert not node['spec'].get('unschedulable', False), (
+        f"Node {node_name} was cordoned although the pre-checks failed"
+    )
+
+    code, data = api_client.vms.get_status(pinned_focal_vm['name'], pinned_focal_vm['namespace'])
+    assert 200 == code, (code, data)
+    assert node_name == data['status']['nodeName'], (
+        f"VM was moved from {node_name} to {data['status']['nodeName']}"
+    )
+
+    code, data = api_client.hosts.clear_maintenance_mode(node_name)
+    assert 204 == code, (
+        f"Failed to clear maintenance mode error on node {node_name}: {code}, {data}"
+    )
+
+    _wait_maintenance_condition(
+        api_client, node_name, lambda cond, n: cond is None, wait_timeout,
+        "removal of the MaintenanceMode condition"
+    )
 
 
 @pytest.mark.hosts
