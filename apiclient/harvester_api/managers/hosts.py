@@ -32,6 +32,10 @@ class HostManager(BaseManager):
         payload = dict(force=str(force).lower())
         return self._create(self.PATH_fmt.format(uid=name), params=params, json=payload)
 
+    def clear_maintenance_mode(self, name):
+        params = dict(action="clearMaintenanceMode")
+        return self._create(self.PATH_fmt.format(uid=name), params=params)
+
     def cpu_manager(self, name, enable=True):
         action = "enable" if enable else "disable"
         params = dict(action=f"{action}CPUManager")
