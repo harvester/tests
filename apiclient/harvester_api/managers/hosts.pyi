@@ -55,3 +55,9 @@ class HostManager(BaseManager):
     ) -> dict:
         """
         """
+    def clear_maintenance_mode(
+        self,
+        name: str
+    ) -> dict:
+        """
+        """
