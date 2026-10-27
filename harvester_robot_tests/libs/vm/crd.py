@@ -2,8 +2,10 @@
 VM CRD Implementation
 """
 import json
+import re
 import time
 from kubernetes import client
+from kubernetes.stream import stream
 from kubernetes.client.rest import ApiException
 from crd import get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted, replace_cr
 from constant import (
@@ -15,6 +17,53 @@ from constant import (
 )
 from utility.utility import logging, get_retry_count_and_interval
 from vm.base import Base
+
+
+# KubeVirt per-disk performance fields, keyed by the snake_case option a test
+# passes. They sit on the Disk, as siblings of "disk", not inside it.
+DISK_PERFORMANCE_FIELDS = {
+    "cache": "cache",
+    "io": "io",
+    "dedicated_io_thread": "dedicatedIOThread",
+}
+
+
+def disk_performance_fields(options):
+    """Return the KubeVirt Disk fields for a dict of performance options.
+
+    Unset (None or empty) options are left out, so a disk without options
+    keeps the exact spec it had before.
+    """
+    fields = {}
+    for option, field in DISK_PERFORMANCE_FIELDS.items():
+        value = (options or {}).get(option)
+        if value in (None, ""):
+            continue
+        if field == "dedicatedIOThread":
+            value = str(value).lower() == "true"
+        fields[field] = value
+    return fields
+
+
+def apply_domain_io_settings(domain, options):
+    """Set the VM-wide storage performance fields (blockMultiQueue,
+    ioThreadsPolicy, ioThreads.supplementalPoolThreadCount) on a domain spec.
+
+    Only requested settings are set, so a default VM keeps the exact spec it
+    had before.
+    """
+    block_multi_queue = options.get("block_multi_queue")
+    if block_multi_queue not in (None, ""):
+        domain["devices"]["blockMultiQueue"] = (
+            str(block_multi_queue).lower() == "true")
+    io_threads_policy = options.get("io_threads_policy")
+    if io_threads_policy:
+        domain["ioThreadsPolicy"] = io_threads_policy
+    thread_count = options.get("supplemental_pool_thread_count")
+    if thread_count not in (None, ""):
+        domain["ioThreads"] = {
+            "supplementalPoolThreadCount": int(thread_count)
+        }
 
 
 class CRD(Base):
@@ -59,11 +108,26 @@ class CRD(Base):
             - size: required, e.g. "10Gi"
             - storage_class: optional, defaults to "harvester-longhorn"
             - name: optional, defaults to "{vm_name}-disk-{index}"
+            - access_mode: optional, defaults to "ReadWriteMany"; node-local
+              storage such as LVM needs "ReadWriteOnce"
+            - cache, io, dedicated_io_thread: optional KubeVirt disk
+              performance fields, as for boot_disk_options
         Example:
             extra_disks=[
                 {"size": "20Gi", "storage_class": "sc-lhv2"},
                 {"name": "data-2", "size": "50Gi"}
             ]
+
+        Storage performance (KubeVirt high-performance storage features):
+            boot_disk_options: optional dict with cache ("none", "writeback",
+                "writethrough"), io ("native", "threads") and
+                dedicated_io_thread (bool) for the boot disk
+            block_multi_queue: optional bool, sets
+                domain.devices.blockMultiQueue
+            io_threads_policy: optional "shared", "auto" or "supplementalPool",
+                sets domain.ioThreadsPolicy
+            supplemental_pool_thread_count: optional int, sets
+                domain.ioThreads.supplementalPoolThreadCount
         """
 
         # Look up the image's actual storage class from Harvester.
@@ -125,7 +189,8 @@ class CRD(Base):
                 "name": disk_name,
                 "disk": {
                     "bus": "virtio"
-                }
+                },
+                **disk_performance_fields(kwargs.get("boot_disk_options"))
             }
         ]
         spec_volumes = [
@@ -164,7 +229,9 @@ class CRD(Base):
                             }
                         },
                         "spec": {
-                            "accessModes": ["ReadWriteMany"],
+                            "accessModes": [
+                                disk.get("access_mode", "ReadWriteMany")
+                            ],
                             "resources": {
                                 "requests": {
                                     "storage": disk["size"]
@@ -180,7 +247,8 @@ class CRD(Base):
                         "name": volume_name,
                         "disk": {
                             "bus": "virtio"
-                        }
+                        },
+                        **disk_performance_fields(disk)
                     }
                 )
                 spec_volumes.append(
@@ -327,6 +395,9 @@ class CRD(Base):
             body["spec"]["template"]["spec"]["nodeSelector"] = {
                 "kubernetes.io/hostname": node_name
             }
+
+        apply_domain_io_settings(
+            body["spec"]["template"]["spec"]["domain"], kwargs)
 
         logging(f"Creating VM with spec: {body}")
 
@@ -1230,6 +1301,73 @@ class CRD(Base):
             body=vm
         )
         logging(f"Updated disk size for {vm_name} {disk_name} to {new_size}")
+
+    def _domain_spec(self, vm_name, from_vmi, namespace):
+        """Return the domain spec of the VM, or of its running VMI, which
+        holds what KubeVirt actually launched."""
+        if from_vmi:
+            vmi = get_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                         VIRTUALMACHINEINSTANCE_PLURAL, vm_name)
+            return vmi['spec'].get('domain', {})
+        vm = self.get(vm_name, namespace)
+        return vm['spec']['template']['spec'].get('domain', {})
+
+    def get_disk_performance(self, vm_name, disk_name, from_vmi=False,
+                             namespace=DEFAULT_NAMESPACE):
+        """Return a disk's cache, io and dedicatedIOThread fields (absent
+        fields are omitted)."""
+        domain = self._domain_spec(vm_name, from_vmi, namespace)
+        for disk in domain.get('devices', {}).get('disks', []):
+            if disk.get('name') == disk_name:
+                return {field: disk[field]
+                        for field in DISK_PERFORMANCE_FIELDS.values()
+                        if field in disk}
+        raise Exception(f"Disk {disk_name} not found in VM {vm_name}")
+
+    def get_domain_io_settings(self, vm_name, from_vmi=False,
+                               namespace=DEFAULT_NAMESPACE):
+        """Return the VM-wide blockMultiQueue, ioThreadsPolicy and
+        supplementalPoolThreadCount settings (absent settings are omitted)."""
+        domain = self._domain_spec(vm_name, from_vmi, namespace)
+        settings = {}
+        if 'blockMultiQueue' in domain.get('devices', {}):
+            settings['blockMultiQueue'] = domain['devices']['blockMultiQueue']
+        if 'ioThreadsPolicy' in domain:
+            settings['ioThreadsPolicy'] = domain['ioThreadsPolicy']
+        if 'supplementalPoolThreadCount' in domain.get('ioThreads', {}):
+            settings['supplementalPoolThreadCount'] = (
+                domain['ioThreads']['supplementalPoolThreadCount'])
+        return settings
+
+    def get_launched_disk_driver(self, vm_name, disk_name,
+                                 namespace=DEFAULT_NAMESPACE):
+        """Return the libvirt <driver> attributes of a disk in the domain the
+        VM's virt-launcher actually started (e.g. cache, io, queues).
+
+        This is the only place some settings are visible: QEMU sizes the
+        virtio-blk queues to the vCPU count even when multi-queue is off, so
+        the guest sees the same queue count either way, while the domain
+        only carries queues='N' when blockMultiQueue is set.
+        """
+        pods = self.core_api.list_namespaced_pod(
+            namespace, label_selector=f"vm.kubevirt.io/name={vm_name}").items
+        running = [p for p in pods if p.status.phase == "Running"]
+        if not running:
+            raise Exception(f"No running virt-launcher pod for VM {vm_name}")
+        # KubeVirt aliases each disk as "ua-<disk name>". Let virsh select the
+        # disk's <driver> element, so only its attributes need reading.
+        driver = stream(
+            self.core_api.connect_get_namespaced_pod_exec,
+            running[0].metadata.name, namespace, container="compute",
+            command=["virsh", "dumpxml", f"{namespace}_{vm_name}", "--xpath",
+                     f"//disk[alias/@name='ua-{disk_name}']/driver"],
+            stderr=True, stdin=False, stdout=True, tty=False,
+        )
+        if not driver.strip().startswith("<driver"):
+            raise Exception(
+                f"Disk {disk_name} not found in the domain of VM {vm_name}: "
+                f"{driver.strip()}")
+        return dict(re.findall(r'(\w+)="([^"]*)"', driver))
 
     def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Return the VM spec's requested CPU core count."""

@@ -20,6 +20,16 @@ class Rest(Base):
 
     def create(self, vm_name, image_id, cpu, memory, **kwargs):
         """Create a virtual machine"""
+        storage_performance = [
+            k for k in ("boot_disk_options", "block_multi_queue",
+                        "io_threads_policy", "supplemental_pool_thread_count")
+            if kwargs.get(k) not in (None, "")
+        ]
+        if storage_performance:
+            raise NotImplementedError(
+                f"{', '.join(storage_performance)} is only implemented for the "
+                "CRD strategy; run with HARVESTER_OPERATION_STRATEGY=crd")
+
         api = get_harvester_api_client()
 
         vm_spec = api.vms.Spec(cpu, memory)
@@ -156,6 +166,27 @@ class Rest(Base):
         """Only implemented for the CRD strategy."""
         raise NotImplementedError(
             "get_disk_names is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_disk_performance(self, vm_name, disk_name, from_vmi=False,
+                             namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_disk_performance is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_domain_io_settings(self, vm_name, from_vmi=False,
+                               namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_domain_io_settings is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_launched_disk_driver(self, vm_name, disk_name,
+                                 namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_launched_disk_driver is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
     def start(self, vm_name):
