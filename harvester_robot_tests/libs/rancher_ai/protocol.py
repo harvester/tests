@@ -8,10 +8,14 @@ import math
 from typing import Optional, cast
 
 from .models import (
-    JSONValue, RancherAIConfirmationError, RancherAIIncompleteResponseError,
-    RancherAIProtocolError, RancherAIResponseTooLargeError, ResourceReference, StreamEvent,
+    JSONValue,
+    RancherAIConfirmationError,
+    RancherAIIncompleteResponseError,
+    RancherAIProtocolError,
+    RancherAIResponseTooLargeError,
+    ResourceReference,
+    StreamEvent,
 )
-
 
 KNOWN_TAGS = (
     # message boundary: carring narrative text and control blocks.
@@ -33,8 +37,7 @@ _CONFIRMATION_MARKERS = tuple(
 
 
 def _unique_object(pairs: list[tuple[str, JSONValue]]) -> dict[str, JSONValue]:
-    """Reject ambiguous control objects rather than silently choosing the last key.
-    """
+    """Reject ambiguous control objects rather than silently choosing the last key."""
     result: dict[str, JSONValue] = {}
     for key, value in pairs:
         if key in result:
@@ -44,8 +47,7 @@ def _unique_object(pairs: list[tuple[str, JSONValue]]) -> dict[str, JSONValue]:
 
 
 def _finite_float(value: str) -> float:
-    """Reject numeric overflow before storing structured response evidence.
-    """
+    """Reject numeric overflow before storing structured response evidence."""
     number = float(value)
     if not math.isfinite(number):
         raise ValueError("Non-finite control number")
@@ -60,8 +62,11 @@ class RancherAIStreamParser:
     """Feed text chunks, preserving narrative text and separating known control tags."""
 
     def __init__(self, max_response_bytes: int = 2 * 1024 * 1024):
-        if (isinstance(max_response_bytes, bool) or not isinstance(max_response_bytes, int)
-                or max_response_bytes <= 0):
+        if (
+            isinstance(max_response_bytes, bool)
+            or not isinstance(max_response_bytes, int)
+            or max_response_bytes <= 0
+        ):
             raise ValueError("max_response_bytes must be a positive integer")
         self.max_response_bytes = max_response_bytes
         self.completed = False
@@ -98,7 +103,9 @@ class RancherAIStreamParser:
         except UnicodeError:
             raise RancherAIProtocolError("Invalid UTF-8 response text") from None
         if self._received_bytes + size > self.max_response_bytes:
-            raise RancherAIResponseTooLargeError("Rancher AI response exceeded the byte limit")
+            raise RancherAIResponseTooLargeError(
+                "Rancher AI response exceeded the byte limit"
+            )
 
         self._received_bytes += size
         self._frames.append(chunk)
@@ -113,7 +120,9 @@ class RancherAIStreamParser:
     def finish(self) -> None:
         """Require the actual closing marker, not connection closure or an idle timeout."""
         if not self.completed:
-            raise RancherAIIncompleteResponseError("Response ended before a complete </message>")
+            raise RancherAIIncompleteResponseError(
+                "Response ended before a complete </message>"
+            )
 
     def _append_text(self, text: str) -> None:
         if self._started:
@@ -122,8 +131,7 @@ class RancherAIStreamParser:
             raise RancherAIProtocolError("Unexpected text before <message>")
 
     def _consume_text(self) -> bool:
-        """Consume narrative text until an opening bracket is found, or the chunk ends.
-        """
+        """Consume narrative text until an opening bracket is found, or the chunk ends."""
         position = self._pending.find("<")
         # Consume text until an opening bracket is found
         if position == -1:
@@ -152,7 +160,9 @@ class RancherAIStreamParser:
                 if not self._started:
                     raise RancherAIProtocolError("Closing marker without <message>")
                 if not self.answer.strip():
-                    raise RancherAIIncompleteResponseError("Completed message without answer text")
+                    raise RancherAIIncompleteResponseError(
+                        "Completed message without answer text"
+                    )
                 self.completed = True
             elif marker.startswith("</"):
                 # control blocks without opening, see _consume_control() for the other cases
@@ -208,7 +218,9 @@ class RancherAIStreamParser:
                     return False
 
                 if self._pending.startswith("</message>", position):
-                    raise RancherAIProtocolError("Unclosed control block before </message>")
+                    raise RancherAIProtocolError(
+                        "Unclosed control block before </message>"
+                    )
 
             # If not return yet, preserve scanning state so not rescanning processed characters.
             self._scan_position += 1
@@ -220,14 +232,18 @@ class RancherAIStreamParser:
         try:
             data = cast(JSONValue, json.loads(raw, parse_constant=_reject_constant))
         except (ValueError, RecursionError):
-            raise RancherAIProtocolError("Invalid JSON in Rancher AI control block") from None
+            raise RancherAIProtocolError(
+                "Invalid JSON in Rancher AI control block"
+            ) from None
 
         # recursively visits the downstream redaction/serialization data.
         pending = [(data, 0)]
         while pending:
             value, depth = pending.pop()
             if depth > 64:
-                raise RancherAIProtocolError("Control JSON exceeds the nesting limit (64)")
+                raise RancherAIProtocolError(
+                    "Control JSON exceeds the nesting limit (64)"
+                )
             if isinstance(value, dict):
                 pending.extend((item, depth + 1) for item in value.values())
             elif isinstance(value, list):
@@ -247,17 +263,19 @@ class RancherAIStreamParser:
                 if isinstance(item, dict) and all(
                     isinstance(item.get(key), str) and item[key] for key in keys
                 ):
-                    self.resources.append(ResourceReference(
-                        **{key: cast(str, item[key]) for key in keys}
-                    ))
+                    self.resources.append(
+                        ResourceReference(**{key: cast(str, item[key]) for key in keys})
+                    )
         self.events.append(StreamEvent(tag, data))
 
 
 class RancherAIConfirmationStreamParser(RancherAIStreamParser):
-    """Parse one confirmation-aware turn, reusing JSON scanning and byte limits.
-    """
+    """Parse one confirmation-aware turn, reusing JSON scanning and byte limits."""
+
     def __init__(
-        self, max_response_bytes: int = 2 * 1024 * 1024, chat_id: Optional[str] = None,
+        self,
+        max_response_bytes: int = 2 * 1024 * 1024,
+        chat_id: Optional[str] = None,
     ):
         super().__init__(max_response_bytes)
         self.chat_id = chat_id
@@ -265,26 +283,22 @@ class RancherAIConfirmationStreamParser(RancherAIStreamParser):
 
     @property
     def requires_confirmation(self) -> bool:
-        """Return whether a validated pending action block was received.
-        """
+        """Return whether a validated pending action block was received."""
         return bool(self.confirmation_actions)
 
     @property
     def received_bytes(self) -> int:
-        """Return bytes charged to this turn's inbound text budget.
-        """
+        """Return bytes charged to this turn's inbound text budget."""
         return self._received_bytes
 
     def feed(self, chunk: str) -> None:
-        """Reject unsolicited trailing messages instead of dropping buffered data.
-        """
+        """Reject unsolicited trailing messages instead of dropping buffered data."""
         super().feed(chunk)
         if self.completed and self._pending.strip():
             raise RancherAIProtocolError("Unexpected data after </message>")
 
     def _consume_text(self) -> bool:
-        """Recognize confirmation controls without changing global one-shot markers.
-        """
+        """Recognize confirmation controls without changing global one-shot markers."""
         position = self._pending.find("<")
         if position == -1:
             self._append_text(self._pending)
@@ -299,31 +313,7 @@ class RancherAIConfirmationStreamParser(RancherAIStreamParser):
             if not self._pending.startswith(marker):
                 continue
             self._pending = self._pending[len(marker):]
-            if marker == "<message>":
-                if self._started:
-                    raise RancherAIProtocolError("Duplicate <message> marker")
-                self._started = True
-            elif marker == "</message>":
-                if not self._started:
-                    raise RancherAIProtocolError("Closing marker without <message>")
-                if not self.answer.strip() and not self.requires_confirmation:
-                    raise RancherAIIncompleteResponseError("Completed message without answer text")
-                self.completed = True
-            elif marker.startswith("</"):
-                raise RancherAIProtocolError("Unmatched control closing marker")
-            else:
-                tag = marker[1:-1]
-                if tag == _CONFIRMATION_TAG:
-                    if not self._started:
-                        raise RancherAIProtocolError("Confirmation outside <message>")
-                    if self.requires_confirmation:
-                        raise RancherAIConfirmationError(
-                            "Multiple confirmation blocks in one turn",
-                        )
-                self._control_tag = tag
-                self._scan_position = 0
-                self._in_string = False
-                self._escaped = False
+            self._consume_marker(marker)
             return True
 
         if any(marker.startswith(self._pending) for marker in _CONFIRMATION_MARKERS):
@@ -332,13 +322,51 @@ class RancherAIConfirmationStreamParser(RancherAIStreamParser):
         self._pending = self._pending[1:]
         return True
 
+    def _consume_marker(self, marker: str) -> None:
+        """Dispatch a known marker after it has been removed from pending input."""
+        if marker == "<message>":
+            if self._started:
+                raise RancherAIProtocolError("Duplicate <message> marker")
+            self._started = True
+        elif marker == "</message>":
+            self._complete_message()
+        elif marker.startswith("</"):
+            raise RancherAIProtocolError("Unmatched control closing marker")
+        else:
+            self._open_control(marker[1:-1])
+
+    def _complete_message(self) -> None:
+        """Require narrative text or a validated confirmation before completing."""
+        if not self._started:
+            raise RancherAIProtocolError("Closing marker without <message>")
+        if not self.answer.strip() and not self.requires_confirmation:
+            raise RancherAIIncompleteResponseError(
+                "Completed message without answer text"
+            )
+        self.completed = True
+
+    def _open_control(self, tag: str) -> None:
+        """Validate confirmation placement before resetting the JSON scanner."""
+        if tag == _CONFIRMATION_TAG:
+            if not self._started:
+                raise RancherAIProtocolError("Confirmation outside <message>")
+            if self.requires_confirmation:
+                raise RancherAIConfirmationError(
+                    "Multiple confirmation blocks in one turn"
+                )
+        self._control_tag = tag
+        self._scan_position = 0
+        self._in_string = False
+        self._escaped = False
+
     def _record_control(self, raw: str) -> None:
-        """Validate pending actions and stable chat metadata after bounded JSON parsing.
-        """
+        """Validate pending actions and stable chat metadata after bounded JSON parsing."""
         try:
             json.loads(raw, object_pairs_hook=_unique_object, parse_float=_finite_float)
         except (ValueError, RecursionError):
-            raise RancherAIProtocolError("Invalid or ambiguous JSON control block") from None
+            raise RancherAIProtocolError(
+                "Invalid or ambiguous JSON control block"
+            ) from None
         previous_chat_id = self.chat_id
         super()._record_control(raw)
         event = self.events[-1]
@@ -346,20 +374,28 @@ class RancherAIConfirmationStreamParser(RancherAIStreamParser):
             current = self.chat_id
             if previous_chat_id and current and current != previous_chat_id:
                 self.chat_id = previous_chat_id
-                raise RancherAIProtocolError("Chat identifier changed during the conversation")
+                raise RancherAIProtocolError(
+                    "Chat identifier changed during the conversation"
+                )
             self.chat_id = current or previous_chat_id
         elif event.tag == _CONFIRMATION_TAG:
             data = event.data
             actions = [data] if isinstance(data, dict) else data
             if not isinstance(actions, list) or not actions:
-                raise RancherAIProtocolError("Confirmation must contain nonempty action objects")
+                raise RancherAIProtocolError(
+                    "Confirmation must contain nonempty action objects"
+                )
             for action in actions:
                 if not isinstance(action, dict):
                     raise RancherAIProtocolError("Invalid confirmation action")
                 action_type = action.get("type")
                 if not isinstance(action_type, str) or not action_type.strip():
-                    raise RancherAIProtocolError("Confirmation action requires a nonempty type")
+                    raise RancherAIProtocolError(
+                        "Confirmation action requires a nonempty type"
+                    )
                 for key in ("payload", "resource"):
                     if key in action and not isinstance(action[key], dict):
-                        raise RancherAIProtocolError("Invalid confirmation action object")
+                        raise RancherAIProtocolError(
+                            "Invalid confirmation action object"
+                        )
             self.confirmation_actions = tuple(cast(list[dict[str, JSONValue]], actions))
