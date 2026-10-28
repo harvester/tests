@@ -39,7 +39,7 @@ WINDOWS_TIERED_TEMPLATES = {
     'windows-iso-large-template',
     'windows-w11-iso-template',
 }
-# Template for prepared (sysprepped) Windows images added in v1.10.0
+# Template for prepared (sysprepped) Windows images added in v1.9.1
 WINDOWS_IMAGE_TEMPLATES = {
     'windows-image-template',
 }
@@ -76,7 +76,7 @@ def expected_default_templates(api_client):
     release = cluster_release(api_client)
     if release and release < (1, 9, 0):
         return BASE_TEMPLATES
-    if release and release < (1, 10, 0):
+    if release and release < (1, 9, 1):
         return BASE_TEMPLATES | WINDOWS_TIERED_TEMPLATES
     return BASE_TEMPLATES | WINDOWS_TIERED_TEMPLATES | WINDOWS_IMAGE_TEMPLATES
 
