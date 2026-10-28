@@ -267,7 +267,7 @@ class RancherAIConfig:
             raise RancherAIConfigError("RANCHER_AI_CA_BUNDLE must be a nonempty path")
 
         return cls(
-            rancher_url=env["RANCHER_ENDPOINT"],
+            rancher_url=_get_config_value("RANCHER_ENDPOINT", env, ""),
             api_token="",
             cluster_id="",
             verify_tls=tls,

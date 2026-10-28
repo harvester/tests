@@ -160,6 +160,10 @@ class RancherAIClient:
     def __init__(self, config: Optional[RancherAIConfig] = None):
         # Import/instantiation can be used by unrelated suites without AI credentials.
         self.config = config
+        if config is not None and not RancherAIConfig._is_valid_cookie_value(config.api_token):
+            raise RancherAIConfigError(
+                "api_token must be an empty string or a valid cookie value",
+            )
         try:
             from robot.libraries.BuiltIn import BuiltIn
             self.rancher_endpoint = BuiltIn().get_variable_value("${RANCHER_ENDPOINT}")
@@ -169,9 +173,12 @@ class RancherAIClient:
             self.rancher_endpoint = os.getenv("RANCHER_ENDPOINT")
             self.rancher_username = os.getenv("RANCHER_USERNAME")
             self.rancher_password = os.getenv("RANCHER_PASSWORD")
-        self.rancher_token = None
+        self.rancher_token = config.api_token if config is not None else None
         self.rancher_session = None
-        self._authenticate_rancher()
+        if config is not None:
+            self.rancher_endpoint = config.rancher_url
+        if not self.rancher_token:
+            self._authenticate_rancher()
 
     def prompt(self, prompt: str, harvester_cluster_id: str) -> ConversationResult:
         """One-shot Conversation: Submit a user request and wait for a complete response.
@@ -454,8 +461,8 @@ class RancherAIClient:
 
                 stage = "receive_initial"
                 receive_turn()
-                print(f"Prompt: {prompt}")
-                print(f"Answer: {parser.answer}")
+                print(f"Prompt: {_redact(prompt, token)}")
+                print(f"Answer: {_redact(parser.answer, token)}")
                 if not parser.requires_confirmation:
                     raise RancherAIConfirmationError("Response did not request confirmation")
 
@@ -518,15 +525,25 @@ class RancherAIClient:
             return  # Already authenticated
 
         session = requests.Session()
-        session.verify = False
+        config = self.config if self.config is not None else RancherAIConfig.from_env()
+        session.verify = (config.ca_bundle or True) if config.verify_tls else False
         session.headers.update({"Content-Type": "application/json"})
 
         from urllib.parse import urljoin
-        url = urljoin(self.rancher_endpoint, "v3-public/localProviders/local?action=login")
-        response = session.post(url, json={
-            "username": self.rancher_username,
-            "password": self.rancher_password
-        })
+
+        url = urljoin(
+            self.rancher_endpoint.rstrip("/") + "/",
+            "v3-public/localProviders/local?action=login",
+        )
+        response = session.post(
+            url,
+            json={
+                "username": self.rancher_username,
+                "password": self.rancher_password,
+            },
+            timeout=(config.connect_timeout, config.timeout),
+        )
+
         if response.status_code != 201:
             logger.info(f"Auth failed - Status: {response.status_code}, Response: {response.text}")
             raise Exception(

@@ -143,7 +143,6 @@ Local Suite Setup
     rancher_ai.Wait For Rancher AI Deployments Ready
 
 Local Suite Teardown
-    Run Keyword If Any Tests Failed    Log Variables
     Run Keyword If All Tests Passed    Run Keywords
     ...    Run Keyword And Ignore Error   VM is deleted    ${VM_NAME}    AND
     ...    Run Keyword And Ignore Error   Delete Volume    ${VOL_NAME}    AND
