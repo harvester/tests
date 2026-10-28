@@ -269,7 +269,7 @@ class ResponseEvaluator:
                     continue
                 detail = f" (HTTP {status})" if status is not None else ""
                 raise EvaluationProviderError(
-                    f"Judge provider request failed{detail}: {error}"
+                    f"Judge provider request failed{detail}: {_redact(str(error), secrets)}"
                 ) from None
 
             if (

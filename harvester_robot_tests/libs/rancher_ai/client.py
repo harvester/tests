@@ -5,29 +5,37 @@ Refer unit test in harvester_robot_tests/tests/unit/test_rancher_ai_client.py
 
 import errno
 import json
+import logging
 import os
 import re
-import requests
 import socket
 import ssl
 import time
 import warnings
 from contextlib import suppress
 from dataclasses import asdict
+from functools import partial
 from typing import Callable, Optional, cast, overload
-import logging
+
+import requests
 import websocket
 
 from .models import (
+    ConfirmationConversationResult,
+    ConversationResult,
     JSONValue,
+    RancherAIAuthenticationError,
     RancherAIConfig,
-    ConfirmationConversationResult, RancherAIConfirmationError,
-    ConversationResult, ResourceReference, StreamEvent,
-    RancherAIError,
     RancherAIConfigError,
-    RancherAIConnectionError, RancherAIAuthenticationError,
-    RancherAIProtocolError, RancherAIIncompleteResponseError,
-    RancherAIResponseTooLargeError, RancherAITimeoutError
+    RancherAIConfirmationError,
+    RancherAIConnectionError,
+    RancherAIError,
+    RancherAIIncompleteResponseError,
+    RancherAIProtocolError,
+    RancherAIResponseTooLargeError,
+    RancherAITimeoutError,
+    ResourceReference,
+    StreamEvent,
 )
 from .protocol import RancherAIConfirmationStreamParser, RancherAIStreamParser
 
@@ -43,8 +51,7 @@ def _redact(value: JSONValue, token: str) -> JSONValue: ...
 
 
 def _redact(value: JSONValue, token: str) -> JSONValue:
-    """Mask raw and JSON-escaped tokens in text and free-form JSON keys and values.
-    """
+    """Mask raw and JSON-escaped tokens in text and free-form JSON keys and values."""
     if isinstance(value, str):
         characters = []
         for char in token:
@@ -56,8 +63,9 @@ def _redact(value: JSONValue, token: str) -> JSONValue:
     if isinstance(value, list):
         return [_redact(item, token) for item in value]
     if isinstance(value, dict):
-        return {_redact(key, token): _redact(item, token)
-                for key, item in value.items()}
+        return {
+            _redact(key, token): _redact(item, token) for key, item in value.items()
+        }
     return value
 
 
@@ -96,9 +104,143 @@ def _transport_reason(error: Exception) -> str:
         return "proxy connection failed; check proxy settings"
     if isinstance(error, websocket.WebSocketProtocolException):
         return "invalid WebSocket handshake or frame"
-    if isinstance(error, OSError) and error.errno in (errno.ENETUNREACH, errno.EHOSTUNREACH):
+    if isinstance(error, OSError) and error.errno in (
+        errno.ENETUNREACH,
+        errno.EHOSTUNREACH,
+    ):
         return "network or host is unreachable"
     return "unspecified transport error"
+
+
+def _remaining_confirmation_time(deadline: float) -> float:
+    """Keep control frames and both turns within one absolute deadline."""
+    value = deadline - time.monotonic()
+    if value <= 0:
+        raise RancherAITimeoutError("Rancher AI conversation deadline exceeded")
+    return value
+
+
+def _connect_confirmation_socket(
+    connection: websocket.WebSocket,
+    url: str,
+    token: str,
+    connect_timeout: float,
+    remaining: Callable[[], float],
+) -> None:
+    """Connect an already owned socket without following authenticated redirects."""
+    connection.connect(
+        url,
+        cookie=f"R_SESS={token}",
+        timeout=min(connect_timeout, remaining()),
+        redirect_limit=0,
+    )
+    status = connection.getstatus()
+    if status != 101:
+        error_class = (
+            RancherAIAuthenticationError
+            if status in (401, 403)
+            else RancherAIConnectionError
+        )
+        raise error_class(
+            f"Rancher AI handshake rejected (HTTP {status}); expected 101"
+        )
+
+
+def _feed_confirmation_frame(
+    parser: RancherAIConfirmationStreamParser,
+    opcode: int,
+    raw,
+) -> None:
+    """Handle one frame without treating close or control traffic as completion."""
+    if opcode == websocket.ABNF.OPCODE_CLOSE:
+        parser.finish()
+        return
+    if opcode in (websocket.ABNF.OPCODE_PING, websocket.ABNF.OPCODE_PONG):
+        return
+    if opcode != websocket.ABNF.OPCODE_TEXT:
+        raise RancherAIProtocolError("Expected a WebSocket text message")
+    if not raw:
+        raise RancherAIIncompleteResponseError("Connection returned an empty response")
+    try:
+        text = raw.decode("utf-8") if isinstance(raw, bytes) else raw
+    except UnicodeError:
+        raise RancherAIProtocolError("Invalid UTF-8 response text") from None
+    parser.feed(text)
+
+
+def _receive_confirmation_turn(
+    connection: websocket.WebSocket,
+    parser: RancherAIConfirmationStreamParser,
+    remaining: Callable[[], float],
+) -> None:
+    """Receive a full turn with absolute deadline checks before and after each read."""
+    while not parser.completed:
+        connection.settimeout(remaining())
+        opcode, raw = connection.recv_data(control_frame=True)
+        remaining()
+        _feed_confirmation_frame(parser, opcode, raw)
+
+
+def _confirmation_result(
+    parser: RancherAIConfirmationStreamParser,
+    prompt: str,
+    cluster_id: str,
+    token: str,
+    turn_started: float,
+) -> ConversationResult:
+    """Sanitize free-form content while preserving fixed result schema keys."""
+    return ConversationResult(
+        prompt=_redact(prompt, token),
+        cluster_id=_redact(cluster_id, token),
+        answer=_redact(parser.answer, token),
+        chat_id=_redact(parser.chat_id, token) if parser.chat_id else None,
+        events=tuple(
+            StreamEvent(event.tag, _redact(event.data, token))
+            for event in parser.events
+        ),
+        resources=tuple(
+            ResourceReference(
+                **{key: _redact(value, token) for key, value in asdict(item).items()}
+            )
+            for item in parser.resources
+        ),
+        transcript=_redact(parser.transcript, token),
+        completed=parser.completed,
+        elapsed_seconds=max(0.0, time.monotonic() - turn_started),
+    )
+
+
+def _attach_confirmation_history(
+    error: RancherAIError,
+    active_response: ConversationResult,
+    initial_response,
+) -> None:
+    """Attach active-turn evidence without changing existing error constructors."""
+    error.partial_result = active_response
+    error.conversation_history = (
+        (active_response,)
+        if initial_response is None
+        else (initial_response, active_response)
+    )
+
+
+def _confirmation_transport_error(error: Exception, stage: str) -> RancherAIError:
+    """Translate upstream exceptions in the original order without exposing their text."""
+    if isinstance(error, (websocket.WebSocketTimeoutException, TimeoutError)):
+        return RancherAITimeoutError("Rancher AI socket operation timed out")
+    if isinstance(error, websocket.WebSocketBadStatusException):
+        error_class = (
+            RancherAIAuthenticationError
+            if error.status_code in (401, 403)
+            else RancherAIConnectionError
+        )
+        return error_class(f"Rancher AI handshake rejected (HTTP {error.status_code})")
+    if isinstance(error, websocket.WebSocketConnectionClosedException):
+        return RancherAIIncompleteResponseError("WebSocket closed before </message>")
+    reason = _transport_reason(error)
+    return RancherAIConnectionError(
+        f"Rancher AI WebSocket transport failed during {stage}: {reason}",
+    )
 
 
 class ConfirmationWebSocket(websocket.WebSocket):
@@ -108,22 +250,23 @@ class ConfirmationWebSocket(websocket.WebSocket):
     fragmented message before returning to the application-level byte/deadline checks.
     This socket is privately owned by one confirmation conversation.
     """
-    def __init__(self, remaining: Callable[[], float], max_response_bytes: int, **kwargs):
+
+    def __init__(
+        self, remaining: Callable[[], float], max_response_bytes: int, **kwargs
+    ):
         self._remaining = remaining
         self._bytes_left = max_response_bytes
         super().__init__(**kwargs)
 
     def _recv(self, bufsize: int) -> bytes:
-        """Prevent a stream of small socket reads from resetting the deadline.
-        """
+        """Prevent a stream of small socket reads from resetting the deadline."""
         self.settimeout(self._remaining())
         data = super()._recv(bufsize)
         self._remaining()
         return data
 
     def recv_frame(self):
-        """Inspect announced lengths before the dependency reads or joins payloads.
-        """
+        """Inspect announced lengths before the dependency reads or joins payloads."""
         self._remaining()
         buffer = self.frame_buffer
         with buffer.lock:
@@ -143,8 +286,11 @@ class ConfirmationWebSocket(websocket.WebSocket):
                         "Rancher AI response exceeded the byte limit",
                     )
                 self._bytes_left -= length
-            elif opcode in (websocket.ABNF.OPCODE_PING, websocket.ABNF.OPCODE_PONG,
-                            websocket.ABNF.OPCODE_CLOSE):
+            elif opcode in (
+                websocket.ABNF.OPCODE_PING,
+                websocket.ABNF.OPCODE_PONG,
+                websocket.ABNF.OPCODE_CLOSE,
+            ):
                 if length > 125:
                     raise RancherAIProtocolError("Oversized WebSocket control frame")
             else:
@@ -160,8 +306,15 @@ class RancherAIClient:
     def __init__(self, config: Optional[RancherAIConfig] = None):
         # Import/instantiation can be used by unrelated suites without AI credentials.
         self.config = config
+        if config is not None and not RancherAIConfig._is_valid_cookie_value(
+            config.api_token
+        ):
+            raise RancherAIConfigError(
+                "api_token must be an empty string or a valid cookie value",
+            )
         try:
             from robot.libraries.BuiltIn import BuiltIn
+
             self.rancher_endpoint = BuiltIn().get_variable_value("${RANCHER_ENDPOINT}")
             self.rancher_username = BuiltIn().get_variable_value("${RANCHER_USERNAME}")
             self.rancher_password = BuiltIn().get_variable_value("${RANCHER_PASSWORD}")
@@ -169,9 +322,12 @@ class RancherAIClient:
             self.rancher_endpoint = os.getenv("RANCHER_ENDPOINT")
             self.rancher_username = os.getenv("RANCHER_USERNAME")
             self.rancher_password = os.getenv("RANCHER_PASSWORD")
-        self.rancher_token = None
+        self.rancher_token = config.api_token if config is not None else None
         self.rancher_session = None
-        self._authenticate_rancher()
+        if config is not None:
+            self.rancher_endpoint = config.rancher_url
+        if not self.rancher_token:
+            self._authenticate_rancher()
 
     def prompt(self, prompt: str, harvester_cluster_id: str) -> ConversationResult:
         """One-shot Conversation: Submit a user request and wait for a complete response.
@@ -196,15 +352,18 @@ class RancherAIClient:
 
         try:
             request_context = {"cluster": harvester_cluster_id}
-            payload = json.dumps({
-                "prompt": prompt,
-                "agent": "virtualization",
-                "context": request_context
+            payload = json.dumps(
+                {
+                    "prompt": prompt,
+                    "agent": "virtualization",
+                    "context": request_context,
                 },
-                allow_nan=False
+                allow_nan=False,
             )
         except (ValueError, TypeError, RecursionError):
-            raise RancherAIConfigError("prompt and context must be valid JSON data") from None
+            raise RancherAIConfigError(
+                "prompt and context must be valid JSON data"
+            ) from None
         parser = RancherAIStreamParser(config.max_response_bytes)
         started = time.monotonic()
         deadline = started + config.timeout
@@ -223,12 +382,17 @@ class RancherAIClient:
                 cluster_id=_redact(harvester_cluster_id, token),
                 answer=_redact(parser.answer, token),
                 chat_id=_redact(parser.chat_id, token) if parser.chat_id else None,
-                events=tuple(StreamEvent(event.tag, _redact(event.data, token))
-                             for event in parser.events),
-                resources=tuple(ResourceReference(**cast(dict, _redact(asdict(item), token)))
-                                for item in parser.resources),
+                events=tuple(
+                    StreamEvent(event.tag, _redact(event.data, token))
+                    for event in parser.events
+                ),
+                resources=tuple(
+                    ResourceReference(**cast(dict, _redact(asdict(item), token)))
+                    for item in parser.resources
+                ),
                 transcript=_redact(parser.transcript, token),
-                completed=parser.completed, elapsed_seconds=max(0.0, time.monotonic() - started),
+                completed=parser.completed,
+                elapsed_seconds=max(0.0, time.monotonic() - started),
             )
 
         ssl_options: dict = {
@@ -238,24 +402,34 @@ class RancherAIClient:
         if config.ca_bundle:
             ssl_options["ca_certs"] = config.ca_bundle
         if not config.verify_tls:
-            warnings.warn("TLS verification is disabled for Rancher AI", RuntimeWarning,
-                          stacklevel=2)
+            warnings.warn(
+                "TLS verification is disabled for Rancher AI",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         # Own the socket before connect so a failed handshake also gets cleaned up.
         connection = websocket.WebSocket(sslopt=ssl_options, enable_multithread=True)
         stage = "connect"
         try:
             connection.connect(
-                config.websocket_url, cookie=f"R_SESS={config.api_token}",
-                timeout=min(config.connect_timeout, remaining()), redirect_limit=0,
+                config.websocket_url,
+                cookie=f"R_SESS={config.api_token}",
+                timeout=min(config.connect_timeout, remaining()),
+                redirect_limit=0,
             )
             # websocket-client with redirect_limit=0 can return a non-101 handshake.
             # Refuse it rather than follow a Location with the authentication cookie.
             status = connection.getstatus()
             if status != 101:
-                error_class = (RancherAIAuthenticationError if status in (401, 403)
-                               else RancherAIConnectionError)
-                raise error_class(f"Rancher AI handshake rejected (HTTP {status}); expected 101")
+                error_class = (
+                    RancherAIAuthenticationError
+                    if status in (401, 403)
+                    else RancherAIConnectionError
+                )
+                raise error_class(
+                    f"Rancher AI handshake rejected (HTTP {status}); expected 101"
+                )
             stage = "send"
             connection.settimeout(remaining())
             connection.send(payload)
@@ -272,12 +446,16 @@ class RancherAIClient:
                 elif opcode != websocket.ABNF.OPCODE_TEXT:
                     raise RancherAIProtocolError("Expected a WebSocket text message")
                 elif not raw:
-                    raise RancherAIIncompleteResponseError("Connection returned an empty response")
+                    raise RancherAIIncompleteResponseError(
+                        "Connection returned an empty response"
+                    )
                 else:
                     try:
                         text = raw.decode("utf-8") if isinstance(raw, bytes) else raw
                     except UnicodeError:
-                        raise RancherAIProtocolError("Invalid UTF-8 response text") from None
+                        raise RancherAIProtocolError(
+                            "Invalid UTF-8 response text"
+                        ) from None
                     parser.feed(text)
             return result()
         except RancherAIError as error:
@@ -285,16 +463,23 @@ class RancherAIClient:
             raise
         except (websocket.WebSocketTimeoutException, TimeoutError):
             raise RancherAITimeoutError(
-                "Rancher AI socket operation timed out", partial_result=result(),
+                "Rancher AI socket operation timed out",
+                partial_result=result(),
             ) from None
         except websocket.WebSocketBadStatusException as error:
-            error_class = (RancherAIAuthenticationError if error.status_code in (401, 403)
-                           else RancherAIConnectionError)
-            raise error_class(f"Rancher AI handshake rejected (HTTP {error.status_code})",
-                              partial_result=result()) from None
+            error_class = (
+                RancherAIAuthenticationError
+                if error.status_code in (401, 403)
+                else RancherAIConnectionError
+            )
+            raise error_class(
+                f"Rancher AI handshake rejected (HTTP {error.status_code})",
+                partial_result=result(),
+            ) from None
         except websocket.WebSocketConnectionClosedException:
             raise RancherAIIncompleteResponseError(
-                "WebSocket closed before </message>", partial_result=result(),
+                "WebSocket closed before </message>",
+                partial_result=result(),
             ) from None
         except (websocket.WebSocketException, OSError) as error:
             # Upstream messages can contain request headers or remote bodies; do not forward them.
@@ -306,12 +491,17 @@ class RancherAIClient:
         finally:
             # Cleanup errors must not hide the response or the primary failure.
             with suppress(Exception):
-                connection.close(timeout=0)  # No close-handshake wait beyond the deadline.
+                connection.close(
+                    timeout=0
+                )  # No close-handshake wait beyond the deadline.
             with suppress(Exception):
                 connection.shutdown()
 
     def prompt_and_confirm(
-        self, prompt: str, harvester_cluster_id: str, decision: str = "yes",
+        self,
+        prompt: str,
+        harvester_cluster_id: str,
+        decision: str = "yes",
     ) -> ConfirmationConversationResult:
         """Confirmation Conversation: Send one yes/no decision after a confirmation request.
 
@@ -329,17 +519,11 @@ class RancherAIClient:
         Raises:
             RancherAIConfirmationError: Missing, ambiguous or repeated confirmation request.
         """
-        if not isinstance(prompt, str) or not prompt.strip():
-            raise RancherAIConfigError("prompt must be a nonempty string")
-        if not isinstance(harvester_cluster_id, str) or not harvester_cluster_id.strip():
-            raise RancherAIConfigError("harvester_cluster_id must be a nonempty string")
-        if not isinstance(decision, str) or decision.strip().lower() not in ("yes", "no"):
-            raise RancherAIConfigError("decision must be yes or no")
-        decision = decision.strip().lower()
-        token = self.rancher_token
-        if (not isinstance(token, str) or not token
-                or not RancherAIConfig._is_valid_cookie_value(token)):
-            raise RancherAIConfigError("A valid authenticated Rancher token is required")
+        decision, token = self._validate_confirmation_request(
+            prompt,
+            harvester_cluster_id,
+            decision,
+        )
 
         config = self.config if self.config is not None else RancherAIConfig.from_env()
         # Snapshot settings; never mutate the caller's config or use mutable auth state mid-call.
@@ -353,20 +537,29 @@ class RancherAIClient:
         if config.ca_bundle:
             ssl_options["ca_certs"] = config.ca_bundle
         if not config.verify_tls:
-            warnings.warn("TLS verification is disabled for Rancher AI", RuntimeWarning,
-                          stacklevel=2)
+            warnings.warn(
+                "TLS verification is disabled for Rancher AI",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
-        payload = json.dumps({
-            "prompt": prompt,
-            "agent": "virtualization",
-            "context": {"cluster": harvester_cluster_id},
-        }, allow_nan=False)
-        confirmation_payload = json.dumps({
-            "prompt": decision,
-            "agent": "virtualization",
-            "context": {},
-            "tags": ["confirmation"],
-        }, allow_nan=False)
+        payload = json.dumps(
+            {
+                "prompt": prompt,
+                "agent": "virtualization",
+                "context": {"cluster": harvester_cluster_id},
+            },
+            allow_nan=False,
+        )
+        confirmation_payload = json.dumps(
+            {
+                "prompt": decision,
+                "agent": "virtualization",
+                "context": {},
+                "tags": ["confirmation"],
+            },
+            allow_nan=False,
+        )
         started = time.monotonic()
         deadline = started + timeout
         turn_started = started
@@ -375,89 +568,46 @@ class RancherAIClient:
         active_prompt = prompt
         stage = "connect"
 
-        def remaining() -> float:
-            """Keep control frames and both turns within one absolute deadline.
-            """
-            value = deadline - time.monotonic()
-            if value <= 0:
-                raise RancherAITimeoutError("Rancher AI conversation deadline exceeded")
-            return value
+        remaining = partial(_remaining_confirmation_time, deadline)
 
         def result() -> ConversationResult:
-            """Sanitize free-form content while preserving fixed result schema keys.
-            """
-            return ConversationResult(
-                prompt=_redact(active_prompt, token),
-                cluster_id=_redact(harvester_cluster_id, token),
-                answer=_redact(parser.answer, token),
-                chat_id=_redact(parser.chat_id, token) if parser.chat_id else None,
-                events=tuple(StreamEvent(event.tag, _redact(event.data, token))
-                             for event in parser.events),
-                resources=tuple(ResourceReference(**{
-                    key: _redact(value, token) for key, value in asdict(item).items()
-                }) for item in parser.resources),
-                transcript=_redact(parser.transcript, token),
-                completed=parser.completed,
-                elapsed_seconds=max(0.0, time.monotonic() - turn_started),
+            """Snapshot the currently active parser and turn, including failure paths."""
+            return _confirmation_result(
+                parser,
+                active_prompt,
+                harvester_cluster_id,
+                token,
+                turn_started,
             )
 
-        def attach_history(error: RancherAIError) -> None:
-            """Attach both-turn evidence without changing existing error constructors.
-            """
-            partial = result()
-            error.partial_result = partial
-            history = (partial,) if initial_response is None else (initial_response, partial)
-            error.conversation_history = history
-
         connection = ConfirmationWebSocket(
-            remaining, max_bytes, sslopt=ssl_options, enable_multithread=True,
+            remaining,
+            max_bytes,
+            sslopt=ssl_options,
+            enable_multithread=True,
         )
-
-        def receive_turn() -> None:
-            """Receive a full framed turn; neither a close nor an idle timeout completes it.
-            """
-            while not parser.completed:
-                connection.settimeout(remaining())
-                opcode, raw = connection.recv_data(control_frame=True)
-                remaining()
-                if opcode == websocket.ABNF.OPCODE_CLOSE:
-                    parser.finish()
-                elif opcode in (websocket.ABNF.OPCODE_PING, websocket.ABNF.OPCODE_PONG):
-                    continue
-                elif opcode != websocket.ABNF.OPCODE_TEXT:
-                    raise RancherAIProtocolError("Expected a WebSocket text message")
-                elif not raw:
-                    raise RancherAIIncompleteResponseError("Connection returned an empty response")
-                else:
-                    try:
-                        text = raw.decode("utf-8") if isinstance(raw, bytes) else raw
-                    except UnicodeError:
-                        raise RancherAIProtocolError("Invalid UTF-8 response text") from None
-                    parser.feed(text)
 
         try:
             try:
-                connection.connect(
-                    websocket_url, cookie=f"R_SESS={token}",
-                    timeout=min(connect_timeout, remaining()), redirect_limit=0,
+                _connect_confirmation_socket(
+                    connection,
+                    websocket_url,
+                    token,
+                    connect_timeout,
+                    remaining,
                 )
-                status = connection.getstatus()
-                if status != 101:
-                    error_class = (RancherAIAuthenticationError if status in (401, 403)
-                                   else RancherAIConnectionError)
-                    raise error_class(
-                        f"Rancher AI handshake rejected (HTTP {status}); expected 101",
-                    )
                 stage = "send_initial"
                 connection.settimeout(remaining())
                 connection.send(payload)
 
                 stage = "receive_initial"
-                receive_turn()
-                print(f"Prompt: {prompt}")
-                print(f"Answer: {parser.answer}")
+                _receive_confirmation_turn(connection, parser, remaining)
+                print(f"Prompt: {_redact(prompt, token)}")
+                print(f"Answer: {_redact(parser.answer, token)}")
                 if not parser.requires_confirmation:
-                    raise RancherAIConfirmationError("Response did not request confirmation")
+                    raise RancherAIConfirmationError(
+                        "Response did not request confirmation"
+                    )
 
                 initial_response = result()
                 bytes_left = max_bytes - parser.received_bytes
@@ -465,7 +615,9 @@ class RancherAIClient:
                 previous_chat_id = parser.chat_id
                 active_prompt = decision
                 turn_started = time.monotonic()
-                parser = RancherAIConfirmationStreamParser(max(1, bytes_left), previous_chat_id)
+                parser = RancherAIConfirmationStreamParser(
+                    max(1, bytes_left), previous_chat_id
+                )
                 if bytes_left <= 0:
                     raise RancherAIResponseTooLargeError(
                         "No response byte budget left for confirmation",
@@ -476,34 +628,21 @@ class RancherAIClient:
                 connection.send(confirmation_payload)
 
                 stage = "receive_confirmation"
-                receive_turn()
+                _receive_confirmation_turn(connection, parser, remaining)
                 if parser.requires_confirmation:
                     raise RancherAIConfirmationError(
                         "A second confirmation request is not allowed",
                     )
                 return ConfirmationConversationResult(
-                    initial_response=initial_response, final_response=result(), decision=decision,
+                    initial_response=initial_response,
+                    final_response=result(),
+                    decision=decision,
                     elapsed_seconds=max(0.0, time.monotonic() - started),
                 )
-            except (websocket.WebSocketTimeoutException, TimeoutError):
-                raise RancherAITimeoutError("Rancher AI socket operation timed out") from None
-            except websocket.WebSocketBadStatusException as error:
-                error_class = (RancherAIAuthenticationError if error.status_code in (401, 403)
-                               else RancherAIConnectionError)
-                raise error_class(
-                    f"Rancher AI handshake rejected (HTTP {error.status_code})",
-                ) from None
-            except websocket.WebSocketConnectionClosedException:
-                raise RancherAIIncompleteResponseError(
-                    "WebSocket closed before </message>",
-                ) from None
             except (websocket.WebSocketException, OSError) as error:
-                reason = _transport_reason(error)
-                raise RancherAIConnectionError(
-                    f"Rancher AI WebSocket transport failed during {stage}: {reason}",
-                ) from None
+                raise _confirmation_transport_error(error, stage) from None
         except RancherAIError as error:
-            attach_history(error)
+            _attach_confirmation_history(error, result(), initial_response)
             raise
         finally:
             # Suppress cleanup errors thus not overwrite the primary failure
@@ -512,23 +651,66 @@ class RancherAIClient:
             with suppress(Exception):
                 connection.shutdown()
 
+    def _validate_confirmation_request(
+        self,
+        prompt: str,
+        harvester_cluster_id: str,
+        decision: str,
+    ) -> tuple[str, str]:
+        """Validate inputs in order before capturing the authenticated token."""
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise RancherAIConfigError("prompt must be a nonempty string")
+        if (
+            not isinstance(harvester_cluster_id, str)
+            or not harvester_cluster_id.strip()
+        ):
+            raise RancherAIConfigError("harvester_cluster_id must be a nonempty string")
+        if not isinstance(decision, str) or decision.strip().lower() not in (
+            "yes",
+            "no",
+        ):
+            raise RancherAIConfigError("decision must be yes or no")
+        decision = decision.strip().lower()
+        token = self.rancher_token
+        if (
+            not isinstance(token, str)
+            or not token
+            or not RancherAIConfig._is_valid_cookie_value(token)
+        ):
+            raise RancherAIConfigError(
+                "A valid authenticated Rancher token is required"
+            )
+        return decision, token
+
     def _authenticate_rancher(self):
         """Authenticate with Rancher and get token"""
         if self.rancher_token and self.rancher_session:
             return  # Already authenticated
 
         session = requests.Session()
-        session.verify = False
+        config = self.config if self.config is not None else RancherAIConfig.from_env()
+        session.verify = (config.ca_bundle or True) if config.verify_tls else False
         session.headers.update({"Content-Type": "application/json"})
 
         from urllib.parse import urljoin
-        url = urljoin(self.rancher_endpoint, "v3-public/localProviders/local?action=login")
-        response = session.post(url, json={
-            "username": self.rancher_username,
-            "password": self.rancher_password
-        })
+
+        url = urljoin(
+            self.rancher_endpoint.rstrip("/") + "/",
+            "v3-public/localProviders/local?action=login",
+        )
+        response = session.post(
+            url,
+            json={
+                "username": self.rancher_username,
+                "password": self.rancher_password,
+            },
+            timeout=(config.connect_timeout, config.timeout),
+        )
+
         if response.status_code != 201:
-            logger.info(f"Auth failed - Status: {response.status_code}, Response: {response.text}")
+            logger.info(
+                f"Auth failed - Status: {response.status_code}, Response: {response.text}"
+            )
             raise Exception(
                 f"Failed to authenticate with Rancher: "
                 f"{response.status_code} {response.text}"

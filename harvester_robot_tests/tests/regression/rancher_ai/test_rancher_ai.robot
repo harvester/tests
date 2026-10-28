@@ -1,5 +1,8 @@
 *** Settings ***
-Documentation    Evaluate image import initiation followed by an independent image listing.
+Documentation    Validate harvester-mcp-server through Rancher AI (rancher-ai-agent).
+...    Interact with Rancher AI using a WebSocket client and evaluate its responses
+...    with the configured LLM. Complement LLM-based evaluation with deterministic
+...    checks of resource states on Harvester.
 Resource    ../../../keywords/variables.resource
 Resource    ../../../keywords/rancher.resource
 Resource    ../../../keywords/rancher_ai.resource
@@ -13,8 +16,6 @@ Test Tags        rancher-ai
 *** Variables ***
 ${HARVESTER_CLUSTER_NAME}    ${EMPTY}
 ${HARVESTER_CLUSTER_ID}      ${EMPTY}
-${PROMPT}              ${EMPTY}
-${RESPONSE}            ${EMPTY}
 ${IMG_DISPLAY_NAME}    ${EMPTY}
 ${IMG_NAME}            ${EMPTY}
 ${VM_NAME}             ${EMPTY}
@@ -50,7 +51,7 @@ Create VM Image
     ${IMG_NAME}=    Get Image Name By Display Name    ${IMG_DISPLAY_NAME}
     Set Suite Variable    ${IMG_NAME}
 
-Create VM Image: No Name and URL
+Create VM Image: No Name And URL
     [Tags]    image    tool:create_virtual_machine_image    negative
     When Prompt Rancher    Create a VM image
     Then Rancher should reply
@@ -111,19 +112,26 @@ List VM
     When Prompt Rancher    List VMs
     Then Rancher should reply    Should contain VM ${VM_NAME}
 
-Delete VM: Plan
-    [Tags]    vm    tool:delete_virtual_machine_plan
-    When Prompt Rancher    Delete VM ${VM_NAME}
-    Then Rancher should reply    A confirmation response with a VM resource
-    And VM should be running    ${VM_NAME}
 
-Delete VM
-    [Tags]    vm    tool:delete_virtual_machine    tool:list_virtual_machines
-    When Prompt Rancher And Confirm    Delete VM ${VM_NAME}
-    Then Rancher should reply    VM ${VM_NAME} is deleted
-    And VM should be deleted   ${VM_NAME}
-    And Prompt Rancher    Get VM ${VM_NAME}
-    And Rancher should reply    No VM ${VM_NAME} found, along with some help text.
+Delete VM: Not Supported Yet
+    [Tags]    vm
+    When Prompt Rancher    Delete VM ${VM_NAME}
+    Then Rancher should reply    Deletion of VMs is not supported yet, along with some help text.
+
+Delete Volume: Not Supported Yet
+    [Tags]    volume
+    When Prompt Rancher    Delete volume ${VOL_NAME}
+    Then Rancher should reply    Deletion of volumes is not supported yet, along with some help text.
+
+Delete Image: Not Supported Yet
+    [Tags]    image
+    When Prompt Rancher    Delete image ${IMG_NAME}
+    Then Rancher should reply    Deletion of images is not supported yet, along with some help text.
+
+Delete VM Network: Not Supported Yet
+    [Tags]    network
+    When Prompt Rancher    Delete VM network ${VNET_NAME}
+    Then Rancher should reply    Deletion of VM networks is not supported yet, along with some help text.
 
 
 *** Keywords ***
@@ -143,29 +151,10 @@ Local Suite Setup
     rancher_ai.Wait For Rancher AI Deployments Ready
 
 Local Suite Teardown
-    Run Keyword If Any Tests Failed    Log Variables
     Run Keyword If All Tests Passed    Run Keywords
     ...    Run Keyword And Ignore Error   VM is deleted    ${VM_NAME}    AND
     ...    Run Keyword And Ignore Error   Delete Volume    ${VOL_NAME}    AND
     ...    Run Keyword And Ignore Error   Delete Volumes Concurrently    ${VM_VOL_NAMES}    AND
     ...    Run Keyword And Ignore Error   Delete image by display name    ${IMG_DISPLAY_NAME}    AND
-    ...    Run Keyword And Ignore Error   Delete image by display name    ${IMG_DISPLAY_NAME}x    AND
     ...    Run Keyword And Ignore Error   network.Delete VLAN Network    ${VNET_NAME}    AND
     ...    Run Keyword And Ignore Error   Delete Harvester Mgmt Cluster    ${HARVESTER_CLUSTER_NAME}
-
-Prompt Rancher
-    [Arguments]    ${_prompt}
-    ${conversation_result}=    rancher_ai.Prompt Rancher   ${_prompt}    ${HARVESTER_CLUSTER_ID}
-    Set Test Variable    ${PROMPT}    ${_prompt}
-    Set Test Variable    ${RESPONSE}    ${conversation_result.answer}
-
-Prompt Rancher And Confirm
-    [Arguments]    ${_prompt}
-    ${conversation_result}=    rancher_ai.Prompt Rancher And Confirm   ${_prompt}    ${HARVESTER_CLUSTER_ID}
-    Set Test Variable    ${PROMPT}    ${_prompt}
-    Set Test Variable    ${RESPONSE}    ${conversation_result.answer}
-
-Rancher Should Reply
-    [Arguments]    ${extra_criteria}    ${evaluation_steps}=None
-    rancher_ai.Rancher should reply
-    ...    ${PROMPT}    ${RESPONSE}    ${extra_criteria}    ${evaluation_steps}
