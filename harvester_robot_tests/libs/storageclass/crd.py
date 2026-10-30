@@ -50,12 +50,15 @@ class CRD(Base):
             "parameters": {
                 "numberOfReplicas": str(number_of_replicas),
                 "staleReplicaTimeout": "30",
-                "diskSelector": disk_selector_value,
                 "encrypted": "false",
                 "migratable": "true",
                 "dataEngine": str(data_engine)
             }
         }
+
+        # An empty diskSelector is read by Longhorn as the tag "", so omit it
+        if disk_selector_value:
+            body["parameters"]["diskSelector"] = disk_selector_value
 
         # The Harvester webhook rejects CDI annotations on a Longhorn v1
         # StorageClass ("longhorn v1 does not support CDI annotations");

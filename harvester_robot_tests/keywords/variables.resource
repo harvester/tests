@@ -47,6 +47,10 @@ ${DEFAULT_NAMESPACE}            default
 ${LONGHORN_NAMESPACE}           longhorn-system
 ${LABEL_TEST}                   test-harvester
 
+# PabotLib lock for suites that provision unprovisioned NVMe disks (LHv2). Held from
+# suite setup to teardown, so that parallel suites never pick the same free disk.
+${LHV2_DISK_LOCK}               lhv2-disks
+
 # Backup
 # NFS endpoint (nfs://host/path) used to configure the backup-target setting
 # when the cluster does not have one yet; backup suites skip if both are absent.
