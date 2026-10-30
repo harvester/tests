@@ -6,15 +6,16 @@ import pytest
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
-    "harvester_e2e_tests.fixtures.hosts"
+    "harvester_e2e_tests.fixtures.hosts",
+    "harvester_e2e_tests.fixtures.images"
 ]
 
 
 @pytest.fixture(scope="module")
-def focal_image(api_client, unique_name, image_ubuntu, wait_timeout):
+def ubuntu_image(api_client, unique_name, image_ubuntu, wait_timeout):
     code, data = api_client.images.create_by_url(unique_name, image_ubuntu.url)
     assert 201 == code, (
-        f"Failed to upload focal image with error: {code}, {data}"
+        f"Failed to upload ubuntu image with error: {code}, {data}"
     )
 
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
@@ -42,10 +43,10 @@ def focal_image(api_client, unique_name, image_ubuntu, wait_timeout):
 
 
 @pytest.fixture()
-def focal_vm(api_client, focal_image, wait_timeout):
+def ubuntu_vm(api_client, ubuntu_image, wait_timeout):
     unique_name = f'vm-{datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")}'
     vm_spec = api_client.vms.Spec(1, 1)
-    vm_spec.add_image('disk-0', focal_image['id'], image_uid=focal_image['uid'])
+    vm_spec.add_image('disk-0', ubuntu_image['id'], image_uid=ubuntu_image['uid'])
     code, data = api_client.vms.create(unique_name, vm_spec)
     assert 201 == code, (
         f"Failed to create VM {unique_name} with error: {code}, {data}"
@@ -79,6 +80,65 @@ def focal_vm(api_client, focal_image, wait_timeout):
         api_client.volumes.delete(volume_name)
 
 
+@pytest.fixture()
+def pinned_ubuntu_vm(api_client, ubuntu_image, wait_timeout):
+    """A running VM that can only be scheduled on a single node (nodeSelector)."""
+    code, data = api_client.hosts.get()
+    assert 200 == code, f"Failed to list nodes with error: {code}, {data}"
+
+    candidates = []
+    for node in data['data']:
+        ready = any(c.get('type') == 'Ready' and c.get('status') == 'True'
+                    for c in node.get('status', {}).get('conditions', []))
+        if ready and not node.get('spec', {}).get('unschedulable', False):
+            candidates.append(node)
+    assert candidates, "No ready and schedulable node found"
+
+    # prefer a worker node, so the control-plane quorum is not involved
+    workers = [n for n in candidates
+               if 'node-role.kubernetes.io/control-plane' not in n['metadata'].get('labels', {})]
+    node = (workers or candidates)[0]
+    node_name = node['metadata']['name']
+    hostname = node['metadata']['labels'].get('kubernetes.io/hostname', node_name)
+
+    unique_name = f'vm-{datetime.now().strftime("%Hh%Mm%Ss%f-%m-%d")}'
+    vm_spec = api_client.vms.Spec(1, 1)
+    vm_spec.add_image('disk-0', ubuntu_image['id'], image_uid=ubuntu_image['uid'])
+    vm_data = vm_spec.to_dict(unique_name, 'default')
+    vm_data['metadata'].pop('resourceVersion', None)
+    vm_data['spec']['template']['spec']['nodeSelector'] = {'kubernetes.io/hostname': hostname}
+
+    code, data = api_client.vms.create(unique_name, vm_data)
+    assert 201 == code, (
+        f"Failed to create VM {unique_name} with error: {code}, {data}"
+    )
+
+    endtime = datetime.now() + timedelta(seconds=wait_timeout)
+    while endtime > datetime.now():
+        code, data = api_client.vms.get(unique_name)
+        if data.get('status', {}).get('ready', False):
+            code, data = api_client.vms.get_status(unique_name)
+            if data['status']['conditions'][-1]['status'] == 'True':
+                break
+        sleep(5)
+    else:
+        raise AssertionError(
+            f"Can't find VM {unique_name} with {wait_timeout} timed out\n"
+            f"Got error: {code}, {data}"
+        )
+
+    yield dict(name=unique_name, namespace='default', node_name=node_name)
+
+    code, data = api_client.vms.get(unique_name)
+    if 200 == code:
+        volume_name = ""
+        for volume in data['spec']['template']['spec']['volumes']:
+            if volume['name'] == 'disk-0':
+                volume_name = volume['persistentVolumeClaim']['claimName']
+        api_client.vms.delete(unique_name)
+        api_client.volumes.delete(volume_name)
+
+
 @pytest.fixture(scope="class")
 def vm_force_reset_policy(api_client):
     # update vm-force-reset-policy to 10s, so we don't need to wait 300s to force remove VM
@@ -98,6 +158,26 @@ def vm_force_reset_policy(api_client):
     # teardown
     updates = {"value": original_value}
     api_client.settings.update("vm-force-reset-policy", updates)
+
+
+def _wait_maintenance_condition(api_client, node_name, check, timeout, desc):
+    """Poll the node until `check(condition, node)` is true and return the node."""
+    condition = None
+    code, data = None, None
+    endtime = datetime.now() + timedelta(seconds=timeout)
+    while endtime > datetime.now():
+        code, data = api_client.hosts.get(node_name)
+        assert 200 == code, (code, data)
+        conditions = data.get('status', {}).get('conditions', [])
+        condition = next((c for c in conditions if c.get('type') == 'MaintenanceMode'), None)
+        if check(condition, data):
+            return data
+        sleep(5)
+    raise AssertionError(
+        f"Node {node_name}: {desc} not reached within {timeout} secs\n"
+        f"MaintenanceMode condition: {condition}\n"
+        f"Got: {code}, {data}"
+    )
 
 
 @pytest.mark.hosts
@@ -224,16 +304,16 @@ def test_verify_host_info(api_client):
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 def test_maintenance_mode_trigger_vm_migrate(
-    api_client, focal_vm, wait_timeout, available_node_names
+    api_client, ubuntu_vm, wait_timeout, available_node_names
 ):
     assert 2 <= len(available_node_names), (
         f"The cluster only have {len(available_node_names)} available node. \
             It's not enough for migration test."
     )
 
-    code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+    code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
     assert 200 == code, (
-        f"Can't get VMI {focal_vm['namespace']}/{focal_vm['name']} with error: {code}, {data}"
+        f"Can't get VMI {ubuntu_vm['namespace']}/{ubuntu_vm['name']} with error: {code}, {data}"
     )
     src_host = data['status']['nodeName']
 
@@ -262,16 +342,16 @@ def test_maintenance_mode_trigger_vm_migrate(
             f"Got error: {code}, {data}"
         )
 
-    code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+    code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
     assert 200 == code, (
-        f"Failed to get VM {focal_vm['namespace']}/{focal_vm['name']} with error: {code}, {data}"
+        f"Failed to get VM {ubuntu_vm['namespace']}/{ubuntu_vm['name']} with error: {code}, {data}"
     )
     assert src_host != data['status']['nodeName'], (
-        f"Failed to migrate VM {focal_vm['namespace']}/{focal_vm['name']} \
+        f"Failed to migrate VM {ubuntu_vm['namespace']}/{ubuntu_vm['name']} \
             from {src_host} to another node"
     )
     assert 'Running' == data['status']['phase'], (
-        f"Failed to migrate VM {focal_vm['namespace']}/{focal_vm['name']}, \
+        f"Failed to migrate VM {ubuntu_vm['namespace']}/{ubuntu_vm['name']}, \
             it's not running after migration"
     )
 
@@ -302,13 +382,112 @@ def test_maintenance_mode_trigger_vm_migrate(
         )
 
 
+@pytest.fixture()
+def clean_maintenance_state(api_client):
+    """Register a node; its maintenance state is reset on teardown, even if the test fails."""
+    nodes = []
+    yield nodes.append
+
+    for name in nodes:
+        api_client.hosts.clear_maintenance_mode(name)
+        _, node = api_client.hosts.get(name)
+        if node.get('spec', {}).get('unschedulable', False):
+            api_client.hosts.maintenance_mode(name, enable=False)
+
+
+@pytest.mark.hosts
+@pytest.mark.sanity
+@pytest.mark.p1
+@pytest.mark.virtualmachines
+@pytest.mark.skip_if_version(
+    "< v1.10.0", reason="https://github.com/harvester/harvester/issues/9022"
+)
+@pytest.mark.parametrize("trigger", ["api_action", "annotation"])
+def test_maintenance_mode_precheck_error_clear(
+    api_client, pinned_ubuntu_vm, clean_maintenance_state, wait_timeout, trigger
+):
+    """
+    A maintenance mode pre-check failure is kept as `MaintenanceMode` condition
+    (status False, reason Error) and can be dismissed with `clearMaintenanceMode`.
+    The UI dialog runs the pre-checks itself and would refuse to submit, so the
+    request is sent directly via the API action or by setting the annotation.
+
+    Prerequisite:
+        - A VM that is pinned to one node via nodeSelector (non-migratable)
+    Steps:
+        1. Request maintenance mode for the node hosting the VM
+        2. Wait for the pre-check error condition
+        3. Call `clearMaintenanceMode`
+    Expected Result:
+        - Condition is `status: False`, `reason: Error` with a message
+        - Node stays schedulable, the drain request annotations are removed
+        - VM keeps running on the node
+        - Condition is removed after `clearMaintenanceMode`
+    """
+    node_name = pinned_ubuntu_vm['node_name']
+    drain_annotations = ('harvesterhci.io/drain-requested', 'harvesterhci.io/drain-forced')
+
+    clean_maintenance_state(node_name)
+
+    if trigger == "api_action":
+        code, data = api_client.hosts.maintenance_mode(node_name, enable=True)
+        assert 204 == code, (
+            f"Failed to request maintenance mode on node {node_name}: {code}, {data}"
+        )
+    else:
+        code, data = api_client.hosts.update(
+            node_name, dict(metadata=dict(annotations={drain_annotations[0]: 'true'}))
+        )
+        assert 200 == code, (
+            f"Failed to set drain-requested on node {node_name}: {code}, {data}"
+        )
+
+    # the error is persisted first, the drain request annotations are removed afterwards
+    node = _wait_maintenance_condition(
+        api_client, node_name,
+        lambda cond, n: (
+            cond is not None and cond.get('status') == 'False'
+            and cond.get('reason') == 'Error'
+            and not any(a in n['metadata'].get('annotations', {}) for a in drain_annotations)
+        ),
+        wait_timeout, "pre-check error (status False, reason Error)"
+    )
+    conditions = node['status']['conditions']
+    condition = next(c for c in conditions if c['type'] == 'MaintenanceMode')
+    assert condition.get('message'), f"Error condition has no message: {condition}"
+    assert not node['spec'].get('unschedulable', False), (
+        f"Node {node_name} was cordoned although the pre-checks failed"
+    )
+
+    code, data = api_client.vms.get_status(
+        pinned_ubuntu_vm['name'], pinned_ubuntu_vm['namespace']
+    )
+    assert 200 == code, (code, data)
+    assert node_name == data['status']['nodeName'], (
+        f"VM was moved from {node_name} to {data['status']['nodeName']}"
+    )
+    assert 'Running' == data['status']['phase'], (
+        f"VM is not running after the failed pre-check: {data['status']}"
+    )
+
+    code, data = api_client.hosts.clear_maintenance_mode(node_name)
+    assert 204 == code, (
+        f"Failed to clear maintenance mode error on node {node_name}: {code}, {data}"
+    )
+
+    _wait_maintenance_condition(
+        api_client, node_name, lambda cond, n: cond is None, wait_timeout,
+        "removal of the MaintenanceMode condition"
+    )
+
+
 @pytest.mark.hosts
 @pytest.mark.sanity
 @pytest.mark.p0
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["host_poweroff", "host_poweron"])
 def test_poweroff_node_trigger_vm_reschedule(
-    api_client, host_state, focal_vm, wait_timeout, available_node_names, vm_force_reset_policy
+    api_client, host_state, ubuntu_vm, wait_timeout, available_node_names, vm_force_reset_policy
 ):
     """
     To cover test:
@@ -330,9 +509,9 @@ def test_poweroff_node_trigger_vm_reschedule(
             It's not enough for migration test."
     )
 
-    code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+    code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
     assert 200 == code, (
-        f"Can't get VMI {focal_vm['namespace']}/{focal_vm['name']} with error: {code}, {data}"
+        f"Can't get VMI {ubuntu_vm['namespace']}/{ubuntu_vm['name']} with error: {code}, {data}"
     )
     old_uid = data['metadata']['uid']
 
@@ -363,13 +542,13 @@ def test_poweroff_node_trigger_vm_reschedule(
         # check vm is restarted
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
-            code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+            code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
             if old_uid != data['metadata']['uid'] and "Running" == data['status'].get('phase'):
                 break
             sleep(5)
         else:
             raise AssertionError(
-                f"VM {focal_vm['namespace']}/{focal_vm['name']} can't be Running \
+                f"VM {ubuntu_vm['namespace']}/{ubuntu_vm['name']} can't be Running \
                     with {wait_timeout} timed out\n"
                 f"Got error: {code}, {data}"
             )
@@ -398,7 +577,7 @@ def test_poweroff_node_trigger_vm_reschedule(
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["host_poweroff", "host_poweron"])
 def test_delete_vm_after_host_shutdown(
-    api_client, host_state, wait_timeout, focal_vm, available_node_names
+    api_client, host_state, wait_timeout, ubuntu_vm, available_node_names
 ):
     """
     To cover test:
@@ -421,9 +600,9 @@ def test_delete_vm_after_host_shutdown(
         " It's not enough for test."
     )
 
-    code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+    code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
     assert 200 == code, (
-        f"Can't get VMI {focal_vm['namespace']}/{focal_vm['name']} with error: {code}, {data}"
+        f"Can't get VMI {ubuntu_vm['namespace']}/{ubuntu_vm['name']} with error: {code}, {data}"
     )
 
     # poweroff host
@@ -448,18 +627,18 @@ def test_delete_vm_after_host_shutdown(
 
     try:
         # Delete VM and check it been deleted
-        code, data = api_client.vms.delete(focal_vm['name'], focal_vm['namespace'])
+        code, data = api_client.vms.delete(ubuntu_vm['name'], ubuntu_vm['namespace'])
         assert 200 == code, (code, data)
         spec = api_client.vms.Spec.from_dict(data)
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
-            code, data = api_client.vms.get(focal_vm['name'], focal_vm['namespace'])
+            code, data = api_client.vms.get(ubuntu_vm['name'], ubuntu_vm['namespace'])
             if 404 == code:
                 break
             sleep(3)
         else:
             raise AssertionError(
-                f"Failed to Delete VM({focal_vm['name']}) with errors:\n"
+                f"Failed to Delete VM({ubuntu_vm['name']}) with errors:\n"
                 f"Status({code}): {data}"
             )
 
@@ -486,7 +665,7 @@ def test_delete_vm_after_host_shutdown(
                 fails.append((vol_name, f"Failed to delete\nStatus({code}): {data}"))
 
         assert not fails, (
-            f"Failed to delete VM({focal_vm['name']})'s volumes with errors:\n"
+            f"Failed to delete VM({ubuntu_vm['name']})'s volumes with errors:\n"
             "\n".join(f"Volume({n}): {r}" for n, r in fails)
         )
     finally:
@@ -514,7 +693,7 @@ def test_delete_vm_after_host_shutdown(
 @pytest.mark.virtualmachines
 @pytest.mark.dependency(depends=["host_poweroff", "host_poweron"])
 def test_vm_restarted_after_host_reboot(
-    api_client, host_state, wait_timeout, focal_vm, available_node_names
+    api_client, host_state, wait_timeout, ubuntu_vm, available_node_names
 ):
     """
     To cover test:
@@ -536,9 +715,9 @@ def test_vm_restarted_after_host_reboot(
             It's not enough for migration test."
     )
 
-    code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+    code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
     assert 200 == code, (
-        f"Can't get VMI {focal_vm['namespace']}/{focal_vm['name']} with error: {code}, {data}"
+        f"Can't get VMI {ubuntu_vm['namespace']}/{ubuntu_vm['name']} with error: {code}, {data}"
     )
     old_uid = data['metadata']['uid']
 
@@ -565,7 +744,7 @@ def test_vm_restarted_after_host_reboot(
     # check vm is restarted
     endtime = datetime.now() + timedelta(seconds=wait_timeout)
     while endtime > datetime.now():
-        code, data = api_client.vms.get_status(focal_vm['name'], focal_vm['namespace'])
+        code, data = api_client.vms.get_status(ubuntu_vm['name'], ubuntu_vm['namespace'])
         if (200 == code and old_uid != data['metadata']['uid']
                 and "Running" == data['status'].get('phase')):
             break
