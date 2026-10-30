@@ -33,6 +33,12 @@ class Base(ABC):
         pass
 
     @abstractmethod
+    def get_by_display_name(self, display_name: str, namespace="default"):
+        """Return the complete image matching an exact display name.
+        """
+        pass
+
+    @abstractmethod
     def exists(self, image_name, namespace):
         """Check if an image exists in the specified namespace"""
         pass
