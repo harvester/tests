@@ -2,7 +2,9 @@
 Documentation    VM Delete Protection Test Cases
 ...    Covers VM delete protection (harvester/harvester#12137). It uses the KubeVirt
 ...    label kubevirt.io/vm-delete-protection, the same as KubeVirt's SSP operator:
-...    - a VM labelled "true" or "True" cannot be deleted until the label is changed
+...    - a VM whose label is a true boolean value ("true", "True", "TRUE", "t", "T"
+...    or "1", as parsed by Go's strconv.ParseBool) cannot be deleted until the
+...    label is changed
 ...    - the default-vm-delete-protection setting labels new VMs only, respects an
 ...    explicit "false", and skips VMs created by the Rancher node driver / CAPHV
 ...    VMs are created stopped: delete protection does not depend on the VM running.
@@ -60,15 +62,18 @@ Disabling Delete Protection Allows Deletion
     VM is deleted    ${VM_PROTECTED}
     VM should be deleted    ${VM_PROTECTED}
 
-Capitalized True Also Protects The VM
+Other Boolean True Values Also Protect The VM
     [Tags]    p1
-    [Documentation]    Same match as the KubeVirt SSP policy: "True" protects too.
-    Protected VM is created    ${VM_CAPITAL}    True
-    ${result}=    Try To Delete VM    ${VM_CAPITAL}
-    Operation Should Be Rejected    ${result}    ${PROTECTED_MESSAGE}
-    VM label is set    ${VM_CAPITAL}    ${PROTECTION_LABEL}    ${None}
-    VM is deleted    ${VM_CAPITAL}
-    VM should be deleted    ${VM_CAPITAL}
+    [Documentation]    The label is parsed with strconv.ParseBool, so "True"
+    ...    (also matched by the KubeVirt SSP policy), "TRUE" and "1" protect too.
+    FOR    ${value}    IN    True    TRUE    1
+        Protected VM is created    ${VM_CAPITAL}    ${value}
+        ${result}=    Try To Delete VM    ${VM_CAPITAL}
+        Operation Should Be Rejected    ${result}    ${PROTECTED_MESSAGE}
+        VM label is set    ${VM_CAPITAL}    ${PROTECTION_LABEL}    ${None}
+        VM is deleted    ${VM_CAPITAL}
+        VM should be deleted    ${VM_CAPITAL}
+    END
 
 Default Setting Protects Only New VMs
     [Tags]    p0
@@ -103,7 +108,8 @@ Rancher Node Driver VMs Are Not Protected By Default
 
 Invalid Default Setting Value Is Rejected
     [Tags]    p2    negative
-    [Documentation]    The setting only accepts "true" or "false".
+    [Documentation]    The setting only accepts boolean values ("true", "false",
+    ...    "True", "1", ...); "yes" is rejected.
     Run Keyword And Expect Error    *Failed to update setting*
     ...    setting_keywords.update    ${DEFAULT_SETTING}    yes
     ${value}=    setting_keywords.get_value    ${DEFAULT_SETTING}
