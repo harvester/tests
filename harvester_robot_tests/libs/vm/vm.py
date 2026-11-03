@@ -114,6 +114,12 @@ class VM(Base):
     def get_annotations(self, vm_name):
         return self.vm.get_annotations(vm_name)
 
+    def get_labels(self, vm_name):
+        return self.vm.get_labels(vm_name)
+
+    def set_label(self, vm_name, key, value):
+        return self.vm.set_label(vm_name, key, value)
+
     def write_data(self, vm_name, data_size_mb):
         return self.vm.write_data(vm_name, data_size_mb)
 
