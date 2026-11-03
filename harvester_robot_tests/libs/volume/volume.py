@@ -47,6 +47,9 @@ class Volume(Base):
     def delete_concurrently(self, volume_names):
         return self.volume.delete_concurrently(volume_names)
 
+    def get_pods_using(self, volume_name):
+        return self.volume.get_pods_using(volume_name)
+
     def try_get(self, volume_name):
         return self.volume.try_get(volume_name)
 
