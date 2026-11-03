@@ -295,3 +295,17 @@ class Rest(Base):
             )
 
         logging(f"Deleted IP pool: {name}")
+
+    # Admission (webhook/CRD schema) checks
+    def try_create_vlan_config(self, name, cluster_network, nics, mode=None,
+                               mtu=None, hardware_addr=None,
+                               node_selector=None, dry_run=False):
+        raise NotImplementedError("REST strategy not yet supported for this operation")
+
+    def try_create_vlan_network(self, name, vlan_id, cluster_network,
+                                dry_run=False):
+        raise NotImplementedError("REST strategy not yet supported for this operation")
+
+    def try_create_host_network_config(self, name, cluster_network, vlan_id,
+                                       mode="dhcp", dry_run=False):
+        raise NotImplementedError("REST strategy not yet supported for this operation")

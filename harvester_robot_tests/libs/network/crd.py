@@ -4,6 +4,7 @@ Layer 4: Makes actual kubectl/K8s API calls for network operations
 """
 
 import json
+from kubernetes import client
 from kubernetes.client.rest import ApiException
 from crd import (
     create_cr, create_cluster_cr,
@@ -414,3 +415,116 @@ class CRD(Base):
                 raise Exception(
                     f"Failed to delete IP pool: {e}"
                 )
+
+    # Admission (webhook/CRD schema) checks, optionally as server-side dry runs
+    def _try_create(self, kind, name, body, plural, namespace=None,
+                    group="network.harvesterhci.io", version="v1beta1",
+                    dry_run=False):
+        """Create a CR with strict field validation (unknown fields are
+        rejected instead of silently pruned); returns {success, code, message, object}"""
+        kwargs = {"field_validation": "Strict"}
+        if dry_run:
+            kwargs["dry_run"] = "All"
+        mode = "dry run" if dry_run else "create"
+        logging(f"Trying to create {kind} {name} ({mode}): {json.dumps(body.get('spec', body))}")
+        api = client.CustomObjectsApi()
+        try:
+            if namespace:
+                obj = api.create_namespaced_custom_object(
+                    group=group, version=version, namespace=namespace,
+                    plural=plural, body=body, **kwargs)
+            else:
+                obj = api.create_cluster_custom_object(
+                    group=group, version=version, plural=plural,
+                    body=body, **kwargs)
+            logging(f"{kind} {name} was accepted ({mode})")
+            return {"success": True, "code": 201, "message": "", "object": obj}
+        except ApiException as e:
+            logging(f"{kind} {name} was rejected (status={e.status}): {e.body or e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or "", "object": None}
+
+    def try_create_vlan_config(self, name, cluster_network, nics, mode=None,
+                               mtu=None, hardware_addr=None,
+                               node_selector=None, dry_run=False):
+        """Attempt to create a VLAN config"""
+        uplink = {"nics": list(nics)}
+        if mode is not None:
+            uplink["mode"] = mode
+        link_attrs = {}
+        if mtu is not None:
+            link_attrs["mtu"] = int(mtu)
+        if hardware_addr is not None:
+            link_attrs["hardwareAddr"] = hardware_addr
+        if link_attrs:
+            uplink["linkAttributes"] = link_attrs
+        spec = {"clusterNetwork": cluster_network, "uplink": uplink}
+        if node_selector:
+            spec["nodeSelector"] = dict(node_selector)
+        body = {
+            "apiVersion": "network.harvesterhci.io/v1beta1",
+            "kind": "VlanConfig",
+            "metadata": {
+                "name": name,
+                "labels": {
+                    "network.harvesterhci.io/clusternetwork": cluster_network,
+                    LABEL_TEST: LABEL_TEST_VALUE
+                }
+            },
+            "spec": spec
+        }
+        return self._try_create("VlanConfig", name, body, "vlanconfigs",
+                                dry_run=dry_run)
+
+    def try_create_vlan_network(self, name, vlan_id, cluster_network,
+                                dry_run=False):
+        """Attempt to create a VLAN network (bridge NAD)"""
+        body = {
+            "apiVersion": "k8s.cni.cncf.io/v1",
+            "kind": "NetworkAttachmentDefinition",
+            "metadata": {
+                "name": name,
+                "namespace": DEFAULT_NAMESPACE,
+                "labels": {
+                    "network.harvesterhci.io/clusternetwork": cluster_network,
+                    "network.harvesterhci.io/type": "L2VlanNetwork",
+                    LABEL_TEST: LABEL_TEST_VALUE
+                }
+            },
+            "spec": {
+                "config": json.dumps({
+                    "cniVersion": "0.3.1",
+                    "name": name,
+                    "type": "bridge",
+                    "bridge": f"{cluster_network}-br",
+                    "promiscMode": True,
+                    "vlan": int(vlan_id),
+                    "ipam": {}
+                })
+            }
+        }
+        return self._try_create("NAD", name, body,
+                                "network-attachment-definitions",
+                                namespace=DEFAULT_NAMESPACE,
+                                group="k8s.cni.cncf.io", version="v1",
+                                dry_run=dry_run)
+
+    def try_create_host_network_config(self, name, cluster_network, vlan_id,
+                                       mode="dhcp", dry_run=False):
+        """Attempt to create a HostNetworkConfig"""
+        body = {
+            "apiVersion": "network.harvesterhci.io/v1beta1",
+            "kind": "HostNetworkConfig",
+            "metadata": {
+                "name": name,
+                "labels": {LABEL_TEST: LABEL_TEST_VALUE}
+            },
+            "spec": {
+                "clusterNetwork": cluster_network,
+                "vlanID": int(vlan_id),
+                "mode": mode,
+                "underlay": False
+            }
+        }
+        return self._try_create("HostNetworkConfig", name, body,
+                                "hostnetworkconfigs", dry_run=dry_run)
