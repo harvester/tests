@@ -20,3 +20,9 @@ class Rest(Base):
 
     def update(self, setting_id, value):
         return super().update(setting_id, value)
+
+    def try_update(self, setting_id, value):
+        return super().try_update(setting_id, value)
+
+    def get_kubevirt_configuration(self):
+        return super().get_kubevirt_configuration()

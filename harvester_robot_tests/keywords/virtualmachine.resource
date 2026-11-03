@@ -17,6 +17,14 @@ VM is created
     [Documentation]    Create a virtual machine with provided name
     vm_keywords.create vm    ${vm_name}    ${image_id}    ${cpu}    ${memory}    &{config}
 
+Try To Create VM
+    [Arguments]    ${vm_name}    ${image_id}    ${cpu}=2    ${memory}=4Gi    &{config}
+    [Documentation]    Attempt to create a VM that may be rejected by an
+    ...    admission webhook. Takes the same options as `VM is created`.
+    ...    Returns a result dict {success, code, message}.
+    ${result}=    vm_keywords.try_create_vm    ${vm_name}    ${image_id}    ${cpu}    ${memory}    &{config}
+    RETURN    ${result}
+
 VM is deleted
     [Arguments]    ${vm_name}
     [Documentation]    Delete a VM
