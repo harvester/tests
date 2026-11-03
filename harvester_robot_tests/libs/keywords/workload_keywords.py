@@ -214,6 +214,22 @@ class workload_keywords:
         ))
         return self.block_checksum(pod_name, size_mb)
 
+    def write_block_marker(self, pod_name, marker, size_mb=4):
+        """Fill the head of the block volume with a repeated plaintext
+        marker, so the backing device can be searched for it later."""
+        self._exec(pod_name, (
+            f"yes {marker} | head -c {int(size_mb) * 1024 * 1024} | "
+            f"dd of={BLOCK_DEVICE_PATH} bs=1M oflag=direct 2>/dev/null && sync"
+        ))
+
+    def block_marker_count(self, pod_name, marker, size_mb=4):
+        """Count marker lines in the head of the block volume."""
+        out = self._exec(pod_name, (
+            f"dd if={BLOCK_DEVICE_PATH} bs=1M count={int(size_mb)} "
+            f"2>/dev/null | grep -c {marker} || true"
+        ))
+        return int(out or 0)
+
     def overwrite_block_head(self, pod_name, size_mb=8):
         """Scribble over the start of the block volume, so a later checksum
         proves a restored volume is independent from the source."""

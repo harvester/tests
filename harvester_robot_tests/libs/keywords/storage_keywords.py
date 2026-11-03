@@ -8,6 +8,7 @@ import sys
 
 # Add the path to the utility module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
+from kubernetes.client.rest import ApiException  # noqa E402
 from utility.utility import logging  # noqa E402
 from blockdevice import Blockdevice  # noqa E402
 from storageclass import StorageClass  # noqa E402
@@ -166,3 +167,19 @@ class storage_keywords:
 
     def create_lvm_storageclass(self, name, vg_name, vg_type, node):
         return self.storageclass.create_lvm(name, vg_name, vg_type, node)
+
+    def create_encrypted_lvm_storageclass(self, name, vg_name, vg_type, node,
+                                          secret_name, secret_namespace="default"):
+        return self.storageclass.create_lvm(name, vg_name, vg_type, node,
+                                            secret_name, secret_namespace)
+
+    def try_create_encrypted_lvm_storageclass(self, name, vg_name, vg_type, node,
+                                              secret_name, secret_namespace="default"):
+        """Attempt to create an encrypted LVM StorageClass for negative
+        testing; returns {success, code, message} instead of raising."""
+        try:
+            self.create_encrypted_lvm_storageclass(
+                name, vg_name, vg_type, node, secret_name, secret_namespace)
+            return {"success": True, "code": 201, "message": ""}
+        except ApiException as e:
+            return {"success": False, "code": e.status, "message": str(e.body or e)}

@@ -43,3 +43,12 @@ Filesystem Volume Capacity In MB
     [Arguments]    ${pod_name}
     ${capacity}=    workload_keywords.filesystem_capacity_mb    ${pod_name}
     RETURN    ${capacity}
+
+Write Marker To Block Volume
+    [Arguments]    ${pod_name}    ${marker}    ${size_mb}=4
+    workload_keywords.write_block_marker    ${pod_name}    ${marker}    ${size_mb}
+
+Block Volume Marker Count
+    [Arguments]    ${pod_name}    ${marker}    ${size_mb}=4
+    ${count}=    workload_keywords.block_marker_count    ${pod_name}    ${marker}    ${size_mb}
+    RETURN    ${count}
