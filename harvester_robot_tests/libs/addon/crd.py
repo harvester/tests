@@ -108,27 +108,28 @@ class CRD(Base):
                 return None
             raise Exception(f"Failed to get addon {addon_name}: {e}")
 
-    def enable_addon(self, addon_name):
+    def enable_addon(self, addon_name, retries=10):
         """
         Enable an addon with retry logic for transient state conflicts
 
         Args:
             addon_name: Name of the addon to enable
+            retries: Number of retries on transient errors (0 = try once, raise immediately)
         """
         logging(f"Enabling addon {addon_name}")
 
-        max_retries = 10
+        max_attempts = retries + 1
         retry_delay = 2  # Start with 2 seconds
 
-        for attempt in range(max_retries):
+        for attempt in range(max_attempts):
             try:
                 # First find which namespace the addon is in
                 namespace = self._find_addon_namespace(addon_name)
                 if not namespace:
-                    if attempt < max_retries - 1:
+                    if attempt < max_attempts - 1:
                         logging(
                             f"Addon {addon_name} is not visible yet, retrying in "
-                            f"{retry_delay}s... ({attempt+1}/{max_retries})",
+                            f"{retry_delay}s... ({attempt+1}/{max_attempts})",
                             level='WARNING'
                         )
                         time.sleep(retry_delay)
@@ -152,15 +153,14 @@ class CRD(Base):
                 logging(f"Addon {addon_name} enable request sent")
                 return
             except ApiException as e:
-                # Check if it's a conflict/update error (409 or 422)
-                if e.status in [409, 422, 400] and attempt < max_retries - 1:
+                if e.status in [409, 422, 400] and attempt < max_attempts - 1:
                     logging(
                         f"Addon {addon_name} is transitioning, retrying in {retry_delay}s... "
-                        f"({attempt+1}/{max_retries})",
+                        f"({attempt+1}/{max_attempts})",
                         level='WARNING'
                     )
                     time.sleep(retry_delay)
-                    retry_delay = min(retry_delay * 2, 16)  # Exponential backoff, max 16s
+                    retry_delay = min(retry_delay * 2, 16)
                 else:
                     raise Exception(f"Failed to enable addon {addon_name}: {e}")
 

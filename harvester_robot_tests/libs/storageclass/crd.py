@@ -134,6 +134,31 @@ class CRD(Base):
         )
         return result.get("items", [])
 
+    def get_default(self):
+        """Return the name of the default StorageClass, or None."""
+        scs = self.custom_api.list_cluster_custom_object(**self.common_parameters)
+        for sc in scs.get("items", []):
+            annotations = sc.get("metadata", {}).get("annotations") or {}
+            if annotations.get("storageclass.kubernetes.io/is-default-class") == "true":
+                return sc["metadata"]["name"]
+        return None
+
+    def set_default(self, name):
+        """Mark a StorageClass as the cluster default."""
+        body = {"metadata": {"annotations": {
+            "storageclass.kubernetes.io/is-default-class": "true"
+        }}}
+        self.custom_api.patch_cluster_custom_object(**self.common_parameters, name=name, body=body)
+        logging(f"StorageClass {name} set as default")
+
+    def unset_default(self, name):
+        """Remove the cluster-default annotation from a StorageClass."""
+        body = {"metadata": {"annotations": {
+            "storageclass.kubernetes.io/is-default-class": "false"
+        }}}
+        self.custom_api.patch_cluster_custom_object(**self.common_parameters, name=name, body=body)
+        logging(f"StorageClass {name} default annotation removed")
+
     def cleanup(self):
         try:
             scs = self.list(

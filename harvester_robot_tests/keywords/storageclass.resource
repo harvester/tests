@@ -42,6 +42,19 @@ Wait Until Storage Class Is Deleted
     Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
     ...    Storage Class Should Not Exist    ${name}
 
+Get Default Storage Class
+    [Documentation]    Return the name of the current default StorageClass, or None.
+    ${name}=    storage_keywords.get_default_storageclass
+    RETURN    ${name}
+
+Set Default Storage Class
+    [Arguments]    ${name}
+    storage_keywords.set_default_storageclass    ${name}
+
+Unset Default Storage Class
+    [Arguments]    ${name}
+    storage_keywords.unset_default_storageclass    ${name}
+
 Storage Class Parameter Should Be
     [Arguments]    ${name}    ${key}    ${expected}
     [Documentation]    Assert one entry of the StorageClass' parameters map
