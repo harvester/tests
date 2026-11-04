@@ -112,6 +112,17 @@ Test Ignore An Entire Check
     When Image Check Resources Are Ignored    ${IGNORE_RULE}
     Then Image Check Should Be Marked Ignored
 
+Test Expired Ignore Rule No Longer Applies
+    [Tags]    p1
+    [Documentation]    Test case 8.3: once the rule's expiresAt is in the past, the check
+    ...    is no longer ignored and is shown on the dashboard again.
+    Given Failing Image Is Reported    ${IMAGE_BAD_A}
+    And Image Check Resources Are Ignored    ${IGNORE_RULE}
+    And Image Check Should Be Marked Ignored
+    When Health Ignore Rule Is Expired    ${IGNORE_RULE}
+    Then Image Check Should Be Marked Ignored    ${False}
+
+
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name

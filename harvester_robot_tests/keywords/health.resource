@@ -129,6 +129,11 @@ Image Check Should Be Marked Ignored
     health_keywords.Wait For Health Check Ignored State
     ...    ${HEALTH_COMPONENT_VMIMAGE}    ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}    ${ignored}    ${WAIT_TIMEOUT}
 
+Health Ignore Rule Is Expired
+    [Arguments]    ${rule_name}
+    [Documentation]    Move the rule's expiresAt into the past, like editing it with kubectl.
+    health_keywords.Expire Health Ignore Rule    ${rule_name}
+
 Health Ignore Rule Is Deleted
     [Arguments]    ${rule_name}
     [Documentation]    Delete the rule, ignoring when it is already gone.
