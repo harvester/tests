@@ -15,10 +15,12 @@ Library          ../libs/keywords/health_keywords.py
 ${HEALTH_COMPONENT_VM}                      harvester-controller-vm
 ${HEALTH_COMPONENT_VOLUME}                  harvester-controller-volume
 ${HEALTH_COMPONENT_VMIMAGE}                 harvester-controller-vmimage
+${HEALTH_COMPONENT_VMBACKUP}                harvester-controller-vmbackup
 
 ${HEALTH_CHECK_VM_NODE_SELECTOR}            VMNodeSelectorLiveMigrationUnsupported
 ${HEALTH_CHECK_REPLICA_SCHEDULING}          ReplicaSchedulingFailure
 ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}           ImageRetryLimitExceeded
+${HEALTH_CHECK_VMBACKUP_FAILED}             VMBackupFailed
 
 # A URL nothing listens on, so an import fails right away.
 ${HEALTH_INVALID_IMAGE_URL}                 http://127.0.0.1:1/invalid.img
@@ -71,4 +73,11 @@ Image Retry Limit Check Should Report Image
     [Documentation]    An image whose import failed must be listed by ImageRetryLimitExceeded.
     Health Check Should Report Resource
     ...    ${HEALTH_COMPONENT_VMIMAGE}    ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}    ${namespace}/${image_name}
+    ...    severity=Error
+
+VM Backup Failed Check Should Report Backup
+    [Arguments]    ${backup_name}    ${namespace}=${DEFAULT_NAMESPACE}
+    [Documentation]    A failed VirtualMachineBackup must be listed by VMBackupFailed.
+    Health Check Should Report Resource
+    ...    ${HEALTH_COMPONENT_VMBACKUP}    ${HEALTH_CHECK_VMBACKUP_FAILED}    ${namespace}/${backup_name}
     ...    severity=Error

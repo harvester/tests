@@ -25,6 +25,7 @@ Resource         ../../../keywords/volume.resource
 Resource         ../../../keywords/virtualmachine.resource
 Resource         ../../../keywords/host.resource
 Resource         ../../../keywords/storageclass.resource
+Resource         ../../../keywords/backup.resource
 Resource         ../../../keywords/health.resource
 
 Suite Setup      Local Suite Setup
@@ -41,6 +42,8 @@ ${SC_REPLICA}           ${EMPTY}
 ${VOL_REPLICA}          ${EMPTY}
 ${VM_REPLICA}           ${EMPTY}
 ${IMAGE_BAD_A}          ${EMPTY}
+${VM_BACKUP}            ${EMPTY}
+${BACKUP_NAME}          ${EMPTY}
 
 
 *** Test Cases ***
@@ -71,6 +74,16 @@ Test Image With Wrong URL Is Reported
     When Create image from url with name    ${IMAGE_BAD_A}    ${HEALTH_INVALID_IMAGE_URL}    retry=${0}
     Then Image Retry Limit Check Should Report Image    ${IMAGE_BAD_A}
 
+Test VM Backup With Insufficient Space Is Reported
+    [Tags]    p1    backup
+    [Documentation]    Test case 4: the backup bucket has little space left, so a VM backup
+    ...    fails and the dashboard reports VMBackupFailed for it.
+    Given Backup target is configured
+    And VM is created    ${VM_BACKUP}    ${IMAGE_NAME}
+    And VM should be running    ${VM_BACKUP}
+    When VM backup is created    ${VM_BACKUP}    ${BACKUP_NAME}
+    Then VM Backup Failed Check Should Report Backup    ${BACKUP_NAME}
+
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name
@@ -80,6 +93,8 @@ Local Suite Setup
     Set Suite Variable    ${VOL_REPLICA}          vol-replica-${suffix}
     Set Suite Variable    ${VM_REPLICA}           vm-replica-${suffix}
     Set Suite Variable    ${IMAGE_BAD_A}          image-bad-a-${suffix}
+    Set Suite Variable    ${VM_BACKUP}            vm-backup-${suffix}
+    Set Suite Variable    ${BACKUP_NAME}          backup-${suffix}
     Set up test environment
     Resource Health Controller Should Be Available
     ${node}=    Get node 0
@@ -92,8 +107,10 @@ Local Suite Teardown
     Run Keyword If Any Tests Failed    Log Variables
 
 Delete Suite Resources
+    Run Keyword And Ignore Error    VM backup is deleted    ${BACKUP_NAME}
     Run Keyword And Ignore Error    VM is deleted    ${VM_NODE_SELECTOR}
     Run Keyword And Ignore Error    VM is deleted    ${VM_REPLICA}
+    Run Keyword And Ignore Error    VM is deleted    ${VM_BACKUP}
     Run Keyword And Ignore Error    Delete Volume    ${VOL_REPLICA}
     Run Keyword And Ignore Error    Delete Storage Class    ${SC_REPLICA}
     Run Keyword And Ignore Error    Delete image by name    ${IMAGE_BAD_A}
