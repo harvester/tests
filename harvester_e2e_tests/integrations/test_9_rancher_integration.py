@@ -422,10 +422,9 @@ class TestResourceQuota:
         ns_quota = loads(data['metadata']['annotations']['field.cattle.io/resourceQuota'])['limit']
         ns_quota['limitsCpu'] = f"{(cpu -1) * 1000}m"
         anno = {'field.cattle.io/resourceQuota': dumps({"limit": ns_quota})}
-        rancher_api_client.set_retries(status_forcelist=(502, 504))
-        code, data = ns_mgr.update(unique_name, dict(annotations=anno))
+        with rancher_api_client.override_retries(status_forcelist=(502, 504)):
+            code, data = ns_mgr.update(unique_name, dict(annotations=anno))
         assert 500 == code and "is lower than the current used" in data['message'], (code, data)
-        rancher_api_client.set_retries()
 
     @pytest.mark.dependency(depends=["decrease_quota"])
     def test_migrate_vm_when_exceed_quota(
