@@ -16,11 +16,13 @@ ${HEALTH_COMPONENT_VM}                      harvester-controller-vm
 ${HEALTH_COMPONENT_VOLUME}                  harvester-controller-volume
 ${HEALTH_COMPONENT_VMIMAGE}                 harvester-controller-vmimage
 ${HEALTH_COMPONENT_VMBACKUP}                harvester-controller-vmbackup
+${HEALTH_COMPONENT_SUPPORTBUNDLE}           harvester-controller-supportbundle
 
 ${HEALTH_CHECK_VM_NODE_SELECTOR}            VMNodeSelectorLiveMigrationUnsupported
 ${HEALTH_CHECK_REPLICA_SCHEDULING}          ReplicaSchedulingFailure
 ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}           ImageRetryLimitExceeded
 ${HEALTH_CHECK_VMBACKUP_FAILED}             VMBackupFailed
+${HEALTH_CHECK_SUPPORTBUNDLE_GENERATING}    SupportBundleGenerating
 
 # A URL nothing listens on, so an import fails right away.
 ${HEALTH_INVALID_IMAGE_URL}                 http://127.0.0.1:1/invalid.img
@@ -81,3 +83,10 @@ VM Backup Failed Check Should Report Backup
     Health Check Should Report Resource
     ...    ${HEALTH_COMPONENT_VMBACKUP}    ${HEALTH_CHECK_VMBACKUP_FAILED}    ${namespace}/${backup_name}
     ...    severity=Error
+
+Support Bundle Generating Check Should Report Bundle
+    [Arguments]    ${bundle_name}    ${namespace}=harvester-system
+    [Documentation]    A generating SupportBundle must be listed by the Info check SupportBundleGenerating.
+    Health Check Should Report Resource
+    ...    ${HEALTH_COMPONENT_SUPPORTBUNDLE}    ${HEALTH_CHECK_SUPPORTBUNDLE_GENERATING}    ${namespace}/${bundle_name}
+    ...    severity=Info

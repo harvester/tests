@@ -153,6 +153,7 @@ ADDON_PLURAL = "addons"
 HEALTH_API_GROUP = "health.harvesterhci.io"
 HEALTH_API_VERSION = "v1beta1"
 COMPONENT_HEALTH_PLURAL = "componenthealths"
+SUPPORTBUNDLE_PLURAL = "supportbundles"
 
 # Descheduler Addon Constants
 # The addon CR ships disabled by default in kube-system; enabling it renders a

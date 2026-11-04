@@ -26,6 +26,7 @@ Resource         ../../../keywords/virtualmachine.resource
 Resource         ../../../keywords/host.resource
 Resource         ../../../keywords/storageclass.resource
 Resource         ../../../keywords/backup.resource
+Resource         ../../../keywords/support_bundle.resource
 Resource         ../../../keywords/health.resource
 
 Suite Setup      Local Suite Setup
@@ -44,6 +45,7 @@ ${VM_REPLICA}           ${EMPTY}
 ${IMAGE_BAD_A}          ${EMPTY}
 ${VM_BACKUP}            ${EMPTY}
 ${BACKUP_NAME}          ${EMPTY}
+${SUPPORT_BUNDLE}       ${EMPTY}
 
 
 *** Test Cases ***
@@ -84,6 +86,13 @@ Test VM Backup With Insufficient Space Is Reported
     When VM backup is created    ${VM_BACKUP}    ${BACKUP_NAME}
     Then VM Backup Failed Check Should Report Backup    ${BACKUP_NAME}
 
+Test Generating Support Bundle Is Reported
+    [Tags]    p1
+    [Documentation]    Test case 5: while a support bundle is generating, the dashboard
+    ...    shows the Info check SupportBundleGenerating for it.
+    When Support bundle is created    ${SUPPORT_BUNDLE}
+    Then Support Bundle Generating Check Should Report Bundle    ${SUPPORT_BUNDLE}
+
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name
@@ -95,6 +104,7 @@ Local Suite Setup
     Set Suite Variable    ${IMAGE_BAD_A}          image-bad-a-${suffix}
     Set Suite Variable    ${VM_BACKUP}            vm-backup-${suffix}
     Set Suite Variable    ${BACKUP_NAME}          backup-${suffix}
+    Set Suite Variable    ${SUPPORT_BUNDLE}       bundle-${suffix}
     Set up test environment
     Resource Health Controller Should Be Available
     ${node}=    Get node 0
@@ -108,6 +118,7 @@ Local Suite Teardown
 
 Delete Suite Resources
     Run Keyword And Ignore Error    VM backup is deleted    ${BACKUP_NAME}
+    Run Keyword And Ignore Error    Support bundle is deleted    ${SUPPORT_BUNDLE}
     Run Keyword And Ignore Error    VM is deleted    ${VM_NODE_SELECTOR}
     Run Keyword And Ignore Error    VM is deleted    ${VM_REPLICA}
     Run Keyword And Ignore Error    VM is deleted    ${VM_BACKUP}
