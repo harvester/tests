@@ -56,7 +56,8 @@ class CRD(Base):
             }
         }
 
-        # An empty diskSelector is read by Longhorn as the tag "", so omit it
+        # An empty diskSelector is not "no selector": Longhorn looks for a disk tag
+        # named "" and fails provisioning ("specified disk tag  does not exist").
         if disk_selector_value:
             body["parameters"]["diskSelector"] = disk_selector_value
 
