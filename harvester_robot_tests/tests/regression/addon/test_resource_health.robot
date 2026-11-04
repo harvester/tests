@@ -21,8 +21,10 @@ Test Tags        regression    addons    resource-health
 Resource         ../../../keywords/variables.resource
 Resource         ../../../keywords/common.resource
 Resource         ../../../keywords/image.resource
+Resource         ../../../keywords/volume.resource
 Resource         ../../../keywords/virtualmachine.resource
 Resource         ../../../keywords/host.resource
+Resource         ../../../keywords/storageclass.resource
 Resource         ../../../keywords/health.resource
 
 Suite Setup      Local Suite Setup
@@ -35,6 +37,9 @@ Test Teardown    Common Test Teardown
 ${IMAGE_NAME}           ${EMPTY}
 ${NODE_NAME}            ${EMPTY}
 ${VM_NODE_SELECTOR}     ${EMPTY}
+${SC_REPLICA}           ${EMPTY}
+${VOL_REPLICA}          ${EMPTY}
+${VM_REPLICA}           ${EMPTY}
 
 
 *** Test Cases ***
@@ -47,11 +52,25 @@ Test VM With Node Selector Is Reported
     And VM should be running    ${VM_NODE_SELECTOR}
     Then VM Node Selector Check Should Report VM    ${VM_NODE_SELECTOR}
 
+Test VM With Insufficient Volume Replicas Is Reported
+    [Tags]    p0
+    [Documentation]    Test case 2: a storage class asks for more replicas than there are
+    ...    nodes, so the replicas of a VM's volume cannot be scheduled and the dashboard
+    ...    reports ReplicaSchedulingFailure for the volume.
+    ${replicas}=    Given Create Storage Class With Replicas Exceeding Node Count    ${SC_REPLICA}
+    And Create Volume    ${VOL_REPLICA}    1Gi    storage_class=${SC_REPLICA}    replicas=${replicas}
+    When VM is created with existing volume    ${VM_REPLICA}    ${IMAGE_NAME}    ${VOL_REPLICA}
+    ${pv_name}=    Get Volume PV Name    ${VOL_REPLICA}
+    Then Volume Replica Check Should Report Volume    ${pv_name}
+
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name
     Set Suite Variable    ${IMAGE_NAME}           image-${suffix}
     Set Suite Variable    ${VM_NODE_SELECTOR}     vm-node-selector-${suffix}
+    Set Suite Variable    ${SC_REPLICA}           sc-replica-${suffix}
+    Set Suite Variable    ${VOL_REPLICA}          vol-replica-${suffix}
+    Set Suite Variable    ${VM_REPLICA}           vm-replica-${suffix}
     Set up test environment
     Resource Health Controller Should Be Available
     ${node}=    Get node 0
@@ -65,4 +84,7 @@ Local Suite Teardown
 
 Delete Suite Resources
     Run Keyword And Ignore Error    VM is deleted    ${VM_NODE_SELECTOR}
+    Run Keyword And Ignore Error    VM is deleted    ${VM_REPLICA}
+    Run Keyword And Ignore Error    Delete Volume    ${VOL_REPLICA}
+    Run Keyword And Ignore Error    Delete Storage Class    ${SC_REPLICA}
     Run Keyword And Ignore Error    Delete image by name    ${IMAGE_NAME}

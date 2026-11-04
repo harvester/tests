@@ -13,8 +13,10 @@ Library          ../libs/keywords/health_keywords.py
 
 *** Variables ***
 ${HEALTH_COMPONENT_VM}                      harvester-controller-vm
+${HEALTH_COMPONENT_VOLUME}                  harvester-controller-volume
 
 ${HEALTH_CHECK_VM_NODE_SELECTOR}            VMNodeSelectorLiveMigrationUnsupported
+${HEALTH_CHECK_REPLICA_SCHEDULING}          ReplicaSchedulingFailure
 
 *** Keywords ***
 Resource Health Controller Should Be Available
@@ -49,4 +51,12 @@ VM Node Selector Check Should Report VM
     ...    VMNodeSelectorLiveMigrationUnsupported check must list it.
     Health Check Should Report Resource
     ...    ${HEALTH_COMPONENT_VM}    ${HEALTH_CHECK_VM_NODE_SELECTOR}    ${namespace}/${vm_name}
+    ...    severity=Warning
+
+Volume Replica Check Should Report Volume
+    [Arguments]    ${longhorn_volume_name}
+    [Documentation]    A volume whose replicas cannot be scheduled must be listed by the
+    ...    ReplicaSchedulingFailure check, by its Longhorn volume (PV) name.
+    Health Check Should Report Resource
+    ...    ${HEALTH_COMPONENT_VOLUME}    ${HEALTH_CHECK_REPLICA_SCHEDULING}    ${longhorn_volume_name}
     ...    severity=Warning

@@ -107,3 +107,6 @@ class Volume(Base):
 
     def cleanup(self):
         return self.volume.cleanup()
+
+    def get_pv_name(self, volume_name):
+        return self.volume.get_pv_name(volume_name)
