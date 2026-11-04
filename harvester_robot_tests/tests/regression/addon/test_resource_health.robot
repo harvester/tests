@@ -105,6 +105,13 @@ Test Ignore A Single Resource Of A Check
     Then Image Should Be Marked Ignored    ${IMAGE_BAD_A}
     And Image Should Be Marked Ignored    ${IMAGE_BAD_B}    ${False}
 
+Test Ignore An Entire Check
+    [Tags]    p1
+    [Documentation]    Test case 8.2: ignoring the entire check marks the whole check as ignored.
+    Given Failing Image Is Reported    ${IMAGE_BAD_A}
+    When Image Check Resources Are Ignored    ${IGNORE_RULE}
+    Then Image Check Should Be Marked Ignored
+
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name
