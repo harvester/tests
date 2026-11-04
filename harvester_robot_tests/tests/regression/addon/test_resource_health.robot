@@ -31,7 +31,7 @@ Resource         ../../../keywords/health.resource
 
 Suite Setup      Local Suite Setup
 Suite Teardown   Local Suite Teardown
-Test Teardown    Common Test Teardown
+Test Teardown    Health Test Teardown    ${IGNORE_RULE}
 
 
 *** Variables ***
@@ -43,6 +43,8 @@ ${SC_REPLICA}           ${EMPTY}
 ${VOL_REPLICA}          ${EMPTY}
 ${VM_REPLICA}           ${EMPTY}
 ${IMAGE_BAD_A}          ${EMPTY}
+${IMAGE_BAD_B}          ${EMPTY}
+${IGNORE_RULE}          ${EMPTY}
 ${VM_BACKUP}            ${EMPTY}
 ${BACKUP_NAME}          ${EMPTY}
 ${SUPPORT_BUNDLE}       ${EMPTY}
@@ -93,6 +95,16 @@ Test Generating Support Bundle Is Reported
     When Support bundle is created    ${SUPPORT_BUNDLE}
     Then Support Bundle Generating Check Should Report Bundle    ${SUPPORT_BUNDLE}
 
+Test Ignore A Single Resource Of A Check
+    [Tags]    p1
+    [Documentation]    Test case 8.1: ignoring selected resources marks only those resources
+    ...    as ignored; the other resources of the check stay active.
+    Given Failing Image Is Reported    ${IMAGE_BAD_A}
+    And Failing Image Is Reported    ${IMAGE_BAD_B}
+    When Image Check Resources Are Ignored    ${IGNORE_RULE}    ${IMAGE_BAD_A}
+    Then Image Should Be Marked Ignored    ${IMAGE_BAD_A}
+    And Image Should Be Marked Ignored    ${IMAGE_BAD_B}    ${False}
+
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name
@@ -102,6 +114,8 @@ Local Suite Setup
     Set Suite Variable    ${VOL_REPLICA}          vol-replica-${suffix}
     Set Suite Variable    ${VM_REPLICA}           vm-replica-${suffix}
     Set Suite Variable    ${IMAGE_BAD_A}          image-bad-a-${suffix}
+    Set Suite Variable    ${IMAGE_BAD_B}          image-bad-b-${suffix}
+    Set Suite Variable    ${IGNORE_RULE}          ignore-${suffix}
     Set Suite Variable    ${VM_BACKUP}            vm-backup-${suffix}
     Set Suite Variable    ${BACKUP_NAME}          backup-${suffix}
     Set Suite Variable    ${SUPPORT_BUNDLE}       bundle-${suffix}
@@ -117,6 +131,7 @@ Local Suite Teardown
     Run Keyword If Any Tests Failed    Log Variables
 
 Delete Suite Resources
+    Run Keyword And Ignore Error    Health Ignore Rule Is Deleted    ${IGNORE_RULE}
     Run Keyword And Ignore Error    VM backup is deleted    ${BACKUP_NAME}
     Run Keyword And Ignore Error    Support bundle is deleted    ${SUPPORT_BUNDLE}
     Run Keyword And Ignore Error    VM is deleted    ${VM_NODE_SELECTOR}
@@ -125,4 +140,5 @@ Delete Suite Resources
     Run Keyword And Ignore Error    Delete Volume    ${VOL_REPLICA}
     Run Keyword And Ignore Error    Delete Storage Class    ${SC_REPLICA}
     Run Keyword And Ignore Error    Delete image by name    ${IMAGE_BAD_A}
+    Run Keyword And Ignore Error    Delete image by name    ${IMAGE_BAD_B}
     Run Keyword And Ignore Error    Delete image by name    ${IMAGE_NAME}
