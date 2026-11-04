@@ -6,9 +6,12 @@ Documentation    Resource Health Keywords - Reusable keywords for the Resource
 ...              written by harvester-resource-health-controller. Each check under
 ...              `status.checks` lists the resources it affects as `<namespace>/<name>`
 ...              (cluster-scoped Longhorn volumes are listed by their bare name).
+...              Ignoring a check creates a cluster-scoped `HealthIgnoreRule`; the
+...              controller then marks the check or the resource with `ignored: true`.
 Library          Collections
 Resource         variables.resource
 Resource         common.resource
+Resource         image.resource
 Library          ../libs/keywords/health_keywords.py
 
 *** Variables ***
@@ -90,3 +93,44 @@ Support Bundle Generating Check Should Report Bundle
     Health Check Should Report Resource
     ...    ${HEALTH_COMPONENT_SUPPORTBUNDLE}    ${HEALTH_CHECK_SUPPORTBUNDLE_GENERATING}    ${namespace}/${bundle_name}
     ...    severity=Info
+
+Failing Image Is Reported
+    [Arguments]    ${image_name}
+    [Documentation]    Create the image from an invalid URL (unless it already exists) and
+    ...    wait until ImageRetryLimitExceeded lists it. retry=0 fails the import at once.
+    ${exists}=    Run Keyword And Return Status    Image Should Exist    ${image_name}
+    IF    not ${exists}
+        Create image from url with name    ${image_name}    ${HEALTH_INVALID_IMAGE_URL}    retry=${0}
+    END
+    Image Retry Limit Check Should Report Image    ${image_name}
+
+Image Check Resources Are Ignored
+    [Arguments]    ${rule_name}    @{image_names}
+    [Documentation]    Ignore only the given images in the ImageRetryLimitExceeded check.
+    ...    With no image given the entire check is ignored.
+    @{resources}=    Create List
+    FOR    ${image_name}    IN    @{image_names}
+        Append To List    ${resources}    ${DEFAULT_NAMESPACE}/${image_name}
+    END
+    health_keywords.Create Health Ignore Rule    ${rule_name}
+    ...    ${HEALTH_COMPONENT_VMIMAGE}    ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}    ${resources}
+    ...    reason=robot test
+
+Image Should Be Marked Ignored
+    [Arguments]    ${image_name}    ${ignored}=${True}
+    [Documentation]    Wait until the image is (or is no longer) marked ignored in the check.
+    health_keywords.Wait For Health Resource Ignored State
+    ...    ${HEALTH_COMPONENT_VMIMAGE}    ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}
+    ...    ${DEFAULT_NAMESPACE}/${image_name}    ${ignored}    ${WAIT_TIMEOUT}
+
+Health Ignore Rule Is Deleted
+    [Arguments]    ${rule_name}
+    [Documentation]    Delete the rule, ignoring when it is already gone.
+    health_keywords.Delete Health Ignore Rule    ${rule_name}
+
+Health Test Teardown
+    [Arguments]    ${ignore_rule_name}
+    [Documentation]    An ignore rule left behind would hide checks from the following
+    ...    tests, so always delete this suite's rule before the common teardown.
+    Run Keyword And Ignore Error    Health Ignore Rule Is Deleted    ${ignore_rule_name}
+    Common Test Teardown

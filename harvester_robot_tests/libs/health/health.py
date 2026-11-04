@@ -33,3 +33,24 @@ class Health(Base):
                                         resource_name, timeout=DEFAULT_TIMEOUT):
         return self.health.wait_for_check_affects_resource(
             component_health_name, check_name, resource_name, timeout)
+
+    def wait_for_resource_ignored_state(self, component_health_name, check_name,
+                                        resource_name, ignored, timeout=DEFAULT_TIMEOUT):
+        return self.health.wait_for_resource_ignored_state(
+            component_health_name, check_name, resource_name, ignored, timeout)
+
+    def wait_for_check_ignored_state(self, component_health_name, check_name,
+                                     ignored, timeout=DEFAULT_TIMEOUT):
+        return self.health.wait_for_check_ignored_state(
+            component_health_name, check_name, ignored, timeout)
+
+    def create_ignore_rule(self, name, component_health_name, check_name,
+                           resources=None, expires_at=None, reason=None):
+        return self.health.create_ignore_rule(
+            name, component_health_name, check_name, resources, expires_at, reason)
+
+    def expire_ignore_rule(self, name):
+        return self.health.expire_ignore_rule(name)
+
+    def delete_ignore_rule(self, name):
+        return self.health.delete_ignore_rule(name)

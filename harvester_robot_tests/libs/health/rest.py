@@ -19,3 +19,21 @@ class Rest(Base):
     def wait_for_check_affects_resource(self, component_health_name, check_name,
                                         resource_name, timeout=DEFAULT_TIMEOUT):
         raise NotImplementedError("REST strategy not yet supported for Health")
+
+    def wait_for_resource_ignored_state(self, component_health_name, check_name,
+                                        resource_name, ignored, timeout=DEFAULT_TIMEOUT):
+        raise NotImplementedError("REST strategy not yet supported for Health")
+
+    def wait_for_check_ignored_state(self, component_health_name, check_name,
+                                     ignored, timeout=DEFAULT_TIMEOUT):
+        raise NotImplementedError("REST strategy not yet supported for Health")
+
+    def create_ignore_rule(self, name, component_health_name, check_name,
+                           resources=None, expires_at=None, reason=None):
+        raise NotImplementedError("REST strategy not yet supported for Health")
+
+    def expire_ignore_rule(self, name):
+        raise NotImplementedError("REST strategy not yet supported for Health")
+
+    def delete_ignore_rule(self, name):
+        raise NotImplementedError("REST strategy not yet supported for Health")
