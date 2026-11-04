@@ -149,6 +149,11 @@ MONITORING_NAMESPACE = "cattle-monitoring-system"
 # Addon-related resource plurals
 ADDON_PLURAL = "addons"
 
+# Resource Health (harvester/harvester#8436). ComponentHealth is cluster-scoped.
+HEALTH_API_GROUP = "health.harvesterhci.io"
+HEALTH_API_VERSION = "v1beta1"
+COMPONENT_HEALTH_PLURAL = "componenthealths"
+
 # Descheduler Addon Constants
 # The addon CR ships disabled by default in kube-system; enabling it renders a
 # Deployment and a ConfigMap both named "descheduler" from the upstream
