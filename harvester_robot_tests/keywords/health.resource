@@ -14,9 +14,14 @@ Library          ../libs/keywords/health_keywords.py
 *** Variables ***
 ${HEALTH_COMPONENT_VM}                      harvester-controller-vm
 ${HEALTH_COMPONENT_VOLUME}                  harvester-controller-volume
+${HEALTH_COMPONENT_VMIMAGE}                 harvester-controller-vmimage
 
 ${HEALTH_CHECK_VM_NODE_SELECTOR}            VMNodeSelectorLiveMigrationUnsupported
 ${HEALTH_CHECK_REPLICA_SCHEDULING}          ReplicaSchedulingFailure
+${HEALTH_CHECK_IMAGE_RETRY_LIMIT}           ImageRetryLimitExceeded
+
+# A URL nothing listens on, so an import fails right away.
+${HEALTH_INVALID_IMAGE_URL}                 http://127.0.0.1:1/invalid.img
 
 *** Keywords ***
 Resource Health Controller Should Be Available
@@ -60,3 +65,10 @@ Volume Replica Check Should Report Volume
     Health Check Should Report Resource
     ...    ${HEALTH_COMPONENT_VOLUME}    ${HEALTH_CHECK_REPLICA_SCHEDULING}    ${longhorn_volume_name}
     ...    severity=Warning
+
+Image Retry Limit Check Should Report Image
+    [Arguments]    ${image_name}    ${namespace}=${DEFAULT_NAMESPACE}
+    [Documentation]    An image whose import failed must be listed by ImageRetryLimitExceeded.
+    Health Check Should Report Resource
+    ...    ${HEALTH_COMPONENT_VMIMAGE}    ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}    ${namespace}/${image_name}
+    ...    severity=Error

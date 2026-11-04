@@ -40,6 +40,7 @@ ${VM_NODE_SELECTOR}     ${EMPTY}
 ${SC_REPLICA}           ${EMPTY}
 ${VOL_REPLICA}          ${EMPTY}
 ${VM_REPLICA}           ${EMPTY}
+${IMAGE_BAD_A}          ${EMPTY}
 
 
 *** Test Cases ***
@@ -63,6 +64,13 @@ Test VM With Insufficient Volume Replicas Is Reported
     ${pv_name}=    Get Volume PV Name    ${VOL_REPLICA}
     Then Volume Replica Check Should Report Volume    ${pv_name}
 
+Test Image With Wrong URL Is Reported
+    [Tags]    p0
+    [Documentation]    Test case 3: an image with an invalid download URL fails, and the
+    ...    dashboard reports ImageRetryLimitExceeded for it.
+    When Create image from url with name    ${IMAGE_BAD_A}    ${HEALTH_INVALID_IMAGE_URL}    retry=${0}
+    Then Image Retry Limit Check Should Report Image    ${IMAGE_BAD_A}
+
 *** Keywords ***
 Local Suite Setup
     ${suffix}=    Generate Unique Name
@@ -71,6 +79,7 @@ Local Suite Setup
     Set Suite Variable    ${SC_REPLICA}           sc-replica-${suffix}
     Set Suite Variable    ${VOL_REPLICA}          vol-replica-${suffix}
     Set Suite Variable    ${VM_REPLICA}           vm-replica-${suffix}
+    Set Suite Variable    ${IMAGE_BAD_A}          image-bad-a-${suffix}
     Set up test environment
     Resource Health Controller Should Be Available
     ${node}=    Get node 0
@@ -87,4 +96,5 @@ Delete Suite Resources
     Run Keyword And Ignore Error    VM is deleted    ${VM_REPLICA}
     Run Keyword And Ignore Error    Delete Volume    ${VOL_REPLICA}
     Run Keyword And Ignore Error    Delete Storage Class    ${SC_REPLICA}
+    Run Keyword And Ignore Error    Delete image by name    ${IMAGE_BAD_A}
     Run Keyword And Ignore Error    Delete image by name    ${IMAGE_NAME}
