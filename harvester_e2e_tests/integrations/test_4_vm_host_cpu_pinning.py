@@ -88,7 +88,9 @@ def cpu_managers(api_client, wait_timeout):
         url = "/apis/batch/v1/namespaces/harvester-system/jobs"
         endtime = datetime.now() + timedelta(seconds=wait_timeout)
         while endtime > datetime.now():
-            waiting = [x for x in api_client._get(url).json()['items']
+            code, data = api_client.get_json(url)
+            assert 200 == code, (code, data)
+            waiting = [x for x in data['items']
                        if 'cpu-manager' in x['metadata']['name'] and x['status'].get('active')]
             if not waiting:
                 break

@@ -189,3 +189,51 @@ class TestHarvesterAPI(TestCase):
             self.assertEqual(api.session, m_session)
             m_auth.assert_called_once_with(user, pwd)
             self.assertEqual(m_session.verify, ssl_verify)
+
+    def test_get_json(self):
+        api = HarvesterAPI("https://endpoint")
+        resp = mock.MagicMock(status_code=200)
+        resp.json.return_value = dict(items=[])
+
+        with mock.patch.object(api.session, 'get', return_value=resp) as m_get:
+            code, data = api.get_json("v1/path", filter="a=b", page=2)
+
+        self.assertEqual((code, data), (200, dict(items=[])))
+        m_get.assert_called_once_with(
+            "https://endpoint/v1/path", params=dict(filter="a=b", page=2))
+
+    def test_get_json_without_json_body(self):
+        api = HarvesterAPI("https://endpoint")
+        resp = mock.MagicMock(status_code=502, text="bad gateway")
+        resp.json.side_effect = ValueError
+
+        with mock.patch.object(api.session, 'get', return_value=resp):
+            code, data = api.get_json("v1/path")
+
+        self.assertEqual((code, data), (502, "bad gateway"))
+
+    def test_delete_json(self):
+        api = HarvesterAPI("https://endpoint")
+        resp = mock.MagicMock(status_code=200)
+        resp.json.return_value = dict(kind="Pod")
+
+        with mock.patch.object(api.session, 'delete', return_value=resp) as m_delete:
+            code, data = api.delete_json("api/v1/pods/a", gracePeriodSeconds=0)
+
+        self.assertEqual((code, data), (200, dict(kind="Pod")))
+        m_delete.assert_called_once_with(
+            "https://endpoint/api/v1/pods/a", params=dict(gracePeriodSeconds=0))
+
+    def test_override_retries(self):
+        api = HarvesterAPI("https://endpoint")
+
+        with mock.patch.object(HarvesterAPI, 'set_retries') as m_retries:
+            with api.override_retries(1, total=0):
+                m_retries.assert_called_once_with(1, total=0)
+            self.assertEqual(m_retries.call_args_list[-1], mock.call())
+
+        with mock.patch.object(HarvesterAPI, 'set_retries') as m_retries:
+            with self.assertRaises(RuntimeError):
+                with api.override_retries(total=0):
+                    raise RuntimeError
+            self.assertEqual(m_retries.call_args_list[-1], mock.call())
