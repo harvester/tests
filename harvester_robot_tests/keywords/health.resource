@@ -123,6 +123,12 @@ Image Should Be Marked Ignored
     ...    ${HEALTH_COMPONENT_VMIMAGE}    ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}
     ...    ${DEFAULT_NAMESPACE}/${image_name}    ${ignored}    ${WAIT_TIMEOUT}
 
+Image Check Should Be Marked Ignored
+    [Arguments]    ${ignored}=${True}
+    [Documentation]    Wait until the whole ImageRetryLimitExceeded check is (or is no longer) ignored.
+    health_keywords.Wait For Health Check Ignored State
+    ...    ${HEALTH_COMPONENT_VMIMAGE}    ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}    ${ignored}    ${WAIT_TIMEOUT}
+
 Health Ignore Rule Is Deleted
     [Arguments]    ${rule_name}
     [Documentation]    Delete the rule, ignoring when it is already gone.
