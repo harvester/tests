@@ -271,17 +271,7 @@ Here are the general guidelines for adding a new e2e test:
 
 
 # Frontend Tests <a name="frontend"/>
-Further info placed in [cypress/README.md](cypress/README.md)
-
-### Creating test skeletons for new features/tickets <a name="generating_skels">
-[Frontend test skeletons](cypress/README.md#test_skeletons)
-There is a test skel spec to use as a template in `tests/cypress/skel/`.
-- If you are adding a test to an existing suite like `tests/integration/login.spec.ts` then you can just use the template jsdoc and function call then add the test steps.
-- If you are creating a new logical group of tests you can copy the `skel.spec.ts` file into integration or into a subdirectory if it fits more into that category then rename it appropriately
-- Add the `@notImplemented` tag to the test case if it hasn't been implemented yet. This will have it shown with that tag on the static site.
-
-
-
+Refer https://github.com/harvester/harvester-ui-tests for frontend tests
 
 [tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pip.pypa.io/en/stable/
