@@ -161,3 +161,39 @@ class network_keywords:
         """
         logging(f"Deleting IP pool: {name}")
         self.network.delete_ip_pool(name)
+
+    # Generic NetworkAttachmentDefinition Operations (any CNI type)
+    def try_create_nad(self, name, config, labels=None, annotations=None):
+        """
+        Attempt to create a NAD with a raw CNI config.
+
+        Args:
+            name: NAD name (default namespace)
+            config: CNI config (dict or JSON string)
+            labels: Extra labels
+            annotations: Extra annotations
+
+        Returns:
+            dict: {success, code, message}
+        """
+        logging(f"Trying to create NAD: {name}")
+        return self.network.try_create_nad(name, config, labels, annotations)
+
+    def try_update_nad_config(self, name, config):
+        """
+        Attempt to replace the CNI config of a NAD.
+
+        Returns:
+            dict: {success, code, message}
+        """
+        logging(f"Trying to update NAD config: {name}")
+        return self.network.try_update_nad_config(name, config)
+
+    def get_nad(self, name):
+        """
+        Get a NAD in the default namespace.
+
+        Returns:
+            dict: NAD object
+        """
+        return self.network.get_nad(name)
