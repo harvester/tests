@@ -936,3 +936,13 @@ class CRD(Base):
                     logging(f'Error deleting PVC {pvc_name}: {e}', "WARNING")
         except Exception as e:
             logging(f'Error during volume cleanup: {e}', 'WARNING')
+
+    def get_pv_name(self, volume_name):
+        """Wait for the PVC to bind and return its PV name (== Longhorn volume name)"""
+        for _ in range(self.retry_count):
+            pvc = self.core_api.read_namespaced_persistent_volume_claim(
+                name=volume_name, namespace=DEFAULT_NAMESPACE)
+            if pvc.spec.volume_name:
+                return pvc.spec.volume_name
+            time.sleep(self.retry_interval)
+        raise AssertionError(f"PVC {volume_name} is not bound to a PV")
