@@ -161,3 +161,55 @@ class network_keywords:
         """
         logging(f"Deleting IP pool: {name}")
         self.network.delete_ip_pool(name)
+
+    # Admission (webhook/CRD schema) checks
+    def try_create_vlan_config(self, name, cluster_network, nics, mode=None,
+                               mtu=None, hardware_addr=None,
+                               node_selector=None, dry_run=False):
+        """
+        Attempt to create a VLAN config with strict field validation.
+
+        Args:
+            name: VLAN config name
+            cluster_network: Cluster network name
+            nics: List of NIC names
+            mode: spec.uplink.mode, left unset if None
+            mtu: spec.uplink.linkAttributes.mtu
+            hardware_addr: spec.uplink.linkAttributes.hardwareAddr
+            node_selector: spec.nodeSelector
+            dry_run: Server-side dry run
+
+        Returns:
+            dict: {success, code, message, object}
+        """
+        logging(f"Trying to create VLAN config: {name}")
+        return self.network.try_create_vlan_config(
+            name, cluster_network, nics, mode, mtu, hardware_addr,
+            node_selector, dry_run
+        )
+
+    def try_create_vlan_network(self, name, vlan_id, cluster_network,
+                                dry_run=False):
+        """
+        Attempt to create a VLAN network.
+
+        Returns:
+            dict: {success, code, message, object}
+        """
+        logging(f"Trying to create VLAN network: {name}")
+        return self.network.try_create_vlan_network(
+            name, vlan_id, cluster_network, dry_run
+        )
+
+    def try_create_host_network_config(self, name, cluster_network, vlan_id,
+                                       mode="dhcp", dry_run=False):
+        """
+        Attempt to create a HostNetworkConfig.
+
+        Returns:
+            dict: {success, code, message, object}
+        """
+        logging(f"Trying to create HostNetworkConfig: {name}")
+        return self.network.try_create_host_network_config(
+            name, cluster_network, vlan_id, mode, dry_run
+        )
