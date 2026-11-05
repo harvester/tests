@@ -15,6 +15,7 @@ from pkg_resources import parse_version
 from packaging.version import InvalidVersion
 from paramiko.ssh_exception import SSHException, NoValidConnectionsError
 from harvester_api.managers import DEFAULT_HARVESTER_NAMESPACE, DEFAULT_LONGHORN_NAMESPACE
+from harvester_e2e_tests.integrations.test_ipv6_host import ipv6_state_failures
 
 pytest_plugins = [
     "harvester_e2e_tests.fixtures.api_client",
@@ -1125,6 +1126,18 @@ class TestAnyNodesUpgrade:
         assert created_sc in names
         assert "storageclass.kubernetes.io/is-default-class" in names[created_sc]
         assert "true" == names[created_sc]["storageclass.kubernetes.io/is-default-class"]
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade"])
+    def test_verify_ipv6_state(self, api_client, host_shell):
+        """IPv4-only nodes upgraded from v1.9 must end with kernel IPv6 disabled.
+
+        harvester/harvester#10755, #12143: the v1.9 installer always enabled IPv6 in the
+        kernel; the upgrade must follow install.ipfamilies instead.
+        """
+        code, data = api_client.hosts.get()
+        assert 200 == code, (code, data)
+        failures = ipv6_state_failures(data["data"], host_shell)
+        assert not failures, "\n".join(failures)
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
     def test_verify_server_version(self, api_client, cluster_state, host_shell, wait_timeout):
