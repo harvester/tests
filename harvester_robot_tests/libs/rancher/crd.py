@@ -1152,7 +1152,7 @@ class CRD(Base):
         logging(f"Triggered upgrade of RKE2 cluster {cluster_name} to {new_k8s_version}")
 
     def create_harvester_config(self, name, cpus, mems, disks, image_id,
-                                network_id, ssh_user, user_data):
+                                network_id, ssh_user, user_data, machine_os="linux"):
         """Create Harvester config for RKE2 node template"""
         logging(f"Creating Harvester config: {name}")
 
@@ -1203,6 +1203,10 @@ class CRD(Base):
             "userData": encoded_user_data,
             "vmNamespace": DEFAULT_NAMESPACE
         }
+        # Only set os for Windows so Linux configs keep working with node
+        # drivers that predate the field (the CRD would reject it as unknown).
+        if machine_os and machine_os != "linux":
+            config_spec["os"] = machine_os
 
         # HarvesterConfig is a Rancher resource, use Rancher kubeconfig
         returncode, stdout, stderr = self._run_kubectl_rancher(
@@ -1214,6 +1218,154 @@ class CRD(Base):
 
         logging(f"Created Harvester config: {name}")
         return config_spec
+
+    # Windows worker operations
+
+    def harvester_config_supports_os(self):
+        """Return True if the harvesterconfig dynamic schema has the os field.
+
+        The field comes from the node driver's harvester-os flag; Rancher only
+        provisions Windows machines on Harvester with a driver that has it.
+        """
+        rc, stdout, stderr = self._run_kubectl_rancher(
+            ["get", "dynamicschemas.management.cattle.io", "harvesterconfig",
+             "-o", "json"]
+        )
+        if rc != 0:
+            raise Exception(f"Failed to get harvesterconfig dynamic schema: {stderr}")
+        fields = json.loads(stdout).get("spec", {}).get("resourceFields", {})
+        return "os" in fields
+
+    def set_worker_machine_pool(self, cluster_name, pool_name, quantity,
+                                harvester_config_name, machine_os="linux",
+                                hostname_length_limit=0):
+        """Add, update or (quantity 0) remove a worker-only machine pool.
+
+        machine_os=windows marks the pool as a Windows pool (Rancher then uses
+        the Windows install script); hostname_length_limit=15 keeps the
+        hostnames NetBIOS compatible.
+        """
+        logging(f"Setting machine pool {pool_name} of {cluster_name}: "
+                f"quantity={quantity} os={machine_os}")
+        cluster = self.get_rke2_cluster(cluster_name)
+        if not cluster:
+            raise Exception(f"RKE2 cluster {cluster_name} not found")
+
+        pools = cluster.get("spec", {}).get("rkeConfig", {}).get("machinePools", [])
+        pools = [p for p in pools if p.get("name") != pool_name]
+        if int(quantity) > 0:
+            pool = {
+                "controlPlaneRole": False,
+                "etcdRole": False,
+                "workerRole": True,
+                "machineConfigRef": {
+                    "kind": "HarvesterConfig",
+                    "name": harvester_config_name
+                },
+                "name": pool_name,
+                "quantity": int(quantity),
+                "unhealthyNodeTimeout": "0s"
+            }
+            if machine_os and machine_os != "linux":
+                pool["machineOS"] = machine_os
+            if int(hostname_length_limit) > 0:
+                pool["hostnameLengthLimit"] = int(hostname_length_limit)
+            pools.append(pool)
+
+        patch = {"spec": {"rkeConfig": {"machinePools": pools}}}
+        rc, stdout, stderr = self._run_kubectl_rancher(
+            ["patch", "clusters.provisioning.cattle.io", cluster_name,
+             "-n", "fleet-default", "--type=merge", "-p", json.dumps(patch)]
+        )
+        if rc != 0:
+            raise Exception(f"Failed to set machine pool {pool_name}: {stderr}")
+
+    def get_guest_nodes(self, cluster_id, label_selector=""):
+        """Return the guest cluster's nodes matching a label selector."""
+        args = ["get", "nodes", "-o", "json"]
+        if label_selector:
+            args.extend(["-l", label_selector])
+        rc, stdout, stderr = self._run_kubectl_guest(cluster_id, args)
+        if rc != 0:
+            raise Exception(f"Failed to get nodes: {stderr}")
+        return json.loads(stdout).get("items", [])
+
+    def get_guest_cluster_vms(self, cluster_name, label_selector=""):
+        """Return the Harvester VMs the node driver created for a guest cluster."""
+        selector = f"guestcluster.harvesterhci.io/name={cluster_name}"
+        if label_selector:
+            selector = f"{selector},{label_selector}"
+        rc, stdout, stderr = self._run_kubectl(
+            ["get", "virtualmachines.kubevirt.io", "-n", DEFAULT_NAMESPACE,
+             "-l", selector, "-o", "json"]
+        )
+        if rc != 0:
+            raise Exception(f"Failed to get guest cluster VMs: {stderr}")
+        return json.loads(stdout).get("items", [])
+
+    def get_vm_cloudinit_userdata(self, vm):
+        """Return the NoCloud user data of a VM (inline or from its secret)."""
+        for volume in vm["spec"]["template"]["spec"].get("volumes", []):
+            nocloud = volume.get("cloudInitNoCloud")
+            if not nocloud:
+                continue
+            if nocloud.get("userData"):
+                return nocloud["userData"]
+            if nocloud.get("userDataBase64"):
+                return base64.b64decode(nocloud["userDataBase64"]).decode("utf-8")
+            secret_name = (nocloud.get("secretRef") or {}).get("name")
+            if secret_name:
+                rc, stdout, stderr = self._run_kubectl(
+                    ["get", "secret", secret_name, "-n", vm["metadata"]["namespace"],
+                     "-o", "jsonpath={.data.userdata}"]
+                )
+                if rc != 0:
+                    raise Exception(f"Failed to get cloud-init secret: {stderr}")
+                return base64.b64decode(stdout).decode("utf-8")
+        return ""
+
+    def apply_guest_manifest(self, cluster_id, manifest):
+        """kubectl apply a YAML/JSON manifest in a guest cluster."""
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id, ["apply", "-f", "-"], input_data=manifest
+        )
+        if rc != 0:
+            raise Exception(f"Failed to apply manifest: {stderr}")
+        return stdout
+
+    def wait_for_guest_pod_completed(self, cluster_id, namespace, name, timeout):
+        """Wait for a pod to reach Succeeded or Failed and return the phase."""
+        deadline = time.time() + int(timeout)
+        phase = ""
+        while time.time() < deadline:
+            rc, stdout, _ = self._run_kubectl_guest(
+                cluster_id,
+                ["get", "pod", name, "-n", namespace, "-o", "jsonpath={.status.phase}"]
+            )
+            phase = stdout.strip() if rc == 0 else ""
+            if phase in ("Succeeded", "Failed"):
+                return phase
+            time.sleep(10)
+        raise Exception(f"Pod {namespace}/{name} did not complete in {timeout}s "
+                        f"(last phase: {phase})")
+
+    def get_guest_pod_logs(self, cluster_id, namespace, name):
+        """Return a pod's logs."""
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id, ["logs", name, "-n", namespace]
+        )
+        if rc != 0:
+            raise Exception(f"Failed to get logs of {namespace}/{name}: {stderr}")
+        return stdout
+
+    def delete_guest_resource(self, cluster_id, kind, namespace, name):
+        """Delete a namespaced resource in a guest cluster, ignoring not found."""
+        rc, stdout, stderr = self._run_kubectl_guest(
+            cluster_id,
+            ["delete", kind, name, "-n", namespace, "--ignore-not-found", "--wait=false"]
+        )
+        if rc != 0:
+            raise Exception(f"Failed to delete {kind} {namespace}/{name}: {stderr}")
 
     def generate_kubeconfig(self, cluster_id, cluster_name):
         """Generate full-access kubeconfig for Harvester cluster.

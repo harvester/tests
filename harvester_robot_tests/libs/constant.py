@@ -208,3 +208,9 @@ HARVESTER_CSI_DRIVER_DEPLOYMENT = "harvester-csi-driver-controllers"
 DEFAULT_RKE2_NODE_CPUS = 4
 DEFAULT_RKE2_NODE_MEMORY = 8  # GB
 DEFAULT_RKE2_NODE_DISK = 60  # GB
+
+# Windows RKE2 workers. The image needs Cloudbase-Init, the QEMU guest agent and
+# the Containers feature; Rancher adds its install script to this user data.
+WINDOWS_RKE2_USER_DATA = "#cloud-config\n"
+# Windows containers must match the node's build: ltsc2025 for Server 2025.
+WINDOWS_PROBE_IMAGE = "mcr.microsoft.com/windows/nanoserver:ltsc2025"

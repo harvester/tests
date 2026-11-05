@@ -70,6 +70,16 @@ ${RANCHER_WAIT_TIMEOUT}         1200
 # RKE2 Version Configuration
 ${RKE2_VERSION}                %{RKE2_VERSION=v1.34}
 
+# Windows RKE2 workers (test_rancher_windows_worker.robot). The suite is skipped
+# unless WINDOWS_IMAGE_URL is set. The image must be a sysprepped Windows Server
+# image with Cloudbase-Init, the QEMU guest agent (VMDP) and the Containers
+# feature, e.g. the rke2 flavor of github.com/abonillabeeche/harvester-windows-cloudbase.
+# Windows Server 2025 needs RKE2 v1.34.12+, v1.35.9+, v1.36.5+ or v1.37.1+.
+${WINDOWS_IMAGE_URL}            %{WINDOWS_IMAGE_URL=}
+${WINDOWS_WORKER_CPUS}          %{WINDOWS_WORKER_CPUS=4}
+${WINDOWS_WORKER_MEMORY}        %{WINDOWS_WORKER_MEMORY=8}
+${WINDOWS_WORKER_DISK}          %{WINDOWS_WORKER_DISK=40}
+
 # KDM (Kontainer Driver Metadata) Configuration
 # Set to a URL pointing to a custom data.json to override the Rancher rke-metadata-config.
 ${KDM_URL}                     %{KDM_URL=default}
