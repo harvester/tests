@@ -4,6 +4,7 @@ Layer 3: Keyword wrappers for Robot Framework
 """
 import os
 import sys
+import time
 from datetime import datetime
 
 # Add the path to the utility module
@@ -244,6 +245,7 @@ class rancher_keywords:
         """
         logging(f"Configuring KDM URL: {url}")
         self.rancher.configure_kdm_url(url)
+        time.sleep(5)
         logging("KDM URL configured successfully")
 
     def get_harvester_node_driver_version(self):
