@@ -57,3 +57,13 @@ class setting_keywords:
     def update(self, setting_id, value):
         setting = self.setting.update(setting_id, value)
         return setting
+
+    def try_update(self, setting_id, value):
+        """Attempt to update a setting; returns a {success, code, message}
+        dict instead of failing when the webhook rejects the value"""
+        logging(f'Attempting to set setting {setting_id} to {value!r} (may be rejected)')
+        return self.setting.try_update(setting_id, value)
+
+    def get_kubevirt_configuration(self):
+        """Return spec.configuration of the harvester-system/kubevirt CR"""
+        return self.setting.get_kubevirt_configuration()

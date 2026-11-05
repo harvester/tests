@@ -30,6 +30,11 @@ class vm_keywords:
         logging(f'Creating VM {vm_name} with image {image_id}, {cpu}C/{memory} and {kwargs}')
         self.vm.create(vm_name, image_id, cpu, memory, **kwargs)
 
+    def try_create_vm(self, vm_name, image_id, cpu=2, memory="4Gi", **kwargs):
+        """Attempt to create a VM that may be rejected; returns result dict"""
+        logging(f'Attempting to create VM {vm_name} with {kwargs} (may be rejected)')
+        return self.vm.try_create(vm_name, image_id, cpu, memory, **kwargs)
+
     def delete_vm(self, vm_name):
         """Delete a virtual machine"""
         logging(f'Deleting VM {vm_name}')

@@ -23,3 +23,11 @@ class Base(ABC):
     @abstractmethod
     def update(self, setting_id, value):
         raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
+    def try_update(self, setting_id, value):
+        raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
+    def get_kubevirt_configuration(self):
+        raise NotImplementedError(self.unsupported_msg)
