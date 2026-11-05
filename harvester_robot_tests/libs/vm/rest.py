@@ -45,6 +45,9 @@ class Rest(Base):
             vm_spec.user_data = yaml.dump(userdata)
 
         if image_id:
+            # The imageId annotation must be "<namespace>/<name>"
+            if '/' not in image_id:
+                image_id = f"{DEFAULT_NAMESPACE}/{image_id}"
             # The version-aware VMSpec decides whether the UID is needed
             # (v1.8.0+ names the image storage class lh-<uid>)
             image_uid = None
@@ -190,16 +193,30 @@ class Rest(Base):
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
     def start(self, vm_name):
-        """Start a VM"""
+        """Start a VM, retrying on update conflicts"""
         api = get_harvester_api_client()
-        code, data = api.vms.start(vm_name)
-        assert code in [200, 204], f"Failed to start VM: {code}, {data}"
+        for i in range(self.retry_count):
+            try:
+                code, data = api.vms.start(vm_name)
+                assert code in [200, 204], f"Failed to start VM: {code}, {data}"
+                return
+            except Exception as e:
+                logging(f"Failed to start VM {vm_name}: {e} ({i})")
+                time.sleep(self.retry_interval)
+        raise AssertionError(f"Failed to start VM {vm_name}")
 
     def stop(self, vm_name):
-        """Stop a VM"""
+        """Stop a VM, retrying on update conflicts"""
         api = get_harvester_api_client()
-        code, data = api.vms.stop(vm_name)
-        assert code in [200, 204], f"Failed to stop VM: {code}, {data}"
+        for i in range(self.retry_count):
+            try:
+                code, data = api.vms.stop(vm_name)
+                assert code in [200, 204], f"Failed to stop VM: {code}, {data}"
+                return
+            except Exception as e:
+                logging(f"Failed to stop VM {vm_name}: {e} ({i})")
+                time.sleep(self.retry_interval)
+        raise AssertionError(f"Failed to stop VM {vm_name}")
 
     def restart(self, vm_name):
         """Restart a VM via KubeVirt's native `restart` subresource action,
@@ -223,8 +240,16 @@ class Rest(Base):
         old_uid = data.get('metadata', {}).get('uid') if code == 200 else None
 
         logging(f"Restarting VM {vm_name}")
-        code, data = api.vms.restart(vm_name)
-        assert code in [200, 204], f"Failed to restart VM: {code}, {data}"
+        for i in range(self.retry_count):
+            try:
+                code, data = api.vms.restart(vm_name)
+                assert code in [200, 204], f"Failed to restart VM: {code}, {data}"
+                break
+            except Exception as e:
+                logging(f"Failed to restart VM {vm_name}: {e} ({i})")
+                time.sleep(self.retry_interval)
+        else:
+            raise AssertionError(f"Failed to restart VM {vm_name}")
 
         endtime = datetime.now() + timedelta(seconds=DEFAULT_TIMEOUT_SHORT)
         while endtime > datetime.now():
@@ -487,35 +512,67 @@ class Rest(Base):
             "update_disk_size is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
-    def get_cpu_cores(self, vm_name, namespace=DEFAULT_NAMESPACE):
-        """Return the VM spec's requested CPU core count."""
+    def get_spec(self, vm_name, field, namespace=DEFAULT_NAMESPACE):
+        """Read a single field from the VM spec.
+
+        Supported *field* values:
+          - ``"cpu_cores"``  – ``spec.template.spec.domain.cpu.cores``
+          - ``"usbtablet"``  – True when ``spec.template.spec.domain.devices.inputs``
+                               contains a USB tablet entry, False otherwise
+
+        Returns the field value, or raises AssertionError when the path does
+        not exist.
+        """
         api = get_harvester_api_client()
         code, data = api.vms.get(vm_name, namespace)
         assert code == 200, f"Failed to get VM: {code}, {data}"
-        return data['spec']['template']['spec']['domain']['cpu']['cores']
+        if field == "cpu_cores":
+            cores = data['spec']['template']['spec']['domain']['cpu']['cores']
+            logging(f"Got VM {namespace}/{vm_name} spec.template.spec.domain.cpu.cores = {cores}")
+            return cores
+        elif field == "usbtablet":
+            #vm_spec = api.vms.Spec.from_dict(data)
+            inputs = data['spec']['template']['spec']['domain']['devices'].get('inputs') or []
+            logging(f"Got VM {namespace}/{vm_name} spec.template.spec.domain.devices.inputs = {inputs}")
+            return any(
+                inp.get('bus') == 'usb' and inp.get('type') == 'tablet'
+                for inp in inputs
+            )
+            #return bool(vm_spec.usbtablet)
+        else:
+            raise ValueError(f"Unknown spec field: {field!r}")
 
-    def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE,
-                         retry_count=5):
-        """Update a VM's CPU core count. Retries on 409 Conflict (object
-        modified concurrently between the get and the update) by re-fetching
-        and reapplying the change.
+    def update_spec(self, vm_name, field, value, namespace=DEFAULT_NAMESPACE,
+                    retry_count=5):
+        """Update a single field in the VM spec with automatic conflict retry.
+
+        Supported *field* values:
+          - ``"cpu_cores"``  – sets ``spec.template.spec.domain.cpu.cores``
+          - ``"usbtablet"``  – adds or removes the USB tablet input device
+
+        On any failure the method logs the exception, sleeps, and retries up
+        to *retry_count* times, then asserts success after the loop.
         """
         api = get_harvester_api_client()
 
-        for attempt in range(retry_count):
-            code, data = api.vms.get(vm_name, namespace)
-            assert code == 200, f"Failed to get VM: {code}, {data}"
+        for i in range(retry_count):
+            try:
+                code, data = api.vms.get(vm_name, namespace)
+                assert code == 200, f"Failed to get VM: {code}, {data}"
 
-            vm_spec = api.vms.Spec.from_dict(data)
-            vm_spec.cpu_cores = int(cpu_cores)
+                vm_spec = api.vms.Spec.from_dict(data)
+                if field == "cpu_cores":
+                    vm_spec.cpu_cores = int(value)
+                elif field == "usbtablet":
+                    vm_spec.usbtablet = bool(value)
+                else:
+                    raise ValueError(f"Unknown spec field: {field!r}")
+                logging(f"Updating VM {namespace}/{vm_name} {field} to {value} ... ({i})")
 
-            code, data = api.vms.update(vm_name, vm_spec, namespace)
-            if code == 200:
-                logging(f"Updated VM {namespace}/{vm_name} CPU cores to {cpu_cores}")
+                code, data = api.vms.update(vm_name, vm_spec, namespace)
+                assert code == 200, f"Failed to update VM: {code}, {data}"
                 return
-            if code == 409 and attempt < retry_count - 1:
-                logging(f"Conflict updating VM {vm_name} CPU cores, "
-                        f"retrying ({attempt + 1}/{retry_count})...")
+            except Exception as e:
+                logging(f"Failed to update VM {vm_name} {field}: {e}")
                 time.sleep(1)
-                continue
-            raise AssertionError(f"Failed to update VM CPU cores: {code}, {data}")
+        raise AssertionError(f"Failed to update VM {namespace}/{vm_name} {field}")
