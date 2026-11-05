@@ -1406,3 +1406,132 @@ class CRD(Base):
                     time.sleep(1)
                     continue
                 raise
+
+    def start_storage_migration(self, vm_name, source_volume, target_volume,
+                                namespace=DEFAULT_NAMESPACE, retry_count=5):
+        """Start a storage migration of a VM volume to another PVC.
+
+        Does what the Harvester `storageMigration` VM action does: set
+        `targetVolume` on the source volume's entry of the
+        harvesterhci.io/volumeClaimTemplates annotation. The Harvester VM
+        controller then swaps the volume in the VM spec and sets
+        updateVolumesStrategy=Migration, which makes KubeVirt live-migrate
+        the VM onto the target PVC. Retries on 409 Conflict.
+        """
+        for attempt in range(retry_count):
+            vm = self.get(vm_name, namespace)
+            annotations = vm['metadata'].setdefault('annotations', {})
+            entries = json.loads(
+                annotations.get('harvesterhci.io/volumeClaimTemplates', '[]'))
+            entry = next((e for e in entries
+                          if e.get('metadata', {}).get('name') == source_volume),
+                         None)
+            if entry is None:
+                raise AssertionError(
+                    f"Source volume {source_volume} not found in the "
+                    f"volumeClaimTemplates annotation of VM {vm_name}")
+            entry['targetVolume'] = target_volume
+            annotations['harvesterhci.io/volumeClaimTemplates'] = json.dumps(entries)
+            try:
+                replace_cr(
+                    group=KUBEVIRT_API_GROUP,
+                    version=KUBEVIRT_API_VERSION,
+                    namespace=namespace,
+                    plural=VIRTUALMACHINE_PLURAL,
+                    name=vm_name,
+                    body=vm
+                )
+                logging(f"Started storage migration of VM {namespace}/{vm_name}: "
+                        f"{source_volume} -> {target_volume}")
+                return
+            except ApiException as e:
+                if e.status == 409 and attempt < retry_count - 1:
+                    logging(f"Conflict starting storage migration of VM {vm_name}, "
+                            f"retrying ({attempt + 1}/{retry_count})...")
+                    time.sleep(1)
+                    continue
+                raise AssertionError(
+                    f"Failed to start storage migration of VM {namespace}/{vm_name}: "
+                    f"{e.status} {e.reason} {e.body}")
+
+    def _storage_migration_state(self, vm, source_volume, target_volume):
+        """Return the list of things still pending for a storage migration of
+        source_volume to target_volume (empty once it has completed)."""
+        pending = []
+        metadata = vm.get('metadata', {})
+        annotations = metadata.get('annotations', {}) or {}
+        status = vm.get('status', {})
+        claims = [v.get('persistentVolumeClaim', {}).get('claimName')
+                  for v in vm['spec']['template']['spec'].get('volumes', [])]
+        if target_volume not in claims or source_volume in claims:
+            pending.append(f"VM spec volumes are {claims}")
+        if 'harvesterhci.io/waitingStorageMigration' in annotations:
+            pending.append("waitingStorageMigration annotation is set")
+        for cond in status.get('conditions', []):
+            if cond.get('type') == 'VolumesChange' and cond.get('status') == 'True':
+                pending.append("VolumesChange condition is True")
+        if status.get('printableStatus') != 'Running':
+            pending.append(f"printableStatus is {status.get('printableStatus')}")
+        entries = json.loads(
+            annotations.get('harvesterhci.io/volumeClaimTemplates', '[]'))
+        names = {e.get('metadata', {}).get('name'): e.get('targetVolume', '')
+                 for e in entries}
+        if names.get(target_volume, None) != '' or source_volume in names:
+            pending.append(f"volumeClaimTemplates entries are {names}")
+        return pending
+
+    def _failed_volume_migration(self, vm_name, namespace):
+        """Return the name of a failed VirtualMachineInstanceMigration of the
+        VM, or None."""
+        vmims = list_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                        "virtualmachineinstancemigrations").get("items", [])
+        for vmim in vmims:
+            if (vmim.get('spec', {}).get('vmiName') == vm_name
+                    and vmim.get('status', {}).get('phase') == 'Failed'):
+                return vmim['metadata']['name']
+        return None
+
+    def wait_for_storage_migration_completed(
+            self, vm_name, source_volume, target_volume,
+            timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+        """Wait until a storage migration has completed: the VM spec uses the
+        target PVC, KubeVirt cleared the VolumesChange condition, the VM is
+        Running, and Harvester rewrote the volumeClaimTemplates entry to the
+        target PVC (the state in which the source PVC can be deleted).
+        Fails early when the KubeVirt migration fails.
+        """
+        endtime = time.time() + timeout
+        pending = []
+        while time.time() < endtime:
+            vm = self.get(vm_name, namespace)
+            pending = self._storage_migration_state(vm, source_volume, target_volume)
+            if not pending:
+                logging(f"Storage migration of VM {namespace}/{vm_name} "
+                        f"{source_volume} -> {target_volume} completed")
+                return
+            failed = self._failed_volume_migration(vm_name, namespace)
+            if failed:
+                raise AssertionError(
+                    f"Migration {failed} of VM {namespace}/{vm_name} failed; "
+                    f"pending: {pending}")
+            logging(f"Waiting for storage migration of VM {vm_name}: {pending}")
+            time.sleep(self.retry_interval)
+        raise AssertionError(
+            f"Storage migration of VM {namespace}/{vm_name} {source_volume} -> "
+            f"{target_volume} did not complete within {timeout}s; pending: {pending}")
+
+    def get_launcher_pods(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the VM's virt-launcher pods as dicts with name, phase,
+        terminating flag and the PVC claim names in their spec.volumes."""
+        pods = self.core_api.list_namespaced_pod(
+            namespace,
+            label_selector=f"kubevirt.io=virt-launcher,vm.kubevirt.io/name={vm_name}"
+        ).items
+        return [{
+            "name": pod.metadata.name,
+            "phase": pod.status.phase,
+            "terminating": pod.metadata.deletion_timestamp is not None,
+            "claims": [v.persistent_volume_claim.claim_name
+                       for v in (pod.spec.volumes or [])
+                       if v.persistent_volume_claim],
+        } for pod in pods]

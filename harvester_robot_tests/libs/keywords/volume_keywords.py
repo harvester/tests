@@ -69,6 +69,12 @@ class volume_keywords:
         logging(f'Deleting {len(volume_names)} volumes concurrently')
         return self.volume.delete_concurrently(volume_names)
 
+    def get_pods_using_volume(self, volume_name):
+        """Return the pods (any phase) that reference the PVC."""
+        pods = self.volume.get_pods_using(volume_name)
+        logging(f'Pods using volume {volume_name}: {pods}')
+        return pods
+
     def try_get_volume(self, volume_name):
         """Attempt to get a volume for negative testing; returns result dict"""
         logging(f'Attempting to get volume {volume_name} (negative test)')

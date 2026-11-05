@@ -244,6 +244,30 @@ class vm_keywords:
         logging(f'Updating VM {vm_name} CPU cores to {cpu_cores}')
         self.vm.update_cpu_cores(vm_name, cpu_cores, namespace)
 
+    def start_vm_storage_migration(self, vm_name, source_volume, target_volume,
+                                   namespace=DEFAULT_NAMESPACE):
+        """Migrate a VM volume to another PVC while the VM keeps running."""
+        logging(f'Starting storage migration of VM {vm_name}: '
+                f'{source_volume} -> {target_volume}')
+        self.vm.start_storage_migration(vm_name, source_volume, target_volume, namespace)
+
+    def wait_for_vm_storage_migration_completed(
+            self, vm_name, source_volume, target_volume,
+            timeout=DEFAULT_TIMEOUT, namespace=DEFAULT_NAMESPACE):
+        """Wait until the storage migration finished and Harvester switched
+        the VM's volumeClaimTemplates entry to the target PVC."""
+        logging(f'Waiting for storage migration of VM {vm_name}: '
+                f'{source_volume} -> {target_volume}')
+        self.vm.wait_for_storage_migration_completed(
+            vm_name, source_volume, target_volume, int(timeout), namespace)
+
+    def get_vm_launcher_pods(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the VM's virt-launcher pods (name, phase, terminating,
+        claims)."""
+        pods = self.vm.get_launcher_pods(vm_name, namespace)
+        logging(f'virt-launcher pods of VM {vm_name}: {pods}')
+        return pods
+
     def exec_command_in_vm(
         self, vm_name, command, username, pkey=None, network="default",
         namespace=DEFAULT_NAMESPACE, timeout=DEFAULT_TIMEOUT

@@ -146,3 +146,17 @@ class VM(Base):
 
     def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE):
         return self.vm.update_cpu_cores(vm_name, cpu_cores, namespace)
+
+    def start_storage_migration(self, vm_name, source_volume, target_volume,
+                                namespace=DEFAULT_NAMESPACE):
+        return self.vm.start_storage_migration(
+            vm_name, source_volume, target_volume, namespace)
+
+    def wait_for_storage_migration_completed(self, vm_name, source_volume,
+                                             target_volume, timeout,
+                                             namespace=DEFAULT_NAMESPACE):
+        return self.vm.wait_for_storage_migration_completed(
+            vm_name, source_volume, target_volume, timeout, namespace)
+
+    def get_launcher_pods(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_launcher_pods(vm_name, namespace)

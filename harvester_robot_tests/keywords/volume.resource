@@ -196,3 +196,34 @@ Restore Volume From Snapshot
     ...    volume_mode=${volume_mode}
     ...    access_mode=${access_mode}
     ...    size=${size}
+
+# usage
+Get Pods Using Volume
+    [Arguments]    ${vol_name}
+    [Documentation]    Return the pods (any phase, as "name (phase)") that list
+    ...    the PVC in spec.volumes, i.e. what `kubectl describe pvc` shows as
+    ...    "Used By".
+    ${pods}=    volume_keywords.get_pods_using_volume    ${vol_name}
+    RETURN    ${pods}
+
+Volume Is Not Used By Any Pod
+    [Arguments]    ${vol_name}
+    [Documentation]    Single-shot assertion backing `Volume Should Be Released`
+    ${pods}=    Get Pods Using Volume    ${vol_name}
+    Should Be Empty    ${pods}    msg=Volume ${vol_name} is still used by ${pods}
+
+Volume Should Be Released
+    [Arguments]    ${vol_name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait until no pod (whatever its phase) references the
+    ...    PVC anymore, so the kubernetes.io/pvc-protection finalizer no longer
+    ...    blocks deleting it.
+    Wait Until Keyword Succeeds    ${timeout}    ${RETRY_INTERVAL}
+    ...    Volume Is Not Used By Any Pod    ${vol_name}
+
+Delete Volume And Wait
+    [Arguments]    ${vol_name}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Delete a PVC and wait until it is gone. Fails if the PVC
+    ...    is still there (e.g. stuck Terminating) after ${timeout} seconds.
+    ${timeout}=    Convert To Integer    ${timeout}
+    volume_keywords.delete_volume    ${vol_name}    wait=${False}
+    volume_keywords.wait_for_volume_deleted    ${vol_name}    timeout=${timeout}

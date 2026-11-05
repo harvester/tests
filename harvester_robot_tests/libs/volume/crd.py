@@ -387,6 +387,17 @@ class CRD(Base):
                 return False
             raise
 
+    def get_pods_using(self, volume_name, namespace=DEFAULT_NAMESPACE):
+        """Return the names of the pods that list the PVC in spec.volumes,
+        whatever their phase. Such a pod keeps the kubernetes.io/pvc-protection
+        finalizer on the PVC, so a deleted PVC stays Terminating until the pod
+        is gone (this is what `kubectl describe pvc` shows as "Used By")."""
+        pods = self.core_api.list_namespaced_pod(namespace).items
+        return [f"{pod.metadata.name} ({pod.status.phase})" for pod in pods
+                if any(v.persistent_volume_claim
+                       and v.persistent_volume_claim.claim_name == volume_name
+                       for v in (pod.spec.volumes or []))]
+
     def try_get(self, volume_name, namespace=DEFAULT_NAMESPACE):
         """Attempt to get a PVC for negative testing.
 
