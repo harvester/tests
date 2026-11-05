@@ -41,9 +41,9 @@ class Addon(Base):
         """Get addon details - delegates to implementation"""
         return self.addon.get_addon(addon_name)
 
-    def enable_addon(self, addon_name):
+    def enable_addon(self, addon_name, retries=10):
         """Enable an addon - delegates to implementation"""
-        return self.addon.enable_addon(addon_name)
+        return self.addon.enable_addon(addon_name, retries=retries)
 
     def disable_addon(self, addon_name):
         """Disable an addon - delegates to implementation"""
