@@ -38,7 +38,8 @@ class CRD(Base):
             'cattle-monitoring-system',
             'cattle-logging-system',
             'harvester-system',
-            'kube-system'
+            'kube-system',
+            'forklift'
         ]
 
     def _find_addon_namespace(self, addon_name):
