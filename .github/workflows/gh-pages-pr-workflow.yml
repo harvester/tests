@@ -5,7 +5,6 @@ on:
       - main
     paths:
       - docs/**
-      - cypress/**
       - harvester_e2e_tests/**
       - .github/workflows/**
 
@@ -44,12 +43,3 @@ jobs:
           pdoc --html -o . .
           mv harvester_e2e_tests/ ../docs/public/backend
         working-directory: ./harvester_e2e_tests
-      - name: install typedoc
-        run: |
-          npm install
-        working-directory: ./cypress/
-      - name: run typedoc
-        run: |
-          ./node_modules/.bin/typedoc --options ./typedoc.json
-          mv docs/ ../docs/public/integration
-        working-directory: ./cypress/
