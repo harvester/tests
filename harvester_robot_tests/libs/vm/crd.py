@@ -1406,3 +1406,138 @@ class CRD(Base):
                     time.sleep(1)
                     continue
                 raise
+
+    def try_create_vm_with_bridge_nics(self, vm_name, nics,
+                                       namespace=DEFAULT_NAMESPACE):
+        """Attempt to create a stopped (Halted) VM without disks whose NICs are
+        bridge interfaces on VM networks. Enough for admission checks on the
+        VM spec (e.g. duplicate MAC addresses); the VM never starts.
+
+        Args:
+            nics: list of dicts with name, network ("<ns>/<nad>") and an
+                optional mac
+        Returns:
+            dict: {success, code, message}; never raises on API rejection
+        """
+        interfaces, networks = [], []
+        for nic in nics:
+            interface = {"name": nic["name"], "bridge": {}, "model": "virtio"}
+            if nic.get("mac"):
+                interface["macAddress"] = nic["mac"]
+            interfaces.append(interface)
+            networks.append({"name": nic["name"],
+                             "multus": {"networkName": nic["network"]}})
+        body = {
+            "apiVersion": f"{KUBEVIRT_API_GROUP}/{KUBEVIRT_API_VERSION}",
+            "kind": "VirtualMachine",
+            "metadata": {
+                "name": vm_name,
+                "namespace": namespace,
+                "labels": {
+                    LABEL_TEST: LABEL_TEST_VALUE,
+                    "harvesterhci.io/creator": "robot-framework"
+                }
+            },
+            "spec": {
+                "runStrategy": RUN_STRATEGY_HALTED,
+                "template": {
+                    "metadata": {
+                        "labels": {"harvesterhci.io/vmName": vm_name}
+                    },
+                    "spec": {
+                        "domain": {
+                            "cpu": {"cores": 1, "sockets": 1, "threads": 1},
+                            "memory": {"guest": "256Mi"},
+                            "resources": {
+                                "limits": {"cpu": "1", "memory": "256Mi"}
+                            },
+                            "devices": {"interfaces": interfaces}
+                        },
+                        "networks": networks
+                    }
+                }
+            }
+        }
+        logging(f"Trying to create VM {namespace}/{vm_name} with NICs {nics}")
+        try:
+            create_cr(
+                group=KUBEVIRT_API_GROUP,
+                version=KUBEVIRT_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINE_PLURAL,
+                body=body
+            )
+            logging(f"VM {namespace}/{vm_name} was created")
+            return {"success": True, "code": 201, "message": ""}
+        except ApiException as e:
+            logging(f"VM {namespace}/{vm_name} was rejected "
+                    f"(status={e.status}): {e.body or e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def _try_replace_vm_template_spec(self, vm_name, change, namespace,
+                                      retry_count=5):
+        """Apply change(template_spec) to the VM and replace it, retrying on
+        409 Conflict. Returns {success, code, message}."""
+        for attempt in range(retry_count):
+            vm = self.get(vm_name, namespace)
+            change(vm['spec']['template']['spec'])
+            try:
+                replace_cr(
+                    group=KUBEVIRT_API_GROUP,
+                    version=KUBEVIRT_API_VERSION,
+                    namespace=namespace,
+                    plural=VIRTUALMACHINE_PLURAL,
+                    name=vm_name,
+                    body=vm
+                )
+                logging(f"VM {namespace}/{vm_name} was updated")
+                return {"success": True, "code": 200, "message": ""}
+            except ApiException as e:
+                if e.status == 409 and attempt < retry_count - 1:
+                    time.sleep(1)
+                    continue
+                logging(f"Update of VM {namespace}/{vm_name} was rejected "
+                        f"(status={e.status}): {e.body or e.reason}")
+                return {"success": False, "code": e.status,
+                        "message": e.body or e.reason or ""}
+
+    def try_update_vm_networks(self, vm_name, networks,
+                               namespace=DEFAULT_NAMESPACE):
+        """Attempt to point VM NICs at other VM networks, changing only
+        spec.template.spec.networks[].multus.networkName (the interfaces are
+        left as they are).
+
+        Args:
+            networks: dict of NIC name -> network ("<ns>/<nad>")
+        Returns:
+            dict: {success, code, message}
+        """
+        def change(spec):
+            for net in spec.get('networks', []):
+                if net['name'] in networks:
+                    net['multus'] = {"networkName": networks[net['name']]}
+        logging(f"Trying to change VM {namespace}/{vm_name} networks to {networks}")
+        return self._try_replace_vm_template_spec(vm_name, change, namespace)
+
+    def try_update_vm_interface_macs(self, vm_name, macs,
+                                     namespace=DEFAULT_NAMESPACE):
+        """Attempt to change the MAC address of VM interfaces.
+
+        Args:
+            macs: dict of NIC name -> MAC address
+        Returns:
+            dict: {success, code, message}
+        """
+        def change(spec):
+            for iface in spec['domain']['devices'].get('interfaces', []):
+                if iface['name'] in macs:
+                    iface['macAddress'] = macs[iface['name']]
+        logging(f"Trying to change VM {namespace}/{vm_name} MACs to {macs}")
+        return self._try_replace_vm_template_spec(vm_name, change, namespace)
+
+    def get_vm_networks(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return a dict of NIC name -> multus network name from the VM spec."""
+        vm = self.get(vm_name, namespace)
+        return {net['name']: net.get('multus', {}).get('networkName', '')
+                for net in vm['spec']['template']['spec'].get('networks', [])}

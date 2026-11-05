@@ -326,3 +326,35 @@ VM Should Boot And Write To Disk
     ...    ${username}    pkey=${pkey}
     Should Match Regexp    ${output.strip()}    ^[0-9a-f]{8}$
     ...    msg=Failed to write to the disk of ${vm_name}: ${output}
+
+Try To Create VM With Bridge NICs
+    [Arguments]    ${vm_name}    @{nics}
+    [Documentation]    Try to create a stopped VM without disks whose NICs are bridge
+    ...    interfaces on VM networks. Each nic is a dict with name, network
+    ...    ("<ns>/<nad>") and an optional mac. The VM never starts, so this
+    ...    only exercises admission checks on the VM spec.
+    ...    Returns: {success, code, message}
+    ${result}=    vm_keywords.try_create_vm_with_bridge_nics    ${vm_name}    ${nics}
+    RETURN    ${result}
+
+Try To Change VM Networks
+    [Arguments]    ${vm_name}    &{networks}
+    [Documentation]    Try to point VM NICs at other VM networks (nic=<ns>/<nad>),
+    ...    changing only spec.template.spec.networks; the interfaces stay
+    ...    as they are. Returns: {success, code, message}
+    ${result}=    vm_keywords.try_update_vm_networks    ${vm_name}    ${networks}
+    RETURN    ${result}
+
+Try To Change VM Interface MACs
+    [Arguments]    ${vm_name}    &{macs}
+    [Documentation]    Try to change the MAC address of VM interfaces (nic=<mac>).
+    ...    Returns: {success, code, message}
+    ${result}=    vm_keywords.try_update_vm_interface_macs    ${vm_name}    ${macs}
+    RETURN    ${result}
+
+VM Network Should Be
+    [Arguments]    ${vm_name}    ${nic}    ${network}
+    [Documentation]    Assert the multus network of a VM NIC in the VM spec.
+    ${networks}=    vm_keywords.get_vm_networks    ${vm_name}
+    Should Be Equal    ${networks}[${nic}]    ${network}
+    ...    msg=VM ${vm_name} NIC ${nic} is on ${networks}[${nic}], expected ${network}
