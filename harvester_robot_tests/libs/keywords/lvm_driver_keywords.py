@@ -268,6 +268,102 @@ class lvm_driver_keywords:
             f"LVM helper pods still present in {LVM_DRIVER_NAMESPACE}: "
             f"{', '.join(leftover)}")
 
+    # ---- encryption at rest (harvester/csi-driver-lvm#67) ----
+
+    def create_encryption_secret(self, name, passphrase,
+                                 namespace=DEFAULT_NAMESPACE):
+        """Create a CRYPTO_KEY_* encryption secret with every field the
+        Harvester StorageClass webhook requires."""
+        body = client.V1Secret(
+            metadata=client.V1ObjectMeta(
+                name=name, namespace=namespace,
+                labels={"harvester-e2e": "lvm-encryption"}),
+            type="Opaque",
+            string_data={
+                "CRYPTO_KEY_VALUE": passphrase,
+                "CRYPTO_KEY_PROVIDER": "secret",
+                "CRYPTO_KEY_CIPHER": "aes-xts-plain64",
+                "CRYPTO_KEY_HASH": "sha256",
+                "CRYPTO_KEY_SIZE": "256",
+                "CRYPTO_PBKDF": "argon2i",
+            })
+        self.core_api.create_namespaced_secret(namespace=namespace, body=body)
+        logging(f"Created encryption secret {namespace}/{name}")
+
+    def delete_secret(self, name, namespace=DEFAULT_NAMESPACE):
+        try:
+            self.core_api.delete_namespaced_secret(
+                name=name, namespace=namespace)
+            logging(f"Deleted secret {namespace}/{name}")
+        except ApiException as e:
+            if e.status != 404:
+                raise
+
+    def try_delete_secret(self, name, namespace=DEFAULT_NAMESPACE):
+        """Attempt to delete a secret for negative testing; returns
+        {success, code, message} instead of raising."""
+        try:
+            self.core_api.delete_namespaced_secret(name=name, namespace=namespace)
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            return {"success": False, "code": e.status, "message": str(e.body or e)}
+
+    def secret_exists(self, name, namespace=DEFAULT_NAMESPACE):
+        try:
+            self.core_api.read_namespaced_secret(name=name, namespace=namespace)
+            return True
+        except ApiException as e:
+            if e.status == 404:
+                return False
+            raise
+
+    def get_volume_handle(self, pvc_name, namespace=DEFAULT_NAMESPACE):
+        """Return the CSI volume handle (the LV name) of a bound PVC."""
+        pvc = self.core_api.read_namespaced_persistent_volume_claim(
+            name=pvc_name, namespace=namespace)
+        pv_name = pvc.spec.volume_name
+        assert pv_name, f"PVC {pvc_name} is not bound to a PV"
+        pv = self.core_api.read_persistent_volume(name=pv_name)
+        return pv.spec.csi.volume_handle
+
+    def lv_should_be_luks2(self, node_name, vg_name, lv_name):
+        """The backing LV must carry a LUKS2 header (blkid probe of the raw
+        device on the host)."""
+        out = self._host_exec(
+            node_name,
+            f"blkid -p -o export /dev/{vg_name}/{lv_name} 2>&1 || true")
+        fields = dict(line.split("=", 1) for line in out.splitlines()
+                      if "=" in line)
+        assert fields.get("TYPE") == "crypto_LUKS" and \
+            fields.get("VERSION") == "2", (
+            f"/dev/{vg_name}/{lv_name} on {node_name} is not a LUKS2 "
+            f"container: {out or '(no signature)'}")
+
+    def crypt_mapping_should_be_active(self, node_name, vg_name, lv_name):
+        """The driver must have opened the LV as a dm-crypt mapping named
+        csi-lvm-<volume id> backed by that LV."""
+        mapper = f"csi-lvm-{lv_name}"
+        out = self._host_exec(
+            node_name,
+            f"dmsetup table {mapper} 2>&1; echo '--'; "
+            f"lsblk -nr -o NAME,TYPE /dev/{vg_name}/{lv_name} 2>&1")
+        table, _, tree = out.partition("--")
+        assert " crypt " in f" {table} ", (
+            f"dm-crypt mapping {mapper} is not active on {node_name}: {table}")
+        assert mapper in tree and "crypt" in tree, (
+            f"{mapper} is not stacked on /dev/{vg_name}/{lv_name}: {tree}")
+
+    def raw_lv_marker_count(self, node_name, vg_name, lv_name, marker,
+                            size_mb=32):
+        """Count plaintext marker lines in the head of the raw LV. The LUKS2
+        header takes the first 16 MiB, so size_mb must cover header plus the
+        marker region."""
+        out = self._host_exec(
+            node_name,
+            f"dd if=/dev/{vg_name}/{lv_name} bs=1M count={int(size_mb)} "
+            f"iflag=direct 2>/dev/null | grep -c {marker} || true")
+        return int(out.strip().splitlines()[-1] if out.strip() else 0)
+
     # ---- retain-policy and pre-provisioned snapshot flow ----
 
     def create_retain_snapshot_class(self, class_name):

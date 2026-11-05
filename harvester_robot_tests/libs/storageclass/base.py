@@ -18,7 +18,8 @@ class Base(ABC):
         raise NotImplementedError(self.unsupported_msg)
 
     @abstractmethod
-    def create_lvm(self, name, vg_name, vg_type, node):
+    def create_lvm(self, name, vg_name, vg_type, node, encryption_secret=None,
+                   encryption_secret_namespace=None):
         """Create an LVM-backed StorageClass."""
         raise NotImplementedError(self.unsupported_msg)
 
