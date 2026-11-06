@@ -83,3 +83,14 @@ Create LHv2 Storage Class With Provisioned Disks
         Fail    ${error}
     END
     RETURN    ${provisioned}
+
+Storage Profile Clone Strategy Should Be
+    [Arguments]    ${name}    ${strategy}
+    ${profile}=    storage_keywords.get_storage_profile    ${name}
+    Should Not Be Equal    ${profile}    ${NONE}    msg=StorageProfile ${name} does not exist
+    Should Be Equal    ${profile}[status][cloneStrategy]    ${strategy}
+
+Storage Class Should Be Unused
+    [Arguments]    ${name}
+    ${unused}=    storage_keywords.storageclass_is_unused    ${name}
+    Should Be True    ${unused}    PVCs or PVs still use StorageClass ${name}

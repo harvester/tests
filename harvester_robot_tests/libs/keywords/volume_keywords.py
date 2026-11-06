@@ -52,6 +52,14 @@ class volume_keywords:
         """Return the imageId annotation of a volume"""
         return self.volume.get_image_id(volume_name)
 
+    def get_volume_metadata(self, volume_name):
+        """Return PVC identity and deletion state."""
+        return self.volume.get_metadata(volume_name)
+
+    def get_data_volume(self, volume_name):
+        """Return the CDI DataVolume associated with a PVC."""
+        return self.volume.get_data_volume(volume_name)
+
     def export_volume_to_image(self, volume_name, image_name,
                                target_storage_class=DEFAULT_STORAGE_CLASS):
         """Start exporting a volume to a VM image"""
