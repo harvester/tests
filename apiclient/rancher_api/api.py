@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from urllib.parse import urljoin
 
 import requests
@@ -107,6 +108,16 @@ class RancherAPI:
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
+
+    @contextmanager
+    def override_retries(self, *args, **kwargs):
+        """ Use the retry settings of `set_retries(*args, **kwargs)` inside the `with` block,
+        and the defaults of `set_retries()` afterwards. """
+        self.set_retries(*args, **kwargs)
+        try:
+            yield
+        finally:
+            self.set_retries()
 
     def generate_kubeconfig(self, harvester_id, harvester_name):
         # kubeconfig for provider

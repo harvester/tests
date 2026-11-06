@@ -20,4 +20,5 @@ scp==0.15.0
 sshpubkeys==3.3.1
 tox==4.50.3
 urllib3==2.6.3
+websocket-client==1.9.0
 setuptools==81.0.0

@@ -25,10 +25,7 @@ class TestVMNegative:
         1. Tries to delete a VM that doesn't exist
         2. Checks that it gets a 404
         """
-        try:
-            api_client.set_retries(1)
+        with api_client.override_retries(1):
             code, data = api_client.vms.delete(unique_name)
-            assert 404 == code, (code, data)
-            assert "NotFound" in data.get('code'), (code, data)
-        finally:
-            api_client.set_retries()
+        assert 404 == code, (code, data)
+        assert "NotFound" in data.get('code'), (code, data)
