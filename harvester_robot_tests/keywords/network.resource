@@ -113,3 +113,21 @@ Delete IP Pool
     ...                   name: IP pool name
     Log    Deleting IP pool: ${name}
     network_keywords.delete_ip_pool    ${name}
+
+List VM Networks
+    [Arguments]    ${network_type}=${None}
+    [Documentation]    List VM networks (NADs) in the default namespace.
+    ...               Args:
+    ...                   network_type: network.harvesterhci.io/type label value
+    ...                       (L2VlanNetwork, OverlayNetwork, ...); all if None
+    ...               Returns:
+    ...                   list: "<namespace>/<name>" of every matching NAD
+    ${networks}=    network_keywords.list_vm_networks    ${network_type}
+    RETURN    ${networks}
+
+Generate MAC Address
+    [Documentation]    Return a random locally administered unicast MAC
+    ...    address (02:xx:xx:xx:xx:xx) for a VM NIC.
+    ${mac}=    Evaluate    '02:' + ':'.join('%02x' % random.randint(0, 255) for _ in range(5))
+    ...    modules=random
+    RETURN    ${mac}

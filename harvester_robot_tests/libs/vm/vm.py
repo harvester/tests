@@ -146,3 +146,36 @@ class VM(Base):
 
     def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE):
         return self.vm.update_cpu_cores(vm_name, cpu_cores, namespace)
+
+    # VM network (NAD) changes
+    def try_update_network(self, vm_name, nic_name, network_name,
+                           namespace=DEFAULT_NAMESPACE):
+        return self.vm.try_update_network(vm_name, nic_name, network_name, namespace)
+
+    def get_conditions(self, vm_name, from_vmi=False, namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_conditions(vm_name, from_vmi, namespace)
+
+    def get_vmi_networks(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_vmi_networks(vm_name, namespace)
+
+    def get_vmi_interface_macs(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_vmi_interface_macs(vm_name, namespace)
+
+    def list_migrations(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.list_migrations(vm_name, namespace)
+
+    def wait_for_new_migration(self, vm_name, known, name_prefix, timeout,
+                               namespace=DEFAULT_NAMESPACE):
+        return self.vm.wait_for_new_migration(vm_name, known, name_prefix, timeout,
+                                              namespace)
+
+    def wait_for_no_new_migration(self, vm_name, known, duration,
+                                  namespace=DEFAULT_NAMESPACE):
+        return self.vm.wait_for_no_new_migration(vm_name, known, duration, namespace)
+
+    def wait_for_migration_phase(self, migration_name, phase, timeout,
+                                 namespace=DEFAULT_NAMESPACE):
+        return self.vm.wait_for_migration_phase(migration_name, phase, timeout, namespace)
+
+    def get_launcher_network_status(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_launcher_network_status(vm_name, namespace)

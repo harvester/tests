@@ -141,3 +141,16 @@ class Base(ABC):
             name: IP pool name
         """
         pass
+
+    @abstractmethod
+    def list_vm_networks(self, network_type=None):
+        """List VM networks (NADs) in the default namespace.
+
+        Args:
+            network_type: network.harvesterhci.io/type label value
+                (L2VlanNetwork, OverlayNetwork, ...); all types if None
+
+        Returns:
+            list: "<namespace>/<name>" of every matching NAD
+        """
+        pass

@@ -326,3 +326,145 @@ VM Should Boot And Write To Disk
     ...    ${username}    pkey=${pkey}
     Should Match Regexp    ${output.strip()}    ^[0-9a-f]{8}$
     ...    msg=Failed to write to the disk of ${vm_name}: ${output}
+
+# VM network (NAD) changes, KubeVirt LiveUpdateNADRef (harvester/harvester#11769)
+VM is created with bridge NIC
+    [Arguments]    ${vm_name}    ${image_id}    ${network}    ${mac_address}    ${nic_name}=nic-1
+    ...    ${cpu}=1    ${memory}=2Gi    &{config}
+    [Documentation]    Create a VM whose only NIC is a bridge interface on the
+    ...    VM network (NAD) ${network}, with a fixed MAC address. The guest
+    ...    gets cloud-init networkData with DHCP off on that NIC. Extra
+    ...    &{config} is passed to `VM is created` (e.g. disk_size,
+    ...    run_strategy, boot_disk_access_mode, requests_memory).
+    ${nic}=    Create Dictionary    name=${nic_name}    network=${network}    mac_address=${mac_address}
+    @{interfaces}=    Create List    ${nic}
+    VM is created    ${vm_name}    ${image_id}    ${cpu}    ${memory}
+    ...    interfaces=${interfaces}    management_network=${False}    &{config}
+
+Try To Change VM Network
+    [Arguments]    ${vm_name}    ${nic_name}    ${network}
+    [Documentation]    Change only spec.template.spec.networks[${nic_name}].multus.networkName
+    ...    of the VM, leaving the interface (binding, MAC, model) untouched.
+    ...    Returns a {success, code, message} dict; never fails on rejection.
+    ${result}=    vm_keywords.try_update_vm_network    ${vm_name}    ${nic_name}    ${network}
+    RETURN    ${result}
+
+VM network is changed
+    [Arguments]    ${vm_name}    ${nic_name}    ${network}
+    [Documentation]    Change only the NAD of a VM network; the update must be accepted
+    ${result}=    Try To Change VM Network    ${vm_name}    ${nic_name}    ${network}
+    Should Be True    ${result}[success]
+    ...    msg=Changing ${nic_name} of VM ${vm_name} to ${network} was rejected (code=${result}[code]): ${result}[message]
+
+VM Update Should Be Rejected
+    [Arguments]    ${result}    @{expected_messages}
+    [Documentation]    Assert a {success, code, message} VM update result was
+    ...    rejected. The Harvester VM webhook reports its denials as
+    ...    InternalError (500), so any error code is accepted; the message
+    ...    must contain at least one of expected_messages (case-insensitive)
+    ...    when given.
+    Should Not Be True    ${result}[success]
+    ...    msg=VM update was expected to be rejected but succeeded
+    IF    ${expected_messages}
+        ${msg_lower}=    Convert To Lower Case    ${result}[message]
+        ${lowered}=    Evaluate    [m.lower() for m in $expected_messages]
+        Should Contain Any    ${msg_lower}    @{lowered}
+        ...    msg=Expected message to contain one of ${expected_messages}, got: ${result}[message]
+    END
+
+VM condition reason should be
+    [Arguments]    ${vm_name}    ${condition}    ${status}    ${reason}    ${from_vmi}=${False}
+    [Documentation]    Wait until the VM (or its VMI with from_vmi=${True})
+    ...    has condition ${condition} with the given status and reason.
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    VM Condition Is    ${vm_name}    ${condition}    ${status}    ${reason}    ${from_vmi}
+
+VM Condition Is
+    [Arguments]    ${vm_name}    ${condition}    ${status}    ${reason}    ${from_vmi}=${False}
+    [Documentation]    Single-shot assertion backing `VM condition reason should be`
+    ${conditions}=    vm_keywords.get_vm_conditions    ${vm_name}    from_vmi=${from_vmi}
+    ${matches}=    Evaluate    [c for c in $conditions if (c.get('type'), c.get('status'), c.get('reason', '')) == ($condition, $status, $reason)]
+    Should Not Be Empty    ${matches}
+    ...    msg=${vm_name} has no condition ${condition}=${status} (${reason}): ${conditions}
+
+VM should not have condition
+    [Arguments]    ${vm_name}    ${condition}    ${from_vmi}=${False}
+    [Documentation]    Assert the VM (or its VMI with from_vmi=${True}) does
+    ...    not carry condition ${condition} with status True.
+    ${conditions}=    vm_keywords.get_vm_conditions    ${vm_name}    from_vmi=${from_vmi}
+    ${matches}=    Evaluate    [c for c in $conditions if c.get('type') == $condition and c.get('status') == 'True']
+    Should Be Empty    ${matches}
+    ...    msg=${vm_name} unexpectedly has condition ${condition}: ${matches}
+
+Get VM migrations
+    [Arguments]    ${vm_name}
+    [Documentation]    Return the names of the VM's VirtualMachineInstanceMigrations
+    ${names}=    vm_keywords.list_vm_migration_names    ${vm_name}
+    RETURN    ${names}
+
+VM workload update migration should be created
+    [Arguments]    ${vm_name}    ${known_migrations}
+    [Documentation]    Wait for a migration created by KubeVirt's workload
+    ...    updater (kubevirt-workload-update-*) that is not in
+    ...    ${known_migrations}. Returns its name.
+    ${name}=    vm_keywords.wait_for_new_vm_migration    ${vm_name}    ${known_migrations}
+    ...    name_prefix=kubevirt-workload-update-    timeout=${WAIT_TIMEOUT}
+    RETURN    ${name}
+
+VM migration should succeed
+    [Arguments]    ${migration_name}
+    [Documentation]    Wait until the VirtualMachineInstanceMigration Succeeds
+    vm_keywords.wait_for_vm_migration_phase    ${migration_name}    Succeeded    timeout=${WAIT_TIMEOUT}
+
+VM should not be migrated
+    [Arguments]    ${vm_name}    ${known_migrations}    ${duration}=60
+    [Documentation]    Assert no migration of the VM besides ${known_migrations}
+    ...    appears within ${duration} seconds.
+    vm_keywords.wait_for_no_new_vm_migration    ${vm_name}    ${known_migrations}    ${duration}
+
+VMI network should be
+    [Arguments]    ${vm_name}    ${nic_name}    ${network}
+    [Documentation]    Wait until the running VMI's spec.networks maps
+    ...    ${nic_name} to the VM network ${network}.
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    VMI Network Is    ${vm_name}    ${nic_name}    ${network}
+
+VMI Network Is
+    [Arguments]    ${vm_name}    ${nic_name}    ${network}
+    [Documentation]    Single-shot assertion backing `VMI network should be`
+    ${networks}=    vm_keywords.get_vmi_networks    ${vm_name}
+    Dictionary Should Contain Item    ${networks}    ${nic_name}    ${network}
+    ...    msg=VMI ${vm_name} network ${nic_name} should be ${network}: ${networks}
+
+Get VMI interface MAC
+    [Arguments]    ${vm_name}    ${nic_name}
+    [Documentation]    Return the MAC address the running VMI reports for ${nic_name}
+    ${macs}=    vm_keywords.get_vmi_interface_macs    ${vm_name}
+    Dictionary Should Contain Key    ${macs}    ${nic_name}
+    ...    msg=VMI ${vm_name} reports no interface ${nic_name}: ${macs}
+    RETURN    ${macs}[${nic_name}]
+
+VMI interface MAC should be
+    [Arguments]    ${vm_name}    ${nic_name}    ${mac_address}
+    [Documentation]    Assert the running VMI reports ${mac_address} for ${nic_name}
+    ${mac}=    Get VMI interface MAC    ${vm_name}    ${nic_name}
+    Should Be Equal As Strings    ${mac}    ${mac_address}    ignore_case=True
+    ...    msg=VMI ${vm_name} ${nic_name} MAC is ${mac}, expected ${mac_address}
+
+VM launcher pod should be attached to network
+    [Arguments]    ${vm_name}    ${network}    ${mac_address}
+    [Documentation]    Assert the Multus network-status of the virt-launcher
+    ...    pod the VMI runs in lists ${network} with ${mac_address}.
+    ${status}=    vm_keywords.get_vm_launcher_network_status    ${vm_name}
+    ${matches}=    Evaluate    [n for n in $status if (n.get('name'), n.get('mac', '').lower()) == ($network, $mac_address.lower())]
+    Should Not Be Empty    ${matches}
+    ...    msg=virt-launcher pod of ${vm_name} is not attached to ${network} with MAC ${mac_address}: ${status}
+
+VM launcher pod should not be attached to network
+    [Arguments]    ${vm_name}    ${network}
+    [Documentation]    Assert the Multus network-status of the virt-launcher
+    ...    pod the VMI runs in does not list ${network}.
+    ${status}=    vm_keywords.get_vm_launcher_network_status    ${vm_name}
+    ${matches}=    Evaluate    [n for n in $status if n.get('name') == $network]
+    Should Be Empty    ${matches}
+    ...    msg=virt-launcher pod of ${vm_name} is still attached to ${network}: ${status}

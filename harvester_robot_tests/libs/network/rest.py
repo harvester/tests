@@ -295,3 +295,6 @@ class Rest(Base):
             )
 
         logging(f"Deleted IP pool: {name}")
+
+    def list_vm_networks(self, network_type=None):
+        raise NotImplementedError("REST strategy not yet supported for this operation")

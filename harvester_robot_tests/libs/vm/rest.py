@@ -20,14 +20,17 @@ class Rest(Base):
 
     def create(self, vm_name, image_id, cpu, memory, **kwargs):
         """Create a virtual machine"""
-        storage_performance = [
+        crd_only = [
             k for k in ("boot_disk_options", "block_multi_queue",
-                        "io_threads_policy", "supplemental_pool_thread_count")
+                        "io_threads_policy", "supplemental_pool_thread_count",
+                        "interfaces", "network_data", "boot_disk_access_mode")
             if kwargs.get(k) not in (None, "")
         ]
-        if storage_performance:
+        if kwargs.get("management_network") not in (None, True, "True", "true"):
+            crd_only.append("management_network")
+        if crd_only:
             raise NotImplementedError(
-                f"{', '.join(storage_performance)} is only implemented for the "
+                f"{', '.join(crd_only)} is only implemented for the "
                 "CRD strategy; run with HARVESTER_OPERATION_STRATEGY=crd")
 
         api = get_harvester_api_client()
@@ -519,3 +522,64 @@ class Rest(Base):
                 time.sleep(1)
                 continue
             raise AssertionError(f"Failed to update VM CPU cores: {code}, {data}")
+
+    # VM network (NAD) changes
+    def try_update_network(self, vm_name, nic_name, network_name,
+                           namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_update_network is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_conditions(self, vm_name, from_vmi=False, namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_conditions is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_vmi_networks(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_vmi_networks is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_vmi_interface_macs(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_vmi_interface_macs is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def list_migrations(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "list_migrations is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_new_migration(self, vm_name, known, name_prefix="",
+                               timeout=DEFAULT_TIMEOUT_SHORT,
+                               namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_new_migration is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_no_new_migration(self, vm_name, known, duration,
+                                  namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_no_new_migration is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_migration_phase(self, migration_name, phase,
+                                 timeout=DEFAULT_TIMEOUT_SHORT,
+                                 namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_migration_phase is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_launcher_network_status(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_launcher_network_status is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
