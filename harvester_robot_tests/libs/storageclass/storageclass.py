@@ -49,6 +49,12 @@ class StorageClass(Base):
             logging(e)
             return self.rest.list(label_selector)
 
+    def get_profile(self, name):
+        return self.crd.get_profile(name)
+
+    def is_unused(self, name):
+        return self.crd.is_unused(name)
+
     def cleanup(self):
         try:
             return self.crd.cleanup()

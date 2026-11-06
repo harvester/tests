@@ -199,7 +199,7 @@ Try To Get Image
 
 Try To Delete Image
     [Arguments]    ${image_name}
-    [Documentation]    Attempt to delete an image expected to be missing. Returns result dict.
+    [Documentation]    Attempt to delete an image and return its success, status code, and message.
     ${result}=    image_keywords.try_delete_image    ${image_name}
     RETURN    ${result}
 

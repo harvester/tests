@@ -89,13 +89,28 @@ def get_cluster_version_release():
     None for versionless values (master/commit-hash builds) - callers
     should treat those as the newest release.
     """
-    api = get_harvester_api_client()
-    code, data = api.get("apis/harvesterhci.io/v1beta1/settings/server-version")
-    release = _extract_release(data.get('value', '') if code == 200 else '')
+    release = _extract_release(_server_version())
     if release is None:
         logging("No release version found in server-version, "
                 "treating as the newest release")
     return release
+
+
+def _server_version():
+    """Read the version through the configured operation strategy."""
+    if os.getenv("HARVESTER_OPERATION_STRATEGY", "crd").lower() == "rest":
+        api = get_harvester_api_client()
+        code, data = api.get("apis/harvesterhci.io/v1beta1/settings/server-version")
+        return data.get('value', '') if code == 200 else ''
+
+    from constant import HARVESTER_API_GROUP, HARVESTER_API_VERSION
+    from crd import get_cluster_cr
+
+    data = get_cluster_cr(
+        group=HARVESTER_API_GROUP, version=HARVESTER_API_VERSION,
+        plural="settings", name="server-version"
+    )
+    return data.get('value', '')
 
 
 def get_retry_count_and_interval():

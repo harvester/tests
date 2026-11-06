@@ -143,6 +143,12 @@ class storage_keywords:
     def get_storageclass(self, name):
         return self.storageclass.get(name)
 
+    def get_storage_profile(self, name):
+        return self.storageclass.get_profile(name)
+
+    def storageclass_is_unused(self, name):
+        return self.storageclass.is_unused(name)
+
     def identify_lvm_suitable_disks(self, min_size_gib=50):
         return self.blockdevice.identify_lvm_suitable(min_size_gib)
 

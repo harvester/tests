@@ -24,6 +24,12 @@ class Rest(Base):
     def get(self, name):
         return super().get(name)
 
+    def get_profile(self, name):
+        return super().get_profile(name)
+
+    def is_unused(self, name):
+        return super().is_unused(name)
+
     def list(self, label_selector=None):
         return super().list(label_selector)
 
