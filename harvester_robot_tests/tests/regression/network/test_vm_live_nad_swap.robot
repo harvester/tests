@@ -18,7 +18,10 @@ Documentation    Change the VM network (NAD) of a running VM without a restart
 ...      or the suite creates them with VLAN_ID and VLAN_ID+1 on CLUSTER_NETWORK;
 ...    - an overlay (Kube-OVN) VM network for the bridge -> overlay case
 ...      (NAD_SWAP_OVERLAY_NETWORK, or the first OverlayNetwork NAD found);
-...      that case is skipped when there is none.
+...      that case is skipped when there is none;
+...    - two overlay VM networks with Kube-OVN subnets for the overlay ->
+...      overlay case (NAD_SWAP_OVERLAY_NETWORK / NAD_SWAP_OVERLAY_TARGET_NETWORK);
+...      that case is skipped unless both are set.
 ...    Test VMs only have bridge NICs with fixed MAC addresses, and cloud-init
 ...    turns DHCP off on them, so they never send DHCP requests on the VLANs.
 ...    The duplicate MAC case needs the VM webhook fix from
@@ -42,6 +45,9 @@ ${IMAGE_ID}             %{NAD_SWAP_IMAGE=}
 ${SOURCE_NETWORK}       %{NAD_SWAP_SOURCE_NETWORK=}
 ${TARGET_NETWORK}       %{NAD_SWAP_TARGET_NETWORK=}
 ${OVERLAY_NETWORK}      %{NAD_SWAP_OVERLAY_NETWORK=}
+# overlay -> overlay case only, both need a Kube-OVN subnet: no auto-discovery
+${OVERLAY_SOURCE_NETWORK}    %{NAD_SWAP_OVERLAY_NETWORK=}
+${OVERLAY_TARGET_NETWORK}    %{NAD_SWAP_OVERLAY_TARGET_NETWORK=}
 ${CLUSTER_NETWORK}      %{CLUSTER_NETWORK=mgmt}
 ${NIC}                  nic-1
 # small test VMs: 1 vCPU, 2Gi memory, 4Gi boot disk
@@ -79,6 +85,38 @@ Live Swap VM Network Between Bridge VLAN Networks
     And VMI interface MAC should be    ${vm}    ${NIC}    ${mac}
     And VM launcher pod should be attached to network    ${vm}    ${TARGET_NETWORK}    ${mac}
     And VM launcher pod should not be attached to network    ${vm}    ${SOURCE_NETWORK}
+
+Live Swap VM Network Between Overlay Networks
+    [Tags]    p1
+    [Documentation]    Change only the NAD of the overlay NIC of a running,
+    ...    live-migratable VM to another overlay (Kube-OVN) network. The
+    ...    binding stays managedtap, so KubeVirt must apply it with a
+    ...    workload update migration instead of asking for a restart, and
+    ...    keep the MAC address. Kube-OVN gives the target pod an address on
+    ...    the new subnet; the guest only uses it after a new DHCP request,
+    ...    which is not checked here (test VMs have DHCP off).
+    ...    Both overlay networks need a Kube-OVN subnet, so this case only
+    ...    runs when NAD_SWAP_OVERLAY_NETWORK and
+    ...    NAD_SWAP_OVERLAY_TARGET_NETWORK are set.
+    Skip If    '${OVERLAY_SOURCE_NETWORK}' == '${EMPTY}' or '${OVERLAY_TARGET_NETWORK}' == '${EMPTY}'
+    ...    NAD_SWAP_OVERLAY_NETWORK and NAD_SWAP_OVERLAY_TARGET_NETWORK are not set
+    ${vm}=    Set Variable    nsw-o2o-${SUFFIX}
+    ${mac}=    Generate MAC Address
+    Given VM is created with bridge NIC    ${vm}    ${IMAGE_ID}    ${OVERLAY_SOURCE_NETWORK}    ${mac}    &{VM_CONFIG}
+    And VM should be running    ${vm}
+    And VM condition should be    ${vm}    LiveMigratable    True
+    ${mac_before}=    Get VMI interface MAC    ${vm}    ${NIC}
+    ${known}=    Get VM migrations    ${vm}
+
+    When VM network is changed    ${vm}    ${NIC}    ${OVERLAY_TARGET_NETWORK}
+
+    ${migration}=    Then VM workload update migration should be created    ${vm}    ${known}
+    And VM migration should succeed    ${migration}
+    And VM should be running    ${vm}
+    And VM should not have condition    ${vm}    RestartRequired
+    And VMI network should be    ${vm}    ${NIC}    ${OVERLAY_TARGET_NETWORK}
+    And VMI interface MAC should be    ${vm}    ${NIC}    ${mac_before}
+    And VM launcher pod should not be attached to network    ${vm}    ${OVERLAY_SOURCE_NETWORK}
 
 Swap VM Network From Bridge To Overlay Requires Restart
     [Tags]    p2
@@ -202,7 +240,7 @@ Local Test Teardown
     # Test VMs are always removed with their volumes, so a failed case does
     # not leave a VM on a shared VLAN behind. Deleting a missing VM is a no-op.
     Common Test Teardown
-    FOR    ${case}    IN    live    ovl    rwo    own    dup
+    FOR    ${case}    IN    live    o2o    ovl    rwo    own    dup
         Run Keyword And Ignore Error    VM is deleted    nsw-${case}-${SUFFIX}
     END
     Run Keyword And Ignore Error    Delete VLAN Network    ${DUP_CN}-vlan
