@@ -7,7 +7,7 @@ import time
 from kubernetes import client
 from kubernetes.stream import stream
 from kubernetes.client.rest import ApiException
-from crd import get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted, replace_cr
+from crd import get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted, replace_cr, patch_cr
 from constant import (
     KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION,
     VIRTUALMACHINE_PLURAL, VIRTUALMACHINEINSTANCE_PLURAL,
@@ -318,7 +318,9 @@ class CRD(Base):
                 "labels": {
                     LABEL_TEST: LABEL_TEST_VALUE,
                     "harvesterhci.io/creator": "robot-framework",
-                    "harvesterhci.io/os": "linux"
+                    "harvesterhci.io/os": "linux",
+                    # extra/override VM labels, e.g. kubevirt.io/vm-delete-protection
+                    **(kwargs.get("labels") or {})
                 }
             },
             "spec": {
@@ -891,6 +893,23 @@ class CRD(Base):
         """Return the VM object's metadata.annotations."""
         vm = self.get(vm_name, namespace)
         return vm.get('metadata', {}).get('annotations', {}) or {}
+
+    def get_labels(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the VM object's metadata.labels."""
+        vm = self.get(vm_name, namespace)
+        return vm.get('metadata', {}).get('labels', {}) or {}
+
+    def set_label(self, vm_name, key, value, namespace=DEFAULT_NAMESPACE):
+        """Set (value) or remove (value=None) one label on the VM object."""
+        logging(f"Setting label {key}={value} on VirtualMachine {namespace}/{vm_name}")
+        return patch_cr(
+            group=KUBEVIRT_API_GROUP,
+            version=KUBEVIRT_API_VERSION,
+            namespace=namespace,
+            plural=VIRTUALMACHINE_PLURAL,
+            name=vm_name,
+            body={"metadata": {"labels": {key: value}}}
+        )
 
     def wait_for_vm_created(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Wait for VM CR creation."""
