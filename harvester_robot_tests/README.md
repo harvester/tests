@@ -237,6 +237,12 @@ The `.env.example` file contains all available configuration options:
   configure the `backup-target` setting when the cluster has none yet
 - `LVM_ADDON_URL` - LVM addon manifest URL; unset derives the manifest
   branch from the cluster release (see `addon/lvm/README.md`)
+- `TF_PROVIDER_VERSION` - Version constraint of the `harvester/harvester`
+  terraform provider used by the terraform suites (default: latest release).
+  To test a local build instead, point `TF_CLI_CONFIG_FILE` to a terraform
+  CLI configuration with a `dev_overrides` block
+- `TERRAFORM_BIN` - terraform binary (default: `terraform`, installed in the
+  container image)
 - `ROBOT_LOG_LEVEL` - Test log level (default: `INFO`)
 - `ROBOT_OUTPUT_DIR` - Output directory for results (default: `./results`)
 
