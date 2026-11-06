@@ -7,10 +7,14 @@ import time
 from kubernetes import client
 from kubernetes.stream import stream
 from kubernetes.client.rest import ApiException
-from crd import get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted, replace_cr
+from crd import (
+    get_cr, create_cr, delete_cr, list_cr, wait_for_cr_deleted, replace_cr,
+    patch_cr,
+)
 from constant import (
     KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION,
     VIRTUALMACHINE_PLURAL, VIRTUALMACHINEINSTANCE_PLURAL,
+    VIRTUALMACHINEINSTANCEMIGRATION_PLURAL,
     DEFAULT_NAMESPACE, LABEL_TEST, LABEL_TEST_VALUE,
     DEFAULT_TIMEOUT_SHORT, DEFAULT_STORAGE_CLASS,
     RUN_STRATEGY_RERUN_ON_FAILURE, RUN_STRATEGY_HALTED,
@@ -64,6 +68,43 @@ def apply_domain_io_settings(domain, options):
         domain["ioThreads"] = {
             "supplementalPoolThreadCount": int(thread_count)
         }
+
+
+def vm_networks(interfaces, management_network=True):
+    """Return the (interfaces, networks) lists of a VM template.
+
+    management_network keeps Harvester's default masquerade NIC on the pod
+    network. interfaces adds bridge NICs on VM networks (NADs); each dict
+    holds name, network ("<namespace>/<nad>") and an optional mac_address.
+    """
+    spec_interfaces, spec_networks = [], []
+    if str(management_network).lower() != "false":
+        spec_interfaces.append(
+            {"masquerade": {}, "model": "virtio", "name": "default"})
+        spec_networks.append({"name": "default", "pod": {}})
+    for nic in interfaces or []:
+        interface = {"bridge": {}, "model": "virtio", "name": nic["name"]}
+        if nic.get("mac_address"):
+            interface["macAddress"] = nic["mac_address"]
+        spec_interfaces.append(interface)
+        spec_networks.append(
+            {"name": nic["name"], "multus": {"networkName": nic["network"]}})
+    return spec_interfaces, spec_networks
+
+
+def static_network_data(interfaces):
+    """Return cloud-init networkData (v2) that keeps DHCP off on every
+    bridge NIC, matched by MAC, so test VMs never send DHCP requests on a
+    VLAN they do not own."""
+    lines = ["version: 2", "ethernets:"]
+    for nic in interfaces:
+        if not nic.get("mac_address"):
+            continue
+        lines += [f"  {nic['name']}:",
+                  f"    match: {{macaddress: '{nic['mac_address']}'}}",
+                  "    dhcp4: false",
+                  "    dhcp6: false"]
+    return "\n".join(lines) + "\n" if len(lines) > 2 else ""
 
 
 class CRD(Base):
@@ -128,6 +169,16 @@ class CRD(Base):
                 sets domain.ioThreadsPolicy
             supplemental_pool_thread_count: optional int, sets
                 domain.ioThreads.supplementalPoolThreadCount
+
+        Networking:
+            interfaces: optional list of dicts with name, network
+                ("<namespace>/<nad>") and mac_address, added as bridge NICs
+            management_network: keep the masquerade NIC on the pod network
+                (default True)
+            network_data: optional cloud-init networkData; defaults to DHCP
+                off on every NIC in interfaces
+            boot_disk_access_mode: optional, defaults to "ReadWriteMany";
+                "ReadWriteOnce" makes the VM not live-migratable
         """
 
         # Look up the image's actual storage class from Harvester.
@@ -172,7 +223,9 @@ class CRD(Base):
                     }
                 },
                 "spec": {
-                    "accessModes": ["ReadWriteMany"],
+                    "accessModes": [
+                        kwargs.get("boot_disk_access_mode", "ReadWriteMany")
+                    ],
                     "resources": {
                         "requests": {
                             "storage": boot_disk_size
@@ -282,9 +335,17 @@ class CRD(Base):
         # Optional cloud-init NoCloud disk: if ssh_public_key is provided,
         # authorizes it for guest SSH access (used by exec_command_in_vm /
         # Execute Command In VM). Without this the VM has no way to log in
-        # with the generated guest keypair.
+        # with the generated guest keypair. VMs with secondary (bridge)
+        # interfaces also get one, so the guest never runs DHCP on them.
         ssh_public_key = kwargs.get("ssh_public_key")
-        if ssh_public_key:
+        interfaces = kwargs.get("interfaces") or []
+        network_data = kwargs.get("network_data")
+        if network_data is None and interfaces:
+            network_data = static_network_data(interfaces)
+        if ssh_public_key or network_data:
+            user_data = "#cloud-config\n"
+            if ssh_public_key:
+                user_data += f"ssh_authorized_keys:\n  - {ssh_public_key}\n"
             spec_devices_disks.append(
                 {"name": "cloudinitdisk", "disk": {"bus": "virtio"}}
             )
@@ -292,14 +353,14 @@ class CRD(Base):
                 {
                     "name": "cloudinitdisk",
                     "cloudInitNoCloud": {
-                        "networkData": "",
-                        "userData": (
-                            "#cloud-config\n"
-                            f"ssh_authorized_keys:\n  - {ssh_public_key}\n"
-                        )
+                        "networkData": network_data or "",
+                        "userData": user_data
                     }
                 }
             )
+
+        spec_interfaces, spec_networks = vm_networks(
+            interfaces, kwargs.get("management_network", True))
 
         # Build complete VM spec matching Harvester structure
         body = {
@@ -350,13 +411,7 @@ class CRD(Base):
                                         "type": "tablet"
                                     }
                                 ],
-                                "interfaces": [
-                                    {
-                                        "masquerade": {},
-                                        "model": "virtio",
-                                        "name": "default"
-                                    }
-                                ]
+                                "interfaces": spec_interfaces
                             },
                             "features": {
                                 "acpi": {"enabled": True}
@@ -378,9 +433,7 @@ class CRD(Base):
                         },
                         "evictionStrategy": "LiveMigrateIfPossible",
                         "hostname": vm_name,
-                        "networks": [
-                            {"name": "default", "pod": {}}
-                        ],
+                        "networks": spec_networks,
                         "volumes": spec_volumes,
                         "terminationGracePeriodSeconds": 120
                     }
@@ -1406,3 +1459,158 @@ class CRD(Base):
                     time.sleep(1)
                     continue
                 raise
+
+    # VM network (NAD) changes, KubeVirt LiveUpdateNADRef
+    def try_update_network(self, vm_name, nic_name, network_name,
+                           namespace=DEFAULT_NAMESPACE):
+        """Change only spec.template.spec.networks[nic].multus.networkName.
+
+        Sent as a merge patch of the networks list (a merge patch replaces
+        lists as a whole), with every other network and the rest of the
+        template untouched. Returns {success, code, message}; never raises
+        on rejection.
+        """
+        vm = self.get(vm_name, namespace)
+        networks = vm['spec']['template']['spec'].get('networks', [])
+        nic = next((n for n in networks if n.get('name') == nic_name), None)
+        if nic is None or 'multus' not in nic:
+            raise Exception(f"VM {vm_name} has no multus network {nic_name}: "
+                            f"{networks}")
+        logging(f"Changing network of {namespace}/{vm_name} {nic_name} "
+                f"from {nic['multus']['networkName']} to {network_name}")
+        nic['multus']['networkName'] = network_name
+        patch = {
+            "metadata": {
+                "resourceVersion": vm['metadata']['resourceVersion']
+            },
+            "spec": {"template": {"spec": {"networks": networks}}}
+        }
+        try:
+            patch_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                     VIRTUALMACHINE_PLURAL, vm_name, patch)
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            logging(f"Network change of {vm_name} was rejected "
+                    f"(status={e.status}): {e.body or e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def get_conditions(self, vm_name, from_vmi=False,
+                       namespace=DEFAULT_NAMESPACE):
+        """Return status.conditions of the VM, or of its VMI."""
+        if from_vmi:
+            obj = get_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                         VIRTUALMACHINEINSTANCE_PLURAL, vm_name)
+        else:
+            obj = self.get(vm_name, namespace)
+        return obj.get('status', {}).get('conditions') or []
+
+    def get_vmi_networks(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return {network name: NAD} from the running VMI's spec.networks
+        ("pod" for the pod network)."""
+        vmi = get_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                     VIRTUALMACHINEINSTANCE_PLURAL, vm_name)
+        return {n['name']: n['multus']['networkName'] if 'multus' in n else 'pod'
+                for n in vmi['spec'].get('networks', [])}
+
+    def get_vmi_interface_macs(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return {interface name: MAC} from the running VMI's
+        status.interfaces."""
+        vmi = get_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                     VIRTUALMACHINEINSTANCE_PLURAL, vm_name)
+        return {i['name']: i.get('mac', '')
+                for i in vmi.get('status', {}).get('interfaces') or []
+                if i.get('name')}
+
+    def list_migrations(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the VirtualMachineInstanceMigrations of the VM as dicts
+        with name, phase and failure (the migration state's failure
+        reason)."""
+        items = list_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                        VIRTUALMACHINEINSTANCEMIGRATION_PLURAL).get('items', [])
+        return [
+            {"name": m['metadata']['name'],
+             "phase": m.get('status', {}).get('phase', ''),
+             "failure": m.get('status', {}).get('migrationState', {})
+                         .get('failureReason', '')}
+            for m in items if m.get('spec', {}).get('vmiName') == vm_name
+        ]
+
+    def wait_for_new_migration(self, vm_name, known, name_prefix="",
+                               timeout=DEFAULT_TIMEOUT_SHORT,
+                               namespace=DEFAULT_NAMESPACE):
+        """Wait for a migration of the VM that is not in `known` (a list of
+        names) and starts with name_prefix; return its name."""
+        endtime = time.time() + int(timeout)
+        while time.time() < endtime:
+            for m in self.list_migrations(vm_name, namespace):
+                if m['name'] not in known and m['name'].startswith(name_prefix):
+                    logging(f"Migration {m['name']} of VM {vm_name} created "
+                            f"(phase {m['phase'] or 'unset'})")
+                    return m['name']
+            time.sleep(self.retry_interval)
+        raise AssertionError(
+            f"No new migration{f' named {name_prefix}*' if name_prefix else ''} "
+            f"of VM {namespace}/{vm_name} within {timeout}s")
+
+    def wait_for_no_new_migration(self, vm_name, known, duration,
+                                  namespace=DEFAULT_NAMESPACE):
+        """Fail as soon as a migration of the VM that is not in `known`
+        appears within `duration` seconds."""
+        endtime = time.time() + int(duration)
+        logging(f"Checking for {duration}s that VM {vm_name} is not migrated")
+        while time.time() < endtime:
+            new = [m for m in self.list_migrations(vm_name, namespace)
+                   if m['name'] not in known]
+            if new:
+                raise AssertionError(
+                    f"VM {namespace}/{vm_name} got unexpected migrations: {new}")
+            time.sleep(self.retry_interval)
+
+    def wait_for_migration_phase(self, migration_name, phase,
+                                 timeout=DEFAULT_TIMEOUT_SHORT,
+                                 namespace=DEFAULT_NAMESPACE):
+        """Wait until a migration reaches `phase`; fail early when it ends
+        in another final phase."""
+        endtime = time.time() + int(timeout)
+        current = None
+        while time.time() < endtime:
+            m = get_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                       VIRTUALMACHINEINSTANCEMIGRATION_PLURAL, migration_name)
+            status = m.get('status', {})
+            if status.get('phase') != current:
+                current = status.get('phase')
+                logging(f"Migration {migration_name} phase: {current}")
+            if current == phase:
+                return m
+            if current in ("Succeeded", "Failed"):
+                raise AssertionError(
+                    f"Migration {migration_name} ended {current}, expected "
+                    f"{phase}: {status.get('migrationState', {})}")
+            time.sleep(self.retry_interval)
+        raise AssertionError(
+            f"Migration {migration_name} did not reach {phase} within "
+            f"{timeout}s (phase {current})")
+
+    def get_launcher_network_status(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return the Multus network-status of the virt-launcher pod the VMI
+        currently runs in, as a list of dicts (name, interface, mac, ...)."""
+        vmi = get_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION, namespace,
+                     VIRTUALMACHINEINSTANCE_PLURAL, vm_name)
+        status = vmi.get('status', {})
+        active = status.get('activePods') or {}
+        node = status.get('nodeName')
+        pods = self.core_api.list_namespaced_pod(
+            namespace, label_selector=f"vm.kubevirt.io/name={vm_name}").items
+        current = [p for p in pods
+                   if p.status.phase == "Running" and p.spec.node_name == node
+                   and (not active or p.metadata.uid in active)]
+        if len(current) != 1:
+            raise Exception(
+                f"Expected one running virt-launcher pod of VM {vm_name} on "
+                f"{node}, found {[p.metadata.name for p in current]}")
+        pod = current[0]
+        raw = (pod.metadata.annotations or {}).get(
+            "k8s.v1.cni.cncf.io/network-status", "[]")
+        logging(f"Pod {pod.metadata.name} network-status: {raw}")
+        return json.loads(raw)

@@ -95,3 +95,7 @@ class Network(Base):
     def delete_ip_pool(self, name):
         """Delete IP pool"""
         return self.network.delete_ip_pool(name)
+
+    def list_vm_networks(self, network_type=None):
+        """List VM networks (NADs) in the default namespace"""
+        return self.network.list_vm_networks(network_type)
