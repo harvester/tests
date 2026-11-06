@@ -7,6 +7,11 @@ from abc import ABC, abstractmethod
 class Base(ABC):
     """Base class for Volume implementations"""
 
+    def get_data_volume(self, volume_name):
+        """Read the CDI DataVolume using the CRD strategy."""
+        raise NotImplementedError(
+            "DataVolume inspection requires HARVESTER_OPERATION_STRATEGY=crd")
+
     @abstractmethod
     def create(self, volume_name, size, numberOfReplicas, frontend, **kwargs):
         """Create a volume"""
