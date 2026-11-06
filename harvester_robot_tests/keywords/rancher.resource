@@ -2431,6 +2431,143 @@ Teardown Rancher Test Suite
     END
 
 # ============================================================
+# Windows worker keywords (test_rancher_windows_worker.robot)
+# ============================================================
+Windows worker prerequisites are met
+    [Documentation]    Skip unless a Windows RKE2 image URL is configured and
+    ...               Rancher's Harvester node driver supports Windows machines
+    ...               (harvesterconfig schema has the os field).
+    Skip If    '${WINDOWS_IMAGE_URL}' == '${EMPTY}'
+    ...    WINDOWS_IMAGE_URL is not set
+    ${supported}=    rancher_keywords.harvester_config_supports_os
+    Skip If    not ${supported}
+    ...    Rancher's Harvester node driver does not support Windows machines (no os field)
+
+Windows image is created
+    [Documentation]    Download the Windows RKE2 worker image into Harvester.
+    Create Image    ${WINDOWS_IMAGE_NAME}    ${WINDOWS_IMAGE_URL}
+    Wait For Image Ready    ${WINDOWS_IMAGE_NAME}    ${RANCHER_WAIT_TIMEOUT}
+
+RKE2 cluster with a Windows worker pool is created
+    [Documentation]    Create a single-node Linux RKE2 cluster (Calico, Harvester
+    ...               cloud provider), then add a Windows worker pool with one
+    ...               machine and wait until Rancher reports the cluster ready.
+    ${cluster_id}=    Create RKE2 Cluster With Full Setup
+    ...    ${WINDOWS_CLUSTER_NAME}    ${WINDOWS_LINUX_CONFIG_NAME}    ${RKE2_VERSION}    1
+    Set Suite Variable    ${WINDOWS_CLUSTER_ID}    ${cluster_id}
+    rancher_keywords.create_harvester_config    ${WINDOWS_CONFIG_NAME}
+    ...    cpus=${WINDOWS_WORKER_CPUS}    mems=${WINDOWS_WORKER_MEMORY}
+    ...    disks=${WINDOWS_WORKER_DISK}
+    ...    image_id=${DEFAULT_NAMESPACE}/${WINDOWS_IMAGE_NAME}
+    ...    network_id=${DEFAULT_NAMESPACE}/${VLAN_NETWORK_NAME}
+    ...    ssh_user=Administrator    machine_os=windows
+    Windows worker pool is scaled to    1
+
+Windows worker pool is scaled to
+    [Arguments]    ${quantity}
+    [Documentation]    Set the Windows worker pool to ${quantity} machines
+    ...               (machineOS windows, hostname length limit 15) and wait
+    ...               for the cluster to be ready.
+    rancher_keywords.set_worker_machine_pool    ${WINDOWS_CLUSTER_NAME}    win
+    ...    ${quantity}    ${WINDOWS_CONFIG_NAME}    machine_os=windows
+    ...    hostname_length_limit=${WINDOWS_HOSTNAME_LENGTH_LIMIT}
+    Wait For RKE2 Cluster Ready    ${WINDOWS_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
+
+Windows cluster is available
+    [Documentation]    Skip when the Windows cluster was not created.
+    Skip If    '${WINDOWS_CLUSTER_ID}' == '${EMPTY}'    Windows cluster was not created
+
+Windows nodes should be ready
+    [Arguments]    ${count}
+    [Documentation]    The cluster has ${count} Windows nodes that are Ready and
+    ...               initialized by the Harvester cloud provider.
+    ${names}=    rancher_keywords.wait_for_windows_nodes_ready
+    ...    ${WINDOWS_CLUSTER_ID}    ${count}    ${RANCHER_WAIT_TIMEOUT}
+    Set Suite Variable    ${WINDOWS_NODE_NAMES}    ${names}
+
+Windows worker VMs should use Windows settings
+    [Documentation]    The VMs behind the Windows nodes carry the Windows label,
+    ...               Hyper-V enlightenments, a VMI hostname equal to the node
+    ...               name and Cloudbase-Init user data running Rancher's
+    ...               install script.
+    rancher_keywords.windows_worker_vms_should_use_windows_settings
+    ...    ${WINDOWS_CLUSTER_NAME}    ${WINDOWS_NODE_NAMES}    ${WINDOWS_HOSTNAME_LENGTH_LIMIT}
+
+Linux whoami service is deployed on Windows cluster
+    [Documentation]    Deploy whoami pinned to Linux nodes (the image is Linux
+    ...               only and a mixed cluster would otherwise schedule it on a
+    ...               Windows node) and a ClusterIP service in front of it.
+    ${manifest}=    Catenate    SEPARATOR=\n
+    ...    {"apiVersion": "v1", "kind": "List", "items": [
+    ...      {"apiVersion": "apps/v1", "kind": "Deployment",
+    ...       "metadata": {"name": "${WINDOWS_WHOAMI_NAME}", "namespace": "default"},
+    ...       "spec": {"replicas": 1,
+    ...                "selector": {"matchLabels": {"name": "${WINDOWS_WHOAMI_NAME}"}},
+    ...                "template": {"metadata": {"labels": {"name": "${WINDOWS_WHOAMI_NAME}"}},
+    ...                  "spec": {"nodeSelector": {"kubernetes.io/os": "linux"},
+    ...                           "containers": [{"name": "whoami",
+    ...                                           "image": "traefik/whoami:v1.11.0",
+    ...                                           "ports": [{"containerPort": 80}]}]}}}},
+    ...      {"apiVersion": "v1", "kind": "Service",
+    ...       "metadata": {"name": "${WINDOWS_WHOAMI_NAME}", "namespace": "default"},
+    ...       "spec": {"selector": {"name": "${WINDOWS_WHOAMI_NAME}"},
+    ...                "ports": [{"port": 80, "targetPort": 80}]}}]}
+    rancher_keywords.apply_guest_manifest    ${WINDOWS_CLUSTER_ID}    ${manifest}
+    Wait For Deployment Ready    ${WINDOWS_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${WINDOWS_WHOAMI_NAME}
+
+Windows pod should reach Linux whoami service
+    [Documentation]    A Windows pod resolves the service through cluster DNS and
+    ...               gets the whoami response from the Linux pod.
+    ${logs}=    rancher_keywords.run_windows_probe_pod    ${WINDOWS_CLUSTER_ID}
+    ...    ${WINDOWS_PROBE_NAME}
+    ...    http://${WINDOWS_WHOAMI_NAME}.default.svc.cluster.local
+    Should Contain    ${logs}    Hostname: ${WINDOWS_WHOAMI_NAME}
+
+Cleanup Windows workload test resources
+    [Documentation]    Delete the probe pod and the whoami service/deployment.
+    Run Keyword And Ignore Error    rancher_keywords.delete_guest_resource
+    ...    ${WINDOWS_CLUSTER_ID}    pod    default    ${WINDOWS_PROBE_NAME}
+    Run Keyword And Ignore Error    rancher_keywords.delete_guest_resource
+    ...    ${WINDOWS_CLUSTER_ID}    service    default    ${WINDOWS_WHOAMI_NAME}
+    Run Keyword And Ignore Error    Delete Deployment
+    ...    ${WINDOWS_CLUSTER_ID}    ${DEFAULT_NAMESPACE}    ${WINDOWS_WHOAMI_NAME}
+
+Windows cluster is deleted
+    [Documentation]    Delete the cluster with Windows workers and wait for it.
+    Delete RKE2 Cluster    ${WINDOWS_CLUSTER_NAME}
+    Wait For RKE2 Cluster Deleted    ${WINDOWS_CLUSTER_NAME}    ${RANCHER_WAIT_TIMEOUT}
+    Set Suite Variable    ${WINDOWS_CLUSTER_ID}    ${EMPTY}
+
+Windows worker VMs should be removed
+    [Documentation]    No VM of the deleted cluster is left on Harvester.
+    Wait Until Keyword Succeeds    10 min    15 s
+    ...    Guest cluster should have no VMs    ${WINDOWS_CLUSTER_NAME}
+
+Guest cluster should have no VMs
+    [Arguments]    ${cluster_name}
+    ${vms}=    rancher_keywords.get_guest_cluster_vms    ${cluster_name}
+    Length Should Be    ${vms}    0
+
+Setup Windows Worker Test Variables
+    [Documentation]    Names used by test_rancher_windows_worker.robot.
+    ${suffix}=    Evaluate    __import__('datetime').datetime.now().strftime("%m%d%H%M%S")
+    Set Suite Variable    ${WINDOWS_CLUSTER_NAME}           rke2-win-${suffix}
+    Set Suite Variable    ${WINDOWS_LINUX_CONFIG_NAME}      rke2-win-${suffix}-linux
+    Set Suite Variable    ${WINDOWS_CONFIG_NAME}            rke2-win-${suffix}-windows
+    Set Suite Variable    ${WINDOWS_IMAGE_NAME}             windows-rke2-${suffix}
+    Set Suite Variable    ${WINDOWS_WHOAMI_NAME}            whoami-win-${suffix}
+    Set Suite Variable    ${WINDOWS_PROBE_NAME}             win-probe-${suffix}
+    Set Suite Variable    ${WINDOWS_HOSTNAME_LENGTH_LIMIT}  15
+    Set Suite Variable    ${WINDOWS_CLUSTER_ID}             ${EMPTY}
+    @{names}=    Create List
+    Set Suite Variable    ${WINDOWS_NODE_NAMES}    ${names}
+
+Cleanup Windows worker test resources
+    [Documentation]    Best-effort removal of the Windows cluster and image.
+    Cleanup Cluster By Name    ${WINDOWS_CLUSTER_NAME}
+    Run Keyword And Ignore Error    Delete Image    ${WINDOWS_IMAGE_NAME}
+
+# ============================================================
 # Utility keywords
 # ============================================================
 Cleanup Cluster By Name

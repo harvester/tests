@@ -146,11 +146,54 @@ class Rancher(Base):
 
     # Harvester Config Operations
     def create_harvester_config(self, name, cpus, mems, disks, image_id,
-                                network_id, ssh_user, user_data):
+                                network_id, ssh_user, user_data, machine_os="linux"):
         """Create Harvester config for RKE2 node template"""
         return self.rancher.create_harvester_config(
-            name, cpus, mems, disks, image_id, network_id, ssh_user, user_data
+            name, cpus, mems, disks, image_id, network_id, ssh_user, user_data,
+            machine_os
         )
+
+    # Windows worker operations
+    def harvester_config_supports_os(self):
+        """Return True if the node driver supports the os (Windows) field"""
+        return self.rancher.harvester_config_supports_os()
+
+    def set_worker_machine_pool(self, cluster_name, pool_name, quantity,
+                                harvester_config_name, machine_os="linux",
+                                hostname_length_limit=0):
+        """Add, update or remove a worker-only machine pool"""
+        return self.rancher.set_worker_machine_pool(
+            cluster_name, pool_name, quantity, harvester_config_name,
+            machine_os, hostname_length_limit
+        )
+
+    def get_guest_nodes(self, cluster_id, label_selector=""):
+        """Return guest cluster nodes matching a label selector"""
+        return self.rancher.get_guest_nodes(cluster_id, label_selector)
+
+    def get_guest_cluster_vms(self, cluster_name, label_selector=""):
+        """Return the Harvester VMs of a guest cluster"""
+        return self.rancher.get_guest_cluster_vms(cluster_name, label_selector)
+
+    def get_vm_cloudinit_userdata(self, vm):
+        """Return a VM's NoCloud user data"""
+        return self.rancher.get_vm_cloudinit_userdata(vm)
+
+    def apply_guest_manifest(self, cluster_id, manifest):
+        """Apply a manifest in a guest cluster"""
+        return self.rancher.apply_guest_manifest(cluster_id, manifest)
+
+    def wait_for_guest_pod_completed(self, cluster_id, namespace, name, timeout):
+        """Wait for a guest pod to complete"""
+        return self.rancher.wait_for_guest_pod_completed(cluster_id, namespace, name, timeout)
+
+    def get_guest_pod_logs(self, cluster_id, namespace, name):
+        """Return a guest pod's logs"""
+        return self.rancher.get_guest_pod_logs(cluster_id, namespace, name)
+
+    def delete_guest_resource(self, cluster_id, kind, namespace, name):
+        """Delete a guest cluster resource"""
+        return self.rancher.delete_guest_resource(cluster_id, kind, namespace, name)
 
     # Kubeconfig Operations
     def generate_kubeconfig(self, cluster_id, cluster_name):

@@ -2,8 +2,10 @@
 Rancher Keywords - creates Rancher() instance and delegates - NO direct API calls!
 Layer 3: Keyword wrappers for Robot Framework
 """
+import json
 import os
 import sys
+import time
 from datetime import datetime
 
 # Add the path to the utility module
@@ -12,6 +14,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'
 from utility.utility import logging, generate_name_with_suffix  # noqa E402
 from rancher import Rancher  # noqa E402
 from constant import DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_LONG, DEFAULT_RKE2_USER_DATA, DEFAULT_RKE2_NODE_CPUS, DEFAULT_RKE2_NODE_MEMORY, DEFAULT_RKE2_NODE_DISK  # noqa E402
+from constant import WINDOWS_RKE2_USER_DATA, WINDOWS_PROBE_IMAGE  # noqa E402
+
+
+UNINITIALIZED_TAINT = "node.cloudprovider.kubernetes.io/uninitialized"
 
 
 class rancher_keywords:
@@ -508,7 +514,8 @@ class rancher_keywords:
 
     # Harvester Config Operations
     def create_harvester_config(self, name, cpus=None, mems=None, disks=None, image_id="",
-                                network_id="", ssh_user="ubuntu", user_data=None):
+                                network_id="", ssh_user="ubuntu", user_data=None,
+                                machine_os="linux"):
         """
         Create Harvester config for RKE2 node template
 
@@ -521,6 +528,7 @@ class rancher_keywords:
             network_id: Network name
             ssh_user: SSH user (default: ubuntu)
             user_data: Cloud-init user data
+            machine_os: Guest OS of the image, linux (default) or windows
 
         Returns:
             dict: Config data
@@ -532,12 +540,205 @@ class rancher_keywords:
         if not disks:
             disks = DEFAULT_RKE2_NODE_DISK
         if not user_data:
-            user_data = DEFAULT_RKE2_USER_DATA
-        logging(f"Creating Harvester config: {name}")
+            # The default user data installs qemu-guest-agent with apt/zypper and
+            # systemctl; Windows images ship the agent and use Cloudbase-Init.
+            user_data = WINDOWS_RKE2_USER_DATA if machine_os == "windows" \
+                else DEFAULT_RKE2_USER_DATA
+        logging(f"Creating Harvester config: {name} (os={machine_os})")
         return self.rancher.create_harvester_config(
             name, int(cpus), int(mems), int(disks),
-            image_id, network_id, ssh_user, user_data
+            image_id, network_id, ssh_user, user_data, machine_os
         )
+
+    # Windows worker operations
+    def harvester_config_supports_os(self):
+        """
+        Check whether Rancher's Harvester node driver supports Windows machines,
+        i.e. the harvesterconfig schema has the os field (harvester-os flag).
+
+        Returns:
+            bool: True if supported
+        """
+        return self.rancher.harvester_config_supports_os()
+
+    def set_worker_machine_pool(self, cluster_name, pool_name, quantity,
+                                harvester_config_name, machine_os="linux",
+                                hostname_length_limit=0):
+        """
+        Add, update or remove (quantity 0) a worker-only machine pool.
+
+        Args:
+            cluster_name: RKE2 cluster name
+            pool_name: Machine pool name
+            quantity: Number of machines (0 removes the pool)
+            harvester_config_name: HarvesterConfig used by the pool
+            machine_os: linux or windows
+            hostname_length_limit: Hostname length limit (15 for Windows NetBIOS)
+        """
+        self.rancher.set_worker_machine_pool(
+            cluster_name, pool_name, int(quantity), harvester_config_name,
+            machine_os, int(hostname_length_limit)
+        )
+
+    def wait_for_windows_nodes_ready(self, cluster_id, count, timeout=DEFAULT_TIMEOUT_LONG):
+        """
+        Wait until the guest cluster has exactly `count` Windows nodes that are
+        Ready and initialized by the Harvester cloud provider (providerID set,
+        no node.cloudprovider.kubernetes.io/uninitialized taint).
+
+        Args:
+            cluster_id: Guest cluster ID
+            count: Expected number of Windows nodes
+            timeout: Timeout in seconds
+
+        Returns:
+            list: Node names
+        """
+        count = int(count)
+        deadline = time.time() + int(timeout)
+        problems = []
+        while time.time() < deadline:
+            problems = []
+            try:
+                nodes = self.rancher.get_guest_nodes(cluster_id, "kubernetes.io/os=windows")
+            except Exception as e:
+                problems = [str(e)]
+                nodes = []
+            if len(nodes) != count:
+                problems.append(f"{len(nodes)} Windows nodes, expected {count}")
+            for node in nodes:
+                name = node["metadata"]["name"]
+                ready = any(c["type"] == "Ready" and c["status"] == "True"
+                            for c in node["status"].get("conditions", []))
+                taints = [t["key"] for t in node["spec"].get("taints", [])]
+                if not ready:
+                    problems.append(f"{name} not Ready")
+                if not node["spec"].get("providerID", "").startswith("harvester://"):
+                    problems.append(f"{name} has no harvester providerID")
+                if UNINITIALIZED_TAINT in taints:
+                    problems.append(f"{name} still has {UNINITIALIZED_TAINT}")
+            if not problems:
+                names = [n["metadata"]["name"] for n in nodes]
+                logging(f"Windows nodes ready: {names}")
+                return names
+            logging(f"Waiting for Windows nodes: {problems}")
+            time.sleep(20)
+        raise Exception(f"Windows nodes not ready after {timeout}s: {problems}")
+
+    def windows_worker_vms_should_use_windows_settings(
+            self, cluster_name, node_names, hostname_length_limit=15):
+        """
+        Check the Harvester VMs behind the Windows nodes: Windows label, Hyper-V
+        enlightenments, VMI hostname equal to the node name (within the
+        hostname length limit) and Cloudbase-Init compatible user data that
+        runs Rancher's install script.
+
+        Args:
+            cluster_name: RKE2 cluster name
+            node_names: Windows node names of the cluster
+            hostname_length_limit: Expected maximum hostname length
+        """
+        vms = self.rancher.get_guest_cluster_vms(cluster_name, "harvesterhci.io/os=windows")
+        if len(vms) != len(node_names):
+            raise Exception(f"Found {len(vms)} Windows VMs for {len(node_names)} Windows nodes")
+        hostnames = []
+        for vm in vms:
+            name = vm["metadata"]["name"]
+            spec = vm["spec"]["template"]["spec"]
+            hostname = spec.get("hostname", "")
+            hostnames.append(hostname)
+            if hostname not in node_names:
+                raise Exception(f"VM {name} hostname '{hostname}' is not a node name {node_names}")
+            if len(hostname) > int(hostname_length_limit):
+                raise Exception(f"VM {name} hostname '{hostname}' is longer than "
+                                f"{hostname_length_limit}")
+            hyperv = spec["domain"].get("features", {}).get("hyperv") or {}
+            for feature in ("relaxed", "vapic", "spinlocks", "synic", "synictimer"):
+                if not (hyperv.get(feature) or {}).get("enabled"):
+                    raise Exception(f"VM {name}: Hyper-V enlightenment {feature} not enabled")
+            user_data = self.rancher.get_vm_cloudinit_userdata(vm)
+            if not user_data.startswith("#cloud-config"):
+                raise Exception(f"VM {name}: user data must start with #cloud-config "
+                                f"for Cloudbase-Init, got: {user_data[:40]!r}")
+            for must in ("C:\\install.ps1", "powershell", f"set_hostname: {hostname}"):
+                if must not in user_data:
+                    raise Exception(f"VM {name}: user data lacks {must!r}")
+            for must_not in ("ssh_authorized_keys", "chpasswd", "## template: jinja"):
+                if must_not in user_data:
+                    raise Exception(f"VM {name}: user data has cloud-init only {must_not!r}")
+        if len(set(hostnames)) != len(hostnames):
+            raise Exception(f"Windows VM hostnames are not unique: {hostnames}")
+        logging(f"Windows VMs use Windows settings: {hostnames}")
+
+    def run_windows_probe_pod(self, cluster_id, name, url, image=WINDOWS_PROBE_IMAGE,
+                              timeout=DEFAULT_TIMEOUT_LONG):
+        """
+        Run a Windows pod that fetches `url` with curl.exe and return its logs.
+
+        Args:
+            cluster_id: Guest cluster ID
+            name: Pod name
+            url: URL to fetch
+            image: Windows image matching the node build (default nanoserver ltsc2025)
+            timeout: Timeout in seconds (the first pull of the image is slow)
+
+        Returns:
+            str: Pod logs
+        """
+        manifest = {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {"name": name, "namespace": "default"},
+            "spec": {
+                "nodeSelector": {"kubernetes.io/os": "windows"},
+                "restartPolicy": "Never",
+                "containers": [{
+                    "name": "probe",
+                    "image": image,
+                    "command": ["cmd", "/c", f"curl.exe -s -m 30 --retry 5 {url}"]
+                }]
+            }
+        }
+        self.rancher.apply_guest_manifest(cluster_id, json.dumps(manifest))
+        phase = self.rancher.wait_for_guest_pod_completed(cluster_id, "default", name, timeout)
+        logs = self.rancher.get_guest_pod_logs(cluster_id, "default", name)
+        logging(f"Windows probe pod {name} {phase}: {logs[:300]}")
+        return logs
+
+    def get_guest_cluster_vms(self, cluster_name, label_selector=""):
+        """
+        Return the Harvester VMs the node driver created for a guest cluster.
+
+        Args:
+            cluster_name: RKE2 cluster name
+            label_selector: Extra label selector (optional)
+
+        Returns:
+            list: VirtualMachine objects
+        """
+        return self.rancher.get_guest_cluster_vms(cluster_name, label_selector)
+
+    def apply_guest_manifest(self, cluster_id, manifest):
+        """
+        Apply a YAML/JSON manifest in a guest cluster.
+
+        Args:
+            cluster_id: Guest cluster ID
+            manifest: Manifest content
+        """
+        return self.rancher.apply_guest_manifest(cluster_id, manifest)
+
+    def delete_guest_resource(self, cluster_id, kind, namespace, name):
+        """
+        Delete a namespaced resource in a guest cluster (ignores not found).
+
+        Args:
+            cluster_id: Guest cluster ID
+            kind: Resource kind (pod, deployment, service, ...)
+            namespace: Namespace
+            name: Resource name
+        """
+        self.rancher.delete_guest_resource(cluster_id, kind, namespace, name)
 
     # Kubeconfig Operations
     def generate_kubeconfig(self, cluster_id, cluster_name):
