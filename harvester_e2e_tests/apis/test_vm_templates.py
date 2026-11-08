@@ -47,11 +47,33 @@ DEFAULT_TEMPLATES_NAMESPACE = 'harvester-public'
 
 
 def _extract_release(text):
-    """Extract a (major, minor, micro) tuple from a version-ish string."""
+    """Extract a (major, minor, micro) tuple from a version-ish string.
+
+    micro is None when the string carries none (branch builds such as
+    ``v1.9-b142-head``). Such a build ships everything merged to that
+    branch, so it must not be mistaken for the minor's .0 release.
+    """
     match = re.search(r"v?(\d+)\.(\d+)(?:\.(\d+))?", text)
     if match:
-        return tuple(int(g or 0) for g in match.groups())
+        major, minor, micro = match.groups()
+        return (int(major), int(minor), None if micro is None else int(micro))
     return None
+
+
+def release_at_least(release, target):
+    """True if the cluster release is >= target (a (major, minor, micro) tuple).
+
+    A None release (versionless master/commit-hash build) counts as the
+    newest release; a release without micro (branch build) counts as the
+    newest patch of its minor.
+    """
+    if release is None:
+        return True
+    if release[2] is None:
+        return release[:2] >= target[:2]
+    if target[2] is None:
+        target = (target[0], target[1], 0)
+    return release >= target
 
 
 def cluster_release(api_client):
@@ -61,7 +83,7 @@ def cluster_release(api_client):
     ``release-v1.9.0-rc5-b117-head``, ``v1.8-head`` or a commit hash), which
     breaks ``api_client.cluster_version`` parsing, so extract the release
     from the raw setting value instead. Versionless values (master/hash
-    builds) yield None.
+    builds) yield None; compare the result with ``release_at_least``.
     """
     code, data = api_client.settings.get('server-version')
     return _extract_release(data.get('value', '') if code == 200 else '')
@@ -71,12 +93,13 @@ def expected_default_templates(api_client):
     """The exact default template set for the cluster's version.
 
     Versionless dev builds (master/commit-hash) are treated as the newest
-    release.
+    release, branch builds (``v1.9-bNNN-head``) as the newest patch of
+    their minor.
     """
     release = cluster_release(api_client)
-    if release and release < (1, 9, 0):
+    if not release_at_least(release, (1, 9, 0)):
         return BASE_TEMPLATES
-    if release and release < (1, 9, 1):
+    if not release_at_least(release, (1, 9, 1)):
         return BASE_TEMPLATES | WINDOWS_TIERED_TEMPLATES
     return BASE_TEMPLATES | WINDOWS_TIERED_TEMPLATES | WINDOWS_IMAGE_TEMPLATES
 

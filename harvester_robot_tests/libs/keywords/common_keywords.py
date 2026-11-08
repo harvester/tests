@@ -43,15 +43,16 @@ class common_keywords:
 
         Returns:
             bool: True if the cluster release >= version. Versionless dev
-                  builds (master/commit-hash) are treated as the newest.
+                  builds (master/commit-hash) are treated as the newest
+                  release, branch builds (v1.9-bNNN-head) as the newest
+                  patch of their minor.
         """
-        from utility.utility import get_cluster_version_release, _extract_release
+        from utility.utility import (get_cluster_version_release, release_at_least,
+                                     _extract_release)
         release = get_cluster_version_release()
-        if release is None:
-            return True
         target = _extract_release(str(version))
         assert target is not None, f"Not a version string: {version}"
-        return release >= target
+        return release_at_least(release, target)
 
     def create_namespace(self, name):
         """Create a namespace (no-op when it already exists)"""
