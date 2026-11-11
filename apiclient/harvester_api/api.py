@@ -168,6 +168,16 @@ class HarvesterAPI:
         resp = self._get(path)
         return resp.status_code, resp.json()
 
+    def get_apps_daemonsets(self, name="", namespace=DEFAULT_NAMESPACE):
+        path = f"v1/apps.daemonsets/{namespace}/{name}"
+        resp = self._get(path)
+        return resp.status_code, resp.json()
+
+    def get_longhorn_settings(self, name="", namespace=mgrs.DEFAULT_LONGHORN_NAMESPACE):
+        path = f"v1/longhorn.io.settings/{namespace}/{name}"
+        resp = self._get(path)
+        return resp.status_code, resp.json()
+
     def get_crds(self, name=""):
         path = f"v1/apiextensions.k8s.io.customresourcedefinitions/{name}"
         resp = self._get(path)
