@@ -29,6 +29,50 @@ NODE_INTERNAL_IP_ANNOTATION = "rke2.io/internal-ip"
 logger = logging.getLogger(__name__)
 
 
+def check_image_version(old, new):
+    def sanitized_ver(img: str):
+        try:
+            # PEP 440 compliant: N(.N)*[-+]?[{a|alpha|b|beta|c|rc}N][.postN][.devN]
+            ver_str = img.split(':', 1)[-1]
+            ver_obj = parse_version(ver_str)
+            return ver_obj
+        except InvalidVersion as e:
+            if "-" in ver_str:
+                # Conform to PEP 440 by replacing the first '-' with '+'
+                # e.g. 1.2.3-4.5.6 -> 1.2.3+4.5.6, v1.10.1-hotfix-2 -> v1.10.1+hotfix
+                ver_obj = parse_version("+".join(ver_str.split("-")[:2]))
+                logger.warning(f"Convert {img} to {ver_obj} for comparison")
+                return ver_obj
+            raise e
+
+    old_le_new = (sanitized_ver(old) <= sanitized_ver(new))
+    if not old_le_new:
+        logger.error(f"Old image {old} does not less or equal to the new {new}")
+
+    return old_le_new
+
+
+def container_image(containers, name, resource):
+    image = next((c.get('image') for c in containers if c.get('name') == name), None)
+    assert isinstance(image, str) and image.strip(), (
+        f"Missing image for container {name} in {resource}"
+    )
+    return image
+
+
+def get_daemonset_owner(pod, name_prefix):
+    """Return the first controlling DaemonSet owner matching the name prefix."""
+    return next(
+        (
+            owner for owner in pod['metadata'].get('ownerReferences', [])
+            if owner.get('controller')
+            and owner.get('kind') == "DaemonSet"
+            and owner.get('name', '').startswith(name_prefix)
+        ),
+        None
+    )
+
+
 @pytest.fixture(scope="module")
 def cluster_state(request, unique_name, api_client):
     class ClusterState:
@@ -1235,89 +1279,104 @@ class TestAnyNodesUpgrade:
                    "rke2 version is not correct")
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
-    def test_verify_deployed_components_version(self, api_client):
-        """ Verify deployed kubevirt and longhorn version
-        Criteria:
-        - except version(get from apps.catalog.cattle.io/harvester) should be equal to the version
-          of kubevirt and longhorn
-        """
-
-        def check_image_version(old, new):
-            def sanitized_ver(img: str):
-                try:
-                    # PEP 440 compliant: N(.N)*[-+]?[{a|alpha|b|beta|c|rc}N][.postN][.devN]
-                    ver_str = img.split(':', 1)[-1]
-                    ver_obj = parse_version(ver_str)
-                    return ver_obj
-                except InvalidVersion as e:
-                    if "-" in ver_str:
-                        # Conform to PEP 440 by replacing the first '-' with '+'
-                        # e.g. 1.2.3-4.5.6 -> 1.2.3+4.5.6, v1.10.1-hotfix-2 -> v1.10.1+hotfix
-                        ver_obj = parse_version("+".join(ver_str.split("-")[:2]))
-                        logger.warning(f"Convert {img} to {ver_obj} for comparison")
-                        return ver_obj
-                    raise e
-
-            old_le_new = (sanitized_ver(old) <= sanitized_ver(new))
-            if not old_le_new:
-                logger.error(f"Old image {old} does not less or equal to the new {new}")
-
-            return old_le_new
-
-        kubevirt_version_existed = False
-        engine_image_version_existed = False
-        longhorn_manager_version_existed = False
-
-        # Get expected image of kubevirt
-        code, app = api_client.get_apps_deployments(name="virt-operator",
-                                                    namespace=DEFAULT_HARVESTER_NAMESPACE)
+    def test_verify_virt_operator_version(self, api_client):
+        code, app = api_client.get_apps_deployments(
+            name="virt-operator", namespace=DEFAULT_HARVESTER_NAMESPACE
+        )
         assert code == 200, (code, app)
         kubevirt_operator_image = app['spec']['template']['spec']['containers'][0]['image']
 
-        # Get except image of longhorn
-        code, apps = api_client.get_apps_controllerrevisions(namespace=DEFAULT_LONGHORN_NAMESPACE)
-        assert code == 200, (code, apps)
+        code, pods = api_client.get_pods(namespace=DEFAULT_HARVESTER_NAMESPACE)
+        assert code == 200, (code, pods)
+        virt_operator_pods = [
+            pod for pod in pods['data'] if "virt-operator" in pod['metadata']['name']
+        ]
+        assert virt_operator_pods, "No virt-operator pods found"
 
-        longhorn_images = {
-            "engine-image": "",
-            "longhorn-manager": ""
-        }
-        for lh_app in longhorn_images:
-            for app in apps['data']:
-                if app["id"].startswith(f"{DEFAULT_LONGHORN_NAMESPACE}/{lh_app}"):
-                    longhorn_images[lh_app] = (
-                        app["data"]["spec"]["template"]["spec"]["containers"][0]["image"])
+        for pod in virt_operator_pods:
+            name = pod['metadata']['name']
+            phase = pod.get('status', {}).get('phase')
+            assert phase == "Running", f"pod {name} is not Running but {phase}"
+            assert check_image_version(
+                kubevirt_operator_image, pod['spec']['containers'][0]['image']
+            ), f"KubeVirt pod {name}: version is not correct"
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade"])
+    def test_verify_engine_image_version(self, api_client, wait_timeout, sleep_timeout):
+        code, setting = api_client.get_longhorn_settings("default-engine-image")
+        assert code == 200, (code, setting)
+        engine_image = setting.get('value').strip()
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
+            assert code == 200, (code, pods)
+
+            engine_found = False
+            for pod in pods['data']:
+                engine_daemonset = get_daemonset_owner(pod, "engine-image-")
+                if engine_daemonset is None:
+                    continue
+
+                engine_found = True
+                pod_name = pod['metadata']['name']
+                container_name = engine_daemonset['name']
+                phase = pod.get('status', {}).get('phase')
+                actual_image = container_image(
+                    pod.get('spec', {}).get('containers', []), container_name, pod_name
+                )
+                if phase != "Running" or not check_image_version(engine_image, actual_image):
+                    break
+            else:
+                if engine_found:
                     break
 
-        # Verify kubevirt version
-        code, pods = api_client.get_pods(namespace=DEFAULT_HARVESTER_NAMESPACE)
-        assert code == 200 and len(pods['data']) > 0, (
-            f"Failed to get pods in namespace {DEFAULT_HARVESTER_NAMESPACE}")
+            sleep(sleep_timeout)
+        else:
+            raise AssertionError(
+                f"Engine-image pods are not all Running with version >= {engine_image} "
+                f"within {wait_timeout}s"
+            )
 
-        for pod in pods['data']:
-            if "virt-operator" in pod['metadata']['name']:
-                kubevirt_version_existed = check_image_version(
-                    kubevirt_operator_image, pod['spec']['containers'][0]['image']
+    @pytest.mark.dependency(depends=["any_nodes_upgrade"])
+    def test_verify_longhorn_manager_version(self, api_client, wait_timeout, sleep_timeout):
+        code, daemonset = api_client.get_apps_daemonsets(
+            name="longhorn-manager", namespace=DEFAULT_LONGHORN_NAMESPACE
+        )
+        assert code == 200, (code, daemonset)
+        manager_image = container_image(
+            daemonset.get('spec', {}).get('template', {}).get('spec', {}).get('containers', []),
+            "longhorn-manager", "DaemonSet longhorn-manager"
+        )
+
+        endtime = datetime.now() + timedelta(seconds=wait_timeout)
+        while endtime > datetime.now():
+            code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
+            assert code == 200, (code, pods)
+
+            manager_found = False
+            for pod in pods['data']:
+                pod_name = pod['metadata']['name']
+                if not pod_name.startswith("longhorn-manager"):
+                    continue
+
+                manager_found = True
+                phase = pod.get('status', {}).get('phase')
+                actual_image = container_image(
+                    pod.get('spec', {}).get('containers', []), "longhorn-manager", pod_name
                 )
+                if phase != "Running" or not check_image_version(manager_image, actual_image):
+                    break
+            else:
+                if manager_found:
+                    break
 
-        # Verify longhorn version
-        code, pods = api_client.get_pods(namespace=DEFAULT_LONGHORN_NAMESPACE)
-        assert code == 200 and len(pods['data']) > 0, (
-            f"Failed to get pods in namespace {DEFAULT_LONGHORN_NAMESPACE}")
-
-        for pod in pods['data']:
-            if "longhorn-manager" in pod['metadata']['name']:
-                longhorn_manager_version_existed = check_image_version(
-                  longhorn_images["longhorn-manager"], pod['spec']['containers'][0]['image']
-                )
-            elif "engine-image" in pod['metadata']['name']:
-                engine_image_version_existed = check_image_version(
-                    longhorn_images["engine-image"], pod['spec']['containers'][0]['image']
-                )
-
-        assert kubevirt_version_existed, "kubevirt version is not correct"
-        assert engine_image_version_existed, "longhorn engine image version is not correct"
-        assert longhorn_manager_version_existed, "longhorn manager version is not correct"
+            sleep(sleep_timeout)
+        else:
+            raise AssertionError(
+                f"Longhorn-manager pods are not all Running with version >= {manager_image} "
+                f"within {wait_timeout}s"
+            )
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade"])
     def test_verify_crds_existed(self, api_client, harvester_crds):
@@ -1345,7 +1404,7 @@ class TestAnyNodesUpgrade:
         code, data = api_client.get_pods(namespace='harvester-system')
         assert code == 200 and data['data'], (code, data)
 
-        upgradelog_pods = [pod for pod in data['data'] if 'upgradelog' in pod['id']]
+        upgradelog_pods = [pod for pod in data['data'] if 'upgradelog-downloader' in pod['id']]
         assert upgradelog_pods, f"No upgradelog pod found:\n{data['data']}"
         for pod in upgradelog_pods:
             assert pod["status"]["phase"] == "Running", (code, upgradelog_pods)
