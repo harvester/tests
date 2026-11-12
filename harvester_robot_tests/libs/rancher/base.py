@@ -170,8 +170,56 @@ class Base(ABC):
     # Harvester Config Operations
     @abstractmethod
     def create_harvester_config(self, name, cpus, mems, disks, image_id,
-                                network_id, ssh_user, user_data):
+                                network_id, ssh_user, user_data, machine_os="linux"):
         """Create Harvester config for RKE2 node template"""
+        pass
+
+    @abstractmethod
+    def harvester_config_supports_os(self):
+        """Return True if the HarvesterConfig schema has the os field
+        (node driver with Windows machine support)."""
+        pass
+
+    @abstractmethod
+    def set_worker_machine_pool(self, cluster_name, pool_name, quantity,
+                                harvester_config_name, machine_os="linux",
+                                hostname_length_limit=0):
+        """Add, update or (quantity 0) remove a worker-only machine pool."""
+        pass
+
+    @abstractmethod
+    def get_guest_nodes(self, cluster_id, label_selector=""):
+        """Return the guest cluster's Node objects matching a label selector."""
+        pass
+
+    @abstractmethod
+    def get_guest_cluster_vms(self, cluster_name, label_selector=""):
+        """Return the Harvester VMs of a guest cluster."""
+        pass
+
+    @abstractmethod
+    def get_vm_cloudinit_userdata(self, vm):
+        """Return the NoCloud user data of a Harvester VM as a string."""
+        pass
+
+    @abstractmethod
+    def apply_guest_manifest(self, cluster_id, manifest):
+        """kubectl apply a YAML/JSON manifest in a guest cluster."""
+        pass
+
+    @abstractmethod
+    def wait_for_guest_pod_completed(self, cluster_id, namespace, name, timeout):
+        """Wait for a pod to reach Succeeded or Failed; return the phase."""
+        pass
+
+    @abstractmethod
+    def get_guest_pod_logs(self, cluster_id, namespace, name):
+        """Return a pod's logs."""
+        pass
+
+    @abstractmethod
+    def delete_guest_resource(self, cluster_id, kind, namespace, name):
+        """Delete a namespaced resource in a guest cluster (ignore not found)."""
         pass
 
     # Kubeconfig Operations

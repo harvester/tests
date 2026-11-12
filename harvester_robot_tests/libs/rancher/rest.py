@@ -792,7 +792,7 @@ class Rest(Base):
         logging(f"Triggered upgrade of RKE2 cluster {cluster_name} to {new_k8s_version}")
 
     def create_harvester_config(self, name, cpus, mems, disks, image_id,
-                                network_id, ssh_user, user_data):
+                                network_id, ssh_user, user_data, machine_os="linux"):
         """Create Harvester config for RKE2 node template"""
         logging(f"Creating Harvester config: {name}")
 
@@ -840,6 +840,8 @@ class Rest(Base):
             "userData": encoded_user_data,
             "vmNamespace": DEFAULT_NAMESPACE
         }
+        if machine_os and machine_os != "linux":
+            payload["os"] = machine_os
 
         code, data = self._rancher_request(
             "POST",
@@ -852,6 +854,37 @@ class Rest(Base):
 
         logging(f"Created Harvester config: {name}")
         return data
+
+    # Windows worker operations (CRD strategy only)
+
+    def harvester_config_supports_os(self):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
+
+    def set_worker_machine_pool(self, cluster_name, pool_name, quantity,
+                                harvester_config_name, machine_os="linux",
+                                hostname_length_limit=0):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
+
+    def get_guest_nodes(self, cluster_id, label_selector=""):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
+
+    def get_guest_cluster_vms(self, cluster_name, label_selector=""):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
+
+    def get_vm_cloudinit_userdata(self, vm):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
+
+    def apply_guest_manifest(self, cluster_id, manifest):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
+
+    def wait_for_guest_pod_completed(self, cluster_id, namespace, name, timeout):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
+
+    def get_guest_pod_logs(self, cluster_id, namespace, name):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
+
+    def delete_guest_resource(self, cluster_id, kind, namespace, name):
+        raise NotImplementedError("Windows worker operations use the CRD strategy")
 
     def generate_kubeconfig(self, cluster_id, cluster_name):
         """Generate full-access kubeconfig for Harvester cluster.
