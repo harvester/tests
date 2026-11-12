@@ -348,3 +348,64 @@ VM Should Boot And Write To Disk
     ...    ${username}    pkey=${pkey}
     Should Match Regexp    ${output.strip()}    ^[0-9a-f]{8}$
     ...    msg=Failed to write to the disk of ${vm_name}: ${output}
+
+VM is live-migrated
+    [Arguments]    ${vm_name}
+    [Documentation]    Start a compute live migration of the VM (a
+    ...    VirtualMachineInstanceMigration without a volume change). The
+    ...    scheduler picks the destination node.
+    vm_keywords.migrate_vm    ${vm_name}    ${None}
+
+Start Storage Migration
+    [Arguments]    ${vm_name}    ${source_volume}    ${target_volume}
+    [Documentation]    Move a VM volume to another (empty, at least as large)
+    ...    PVC while the VM keeps running, like the Harvester
+    ...    `storageMigration` VM action: set `targetVolume` on the source
+    ...    entry of the harvesterhci.io/volumeClaimTemplates annotation.
+    vm_keywords.start_vm_storage_migration    ${vm_name}    ${source_volume}    ${target_volume}
+
+Storage Migration Should Complete
+    [Arguments]    ${vm_name}    ${source_volume}    ${target_volume}    ${timeout}=${WAIT_TIMEOUT}
+    [Documentation]    Wait until the VM runs on the target PVC, KubeVirt has
+    ...    cleared the VolumesChange condition and Harvester has rewritten the
+    ...    volumeClaimTemplates entry to the target PVC.
+    vm_keywords.wait_for_vm_storage_migration_completed    ${vm_name}
+    ...    ${source_volume}    ${target_volume}    timeout=${timeout}
+
+Get VM Launcher Pods
+    [Arguments]    ${vm_name}
+    [Documentation]    Return the VM's virt-launcher pods as dicts with name,
+    ...    phase, terminating and claims (the PVCs in the pod's spec.volumes).
+    ${pods}=    vm_keywords.get_vm_launcher_pods    ${vm_name}
+    RETURN    ${pods}
+
+VM Should Have A Completed Launcher Pod
+    [Arguments]    ${vm_name}
+    [Documentation]    Assert the VM has a virt-launcher pod in the Succeeded
+    ...    phase that is not being deleted (the source pod of a migration).
+    ${pods}=    Get VM Launcher Pods    ${vm_name}
+    ${completed}=    Evaluate
+    ...    [p['name'] for p in $pods if p['phase'] == 'Succeeded' and not p['terminating']]
+    Should Not Be Empty    ${completed}
+    ...    msg=VM ${vm_name} has no Completed virt-launcher pod: ${pods}
+
+VM Launcher Pods Should Not Use Volume
+    [Arguments]    ${vm_name}    ${volume_name}
+    [Documentation]    Single-shot assertion: no virt-launcher pod of the VM
+    ...    lists the PVC in spec.volumes.
+    ${pods}=    Get VM Launcher Pods    ${vm_name}
+    ${holders}=    Evaluate
+    ...    [f"{p['name']} ({p['phase']})" for p in $pods if $volume_name in p['claims']]
+    Should Be Empty    ${holders}
+    ...    msg=virt-launcher pods of VM ${vm_name} still use volume ${volume_name}: ${holders}
+
+VM Should Run Only On Volume
+    [Arguments]    ${vm_name}    ${volume_name}
+    [Documentation]    Assert the VM has exactly one running virt-launcher pod
+    ...    and that it uses the given PVC.
+    ${pods}=    Get VM Launcher Pods    ${vm_name}
+    ${running}=    Evaluate    [p for p in $pods if p['phase'] == 'Running']
+    Length Should Be    ${running}    1
+    ...    msg=VM ${vm_name} should have one running virt-launcher pod: ${pods}
+    Should Contain    ${running}[0][claims]    ${volume_name}
+    ...    msg=The running virt-launcher pod of VM ${vm_name} does not use ${volume_name}: ${running}[0]

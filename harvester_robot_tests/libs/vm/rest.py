@@ -519,3 +519,24 @@ class Rest(Base):
                 time.sleep(1)
                 continue
             raise AssertionError(f"Failed to update VM CPU cores: {code}, {data}")
+
+    def start_storage_migration(self, vm_name, source_volume, target_volume,
+                                namespace=DEFAULT_NAMESPACE):
+        """Start a storage migration. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "start_storage_migration is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def wait_for_storage_migration_completed(
+            self, vm_name, source_volume, target_volume,
+            timeout=DEFAULT_TIMEOUT_SHORT, namespace=DEFAULT_NAMESPACE):
+        """Wait for a storage migration. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "wait_for_storage_migration_completed is only implemented for the "
+            "CRD strategy; run with HARVESTER_OPERATION_STRATEGY=crd")
+
+    def get_launcher_pods(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """List virt-launcher pods. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_launcher_pods is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")

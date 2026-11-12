@@ -105,6 +105,12 @@ class Rest(Base):
             "delete_concurrently is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
+    def get_pods_using(self, volume_name):
+        """List the pods using a PVC. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "get_pods_using is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def try_get(self, volume_name):
         """Negative-test helper. Only implemented for the CRD strategy."""
         raise NotImplementedError(
