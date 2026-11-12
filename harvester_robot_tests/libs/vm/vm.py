@@ -146,3 +146,18 @@ class VM(Base):
 
     def update_cpu_cores(self, vm_name, cpu_cores, namespace=DEFAULT_NAMESPACE):
         return self.vm.update_cpu_cores(vm_name, cpu_cores, namespace)
+
+    def try_create_vm_with_bridge_nics(self, vm_name, nics,
+                                       namespace=DEFAULT_NAMESPACE):
+        return self.vm.try_create_vm_with_bridge_nics(vm_name, nics, namespace)
+
+    def try_update_vm_networks(self, vm_name, networks,
+                               namespace=DEFAULT_NAMESPACE):
+        return self.vm.try_update_vm_networks(vm_name, networks, namespace)
+
+    def try_update_vm_interface_macs(self, vm_name, macs,
+                                     namespace=DEFAULT_NAMESPACE):
+        return self.vm.try_update_vm_interface_macs(vm_name, macs, namespace)
+
+    def get_vm_networks(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.get_vm_networks(vm_name, namespace)

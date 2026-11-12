@@ -519,3 +519,18 @@ class Rest(Base):
                 time.sleep(1)
                 continue
             raise AssertionError(f"Failed to update VM CPU cores: {code}, {data}")
+
+    def try_create_vm_with_bridge_nics(self, vm_name, nics,
+                                       namespace=DEFAULT_NAMESPACE):
+        raise NotImplementedError("REST strategy not yet supported for this operation")
+
+    def try_update_vm_networks(self, vm_name, networks,
+                               namespace=DEFAULT_NAMESPACE):
+        raise NotImplementedError("REST strategy not yet supported for this operation")
+
+    def try_update_vm_interface_macs(self, vm_name, macs,
+                                     namespace=DEFAULT_NAMESPACE):
+        raise NotImplementedError("REST strategy not yet supported for this operation")
+
+    def get_vm_networks(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        raise NotImplementedError("REST strategy not yet supported for this operation")

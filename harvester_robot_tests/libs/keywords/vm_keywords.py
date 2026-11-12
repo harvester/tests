@@ -283,3 +283,26 @@ class vm_keywords:
             f"VM {vm_name} cloud-init did not finish within {timeout}s, "
             f"last status: {output}"
         )
+
+    def try_create_vm_with_bridge_nics(self, vm_name, nics,
+                                       namespace=DEFAULT_NAMESPACE):
+        """Try to create a stopped VM without disks whose NICs are bridge
+        interfaces on VM networks. nics: list of dicts with name, network
+        and an optional mac. Returns {success, code, message}."""
+        return self.vm.try_create_vm_with_bridge_nics(vm_name, nics, namespace)
+
+    def try_update_vm_networks(self, vm_name, networks,
+                               namespace=DEFAULT_NAMESPACE):
+        """Try to change only the multus network of VM NICs.
+        networks: dict of NIC name -> network. Returns {success, code, message}."""
+        return self.vm.try_update_vm_networks(vm_name, networks, namespace)
+
+    def try_update_vm_interface_macs(self, vm_name, macs,
+                                     namespace=DEFAULT_NAMESPACE):
+        """Try to change the MAC address of VM interfaces.
+        macs: dict of NIC name -> MAC. Returns {success, code, message}."""
+        return self.vm.try_update_vm_interface_macs(vm_name, macs, namespace)
+
+    def get_vm_networks(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        """Return a dict of NIC name -> multus network name."""
+        return self.vm.get_vm_networks(vm_name, namespace)
