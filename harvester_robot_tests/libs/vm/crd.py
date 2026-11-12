@@ -100,6 +100,33 @@ class CRD(Base):
             logging(f"Failed to create VM {vm_name}: {e}")
             raise
 
+    @staticmethod
+    def _append_lun_volumes(lun_volumes, spec_devices_disks, spec_volumes):
+        """Attach pre-existing PVCs as SCSI LUN disks (SCSI command passthrough).
+
+        lun_volumes: list of dicts with
+          - claim: required, name of a Bound Block-mode PVC in the namespace
+          - reservation: optional bool, SCSI-3 persistent reservation
+            passthrough (needs persistent reservation enabled in KubeVirt)
+          - shareable: optional bool, the disk may be attached to several VMs
+        """
+        if not lun_volumes:
+            return
+        if not isinstance(lun_volumes, list):
+            raise Exception("lun_volumes must be a list of dicts")
+        for idx, lun in enumerate(lun_volumes, start=1):
+            disk_nm = f"lun-{idx}"
+            disk = {"name": disk_nm, "lun": {"bus": "scsi"}}
+            if str(lun.get("reservation", False)).lower() == "true":
+                disk["lun"]["reservation"] = True
+            if str(lun.get("shareable", False)).lower() == "true":
+                disk["shareable"] = True
+            spec_devices_disks.append(disk)
+            spec_volumes.append(
+                {"name": disk_nm,
+                 "persistentVolumeClaim": {"claimName": lun["claim"]}}
+            )
+
     def _create_virtual_machine(
             self, vm_name, image_id, cpu, memory, namespace, **kwargs):
         """Create VM matching Harvester's exact structure.
@@ -276,28 +303,8 @@ class CRD(Base):
                      "persistentVolumeClaim": {"claimName": pvc_name}}
                 )
 
-        # Attach pre-existing PVCs as SCSI LUN disks (SCSI command passthrough).
-        # lun_volumes: list of dicts with
-        #   - claim: required, name of a Bound Block-mode PVC in the namespace
-        #   - reservation: optional bool, SCSI-3 persistent reservation
-        #     passthrough (needs persistent reservation enabled in KubeVirt)
-        #   - shareable: optional bool, the disk may be attached to several VMs
-        lun_volumes = kwargs.get("lun_volumes", [])
-        if lun_volumes:
-            if not isinstance(lun_volumes, list):
-                raise Exception("lun_volumes must be a list of dicts")
-            for idx, lun in enumerate(lun_volumes, start=1):
-                disk_nm = f"lun-{idx}"
-                disk = {"name": disk_nm, "lun": {"bus": "scsi"}}
-                if str(lun.get("reservation", False)).lower() == "true":
-                    disk["lun"]["reservation"] = True
-                if str(lun.get("shareable", False)).lower() == "true":
-                    disk["shareable"] = True
-                spec_devices_disks.append(disk)
-                spec_volumes.append(
-                    {"name": disk_nm,
-                     "persistentVolumeClaim": {"claimName": lun["claim"]}}
-                )
+        self._append_lun_volumes(
+            kwargs.get("lun_volumes", []), spec_devices_disks, spec_volumes)
 
         logging(f"Volume claim templates for VM {vm_name}: {volume_claim_templates}")
         logging(f"Volume spec_devices_disks for VM {vm_name}: {spec_devices_disks}")
