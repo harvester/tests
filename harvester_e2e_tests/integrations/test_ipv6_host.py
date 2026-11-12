@@ -1,14 +1,17 @@
 """Host level IPv6 state must follow the install-time IP family choice.
 
-Covers harvester/harvester#10755, #10795, #10796 (dual-stack IPv4-first) and the
-1.9 -> 1.10 upgrade fix (harvester-installer#1298, harvester#11309, harvester#12143).
+Automates the "Node state after install" part of the manual test case
+docs/content/manual/deployment/10755-dual-stack-ipv4-first-install.md
+(harvester/harvester#10755, dual-stack IPv4-first). The upgrade test
+`test_upgrade.py::test_verify_ipv6_state` reuses `ipv6_state_failures` for its own manual
+test case, docs/content/manual/upgrade/10755-upgrade-1.9-ipv4-only-disable-ipv6.md.
 
 Source of truth is `install.ipfamilies` in /oem/harvester.config on each node:
   * absent / ["IPv4"]      -> IPv4-only: kernel IPv6 disabled, no global IPv6 address
   * ["IPv4", "IPv6"]       -> dual-stack: kernel IPv6 enabled, mgmt bridge has SLAAC/DHCPv6
                               address, node podCIDRs hold one IPv4 and one IPv6 range
 
-The same tests are valid on a fresh install and after an upgrade from 1.9.
+The checks apply to clusters running v1.10 or later.
 """
 import ipaddress
 import re
@@ -114,6 +117,8 @@ def pod_cidr_families(pod_cidrs):
     return sorted(ipaddress.ip_network(c, strict=False).version for c in pod_cidrs)
 
 
+@pytest.mark.hosts
+@pytest.mark.p0
 class TestIPv6Helpers:
     """Offline checks of the parsing helpers, no cluster needed."""
 
