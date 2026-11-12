@@ -73,8 +73,15 @@ class CRD(Base):
         except ApiException as e:
             raise Exception(f"Failed to create StorageClass {name}: {e}")
 
-    def create_lvm(self, name, vg_name, vg_type, node):
-        """Create a node-local StorageClass for the LVM CSI driver."""
+    def create_lvm(self, name, vg_name, vg_type, node, encryption_secret=None,
+                   encryption_secret_namespace=None):
+        """Create a node-local StorageClass for the LVM CSI driver.
+
+        With encryption_secret set the class is encrypted at rest
+        (harvester/csi-driver-lvm#67): every CSI secret reference points at
+        that CRYPTO_KEY_* secret, and CDI clones use host-assisted copy so
+        image data is written through the dm-crypt mapping.
+        """
         if self.get(name):
             raise Exception(f"StorageClass {name} already exists")
         body = {
@@ -98,6 +105,17 @@ class CRD(Base):
                 }],
             }],
         }
+        if encryption_secret:
+            namespace = encryption_secret_namespace or "default"
+            body["parameters"]["encrypted"] = "true"
+            for kind in ("provisioner", "node-stage", "node-publish",
+                         "node-expand"):
+                prefix = f"csi.storage.k8s.io/{kind}-secret"
+                body["parameters"][f"{prefix}-name"] = encryption_secret
+                body["parameters"][f"{prefix}-namespace"] = namespace
+            body["metadata"]["annotations"] = {
+                "cdi.harvesterhci.io/storageProfileCloneStrategy": "copy",
+            }
         return self.custom_api.create_cluster_custom_object(
             **self.common_parameters, body=body
         )

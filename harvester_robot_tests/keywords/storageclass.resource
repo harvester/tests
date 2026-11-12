@@ -48,3 +48,21 @@ Storage Class Parameter Should Be
     ${sc}=    storage_keywords.get_storageclass    ${name}
     Should Not Be Equal    ${sc}    ${NONE}    msg=StorageClass ${name} does not exist
     Dictionary Should Contain Item    ${sc}[parameters]    ${key}    ${expected}
+
+Create Encrypted LVM Storage Class
+    [Arguments]    ${name}    ${vg_name}    ${vg_type}    ${node}    ${secret_name}
+    ...    ${secret_namespace}=default
+    [Documentation]    LVM StorageClass with encrypted=true whose CSI secret
+    ...    references all point at a CRYPTO_KEY_* secret
+    ...    (harvester/csi-driver-lvm#67).
+    storage_keywords.create_encrypted_lvm_storageclass    ${name}    ${vg_name}    ${vg_type}
+    ...    ${node}    ${secret_name}    ${secret_namespace}
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Storage Class Is Present    ${name}
+
+Try To Create Encrypted LVM Storage Class
+    [Arguments]    ${name}    ${vg_name}    ${vg_type}    ${node}    ${secret_name}
+    ...    ${secret_namespace}=default
+    ${result}=    storage_keywords.try_create_encrypted_lvm_storageclass    ${name}
+    ...    ${vg_name}    ${vg_type}    ${node}    ${secret_name}    ${secret_namespace}
+    RETURN    ${result}
