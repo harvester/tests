@@ -414,3 +414,10 @@ class CRD(Base):
                 raise Exception(
                     f"Failed to delete IP pool: {e}"
                 )
+
+    def list_vm_networks(self, network_type=None):
+        """List VM networks (NADs) in the default namespace"""
+        selector = (f"network.harvesterhci.io/type={network_type}"
+                    if network_type else None)
+        return [f"{nad['metadata']['namespace']}/{nad['metadata']['name']}"
+                for nad in self.list_vlan_networks(label_selector=selector)]

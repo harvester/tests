@@ -283,3 +283,47 @@ class vm_keywords:
             f"VM {vm_name} cloud-init did not finish within {timeout}s, "
             f"last status: {output}"
         )
+
+    # VM network (NAD) changes, KubeVirt LiveUpdateNADRef
+    def try_update_vm_network(self, vm_name, nic_name, network_name):
+        """Change only the NAD of a VM network; returns {success, code, message}"""
+        logging(f'Changing network {nic_name} of VM {vm_name} to {network_name}')
+        return self.vm.try_update_network(vm_name, nic_name, network_name)
+
+    def get_vm_conditions(self, vm_name, from_vmi=False):
+        """Return status.conditions of the VM, or of its VMI"""
+        return self.vm.get_conditions(vm_name, from_vmi=str(from_vmi).lower() == "true")
+
+    def get_vmi_networks(self, vm_name):
+        """Return {network name: NAD} of the running VMI"""
+        return self.vm.get_vmi_networks(vm_name)
+
+    def get_vmi_interface_macs(self, vm_name):
+        """Return {interface name: MAC} of the running VMI"""
+        return self.vm.get_vmi_interface_macs(vm_name)
+
+    def list_vm_migration_names(self, vm_name):
+        """Return the names of the VM's VirtualMachineInstanceMigrations"""
+        return [m["name"] for m in self.vm.list_migrations(vm_name)]
+
+    def wait_for_new_vm_migration(self, vm_name, known, name_prefix="",
+                                  timeout=DEFAULT_TIMEOUT):
+        """Wait for a migration of the VM that is not in `known`; return its name"""
+        logging(f'Waiting for a new migration {name_prefix}* of VM {vm_name}')
+        return self.vm.wait_for_new_migration(vm_name, list(known), name_prefix,
+                                              int(timeout))
+
+    def wait_for_no_new_vm_migration(self, vm_name, known, duration):
+        """Fail if a migration of the VM that is not in `known` appears
+        within `duration` seconds"""
+        self.vm.wait_for_no_new_migration(vm_name, list(known), int(duration))
+
+    def wait_for_vm_migration_phase(self, migration_name, phase,
+                                    timeout=DEFAULT_TIMEOUT):
+        """Wait until a VirtualMachineInstanceMigration reaches `phase`"""
+        logging(f'Waiting for migration {migration_name} to be {phase}')
+        return self.vm.wait_for_migration_phase(migration_name, phase, int(timeout))
+
+    def get_vm_launcher_network_status(self, vm_name):
+        """Return the Multus network-status of the VMI's current virt-launcher pod"""
+        return self.vm.get_launcher_network_status(vm_name)

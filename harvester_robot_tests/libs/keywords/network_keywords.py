@@ -161,3 +161,16 @@ class network_keywords:
         """
         logging(f"Deleting IP pool: {name}")
         self.network.delete_ip_pool(name)
+
+    def list_vm_networks(self, network_type=None):
+        """
+        List VM networks (NADs) in the default namespace.
+
+        Args:
+            network_type: network.harvesterhci.io/type label value; all if None
+
+        Returns:
+            list: "<namespace>/<name>" of every matching NAD
+        """
+        logging(f"Listing VM networks of type {network_type}")
+        return self.network.list_vm_networks(network_type)
