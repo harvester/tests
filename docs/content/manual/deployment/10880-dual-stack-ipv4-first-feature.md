@@ -50,6 +50,16 @@ The installer UI, config-file install and the upgrade path are in [10755-dual-st
 1. Check that `kubectl exec -n harvester-system <harvester-node-manager pod> -- sha256sum /usr/bin/harvester-node-manager` matches a local build of the same commit (disable the docker cache when building)
 1. Run `sudo grep ipFamilyPolicy /etc/rancher/rancherd/config.yaml.d/22-addons.yaml` and check the `kubeovn-operator` values in the same file
 1. Enable `harvester-seeder`, `pcidevices-controller`, `vm-import-controller` and `kubeovn-operator`, wait until Ready, and run `kubectl get svc -A -o custom-columns="NAME:.metadata.name,POLICY:.spec.ipFamilyPolicy,FAMILIES:.spec.ipFamilies" | grep -E 'ovn|pci|import|seeder'`
+1. Enable more advertised addons: `rancher-monitoring`, `rancher-logging`, `descheduler` and `nvidia-driver-toolkit` (needs a vGPU driver location, skip without one), together with the four addons above, wait until Ready and run `kubectl get addons.harvesterhci.io -A` and `kubectl get pods -A | grep -vE 'Running|Completed'`
+1. For each enabled addon record the service families in its namespace: `kubectl get svc -n cattle-monitoring-system -o custom-columns="NAME:.metadata.name,POLICY:.spec.ipFamilyPolicy,FAMILIES:.spec.ipFamilies"` (same for `cattle-logging-system`, `kube-system`, `harvester-system`)
+1. Exercise each addon on the dual-stack cluster:
+   * `rancher-monitoring`: open Grafana and Prometheus from the dashboard, the node and VM dashboards show data and the Prometheus targets are `UP`
+   * `rancher-logging`: pods Running; create a `ClusterOutput`/`ClusterFlow` (or use the default flows) and see logs arrive; check the fluentbit/fluentd pods have IPv4 and IPv6 pod IPs
+   * `descheduler`: the deployment is Running and the logs show a descheduling cycle without errors
+   * `pcidevices-controller`: `kubectl get pcidevices` lists devices on hardware that has them (the list can be empty in nested virtualization)
+   * `harvester-seeder`: pods Running (hardware features need bare metal)
+   * `vm-import-controller`: the CRDs exist (`kubectl get crd | grep migration.harvesterhci.io`); optionally import a VM from a VMware or OpenStack source as in the vm-import plan
+   * `kubeovn-operator`: create an overlay network and a VM on it (see VM section)
 1. Optional chart check in the charts repository: `helm template` each chart (harvester-load-balancer, harvester-network-controller, harvester-node-disk-manager, harvester-seeder, harvester-pcidevices-controller, harvester-vm-import-controller, kubeovn-operator) with and without `--set global.ipFamilyPolicy=PreferDualStack`, and in the harvester repository `go run ./cmd/addon-generator -generateTemplates -path ./test/.`
 
 ### Cluster B: VIP and kubeconfig
@@ -170,6 +180,9 @@ Previous setting values must stay in place after each rejected request.
 1. The node-manager binary hash matches the local build
 1. `22-addons.yaml` has four lines `ipFamilyPolicy: PreferDualStack`, `netStack: dual_stack` and a `dualStack:` block (`podCIDR: 10.54.0.0/16,fd54::/112`, `serviceCIDR: 10.55.0.0/16,fd55::/112`, `joinCIDR: 100.64.0.0/16,fd64::/112`, `podGateway: 10.54.0.1,fd54::1`) that does not overlap the RKE2 CIDRs
 1. `harvester-seeder`, `harvester-vm-import-controller`, `pcidevices-webhook`, `kube-ovn-cni`, `kube-ovn-controller`, `kube-ovn-monitor`, `kube-ovn-pinger`, `kubeovn-operator-*`, `ovn-nb`, `ovn-northd`, `ovn-sb` are `PreferDualStack` `[IPv4 IPv6]`. This also verifies the `netStack` fix in kubeovn-operator #52, the operator-created `kube-ovn-*` services could not switch before
+1. All addons enabled above are Ready and no pod is stuck outside `Running` or `Completed`
+1. Addon services owned by Harvester are `PreferDualStack`; Rancher-owned charts (`rancher-monitoring`, `rancher-logging`) are expected to stay `SingleStack` until Rancher adopts dual-stack ([#11614](https://github.com/harvester/harvester/issues/11614)); record the result for `descheduler` and `nvidia-driver-toolkit`; any other single-stack service Harvester owns is a finding to report
+1. Grafana and Prometheus load with data and all Prometheus targets are `UP`; logs arrive through the logging addon; the descheduler runs without errors; `pcidevices` and `vm-import-controller` objects work as far as the environment allows
 1. `kube-ovn-webhook` stays `SingleStack` on purpose ([#10882](https://github.com/harvester/harvester/issues/10882)). Not dual-stack yet and out of scope: `harvester-vm-dhcp-controller`, `harvester-upgrade-manager`, `harvester-csi-driver-lvm`, `harvester-mcp-server`, `rancher-vcluster` ([#10768](https://github.com/harvester/harvester/issues/10768) [#12043](https://github.com/harvester/harvester/issues/12043))
 1. Charts render `SingleStack` by default and `PreferDualStack` with the value set; `networking.netStack` defaults to `ipv4`; the generated addon template keeps the `{{- if .IsDualStackEnabled }}` blocks, which are resolved on the node at install time
 
