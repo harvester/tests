@@ -38,6 +38,16 @@ class Base(ABC):
         raise NotImplementedError(self.unsupported_msg)
 
     @abstractmethod
+    def get_profile(self, name):
+        """Get the CDI StorageProfile for a StorageClass."""
+        raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
+    def is_unused(self, name):
+        """Return whether no PVCs or PVs use the StorageClass."""
+        raise NotImplementedError(self.unsupported_msg)
+
+    @abstractmethod
     def cleanup(self):
         """Cleanup test StorageClasses"""
         raise NotImplementedError(self.unsupported_msg)

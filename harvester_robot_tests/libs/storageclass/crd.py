@@ -16,6 +16,7 @@ class CRD(Base):
     def __init__(self):
         super().__init__()
         self.custom_api = client.CustomObjectsApi()
+        self.core_api = client.CoreV1Api()
         self.common_parameters = {
             "group": "storage.k8s.io",
             "version": "v1",
@@ -133,6 +134,23 @@ class CRD(Base):
             label_selector=label_selector
         )
         return result.get("items", [])
+
+    def get_profile(self, name):
+        try:
+            return self.custom_api.get_cluster_custom_object(
+                group="cdi.kubevirt.io", version="v1beta1",
+                plural="storageprofiles", name=name,
+            )
+        except ApiException as e:
+            if e.status == 404:
+                return None
+            raise
+
+    def is_unused(self, name):
+        # Include Pending PVCs and PVs still being deleted by the CSI driver.
+        claims = self.core_api.list_persistent_volume_claim_for_all_namespaces().items
+        volumes = self.core_api.list_persistent_volume().items
+        return not any(volume.spec.storage_class_name == name for volume in claims + volumes)
 
     def cleanup(self):
         try:

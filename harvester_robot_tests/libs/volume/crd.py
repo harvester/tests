@@ -345,6 +345,8 @@ class CRD(Base):
                 'metadata': {
                     'name': pvc.metadata.name,
                     'namespace': pvc.metadata.namespace,
+                    'uid': pvc.metadata.uid,
+                    'deletionTimestamp': pvc.metadata.deletion_timestamp,
                     'labels': pvc.metadata.labels or {},
                     'annotations': pvc.metadata.annotations or {}
                 },
@@ -372,6 +374,10 @@ class CRD(Base):
         except ApiException as e:
             logging(f"Failed to get PVC {volume_name}: {e}")
             raise
+
+    def get_data_volume(self, volume_name, namespace=DEFAULT_NAMESPACE):
+        """Read the CDI DataVolume that provisions this PVC."""
+        return get_cr("cdi.kubevirt.io", "v1beta1", namespace, "datavolumes", volume_name)
 
     def exists(self, volume_name, namespace=DEFAULT_NAMESPACE):
         """Return True if the PVC exists, False if it returns 404.

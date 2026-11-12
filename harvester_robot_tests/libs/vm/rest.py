@@ -20,6 +20,10 @@ class Rest(Base):
 
     def create(self, vm_name, image_id, cpu, memory, **kwargs):
         """Create a virtual machine"""
+        if kwargs.get("boot_access_mode"):
+            raise NotImplementedError("boot_access_mode requires HARVESTER_OPERATION_STRATEGY=crd")
+        if kwargs.get("use_golden_image"):
+            raise NotImplementedError("use_golden_image requires HARVESTER_OPERATION_STRATEGY=crd")
         storage_performance = [
             k for k in ("boot_disk_options", "block_multi_queue",
                         "io_threads_policy", "supplemental_pool_thread_count")
