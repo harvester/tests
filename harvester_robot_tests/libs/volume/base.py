@@ -81,3 +81,8 @@ class Base(ABC):
     def cleanup(self):
         """Clean up all test volumes"""
         pass
+
+    @abstractmethod
+    def get_pv_name(self, volume_name):
+        """Get the name of the PV (== Longhorn volume) bound to the volume"""
+        pass

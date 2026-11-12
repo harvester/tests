@@ -201,3 +201,10 @@ Restore Volume From Snapshot
     ...    volume_mode=${volume_mode}
     ...    access_mode=${access_mode}
     ...    size=${size}
+
+Get Volume PV Name
+    [Arguments]    ${vol_name}
+    [Documentation]    Return the PV name bound to the volume. It is also the name of
+    ...    the Longhorn volume, which is how the volume health checks list it.
+    ${pv_name}=    volume_keywords.get_volume_pv_name    ${vol_name}
+    RETURN    ${pv_name}
