@@ -25,6 +25,8 @@ class Rest(Base):
                         "io_threads_policy", "supplemental_pool_thread_count")
             if kwargs.get(k) not in (None, "")
         ]
+        if kwargs.get("lun_volumes"):
+            storage_performance.append("lun_volumes")
         if storage_performance:
             raise NotImplementedError(
                 f"{', '.join(storage_performance)} is only implemented for the "
@@ -66,6 +68,12 @@ class Rest(Base):
         code, data = api.vms.create(vm_name, vm_spec)
         assert code == 201, f"Failed to create VM: {code}, {data}"
         return data
+
+    def try_create(self, vm_name, image_id, cpu, memory, **kwargs):
+        """Negative-test helper. Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "try_create is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
 
     def delete(self, vm_name):
         """Delete a virtual machine"""
