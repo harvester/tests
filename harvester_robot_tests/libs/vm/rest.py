@@ -491,6 +491,12 @@ class Rest(Base):
         assert code == 200, f"Failed to get VM: {code}, {data}"
         return data.get('metadata', {}).get('annotations', {}) or {}
 
+    def get_labels(self, vm_name):
+        raise NotImplementedError("get_labels is only implemented for the CRD strategy")
+
+    def set_label(self, vm_name, key, value):
+        raise NotImplementedError("set_label is only implemented for the CRD strategy")
+
     def write_data(self, vm_name, data_size_mb):
         """Write data to VM"""
         checksum = f"checksum-{vm_name}-{data_size_mb}"
