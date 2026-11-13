@@ -295,3 +295,13 @@ class Rest(Base):
             )
 
         logging(f"Deleted IP pool: {name}")
+
+    # Generic NetworkAttachmentDefinition Operations (any CNI type)
+    def try_create_nad(self, name, config, labels=None, annotations=None):
+        raise NotImplementedError("REST strategy not yet supported for generic NADs")
+
+    def try_update_nad_config(self, name, config):
+        raise NotImplementedError("REST strategy not yet supported for generic NADs")
+
+    def get_nad(self, name):
+        raise NotImplementedError("REST strategy not yet supported for generic NADs")
