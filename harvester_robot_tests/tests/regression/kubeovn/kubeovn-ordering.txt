@@ -1,0 +1,5 @@
+--test Addon.Test KubeOVN Addon.Setup KubeOVN Addon
+#WAIT
+--suite KubeOVN.Test KubeOVN VPC NAT Gateway
+#WAIT
+--test Addon.Test KubeOVN Addon.Teardown KubeOVN Addon
