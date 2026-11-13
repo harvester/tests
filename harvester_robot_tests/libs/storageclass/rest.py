@@ -27,5 +27,14 @@ class Rest(Base):
     def list(self, label_selector=None):
         return super().list(label_selector)
 
+    def get_default(self):
+        raise NotImplementedError(self.unsupported_msg)
+
+    def set_default(self, name):
+        raise NotImplementedError(self.unsupported_msg)
+
+    def unset_default(self, name):
+        raise NotImplementedError(self.unsupported_msg)
+
     def cleanup(self):
         return super().cleanup()
