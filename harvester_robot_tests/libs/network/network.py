@@ -95,3 +95,27 @@ class Network(Base):
     def delete_ip_pool(self, name):
         """Delete IP pool"""
         return self.network.delete_ip_pool(name)
+
+    # Admission (webhook/CRD schema) checks
+    def try_create_vlan_config(self, name, cluster_network, nics, mode=None,
+                               mtu=None, hardware_addr=None,
+                               node_selector=None, dry_run=False):
+        """Attempt to create a VLAN config"""
+        return self.network.try_create_vlan_config(
+            name, cluster_network, nics, mode, mtu, hardware_addr,
+            node_selector, dry_run
+        )
+
+    def try_create_vlan_network(self, name, vlan_id, cluster_network,
+                                dry_run=False):
+        """Attempt to create a VLAN network"""
+        return self.network.try_create_vlan_network(
+            name, vlan_id, cluster_network, dry_run
+        )
+
+    def try_create_host_network_config(self, name, cluster_network, vlan_id,
+                                       mode="dhcp", dry_run=False):
+        """Attempt to create a HostNetworkConfig"""
+        return self.network.try_create_host_network_config(
+            name, cluster_network, vlan_id, mode, dry_run
+        )

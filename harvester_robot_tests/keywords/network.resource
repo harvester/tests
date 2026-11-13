@@ -113,3 +113,53 @@ Delete IP Pool
     ...                   name: IP pool name
     Log    Deleting IP pool: ${name}
     network_keywords.delete_ip_pool    ${name}
+
+# Admission (webhook/CRD schema) checks
+Try To Create VLAN Config
+    [Arguments]    ${name}    ${cluster_network}    ${nics}    ${mode}=${None}
+    ...    ${mtu}=${None}    ${hardware_addr}=${None}    ${node_selector}=${None}    ${dry_run}=${False}
+    [Documentation]    Attempt to create a VLAN config with strict field validation
+    ...               (unknown fields are rejected, not pruned). Never fails on rejection.
+    ...               Returns:
+    ...                   dict: {success, code, message, object}
+    ${result}=    network_keywords.try_create_vlan_config    ${name}    ${cluster_network}    ${nics}
+    ...    ${mode}    ${mtu}    ${hardware_addr}    ${node_selector}    ${dry_run}
+    RETURN    ${result}
+
+Try To Create VLAN Network
+    [Arguments]    ${name}    ${vlan_id}    ${cluster_network}    ${dry_run}=${False}
+    [Documentation]    Attempt to create a VLAN network (bridge NAD).
+    ...               Returns:
+    ...                   dict: {success, code, message, object}
+    ${result}=    network_keywords.try_create_vlan_network    ${name}    ${vlan_id}    ${cluster_network}    ${dry_run}
+    RETURN    ${result}
+
+Try To Create Host Network Config
+    [Arguments]    ${name}    ${cluster_network}    ${vlan_id}    ${mode}=dhcp    ${dry_run}=${False}
+    [Documentation]    Attempt to create a HostNetworkConfig.
+    ...               Returns:
+    ...                   dict: {success, code, message, object}
+    ${result}=    network_keywords.try_create_host_network_config    ${name}    ${cluster_network}    ${vlan_id}
+    ...    ${mode}    ${dry_run}
+    RETURN    ${result}
+
+Network Operation Should Succeed
+    [Arguments]    ${result}
+    [Documentation]    Assert a {success, code, message} network result was accepted.
+    Should Be True    ${result}[success]
+    ...    msg=Network operation was rejected (code=${result}[code]): ${result}[message]
+
+Network Operation Should Be Rejected
+    [Arguments]    ${result}    @{expected_messages}
+    [Documentation]    Assert a {success, code, message} network result was rejected.
+    ...    The network webhook reports its denials as InternalError (500), so
+    ...    any error code is accepted; the message must contain at least one
+    ...    of expected_messages (case-insensitive) when given.
+    Should Not Be True    ${result}[success]
+    ...    msg=Network operation was expected to be rejected but succeeded
+    IF    ${expected_messages}
+        ${msg_lower}=    Convert To Lower Case    ${result}[message]
+        ${lowered}=    Evaluate    [m.lower() for m in $expected_messages]
+        Should Contain Any    ${msg_lower}    @{lowered}
+        ...    msg=Expected message to contain one of ${expected_messages}, got: ${result}[message]
+    END
