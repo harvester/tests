@@ -19,7 +19,7 @@ ${RETRY_INTERVAL}               3
 ${SLEEP_TIMEOUT}                3
 
 # Images
-${OPENSUSE_IMAGE_URL}           %{OPENSUSE_IMAGE_URL=https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.6/images/openSUSE-Leap-15.6.x86_64-NoCloud.qcow2}
+${OPENSUSE_IMAGE_URL}           %{OPENSUSE_IMAGE_URL=https://cdn.opensuse.org/distribution/leap/16.1/appliances/Leap-16.1-Minimal-VM.x86_64-Cloud.qcow2}
 ${OPENSUSE_SSH_USER}            opensuse
 ${UBUNTU_IMAGE_URL}             %{UBUNTU_IMAGE_URL=https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img}
 ${UBUNTU_SSH_USER}              ubuntu
@@ -88,7 +88,7 @@ ${AI_EVAL_THRESHOLD}    0.8
 ${AI_EVAL_TIMEOUT}      120
 
 # RKE2 Version Configuration
-${RKE2_VERSION}                %{RKE2_VERSION=v1.34}
+${RKE2_VERSION}                %{RKE2_VERSION=v1.36}
 
 # KDM (Kontainer Driver Metadata) Configuration
 # Set to a URL pointing to a custom data.json to override the Rancher rke-metadata-config.
@@ -99,7 +99,7 @@ ${INGRESS_CONTROLLER}           %{INGRESS_CONTROLLER=traefik}
 
 # Chart Repository for import clusters
 ${CHART_REPO_URL}               %{CHART_REPO_URL=https://github.com/rancher/charts}
-${CHART_REPO_BRANCH}            %{CHART_REPO_BRANCH=release-v2.14}
+${CHART_REPO_BRANCH}            %{CHART_REPO_BRANCH=release-v2.15}
 ${CSI_CHART_VERSION}            %{CSI_CHART_VERSION=}
 ${CP_CHART_VERSION}             %{CP_CHART_VERSION=}
 
