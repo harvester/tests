@@ -1044,6 +1044,31 @@ class TestAnyNodesUpgrade:
         assert not fails, "\n".join(fails)
 
     @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_vms"])
+    def test_verify_vm_list_queries(self, api_client, cluster_state):
+        """ Verify the VM list, the API server serves it from the SQL cache
+        Criteria:
+        - the VMs are listed, sorted and paged
+        - the VMs are found by their name and by their status
+        """
+        path = "v1/harvester/kubevirt.io.virtualmachines/default"
+        expected = sorted(f"default/{name}" for name in cluster_state.vms['names'])
+
+        code, data = api_client.get_json(path, sort="metadata.name", pagesize=100)
+        assert 200 == code, (code, data)
+        listed = [item["id"] for item in data["data"]]
+        assert set(expected) <= set(listed), (expected, listed)
+        assert listed == sorted(listed)
+        assert len(listed) == data["count"], (data["count"], listed)
+
+        code, data = api_client.get_json(path, filter=f"metadata.name={expected[0].split('/')[1]}")
+        assert 200 == code, (code, data)
+        assert [expected[0]] == [item["id"] for item in data["data"]]
+
+        code, data = api_client.get_json(path, filter="status.printableStatus=Running")
+        assert 200 == code, (code, data)
+        assert set(expected) <= {item["id"] for item in data["data"]}, data
+
+    @pytest.mark.dependency(depends=["any_nodes_upgrade", "preq_setup_vms"])
     def test_verify_restore_vm_from_snapshot(
         self, api_client, cluster_state, vm_shell, vm_checker, wait_timeout
     ):
