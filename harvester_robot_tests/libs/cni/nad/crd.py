@@ -10,6 +10,8 @@ from constant import (
     CNI_GROUP,
     CNI_VERSION,
     CNI_NAD_PLURAL,
+    LABEL_TEST,
+    LABEL_TEST_VALUE,
 )
 from utility.utility import logging
 from nad.base import Base
@@ -66,7 +68,7 @@ class CRD(Base):
                         "name": name,
                         "namespace": namespace,
                         "labels": {
-                            "harvesterhci.io/creator": "robot-framework",
+                            LABEL_TEST: LABEL_TEST_VALUE,
                             "network.harvesterhci.io/type": "OverlayNetwork",
                         },
                     },

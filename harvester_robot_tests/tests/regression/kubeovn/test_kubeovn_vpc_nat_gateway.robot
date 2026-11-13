@@ -117,6 +117,3 @@ Cleanup VPC NAT Gateway
     ...    ${KUBE_SYSTEM_NAMESPACE}    ${EXTERNAL_NETWORK_NAME}
     Run Keyword And Ignore Error    NetworkAttachmentDefinition is Deleted
     ...    ${DEFAULT_NAMESPACE}    ${INTERNAL_NETWORK_NAME}
-
-Configure VPC NAT Gateway
-    Log    Configuring VPC NAT Gateway
