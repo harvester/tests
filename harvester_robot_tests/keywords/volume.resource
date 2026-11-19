@@ -153,9 +153,58 @@ Try To Resize Volume
 
 Export Volume To Image
     [Arguments]    ${vol_name}    ${image_name}    ${target_storage_class}=${DEFAULT_STORAGE_CLASS}
+    ...    ${backend}=${EMPTY}
     [Documentation]    Start exporting a volume to a VM image (sourceType=export-from-volume).
     ...    The export runs asynchronously; the source volume is in use while it proceeds.
+    ...    backend=cdi exports into a CDI golden image PVC (Longhorn V2, LVM, third-party storage).
     volume_keywords.export_volume_to_image    ${vol_name}    ${image_name}    ${target_storage_class}
+    ...    ${backend}
+
+Get Longhorn Volume Of
+    [Arguments]    ${pvc_name}
+    [Documentation]    Return the Longhorn Volume CR backing a bound PVC.
+    ${lh_volume}=    volume_keywords.get_longhorn_volume    ${pvc_name}
+    Should Not Be Equal    ${lh_volume}    ${NONE}    msg=No Longhorn volume backs PVC ${pvc_name}
+    RETURN    ${lh_volume}
+
+Volume ${pvc_name} Should Be A Linked Clone Of ${source_pvc_name}
+    [Documentation]    Assert that the Longhorn volume of a PVC is a completed linked clone of
+    ...    the Longhorn volume of the source PVC.
+    ${clone}=    Get Longhorn Volume Of    ${pvc_name}
+    ${source}=    Get Longhorn Volume Of    ${source_pvc_name}
+    Should Be Equal    ${clone}[spec][cloneMode]    linked-clone
+    ...    msg=Volume ${pvc_name} was not created as a linked clone
+    Should Be Equal    ${clone}[spec][dataSource]    vol://${source}[metadata][name]
+    ...    msg=Volume ${pvc_name} is not cloned from ${source_pvc_name}
+    ${state}=    Evaluate    ($clone.get('status') or {}).get('cloneStatus', {}).get('state', '')
+    Should Be Equal    ${state}    completed    msg=Clone of ${pvc_name} is not completed
+
+Wait Until Volume ${pvc_name} Is A Linked Clone Of ${source_pvc_name}
+    [Documentation]    A PVC is Bound before Longhorn finishes the clone (longhorn/longhorn#14599),
+    ...    so wait for the clone to complete before asserting it.
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Volume ${pvc_name} Should Be A Linked Clone Of ${source_pvc_name}
+
+Volume ${pvc_name} Should Allocate Less Than ${source_pvc_name}
+    [Documentation]    Assert that a linked clone stores less data than its source, which it
+    ...    shares instead of copying.
+    ${clone}=    Get Longhorn Volume Of    ${pvc_name}
+    ${source}=    Get Longhorn Volume Of    ${source_pvc_name}
+    ${clone_bytes}=    Evaluate    int($clone['status'].get('actualSize', 0))
+    ${source_bytes}=    Evaluate    int($source['status'].get('actualSize', 0))
+    Should Be True    ${source_bytes} > 0    msg=Source volume ${source_pvc_name} reports no data
+    Should Be True    ${clone_bytes} < ${source_bytes}
+    ...    msg=Linked clone ${pvc_name} allocates ${clone_bytes} bytes, source ${source_bytes} bytes
+
+Longhorn Volume Should Not Exist
+    [Arguments]    ${lh_volume_name}
+    ${lh_volume}=    volume_keywords.get_longhorn_volume_by_name    ${lh_volume_name}
+    Should Be Equal    ${lh_volume}    ${NONE}    msg=Longhorn volume ${lh_volume_name} still exists
+
+Wait Until Longhorn Volume Is Deleted
+    [Arguments]    ${lh_volume_name}
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Longhorn Volume Should Not Exist    ${lh_volume_name}
 
 Volume Is Present
     [Arguments]    ${vol_name}

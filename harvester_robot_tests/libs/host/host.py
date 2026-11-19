@@ -82,6 +82,9 @@ class Host(Base):
         return self.host.cleanup()
 
     # Longhorn Node
+    def list_lh_v2_disks_with_tag(self, tag):
+        return self.host.list_lh_v2_disks_with_tag(tag)
+
     def get_lh_node(self, node_name):
         return self.host.get_lh_node(node_name)
 

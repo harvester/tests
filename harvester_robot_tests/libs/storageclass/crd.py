@@ -29,7 +29,7 @@ class CRD(Base):
         parts = [part for part in parts if part]
         return ",".join(parts)
 
-    def create(self, name, data_engine, number_of_replicas, disk_selector):
+    def create(self, name, data_engine, number_of_replicas, disk_selector, clone_mode=""):
         if self.get(name):
             raise Exception(f"StorageClass {name} already exists")
 
@@ -59,6 +59,12 @@ class CRD(Base):
         # An empty diskSelector is read by Longhorn as the tag "", so omit it
         if disk_selector_value:
             body["parameters"]["diskSelector"] = disk_selector_value
+
+        # Longhorn V2 only: "linked-clone" creates volumes cloned from another
+        # volume (e.g. VM root disks from a CDI image) as copy-on-write clones.
+        # Omitted means the Longhorn default, "full-copy".
+        if clone_mode:
+            body["parameters"]["cloneMode"] = str(clone_mode)
 
         # The Harvester webhook rejects CDI annotations on a Longhorn v1
         # StorageClass ("longhorn v1 does not support CDI annotations");

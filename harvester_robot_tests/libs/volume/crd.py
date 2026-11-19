@@ -181,7 +181,7 @@ class CRD(Base):
 
     def export_to_image(self, volume_name, image_name,
                         target_storage_class=DEFAULT_STORAGE_CLASS,
-                        namespace=DEFAULT_NAMESPACE):
+                        namespace=DEFAULT_NAMESPACE, backend=""):
         """Start exporting a volume (PVC) to a VirtualMachineImage.
 
         This is the CRD form of the REST `?action=export`: it creates a
@@ -211,6 +211,10 @@ class CRD(Base):
                 "targetStorageClassName": target_storage_class
             }
         }
+        # backend "cdi" exports into a CDI golden image PVC (Longhorn V2, LVM,
+        # third-party storage) instead of a Longhorn backing image
+        if backend:
+            body["spec"]["backend"] = backend
         logging(f"Exporting volume {namespace}/{volume_name} to image "
                 f"{image_name} (sc={target_storage_class})")
         return create_cr(
@@ -518,6 +522,34 @@ class CRD(Base):
             time.sleep(self.retry_interval)
 
         raise AssertionError(f"PVC {namespace}/{volume_name} was not deleted within {timeout}s")
+
+    def get_longhorn_volume(self, pvc_name, namespace=DEFAULT_NAMESPACE):
+        """Return the Longhorn Volume CR backing a bound PVC (None if unbound or missing)."""
+        try:
+            pvc = self.core_api.read_namespaced_persistent_volume_claim(
+                name=pvc_name, namespace=namespace)
+        except ApiException as e:
+            if e.status == 404:
+                return None
+            raise
+        if not pvc.spec.volume_name:
+            return None
+        return self.get_longhorn_volume_by_name(pvc.spec.volume_name)
+
+    def get_longhorn_volume_by_name(self, lh_volume_name):
+        """Return the Longhorn Volume CR with this name (== PV name), or None."""
+        try:
+            return client.CustomObjectsApi().get_namespaced_custom_object(
+                group=LONGHORN_API_GROUP,
+                version=LONGHORN_API_VERSION,
+                namespace=LONGHORN_NAMESPACE,
+                plural="volumes",
+                name=lh_volume_name,
+            )
+        except ApiException as e:
+            if e.status == 404:
+                return None
+            raise
 
     def wait_for_longhorn_volume_healthy(self, pvc_name, timeout=DEFAULT_TIMEOUT_SHORT,
                                          namespace=DEFAULT_NAMESPACE):

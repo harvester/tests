@@ -120,6 +120,10 @@ class host_keywords:
         """Get Longhorn-specific node details"""
         return self.host.get_lh_node(node_name)
 
+    def list_lh_v2_disks_with_tag(self, tag):
+        """Return {node: [disk names]} of schedulable Longhorn V2 block disks with a tag"""
+        return self.host.list_lh_v2_disks_with_tag(tag)
+
     def add_lh_node_disk_tag(self, node_name, disk_name, tag):
         """Add a tag to a Longhorn node disk"""
         return self.host.add_lh_node_disk_tag(node_name, disk_name, tag)

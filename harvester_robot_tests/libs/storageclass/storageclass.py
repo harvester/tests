@@ -14,12 +14,12 @@ class StorageClass(Base):
         self.crd = CRD()
         self.rest = Rest()
 
-    def create(self, name, data_engine, number_of_replicas, disk_selector):
+    def create(self, name, data_engine, number_of_replicas, disk_selector, clone_mode=""):
         try:
-            return self.crd.create(name, data_engine, number_of_replicas, disk_selector)
+            return self.crd.create(name, data_engine, number_of_replicas, disk_selector, clone_mode)
         except NotImplementedError as e:
             logging(e)
-            return self.rest.create(name, data_engine, number_of_replicas, disk_selector)
+            return self.rest.create(name, data_engine, number_of_replicas, disk_selector, clone_mode)
 
     def create_lvm(self, name, vg_name, vg_type, node):
         try:

@@ -176,6 +176,11 @@ class Rest(Base):
 
         return node_vms
 
+    def list_lh_v2_disks_with_tag(self, tag):
+        raise NotImplementedError(
+            "list_lh_v2_disks_with_tag is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def add_lh_node_disk_tag(self, node_name, disk_name, tag):
         return super().add_lh_node_disk_tag(node_name, disk_name, tag)
 
