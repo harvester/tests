@@ -1,5 +1,5 @@
 # Naming Of Test Files
-To distinguish test cases with order, each file should start with `test_<N>_`, and the `N` is the number point out its dependencies of functionality, for example, `volume` and `image` will not dpened on anything, so the number should be `1`; for `vm`, it at least depends on `volume` and `image`, so it's number should be at least `3`.
+To distinguish test cases with order, each file should start with `test_<N>_`, and the `N` is the number point out its dependencies of functionality, for example, `volume` and `image` will not depend on anything, so the number should be `1`; for `vm`, it at least depends on `volume` and `image`, so it's number should be at least `3`.
 
 Here is the table for existing functionality:
 

@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from urllib.parse import urljoin
 
 import re
@@ -122,6 +123,27 @@ class HarvesterAPI:
         headers.update(kwargs.pop('headers', {}))
         return self.session.patch(url, headers=headers, **kwargs)
 
+    def get_json(self, path, **params):
+        """ GET `path` with `params` as query, for paths no manager covers.
+
+        Returns the status code and the decoded JSON body (the text, if it is not JSON).
+        """
+        return self._status_and_json(self._get(path, params=params))
+
+    def delete_json(self, path, **params):
+        """ DELETE `path` with `params` as query, for paths no manager covers.
+
+        Returns the status code and the decoded JSON body (the text, if it is not JSON).
+        """
+        return self._status_and_json(self._delete(path, params=params))
+
+    @staticmethod
+    def _status_and_json(resp):
+        try:
+            return resp.status_code, resp.json()
+        except ValueError:
+            return resp.status_code, resp.text
+
     def get_url(self, path):
         return urljoin(self.endpoint, path).format(API_VERSION=self.API_VERSION)
 
@@ -147,6 +169,16 @@ class HarvesterAPI:
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
+
+    @contextmanager
+    def override_retries(self, *args, **kwargs):
+        """ Use the retry settings of `set_retries(*args, **kwargs)` inside the `with` block,
+        and the defaults of `set_retries()` afterwards. """
+        self.set_retries(*args, **kwargs)
+        try:
+            yield
+        finally:
+            self.set_retries()
 
     def generate_kubeconfig(self):
         path = "v1/management.cattle.io.clusters/local?action=generateKubeconfig"
