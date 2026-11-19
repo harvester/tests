@@ -1,0 +1,288 @@
+# Comment on a PR (harvester org members with write access to this repo only, no fork PRs):
+#   /robot-test                         shared nested cluster for the PR's Harvester version
+#   /robot-test | fresh                 same, but recreate the shared cluster first
+#   /robot-test | version=v1.8          shared nested cluster of another Harvester version
+#   /robot-test | giants                existing environment (giants, cyclops, ravens, ...)
+#   /robot-test | suite=test_vm,test_a  add suites (needed when the PR changes no .robot file)
+
+name: Robot tests on Jenkins (/robot-test)
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write # reactions and result comments
+  issues: write
+  checks: read
+
+jobs:
+  robot-test:
+    # Cheap pre-filter so ordinary comments never occupy the runner
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/robot-test')
+    runs-on: robot-test-runners
+    timeout-minutes: 720
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      ORG: ${{ github.repository_owner }}
+      PR: ${{ github.event.issue.number }}
+
+    steps:
+      # Checks the commenter has write/admin on the repo, rejects fork PRs, adds the eyes
+      # reaction and, when the job ends, a +1 / -1 reaction. PR code is never checked out here.
+      - name: Command
+        id: command
+        uses: github/command@3442f3fa1efe01bdb024b157083c337902d17372 # v2.0.3
+        with:
+          command: /robot-test
+          permissions: write,admin
+          allow_forks: "false"
+          allow_drafts: "true"
+          skip_ci: "true"
+          skip_reviews: "true"
+
+      - name: Install tools
+        if: steps.command.outputs.continue == 'true'
+        run: |
+          set -euo pipefail
+          missing=""
+          for tool in curl jq xmlstarlet; do command -v "$tool" >/dev/null || missing="$missing $tool"; done
+          if [ -n "$missing" ]; then
+            sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $missing
+          fi
+          if ! command -v gh >/dev/null; then
+            # Pinned release, verified against its published checksum
+            ver=2.105.0
+            sum=79e7ab5db738c48777b696e374f8b428f0647debfb424f44d2f426370407fe2f
+            curl -fsSL -o /tmp/gh.tar.gz "https://github.com/cli/cli/releases/download/v${ver}/gh_${ver}_linux_amd64.tar.gz"
+            echo "$sum  /tmp/gh.tar.gz" | sha256sum -c -
+            tar xzf /tmp/gh.tar.gz -C /tmp
+            sudo install "/tmp/gh_${ver}_linux_amd64/bin/gh" /usr/local/bin/gh
+          fi
+
+      - name: Check org membership
+        if: steps.command.outputs.continue == 'true'
+        id: member
+        env:
+          ACTOR: ${{ steps.command.outputs.actor }}
+        run: |
+          set -uo pipefail
+          if [ -z "${GH_ORG_TOKEN:-}" ]; then
+            echo "GH_ORG_TOKEN is not set on the runner"; exit 1
+          fi
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $GH_ORG_TOKEN" \
+            "https://api.github.com/orgs/$ORG/members/$ACTOR")
+          if [ "$code" != 204 ]; then
+            gh pr comment "$PR" -R "$REPO" --body "@$ACTOR only members of the \`$ORG\` organization can run \`/robot-test\`."
+            echo "replied=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Resolve target and suites
+        if: steps.command.outputs.continue == 'true'
+        id: plan
+        env:
+          PARAMS: ${{ steps.command.outputs.params }}
+          BASE_REF: ${{ steps.command.outputs.base_ref }}
+          SHA: ${{ steps.command.outputs.sha }}
+          ACTOR: ${{ steps.command.outputs.actor }}
+        run: |
+          set -euo pipefail
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "no PR commit sha"; exit 1; }
+          envs="giants cyclops ravens raiders falcons blazers cardinals saints bills titans"
+          usage="Usage: \`/robot-test\`, \`/robot-test | fresh\`, \`/robot-test | version=v1.8\`, \`/robot-test | <env>\` (one of: $envs), optionally with \`suite=a,b\`."
+          reply() { gh pr comment "$PR" -R "$REPO" --body "@$ACTOR $1"; echo "replied=true" >> "$GITHUB_OUTPUT"; exit 1; }
+
+          target=nested; version=""; fresh=false; extra_suites=""
+          for token in $PARAMS; do
+            lowered=$(echo "$token" | tr 'A-Z' 'a-z')
+            if [ "$lowered" = nested ] || [[ " $envs " == *" $lowered "* ]]; then
+              target=$lowered
+            elif [ "$lowered" = fresh ]; then
+              fresh=true
+            elif [[ "$token" =~ ^version=[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+              version=${token#version=}
+            elif [[ "$token" =~ ^suite=[A-Za-z0-9_.,-]+$ ]]; then
+              extra_suites="$extra_suites ${token#suite=}"
+            else
+              reply "unknown argument \`${token:0:50}\`. $usage"
+            fi
+          done
+          if [ "$target" != nested ] && { [ -n "$version" ] || [ "$fresh" = true ]; }; then
+            reply "\`version=\` and \`fresh\` only apply to the shared nested cluster. $usage"
+          fi
+          [ -n "$version" ] || { [ "$BASE_REF" = main ] && version=master || version=$BASE_REF; }
+
+          # Suites = .robot files added/changed between the base branch and the pinned commit
+          # (same diff as the PR, frozen at that commit; GitHub lists up to 300 files) + suite= arguments
+          changed=$(gh api "repos/$REPO/compare/$BASE_REF...$SHA" \
+            --jq '.files[] | select(.status != "removed") | .filename | select(endswith(".robot"))' \
+            | xargs -r -n1 basename | sed 's/\.robot$//')
+          suites=$( { echo "$changed"; echo "$extra_suites" | tr ', ' '\n\n'; } | sed 's/\.robot$//' | grep -v '^$' | sort -u || true)
+          if [ -z "$suites" ]; then
+            reply "this PR has no added or changed \`.robot\` test files. Tell me which suites to run, e.g. \`/robot-test | suite=test_vm\`."
+          fi
+          filter="--runemptysuite"
+          for s in $suites; do filter="$filter --suite $s"; done
+          if [ "$target" = nested ]; then
+            # The nested cluster has no Rancher, GPUs or PCI devices
+            filter="$filter --exclude rancher --exclude nvidia-driver-toolkit --exclude pcidevices-controller"
+          fi
+
+          {
+            echo "target=$target"
+            echo "version=$version"
+            echo "fresh=$fresh"
+            echo "cluster=robot-pr-$(echo "$version" | tr 'A-Z' 'a-z' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')"
+            echo "filter=$filter"
+            echo "suites<<EOF"; echo "$suites"; echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run on Jenkins and wait
+        if: steps.command.outputs.continue == 'true'
+        id: jenkins
+        env:
+          TARGET: ${{ steps.plan.outputs.target }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          FRESH: ${{ steps.plan.outputs.fresh }}
+          CLUSTER: ${{ steps.plan.outputs.cluster }}
+          FILTER: ${{ steps.plan.outputs.filter }}
+          SUITES: ${{ steps.plan.outputs.suites }}
+          SHA: ${{ steps.command.outputs.sha }}
+          ACTOR: ${{ steps.command.outputs.actor }}
+        run: |
+          set -euo pipefail
+          : "${JENKINS_URL:?JENKINS_URL is not set on the runner}"
+          : "${JENKINS_USER:?}" "${JENKINS_API_TOKEN:?}"
+          echo "::add-mask::$JENKINS_URL"
+          JENKINS_URL=${JENKINS_URL%/}
+          auth=(-u "$JENKINS_USER:$JENKINS_API_TOKEN")
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "no PR commit sha"; exit 1; }
+
+          common=(
+            --data-urlencode "test_repo_git_url=https://github.com/$REPO"
+            --data-urlencode "test_repo_git_branch=refs/pull/$PR/head:pr-$PR"
+            --data-urlencode "test_repo_git_commit=$SHA"
+            --data-urlencode "test_filter=$FILTER"
+            --data-urlencode "slack_notify=false"
+          )
+          if [ "$TARGET" = nested ]; then
+            job=harvester-install-and-robot-tests
+            where="shared nested cluster \`$CLUSTER\` (1 node), Harvester \`$VERSION\`"
+            [ "$FRESH" = true ] && where="$where, recreated"
+            params=("${common[@]}"
+              --data-urlencode "nested_node_count=1"
+              --data-urlencode "harvester_version=$VERSION"
+              --data-urlencode "shared_cluster_name=$CLUSTER"
+              --data-urlencode "recreate_shared_cluster=$FRESH")
+          else
+            job=harvester-robot-tests
+            where="existing environment \`$TARGET\`"
+            params=("${common[@]}"
+              --data-urlencode "Environment=$TARGET"
+              --data-urlencode "lock_resource=robot-env-$TARGET")
+          fi
+
+          hdr=$(mktemp)
+          curl -fsS "${auth[@]}" -D "$hdr" -o /dev/null -X POST "$JENKINS_URL/job/$job/buildWithParameters" "${params[@]}"
+          # Only the queue id is taken from Jenkins' reply; URLs are rebuilt from the
+          # runner's JENKINS_URL, which may differ from Jenkins' configured public URL
+          queue_id=$(awk 'tolower($1)=="location:" {print $2}' "$hdr" | tr -d '\r' | sed -E 's#.*/queue/item/([0-9]+)/?.*#\1#')
+          [[ "$queue_id" =~ ^[0-9]+$ ]] || { echo "Jenkins did not return a queue item"; exit 1; }
+
+          build_number=""
+          for _ in $(seq 1 240); do
+            build_number=$(curl -fsS "${auth[@]}" "$JENKINS_URL/queue/item/$queue_id/api/json" | jq -r '.executable.number // empty')
+            [ -n "$build_number" ] && break
+            sleep 30
+          done
+          [ -n "$build_number" ] || { echo "Jenkins build never started"; exit 1; }
+          build_url="$JENKINS_URL/job/$job/$build_number"
+          {
+            echo "job=$job"
+            echo "build_number=$build_number"
+            echo "where=$where"
+          } >> "$GITHUB_OUTPUT"
+
+          gh pr comment "$PR" -R "$REPO" --body "@$ACTOR robot tests started for commit \`${SHA:0:10}\`.
+
+          - **Where:** $where
+          - **Suites:** $(echo "$SUITES" | sed 's/.*/`&`/' | paste -sd, - | sed 's/,/, /g')
+          - **Jenkins build:** \`$job\` #$build_number
+
+          If another run is using the same cluster, this one waits for it to finish. I will post the result here."
+
+          result=""
+          while true; do
+            info=$(curl -fsS "${auth[@]}" "$build_url/api/json?tree=building,result")
+            [ "$(echo "$info" | jq -r .building)" = false ] && { result=$(echo "$info" | jq -r .result); break; }
+            sleep 60
+          done
+          echo "result=$result" >> "$GITHUB_OUTPUT"
+
+          curl -fsS "${auth[@]}" -o output.xml "$build_url/artifact/ansible/robot_test_report/output.xml" || rm -f output.xml
+
+      - name: Post result
+        if: always() && steps.jenkins.outputs.result != ''
+        env:
+          RESULT: ${{ steps.jenkins.outputs.result }}
+          JOB: ${{ steps.jenkins.outputs.job }}
+          BUILD_NUMBER: ${{ steps.jenkins.outputs.build_number }}
+          WHERE: ${{ steps.jenkins.outputs.where }}
+          ACTOR: ${{ steps.command.outputs.actor }}
+          SUITES: ${{ steps.plan.outputs.suites }}
+          SHA: ${{ steps.command.outputs.sha }}
+        run: |
+          set -uo pipefail
+          case "$RESULT" in
+            SUCCESS)  title="✅ PASSED" ;;
+            UNSTABLE) title="❌ TEST FAILURES" ;;
+            ABORTED)  title="🛑 ABORTED" ;;
+            *)        title="💥 BUILD FAILED" ;;
+          esac
+          {
+            echo "### Robot test result: $title"
+            echo
+            echo "- **Requested by:** @$ACTOR"
+            echo "- **Commit:** \`${SHA:0:10}\`"
+            echo "- **Where:** $WHERE"
+            echo "- **Suites:** $(echo "$SUITES" | sed 's/.*/`&`/' | paste -sd, - | sed 's/,/, /g')"
+            echo "- **Jenkins build:** \`$JOB\` #$BUILD_NUMBER"
+            if [ -f output.xml ]; then
+              totals=$(grep -o '<stat pass="[0-9]*" fail="[0-9]*" skip="[0-9]*"[^>]*>All Tests' output.xml | head -1 \
+                | sed -E 's/<stat pass="([0-9]+)" fail="([0-9]+)" skip="([0-9]+)".*/\1 passed, \2 failed, \3 skipped/')
+              echo "- **Totals:** ${totals:-n/a}"
+              if command -v xmlstarlet >/dev/null; then
+                echo; echo "| Test | Result |"; echo "|---|---|"
+                xmlstarlet sel -t -m '//test' -v '@name' -o '@@SEP@@' -v 'status/@status' -n output.xml \
+                  | sed 's/|/\\|/g; s/@@SEP@@PASS$/@@SEP@@✅ PASS/; s/@@SEP@@FAIL$/@@SEP@@❌ FAIL/; s/@@SEP@@SKIP$/@@SEP@@⏭️ SKIP/; s/@@SEP@@/ | /; s/^/| /; s/$/ |/'
+                failed=$(xmlstarlet sel -t -m '//test[status/@status="FAIL"]' -o '**' -v '@name' -o '**: ' -v 'normalize-space(substring(status, 1, 500))' -n output.xml)
+                if [ -n "$failed" ]; then
+                  echo; echo "<details><summary>Failure messages</summary>"; echo
+                  echo "$failed" | sed 's/^/- /'
+                  echo; echo "</details>"
+                fi
+              fi
+            else
+              echo; echo "No \`output.xml\` was produced (cluster provisioning or test setup failed). Check the Jenkins build."
+            fi
+          } > result.md
+          gh pr comment "$PR" -R "$REPO" --body-file result.md
+
+      # Failures turn the command's reaction into -1; the comment above has the details
+      - name: Fail unless the tests passed
+        if: steps.command.outputs.continue == 'true' && steps.jenkins.outputs.result != 'SUCCESS'
+        run: exit 1
+
+      - name: Report workflow problems
+        if: >-
+          failure() && steps.command.outputs.continue == 'true' && steps.jenkins.outputs.result == ''
+          && steps.member.outputs.replied != 'true' && steps.plan.outputs.replied != 'true'
+        env:
+          ACTOR: ${{ steps.command.outputs.actor }}
+        run: |
+          gh pr comment "$PR" -R "$REPO" --body "@$ACTOR the robot test workflow failed before a result was available: $GITHUB_SERVER_URL/$REPO/actions/runs/$GITHUB_RUN_ID"
+
