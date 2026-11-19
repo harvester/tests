@@ -148,6 +148,14 @@ List Worker Nodes
     ${node_names}=    host_keywords.get_worker_nodes
     RETURN    ${node_names}
 
+Node label is added
+    [Arguments]    ${node_name}    ${key}    ${value}
+    host_keywords.add node label    ${node_name}    ${key}    ${value}
+
+Node label is removed
+    [Arguments]    ${node_name}    ${key}
+    host_keywords.remove node label    ${node_name}    ${key}
+
 Get node resource utilization
     [Arguments]    ${node_name}
     [Documentation]    Get a node's requests-based CPU/memory utilization, measured the
