@@ -34,3 +34,17 @@ class Setting(Base):
         except NotImplementedError as e:
             logging(e)
             return self.rest.update(setting_id, value)
+
+    def try_update(self, setting_id, value):
+        try:
+            return self.crd.try_update(setting_id, value)
+        except NotImplementedError as e:
+            logging(e)
+            return self.rest.try_update(setting_id, value)
+
+    def get_kubevirt_configuration(self):
+        try:
+            return self.crd.get_kubevirt_configuration()
+        except NotImplementedError as e:
+            logging(e)
+            return self.rest.get_kubevirt_configuration()

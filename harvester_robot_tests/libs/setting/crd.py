@@ -5,9 +5,10 @@ Layer 4: Component and its implementation
 
 from kubernetes import client
 from kubernetes.client.rest import ApiException
-from crd import get_cluster_cr, patch_cluster_cr
+from crd import get_cr, get_cluster_cr, patch_cluster_cr
 from constant import (
-    HARVESTER_API_GROUP, HARVESTER_API_VERSION,
+    HARVESTER_API_GROUP, HARVESTER_API_VERSION, HARVESTER_NAMESPACE,
+    KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION,
 )
 from .base import Base
 
@@ -72,3 +73,26 @@ class CRD(Base):
             return setting
         except ApiException as e:
             raise Exception(f"Failed to update setting {setting_id}: {e}")
+
+    def try_update(self, setting_id, value):
+        """Attempt to update a setting's value that may be rejected by the
+        setting webhook. Never raises on an API error; returns
+        {"success": bool, "code": int, "message": str}."""
+        try:
+            patch_cluster_cr(
+                **self.common_parameters,
+                name=setting_id,
+                body={"value": value}
+            )
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def get_kubevirt_configuration(self):
+        """Return spec.configuration of the harvester-system/kubevirt CR,
+        which several settings manage (kubevirt-migration,
+        persistent-reservation-enabled, ...)."""
+        kubevirt = get_cr(KUBEVIRT_API_GROUP, KUBEVIRT_API_VERSION,
+                          HARVESTER_NAMESPACE, "kubevirts", "kubevirt")
+        return kubevirt.get("spec", {}).get("configuration", {})
