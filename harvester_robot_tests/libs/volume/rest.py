@@ -87,7 +87,7 @@ class Rest(Base):
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
     def export_to_image(self, volume_name, image_name,
-                        target_storage_class=DEFAULT_STORAGE_CLASS):
+                        target_storage_class=DEFAULT_STORAGE_CLASS, backend=""):
         """Export volume to image. Only implemented for the CRD strategy."""
         raise NotImplementedError(
             "export_to_image is only implemented for the CRD strategy; "
@@ -267,6 +267,18 @@ class Rest(Base):
             snapshot_name, new_volume_name, namespace=namespace
         )
         assert code in (200, 201, 204), f"Failed to restore from snapshot: {code}, {data}"
+
+    def get_longhorn_volume(self, pvc_name, namespace=None):
+        raise NotImplementedError(
+            "get_longhorn_volume is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd"
+        )
+
+    def get_longhorn_volume_by_name(self, lh_volume_name):
+        raise NotImplementedError(
+            "get_longhorn_volume_by_name is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd"
+        )
 
     def wait_for_longhorn_volume_healthy(self, pvc_name, timeout=None, namespace=None):
         raise NotImplementedError(

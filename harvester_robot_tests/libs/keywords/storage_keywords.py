@@ -146,10 +146,15 @@ class storage_keywords:
             if condition.get("type") == condition_type:
                 return condition.get("status")
 
-    def create_storageclass(self, name, data_engine, number_of_replicas, disk_selector):
+    def create_storageclass(self, name, data_engine, number_of_replicas, disk_selector,
+                            clone_mode=""):
         return self.storageclass.create(
-            name, data_engine, number_of_replicas, disk_selector
+            name, data_engine, number_of_replicas, disk_selector, clone_mode
         )
+
+    def longhorn_disks_with_tag(self, tag):
+        """Return {node: [disk names]} of schedulable Longhorn V2 block disks with a tag."""
+        return self.host.list_lh_v2_disks_with_tag(tag)
 
     def delete_storageclass(self, name):
         return self.storageclass.delete(name)

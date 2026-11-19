@@ -25,6 +25,22 @@ Create LHv2 Storage Class
     [Arguments]    ${name}    ${number_of_replicas}    ${disk_selector}
     Create Storage Class    ${name}    v2    ${number_of_replicas}    ${disk_selector}
 
+Create LHv2 Linked-Clone Storage Class
+    [Arguments]    ${name}    ${number_of_replicas}    ${disk_selector}
+    [Documentation]    Create a Longhorn V2 StorageClass with cloneMode=linked-clone, so volumes
+    ...    cloned from another volume (for example VM root disks from a CDI image) are
+    ...    copy-on-write linked clones instead of full copies.
+    storage_keywords.create_storageclass    ${name}    v2    ${number_of_replicas}    ${disk_selector}
+    ...    clone_mode=linked-clone
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Storage Class Is Present    ${name}
+
+Longhorn V2 Disks With Tag
+    [Arguments]    ${tag}
+    [Documentation]    Return {node: [disk names]} of schedulable Longhorn V2 block disks with the tag.
+    ${disks}=    storage_keywords.longhorn_disks_with_tag    ${tag}
+    RETURN    ${disks}
+
 Delete Storage Class
     [Arguments]    ${name}
     storage_keywords.delete_storageclass    ${name}

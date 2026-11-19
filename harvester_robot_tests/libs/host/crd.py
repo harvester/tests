@@ -453,6 +453,26 @@ class CRD(Base):
         }
 
     # Longhorn Node
+    def list_lh_v2_disks_with_tag(self, tag):
+        """Return {node: [disk names]} of Longhorn V2 block disks that carry a tag
+        and are schedulable."""
+        from crd import list_cr
+        result = {}
+        nodes = list_cr(**self.lh_nodes_parameters)
+        for node in nodes.get("items", []):
+            node_name = node["metadata"]["name"]
+            disk_status = node.get("status", {}).get("diskStatus", {}) or {}
+            for disk_name, disk in (node.get("spec", {}).get("disks", {}) or {}).items():
+                if tag not in (disk.get("tags") or []) or disk.get("diskType") != "block":
+                    continue
+                if not disk.get("allowScheduling", False):
+                    continue
+                conditions = disk_status.get(disk_name, {}).get("conditions", []) or []
+                if any(c.get("type") == "Schedulable" and c.get("status") == "True"
+                       for c in conditions):
+                    result.setdefault(node_name, []).append(disk_name)
+        return result
+
     def get_lh_node(self, node_name):
         """Get Longhorn Node CR for a specific node
         Note: This is a Longhorn-specific resource that represents the node in Longhorn's context

@@ -53,11 +53,19 @@ class volume_keywords:
         return self.volume.get_image_id(volume_name)
 
     def export_volume_to_image(self, volume_name, image_name,
-                               target_storage_class=DEFAULT_STORAGE_CLASS):
+                               target_storage_class=DEFAULT_STORAGE_CLASS, backend=""):
         """Start exporting a volume to a VM image"""
         logging(f'Exporting volume {volume_name} to image {image_name}')
         return self.volume.export_to_image(
-            volume_name, image_name, target_storage_class)
+            volume_name, image_name, target_storage_class, backend)
+
+    def get_longhorn_volume(self, pvc_name, namespace="default"):
+        """Return the Longhorn Volume CR backing a PVC, or None"""
+        return self.volume.get_longhorn_volume(pvc_name, namespace)
+
+    def get_longhorn_volume_by_name(self, lh_volume_name):
+        """Return the Longhorn Volume CR with this name, or None"""
+        return self.volume.get_longhorn_volume_by_name(lh_volume_name)
 
     def create_volumes_concurrently(self, volume_names, size="10Gi"):
         """Create multiple volumes in parallel; returns per-volume result dicts"""
