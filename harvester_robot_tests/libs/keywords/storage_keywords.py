@@ -157,6 +157,15 @@ class storage_keywords:
     def get_storageclass(self, name):
         return self.storageclass.get(name)
 
+    def get_default_storageclass(self):
+        return self.storageclass.get_default()
+
+    def set_default_storageclass(self, name):
+        return self.storageclass.set_default(name)
+
+    def unset_default_storageclass(self, name):
+        return self.storageclass.unset_default(name)
+
     def identify_lvm_suitable_disks(self, min_size_gib=50):
         return self.blockdevice.identify_lvm_suitable(min_size_gib)
 
