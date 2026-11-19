@@ -7,9 +7,8 @@ pytest_plugins = ["harvester_e2e_tests.fixtures.api_client"]
 
 DEFAULT_UBUNTU_IMAGE_URL = (
     "https://cloud-images.ubuntu.com"
-    "/focal/current/focal-server-cloudimg-amd64.img"
+    "/noble/current/noble-server-cloudimg-amd64.img"
 )
-
 
 @pytest.fixture(scope="session")
 def image_opensuse(request, api_client):
