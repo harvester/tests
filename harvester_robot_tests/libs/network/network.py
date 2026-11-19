@@ -95,3 +95,16 @@ class Network(Base):
     def delete_ip_pool(self, name):
         """Delete IP pool"""
         return self.network.delete_ip_pool(name)
+
+    # Generic NetworkAttachmentDefinition Operations (any CNI type)
+    def try_create_nad(self, name, config, labels=None, annotations=None):
+        """Attempt to create a NAD with a raw CNI config"""
+        return self.network.try_create_nad(name, config, labels, annotations)
+
+    def try_update_nad_config(self, name, config):
+        """Attempt to replace the CNI config of a NAD"""
+        return self.network.try_update_nad_config(name, config)
+
+    def get_nad(self, name):
+        """Get a NAD"""
+        return self.network.get_nad(name)

@@ -113,3 +113,62 @@ Delete IP Pool
     ...                   name: IP pool name
     Log    Deleting IP pool: ${name}
     network_keywords.delete_ip_pool    ${name}
+
+# Generic NetworkAttachmentDefinition Operations (any CNI type)
+Try To Create NAD
+    [Arguments]    ${name}    ${config}    ${labels}=${None}    ${annotations}=${None}
+    [Documentation]    Attempt to create a NAD in the default namespace with a raw
+    ...               CNI config (dict or JSON string). Never fails on rejection.
+    ...               Returns:
+    ...                   dict: {success, code, message}
+    ${result}=    network_keywords.try_create_nad    ${name}    ${config}    ${labels}    ${annotations}
+    RETURN    ${result}
+
+Try To Update NAD Config
+    [Arguments]    ${name}    ${config}
+    [Documentation]    Attempt to replace the CNI config of a NAD.
+    ...               Returns:
+    ...                   dict: {success, code, message}
+    ${result}=    network_keywords.try_update_nad_config    ${name}    ${config}
+    RETURN    ${result}
+
+Get NAD
+    [Arguments]    ${name}
+    [Documentation]    Get a NAD in the default namespace.
+    ${nad}=    network_keywords.get_nad    ${name}
+    RETURN    ${nad}
+
+NAD Operation Should Succeed
+    [Arguments]    ${result}
+    [Documentation]    Assert a {success, code, message} NAD result was accepted.
+    Should Be True    ${result}[success]
+    ...    msg=NAD operation was rejected (code=${result}[code]): ${result}[message]
+
+NAD Operation Should Be Rejected
+    [Arguments]    ${result}    @{expected_messages}
+    [Documentation]    Assert a {success, code, message} NAD result was rejected. The
+    ...    network webhook reports its denials as InternalError (500), so any
+    ...    error code is accepted; the message must contain at least one of
+    ...    expected_messages (case-insensitive) when given.
+    Should Not Be True    ${result}[success]
+    ...    msg=NAD operation was expected to be rejected but succeeded
+    IF    ${expected_messages}
+        ${msg_lower}=    Convert To Lower Case    ${result}[message]
+        ${lowered}=    Evaluate    [m.lower() for m in $expected_messages]
+        Should Contain Any    ${msg_lower}    @{lowered}
+        ...    msg=Expected message to contain one of ${expected_messages}, got: ${result}[message]
+    END
+
+NAD Config Should Be Stored Unmodified
+    [Arguments]    ${name}    ${expected_config}
+    [Documentation]    The stored CNI config must equal the one that was sent (no MTU
+    ...    or bridge fields injected by the mutator), and the NAD must not
+    ...    get a cluster network label.
+    ${nad}=    Get NAD    ${name}
+    ${stored}=    Evaluate    json.loads($nad['spec']['config'])    modules=json
+    ${expected}=    Evaluate    $expected_config if isinstance($expected_config, dict) else json.loads($expected_config)    modules=json
+    Should Be Equal    ${stored}    ${expected}
+    ...    msg=NAD ${name} config was modified: ${stored}
+    ${labels}=    Evaluate    $nad['metadata'].get('labels') or {}
+    Dictionary Should Not Contain Key    ${labels}    network.harvesterhci.io/clusternetwork
+    ...    msg=NAD ${name} got a cluster network label: ${labels}
