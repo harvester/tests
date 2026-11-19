@@ -14,7 +14,7 @@ outcome==1.1.0
 paramiko==2.8.0
 pycparser==2.20
 PyNaCl==1.4.0
-pyOpenSSL==21.0.0
+pyOpenSSL==26.0.0
 requests==2.26.0
 robotframework==4.1.2
 robotframework-pythonlibcore==3.0.0
