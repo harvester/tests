@@ -126,6 +126,39 @@ class VMSpec:
 
         self.user_data = "#cloud-config\n" + yaml.dump(userdata)
 
+    @staticmethod
+    def _ensure_ssh_user(user_data):
+        """Make sure the `opensuse` user exists when SSH keys or a password are injected.
+
+        openSUSE Leap 16.1+ images no longer ship the `opensuse` user, so a top-level
+        `ssh_authorized_keys` would not reach it. When keys or a password are given without an
+        explicit `users` list, also declare `opensuse` (keeps the `default` user and the
+        top-level values, so other images behave as before). A top-level `password` is copied
+        to that user too.  On non opensuse images this will also be applied but it wont matter we
+        will end up with an opensuse user that just isnt leveraged
+        """
+        try:
+            data = yaml.safe_load(user_data)
+        except yaml.YAMLError:
+            return user_data
+        if not isinstance(data, dict) or 'users' in data:
+            return user_data
+        if not (data.get('ssh_authorized_keys') or data.get('password')):
+            return user_data
+
+        user = {
+            'name': 'opensuse',
+            'sudo': 'ALL=(ALL) NOPASSWD:ALL',
+            'shell': '/bin/bash',
+        }
+        if data.get('ssh_authorized_keys'):
+            user['ssh_authorized_keys'] = list(data['ssh_authorized_keys'])
+        if data.get('password'):
+            user['lock_passwd'] = False
+            user['plain_text_passwd'] = data['password']
+        data['users'] = ['default', user]
+        return "#cloud-config\n" + yaml.dump(data)
+
     @property
     def user_data(self):
         return self._cloudinit_vol['volume']['cloudInitNoCloud'].get('userData', "")
@@ -135,6 +168,7 @@ class VMSpec:
         if isinstance(val, str):
             if val.split('\n', 1)[0] != "#cloud-config":
                 val = f"#cloud-config\n{val}"
+            val = self._ensure_ssh_user(val)
         self._cloudinit_vol['volume']['cloudInitNoCloud']['userData'] = val
 
     @property
