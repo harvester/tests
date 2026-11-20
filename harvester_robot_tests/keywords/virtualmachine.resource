@@ -38,6 +38,14 @@ VM is deleted
     [Documentation]    Delete a VM
     vm_keywords.delete vm    ${vm_name}
 
+VM Is Deleted Keeping Volumes
+    [Arguments]    ${vm_name}
+    [Documentation]    Delete only the VM and wait until it is gone, retaining its PVCs.
+    ${result}=    vm_keywords.try_delete_vm    ${vm_name}
+    Should Be True    ${result}[success] or ${result}[code] == 404
+    ...    msg=Failed to delete VM ${vm_name}: ${result}[message]
+    VM should be deleted    ${vm_name}
+
 Stopped VM is created
     [Arguments]    ${vm_name}    ${image_id}    ${cpu}=2    ${memory}=4Gi
     [Documentation]    Create a VM that does not boot (runStrategy=Halted)

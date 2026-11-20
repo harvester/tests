@@ -36,6 +36,12 @@ class Volume(Base):
     def get_image_id(self, volume_name):
         return self.volume.get_image_id(volume_name)
 
+    def get_metadata(self, volume_name):
+        return self.volume.get(volume_name)['metadata']
+
+    def get_data_volume(self, volume_name):
+        return self.volume.get_data_volume(volume_name)
+
     def export_to_image(self, volume_name, image_name,
                         target_storage_class=DEFAULT_STORAGE_CLASS):
         return self.volume.export_to_image(

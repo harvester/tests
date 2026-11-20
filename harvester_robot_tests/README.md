@@ -231,6 +231,18 @@ The `.env.example` file contains all available configuration options:
 - `HARVESTER_PASSWORD` - Admin password
 - `SSH_PRIVATE_KEY` - SSH private key (PEM) used to access the Harvester host
   node, e.g. as a jump host to reach VM guests (see `Execute Command In VM`)
+- `CDI_STORAGE_CLASS` - Existing CDI-capable StorageClass (for example, LVM or Longhorn v2)
+  for the [CDI image deletion tests](tests/regression/image/test_image_cdi_deletion.robot#L1).
+  This suite uses the CRD strategy with `KUBECONFIG` and reuses the supplied class.
+  Harvester API credentials are not needed for this suite.
+  Set `OPENSUSE_IMAGE_URL` to a local image mirror when public downloads are slow.
+  The direct golden-PVC case reproduces VM importer output using its imported label
+  and a direct PVC reference; it does not run an external VM import.
+- `CDI_STORAGE_BACKEND` - Set to `lvm` to let the CDI suite prepare and clean up
+  its storage using the existing LVM keywords. Requires an Active, Unprovisioned
+  disk of at least 50 GiB. Defaults to `none`; the suite skips if no existing
+  `CDI_STORAGE_CLASS` or backend is supplied. An existing class takes precedence.
+  See [CDI storage setup](tests/regression/image/README.md#L1) for CI and local use.
 - `VLAN_ID` - VLAN ID for network tests
 - `VLAN_NIC` - Network interface for VLAN (default: `mgmt`)
 - `BACKUP_TARGET_NFS_ENDPOINT` - NFS endpoint (`nfs://host/path`) used to
@@ -348,6 +360,11 @@ Run it with:
 ```
 
 To add test cases to the baseline, append `pr-baseline` to `Tags` (case level) or `Test Tags` (suite level).
+
+The baseline includes both CDI image deletion cases. They require an existing
+`CDI_STORAGE_CLASS` or `CDI_STORAGE_BACKEND=lvm`; automatic LVM setup needs an
+Active, Unprovisioned disk of at least 50 GiB. Harvester CI supplies the LVM
+backend by default.
 
 **Note**: The `run.sh` script automatically:
 - Loads environment variables from `.env` file if it exists
