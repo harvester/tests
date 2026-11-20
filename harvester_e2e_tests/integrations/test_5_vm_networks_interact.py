@@ -26,7 +26,16 @@ node_user = "rancher"
 
 cloud_user_data = \
     """
-password: {password}\nchpasswd: {{ expire: False }}\nssh_pwauth: True
+users:
+  - default
+  - name: opensuse
+    sudo: 'ALL=(ALL) NOPASSWD:ALL'
+    lock_passwd: false
+    shell: /bin/bash
+    plain_text_passwd: {password}
+password: {password}
+chpasswd: {{ expire: False }}
+ssh_pwauth: True
 """
 
 cloud_network_data = \
