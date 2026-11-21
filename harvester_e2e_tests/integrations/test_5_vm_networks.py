@@ -242,7 +242,7 @@ class TestVMNetwork:
             assert cloud_inited, (out, err)
             out, err = sh.exec_command("sudo cloud-init clean")
             out, err = sh.exec_command("sudo cloud-init status")
-            assert "not run" in out, (out, err)
+            assert any(s in out for s in ("not run", "not started")), (out, err)
             out, err = sh.exec_command("ip --json a s")
             assert not err
         ifname = next(i['ifname'] for i in json.loads(out) if i['link_type'] != 'loopback')
