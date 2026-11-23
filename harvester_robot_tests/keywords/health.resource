@@ -80,6 +80,12 @@ Image Retry Limit Check Should Report Image
     ...    ${HEALTH_COMPONENT_VMIMAGE}    ${HEALTH_CHECK_IMAGE_RETRY_LIMIT}    ${namespace}/${image_name}
     ...    severity=Error
 
+Failing Backup Target Is Enabled
+    [Documentation]    Skip unless HEALTH_FAILING_BACKUP_TARGET is true, i.e. the
+    ...    configured backup target is one that fails backups (little space left).
+    Skip If    '${HEALTH_FAILING_BACKUP_TARGET}'.lower() != 'true'
+    ...    HEALTH_FAILING_BACKUP_TARGET is not true; skipping test that needs a failing backup target
+
 VM Backup Failed Check Should Report Backup
     [Arguments]    ${backup_name}    ${namespace}=${DEFAULT_NAMESPACE}
     [Documentation]    A failed VirtualMachineBackup must be listed by VMBackupFailed.

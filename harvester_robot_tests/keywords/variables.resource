@@ -56,6 +56,9 @@ ${LHV2_DISK_LOCK}               lhv2-disks
 # NFS endpoint (nfs://host/path) used to configure the backup-target setting
 # when the cluster does not have one yet; backup suites skip if both are absent.
 ${BACKUP_TARGET_NFS_ENDPOINT}    %{BACKUP_TARGET_NFS_ENDPOINT=}
+# Set to true to run tests that need a backup target which fails backups (e.g. a
+# bucket with little space left). Meant for local runs; such tests skip otherwise.
+${HEALTH_FAILING_BACKUP_TARGET}    %{HEALTH_FAILING_BACKUP_TARGET=}
 
 # LVM Addon manifest. Leave empty to derive the branch from the cluster
 # release (v<major>.<minor>; dev builds use harvester master).

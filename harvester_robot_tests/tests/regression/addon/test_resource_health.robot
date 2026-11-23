@@ -10,9 +10,10 @@ Documentation    Resource Health Dashboard Test Cases
 ...              Skip conditions:
 ...                - ComponentHealth resources absent (controller not installed)
 ...                  -> whole suite skipped
-...                - No backup target configured -> the VM backup failure test is skipped.
-...                  The target must also be one that fails backups (for example a bucket
-...                  with little space left), otherwise that test times out.
+...                - HEALTH_FAILING_BACKUP_TARGET is not true -> the VM backup failure test
+...                  is skipped. Set it only when the cluster backup target fails backups
+...                  (for example a bucket with little space left), otherwise that test
+...                  times out. Meant for local runs. No backup target configured also skips.
 ...
 ...              Not covered here: test case 6 (ScheduleVMBackup reaches max failure)
 ...              and test case 7 (VolumeRemoteBackup, needs a guest cluster).
@@ -82,7 +83,8 @@ Test VM Backup With Insufficient Space Is Reported
     [Tags]    p1    backup
     [Documentation]    Test case 4: the backup bucket has little space left, so a VM backup
     ...    fails and the dashboard reports VMBackupFailed for it.
-    Given Backup target is configured
+    Given Failing Backup Target Is Enabled
+    And Backup target is configured
     And VM is created    ${VM_BACKUP}    ${IMAGE_NAME}
     And VM should be running    ${VM_BACKUP}
     When VM backup is created    ${VM_BACKUP}    ${BACKUP_NAME}
