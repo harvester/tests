@@ -60,6 +60,10 @@ ${BACKUP_TARGET_NFS_ENDPOINT}    %{BACKUP_TARGET_NFS_ENDPOINT=}
 # bucket with little space left). Meant for local runs; such tests skip otherwise.
 ${HEALTH_FAILING_BACKUP_TARGET}    %{HEALTH_FAILING_BACKUP_TARGET=}
 
+# Resource health controller addon manifest. Leave empty to derive the branch
+# from the cluster release (v<major>.<minor>; falls back to harvester master).
+${HEALTH_ADDON_URL}             %{HEALTH_ADDON_URL=}
+
 # LVM Addon manifest. Leave empty to derive the branch from the cluster
 # release (v<major>.<minor>; dev builds use harvester master).
 ${LVM_ADDON_URL}                %{LVM_ADDON_URL=}

@@ -7,9 +7,12 @@ Documentation    Resource Health Dashboard Test Cases
 ...              harvester-resource-health-controller, so each test creates the
 ...              problematic resource and verifies the matching check lists it.
 ...
+...              Suite setup installs the experimental
+...              `harvester-resource-health-controller` addon when it is absent
+...              (HEALTH_ADDON_URL overrides the manifest), enables it and waits for
+...              the ComponentHealth resources; teardown restores its original state.
+...
 ...              Skip conditions:
-...                - ComponentHealth resources absent (controller not installed)
-...                  -> whole suite skipped
 ...                - HEALTH_FAILING_BACKUP_TARGET is not true -> the VM backup failure test
 ...                  is skipped. Set it only when the cluster backup target fails backups
 ...                  (for example a bucket with little space left), otherwise that test
@@ -140,7 +143,7 @@ Local Suite Setup
     Set Suite Variable    ${BACKUP_NAME}          backup-${suffix}
     Set Suite Variable    ${SUPPORT_BUNDLE}       bundle-${suffix}
     Set up test environment
-    Resource Health Controller Should Be Available
+    Resource Health Controller Is Installed
     ${node}=    Get node 0
     Set Suite Variable    ${NODE_NAME}    ${node}
     Image is available for VM creation    ${IMAGE_NAME}    ${OPENSUSE_IMAGE_URL}
@@ -149,6 +152,7 @@ Local Suite Teardown
     # Parallel-safe: only delete this suite's own named resources.
     Run Keyword If All Tests Passed    Delete Suite Resources
     Run Keyword If Any Tests Failed    Log Variables
+    Run Keyword And Ignore Error    Resource Health Controller State Is Restored
 
 Delete Suite Resources
     Run Keyword And Ignore Error    Health Ignore Rule Is Deleted    ${IGNORE_RULE}

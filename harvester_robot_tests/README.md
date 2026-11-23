@@ -238,6 +238,8 @@ The `.env.example` file contains all available configuration options:
 - `HEALTH_FAILING_BACKUP_TARGET` - set to `true` to run the resource health VM
   backup failure test, which needs a backup target that fails backups (e.g. a
   bucket with little space left); skipped otherwise, intended for local runs
+- `HEALTH_ADDON_URL` - resource health controller addon manifest URL; unset
+  derives the manifest branch from the cluster release (falls back to master)
 - `LVM_ADDON_URL` - LVM addon manifest URL; unset derives the manifest
   branch from the cluster release (see `addon/lvm/README.md`)
 - `ROBOT_LOG_LEVEL` - Test log level (default: `INFO`)

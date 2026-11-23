@@ -8,13 +8,22 @@ Documentation    Resource Health Keywords - Reusable keywords for the Resource
 ...              (cluster-scoped Longhorn volumes are listed by their bare name).
 ...              Ignoring a check creates a cluster-scoped `HealthIgnoreRule`; the
 ...              controller then marks the check or the resource with `ignored: true`.
+...
+...              The controller ships as the experimental addon
+...              `harvester-resource-health-controller`, registered with
+...              `enabled: false`, so suites install and enable it themselves.
 Library          Collections
 Resource         variables.resource
 Resource         common.resource
 Resource         image.resource
+Resource         addon.resource
 Library          ../libs/keywords/health_keywords.py
 
 *** Variables ***
+${HEALTH_ADDON_NAME}                        harvester-resource-health-controller
+# Addon enabled flag found before the suite ran; ${NONE} skips the restore.
+${INITIAL_STATE_HEALTH_ADDON}               ${NONE}
+
 ${HEALTH_COMPONENT_VM}                      harvester-controller-vm
 ${HEALTH_COMPONENT_VOLUME}                  harvester-controller-volume
 ${HEALTH_COMPONENT_VMIMAGE}                 harvester-controller-vmimage
@@ -31,15 +40,38 @@ ${HEALTH_CHECK_SUPPORTBUNDLE_GENERATING}    SupportBundleGenerating
 ${HEALTH_INVALID_IMAGE_URL}                 http://127.0.0.1:1/invalid.img
 
 *** Keywords ***
-Resource Health Controller Should Be Available
-    [Documentation]    Skip the suite when the ComponentHealth resources are absent.
-    ...    The resource health controller is not part of every Harvester release,
-    ...    so clusters without it skip instead of failing.
-    ${exists}=    health_keywords.Component Health Exists    ${HEALTH_COMPONENT_VM}
-    IF    not ${exists}
-        Skip    ComponentHealth '${HEALTH_COMPONENT_VM}' not found - resource health controller is not installed
+Resource Health Controller Is Installed
+    [Documentation]    Register the resource health controller addon when it is absent,
+    ...    enable it, and wait until it writes the ComponentHealth resources. The
+    ...    original enabled flag is kept for `Resource Health Controller State Is Restored`;
+    ...    an addon registered here counts as disabled, matching its manifest.
+    ...    An existing addon is not re-applied: the manifest ships `enabled: false`
+    ...    and would disable a running controller.
+    ${exists}=    addon.Addon Exists    ${HEALTH_ADDON_NAME}
+    IF    ${exists}
+        ${initial_state}=    addon.Get Initial State    ${HEALTH_ADDON_NAME}
+    ELSE
+        addon.Install Experimental Addon    ${HEALTH_ADDON_NAME}    ${HEALTH_ADDON_URL}
+        ${initial_state}=    Set Variable    ${False}
     END
+    Set Suite Variable    ${INITIAL_STATE_HEALTH_ADDON}    ${initial_state}
+    IF    not ${initial_state}
+        addon.Enable    ${HEALTH_ADDON_NAME}
+    END
+    addon.Wait For Enabled    ${HEALTH_ADDON_NAME}
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}s    ${RETRY_INTERVAL}s
+    ...    Component Health Should Exist    ${HEALTH_COMPONENT_VM}
     Log    Resource health controller is available
+
+Component Health Should Exist
+    [Arguments]    ${name}
+    ${exists}=    health_keywords.Component Health Exists    ${name}
+    Should Be True    ${exists}    ComponentHealth '${name}' not found
+
+Resource Health Controller State Is Restored
+    [Documentation]    Put the addon back to the enabled flag found by
+    ...    `Resource Health Controller Is Installed`.
+    addon.Restore State    ${HEALTH_ADDON_NAME}    ${INITIAL_STATE_HEALTH_ADDON}
 
 Health Check Should Report Resource
     [Arguments]    ${component}    ${check}    ${resource}    ${severity}=${NONE}
