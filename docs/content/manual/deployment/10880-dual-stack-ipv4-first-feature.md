@@ -2,8 +2,8 @@
 title: Dual-stack (IPv4 first) feature verification
 ---
 
-* Related issues: [#10755](https://github.com/harvester/harvester/issues/10755) [#10769](https://github.com/harvester/harvester/issues/10769) [#10880](https://github.com/harvester/harvester/issues/10880) [#11471](https://github.com/harvester/harvester/issues/11471) [#2688](https://github.com/harvester/tests/issues/2688)
-* Related PRs: harvester [#10945](https://github.com/harvester/harvester/pull/10945) [#11309](https://github.com/harvester/harvester/pull/11309) [#11523](https://github.com/harvester/harvester/pull/11523) [#11877](https://github.com/harvester/harvester/pull/11877) [#12095](https://github.com/harvester/harvester/pull/12095), harvester-installer [#1298](https://github.com/harvester/harvester-installer/pull/1298), charts [#636](https://github.com/harvester/charts/pull/636) [#643](https://github.com/harvester/charts/pull/643) [#645](https://github.com/harvester/charts/pull/645), node-manager [#238](https://github.com/harvester/node-manager/pull/238), kubeovn-operator [#52](https://github.com/harvester/kubeovn-operator/pull/52)
+* Related issues: [#10755](https://github.com/harvester/harvester/issues/10755) [#10759](https://github.com/harvester/harvester/issues/10759) [#10769](https://github.com/harvester/harvester/issues/10769) [#10880](https://github.com/harvester/harvester/issues/10880) [#11471](https://github.com/harvester/harvester/issues/11471) [#2688](https://github.com/harvester/tests/issues/2688)
+* Related PRs: harvester [#10945](https://github.com/harvester/harvester/pull/10945) [#11309](https://github.com/harvester/harvester/pull/11309) [#11523](https://github.com/harvester/harvester/pull/11523) [#11877](https://github.com/harvester/harvester/pull/11877) [#12095](https://github.com/harvester/harvester/pull/12095), harvester-installer [#1298](https://github.com/harvester/harvester-installer/pull/1298), charts [#636](https://github.com/harvester/charts/pull/636) [#643](https://github.com/harvester/charts/pull/643) [#645](https://github.com/harvester/charts/pull/645), node-manager [#238](https://github.com/harvester/node-manager/pull/238), kubeovn-operator [#52](https://github.com/harvester/kubeovn-operator/pull/52), network-controller-harvester [#450](https://github.com/harvester/network-controller-harvester/pull/450) [#454](https://github.com/harvester/network-controller-harvester/pull/454) [#456](https://github.com/harvester/network-controller-harvester/pull/456)
 * HEP: [20260528-dual-stack-ipv4-first](https://github.com/harvester/harvester/blob/master/enhancements/20260528-dual-stack-ipv4-first.md)
 
 ## Category:
@@ -84,6 +84,38 @@ The installer UI, config-file install and the upgrade path are in [10755-dual-st
 1. Set `vm-migration-network` to `{"vlan":101,"clusterNetwork":"mgmt","range":"192.168.101.0/24","rangeV6":"fd01::/120","rangeV6Start":"fd01::10","rangeV6End":"fd01::50"}`
 1. Migrate the VM from the VM section to the other node. During the migration run `kubectl -n kube-system get ippools.whereabouts.cni.cncf.io fd01---120 -o yaml`
 1. After the migration run `kubectl get vmi <vm> -o jsonpath='{.status.interfaces[*]}'`
+
+### Cluster B: Host network configuration (HNC) and kube-ovn
+HostNetworkConfig (HNC) puts a VLAN sub-interface with IPv4, IPv6 or dual-stack addresses on every node. [network-controller-harvester#450](https://github.com/harvester/network-controller-harvester/pull/450) was still open when this section was written, run it once the PR is merged, with the new CRD from the PR (or charts [#676](https://github.com/harvester/charts/pull/676)). The test steps follow the plan in [#10759](https://github.com/harvester/harvester/issues/10759). There is no UI yet, use YAML.
+1. Prepare DHCP on VLAN 100 on the libvirt host (lease time 5 minutes so renew can be tested). For example, with the VLAN device `virbr0.100` carrying `192.168.100.1/24` and `2001:db8:cbfe::1/64`, run one `dnsmasq --no-daemon --port=0 --interface=virbr0.100 --bind-dynamic --dhcp-range=192.168.100.50,192.168.100.100,255.255.255.0,5m --dhcp-option=option:router,192.168.100.1 --no-hosts --dhcp-leasefile=/tmp/dnsmasq-vlan100.leases --dhcp-sequential-ip --dhcp-no-override` for IPv4 and another with `--dhcp-range=2001:db8:cbfe::10,2001:db8:cbfe::50,64,5m --enable-ra --dhcp-option=option6:dns-server,[2001:db8:cbfe::1] --dhcp-leasefile=/tmp/dnsmasq-vlan100-v6.leases` for IPv6. Allow VLAN 100 on the bridge ports of the node VMs
+1. Create a static dual-stack HNC:
+   ```
+   apiVersion: network.harvesterhci.io/v1beta1
+   kind: HostNetworkConfig
+   metadata:
+     name: hnc-static-dual
+   spec:
+     clusterNetwork: mgmt
+     hostMultiFamilyIPs:
+       <node-1>:
+         ipv4: 192.168.100.15/24
+         ipv6: 2001:db8:cbfe::2/128
+       <node-2>:
+         ipv4: 192.168.100.16/24
+         ipv6: 2001:db8:cbfe::3/128
+     ipFamily: dual-ipv4-ipv6
+     mode: static
+     underlay: false
+     vlanID: 100
+   ```
+   Run `kubectl get hostnetworkconfigs.network.harvesterhci.io hnc-static-dual -o yaml` and on each node `ip -o addr show dev mgmt-br.100`
+1. Create DHCP HNCs with `mode: dhcp` and `ipFamily` `dual-ipv4-ipv6`, `ipv4` and `ipv6` (one at a time, VLAN 100) and check the status and the node addresses for each
+1. For the dual DHCP HNC stop the DHCPv6 server first and create the HNC, then start it
+1. Wait for a lease renewal (5 minutes) and read the agent log; then stop the DHCP server and read the log again
+1. Update the HNC (change an address or the `ipFamily`) and delete it, then check the node addresses and the DHCP lease file
+1. Replace the network-controller agent pod on a node while an HNC exists
+1. Webhook checks: create an HNC where two nodes use the same IP; a dual-stack HNC where a node has only an IPv4 or only an IPv6 address; and, once it is available, a dual-stack HNC on a host that is IPv4-only
+1. With `kubeovn-operator` enabled and the dual-stack HNC present, run `kubectl -n kube-system get pods | grep ovs-ovn` and for one pod `kubectl -n kube-system exec <ovs-ovn-pod> -- ovs-vsctl show`
 
 ### Cluster B: NTP servers
 1. Baseline: `kubectl get settings.harvesterhci.io ntp-servers -o jsonpath='{.value}'` is `{"ntpServers":["0.suse.pool.ntp.org"]}`
@@ -205,6 +237,17 @@ Previous setting values must stay in place after each rejected request.
 1. The order is kept, not sorted, and a new order triggers one reconcile
 1. The baseline is restored after the cleanup and the value survives the reboot
 1. `harvester-node-manager-webhook` is `PreferDualStack` with an IPv4 and an IPv6 IP
+
+### Cluster B: Host network configuration (HNC) and kube-ovn
+1. The static HNC is `Ready` on every node; the status `network` shows both addresses and `ip -o addr show dev mgmt-br.100` has the IPv4 and the IPv6 address
+1. A DHCP dual-stack HNC is `Ready` with `network.ipv4`, `network.gatewayIPv4` and `network.ipv6` filled in; the IPv4 and the IPv6 address are applied together. With the DHCPv6 server stopped, neither address is applied and the HNC is not `Ready` (no half applied state), and once the server is back both are applied
+1. The IPv4-only and the IPv6-only HNC get only their own family
+1. After a renewal the addresses stay and the agent log shows the renewal; with the DHCP server stopped the agent logs the renew error (the error is not written to the CRD status yet, [#11525](https://github.com/harvester/harvester/issues/11525))
+1. Update and delete work without leftovers: removed addresses are gone from the node and the IPv4 lease is released on a best effort basis (check the dnsmasq lease file)
+1. Replacing the agent pod does not change addresses or status
+1. The webhook rejects a duplicated IP across nodes and a node with a missing family in dual-stack mode; the rejection of a dual-stack HNC on an IPv4-only host was announced for a follow-up of #450, record the result
+1. The kube-ovn tunnel ports in `ovs-vsctl show` use the HNC addresses as `local_ip` and `remote_ip`; in the reference run these were the IPv4 addresses of the dual-stack HNC (IPv4 first) and the type shown was `vxlan`, record the tunnel type that your build shows. The HNC stays a host-side prerequisite, it does not give VMs on a classic VLAN VM network an IPv6 address
+1. Known open items, not failures: IPv6 duplicate address detection is not handled yet, a failed renew is not written back to the CRD, and the management interface detection can pick another sub-interface until [#455](https://github.com/harvester/network-controller-harvester/pull/455) is merged
 
 ### Cluster B: VM with IPv6 through cloud-init
 1. Without IPv6 configuration the pod has an IPv4 and an IPv6 address, the guest has only IPv4 (no global IPv6 address, no IPv6 default route). This is the documented KubeVirt difference, not a Harvester bug
