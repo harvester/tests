@@ -25,6 +25,26 @@ Create LHv2 Storage Class
     [Arguments]    ${name}    ${number_of_replicas}    ${disk_selector}
     Create Storage Class    ${name}    v2    ${number_of_replicas}    ${disk_selector}
 
+Create Encryption Secret
+    [Arguments]    ${name}    ${passphrase}    ${namespace}=${DEFAULT_NAMESPACE}
+    [Documentation]    Create a Secret with the LUKS passphrase and crypto options
+    ...    an encrypted Longhorn StorageClass refers to
+    storage_keywords.create_encryption_secret    ${name}    ${namespace}    ${passphrase}
+
+Delete Encryption Secret
+    [Arguments]    ${name}    ${namespace}=${DEFAULT_NAMESPACE}
+    storage_keywords.delete_encryption_secret    ${name}    ${namespace}
+
+Create Encrypted Storage Class
+    [Arguments]    ${name}    ${data_engine}    ${number_of_replicas}    ${secret_name}
+    ...    ${secret_namespace}=${DEFAULT_NAMESPACE}
+    [Documentation]    Create a Longhorn StorageClass with `encrypted: "true"` whose
+    ...    CSI secret parameters point at the given encryption Secret
+    storage_keywords.create_storageclass    ${name}    ${data_engine}    ${number_of_replicas}
+    ...    ${EMPTY}    encryption_secret=${secret_namespace}/${secret_name}
+    Wait Until Keyword Succeeds    ${WAIT_TIMEOUT}    ${RETRY_INTERVAL}
+    ...    Storage Class Is Present    ${name}
+
 Delete Storage Class
     [Arguments]    ${name}
     storage_keywords.delete_storageclass    ${name}
@@ -50,6 +70,12 @@ Storage Class Parameter Should Be
     ${sc}=    storage_keywords.get_storageclass    ${name}
     Should Not Be Equal    ${sc}    ${NONE}    msg=StorageClass ${name} does not exist
     Dictionary Should Contain Item    ${sc}[parameters]    ${key}    ${expected}
+
+Get Storage Class Parameter
+    [Arguments]    ${name}    ${key}
+    ${sc}=    storage_keywords.get_storageclass    ${name}
+    Should Not Be Equal    ${sc}    ${NONE}    msg=StorageClass ${name} does not exist
+    RETURN    ${sc}[parameters][${key}]
 
 Create LHv2 Storage Class With Provisioned Disks
     [Arguments]    ${name}

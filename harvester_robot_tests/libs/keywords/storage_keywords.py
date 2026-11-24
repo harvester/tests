@@ -146,10 +146,17 @@ class storage_keywords:
             if condition.get("type") == condition_type:
                 return condition.get("status")
 
-    def create_storageclass(self, name, data_engine, number_of_replicas, disk_selector):
+    def create_storageclass(self, name, data_engine, number_of_replicas, disk_selector,
+                            encryption_secret=None):
         return self.storageclass.create(
-            name, data_engine, number_of_replicas, disk_selector
+            name, data_engine, number_of_replicas, disk_selector, encryption_secret
         )
+
+    def create_encryption_secret(self, name, namespace, passphrase):
+        return self.storageclass.create_encryption_secret(name, namespace, passphrase)
+
+    def delete_encryption_secret(self, name, namespace):
+        return self.storageclass.delete_encryption_secret(name, namespace)
 
     def delete_storageclass(self, name):
         return self.storageclass.delete(name)

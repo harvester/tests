@@ -9,6 +9,11 @@ from utility.utility import logging
 from constant import LABEL_TEST, LABEL_TEST_VALUE, LVM_PROVISIONER
 from .base import Base
 
+# CSI parameters a Longhorn encrypted StorageClass points at its key Secret with
+ENCRYPTION_SECRET_PARAMS = (
+    "provisioner", "node-publish", "node-stage", "node-expand",
+)
+
 
 class CRD(Base):
     """CRD implementation for StorageClass operations using Kubernetes API"""
@@ -16,6 +21,7 @@ class CRD(Base):
     def __init__(self):
         super().__init__()
         self.custom_api = client.CustomObjectsApi()
+        self.core_api = client.CoreV1Api()
         self.common_parameters = {
             "group": "storage.k8s.io",
             "version": "v1",
@@ -29,7 +35,8 @@ class CRD(Base):
         parts = [part for part in parts if part]
         return ",".join(parts)
 
-    def create(self, name, data_engine, number_of_replicas, disk_selector):
+    def create(self, name, data_engine, number_of_replicas, disk_selector,
+               encryption_secret=None):
         if self.get(name):
             raise Exception(f"StorageClass {name} already exists")
 
@@ -55,6 +62,16 @@ class CRD(Base):
                 "dataEngine": str(data_engine)
             }
         }
+
+        # encryption_secret is "<namespace>/<name>" of a Secret created by
+        # create_encryption_secret; Longhorn encrypts every volume of the SC
+        if encryption_secret:
+            secret_ns, secret_name = encryption_secret.split("/", 1)
+            body["parameters"]["encrypted"] = "true"
+            for prefix in ENCRYPTION_SECRET_PARAMS:
+                key = f"csi.storage.k8s.io/{prefix}-secret"
+                body["parameters"][f"{key}-name"] = secret_name
+                body["parameters"][f"{key}-namespace"] = secret_ns
 
         # An empty diskSelector is read by Longhorn as the tag "", so omit it
         if disk_selector_value:
@@ -104,6 +121,32 @@ class CRD(Base):
         return self.custom_api.create_cluster_custom_object(
             **self.common_parameters, body=body
         )
+
+    def create_encryption_secret(self, name, namespace, passphrase):
+        """Create the Secret holding the LUKS passphrase of encrypted volumes"""
+        body = client.V1Secret(
+            metadata=client.V1ObjectMeta(
+                name=name, namespace=namespace,
+                labels={LABEL_TEST: LABEL_TEST_VALUE}),
+            string_data={
+                "CRYPTO_KEY_VALUE": passphrase,
+                "CRYPTO_KEY_PROVIDER": "secret",
+                "CRYPTO_KEY_CIPHER": "aes-xts-plain64",
+                "CRYPTO_KEY_HASH": "sha256",
+                "CRYPTO_KEY_SIZE": "256",
+                "CRYPTO_PBKDF": "argon2i",
+            },
+        )
+        logging(f"Creating encryption Secret {namespace}/{name}")
+        return self.core_api.create_namespaced_secret(namespace, body)
+
+    def delete_encryption_secret(self, name, namespace):
+        try:
+            self.core_api.delete_namespaced_secret(name, namespace)
+            logging(f"Deleted encryption Secret {namespace}/{name}")
+        except ApiException as e:
+            if e.status != 404:
+                raise
 
     def delete(self, name):
         try:

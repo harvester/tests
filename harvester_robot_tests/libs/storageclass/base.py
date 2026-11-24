@@ -13,8 +13,17 @@ class Base(ABC):
         self.unsupported_msg = f"Unsupported by {self.__class__.__name__}, falling back."
 
     @abstractmethod
-    def create(self, name, data_engine, number_of_replicas, disk_selector):
-        """Create a StorageClass"""
+    def create(self, name, data_engine, number_of_replicas, disk_selector,
+               encryption_secret=None):
+        """Create a StorageClass, encrypted if encryption_secret ("<ns>/<name>") is set"""
+        raise NotImplementedError(self.unsupported_msg)
+
+    def create_encryption_secret(self, name, namespace, passphrase):
+        """Create a Longhorn volume encryption Secret"""
+        raise NotImplementedError(self.unsupported_msg)
+
+    def delete_encryption_secret(self, name, namespace):
+        """Delete a Longhorn volume encryption Secret"""
         raise NotImplementedError(self.unsupported_msg)
 
     @abstractmethod
