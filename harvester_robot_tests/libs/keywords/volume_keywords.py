@@ -115,6 +115,14 @@ class volume_keywords:
         logging(f'Waiting for Longhorn volume backing PVC {pvc_name} to be healthy')
         self.volume.wait_for_longhorn_volume_healthy(pvc_name, timeout, namespace)
 
+    def get_longhorn_volume(self, pvc_name, namespace="default"):
+        """Return the Longhorn Volume CR backing a PVC"""
+        return self.volume.get_longhorn_volume(pvc_name, namespace)
+
+    def get_host_device_info(self, pvc_name, namespace="default"):
+        """Inspect the block device of an attached volume on its node"""
+        return self.volume.get_host_device_info(pvc_name, namespace)
+
     def get_volume_status(self, volume_name):
         """Get volume status"""
         return self.volume.get_status(volume_name)
