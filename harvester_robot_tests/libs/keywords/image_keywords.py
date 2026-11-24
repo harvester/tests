@@ -27,6 +27,15 @@ class image_keywords:
         logging(f'Creating image {image_name}')
         self.image.create_from_url(image_name, image_url, checksum, **kwargs)
 
+    def create_image_by_crypto(self, image_name, crypto_operation, source_image_name,
+                               storage_class, backend="", namespace='default',
+                               source_image_namespace=""):
+        """Encrypt or decrypt an existing image into a new image"""
+        logging(f'Creating image {image_name} by {crypto_operation} of {source_image_name}')
+        self.image.create_by_crypto(image_name, crypto_operation, source_image_name,
+                                    storage_class, backend, namespace,
+                                    source_image_namespace)
+
     def upload_image_file(self, image_name, file_path, namespace='default'):
         """Create an image by uploading a local file"""
         logging(f'Uploading image {image_name} from {file_path}')
@@ -74,7 +83,9 @@ class image_keywords:
     def try_create_image(self, image_name, image_url="", source_type="download",
                          checksum="", namespace='default', **kwargs):
         """Attempt to create an image for negative testing; returns result dict.
-        kwargs (backing_image_name, backend, storage_class) map to spec fields.
+        kwargs (backing_image_name, backend, storage_class) map to spec fields,
+        crypto_operation / source_image_name / source_image_namespace to
+        spec.securityParameters.
         """
         logging(f'Attempting to create image {namespace}/{image_name} '
                 f'(sourceType={source_type}, url={image_url}, {kwargs}) (negative test)')

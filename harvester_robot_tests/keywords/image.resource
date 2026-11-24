@@ -30,6 +30,45 @@ Create restore image from backing image backup
     image_keywords.create image from url    ${image_name}    ${backup_url}    checksum=${checksum}
     ...    source_type=restore
 
+Create image by crypto operation
+    [Arguments]    ${image_name}    ${crypto_operation}    ${source_image_name}    ${storage_class}
+    ...    ${backend}=${EMPTY}    ${namespace}=${DEFAULT_NAMESPACE}    ${source_image_namespace}=${EMPTY}
+    [Documentation]    Create an image (sourceType clone) by encrypting or decrypting
+    ...    source_image_name onto storage_class. backend must match the source image's
+    ...    backend: cdi for an image on an LHv2 StorageClass, backingimage for LHv1.
+    image_keywords.create_image_by_crypto    ${image_name}    ${crypto_operation}
+    ...    ${source_image_name}    ${storage_class}    backend=${backend}
+    ...    namespace=${namespace}    source_image_namespace=${source_image_namespace}
+
+Image is encrypted from
+    [Arguments]    ${image_name}    ${source_image_name}    ${storage_class}    ${backend}=${EMPTY}
+    Create image by crypto operation    ${image_name}    encrypt    ${source_image_name}
+    ...    ${storage_class}    backend=${backend}
+    Wait for image downloaded by name    ${image_name}
+
+Image is decrypted from
+    [Arguments]    ${image_name}    ${source_image_name}    ${storage_class}    ${backend}=${EMPTY}
+    Create image by crypto operation    ${image_name}    decrypt    ${source_image_name}
+    ...    ${storage_class}    backend=${backend}
+    Wait for image downloaded by name    ${image_name}
+
+Image Security Parameters Should Be
+    [Arguments]    ${image_name}    ${crypto_operation}    ${source_image_name}
+    ...    ${source_image_namespace}=${DEFAULT_NAMESPACE}
+    ${spec}=    image_keywords.get_image_spec    ${image_name}
+    ${security}=    Set Variable    ${spec}[securityParameters]
+    Should Be Equal As Strings    ${security}[cryptoOperation]    ${crypto_operation}
+    Should Be Equal As Strings    ${security}[sourceImageName]    ${source_image_name}
+    Should Be Equal As Strings    ${security}[sourceImageNamespace]    ${source_image_namespace}
+
+Image Virtual Size Should Equal
+    [Arguments]    ${image_name}    ${other_image_name}
+    [Documentation]    Encryption must not change the guest-visible size of an image
+    ${status}=    image_keywords.get_image_status    ${image_name}
+    ${other}=    image_keywords.get_image_status    ${other_image_name}
+    Should Be True    ${status}[virtual_size] > 0
+    Should Be Equal As Integers    ${status}[virtual_size]    ${other}[virtual_size]
+
 Wait for image downloaded by name
     [Arguments]    ${image_name}    ${timeout}=${WAIT_TIMEOUT}
     [Documentation]    Wait for image download to complete
@@ -182,6 +221,20 @@ Try To Create Image
     ${result}=    image_keywords.try_create_image    ${image_name}    ${image_url}    ${source_type}    ${checksum}
     ...    ${namespace}    &{spec}
     RETURN    ${result}
+
+Image Crypto Operation Should Be Rejected
+    [Arguments]    ${image_name}    ${crypto_operation}    ${source_image_name}    ${storage_class}
+    ...    ${expected_message}    ${backend}=cdi
+    [Documentation]    Try to encrypt/decrypt source_image_name into image_name and assert
+    ...    the webhook rejects it with expected_message. An image created by mistake
+    ...    (a webhook regression) is deleted again.
+    ${result}=    Try To Create Image    ${image_name}    source_type=clone
+    ...    crypto_operation=${crypto_operation}    source_image_name=${source_image_name}
+    ...    storage_class=${storage_class}    backend=${backend}
+    IF    ${result}[success]
+        Run Keyword And Ignore Error    Delete image by name    ${image_name}
+    END
+    Operation Should Be Rejected    ${result}    ${expected_message}
 
 Try To Update Image Spec
     [Arguments]    ${image_name}    &{spec}
