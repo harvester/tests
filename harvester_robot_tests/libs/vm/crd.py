@@ -4,6 +4,7 @@ VM CRD Implementation
 import json
 import re
 import time
+import yaml
 from kubernetes import client
 from kubernetes.stream import stream
 from kubernetes.client.rest import ApiException
@@ -26,6 +27,33 @@ DISK_PERFORMANCE_FIELDS = {
     "io": "io",
     "dedicated_io_thread": "dedicatedIOThread",
 }
+
+
+# Guest user the robot tests SSH in as (see OPENSUSE_SSH_USER in variables.resource).
+# openSUSE Leap 16.1+ no longer ships it, so cloud-init has to create it.
+OPENSUSE_SSH_USER = "opensuse"
+
+
+def build_ssh_user_data(ssh_public_key):
+    """Cloud-init user data authorizing ssh_public_key for guest SSH login.
+
+    The key is kept at the top level (authorizes the image's default user, as
+    before) and also given to an explicit `opensuse` user, because openSUSE
+    Leap 16.1+ images don't ship that user. On other images the extra user is
+    created but never used.
+    """
+    return "#cloud-config\n" + yaml.dump({
+        "ssh_authorized_keys": [ssh_public_key],
+        "users": [
+            "default",
+            {
+                "name": OPENSUSE_SSH_USER,
+                "shell": "/bin/bash",
+                "sudo": "ALL=(ALL) NOPASSWD:ALL",
+                "ssh_authorized_keys": [ssh_public_key],
+            },
+        ],
+    })
 
 
 def disk_performance_fields(options):
@@ -295,10 +323,7 @@ class CRD(Base):
                     "name": "cloudinitdisk",
                     "cloudInitNoCloud": {
                         "networkData": "",
-                        "userData": (
-                            "#cloud-config\n"
-                            f"ssh_authorized_keys:\n  - {ssh_public_key}\n"
-                        )
+                        "userData": build_ssh_user_data(ssh_public_key)
                     }
                 }
             )

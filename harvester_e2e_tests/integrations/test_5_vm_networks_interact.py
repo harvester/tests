@@ -276,6 +276,11 @@ class TestBackendNetwork:
         mgmt_ip = interfaces_data[0]['ipAddress']
 
         # Ping management ip address from Harvester node
+        # Wait for the guest to finish booting (cloud-init done) before pinging,
+        # the pod IP is assigned well before the guest network is up
+        with vm_shell_from_host(vip, mgmt_ip, vm_user, vm_passwd) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (out, err)
         with host_shell.login(vip) as sh:
             stdout, stderr = sh.exec_command(f"ping -c 50 {mgmt_ip}")
 
@@ -285,9 +290,9 @@ class TestBackendNetwork:
 
         # SSH to management ip address and execute command from Harvester node
         with vm_shell_from_host(vip, mgmt_ip, vm_user, vm_passwd) as sh:
-            stdout, stderr = sh.exec_command("ls")
+            stdout, stderr = sh.exec_command("whoami")
 
-        assert stdout.find("bin") == 0, (
+        assert stdout.strip() == vm_user, (
             f"Failed to ssh to VM management IP {mgmt_ip} "
             f"on management interface from Harvester node")
 
@@ -384,11 +389,12 @@ class TestBackendNetwork:
 
         # SSH to vlan ip address and execute command from external host
         _stdout, _stderr = self.ssh_client(
-            client, vlan_ip, vm_credential["user"], vm_credential["password"], 'ls', wait_timeout)
+            client, vlan_ip, vm_credential["user"], vm_credential["password"],
+            'whoami', wait_timeout)
 
-        stdout = _stdout.read().decode('ascii').strip("\n")
+        stdout = _stdout.read().decode('ascii').strip()
 
-        assert stdout.find("bin") == 0, (
+        assert stdout == vm_credential["user"], (
             f"Failed to ssh to VM external vlan IP {vlan_ip}"
             f"on vlan interface from external host")
 
@@ -669,11 +675,12 @@ class TestBackendNetwork:
 
         # SSH to vlan ip address and execute command
         _stdout, _stderr = self.ssh_client(
-            client, vlan_ip, vm_credential["user"], vm_credential["password"], 'ls', wait_timeout)
+            client, vlan_ip, vm_credential["user"], vm_credential["password"],
+            'whoami', wait_timeout)
 
-        stdout = _stdout.read().decode('ascii').strip("\n")
+        stdout = _stdout.read().decode('ascii').strip()
 
-        assert stdout.find("bin") == 0, (
+        assert stdout == vm_credential["user"], (
             f"Failed to ssh to VM external vlan IP {vlan_ip}"
             f"on vlan interface from external host")
 
@@ -782,6 +789,11 @@ class TestBackendNetwork:
         # Check can ping management ip address from Harvester node
         mgmt_ip = ip_addresses[0]
 
+        # Wait for the guest to finish booting (cloud-init done) before pinging,
+        # the pod IP is assigned well before the guest network is up
+        with vm_shell_from_host(vip, mgmt_ip, vm_user, vm_passwd) as sh:
+            cloud_inited, (out, err) = vm_checker.wait_cloudinit_done(sh)
+            assert cloud_inited, (out, err)
         with host_shell.login(vip) as sh:
             stdout, stderr = sh.exec_command(f"ping -c 50 {mgmt_ip}")
 
@@ -791,9 +803,9 @@ class TestBackendNetwork:
 
         # Check can ssh to host and execute command from Harvester node
         with vm_shell_from_host(vip, mgmt_ip, vm_user, vm_passwd) as sh:
-            stdout, stderr = sh.exec_command("ls")
+            stdout, stderr = sh.exec_command("whoami")
 
-        assert stdout.find("bin") == 0, (
+        assert stdout.strip() == vm_user, (
             f"Failed to ssh to VM management IP {mgmt_ip} "
             f"on management interface from Harvester node")
 
