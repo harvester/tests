@@ -49,6 +49,27 @@ class StorageClass(Base):
             logging(e)
             return self.rest.list(label_selector)
 
+    def get_default(self):
+        try:
+            return self.crd.get_default()
+        except NotImplementedError as e:
+            logging(e)
+            return self.rest.get_default()
+
+    def set_default(self, name):
+        try:
+            return self.crd.set_default(name)
+        except NotImplementedError as e:
+            logging(e)
+            return self.rest.set_default(name)
+
+    def unset_default(self, name):
+        try:
+            return self.crd.unset_default(name)
+        except NotImplementedError as e:
+            logging(e)
+            return self.rest.unset_default(name)
+
     def cleanup(self):
         try:
             return self.crd.cleanup()

@@ -33,12 +33,13 @@ Get Initial State
     RETURN    ${initial_state}
 
 Enable
-    [Arguments]    ${addon_name}
-    [Documentation]    Enable an addon
+    [Arguments]    ${addon_name}    ${retries}=10
+    [Documentation]    Enable an addon. Pass retries=0 to try once with no retry.
     ...               Args:
     ...                   addon_name: Name of the addon to enable
+    ...                   retries: Number of retries on transient errors (default 10)
     Log    Enabling addon: ${addon_name}
-    addon_keywords.enable_addon    ${addon_name}
+    addon_keywords.enable_addon    ${addon_name}    ${retries}
     Log    Addon ${addon_name} enable request sent
 
 Disable

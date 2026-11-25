@@ -51,15 +51,16 @@ class addon_keywords:
         logging(f'Getting initial state of addon {addon_name}')
         return self.addon.is_addon_enabled(addon_name)
 
-    def enable_addon(self, addon_name):
+    def enable_addon(self, addon_name, retries=10):
         """
         Enable an addon
 
         Args:
             addon_name: Name of the addon to enable
+            retries: Number of retries on transient errors (0 = try once)
         """
         logging(f'Enabling addon {addon_name}')
-        self.addon.enable_addon(addon_name)
+        self.addon.enable_addon(addon_name, retries=int(retries))
 
     def disable_addon(self, addon_name):
         """
