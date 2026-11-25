@@ -147,6 +147,10 @@ class CRD(Base):
                 {"name": "data-2", "size": "50Gi"}
             ]
 
+        boot_access_mode: access mode for a cloned root PVC; falls back to
+            disk_access_mode (default ReadWriteMany).
+        use_golden_image: attach the golden PVC directly with the VM importer label.
+
         Storage performance (KubeVirt high-performance storage features):
             boot_disk_options: optional dict with cache ("none", "writeback",
                 "writethrough"), io ("native", "threads") and
@@ -187,32 +191,8 @@ class CRD(Base):
 
         # Build volumeClaimTemplates annotation for Harvester
         disk_name = "disk-0"
-        volume_name = f"{vm_name}-{disk_name}"
-        boot_disk_size = kwargs.get("disk_size", "10Gi")
-        boot_access_mode = kwargs.get("disk_access_mode", "ReadWriteMany")
-        volume_claim_templates = [
-            {
-                "metadata": {
-                    "name": volume_name,
-                    "annotations": {
-                        "harvesterhci.io/imageId": f"{namespace}/{image_id}"
-                    },
-                    "labels": {
-                        LABEL_TEST: LABEL_TEST_VALUE
-                    }
-                },
-                "spec": {
-                    "accessModes": [boot_access_mode],
-                    "resources": {
-                        "requests": {
-                            "storage": boot_disk_size
-                        }
-                    },
-                    "volumeMode": "Block",
-                    "storageClassName": storage_class
-                }
-            }
-        ]
+        volume_name, volume_claim_templates = self._boot_claim(
+            vm_name, image_id, namespace, storage_class, **kwargs)
         spec_devices_disks = [
             {
                 "bootOrder": 1,
@@ -414,6 +394,10 @@ class CRD(Base):
                 }
             }
         }
+        if kwargs.get("use_golden_image"):
+            # Reproduce VM importer output accepted by the golden PVC validator.
+            body["metadata"]["labels"]["migration.harvesterhci.io/imported"] = "true"
+
         # Pin the VM to a node when requested. Needed for node-local storage
         # (e.g. LVM): the PV carries a node affinity, so its consumer VM has
         # to run on that node for volumes to bind and attach.
@@ -439,6 +423,33 @@ class CRD(Base):
         except ApiException as e:
             logging(f"Failed to create VirtualMachine: {e}")
             raise
+
+    def _boot_claim(self, vm_name, image_id, namespace, storage_class, **kwargs):
+        """Use the golden PVC for imported VMs, otherwise request a clone."""
+        if kwargs.get("use_golden_image"):
+            return image_id, []
+
+        volume_name = f"{vm_name}-disk-0"
+        access_mode = kwargs.get(
+            "boot_access_mode", kwargs.get("disk_access_mode", "ReadWriteMany"))
+        template = {
+            "metadata": {
+                "name": volume_name,
+                "annotations": {
+                    "harvesterhci.io/imageId": f"{namespace}/{image_id}"
+                },
+                "labels": {LABEL_TEST: LABEL_TEST_VALUE}
+            },
+            "spec": {
+                "accessModes": [access_mode],
+                "resources": {
+                    "requests": {"storage": kwargs.get("disk_size", "10Gi")}
+                },
+                "volumeMode": "Block",
+                "storageClassName": storage_class
+            }
+        }
+        return volume_name, [template]
 
     def delete(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Delete a VM together with the PVCs it owns (boot + data disks).
