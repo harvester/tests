@@ -10,7 +10,7 @@ from crd import (
     delete_cr, delete_cluster_cr,
     list_cr, list_cluster_cr,
     wait_for_cr_deleted, wait_for_cluster_cr_deleted,
-    get_cluster_cr,
+    get_cr, get_cluster_cr, patch_cr,
     wait_for_cluster_cr_condition,
 )
 from constant import DEFAULT_NAMESPACE, LABEL_TEST, LABEL_TEST_VALUE, DEFAULT_TIMEOUT_SHORT
@@ -414,3 +414,66 @@ class CRD(Base):
                 raise Exception(
                     f"Failed to delete IP pool: {e}"
                 )
+
+    # Generic NetworkAttachmentDefinition Operations (any CNI type)
+    def try_create_nad(self, name, config, labels=None, annotations=None):
+        """Attempt to create a NAD with a raw CNI config; returns {success, code, message}"""
+        if not isinstance(config, str):
+            config = json.dumps(config)
+        body = {
+            "apiVersion": "k8s.cni.cncf.io/v1",
+            "kind": "NetworkAttachmentDefinition",
+            "metadata": {
+                "name": name,
+                "namespace": DEFAULT_NAMESPACE,
+                "labels": {**(labels or {}), LABEL_TEST: LABEL_TEST_VALUE},
+                "annotations": dict(annotations or {}),
+            },
+            "spec": {"config": config}
+        }
+        logging(f"Trying to create NAD {name}: {config}")
+        try:
+            create_cr(
+                group="k8s.cni.cncf.io",
+                version="v1",
+                namespace=DEFAULT_NAMESPACE,
+                plural="network-attachment-definitions",
+                body=body
+            )
+            logging(f"NAD {name} was created")
+            return {"success": True, "code": 201, "message": ""}
+        except ApiException as e:
+            logging(f"NAD {name} was rejected (status={e.status}): {e.body or e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def try_update_nad_config(self, name, config):
+        """Attempt to replace the CNI config of a NAD; returns {success, code, message}"""
+        if not isinstance(config, str):
+            config = json.dumps(config)
+        logging(f"Trying to update NAD {name} config: {config}")
+        try:
+            patch_cr(
+                group="k8s.cni.cncf.io",
+                version="v1",
+                namespace=DEFAULT_NAMESPACE,
+                plural="network-attachment-definitions",
+                name=name,
+                body={"spec": {"config": config}}
+            )
+            logging(f"NAD {name} config was updated")
+            return {"success": True, "code": 200, "message": ""}
+        except ApiException as e:
+            logging(f"NAD {name} update was rejected (status={e.status}): {e.body or e.reason}")
+            return {"success": False, "code": e.status,
+                    "message": e.body or e.reason or ""}
+
+    def get_nad(self, name):
+        """Get a NAD in the default namespace"""
+        return get_cr(
+            group="k8s.cni.cncf.io",
+            version="v1",
+            namespace=DEFAULT_NAMESPACE,
+            plural="network-attachment-definitions",
+            name=name
+        )

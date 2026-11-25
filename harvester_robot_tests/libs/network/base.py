@@ -141,3 +141,37 @@ class Base(ABC):
             name: IP pool name
         """
         pass
+
+    # Generic NetworkAttachmentDefinition Operations (any CNI type)
+    @abstractmethod
+    def try_create_nad(self, name, config, labels=None, annotations=None):
+        """Attempt to create a NAD with a raw CNI config.
+
+        Args:
+            name: NAD name (in the default namespace)
+            config: CNI config, as a dict or a JSON string
+            labels: Extra labels
+            annotations: Extra annotations
+
+        Returns:
+            dict: {success, code, message}; never raises on API rejection
+        """
+        pass
+
+    @abstractmethod
+    def try_update_nad_config(self, name, config):
+        """Attempt to replace the CNI config of an existing NAD.
+
+        Returns:
+            dict: {success, code, message}; never raises on API rejection
+        """
+        pass
+
+    @abstractmethod
+    def get_nad(self, name):
+        """Get a NAD in the default namespace.
+
+        Returns:
+            dict: NAD object
+        """
+        pass
