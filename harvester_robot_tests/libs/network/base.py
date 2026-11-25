@@ -141,3 +141,45 @@ class Base(ABC):
             name: IP pool name
         """
         pass
+
+    # Admission (webhook/CRD schema) checks, optionally as server-side dry runs
+    @abstractmethod
+    def try_create_vlan_config(self, name, cluster_network, nics, mode=None,
+                               mtu=None, hardware_addr=None,
+                               node_selector=None, dry_run=False):
+        """Attempt to create a VLAN config with strict field validation.
+
+        Args:
+            name: VLAN config name
+            cluster_network: Cluster network name
+            nics: List of NIC names
+            mode: spec.uplink.mode ("", "bond", "isolated", ...); unset if None
+            mtu: spec.uplink.linkAttributes.mtu
+            hardware_addr: spec.uplink.linkAttributes.hardwareAddr
+            node_selector: spec.nodeSelector
+            dry_run: Server-side dry run (admission runs, nothing is stored)
+
+        Returns:
+            dict: {success, code, message, object}; never raises on rejection
+        """
+        pass
+
+    @abstractmethod
+    def try_create_vlan_network(self, name, vlan_id, cluster_network,
+                                dry_run=False):
+        """Attempt to create a VLAN network (bridge NAD).
+
+        Returns:
+            dict: {success, code, message, object}; never raises on rejection
+        """
+        pass
+
+    @abstractmethod
+    def try_create_host_network_config(self, name, cluster_network, vlan_id,
+                                       mode="dhcp", dry_run=False):
+        """Attempt to create a HostNetworkConfig.
+
+        Returns:
+            dict: {success, code, message, object}; never raises on rejection
+        """
+        pass
