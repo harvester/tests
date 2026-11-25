@@ -112,8 +112,9 @@ Delete Volume
     volume_keywords.delete_volume    ${vol_name}
 
 Wait Until Volume Is Deleted
-    [Arguments]    ${vol_name}
-    volume_keywords.wait_for_volume_deleted    ${vol_name}
+    [Arguments]    ${vol_name}    ${namespace}=default
+    [Documentation]    Wait until the volume (PVC) ${vol_name} in ${namespace} is gone
+    volume_keywords.wait_for_volume_deleted    ${vol_name}    namespace=${namespace}
 
 # negative
 Try To Create Volume
@@ -158,8 +159,9 @@ Export Volume To Image
     volume_keywords.export_volume_to_image    ${vol_name}    ${image_name}    ${target_storage_class}
 
 Volume Is Present
-    [Arguments]    ${vol_name}
-    ${status}=    volume_keywords.get_volume_status    ${vol_name}
+    [Arguments]    ${vol_name}    ${namespace}=default
+    [Documentation]    The volume (PVC) ${vol_name} exists in ${namespace}
+    ${status}=    volume_keywords.get_volume_status    ${vol_name}    ${namespace}
     Should Not Be Empty    ${status}
 
 Volume Should Be Listed

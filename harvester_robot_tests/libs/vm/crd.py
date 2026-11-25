@@ -81,7 +81,7 @@ class CRD(Base):
 
     def create(self, vm_name, image_id, cpu, memory, **kwargs):
         """Create a VM using CRD"""
-        namespace = kwargs.get('namespace', DEFAULT_NAMESPACE)
+        namespace = kwargs.pop('namespace', DEFAULT_NAMESPACE)
 
         try:
             logging(f"Creating VirtualMachine {namespace}/{vm_name}")
@@ -129,80 +129,90 @@ class CRD(Base):
                 sets domain.ioThreadsPolicy
             supplemental_pool_thread_count: optional int, sets
                 domain.ioThreads.supplementalPoolThreadCount
+
+        container_image: optional, boot from this container disk instead of image_id
+        annotations: optional dict, added to the annotations of the VM
         """
 
-        # Look up the image's actual storage class from Harvester.
-        # Since v1.8.0 (harvester#5165), storage classes use lh-<uid>
-        # instead of longhorn-<image_name>. We read status.storageClassName
-        # which works for both old and new Harvester versions.
-        try:
-            img_obj = self.obj_api.get_namespaced_custom_object(
-                group="harvesterhci.io",
-                version="v1beta1",
-                namespace=namespace,
-                plural="virtualmachineimages",
-                name=image_id
-            )
-            storage_class = img_obj.get("status", {}).get(
-                "storageClassName", ""
-            )
-            if not storage_class:
-                raise Exception(
-                    f"Image {image_id} has no storageClassName in status"
+        container_image = kwargs.get("container_image")
+        if container_image:
+            # Boots from a container disk, no image and no boot PVC
+            volume_claim_templates = []
+            spec_devices_disks = [{"bootOrder": 1, "name": "disk-0", "disk": {"bus": "virtio"}}]
+            spec_volumes = [{"name": "disk-0", "containerDisk": {"image": container_image}}]
+        else:
+            # Look up the image's actual storage class from Harvester.
+            # Since v1.8.0 (harvester#5165), storage classes use lh-<uid>
+            # instead of longhorn-<image_name>. We read status.storageClassName
+            # which works for both old and new Harvester versions.
+            try:
+                img_obj = self.obj_api.get_namespaced_custom_object(
+                    group="harvesterhci.io",
+                    version="v1beta1",
+                    namespace=namespace,
+                    plural="virtualmachineimages",
+                    name=image_id
                 )
-            logging(f"Resolved storage class for image {image_id}: "
-                    f"{storage_class}")
-        except ApiException as e:
-            raise Exception(
-                f"Failed to look up image {image_id} for storage class: {e}"
-            )
+                storage_class = img_obj.get("status", {}).get(
+                    "storageClassName", ""
+                )
+                if not storage_class:
+                    raise Exception(
+                        f"Image {image_id} has no storageClassName in status"
+                    )
+                logging(f"Resolved storage class for image {image_id}: "
+                        f"{storage_class}")
+            except ApiException as e:
+                raise Exception(
+                    f"Failed to look up image {image_id} for storage class: {e}"
+                )
 
-        # Build volumeClaimTemplates annotation for Harvester
-        disk_name = "disk-0"
-        volume_name = f"{vm_name}-{disk_name}"
-        boot_disk_size = kwargs.get("disk_size", "10Gi")
-        boot_access_mode = kwargs.get("disk_access_mode", "ReadWriteMany")
-        volume_claim_templates = [
-            {
-                "metadata": {
-                    "name": volume_name,
-                    "annotations": {
-                        "harvesterhci.io/imageId": f"{namespace}/{image_id}"
-                    },
-                    "labels": {
-                        LABEL_TEST: LABEL_TEST_VALUE
-                    }
-                },
-                "spec": {
-                    "accessModes": [boot_access_mode],
-                    "resources": {
-                        "requests": {
-                            "storage": boot_disk_size
+            # Build volumeClaimTemplates annotation for Harvester
+            disk_name = "disk-0"
+            volume_name = f"{vm_name}-{disk_name}"
+            boot_disk_size = kwargs.get("disk_size", "10Gi")
+            boot_access_mode = kwargs.get("disk_access_mode", "ReadWriteMany")
+            volume_claim_templates = [
+                {
+                    "metadata": {
+                        "name": volume_name,
+                        "annotations": {
+                            "harvesterhci.io/imageId": f"{namespace}/{image_id}"
+                        },
+                        "labels": {
+                            LABEL_TEST: LABEL_TEST_VALUE
                         }
                     },
-                    "volumeMode": "Block",
-                    "storageClassName": storage_class
+                    "spec": {
+                        "accessModes": [boot_access_mode],
+                        "resources": {
+                            "requests": {
+                                "storage": boot_disk_size
+                            }
+                        },
+                        "volumeMode": "Block",
+                        "storageClassName": storage_class
+                    }
                 }
-            }
-        ]
-        spec_devices_disks = [
-            {
-                "bootOrder": 1,
-                "name": disk_name,
-                "disk": {
-                    "bus": "virtio"
-                },
-                **disk_performance_fields(kwargs.get("boot_disk_options"))
-            }
-        ]
-        spec_volumes = [
-            {
-                "name": disk_name,
-                "persistentVolumeClaim": {
-                    "claimName": volume_name
+            ]
+            spec_devices_disks = [
+                {
+                    "bootOrder": 1,
+                    "name": disk_name,
+                    "disk": {
+                        "bus": "virtio"
+                    },
+                    **disk_performance_fields(kwargs.get("boot_disk_options"))
                 }
-            }
-        ]
+            ]
+            spec_volumes = [
+                {
+                    "name": disk_name,
+                    "persistentVolumeClaim": {
+                        "claimName": volume_name
+                    }
+                }
+            ]
 
         # runStrategy controls whether the VM boots on create. Default keeps the
         # existing behaviour (RerunOnFailure starts it); pass run_strategy=Halted
@@ -315,7 +325,8 @@ class CRD(Base):
                     "harvesterhci.io/volumeClaimTemplates": (
                         json.dumps(volume_claim_templates)
                     ),
-                    "harvesterhci.io/sshNames": "[]"
+                    "harvesterhci.io/sshNames": "[]",
+                    **(kwargs.get("annotations") or {})
                 },
                 "labels": {
                     LABEL_TEST: LABEL_TEST_VALUE,
@@ -903,6 +914,29 @@ class CRD(Base):
         """Return the VM object's metadata.annotations."""
         vm = self.get(vm_name, namespace)
         return vm.get('metadata', {}).get('annotations', {}) or {}
+
+    def set_annotation(self, vm_name, key, value, namespace=DEFAULT_NAMESPACE):
+        """Set an annotation of the VM, retrying on update conflicts."""
+        for i in range(self.retry_count):
+            vm = self.get(vm_name, namespace)
+            vm['metadata'].setdefault('annotations', {})[key] = value
+            try:
+                self.obj_api.replace_namespaced_custom_object(
+                    group=KUBEVIRT_API_GROUP,
+                    version=KUBEVIRT_API_VERSION,
+                    namespace=namespace,
+                    plural=VIRTUALMACHINE_PLURAL,
+                    name=vm_name,
+                    body=vm
+                )
+                return
+            except ApiException as e:
+                if e.status != 409:
+                    raise
+                logging(f"Conflict when annotating VM, retrying ({i})...")
+                time.sleep(self.retry_interval)
+        raise AssertionError(
+            f"Failed to annotate VM {namespace}/{vm_name} after {self.retry_count} attempts")
 
     def wait_for_vm_created(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Wait for VM CR creation."""

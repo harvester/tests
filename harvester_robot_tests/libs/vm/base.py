@@ -14,17 +14,17 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def delete(self, vm_name):
+    def delete(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Delete a virtual machine"""
         pass
 
     @abstractmethod
-    def start(self, vm_name):
+    def start(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Start a VM"""
         pass
 
     @abstractmethod
-    def stop(self, vm_name):
+    def stop(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Stop a VM"""
         pass
 

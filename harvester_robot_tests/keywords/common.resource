@@ -39,9 +39,9 @@ Cluster Version Is At Least
     RETURN    ${result}
 
 Namespace is created
-    [Arguments]    ${name}
-    [Documentation]    Create a namespace for test resources (idempotent)
-    common_keywords.create_namespace    ${name}
+    [Arguments]    ${name}    ${labels}=${NONE}
+    [Documentation]    Create a namespace for test resources (idempotent), with optional extra labels
+    common_keywords.create_namespace    ${name}    ${labels}
 
 Namespace is deleted
     [Arguments]    ${name}

@@ -22,17 +22,17 @@ class VM(Base):
     def create(self, vm_name, image_id, cpu, memory, **kwargs):
         return self.vm.create(vm_name, image_id, cpu, memory, **kwargs)
 
-    def delete(self, vm_name):
-        return self.vm.delete(vm_name)
+    def delete(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.delete(vm_name, namespace)
 
     def list(self, namespace=DEFAULT_NAMESPACE):
         return self.vm.list(namespace)
 
-    def start(self, vm_name):
-        return self.vm.start(vm_name)
+    def start(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.start(vm_name, namespace)
 
-    def stop(self, vm_name):
-        return self.vm.stop(vm_name)
+    def stop(self, vm_name, namespace=DEFAULT_NAMESPACE):
+        return self.vm.stop(vm_name, namespace)
 
     def restart(self, vm_name):
         return self.vm.restart(vm_name)
@@ -117,6 +117,9 @@ class VM(Base):
 
     def get_annotations(self, vm_name):
         return self.vm.get_annotations(vm_name)
+
+    def set_annotation(self, vm_name, key, value, namespace=DEFAULT_NAMESPACE):
+        return self.vm.set_annotation(vm_name, key, value, namespace)
 
     def write_data(self, vm_name, data_size_mb):
         return self.vm.write_data(vm_name, data_size_mb)
