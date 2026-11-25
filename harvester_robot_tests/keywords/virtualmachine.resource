@@ -210,6 +210,13 @@ Get VM node
     ${node}=    vm_keywords.get_vm_node    ${vm_name}
     RETURN    ${node}
 
+VMs should run on different nodes
+    [Arguments]    ${vm_a}    ${vm_b}
+    [Documentation]    Assert the two running VMs are not on the same node
+    ${node_a}=    vm_keywords.get_vm_node    ${vm_a}
+    ${node_b}=    vm_keywords.get_vm_node    ${vm_b}
+    Should Not Be Equal    ${node_a}    ${node_b}    msg=${vm_a} and ${vm_b} both run on ${node_a}
+
 VM should be running on node
     [Arguments]    ${vm_name}    ${expected_node}
     [Documentation]    Assert the VM is currently running on ${expected_node}
