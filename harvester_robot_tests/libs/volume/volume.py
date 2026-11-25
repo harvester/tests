@@ -37,7 +37,10 @@ class Volume(Base):
         return self.volume.get_image_id(volume_name)
 
     def export_to_image(self, volume_name, image_name,
-                        target_storage_class=DEFAULT_STORAGE_CLASS):
+                        target_storage_class=DEFAULT_STORAGE_CLASS, backend=""):
+        if backend:
+            return self.volume.export_to_image(
+                volume_name, image_name, target_storage_class, backend=backend)
         return self.volume.export_to_image(
             volume_name, image_name, target_storage_class)
 
@@ -104,6 +107,12 @@ class Volume(Base):
 
     def wait_for_longhorn_volume_healthy(self, pvc_name, timeout, namespace):
         return self.volume.wait_for_longhorn_volume_healthy(pvc_name, timeout, namespace)
+
+    def get_longhorn_volume(self, pvc_name, namespace):
+        return self.volume.get_longhorn_volume(pvc_name, namespace)
+
+    def get_longhorn_volume_by_name(self, lh_volume_name):
+        return self.volume.get_longhorn_volume_by_name(lh_volume_name)
 
     def cleanup(self):
         return self.volume.cleanup()

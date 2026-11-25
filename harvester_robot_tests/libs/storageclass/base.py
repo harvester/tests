@@ -13,7 +13,7 @@ class Base(ABC):
         self.unsupported_msg = f"Unsupported by {self.__class__.__name__}, falling back."
 
     @abstractmethod
-    def create(self, name, data_engine, number_of_replicas, disk_selector):
+    def create(self, name, data_engine, number_of_replicas, disk_selector, clone_mode=""):
         """Create a StorageClass"""
         raise NotImplementedError(self.unsupported_msg)
 
