@@ -22,6 +22,9 @@ class VM(Base):
     def create(self, vm_name, image_id, cpu, memory, **kwargs):
         return self.vm.create(vm_name, image_id, cpu, memory, **kwargs)
 
+    def try_create(self, vm_name, image_id, cpu, memory, **kwargs):
+        return self.vm.try_create(vm_name, image_id, cpu, memory, **kwargs)
+
     def delete(self, vm_name):
         return self.vm.delete(vm_name)
 
