@@ -110,6 +110,16 @@ class vm_keywords:
         logging(f'Getting annotations of VM {vm_name}')
         return self.vm.get_annotations(vm_name)
 
+    def get_vm_labels(self, vm_name):
+        """Return the VM object's metadata.labels"""
+        logging(f'Getting labels of VM {vm_name}')
+        return self.vm.get_labels(vm_name)
+
+    def set_vm_label(self, vm_name, key, value):
+        """Set a label on the VM object (value None removes it)"""
+        logging(f'Setting label {key}={value} on VM {vm_name}')
+        return self.vm.set_label(vm_name, key, value)
+
     def pause_vm(self, vm_name):
         """Pause a running VM"""
         logging(f'Pausing VM {vm_name}')

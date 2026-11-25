@@ -389,3 +389,30 @@ VM Should Boot And Write To Disk
     ...    ${username}    pkey=${pkey}
     Should Match Regexp    ${output.strip()}    ^[0-9a-f]{8}$
     ...    msg=Failed to write to the disk of ${vm_name}: ${output}
+
+Get VM labels
+    [Arguments]    ${vm_name}
+    [Documentation]    Return the VM object's metadata.labels
+    ${labels}=    vm_keywords.get_vm_labels    ${vm_name}
+    RETURN    ${labels}
+
+VM label should be
+    [Arguments]    ${vm_name}    ${key}    ${expected}
+    [Documentation]    Assert a label on the VM object has the expected value
+    ${labels}=    Get VM labels    ${vm_name}
+    Dictionary Should Contain Key    ${labels}    ${key}
+    ...    msg=VM ${vm_name} has no label ${key}: ${labels}
+    Should Be Equal As Strings    ${labels}[${key}]    ${expected}
+    ...    msg=VM ${vm_name} label ${key} is ${labels}[${key}], expected ${expected}
+
+VM label should be absent
+    [Arguments]    ${vm_name}    ${key}
+    [Documentation]    Assert the VM object does not carry the label
+    ${labels}=    Get VM labels    ${vm_name}
+    Dictionary Should Not Contain Key    ${labels}    ${key}
+    ...    msg=VM ${vm_name} unexpectedly has label ${key}=${labels.get('${key}')}
+
+VM label is set
+    [Arguments]    ${vm_name}    ${key}    ${value}
+    [Documentation]    Set (or, with value None, remove) a label on the VM object
+    vm_keywords.set_vm_label    ${vm_name}    ${key}    ${value}
