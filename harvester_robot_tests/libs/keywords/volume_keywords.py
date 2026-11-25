@@ -166,3 +166,7 @@ class volume_keywords:
         """Wait for a volume snapshot to become ready to use"""
         logging(f'Waiting for snapshot {snapshot_name} to be ready')
         self.volume.wait_for_snapshot_ready(snapshot_name, timeout)
+
+    def get_volume_pv_name(self, volume_name):
+        """Get the PV (== Longhorn volume) name bound to the volume"""
+        return self.volume.get_pv_name(volume_name)

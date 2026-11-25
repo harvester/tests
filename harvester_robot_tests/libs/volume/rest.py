@@ -289,3 +289,8 @@ class Rest(Base):
                     self.delete(name, wait=True)
                 except Exception as e:
                     logging(f"Error deleting volume {name}: {e}", "WARNING")
+
+    def get_pv_name(self, volume_name):
+        raise NotImplementedError(
+            "get_pv_name is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")

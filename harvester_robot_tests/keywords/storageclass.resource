@@ -4,6 +4,7 @@ Library          ../libs/keywords/storage_keywords.py
 Resource         variables.resource
 Resource         setting.resource
 Resource         storage.resource
+Resource         host.resource
 
 
 *** Keywords ***
@@ -83,3 +84,13 @@ Create LHv2 Storage Class With Provisioned Disks
         Fail    ${error}
     END
     RETURN    ${provisioned}
+
+Create Storage Class With Replicas Exceeding Node Count
+    [Arguments]    ${name}
+    [Documentation]    Create a Longhorn v1 StorageClass asking for one more replica than
+    ...    there are nodes, so the replicas of its volumes can never all be scheduled.
+    ...    Returns the replica count.
+    ${node_count}=    Get cluster node count
+    ${replicas}=    Evaluate    ${node_count} + 1
+    Create Storage Class    ${name}    v1    ${replicas}    ${EMPTY}
+    RETURN    ${replicas}
