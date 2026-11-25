@@ -27,6 +27,13 @@ class Image:
         # File upload is available only through the REST strategy
         return self.rest.create_from_file(image_name, file_path, namespace)
 
+    def create_by_crypto(self, image_name, crypto_operation, source_image_name,
+                         storage_class, backend="", namespace=DEFAULT_NAMESPACE,
+                         source_image_namespace=""):
+        return self.image.create_by_crypto(image_name, crypto_operation, source_image_name,
+                                           storage_class, backend, namespace,
+                                           source_image_namespace)
+
     def wait_for_downloaded(self, image_name, timeout):
         return self.image.wait_for_downloaded(image_name, timeout)
 

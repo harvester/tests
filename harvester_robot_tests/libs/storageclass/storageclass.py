@@ -14,12 +14,21 @@ class StorageClass(Base):
         self.crd = CRD()
         self.rest = Rest()
 
-    def create(self, name, data_engine, number_of_replicas, disk_selector):
+    def create(self, name, data_engine, number_of_replicas, disk_selector,
+               encryption_secret=None):
         try:
-            return self.crd.create(name, data_engine, number_of_replicas, disk_selector)
+            return self.crd.create(name, data_engine, number_of_replicas, disk_selector,
+                                   encryption_secret)
         except NotImplementedError as e:
             logging(e)
-            return self.rest.create(name, data_engine, number_of_replicas, disk_selector)
+            return self.rest.create(name, data_engine, number_of_replicas, disk_selector,
+                                    encryption_secret)
+
+    def create_encryption_secret(self, name, namespace, passphrase):
+        return self.crd.create_encryption_secret(name, namespace, passphrase)
+
+    def delete_encryption_secret(self, name, namespace):
+        return self.crd.delete_encryption_secret(name, namespace)
 
     def create_lvm(self, name, vg_name, vg_type, node):
         try:

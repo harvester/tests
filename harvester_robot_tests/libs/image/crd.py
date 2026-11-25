@@ -120,6 +120,65 @@ class CRD(Base):
     def create_from_file(self, image_name, file_path, namespace=DEFAULT_NAMESPACE):
         raise NotImplementedError("File upload is available only through the REST strategy")
 
+    @staticmethod
+    def _security_parameters(kwargs, namespace):
+        """spec.securityParameters from crypto_operation/source_image_name kwargs"""
+        if not kwargs.get("crypto_operation") and not kwargs.get("source_image_name"):
+            return None
+        return {
+            "cryptoOperation": kwargs.get("crypto_operation", ""),
+            "sourceImageName": kwargs.get("source_image_name", ""),
+            "sourceImageNamespace": kwargs.get("source_image_namespace") or namespace,
+        }
+
+    def create_by_crypto(self, image_name, crypto_operation, source_image_name,
+                         storage_class, backend="", namespace=DEFAULT_NAMESPACE,
+                         source_image_namespace=""):
+        """Encrypt or decrypt source_image_name into a new image (sourceType clone).
+
+        storage_class is the target StorageClass. backend must match the
+        source image's backend: cdi for an image on an LHv2 StorageClass,
+        backingimage (the default when empty) for an LHv1 backing image.
+        """
+        security = self._security_parameters({
+            "crypto_operation": crypto_operation,
+            "source_image_name": source_image_name,
+            "source_image_namespace": source_image_namespace,
+        }, namespace)
+        body = {
+            "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
+            "kind": "VirtualMachineImage",
+            "metadata": {
+                "name": image_name,
+                "namespace": namespace,
+                "labels": {LABEL_TEST: LABEL_TEST_VALUE},
+            },
+            "spec": {
+                "displayName": image_name,
+                "sourceType": "clone",
+                "securityParameters": security,
+                "targetStorageClassName": storage_class,
+            },
+        }
+        if backend:
+            body["spec"]["backend"] = backend
+        try:
+            logging(f"Creating VirtualMachineImage {namespace}/{image_name} by "
+                    f"{crypto_operation} of {security['sourceImageNamespace']}/"
+                    f"{source_image_name} onto StorageClass {storage_class}")
+            create_cr(
+                group=HARVESTER_API_GROUP,
+                version=HARVESTER_API_VERSION,
+                namespace=namespace,
+                plural=VIRTUALMACHINEIMAGE_PLURAL,
+                body=body
+            )
+            self.wait_for_image_created(image_name, namespace)
+            return f"{namespace}/{image_name}"
+        except ApiException as e:
+            logging(f"Failed to create image {image_name}: {e}")
+            raise Exception(f"Failed to create image: {e.status}, {e.body or e.reason}")
+
     def try_create(self, image_name, image_url="", source_type="download",
                    checksum="", namespace=DEFAULT_NAMESPACE, **kwargs):
         """Attempt to create an image for negative testing.
@@ -128,7 +187,8 @@ class CRD(Base):
         caller can assert on the failure code/reason (e.g. empty url/data).
         Optional kwargs backing_image_name / backend / storage_class map to
         the matching spec fields, so CRD (CEL) and webhook rules on them can
-        be exercised.
+        be exercised. crypto_operation / source_image_name /
+        source_image_namespace set spec.securityParameters.
         """
         body = {
             "apiVersion": f"{HARVESTER_API_GROUP}/{HARVESTER_API_VERSION}",
@@ -153,6 +213,9 @@ class CRD(Base):
                              ("storage_class", "targetStorageClassName")):
             if kwargs.get(kwarg):
                 body["spec"][field] = kwargs[kwarg]
+        security = self._security_parameters(kwargs, namespace)
+        if security:
+            body["spec"]["securityParameters"] = security
 
         try:
             create_cr(
@@ -456,6 +519,7 @@ class CRD(Base):
             'state': state,
             'download_percent': progress,
             'size': status.get('size', 0),
+            'virtual_size': status.get('virtualSize', 0),
             'failed': status.get('failed', 0),
             'conditions': conditions,
             'storage_class_name': status.get('storageClassName', '')

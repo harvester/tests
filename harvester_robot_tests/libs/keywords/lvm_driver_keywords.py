@@ -15,7 +15,7 @@ import time
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
 from kubernetes import client # noqa E402
 from kubernetes.client.rest import ApiException # noqa E402
-from kubernetes.stream import stream # noqa E402
+from utility.host import exec_command_on_host # noqa E402
 from utility.utility import logging, init_k8s_api_client, get_retry_count_and_interval # noqa E402
 from constant import DEFAULT_NAMESPACE # noqa E402
 
@@ -26,7 +26,6 @@ LVM_DRIVER_NAMESPACE = os.getenv("LVM_DRIVER_NAMESPACE", "harvester-system")
 # Introduced by harvester/csi-driver-lvm#64: one immutable ConfigMap per
 # snapshot recording its backend node and volume group.
 LOCATION_LABEL = "lvm.driver.harvesterhci.io/snapshot-location"
-HOST_POD_IMAGE = os.getenv("WORKLOAD_POD_IMAGE", "busybox:1.36.1")
 
 
 class lvm_driver_keywords:
@@ -132,73 +131,9 @@ class lvm_driver_keywords:
 
     # ---- backend LV verification on the node ----
 
-    def _host_exec(self, node_name, command):
-        """Run a command in the host namespaces of node_name via a transient
-        privileged hostPID pod (nsenter into PID 1), and return stdout."""
-        pod_name = f"lvm-host-probe-{int(time.time() * 1000) % 1000000}"
-        body = {
-            "apiVersion": "v1",
-            "kind": "Pod",
-            "metadata": {
-                "name": pod_name,
-                "namespace": DEFAULT_NAMESPACE,
-                "labels": {"app": "harvester-e2e-host-probe"},
-            },
-            "spec": {
-                "nodeName": node_name,
-                "restartPolicy": "Never",
-                "hostPID": True,
-                "terminationGracePeriodSeconds": 0,
-                "tolerations": [{"operator": "Exists"}],
-                "containers": [{
-                    "name": "probe",
-                    "image": HOST_POD_IMAGE,
-                    "command": ["sh", "-c", "sleep 300"],
-                    "securityContext": {"privileged": True,
-                                        "runAsUser": 0},
-                }],
-            },
-        }
-        self.core_api.create_namespaced_pod(
-            namespace=DEFAULT_NAMESPACE, body=body)
-        try:
-            retry_count, retry_interval = get_retry_count_and_interval()
-            for _ in range(retry_count):
-                pod = self.core_api.read_namespaced_pod(
-                    name=pod_name, namespace=DEFAULT_NAMESPACE)
-                if pod.status and pod.status.phase == "Running":
-                    break
-                time.sleep(retry_interval)
-            else:
-                raise AssertionError(
-                    f"Host probe pod on {node_name} did not start")
-            resp = stream(
-                self.core_api.connect_get_namespaced_pod_exec,
-                pod_name, DEFAULT_NAMESPACE,
-                command=["nsenter", "-t", "1", "-m", "-u", "-i", "-n",
-                         "--", "sh", "-c", command],
-                stderr=True, stdin=False, stdout=True, tty=False,
-                _preload_content=False)
-            stdout = []
-            while resp.is_open():
-                resp.update(timeout=5)
-                if resp.peek_stdout():
-                    stdout.append(resp.read_stdout())
-                if resp.peek_stderr():
-                    resp.read_stderr()
-            resp.close()
-            return "".join(stdout).strip()
-        finally:
-            try:
-                self.core_api.delete_namespaced_pod(
-                    name=pod_name, namespace=DEFAULT_NAMESPACE,
-                    grace_period_seconds=0)
-            except ApiException:
-                pass
-
     def lv_exists_on_node(self, node_name, vg_name, lv_name):
         """Check via the host's lvm tools whether vg/lv exists."""
-        out = self._host_exec(
+        out = exec_command_on_host(
             node_name,
             f"lvs --noheadings -o lv_name {vg_name} 2>/dev/null || true")
         names = [line.strip() for line in out.splitlines()]

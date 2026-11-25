@@ -48,6 +48,41 @@ Wait Until VM Boot Volume Is Healthy
     ${pvc_name}=    Set Variable    ${vm_name}-disk-0
     volume_keywords.wait_for_longhorn_volume_healthy    ${pvc_name}
 
+Longhorn Volume Of PVC Encryption Should Be
+    [Arguments]    ${pvc_name}    ${encrypted}    ${data_engine}=${NONE}
+    ...    ${namespace}=${DEFAULT_NAMESPACE}
+    [Documentation]    Assert spec.encrypted (and optionally spec.dataEngine) of the
+    ...    Longhorn volume backing a PVC. encrypted is ${TRUE} or ${FALSE}.
+    ${lh_volume}=    volume_keywords.get_longhorn_volume    ${pvc_name}    ${namespace}
+    ${actual}=    Evaluate    bool($lh_volume['spec'].get('encrypted', False))
+    Should Be Equal    ${actual}    ${encrypted}
+    ...    msg=Longhorn volume of PVC ${namespace}/${pvc_name}: encrypted is ${actual}
+    IF    $data_engine is not None
+        Should Be Equal As Strings    ${lh_volume}[spec][dataEngine]    ${data_engine}
+    END
+
+Data Of Attached PVC Should Be Encrypted On Disk
+    [Arguments]    ${pvc_name}    ${cipher}=aes-xts-plain64
+    [Documentation]    Assert on the node that the raw Longhorn device is LUKS, holds no
+    ...    plaintext partition table, and that the pod uses a dm-crypt device on top of it.
+    ${info}=    volume_keywords.get_host_device_info    ${pvc_name}
+    Should Be True    ${info}[is_luks]    msg=The raw device of ${pvc_name} is not LUKS
+    Should Not Be True    ${info}[plain_gpt]    msg=The raw device of ${pvc_name} holds plaintext
+    Should Not Be Empty    ${info}[crypt_dev]    msg=${pvc_name} has no dm-crypt device
+    Should Be Equal As Strings    ${info}[published_dev]    ${info}[crypt_dev]
+    Should Be Equal As Strings    ${info}[crypt_backing_dev]    ${info}[raw_dev]
+    Should Be Equal As Strings    ${info}[crypt_cipher]    ${cipher}
+
+Data Of Attached PVC Should Be Plain On Disk
+    [Arguments]    ${pvc_name}
+    [Documentation]    Counterpart of Data Of Attached PVC Should Be Encrypted On Disk.
+    ...    The disk must have a GPT, as bootable cloud images do.
+    ${info}=    volume_keywords.get_host_device_info    ${pvc_name}
+    Should Not Be True    ${info}[is_luks]    msg=The raw device of ${pvc_name} is LUKS
+    Should Be True    ${info}[plain_gpt]    msg=No GPT on the raw device of ${pvc_name}
+    Should Be Empty    ${info}[crypt_dev]    msg=${pvc_name} has a dm-crypt device
+    Should Be Equal As Strings    ${info}[published_dev]    ${info}[raw_dev]
+
 Volume Is Active
     [Arguments]    ${vol_name}
     Volume Phase Is Bound    ${vol_name}

@@ -90,6 +90,14 @@ class Rest(Base):
 
         raise AssertionError(f"Image {image_name} was not ready within {timeout}s")
 
+    def create_by_crypto(self, image_name, crypto_operation, source_image_name,
+                         storage_class, backend="", namespace=DEFAULT_NAMESPACE,
+                         source_image_namespace=""):
+        """Only implemented for the CRD strategy."""
+        raise NotImplementedError(
+            "create_by_crypto is only implemented for the CRD strategy; "
+            "run with HARVESTER_OPERATION_STRATEGY=crd")
+
     def try_create(self, image_name, image_url="", source_type="download",
                    checksum="", namespace=DEFAULT_NAMESPACE, **kwargs):
         """Negative-test helper. Only implemented for the CRD strategy."""
@@ -178,6 +186,7 @@ class Rest(Base):
             'download_percent': progress,
             'progress': progress,
             'size': status.get('size', 0),
+            'virtual_size': status.get('virtualSize', 0),
             'conditions': status.get('conditions', [])
         }
 

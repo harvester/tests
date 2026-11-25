@@ -19,6 +19,7 @@ from constant import (
     VIRTUALMACHINEIMAGE_PLURAL,
     LONGHORN_API_GROUP, LONGHORN_API_VERSION, LONGHORN_NAMESPACE,
 )
+from utility.host import exec_command_on_host
 from utility.utility import logging, get_retry_count_and_interval
 from volume.base import Base
 
@@ -583,6 +584,71 @@ class CRD(Base):
             f"Longhorn volume {lh_volume_name} (PVC {namespace}/{pvc_name}) "
             f"did not reach robustness=healthy within {timeout}s"
         )
+
+    def get_longhorn_volume(self, pvc_name, namespace=DEFAULT_NAMESPACE):
+        """Return the Longhorn Volume CR backing a bound PVC"""
+        pvc = self.core_api.read_namespaced_persistent_volume_claim(
+            name=pvc_name, namespace=namespace)
+        lh_volume_name = pvc.spec.volume_name
+        if not lh_volume_name:
+            raise AssertionError(f"PVC {namespace}/{pvc_name} is not bound")
+        return client.CustomObjectsApi().get_namespaced_custom_object(
+            group=LONGHORN_API_GROUP,
+            version=LONGHORN_API_VERSION,
+            namespace=LONGHORN_NAMESPACE,
+            plural="volumes",
+            name=lh_volume_name,
+        )
+
+    def get_host_device_info(self, pvc_name, namespace=DEFAULT_NAMESPACE):
+        """Inspect the block device of an attached volume on its node.
+
+        Returns a dict:
+            is_luks: the raw Longhorn device has a LUKS header
+            plain_gpt: a plaintext GPT header is readable in the first 64 MiB
+                of the raw device
+            raw_dev, published_dev: major:minor of the raw Longhorn device and
+                of the device given to the pod
+            crypt_dev: major:minor of the dm-crypt device, "" if there is none
+            crypt_cipher, crypt_backing_dev: cipher and underlying device of
+                the dm-crypt device
+        """
+        lh_volume = self.get_longhorn_volume(pvc_name, namespace)
+        name = lh_volume['metadata']['name']
+        node = lh_volume.get('status', {}).get('currentNodeID')
+        assert node, f"Longhorn volume {name} of PVC {pvc_name} is not attached"
+        # dmsetup table fields 3, 4, 7: target, cipher, backing device (no key)
+        out = exec_command_on_host(node, f"""
+raw=/dev/longhorn/{name}; crypt=/dev/mapper/{name}-encrypted
+pub=/var/lib/kubelet/plugins/kubernetes.io/csi/volumeDevices/publish/{name}
+dev() {{ stat -L -c '%t %T' "$@" | while read a b; do echo $((0x$a)):$((0x$b)); done | sort -u; }}
+test -b $raw; echo raw_rc=$?
+cryptsetup isLuks $raw; echo luks_rc=$?
+gpt=$(dd if=$raw bs=1M count=64 iflag=direct 2>/dev/null | grep -a -c 'EFI PART'); echo gpt=$gpt
+echo raw_dev=$(dev $raw)
+echo published_dev=$(dev $pub/*)
+if test -e $crypt; then
+    echo crypt_dev=$(dev $crypt)
+    echo crypt_table=$(dmsetup table {name}-encrypted | cut -d' ' -f3,4,7)
+fi
+""")
+        logging(f"Host device info of {name} on {node}: {out}")
+        info = dict(line.split('=', 1) for line in out.splitlines() if '=' in line)
+        # A failed inspection must not look like an unencrypted device
+        assert info.get('raw_rc') == '0' and info.get('luks_rc') in ('0', '1') \
+            and info.get('gpt', '').isdigit() and info.get('raw_dev') \
+            and info.get('published_dev'), (
+                f"Cannot inspect the device of {name} on {node}: {out}")
+        table = (info.get('crypt_table', '').split() + [''] * 3)[:3]
+        return {
+            'is_luks': info['luks_rc'] == '0',
+            'plain_gpt': int(info['gpt']) > 0,
+            'raw_dev': info['raw_dev'],
+            'published_dev': info['published_dev'],
+            'crypt_dev': info.get('crypt_dev', ''),
+            'crypt_cipher': table[1],
+            'crypt_backing_dev': table[2],
+        }
 
     def get_status(self, volume_name):
         """Get volume status"""

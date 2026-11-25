@@ -12,7 +12,10 @@ class Rest(Base):
     def __init__(self):
         super().__init__()
 
-    def create(self, name, data_engine, number_of_replicas, disk_selector):
+    def create(self, name, data_engine, number_of_replicas, disk_selector,
+               encryption_secret=None):
+        if encryption_secret:
+            raise NotImplementedError("Encrypted StorageClass is only implemented for CRD")
         return super().add_storageclass(name, data_engine, number_of_replicas, disk_selector)
 
     def create_lvm(self, name, vg_name, vg_type, node):
