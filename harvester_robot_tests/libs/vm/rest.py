@@ -44,7 +44,10 @@ class Rest(Base):
             userdata['ssh_authorized_keys'] = [ssh_public_key]
             vm_spec.user_data = yaml.dump(userdata)
 
-        if image_id:
+        container_image = kwargs.get("container_image")
+        if container_image:
+            vm_spec.add_container("disk-0", container_image)
+        elif image_id:
             # The imageId annotation must be "<namespace>/<name>"
             if '/' not in image_id:
                 image_id = f"{DEFAULT_NAMESPACE}/{image_id}"
@@ -63,15 +66,19 @@ class Rest(Base):
             vm_spec.add_image("disk-0", image_id, size=kwargs.get("disk_size", 10),
                               image_uid=image_uid)
 
-        code, data = api.vms.create(vm_name, vm_spec)
+        namespace = kwargs.get("namespace", DEFAULT_NAMESPACE)
+        body = vm_spec.to_dict(vm_name, namespace)
+        body["metadata"].pop("resourceVersion", None)
+        body["metadata"].setdefault("annotations", {}).update(kwargs.get("annotations") or {})
+        code, data = api.vms.create(vm_name, body, namespace)
         assert code == 201, f"Failed to create VM: {code}, {data}"
         return data
 
-    def delete(self, vm_name):
+    def delete(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Delete a virtual machine"""
         api = get_harvester_api_client()
-        code, data = api.vms.delete(vm_name)
-        assert code == 200, f"Failed to delete VM: {code}, {data}"
+        code, data = api.vms.delete(vm_name, namespace)
+        assert code in (200, 204), f"Failed to delete VM: {code}, {data}"
 
     def list(self, namespace=DEFAULT_NAMESPACE):
         """List VMs in a namespace"""
@@ -198,12 +205,12 @@ class Rest(Base):
             "get_launched_disk_driver is only implemented for the CRD strategy; "
             "run with HARVESTER_OPERATION_STRATEGY=crd")
 
-    def start(self, vm_name):
+    def start(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Start a VM, retrying on update conflicts"""
         api = get_harvester_api_client()
         for i in range(self.retry_count):
             try:
-                code, data = api.vms.start(vm_name)
+                code, data = api.vms.start(vm_name, namespace)
                 assert code in [200, 204], f"Failed to start VM: {code}, {data}"
                 return
             except Exception as e:
@@ -211,12 +218,12 @@ class Rest(Base):
                 time.sleep(self.retry_interval)
         raise AssertionError(f"Failed to start VM {vm_name}")
 
-    def stop(self, vm_name):
+    def stop(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Stop a VM, retrying on update conflicts"""
         api = get_harvester_api_client()
         for i in range(self.retry_count):
             try:
-                code, data = api.vms.stop(vm_name)
+                code, data = api.vms.stop(vm_name, namespace)
                 assert code in [200, 204], f"Failed to stop VM: {code}, {data}"
                 return
             except Exception as e:
@@ -490,6 +497,22 @@ class Rest(Base):
         code, data = api.vms.get(vm_name)
         assert code == 200, f"Failed to get VM: {code}, {data}"
         return data.get('metadata', {}).get('annotations', {}) or {}
+
+    def set_annotation(self, vm_name, key, value, namespace=DEFAULT_NAMESPACE):
+        """Set an annotation of the VM, retrying on update conflicts."""
+        api = get_harvester_api_client()
+        for i in range(self.retry_count):
+            code, vm = api.vms.get(vm_name, namespace)
+            assert code == 200, f"Failed to get VM: {code}, {vm}"
+            vm['metadata'].setdefault('annotations', {})[key] = value
+            code, data = api.vms.update(vm_name, vm, namespace)
+            if code != 409:
+                assert code == 200, f"Failed to annotate VM: {code}, {data}"
+                return
+            logging(f"Conflict when annotating VM, retrying ({i})...")
+            time.sleep(self.retry_interval)
+        raise AssertionError(
+            f"Failed to annotate VM {namespace}/{vm_name} after {self.retry_count} attempts")
 
     def write_data(self, vm_name, data_size_mb):
         """Write data to VM"""

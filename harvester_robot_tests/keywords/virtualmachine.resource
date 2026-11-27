@@ -34,14 +34,17 @@ Get VM Volumes
     RETURN    ${claim_names}
 
 VM is deleted
-    [Arguments]    ${vm_name}
+    [Arguments]    ${vm_name}    ${namespace}=default
     [Documentation]    Delete a VM
-    vm_keywords.delete vm    ${vm_name}
+    vm_keywords.delete vm    ${vm_name}    ${namespace}
 
 Stopped VM is created
-    [Arguments]    ${vm_name}    ${image_id}    ${cpu}=2    ${memory}=4Gi
-    [Documentation]    Create a VM that does not boot (runStrategy=Halted)
+    [Arguments]    ${vm_name}    ${image_id}    ${cpu}=2    ${memory}=4Gi    &{config}
+    [Documentation]    Create a VM that does not boot (runStrategy=Halted).
+    ...    &{config} as for `VM is created`, e.g. container_image instead of an
+    ...    image, annotations, extra_disks or namespace.
     vm_keywords.create vm    ${vm_name}    ${image_id}    ${cpu}    ${memory}    run_strategy=Halted
+    ...    &{config}
 
 VM is created with extra disks
     [Arguments]    ${vm_name}    ${image_id}    @{sizes}
@@ -96,9 +99,9 @@ Volume Should Be Unplugged
     vm_keywords.wait_for_vm_volume_unplugged    ${vm_name}    ${disk_name}
 
 VM is started
-    [Arguments]    ${vm_name}
+    [Arguments]    ${vm_name}    ${namespace}=default
     [Documentation]    Start a VM
-    vm_keywords.start vm    ${vm_name}
+    vm_keywords.start vm    ${vm_name}    ${namespace}
 
 VM is restarted
     [Arguments]    ${vm_name}
@@ -179,9 +182,9 @@ Try To Delete VM
     RETURN    ${result}
 
 VM is stopped
-    [Arguments]    ${vm_name}
+    [Arguments]    ${vm_name}    ${namespace}=default
     [Documentation]    Stop a VM
-    vm_keywords.stop vm    ${vm_name}
+    vm_keywords.stop vm    ${vm_name}    ${namespace}
 
 VM should be running
     [Arguments]    ${vm_name}
@@ -230,6 +233,11 @@ Get VM annotations
     [Documentation]    Return the VM object's metadata.annotations as a dictionary
     ${annotations}=    vm_keywords.get_vm_annotations    ${vm_name}
     RETURN    ${annotations}
+
+VM annotation is set
+    [Arguments]    ${vm_name}    ${key}    ${value}    ${namespace}=default
+    [Documentation]    Set an annotation of the VM
+    vm_keywords.set_vm_annotation    ${vm_name}    ${key}    ${value}    ${namespace}
 
 VM annotation should be
     [Arguments]    ${vm_name}    ${key}    ${value}

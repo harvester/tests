@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))) # noqa E402
 from utility.utility import logging # noqa E402
 from volume import Volume # noqa E402
-from constant import DEFAULT_TIMEOUT_SHORT # noqa E402
+from constant import DEFAULT_TIMEOUT_SHORT, DEFAULT_NAMESPACE # noqa E402
 from constant import DEFAULT_VOLUME_SNAPSHOT_CLASS # noqa E402
 from constant import DEFAULT_STORAGE_CLASS # noqa E402
 
@@ -104,10 +104,11 @@ class volume_keywords:
         logging(f'Waiting for volume {volume_name} to be attached')
         self.volume.wait_for_attached(volume_name, timeout)
 
-    def wait_for_volume_deleted(self, volume_name, timeout=DEFAULT_TIMEOUT_SHORT):
+    def wait_for_volume_deleted(self, volume_name, timeout=DEFAULT_TIMEOUT_SHORT,
+                                namespace=DEFAULT_NAMESPACE):
         """Wait for volume to be deleted"""
-        logging(f'Waiting for volume {volume_name} to be deleted')
-        self.volume.wait_for_deleted(volume_name, timeout)
+        logging(f'Waiting for volume {namespace}/{volume_name} to be deleted')
+        self.volume.wait_for_deleted(volume_name, timeout, namespace)
 
     def wait_for_longhorn_volume_healthy(self, pvc_name, timeout=DEFAULT_TIMEOUT_SHORT,
                                          namespace="default"):
@@ -115,9 +116,9 @@ class volume_keywords:
         logging(f'Waiting for Longhorn volume backing PVC {pvc_name} to be healthy')
         self.volume.wait_for_longhorn_volume_healthy(pvc_name, timeout, namespace)
 
-    def get_volume_status(self, volume_name):
+    def get_volume_status(self, volume_name, namespace=DEFAULT_NAMESPACE):
         """Get volume status"""
-        return self.volume.get_status(volume_name)
+        return self.volume.get_status(volume_name, namespace)
 
     def list_volumes(self):
         """List all volumes"""

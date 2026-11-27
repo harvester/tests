@@ -30,10 +30,10 @@ class vm_keywords:
         logging(f'Creating VM {vm_name} with image {image_id}, {cpu}C/{memory} and {kwargs}')
         self.vm.create(vm_name, image_id, cpu, memory, **kwargs)
 
-    def delete_vm(self, vm_name):
+    def delete_vm(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Delete a virtual machine"""
-        logging(f'Deleting VM {vm_name}')
-        self.vm.delete(vm_name)
+        logging(f'Deleting VM {namespace}/{vm_name}')
+        self.vm.delete(vm_name, namespace)
 
     def list_vms(self, namespace=DEFAULT_NAMESPACE, name_prefix=None):
         """List VMs, optionally filtered by name prefix"""
@@ -45,15 +45,15 @@ class vm_keywords:
                    if vm.get("metadata", {}).get("name", "").startswith(name_prefix)]
         return [vm.get("metadata", {}).get("name") for vm in vms]
 
-    def start_vm(self, vm_name):
+    def start_vm(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Start a stopped VM"""
-        logging(f'Starting VM {vm_name}')
-        self.vm.start(vm_name)
+        logging(f'Starting VM {namespace}/{vm_name}')
+        self.vm.start(vm_name, namespace)
 
-    def stop_vm(self, vm_name):
+    def stop_vm(self, vm_name, namespace=DEFAULT_NAMESPACE):
         """Stop a running VM"""
-        logging(f'Stopping VM {vm_name}')
-        self.vm.stop(vm_name)
+        logging(f'Stopping VM {namespace}/{vm_name}')
+        self.vm.stop(vm_name, namespace)
 
     def restart_vm(self, vm_name):
         """Restart a VM"""
@@ -109,6 +109,11 @@ class vm_keywords:
         """Return the VM object's metadata.annotations"""
         logging(f'Getting annotations of VM {vm_name}')
         return self.vm.get_annotations(vm_name)
+
+    def set_vm_annotation(self, vm_name, key, value, namespace=DEFAULT_NAMESPACE):
+        """Set an annotation of the VM"""
+        logging(f'Setting annotation {key}={value} of VM {namespace}/{vm_name}')
+        self.vm.set_annotation(vm_name, key, value, namespace)
 
     def pause_vm(self, vm_name):
         """Pause a running VM"""

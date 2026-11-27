@@ -54,12 +54,12 @@ class common_keywords:
         assert target is not None, f"Not a version string: {version}"
         return release_at_least(release, target)
 
-    def create_namespace(self, name):
-        """Create a namespace (no-op when it already exists)"""
+    def create_namespace(self, name, labels=None):
+        """Create a namespace with optional extra labels (no-op when it already exists)"""
         from kubernetes import client
         from kubernetes.client.rest import ApiException
         body = client.V1Namespace(metadata=client.V1ObjectMeta(
-            name=name, labels={LABEL_TEST: LABEL_TEST_VALUE}))
+            name=name, labels={LABEL_TEST: LABEL_TEST_VALUE, **(labels or {})}))
         try:
             client.CoreV1Api().create_namespace(body=body)
             logging(f"Created namespace {name}")

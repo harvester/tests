@@ -4,7 +4,7 @@ Volume Component - delegates to CRD or REST implementation
 """
 import os
 
-from constant import HarvesterOperationStrategy, DEFAULT_STORAGE_CLASS
+from constant import HarvesterOperationStrategy, DEFAULT_STORAGE_CLASS, DEFAULT_NAMESPACE
 from volume.rest import Rest
 from volume.crd import CRD
 from volume.base import Base
@@ -68,11 +68,11 @@ class Volume(Base):
     def wait_for_attached(self, volume_name, timeout):
         return self.volume.wait_for_attached(volume_name, timeout)
 
-    def wait_for_deleted(self, volume_name, timeout):
-        return self.volume.wait_for_deleted(volume_name, timeout)
+    def wait_for_deleted(self, volume_name, timeout, namespace=DEFAULT_NAMESPACE):
+        return self.volume.wait_for_deleted(volume_name, timeout, namespace)
 
-    def get_status(self, volume_name):
-        return self.volume.get_status(volume_name)
+    def get_status(self, volume_name, namespace=DEFAULT_NAMESPACE):
+        return self.volume.get_status(volume_name, namespace)
 
     def list(self):
         return self.volume.list()

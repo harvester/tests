@@ -501,9 +501,9 @@ class CRD(Base):
 
         raise AssertionError(f"PVC {namespace}/{volume_name} did not bind within {timeout}s")
 
-    def wait_for_deleted(self, volume_name, timeout=DEFAULT_TIMEOUT_SHORT):
+    def wait_for_deleted(self, volume_name, timeout=DEFAULT_TIMEOUT_SHORT,
+                         namespace=DEFAULT_NAMESPACE):
         """Wait for PVC to be deleted"""
-        namespace = DEFAULT_NAMESPACE
         endtime = time.time() + timeout
 
         while time.time() < endtime:
@@ -584,9 +584,9 @@ class CRD(Base):
             f"did not reach robustness=healthy within {timeout}s"
         )
 
-    def get_status(self, volume_name):
+    def get_status(self, volume_name, namespace=DEFAULT_NAMESPACE):
         """Get volume status"""
-        pvc = self.get(volume_name)
+        pvc = self.get(volume_name, namespace)
         status = pvc.get('status', {})
 
         return {

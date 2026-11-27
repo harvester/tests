@@ -150,21 +150,22 @@ class Rest(Base):
             time.sleep(3)
         raise AssertionError(f"Volume {volume_name} did not bind within {timeout}s")
 
-    def wait_for_deleted(self, volume_name, timeout=DEFAULT_TIMEOUT_SHORT):
+    def wait_for_deleted(self, volume_name, timeout=DEFAULT_TIMEOUT_SHORT,
+                         namespace=DEFAULT_NAMESPACE):
         """Wait for volume to be deleted"""
         api = get_harvester_api_client()
         endtime = datetime.now() + timedelta(seconds=timeout)
         while endtime > datetime.now():
-            code, data = api.volumes.get(volume_name)
+            code, data = api.volumes.get(volume_name, namespace)
             if code == 404:
                 return True
             time.sleep(3)
         raise AssertionError(f"Volume {volume_name} was not deleted within {timeout}s")
 
-    def get_status(self, volume_name):
+    def get_status(self, volume_name, namespace=DEFAULT_NAMESPACE):
         """Get volume status (same shape as the CRD implementation)"""
         api = get_harvester_api_client()
-        code, data = api.volumes.get(volume_name)
+        code, data = api.volumes.get(volume_name, namespace)
         assert code == 200, f"Failed to get volume status: {code}, {data}"
         status = data.get('status', {})
         return {

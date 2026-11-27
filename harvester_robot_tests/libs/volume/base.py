@@ -2,6 +2,7 @@
 Base class for Volume operations (optional - for common patterns)
 """
 from abc import ABC, abstractmethod
+from constant import DEFAULT_NAMESPACE
 
 
 class Base(ABC):
@@ -18,7 +19,7 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def get_status(self, volume_name):
+    def get_status(self, volume_name, namespace=DEFAULT_NAMESPACE):
         """Get volume status"""
         pass
 
@@ -73,7 +74,7 @@ class Base(ABC):
         pass
 
     @abstractmethod
-    def wait_for_deleted(self, volume_name, timeout):
+    def wait_for_deleted(self, volume_name, timeout, namespace=DEFAULT_NAMESPACE):
         """Wait for the volume to be deleted"""
         pass
 
