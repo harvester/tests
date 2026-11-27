@@ -242,8 +242,8 @@ New VM Is Listed And Deleted VM Is Gone
     Then Wait Until Keyword Succeeds    2 min    3 s    VM Should Be Listed    vm-extra    ${FALSE}
 
 Status Change Is Indexed
-    [Documentation]    Boots a VM from a container disk of registry.suse.com. The CI feeds its
-    ...    clusters from its own artifact server, nothing shows that this registry is reachable.
+    [Documentation]    Boots a VM from a container disk of a public registry (docker.io). The CI
+    ...    feeds its clusters from its own artifact server, nothing shows that it can pull it.
     [Tags]    p1    -pr-baseline
     [Teardown]    Run Keywords    Delete VM And Wait Until Gone    vm-run
     ...    AND    Common Test Teardown

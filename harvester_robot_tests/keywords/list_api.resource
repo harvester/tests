@@ -21,7 +21,7 @@ ${DISPLAY_NAME}             harvesterhci.io/vmDisplayName
 ${DISPLAY_NAME_FIELD}       metadata.annotations[${DISPLAY_NAME}]
 ${STOPPED}                  status.printableStatus=Stopped
 ${RUNNING}                  status.printableStatus=Running
-${CONTAINER_DISK_IMAGE}     registry.suse.com/harvester-beta/vmi-fedora:latest
+${CONTAINER_DISK_IMAGE}     docker.io/kubevirt/cirros-container-disk-demo:latest
 ${APISERVER_LABELS}         app.kubernetes.io/name=harvester,app.kubernetes.io/component=apiserver
 @{NO_IDS}
 # Suite variables of test_list_api.robot: the namespace of the VMs, the prefix of
